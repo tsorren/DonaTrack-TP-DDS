@@ -1,6 +1,7 @@
 package grupo5.donaciones.controllers;
 
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.ConteosDeEntidadDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.FiltroDonacionesIndependientes;
 import grupo5.donaciones.services.ParametrosListado;
@@ -14,6 +15,8 @@ public interface IDonacionesIndependientesController {
       FiltroDonacionesIndependientes filtro, ParametrosListado listado);
 
   ResponseEntity<DonacionIndependienteResponseDTO> obtener(UUID id);
+
+  ResponseEntity<ConteosDeEntidadDTO> conteos(UUID entidadId, UUID necesidadId);
 
   ResponseEntity<DonacionIndependienteResponseDTO> cambiarEstado(
       UUID id,

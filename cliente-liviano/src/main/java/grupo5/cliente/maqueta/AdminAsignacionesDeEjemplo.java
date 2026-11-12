@@ -4,6 +4,7 @@ import static grupo5.cliente.vistas.AdminAsignacionesVista.MENOS_RECIBIERON;
 import static grupo5.cliente.vistas.AdminAsignacionesVista.PARECIDO;
 
 import grupo5.cliente.vistas.AdminAsignacionesVista;
+import grupo5.cliente.vistas.AdminAsignacionesVista.Cubre;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Cuentas;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Decidida;
 import grupo5.cliente.vistas.AdminAsignacionesVista.DonacionEnJuego;
@@ -11,9 +12,11 @@ import grupo5.cliente.vistas.AdminAsignacionesVista.Opcion;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Propuesta;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Sugerencia;
 import grupo5.cliente.vistas.ConsultaAsignaciones;
+import grupo5.cliente.vistas.ConsultaDecididas;
 import grupo5.cliente.vistas.Tramo;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Los datos de ejemplo de Asignar donaciones (R11-24, ficha r11-p1-asignaciones): propuestas sin
@@ -190,15 +193,112 @@ final class AdminAsignacionesDeEjemplo {
               true,
               "La pide 1 propuesta."));
 
-  private static final List<Decidida> DECIDIDAS =
+  private static final String DESCARTADA = "Descartada";
+  private static final String ALIMENTOS = "Alimentos";
+  private static final String CUENTA_LEO = "leo";
+
+  /**
+   * Una decidida de ejemplo con lo que usa la búsqueda en memoria: la clave de la categoría, hace
+   * cuántos días se decidió (-1: sin fecha) y quién ("vos", {@link #CUENTA_LEO} o "antes").
+   */
+  private record Ejemplo(Decidida decidida, String categoria, int dias, String autor) {}
+
+  private static final List<Ejemplo> DECIDIDAS =
       List.of(
-          new Decidida(COMEDOR, "Fideos, 20 kg", APROBADA),
-          new Decidida(HOGAR, "Aceite, 12 litros", APROBADA),
-          new Decidida(MERENDERO, "Azúcar, 15 kg", APROBADA),
-          new Decidida(ESCUELA, "Cuadernos, 40 unidades", APROBADA),
-          new Decidida(HOGAR, "Ropa de abrigo, 40 prendas", APROBADA),
-          new Decidida(COMEDOR, "Galletitas, 5 kg", "Descartada"),
-          new Decidida(MERENDERO, "Harina, 10 kg", "Descartada"));
+          new Ejemplo(
+              new Decidida(
+                  COMEDOR,
+                  "Fideos, 20 kg",
+                  APROBADA,
+                  ALIMENTOS,
+                  "Aprobaste vos el 11 de noviembre de 2026, 10:15.",
+                  null,
+                  List.of(new Cubre("fideos-ana", "Fideos · 20 kg (de Ana Ejemplo)"))),
+              "alimentos",
+              1,
+              "vos"),
+          new Ejemplo(
+              new Decidida(
+                  HOGAR,
+                  "Aceite, 12 litros",
+                  APROBADA,
+                  ALIMENTOS,
+                  "Aprobó Leo Gómez el 9 de noviembre de 2026, 16:02.",
+                  null,
+                  List.of(new Cubre("aceite-almacen", "Aceite · 12 litros (de Almacén Ejemplo)"))),
+              "alimentos",
+              3,
+              CUENTA_LEO),
+          new Ejemplo(
+              new Decidida(
+                  MERENDERO,
+                  "Azúcar, 15 kg",
+                  APROBADA,
+                  ALIMENTOS,
+                  "Aprobaste vos el 2 de noviembre de 2026, 9:40.",
+                  null,
+                  List.of(new Cubre("azucar-luis", "Azúcar · 15 kg (de Luis Ejemplo)"))),
+              "alimentos",
+              10,
+              "vos"),
+          new Ejemplo(
+              new Decidida(
+                  ESCUELA,
+                  "Cuadernos, 40 unidades",
+                  APROBADA,
+                  "Útiles escolares",
+                  "Aprobó Leo Gómez el 20 de octubre de 2026, 11:30.",
+                  null,
+                  List.of(
+                      new Cubre(
+                          "cuadernos-libreria", "Cuadernos · 40 unidades (de Librería Ejemplo)"))),
+              "utiles",
+              23,
+              CUENTA_LEO),
+          new Ejemplo(
+              new Decidida(
+                  HOGAR,
+                  "Ropa de abrigo, 40 prendas",
+                  APROBADA,
+                  "Ropa",
+                  "Se decidió antes de que guardáramos quién y cuándo.",
+                  null,
+                  List.of(
+                      new Cubre("abrigo-marta", "Ropa de abrigo · 40 prendas (de Marta Ejemplo)"))),
+              "ropa",
+              -1,
+              "antes"),
+          new Ejemplo(
+              new Decidida(
+                  COMEDOR,
+                  "Galletitas, 5 kg",
+                  DESCARTADA,
+                  ALIMENTOS,
+                  "Descartó Leo Gómez el 8 de noviembre de 2026, 18:20.",
+                  "El comedor ya consiguió galletitas de otra donación.",
+                  List.of(new Cubre("galletitas-ana", "Galletitas · 5 kg (de Ana Ejemplo)"))),
+              "alimentos",
+              4,
+              CUENTA_LEO),
+          new Ejemplo(
+              new Decidida(
+                  MERENDERO,
+                  "Harina, 10 kg",
+                  DESCARTADA,
+                  ALIMENTOS,
+                  "Se decidió antes de que guardáramos quién y cuándo.",
+                  "",
+                  List.of(new Cubre("harina-luis", "Harina · 10 kg (de Luis Ejemplo)"))),
+              "alimentos",
+              -1,
+              "antes"));
+
+  private static final List<Opcion> AUTORES =
+      List.of(
+          new Opcion("", "Cualquiera"),
+          new Opcion("vos", "Vos"),
+          new Opcion(CUENTA_LEO, "Leo Gómez"),
+          new Opcion("antes", "Antes de las cuentas"));
 
   private static final List<Opcion> CATEGORIAS =
       List.of(
@@ -208,16 +308,66 @@ final class AdminAsignacionesDeEjemplo {
 
   private AdminAsignacionesDeEjemplo() {}
 
+  /** Todas las decididas, filtradas en memoria como lo haría Donaciones (R11-35). */
+  private static List<Decidida> buscadas(ConsultaDecididas b) {
+    String buscar = b.buscar().toLowerCase(Locale.ROOT);
+    int dias =
+        switch (b.decidida()) {
+          case "hoy" -> 0;
+          case "7-dias" -> 6;
+          case "30-dias", "este-mes" -> 29;
+          case "mes-anterior" -> -2;
+          default -> Integer.MAX_VALUE;
+        };
+    List<Ejemplo> todas = new ArrayList<>(DECIDIDAS);
+    if (ConsultaDecididas.ANTIGUAS.equals(b.orden())) {
+      todas = todas.reversed();
+    }
+    return todas.stream()
+        .filter(
+            e ->
+                buscar.isEmpty()
+                    || (e.decidida().entidad() + " " + e.decidida().que())
+                        .toLowerCase(Locale.ROOT)
+                        .contains(buscar))
+        .filter(
+            e ->
+                b.estado().isEmpty()
+                    || (ConsultaDecididas.DESCARTADAS.equals(b.estado())
+                        == e.decidida().descartada()))
+        .filter(e -> b.categoria().isEmpty() || b.categoria().equals(e.categoria()))
+        .filter(e -> b.decidio().isEmpty() || b.decidio().equals(e.autor()))
+        .filter(e -> dias == Integer.MAX_VALUE || (e.dias() >= 0 && e.dias() <= dias))
+        .map(Ejemplo::decidida)
+        .toList();
+  }
+
   static AdminAsignacionesVista vista(ConsultaAsignaciones consulta, String accion) {
     List<Propuesta> libres = new ArrayList<>(LIBRES);
-    List<Decidida> decididas = new ArrayList<>(DECIDIDAS);
+    List<Decidida> decididas = new ArrayList<>(DECIDIDAS.stream().map(Ejemplo::decidida).toList());
     if ("aprobada".equals(accion)) {
       libres.removeIf(p -> "lentejas".equals(p.clave()));
-      decididas.addFirst(new Decidida(COMEDOR, "Lentejas, 15 kg", APROBADA));
+      decididas.addFirst(
+          new Decidida(
+              COMEDOR,
+              "Lentejas, 15 kg",
+              APROBADA,
+              ALIMENTOS,
+              "Aprobaste vos hoy.",
+              null,
+              List.of()));
     }
     if ("descartada".equals(accion)) {
       libres.removeIf(p -> "leche".equals(p.clave()));
-      decididas.addFirst(new Decidida(MERENDERO, "Leche en polvo, 12 unidades", "Descartada"));
+      decididas.addFirst(
+          new Decidida(
+              MERENDERO,
+              "Leche en polvo, 12 unidades",
+              DESCARTADA,
+              ALIMENTOS,
+              "Descartaste vos hoy.",
+              null,
+              List.of()));
     }
     if ("nuevas".equals(accion)) {
       libres.addAll(NUEVAS);
@@ -235,10 +385,12 @@ final class AdminAsignacionesDeEjemplo {
               null,
               null,
               List.of(),
-              Tramo.de(decididas, pagina, 20),
-              List.of(),
+              Tramo.de(buscadas(consulta.decididas()), pagina, 20),
+              CATEGORIAS,
               null,
-              null);
+              null,
+              AUTORES,
+              consulta.decididas().decidida().isEmpty() ? 0 : 2);
       case ConsultaAsignaciones.CONFLICTOS ->
           new AdminAsignacionesVista(
               consulta,

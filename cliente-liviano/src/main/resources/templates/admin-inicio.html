@@ -4,10 +4,15 @@
        admin, por temas»). Sin audacia de más: la mesa de trabajo de quien decide. Arriba, lo que
        espera una decisión, una tarjeta por tema con su cantidad y su botón (la que da 0 no se dibuja);
        debajo, cómo está todo en cuatro tarjetas (Donaciones por estado, Entregas confirmadas, La red y
-       Camiones), cada una con su período, sus cifras con separador de miles y su salida. Sin gráficos
-       (R11-42): entran después dentro de cada tarjeta. Los datos llegan en adminInicio (los de
-       ejemplo, en maqueta.AdminPersonasMaqueta).
-       ?escenario=vacio (nada espera decisión), lento, error y error-camiones (solo falta Logística). */-->
+       Camiones), cada una con su período, sus cifras con separador de miles y su salida. Al final,
+       los gráficos de los últimos 12 meses (R11-42, cambia el «sin gráficos» de R11-21): Mes a mes y
+       Por categoría, cada uno a todo el ancho, con su tabla al lado (debajo en el celular); el
+       dibujo es un SVG armado en el servidor y oculto al lector, porque la tabla dice lo mismo. Los
+       datos llegan en adminInicio (los de ejemplo, en maqueta.AdminPersonasMaqueta y
+       maqueta.AdminInicioGraficosDeEjemplo).
+       ?escenario=vacio (nada espera decisión), lento, error, error-camiones (solo falta Logística),
+       error-evolucion (solo faltan los gráficos), evolucion-corta (plataforma nueva) y
+       evolucion-vacia (todavía sin donaciones). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-inicio', ~{::contenido})}">
 <head>
@@ -22,7 +27,9 @@
              sinDecisiones=${escenario == 'vacio' or (conDatos and d.nada())},
              conDecisiones=${conDatos and !sinDecisiones},
              camiones=${escenario == 'error-camiones' ? null : c.camiones},
-             codigoCamiones=${escenario == 'error-camiones' or traceId == null ? 'a1b2c3d4e5f6' : traceId}">
+             codigoCamiones=${escenario == 'error-camiones' or traceId == null ? 'a1b2c3d4e5f6' : traceId},
+             ev=${escenario == 'error-evolucion' ? null : adminInicio.evolucion},
+             codigoEvolucion=${escenario == 'error-evolucion' or traceId == null ? 'a1b2c3d4e5f6' : traceId}">
   <div class="mesa">
     <header class="mesa-cabecera">
       <p class="rotulo" th:text="${seccion}">Inicio</p>
@@ -104,6 +111,8 @@
         <div class="esqueleto" data-forma="hueco"></div>
         <div class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <div class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
+        <div class="esqueleto" data-forma="hueco" data-tema="grafico"></div>
+        <div class="esqueleto" data-forma="hueco" data-tema="grafico"></div>
       </div>
       <th:block th:if="${conDatos}">
         <p class="todo-fecha" th:text="|Al ${adminInicio.al}.|">Al 15 de octubre de 2026, 18:30.</p>
@@ -212,7 +221,161 @@
             </div>
             <p th:if="${camiones != null}" class="salidas"><a href="/admin-camiones" th:href="@{/admin-camiones}">Ver camiones</a></p>
           </section>
+
+          <!--/* R11-42: los gráficos, al final y a todo el ancho. Si no llegan, una sola tarjeta con su
+                 aviso; sin donaciones, una tarjeta con la frase y sin dibujo. */-->
+          <section th:if="${ev == null}" class="tarjeta registro-mesa" data-tema="grafico"
+                   aria-labelledby="grafico-error">
+            <div class="tarjeta-cabeza">
+              <h3 id="grafico-error">Los últimos 12 meses</h3>
+            </div>
+            <div class="banner" data-estado="error" role="alert">
+              <p><b>No pudimos cargar los gráficos.</b></p>
+              <p>Las cifras de arriba están al día. Probá de nuevo en unos minutos; si sigue,
+                <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+                   th:href="@{/publico-contacto(codigo=${codigoEvolucion},volver='/admin-inicio')}">escribinos
+                  con este código</a>.</p>
+              <p class="aviso-codigo">Código: <code th:text="${codigoEvolucion}">a1b2c3d4e5f6</code></p>
+              <a class="boton" data-tono="secundario" href="/admin-inicio"
+                 th:href="@{/admin-inicio}">Volver a cargar</a>
+            </div>
+          </section>
+
+          <section th:if="${ev != null and ev.vacia()}" class="tarjeta registro-mesa" data-tema="grafico"
+                   aria-labelledby="grafico-vacio">
+            <div class="tarjeta-cabeza">
+              <h3 id="grafico-vacio">Mes a mes</h3>
+            </div>
+            <p><b>Todavía no hay donaciones registradas.</b></p>
+            <p>Los gráficos aparecen cuando se registre la primera.</p>
+          </section>
+
+          <th:block th:if="${ev != null and !ev.vacia()}">
+            <section class="tarjeta registro-mesa" data-tema="grafico" aria-labelledby="grafico-meses">
+              <div class="tarjeta-cabeza">
+                <h3 id="grafico-meses">Mes a mes</h3>
+                <p th:text="${ev.periodo}">de noviembre de 2025 a octubre de 2026</p>
+              </div>
+              <div data-parte="grafico">
+                <figure>
+                  <figcaption th:text="${ev.frase}">En los últimos 12 meses se registraron 1.424 donaciones y se
+                    confirmaron 1.161 entregas. El mes con más donaciones registradas fue agosto de 2026, con 165.</figcaption>
+                  <p data-parte="leyenda"><span data-serie="registradas">Registradas</span>
+                    <span data-serie="entregadas">Entregas confirmadas</span></p>
+                  <div data-parte="dibujo" data-forma="columnas" aria-hidden="true">
+                    <p data-parte="escala">
+                      <span th:text="${#numbers.formatInteger(ev.tope, 1, 'POINT')}">200</span>
+                      <span th:text="${#numbers.formatInteger(ev.mitad, 1, 'POINT')}">100</span>
+                      <span>0</span>
+                    </p>
+                    <svg viewBox="0 0 120 100" th:attr="viewBox=|0 0 ${ev.meses.size() * 10} 100|"
+                         preserveAspectRatio="none" focusable="false">
+                      <line data-parte="guia" x1="0" y1="0" x2="120" y2="0" th:attr="x2=${ev.meses.size() * 10}"/>
+                      <line data-parte="guia" x1="0" y1="50" x2="120" y2="50" th:attr="x2=${ev.meses.size() * 10}"/>
+                      <line data-parte="base" x1="0" y1="100" x2="120" y2="100" th:attr="x2=${ev.meses.size() * 10}"/>
+                      <g th:each="m, i : ${ev.meses}" th:attr="data-curso=${m.enCurso} ? 'si' : null">
+                        <rect data-serie="registradas" width="3.25" x="1.5" y="52" height="48"
+                              th:attr="x=${i.index * 10 + 1.5},y=${100 - m.altoRegistradas},height=${m.altoRegistradas}"/>
+                        <rect data-serie="entregadas" width="3.25" x="5.25" y="64" height="36"
+                              th:attr="x=${i.index * 10 + 5.25},y=${100 - m.altoEntregadas},height=${m.altoEntregadas}"/>
+                      </g>
+                    </svg>
+                    <ol data-parte="meses" role="list">
+                      <li th:each="m : ${ev.meses}">
+                        <span th:text="${m.corto}">nov</span>
+                        <span th:if="${m.anio != null}" th:text="${m.anio}">2025</span>
+                        <span th:if="${m.enCurso}" data-parte="curso">en curso</span>
+                      </li>
+                    </ol>
+                  </div>
+                </figure>
+                <table>
+                  <caption>Donaciones registradas y entregas confirmadas, mes a mes</caption>
+                  <thead>
+                  <tr>
+                    <th scope="col">Mes</th>
+                    <th scope="col">Registradas</th>
+                    <th scope="col">Entregas confirmadas</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr th:each="m : ${ev.meses}">
+                    <th scope="row" th:text="${m.nombre}">Noviembre 2025</th>
+                    <td th:text="${#numbers.formatInteger(m.registradas, 1, 'POINT')}">96</td>
+                    <td th:text="${#numbers.formatInteger(m.entregadas, 1, 'POINT')}">71</td>
+                  </tr>
+                  </tbody>
+                  <tfoot>
+                  <tr>
+                    <th scope="row">Total</th>
+                    <td th:text="${#numbers.formatInteger(ev.total.registradas, 1, 'POINT')}">1.424</td>
+                    <td th:text="${#numbers.formatInteger(ev.total.entregadas, 1, 'POINT')}">1.161</td>
+                  </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <p data-parte="nota" th:text="${ev.nota}">Una entrega cuenta en el mes en que la organización la
+                confirmó: puede ser de una donación registrada antes. Octubre todavía no terminó.</p>
+              <p class="salidas"><a href="/admin-donaciones" th:href="@{/admin-donaciones}">Ver todas las donaciones</a></p>
+            </section>
+
+            <section class="tarjeta registro-mesa" data-tema="grafico" aria-labelledby="grafico-categorias">
+              <div class="tarjeta-cabeza">
+                <h3 id="grafico-categorias">Por categoría</h3>
+                <p th:text="${ev.periodo}">de noviembre de 2025 a octubre de 2026</p>
+              </div>
+              <div data-parte="grafico">
+                <figure>
+                  <figcaption th:text="${ev.fraseCategorias}">Alimentos es la categoría con más donaciones registradas
+                    en estos 12 meses: 542 de 1.424.</figcaption>
+                  <p data-parte="leyenda"><span data-serie="registradas">Registradas</span>
+                    <span data-serie="entregadas">Entregas confirmadas</span></p>
+                  <ul data-parte="dibujo" data-forma="barras" role="list" aria-hidden="true">
+                    <li th:each="c : ${ev.categorias}">
+                      <span data-parte="nombre"><svg viewBox="0 0 100 100" focusable="false"><use href="#cat-alimentos"
+                           th:href="|#${c.icono != null ? c.icono : 'cat-generico'}|"/></svg>
+                        <span th:text="${c.nombre}">Alimentos</span></span>
+                      <svg viewBox="0 0 100 4" preserveAspectRatio="none" focusable="false">
+                        <rect data-serie="registradas" x="0" y="0" height="4" width="100" th:attr="width=${c.largoRegistradas}"/>
+                      </svg>
+                      <span th:text="${#numbers.formatInteger(c.registradas, 1, 'POINT')}">542</span>
+                      <svg viewBox="0 0 100 4" preserveAspectRatio="none" focusable="false">
+                        <rect data-serie="entregadas" x="0" y="0" height="4" width="85" th:attr="width=${c.largoEntregadas}"/>
+                      </svg>
+                      <span th:text="${#numbers.formatInteger(c.entregadas, 1, 'POINT')}">461</span>
+                    </li>
+                  </ul>
+                </figure>
+                <table>
+                  <caption>Donaciones registradas y entregas confirmadas, por categoría</caption>
+                  <thead>
+                  <tr>
+                    <th scope="col">Categoría</th>
+                    <th scope="col">Registradas</th>
+                    <th scope="col">Entregas confirmadas</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr th:each="c : ${ev.categorias}">
+                    <th scope="row" th:text="${c.nombre}">Alimentos</th>
+                    <td th:text="${#numbers.formatInteger(c.registradas, 1, 'POINT')}">542</td>
+                    <td th:text="${#numbers.formatInteger(c.entregadas, 1, 'POINT')}">461</td>
+                  </tr>
+                  </tbody>
+                  <tfoot>
+                  <tr>
+                    <th scope="row">Total</th>
+                    <td th:text="${#numbers.formatInteger(ev.totalCategorias.registradas, 1, 'POINT')}">1.424</td>
+                    <td th:text="${#numbers.formatInteger(ev.totalCategorias.entregadas, 1, 'POINT')}">1.161</td>
+                  </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <p class="salidas"><a href="/admin-donaciones" th:href="@{/admin-donaciones}">Ver todas las donaciones</a></p>
+            </section>
+          </th:block>
         </div>
+        <th:block th:if="${ev != null and !ev.vacia()}"><svg th:replace="~{iconos :: categorias}"></svg></th:block>
       </th:block>
     </section>
   </div>

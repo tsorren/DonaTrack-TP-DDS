@@ -10,10 +10,14 @@ import grupo5.donaciones.dto.donaciones.FiltroDonaciones;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ContadoresPublicosDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
+import grupo5.donaciones.dto.donaciones.outputs.EvolucionAdminDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ResumenAdminDTO;
+import grupo5.donaciones.models.entities.actividad.AccionDeAdministracion;
+import grupo5.donaciones.services.IActividadService;
 import grupo5.donaciones.services.IDonacionesService;
 import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.impl.ContadoresPublicosService;
+import grupo5.donaciones.services.impl.EvolucionAdminService;
 import grupo5.donaciones.services.impl.ResumenAdminService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -36,14 +40,20 @@ public class DonacionesController implements IDonacionesController {
   private final IDonacionesService service;
   private final ContadoresPublicosService contadoresPublicosService;
   private final ResumenAdminService resumenAdminService;
+  private final EvolucionAdminService evolucionAdminService;
+  private final IActividadService actividad;
 
   public DonacionesController(
       IDonacionesService service,
       ContadoresPublicosService contadoresPublicosService,
-      ResumenAdminService resumenAdminService) {
+      ResumenAdminService resumenAdminService,
+      EvolucionAdminService evolucionAdminService,
+      IActividadService actividad) {
     this.service = service;
     this.contadoresPublicosService = contadoresPublicosService;
     this.resumenAdminService = resumenAdminService;
+    this.evolucionAdminService = evolucionAdminService;
+    this.actividad = actividad;
   }
 
   @Override
@@ -53,7 +63,11 @@ public class DonacionesController implements IDonacionesController {
   @PostMapping
   public ResponseEntity<DonacionOutputDTO> cargarDonacion(
       @Valid @RequestBody DonacionInputDTO dto) {
-    return ResponseEntity.status(HttpStatus.CREATED).body(service.cargarDonacion(dto));
+    DonacionOutputDTO registrada = service.cargarDonacion(dto);
+    // R11-26: solo la que registra la administración; la del donante sobre sí mismo no entra.
+    actividad.registrar(
+        AccionDeAdministracion.DONACION_REGISTRADA, String.valueOf(registrada.id()), null);
+    return ResponseEntity.status(HttpStatus.CREATED).body(registrada);
   }
 
   @Override
@@ -68,6 +82,16 @@ public class DonacionesController implements IDonacionesController {
   @GetMapping("/resumen")
   public ResponseEntity<ResumenAdminDTO> obtenerResumen() {
     return ResponseEntity.ok(resumenAdminService.calcular());
+  }
+
+  /**
+   * Los gráficos del inicio del admin (R11-42): los últimos 12 meses por mes y por categoría,
+   * aparte del resumen para que una falla de las series no tape las cifras. Solo ADMIN.
+   */
+  @Override
+  @GetMapping("/resumen/evolucion")
+  public ResponseEntity<EvolucionAdminDTO> obtenerEvolucion() {
+    return ResponseEntity.ok(evolucionAdminService.calcular());
   }
 
   /** Público (RF-01, HB-02): sin token cuando el gateway aplique la allowlist. */

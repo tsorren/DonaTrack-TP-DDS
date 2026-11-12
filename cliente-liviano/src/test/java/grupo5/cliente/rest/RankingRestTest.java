@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import grupo5.cliente.vistas.RankingVista;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
@@ -28,7 +30,10 @@ import org.springframework.web.client.RestClientException;
 /** El adaptador REST del ranking contra respuestas de ejemplo de Incentivos (plan E6, §F1). */
 class RankingRestTest {
 
-  private static final String HISTORIAL = "http://incentivos/api/incentivos/ranking/historial";
+  private static final String RANKING = "http://incentivos/api/incentivos/ranking/";
+
+  /** R11-43: la primera página de 12 meses. */
+  private static final String HISTORIAL = RANKING + "historial?page=0&size=12";
 
   /** Dos meses desordenados, uno sin fecha de cálculo, con campos que el cliente no usa. */
   private static final String DOS_MESES =
@@ -113,5 +118,61 @@ class RankingRestTest {
     incentivos.expect(requestTo(HISTORIAL)).andRespond(withServerError());
 
     assertThrows(RestClientException.class, adaptador::ranking);
+  }
+
+  // ===================== R11-43: de a una página de meses =====================
+
+  @Test
+  void otraPaginaConElTotalYElPrimeroDeEsaPaginaElegido() {
+    incentivos
+        .expect(requestTo(RANKING + "historial?page=1&size=12"))
+        .andRespond(
+            withSuccess(DOS_MESES, MediaType.APPLICATION_JSON).header("X-Total-Count", "14"));
+
+    RankingVista ranking = adaptador.ranking(null, 2);
+
+    incentivos.verify();
+    assertEquals(14, ranking.total());
+    assertEquals(2, ranking.pagina());
+    assertEquals(2, ranking.paginas());
+    assertEquals("2026-09", ranking.elegido().clave());
+  }
+
+  @Test
+  void elMesPedidoDeLaPaginaNoSePideAparte() {
+    incentivos
+        .expect(requestTo(HISTORIAL))
+        .andRespond(withSuccess(DOS_MESES, MediaType.APPLICATION_JSON));
+
+    assertEquals("2026-08", adaptador.ranking("2026-08", 1).elegido().clave());
+    incentivos.verify();
+  }
+
+  @Test
+  void elMesPedidoDeOtraPaginaSePideSoloYUnoQueNoSeCalculoDaElPrimero() {
+    incentivos
+        .expect(requestTo(HISTORIAL))
+        .andRespond(withSuccess(DOS_MESES, MediaType.APPLICATION_JSON));
+    incentivos
+        .expect(requestTo(RANKING + "2025-01"))
+        .andRespond(
+            withSuccess(
+                """
+                {"periodo": "2025-01", "calculadoEn": null,
+                 "entradas": [{"posicion": 1, "nombreDonante": "Ana Ejemplo", "misionesCompletadas": 3}]}
+                """,
+                MediaType.APPLICATION_JSON));
+    incentivos
+        .expect(requestTo(HISTORIAL))
+        .andRespond(withSuccess(DOS_MESES, MediaType.APPLICATION_JSON));
+    incentivos.expect(requestTo(RANKING + "2020-01")).andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+    RankingVista.Mes enero = adaptador.ranking("2025-01", 1).elegido();
+    RankingVista.Mes sinCalcular = adaptador.ranking("2020-01", 1).elegido();
+
+    incentivos.verify();
+    assertEquals("Enero de 2025", enero.nombre());
+    assertEquals(List.of(new Puesto("Ana Ejemplo", 3)), enero.puestos());
+    assertEquals("2026-09", sinCalcular.clave());
   }
 }

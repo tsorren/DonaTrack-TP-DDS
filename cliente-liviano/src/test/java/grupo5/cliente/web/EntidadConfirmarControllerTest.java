@@ -47,7 +47,7 @@ class EntidadConfirmarControllerTest {
     EntidadConfirmarPuerto confirmar() {
       return new EntidadConfirmarPuerto() {
         @Override
-        public List<EntidadEntregaVista> entregas(UUID entidad) {
+        public List<EntidadEntregaVista> entregas(UUID entidad, String pedida) {
           return List.of(
               new EntidadEntregaVista(
                   ENTREGA,

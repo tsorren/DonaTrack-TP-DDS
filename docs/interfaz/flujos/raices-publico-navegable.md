@@ -142,7 +142,7 @@ o la imagen sola), con el mismo texto que en la portada.
 
 ### 4.2 Mapa (`publico-mapa`)
 
-> Desde R11-19 (2026-11-12, en revisión), la lista va plegada y paginada y los botones de salida,
+> Desde R11-19 (2026-11-12, aprobada), la lista va plegada y paginada y los botones de salida,
 > debajo del mapa: ver la [ampliación R11-19](#ampliación-r11-19-mapa-más-corto-lote-p1-mapa).
 
 ```text
@@ -271,6 +271,11 @@ sin correo, contraseña ni salidas, con el rótulo "Completá tu perfil" y el bo
 perfil" (la entidad conserva "Enviar la solicitud"). Si Donaciones o Keycloak fallan, el aviso "No
 pudimos guardar tu perfil" (o "No pudimos enviar la solicitud") conserva lo escrito. El nombre y
 apellido de quien representa a la empresa o a la entidad pide al menos dos palabras.
+
+**Ver y corregir la solicitud** (R11-41, 2026-11-12): con la cuenta pendiente, "Recibimos la
+solicitud" suma "Lo que nos enviaste" y "Corregir los datos" lleva a
+`publico-registro-entidad-corregir`. El diseño está en la ficha
+[r11-p2-pendiente-solicitud](r11-p2-pendiente-solicitud.md), que amplía esta sección.
 
 ### 4.8 Recuperar la contraseña (`publico-recuperar`)
 
@@ -693,7 +698,7 @@ foto, y Donaciones no da el lugar, así que no se pueden cruzar. El HTML de la m
 
 ## Ampliación R11-19: Mapa más corto (lote `p1-mapa`)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él) (usuario)
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p1-mapa` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P1, ruta CONTRATO).
 > La decisión del usuario ("Mapa público: botones debajo del mapa; lista plegada (entidad +

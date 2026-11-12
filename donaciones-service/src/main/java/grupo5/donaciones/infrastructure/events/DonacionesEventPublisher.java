@@ -10,6 +10,7 @@ import grupo5.donaciones.dto.comunicaciones.EventoDonacionSegmentadaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionVencidaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
+import grupo5.donaciones.dto.comunicaciones.EventoImportacionTerminadaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 import grupo5.donaciones.services.IDonacionesEventPublisher;
 import java.util.UUID;
@@ -79,6 +80,11 @@ public class DonacionesEventPublisher implements IDonacionesEventPublisher {
   @Override
   public void publicarDonacionSegmentada(EventoDonacionSegmentadaV1 evento) {
     publicar(RabbitMQConfig.ROUTING_KEY_DONACION_SEGMENTADA, evento);
+  }
+
+  @Override
+  public void publicarImportacionTerminada(EventoImportacionTerminadaV1 evento) {
+    publicar(RabbitMQConfig.ROUTING_KEY_IMPORTACION_TERMINADA, evento);
   }
 
   /**

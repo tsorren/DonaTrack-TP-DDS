@@ -5,6 +5,7 @@ import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -47,6 +48,17 @@ class AdministradoresMaqueta implements DirectorioDeAdministradores, Administrad
   public List<Administrador> pagina(int pagina) {
     fallaSiHayError();
     return pagina == 1 ? CUENTAS : List.of();
+  }
+
+  @Override
+  public List<Administrador> buscar(String texto, int max) {
+    fallaSiHayError();
+    String buscado = texto == null ? "" : texto.strip().toLowerCase(Locale.ROOT);
+    return CUENTAS.stream()
+        .filter(
+            c -> (c.nombreCompleto() + " " + c.correo()).toLowerCase(Locale.ROOT).contains(buscado))
+        .limit(max)
+        .toList();
   }
 
   @Override

@@ -85,7 +85,9 @@ class DonanteSeguimientoRestTest {
 
   @Test
   void laQueVaEnCaminoTraeLaPosicionDelCamionYElDestino() {
-    apis.expect(requestTo("http://logistica/api/entregas/seguimiento/donantes/" + DONANTE))
+    apis.expect(
+            requestTo(
+                "http://logistica/api/entregas/seguimiento/donantes/" + DONANTE + "?size=100"))
         .andRespond(
             withSuccess(
                 "[{\"idEntrega\": \"%s\", \"idDonacion\": \"%s\", \"posicionCamion\":"
@@ -118,7 +120,9 @@ class DonanteSeguimientoRestTest {
 
   @Test
   void sinLogisticaLaListaSeMuestraSinPosiciones() {
-    apis.expect(requestTo("http://logistica/api/entregas/seguimiento/donantes/" + DONANTE))
+    apis.expect(
+            requestTo(
+                "http://logistica/api/entregas/seguimiento/donantes/" + DONANTE + "?size=100"))
         .andRespond(withServerError());
     conDonaciones();
 
@@ -136,7 +140,9 @@ class DonanteSeguimientoRestTest {
    */
   @Test
   void laQueEstaEnElDepositoLlegaComoPendienteSinDestino() {
-    apis.expect(requestTo("http://logistica/api/entregas/seguimiento/donantes/" + DONANTE))
+    apis.expect(
+            requestTo(
+                "http://logistica/api/entregas/seguimiento/donantes/" + DONANTE + "?size=100"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
     conDonaciones();
 

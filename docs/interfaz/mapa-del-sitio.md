@@ -24,6 +24,7 @@ flowchart LR
     L --> RE[Registrarse: elegir]
     RE --> RD[Registro de donante]
     RE --> RN[Registro de organización]
+    RN --> SS[Recibimos la solicitud] --> SC[Corregir la solicitud]
     IS --> RC[Recuperar contraseña]
     IS --> AC[Activar cuenta]
   end
@@ -57,6 +58,8 @@ flowchart LR
     IA --> RK[Ranking]
     IA --> PA[Mi perfil]
     IA --> AD[Administradores] --> AN[Dar de alta un administrador]
+    AD --> ACT[Actividad]
+    IA --> NA[Notificaciones]
     DOa --> IM[Importaciones]
   end
 ```
@@ -102,6 +105,9 @@ flowchart LR
 | Donantes → Importaciones (`/admin-importaciones`: en curso e históricas, con búsqueda y filtros) | Admin | 2 → 3 | RF-20 | [r11-p1-importaciones](flujos/r11-p1-importaciones.md) | E6 |
 | Mi perfil del admin (`/admin-perfil`, desde el menú de la cuenta) | Admin | 2 | RI-AUTH-02, R11-10 | [r11-p1-admins](flujos/r11-p1-admins.md) | E6 (R11, P1) |
 | Administradores → dar de alta (`/admin-administradores`, desde el menú de la cuenta; la ventana o, sin JavaScript, `/admin-administradores-nuevo`; el resultado con la contraseña provisoria, `/admin-administradores-alta`) | Admin | 2 → 3 | RF-AUTH-07, R11-10 | [r11-p1-admins](flujos/r11-p1-admins.md) | E6 (R11, P1) |
+| Administradores → Actividad (`/admin-actividad`: quién hizo qué y cuándo, de a 20, con búsqueda por administrador y filtros Quién, Acción y Fecha; "Ver su actividad" en cada cuenta y "Ver mi actividad" en Mi perfil) | Admin | 2 | R11-26, RI-SVC-04 | [r11-p2-actividad](flujos/r11-p2-actividad.md) | E6 (R11, P2) |
+| Recibimos la solicitud → Corregir los datos (`/publico-registro-entidad-corregir`: el formulario del registro lleno, en página aparte, mientras la solicitud espera) | Organización pendiente | 3 | RF-AUTH-06, R11-41 | [r11-p2-pendiente-solicitud](flujos/r11-p2-pendiente-solicitud.md) | E6 (R11, P2) |
+| Notificaciones del admin (`/admin-notificaciones`, bandeja compartida de la Administración, de a 20; desde la campanita) | Admin | 2 | R11-30 | [r11-p2-campanita](flujos/r11-p2-campanita.md) | E6 (R11, P2) |
 
 ## Pantallas dibujadas (sitios A y B de la corrida del 2026-11-02)
 
@@ -183,7 +189,38 @@ ya estaban ([backlog de la revisión](backlog-revision-2026-11-11.md#estado-de-p
 | Asignar donaciones | Tres pestañas que son direcciones propias: Propuestas, Conflictos y Destino; se borraron las variantes A, B y C | R11-24 |
 | Ranking | "Volver al último mes" cuando se mira un mes anterior | R11-23 |
 | Portada y públicas con la sesión iniciada | La navegación pública sigue; "Ingresar" y "Crear una cuenta" se cambian por "Ir a mi inicio" (el inicio del área) y la foto con el menú de la cuenta. Con la solicitud pendiente, "Ver mi solicitud" (lleva a "Recibimos la solicitud"). Integrado después del cierre (`p1-portada`) | R11-15 |
-El registro de actividad y las notificaciones del admin entran con sus lotes de P2.
+El registro de actividad y las notificaciones del admin entraron con sus lotes de P2 (abajo).
+
+## Cambios de la oleada P2: lote `p2-admin-bandeja` (2026-11-12)
+
+Ninguna pantalla nueva ni ningún nivel más ([ficha](flujos/r11-p2-admin-bandeja.md)):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Donaciones del admin | Bandeja: cada renglón abre su ficha en la misma página (`?donacion=`), al lado desde la tableta y fija al desplazarse; en el celular, debajo del renglón y con "Cerrar la ficha". Desde la ficha: "Ver las propuestas que la piden" (Asignar donaciones, Destino) y "Marcar como vencida". `admin-donaciones-detalle` sigue para los enlaces que llegan de afuera | R11-34 |
+| Donantes del admin → Donaciones | La ficha del donante lleva a sus donaciones (`/admin-donaciones?donante=`), que se ven con "De <nombre> · Quitar" | R11-34 |
+| Asignar donaciones → Todas las decididas | Búsqueda y filtros (estado, categoría, fecha, quién decidió) y orden por la fecha de la decisión; cada decidida lleva a la ficha de sus donaciones en Donaciones | R11-35 |
+
+## Cambios de la oleada P2: los demás lotes (2026-11-12)
+
+Dos pantallas nuevas (Corregir la solicitud y Notificaciones del admin con datos reales) y una
+pestaña (Actividad); ninguna a más de 3 niveles
+([backlog de la revisión](backlog-revision-2026-11-11.md#estado-de-p2-al-cierre-de-la-oleada-2026-11-12)):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Cabecera privada de los tres roles | La campanita abre un desplegable con las 5 sin leer y "Ver todas", sin cambiar de pantalla; tocar una fila la marca leída y lleva a lo que nombra. Sin JavaScript, lleva a la bandeja sin leer | R11-29 |
+| Notificaciones del admin | Bandeja real y compartida de la Administración (avisos de importación terminada o cortada y mensajes de contacto), de a 20, con la misma forma que las otras dos | R11-30 |
+| Administradores | Pestañas "Cuentas · Actividad"; "Ver su actividad" en cada cuenta y "Ver mi actividad" en Mi perfil | R11-26 |
+| Inicio de la empresa | El tablero en tres columnas de a 3, cada una con su paginador y su parámetro en la dirección (`?llego=`, `?camino=`) | R11-25 |
+| Inicio del admin | Al final de "Cómo está todo", dos gráficos de los últimos 12 meses con su tabla | R11-42 |
+| Organizaciones del donante | Una tarjeta por organización; Categoría es un filtro; la franja "Cómo llega tu donación" arriba de la lista | R11-27, R11-28 |
+| Necesidades de la organización | "Publicar otra necesidad" es una ventana en 3 pasos; cada necesidad muestra 3 en curso y 3 recibidas con "Ver todas", que lleva a Donaciones recibidas | R11-31, R11-43 |
+| Toda ventana de confirmar o de un formulario corto | Bloquea el fondo y retiene el foco (con JavaScript) | R11-32 |
+| Donaciones recibidas, Seguir entregas y Ranking | De a una página con el paginador común; el menú "Mes" del ranking muestra los 12 meses de la página | R11-43 |
+| Organizaciones del admin | Vuelven los filtros Estado, Necesidades y Tipo | R11-43 |
+| Recibimos la solicitud | "Lo que nos enviaste" con los datos guardados y "Corregir los datos"; si ya la aprobaron, "Ingresar de nuevo" | R11-41 |
+| Listados (desde la tableta) | La cabecera y la barra de búsqueda y filtros quedan fijas al desplazarse; en el celular, el botón de Confirmar recepción queda fijo encima del menú | R11-33 |
 
 ## Observaciones para el diseño
 

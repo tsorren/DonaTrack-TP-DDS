@@ -1,5 +1,6 @@
 package grupo5.cliente.web;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,6 +23,7 @@ import grupo5.cliente.vistas.DonanteEntidadesVista.Pedido;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -159,11 +161,13 @@ class DonanteEntidadesControllerTest {
   }
 
   /**
-   * B2 y B3: las categorías del filtro y los grupos son los de la vista (Higiene también); la
-   * categoría elegida muestra solo su grupo y una entidad sin nada pendiente de ella lo dice.
+   * B2, B3 y R11-27: las categorías del filtro son las de la vista (Higiene también); la lista no
+   * se agrupa por categoría: una tarjeta por organización, con sus categorías en el pie. Con una
+   * categoría elegida, sus pedidos van primero y una organización sin nada pendiente de ella lo
+   * dice en su tarjeta.
    */
   @Test
-  void lasCategoriasRealesFiltranYAgrupan() throws Exception {
+  void unaTarjetaPorOrganizacionYLaCategoriaComoFiltro() throws Exception {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
     Pedido jabon =
         new Pedido(
@@ -172,42 +176,63 @@ class DonanteEntidadesControllerTest {
         .thenReturn(
             vista(
                 List.of(
-                    new Entidad("Hogar Ejemplo", false, List.of(jabon, frazadas())),
+                    new Entidad("Hogar Ejemplo", false, List.of(frazadas(), jabon)),
                     new Entidad("Club Ejemplo", false, List.of(frazadas()))),
                 5,
                 1,
                 1));
 
-    mvc.perform(get("/donante-entidades"))
-        .andExpect(content().string(containsString("id=\"grupo-2\"")))
-        .andExpect(content().string(containsString("Jabón")))
-        .andExpect(content().string(containsString("Todas las categorías")));
-    mvc.perform(get("/donante-entidades?categoria=" + HIGIENE))
-        .andExpect(
-            content()
-                .string(
-                    containsString(
-                        "5 organizaciones coinciden con lo que elegiste. Página 1 de 1.")))
-        .andExpect(content().string(not(containsString("id=\"grupo-3\""))))
-        .andExpect(content().string(containsString("Lo que pedía de Higiene ya está cubierto.")));
+    String todas =
+        mvc.perform(get("/donante-entidades"))
+            .andExpect(content().string(containsString("Todas las categorías")))
+            .andExpect(content().string(not(containsString("data-v=\"grupo\""))))
+            .andExpect(content().string(containsString("Higiene · Ropa")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertThat(veces(todas, "data-v=\"organizacion\"")).isEqualTo(2);
+    assertThat(veces(todas, "<span data-v=\"nombre\">Hogar Ejemplo</span>")).isEqualTo(1);
+    assertThat(todas.indexOf("Frazadas")).isLessThan(todas.indexOf("Jabón"));
+
+    String higiene =
+        mvc.perform(get("/donante-entidades?categoria=" + HIGIENE))
+            .andExpect(
+                content()
+                    .string(
+                        containsString(
+                            "5 organizaciones coinciden con lo que elegiste. Página 1 de 1.")))
+            .andExpect(
+                content().string(containsString("Lo que pedía de Higiene ya está cubierto.")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertThat(veces(higiene, "data-v=\"organizacion\"")).isEqualTo(2);
+    assertThat(higiene.indexOf("Jabón")).isLessThan(higiene.indexOf("Frazadas"));
     verify(entidades).entidades(DONANTE, new Consulta("", HIGIENE, false, 1));
   }
 
-  /** I6: un pedido sin categoría conocida no se pierde. */
+  /** I6: un pedido sin categoría conocida no se pierde: va con el ícono de respaldo y "Otras". */
   @Test
-  void losPedidosSinCategoriaVanEnOtros() throws Exception {
+  void losPedidosSinCategoriaVanConOtras() throws Exception {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
     Pedido suelto = new Pedido("Pañales", null, null, "Piden 10", "Sin fecha de cierre", null, 10);
     when(entidades.entidades(eq(DONANTE), any()))
-        .thenReturn(vista(List.of(new Entidad("Hogar Ejemplo", false, List.of(suelto))), 1, 1, 1));
+        .thenReturn(
+            vista(
+                List.of(new Entidad("Hogar Ejemplo", false, List.of(frazadas(), suelto))),
+                1,
+                1,
+                1));
 
     mvc.perform(get("/donante-entidades"))
-        .andExpect(content().string(containsString("Otros pedidos")))
-        .andExpect(content().string(containsString("Pañales")));
+        .andExpect(content().string(containsString("Pañales")))
+        .andExpect(content().string(containsString("#cat-generico")))
+        .andExpect(content().string(containsString("Ropa · Otras")))
+        .andExpect(content().string(not(containsString("Otros pedidos"))));
   }
 
   /**
-   * B1 e I2: una entidad que llega sin pedidos vigentes (con "Ya doné", una que ya tiene todo
+   * B1 e I2: una organización que llega sin pedidos vigentes (con "Ya doné", una que ya tiene todo
    * cubierto) también se ve, con su marca, para que la pantalla muestre todas las que cuenta.
    */
   @Test
@@ -224,31 +249,133 @@ class DonanteEntidadesControllerTest {
                 1,
                 1));
 
-    mvc.perform(get("/donante-entidades?ya=si"))
-        .andExpect(
-            content()
-                .string(
-                    containsString(
-                        "3 organizaciones coinciden con lo que elegiste. Página 1 de 1.")))
-        .andExpect(content().string(containsString("Sin pedidos pendientes")))
-        .andExpect(
-            content()
-                .string(
-                    containsString(
-                        "<span data-v=\"nombre\">Comedor Ejemplo Este</span><span data-v=\"ya-donaste\">Ya le donaste</span>")))
-        .andExpect(content().string(containsString("Hoy no pide nada.")));
+    String pagina =
+        mvc.perform(get("/donante-entidades?ya=si"))
+            .andExpect(
+                content()
+                    .string(
+                        containsString(
+                            "3 organizaciones coinciden con lo que elegiste. Página 1 de 1.")))
+            .andExpect(content().string(not(containsString("Sin pedidos pendientes"))))
+            .andExpect(
+                content()
+                    .string(
+                        containsString(
+                            "<span data-v=\"nombre\">Comedor Ejemplo Este</span><span data-v=\"ya-donaste\">Ya le donaste</span>")))
+            .andExpect(content().string(containsString("Hoy no pide nada.")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertThat(veces(pagina, "data-v=\"organizacion\"")).isEqualTo(3);
   }
 
-  /** Con una categoría elegida, la entidad sin pedidos sale en su grupo y no se repite. */
+  /** Con una categoría elegida, la organización sin pedidos sale una sola vez, con el aviso. */
   @Test
   void conCategoriaLaEntidadSinPedidosNoSeRepite() throws Exception {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
     when(entidades.entidades(eq(DONANTE), any()))
         .thenReturn(vista(List.of(new Entidad("Comedor Ejemplo Este", true, List.of())), 1, 1, 1));
 
-    mvc.perform(get("/donante-entidades?categoria=ropa"))
-        .andExpect(content().string(containsString("Lo que pedía de Ropa ya está cubierto.")))
-        .andExpect(content().string(not(containsString("Sin pedidos pendientes"))));
+    String pagina =
+        mvc.perform(get("/donante-entidades?categoria=ropa"))
+            .andExpect(content().string(containsString("Lo que pedía de Ropa ya está cubierto.")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertThat(veces(pagina, "<span data-v=\"nombre\">Comedor Ejemplo Este</span>")).isEqualTo(1);
+  }
+
+  /** R11-27: hasta 3 pedidos a la vista; el resto, en un plegable que dice cuántos faltan. */
+  @Test
+  void conMasDeTresPedidosElRestoVaPlegado() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(entidades.entidades(eq(DONANTE), any()))
+        .thenReturn(
+            vista(
+                List.of(
+                    new Entidad("Hogar Ejemplo", false, pedidos(5)),
+                    new Entidad("Club Ejemplo", false, pedidos(4)),
+                    new Entidad("Merendero Ejemplo", false, pedidos(3))),
+                3,
+                1,
+                1));
+
+    String pagina =
+        mvc.perform(get("/donante-entidades"))
+            .andExpect(content().string(containsString("Ver 2 necesidades más")))
+            .andExpect(content().string(containsString("Ver 1 necesidad más")))
+            .andExpect(
+                content()
+                    .string(
+                        containsString("<span class=\"solo-lectores\"> de Hogar Ejemplo</span>")))
+            .andExpect(content().string(containsString("Ver menos")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertThat(veces(pagina, "<details data-v=\"mas\"")).isEqualTo(2);
+    // El cuarto pedido de Hogar va dentro de su plegable; el tercero, a la vista.
+    int hogar = pagina.indexOf("<span data-v=\"nombre\">Hogar Ejemplo</span>");
+    int plegable = pagina.indexOf("<details data-v=\"mas\"", hogar);
+    assertThat(pagina.indexOf("Pedido 4", hogar)).isGreaterThan(plegable);
+    assertThat(pagina.indexOf("Pedido 3", hogar)).isLessThan(plegable);
+  }
+
+  /**
+   * R11-28: "Cómo llega tu donación" es una franja de ayuda arriba de la búsqueda, no una tarjeta
+   * más; "Ver Mis donaciones" es un enlace, no un botón.
+   */
+  @Test
+  void comoLlegaEsUnaFranjaDeAyudaArribaDeLaLista() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(entidades.entidades(eq(DONANTE), any()))
+        .thenReturn(
+            vista(List.of(new Entidad("Hogar Ejemplo", false, List.of(frazadas()))), 1, 1, 1));
+
+    String pagina =
+        mvc.perform(get("/donante-entidades"))
+            .andExpect(
+                content()
+                    .string(
+                        containsString("<aside data-v=\"ayuda\" aria-labelledby=\"como-titulo\">")))
+            .andExpect(
+                content()
+                    .string(
+                        containsString("<a href=\"/donante-donaciones\">Ver Mis donaciones</a>")))
+            .andExpect(content().string(not(containsString("como-donar"))))
+            .andExpect(content().string(not(containsString("por categoría"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertThat(pagina.indexOf("data-v=\"ayuda\"")).isLessThan(pagina.indexOf("role=\"search\""));
+    assertThat(pagina.indexOf("data-v=\"ayuda\""))
+        .isLessThan(pagina.indexOf("data-v=\"organizacion\""));
+  }
+
+  @Test
+  void conErrorLaFranjaSigue() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(entidades.entidades(eq(DONANTE), any())).thenReturn(vista(List.of(), 0, 1, 1));
+
+    mvc.perform(get("/donante-entidades?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos cargar las organizaciones.")))
+        .andExpect(content().string(containsString("data-v=\"ayuda\"")));
+  }
+
+  private static List<Pedido> pedidos(int cuantos) {
+    return IntStream.rangeClosed(1, cuantos)
+        .mapToObj(
+            i ->
+                new Pedido(
+                    "Pedido " + i, "ropa", "cat-ropa", "Piden 10 unidades", "Sin fecha", null, 10))
+        .toList();
+  }
+
+  private static int veces(String texto, String buscado) {
+    int cuenta = 0;
+    for (int i = texto.indexOf(buscado); i >= 0; i = texto.indexOf(buscado, i + 1)) {
+      cuenta++;
+    }
+    return cuenta;
   }
 
   /** R11-18: el nombre va en su propia línea y la marca debajo, en otro elemento. */

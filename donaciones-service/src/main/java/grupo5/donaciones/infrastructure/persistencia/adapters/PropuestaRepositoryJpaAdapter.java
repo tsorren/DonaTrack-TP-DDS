@@ -9,8 +9,8 @@ import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.propuestas.SituacionPropuesta;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
+import grupo5.donaciones.models.repositories.listados.BusquedaDecididas;
 import grupo5.donaciones.models.repositories.listados.CriterioPropuestas;
-import grupo5.donaciones.models.repositories.listados.OrdenPropuestas;
 import grupo5.donaciones.models.repositories.listados.Paginado;
 import grupo5.donaciones.models.repositories.listados.PropuestaEnListado;
 import grupo5.donaciones.models.repositories.listados.StockEnPropuestas;
@@ -92,6 +92,31 @@ public class PropuestaRepositoryJpaAdapter
 
   private static final String ALGORITMO = "algoritmo";
 
+  // R11-35: el texto buscado, en la organización y lo que pide la necesidad, o en lo donado
+  private static final String BUSCADA =
+      "(EXISTS (SELECT 1 FROM donaciones.necesidad nq"
+          + " LEFT JOIN donaciones.juridica jq ON jq.id = nq.entidad_beneficiaria_id"
+          + " WHERE nq.id = p.id_necesidad_que_satisface AND ("
+          + ConsultaListado.contiene("jq.razon_social", "q")
+          + " OR "
+          + ConsultaListado.contiene("nq.descripcion", "q")
+          + ")) OR EXISTS (SELECT 1 FROM donaciones.posible_fragmentacion fq"
+          + " JOIN donaciones.item_donacion_independiente iq"
+          + " ON iq.id_donacion_independiente = fq.id_donacion_independiente"
+          + " WHERE fq.id_propuesta = p.id AND "
+          + ConsultaListado.contiene("iq.bien_descripcion", "q")
+          + "))";
+
+  // R11-35: la categoría de la necesidad que cubre
+  private static final String DE_LA_CATEGORIA_DE_LA_NECESIDAD =
+      "EXISTS (SELECT 1 FROM donaciones.necesidad nc"
+          + " JOIN donaciones.subcategoria snc ON snc.id = nc.subcategoria_id"
+          + " WHERE nc.id = p.id_necesidad_que_satisface"
+          + " AND snc.id_categoria = :categoriaDecidida)";
+
+  private static final String DECIDIDAS =
+      "p.estado IN ('" + EstadoPropuesta.APROBADA + "', '" + EstadoPropuesta.DESCARTADA + "')";
+
   private final PropuestasPersistenciaMapper mapper;
 
   @PersistenceContext private EntityManager em;
@@ -160,6 +185,7 @@ public class PropuestaRepositoryJpaAdapter
                     + " WHERE fd.id_propuesta = p.id"
                     + " AND fd.id_donacion_independiente = :donacionId)",
                 "donacionId");
+    buscarDecididas(consulta, c.decididas());
     if (c.ambos()) {
       consulta.donde(
           "(SELECT count(DISTINCT sb.algoritmo) FROM donaciones.sugerencia_propuesta sb"
@@ -187,17 +213,44 @@ public class PropuestaRepositoryJpaAdapter
         pagina.stream().map(p -> enListado(p, situaciones.get(p.getId()), stocks)).toList(), total);
   }
 
+  /** La búsqueda de Todas las decididas (R11-35): solo las condiciones de lo que se pidió. */
+  private static void buscarDecididas(ConsultaListado consulta, BusquedaDecididas b) {
+    if (b.q() != null) {
+      consulta.donde(BUSCADA, "q", ConsultaListado.patron(b.q()));
+    }
+    consulta.siHay(b.categoriaId(), DE_LA_CATEGORIA_DE_LA_NECESIDAD, "categoriaDecidida");
+    if (b.deSistema()) {
+      consulta.donde("(p.decidida_por IS NULL OR p.decidida_por = :decididaPor)");
+      consulta.parametro("decididaPor", BusquedaDecididas.SISTEMA);
+    } else {
+      consulta.siHay(b.decididaPor(), "p.decidida_por = :decididaPor", "decididaPor");
+    }
+    consulta
+        .siHay(
+            b.desde() == null ? null : b.desde().atStartOfDay(),
+            "p.fecha_decision >= :decididaDesde",
+            "decididaDesde")
+        .siHay(
+            b.hasta() == null ? null : b.hasta().plusDays(1).atStartOfDay(),
+            "p.fecha_decision < :decididaHasta",
+            "decididaHasta");
+  }
+
   /** El orden del listado; desempata siempre por id. */
   private static String orden(CriterioPropuestas c, String algoritmo) {
     String recientes = "p.fecha_creacion DESC, p.id";
     String orden =
-        c.orden() == OrdenPropuestas.RECIENTE
-            ? recientes
-            : "(SELECT min(sp.puesto) FROM donaciones.sugerencia_propuesta sp"
-                + " WHERE sp.id_propuesta = p.id"
-                + (algoritmo == null ? "" : " AND sp.algoritmo = :algoritmo")
-                + ") ASC NULLS LAST, "
-                + recientes;
+        switch (c.orden()) {
+          case RECIENTE -> recientes;
+          case DECISION_RECIENTE -> "p.fecha_decision DESC NULLS LAST, " + recientes;
+          case DECISION_ANTIGUA -> "p.fecha_decision ASC NULLS FIRST, p.fecha_creacion ASC, p.id";
+          case PUESTO ->
+              "(SELECT min(sp.puesto) FROM donaciones.sugerencia_propuesta sp"
+                  + " WHERE sp.id_propuesta = p.id"
+                  + (algoritmo == null ? "" : " AND sp.algoritmo = :algoritmo")
+                  + ") ASC NULLS LAST, "
+                  + recientes;
+        };
     return c.agrupaPorDonacion() ? "sit.clave ASC NULLS LAST, " + orden : orden;
   }
 
@@ -256,6 +309,17 @@ public class PropuestaRepositoryJpaAdapter
 
   private static int entero(Object valor) {
     return valor == null ? 0 : ((Number) valor).intValue();
+  }
+
+  @Override
+  public long contarDecididasSinFecha() {
+    return ((Number)
+            em.createNativeQuery(
+                    "SELECT count(*) FROM donaciones.propuesta p WHERE "
+                        + DECIDIDAS
+                        + " AND p.fecha_decision IS NULL")
+                .getSingleResult())
+        .longValue();
   }
 
   @Override

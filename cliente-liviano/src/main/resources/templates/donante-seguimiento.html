@@ -12,7 +12,8 @@
        se destaca en el mapa. Sin JavaScript, el aviso del mapa y la lista. Los datos son los de
        viaje-datos.html. Los datos vienen del controller (miSeguimiento: de la maqueta, las de
        viaje-datos, o de Donaciones y Logística); viaje-datos sigue envolviendo la pantalla. Estados de la maqueta: ?escenario=vacio, error y lento.
-       Fragmentos: mapa (el contenedor del mapa y su script; lo usa también persona/) y
+       Fragmentos: mapa (el contenedor del mapa y su script; lo usa también persona/),
+       sinDestino(nombres) (el aviso de lo que espera destino, R11-39; también persona/) y
        entrega(d, numero, punto). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-seguimiento', ~{::contenido})}">
@@ -129,15 +130,35 @@
             <li th:replace="~{:: entrega(${d}, ${#lists.size(vanEnCamino) + #lists.size(tienenProblema) + vuelta.count}, ${puntos.get(d.clave)})}"></li>
           </th:block>
         </ol>
-        <p class="seguimiento-pie" th:unless="${#lists.isEmpty(sinDestino)}"
-           th:text="|${#strings.listJoin(sinDestino, ' y ')} todavía esperan destino: aparecen acá cuando se les asigne una organización. Las que ya llegaron, con la foto de la organización, están en Mis donaciones.|">Arroz
-          largo fino y Zapatillas todavía esperan destino.</p>
+        <th:block th:unless="${#lists.isEmpty(sinDestino)}">
+          <aside th:replace="~{donante-seguimiento :: sinDestino(${sinDestino})}"></aside>
+        </th:block>
         <a class="boton" data-tono="secundario" href="/donante-donaciones"
            th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
       </section>
     </div>
   </div>
 </th:block>
+
+<!--/* Lo que espera destino (R11-39): un aviso con el ícono del reloj (decorativo), el título, las
+       donaciones en una lista y qué pasa después, no un párrafo suelto. Lo usan la empresa y la persona.
+       sinDestino(nombres): los títulos de las donaciones que todavía no tienen organización. */-->
+<aside th:fragment="sinDestino(nombres)" data-v="sin-destino" aria-labelledby="sin-destino-titulo"
+       th:with="una=${#lists.size(nombres) == 1}">
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <circle data-v="sin-destino-circulo" cx="12" cy="12" r="11"/>
+    <path data-v="sin-destino-manos" d="M12 5.5V12l4 2.5"/>
+  </svg>
+  <div>
+    <h3 id="sin-destino-titulo" th:text="${una} ? 'Todavía espera destino' : 'Todavía esperan destino'">Todavía esperan destino</h3>
+    <ul role="list">
+      <li th:each="nombre : ${nombres}" th:text="${nombre}">Arroz largo fino</li>
+    </ul>
+    <p th:text="${una} ? 'Aparece en esta lista cuando se le asigne una organización.' : 'Aparecen en esta lista cuando se les asigne una organización.'">Aparecen
+      en esta lista cuando se les asigne una organización.</p>
+    <p>Las que ya llegaron, con la foto de la organización, están en Mis donaciones.</p>
+  </div>
+</aside>
 
 <!--/* El mapa de seguimiento, que usan la empresa y la persona: el contenedor que static/js/mapa.js
        llena con MapLibre (sus puntos son las entregas de la lista, .entrega[data-lat]), el depósito con

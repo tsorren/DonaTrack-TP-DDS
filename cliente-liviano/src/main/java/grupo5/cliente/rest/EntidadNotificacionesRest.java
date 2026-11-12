@@ -18,12 +18,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 
 /**
@@ -75,18 +75,15 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
           "Donación vencida");
 
   /** Los estados que Confirmar recepción acepta (EntidadConfirmarRest): la puerta y el traslado. */
-  private static final Set<String> ESPERANDO = Set.of("EN_PUERTA", "EN_TRASLADO");
+  private static final List<String> ESPERANDO = List.of("EN_PUERTA", "EN_TRASLADO");
 
   private final NotificacionesApi api;
   private final LogisticaApi logistica;
-  private final DonacionesApi donaciones;
   private final Clock reloj;
 
-  EntidadNotificacionesRest(
-      NotificacionesApi api, LogisticaApi logistica, DonacionesApi donaciones, Clock reloj) {
+  EntidadNotificacionesRest(NotificacionesApi api, LogisticaApi logistica, Clock reloj) {
     this.api = api;
     this.logistica = logistica;
-    this.donaciones = donaciones;
     this.reloj = reloj;
   }
 
@@ -121,8 +118,7 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
     String tema = tema(n.tipoEvento());
     UUID entrega = n.referenciaId() == null ? null : entregaDe.get(n.referenciaId());
     boolean confirmable = EN_CAMINO.equals(n.tipoEvento()) && entrega != null;
-    String titulo =
-        n.tipoEvento() == null ? NOVEDAD : TITULOS.getOrDefault(n.tipoEvento(), NOVEDAD);
+    String titulo = titulo(n.tipoEvento());
     return new Novedad(
         n.id().toString(),
         tema,
@@ -137,6 +133,12 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
         null);
   }
 
+  /** El título del aviso según su tipo; sin tipo o de otro, "Novedad" (también en la campanita). */
+  static String titulo(String tipoEvento) {
+    // Map.of no admite buscar con null: sin tipo, "Novedad".
+    return tipoEvento == null ? NOVEDAD : TITULOS.getOrDefault(tipoEvento, NOVEDAD);
+  }
+
   static String tema(String tipoEvento) {
     // List.of no admite buscar con null: sin tipo, "Otras novedades".
     if (tipoEvento == null) {
@@ -149,7 +151,7 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
         .orElse(Bandejas.OTRAS);
   }
 
-  private static String destino(String tema) {
+  static String destino(String tema) {
     return switch (tema) {
       case "camino" -> A_RECIBIDAS + "?estado=en-camino";
       case "asignadas" -> A_RECIBIDAS + "?estado=por-salir";
@@ -159,32 +161,28 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
   }
 
   /**
-   * De la donación del aviso a la entrega que la entidad todavía tiene que confirmar. Una llamada a
-   * Logística y otra a Donaciones (las asignadas, como Confirmar recepción), y solo si hay un aviso
-   * de entrega en camino con donación; sin respuesta, ninguna.
+   * De la donación del aviso a la entrega que la entidad todavía tiene que confirmar. Una sola
+   * llamada a Logística, con las donaciones de los avisos de entrega en camino de la página ({@code
+   * idDonacion}, R11-43): Logística ya da solo las entregas de esta entidad, así que no hace falta
+   * leer sus asignadas. Sin avisos así, ninguna llamada; sin respuesta, ninguna entrega.
    */
   private Map<UUID, UUID> entregasEsperando(
       UUID entidad, List<NotificacionesApi.Notificacion> avisos) {
-    if (avisos.stream()
-        .noneMatch(n -> EN_CAMINO.equals(n.tipoEvento()) && n.referenciaId() != null)) {
+    List<String> donaciones =
+        avisos.stream()
+            .filter(n -> EN_CAMINO.equals(n.tipoEvento()) && n.referenciaId() != null)
+            .map(n -> n.referenciaId().toString())
+            .distinct()
+            .toList();
+    if (donaciones.isEmpty()) {
       return Map.of();
     }
+    MultiValueMap<String, String> filtros = EntidadSeguimientoRest.deLasDonaciones(donaciones);
+    ESPERANDO.forEach(e -> filtros.add("estado", e));
     try {
-      List<LogisticaApi.Seguimiento> esperando =
-          logistica.seguimientoDeEntidad(entidad).stream()
-              .filter(
-                  s -> s.idEntrega() != null && s.idDonacion() != null && s.estadoEntrega() != null)
-              .filter(s -> ESPERANDO.contains(s.estadoEntrega()))
-              .toList();
-      if (esperando.isEmpty()) {
-        return Map.of();
-      }
-      Set<UUID> asignadas =
-          donaciones.asignadas(entidad).stream()
-              .map(DonacionesApi.Donacion::id)
-              .collect(Collectors.toSet());
-      return esperando.stream()
-          .filter(s -> asignadas.contains(s.idDonacion()))
+      return logistica.seguimientoDeEntidad(entidad, filtros).stream()
+          .filter(s -> s.idEntrega() != null && s.idDonacion() != null && s.estadoEntrega() != null)
+          .filter(s -> ESPERANDO.contains(s.estadoEntrega()))
           .collect(
               Collectors.toMap(
                   LogisticaApi.Seguimiento::idDonacion,

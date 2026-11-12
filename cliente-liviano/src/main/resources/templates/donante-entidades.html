@@ -1,21 +1,23 @@
 <!DOCTYPE html>
-<!--/* Entidades del donante (RF-06), según la ficha docs/interfaz/flujos/raices-donante-navegable.md.
-       Era la prueba entidades-donante-c, elegida el 2026-11-09 (tarde): el avance de los pedidos,
-       lo que piden todas agrupado por categoría, un renglón por pedido con una barra gruesa y su
-       porcentaje. Todo pedido tiene meta, así que todos llevan barra y porcentaje (el que todavía no
-       recibió nada, en 0 %). Las entidades a las que tu empresa ya les donó quedan atenuadas (papel
-       gris y la marca "Ya le donaste" en palabras), sin borde de selección.
+<!--/* Organizaciones del donante (RF-06), según la ficha docs/interfaz/flujos/raices-donante-navegable.md,
+       sección 10 (R11-27 y R11-28, lote p2-entidades-donante): una tarjeta por organización, con lo
+       que pide adentro (hasta 3 a la vista y el resto en un plegable en el lugar), todas del mismo
+       alto desde dos columnas, con el aire entre lo que pide y el pie. Ya no se agrupa por categoría:
+       la categoría es un filtro y, en el pie de cada tarjeta, el texto de las que pide. Las
+       organizaciones a las que la cuenta ya les donó quedan atenuadas, con "Ya le donaste" en
+       palabras.
+       "Cómo llega tu donación" es una franja de ayuda (aside, fondo agua, ícono de información) arriba
+       de la búsqueda, en todos los estados: es texto fijo.
        Búsqueda y filtros en una barra (componentes/filtros, .filtros-barra): por nombre (?nombre=),
        categoría (?categoria=, una de las de la vista: con Donaciones, su id; en la maqueta,
        alimentos|ropa|muebles|escolares) y "Ya doné" (?ya=si). Los tres los resuelve el puerto sobre
-       todas las entidades activas (R11-12, lote p1-donante-listas): la plantilla no vuelve a filtrar
-       y el total y las páginas son los del filtro. Paginado de seis con el componente paginas
-       (?pagina=2 a 8: la maqueta dibuja las dos primeras; la segunda, con nombres largos, R11-18) y ?escenario=vacio, error y lento. Sin
-       detalle ni botón "Donar": la entidad la elige el admin (RF-17). "Cómo llega tu donación" es
-       texto fijo: queda también con error y vacío. Lo propio de la pantalla va con data-v.
-       Los datos vienen del controller (misEntidades: de la maqueta, la primera página de 46; o de
-       Donaciones, la página pedida con lo que pide cada entidad). Con datos reales lo recibido no
-       existe (HB-18): el renglón va sin barra ni porcentaje. */-->
+       todas las organizaciones activas (R11-12): la plantilla no vuelve a filtrar y el total y las
+       páginas son los del filtro. Con una categoría elegida, sus pedidos van primero en cada tarjeta.
+       Paginado de seis con el componente paginas (?pagina=2 a 8: la maqueta dibuja las dos primeras;
+       la segunda, con nombres largos, R11-18) y ?escenario=vacio, error y lento. Sin detalle ni botón
+       "Donar": la organización la elige el admin (RF-17). Lo propio de la pantalla va con data-v.
+       Con datos reales lo recibido no existe (HB-18): el pedido va sin barra ni porcentaje.
+       La tarjeta (organizacion) la usa también la versión de persona de la maqueta. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-entidades', ~{::contenido})}">
 <head>
@@ -32,7 +34,6 @@
              busca=${param.nombre != null ? #strings.trim(param.nombre[0]) : ''},
              pedidaCategoria=${param.categoria != null ? param.categoria[0] : ''},
              categoria=${categorias.?[valor == #root.pedidaCategoria].isEmpty() ? '' : pedidaCategoria},
-             elegida=${categoria == '' ? null : categorias.^[valor == #root.categoria]},
              soloYa=${param.ya != null and param.ya[0] == 'si'},
              filtrado=${categoria != '' or soloYa},
              total=${misEntidades.total},
@@ -46,9 +47,13 @@
     <header>
       <p class="rotulo" th:text="${seccion}">Organizaciones</p>
       <h1>Quiénes reciben <em>las donaciones</em></h1>
-      <p class="bajada">Lo que piden hoy las organizaciones activas, por categoría, y cuánto recibió cada necesidad. Actualizado
+      <p class="bajada">Las organizaciones activas y lo que pide cada una. Actualizado
         [[${misEntidades.actualizado}]].</p>
     </header>
+
+    <!--/* El depósito de ejemplo, solo en la maqueta: con datos reales todavía no hay de dónde sacarlo
+           (R11-09) y se ofrece escribir para saberlo. */-->
+    <aside th:replace="~{donante-entidades :: ayuda(${depositoDeEjemplo})}"></aside>
 
     <th:block th:if="${escenario == 'error'}">
       <section th:replace="~{datos-donante :: error('No pudimos cargar las organizaciones.', '/donante-entidades')}"></section>
@@ -72,7 +77,7 @@
           <button class="boton" data-tono="secundario" type="submit">Buscar</button>
         </div>
       </div>
-      <div class="filtros" role="group" aria-label="Filtrar los pedidos">
+      <div class="filtros" role="group" aria-label="Filtrar las organizaciones">
         <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${categoria}, ${misEntidades.opcionesDeCategoria()})}"></details>
         <label th:replace="~{componentes/filtros :: interruptor('ya', 'si', 'Ya doné', ${soloYa})}"></label>
         <a th:if="${busca != '' or filtrado}" class="filtros-sacar" href="/donante-entidades"
@@ -82,12 +87,15 @@
 
     <th:block th:if="${escenario == 'lento'}">
       <p class="cargando" role="status">Cargando las organizaciones…</p>
-      <div class="esqueleto" data-forma="punteado" data-tamano="alto" aria-busy="true"></div>
+      <div class="lista" data-v="organizaciones" aria-busy="true">
+        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+      </div>
     </th:block>
 
     <th:block th:if="${escenario == '' and !sinEntidades}">
       <!--/* El resultado, sobre el total que da el servidor (R11-12): la categoría y "Ya doné" filtran
-             todas las entidades activas, no la página. Al llegar desde el paginador, el foco va acá. */-->
+             todas las organizaciones activas, no la página. Al llegar desde el paginador, el foco va acá. */-->
       <p class="resultado" role="status" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
          th:text="${filtrado} ? (${total == 0} ? (${soloYa and categoria == '' and busca == ''} ? 'Todavía no le donaste a ninguna organización.' : 'Ninguna organización coincide con lo que elegiste.') : |${total} ${total == 1 ? 'organización coincide' : 'organizaciones coinciden'} con lo que elegiste. Página ${pagina} de ${paginas}.|)
                  : (${busca != ''} ? (${total == 0} ? 'Ninguna organización activa se llama así.' : |${total} ${total == 1 ? 'organización activa tiene' : 'organizaciones activas tienen'} «${busca}» en el nombre. Página ${pagina} de ${paginas}.|)
@@ -109,100 +117,107 @@
 
       <svg th:replace="~{iconos :: categorias}"></svg>
 
-      <!--/* El avance de los pedidos, por categoría (las de la vista, en su orden): cada pedido es un
-             renglón con la entidad, lo que falta y la barra de lo recibido con su porcentaje; los
-             pedidos de una entidad a la que ya le donaste, atenuados y con la marca en palabras.
-             Con una categoría elegida, solo su grupo; una entidad que llegó por esa categoría pero ya
-             no tiene nada pendiente de ella lo dice en su renglón. Los pedidos sin categoría conocida
-             van en "Otros pedidos": ninguna necesidad vigente queda sin mostrarse. */-->
-      <th:block th:if="${dibujada or busca != '' or filtrado}">
-        <th:block th:each="g : ${categorias}"
-                  th:with="enGrupo=${lista.?[!pide.?[categoria == #root.g.valor].isEmpty()]},
-                           cubiertas=${categoria == g.valor ? lista.?[pide.?[categoria == #root.g.valor].isEmpty()] : {}}">
-        <section th:unless="${(enGrupo.isEmpty() and cubiertas.isEmpty()) or (categoria != '' and g.valor != categoria)}" data-v="grupo" th:aria-labelledby="|grupo-${gStat.count}|">
-          <h2 th:id="|grupo-${gStat.count}|">
-            <svg th:if="${g.icono != null}" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos" th:href="|#${g.icono}|"/></svg>
-            <span th:text="${g.texto}">Alimentos</span></h2>
-          <ul data-v="renglones" role="list">
-            <th:block th:each="e : ${enGrupo}">
-              <th:block th:each="p : ${e.pide.?[categoria == #root.g.valor]}">
-                <li th:replace="~{donante-entidades :: renglon(${e}, ${p})}"></li>
-              </th:block>
-            </th:block>
-            <li th:each="e : ${cubiertas}" th:data-ya="${e.ya} ? 'si' : null">
-              <span th:replace="~{donante-entidades :: quien(${e})}"></span>
-              <span data-v="falta" th:text="|Lo que pedía de ${g.texto} ya está cubierto.|">Lo que pedía de
-                Alimentos ya está cubierto.</span>
-            </li>
-          </ul>
-        </section>
+      <ul th:if="${(dibujada or busca != '' or filtrado) and !lista.isEmpty()}" class="lista" data-v="organizaciones"
+          role="list" aria-label="Organizaciones de esta página">
+        <th:block th:each="e : ${lista}">
+          <li th:replace="~{donante-entidades :: organizacion(${e}, ${categorias}, ${categoria})}"></li>
         </th:block>
-        <th:block th:if="${categoria == ''}" th:with="otros=${lista.?[!pide.?[categoria == null].isEmpty()]}">
-          <section th:unless="${otros.isEmpty()}" data-v="grupo" aria-labelledby="grupo-otros">
-            <h2 id="grupo-otros"><span>Otros pedidos</span></h2>
-            <ul data-v="renglones" role="list">
-              <th:block th:each="e : ${otros}">
-                <th:block th:each="p : ${e.pide.?[categoria == null]}">
-                  <li th:replace="~{donante-entidades :: renglon(${e}, ${p})}"></li>
-                </th:block>
-              </th:block>
-            </ul>
-          </section>
-        </th:block>
-        <!--/* Las que llegaron sin ningún pedido vigente (por ejemplo, con "Ya doné", una que ya tiene
-               todo cubierto): el total del servidor las cuenta, así que también se ven, con su marca.
-               Con una categoría elegida ya salen en su grupo como "cubierto". */-->
-        <th:block th:if="${categoria == ''}" th:with="sinPedidos=${lista.?[pide.isEmpty()]}">
-          <section th:unless="${sinPedidos.isEmpty()}" data-v="grupo" aria-labelledby="grupo-sin-pedidos">
-            <h2 id="grupo-sin-pedidos"><span>Sin pedidos pendientes</span></h2>
-            <ul data-v="renglones" role="list">
-              <li th:each="e : ${sinPedidos}" th:data-ya="${e.ya} ? 'si' : null">
-                <span th:replace="~{donante-entidades :: quien(${e})}"></span>
-                <span data-v="falta">Hoy no pide nada.</span>
-              </li>
-            </ul>
-          </section>
-        </th:block>
-      </th:block>
+      </ul>
 
       <!--/* El paginador común (componentes/paginas, R11-11): conserva la búsqueda, la categoría y
              "Ya doné" en la dirección (lo arma el controller); con una sola página no se dibuja. */-->
       <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
     </th:block>
-
-    <section class="tarjeta lamina como-donar" aria-labelledby="como-titulo">
-      <h2 id="como-titulo">Cómo llega tu donación</h2>
-      <p>Llevás la donación al depósito. Ahí la registran y la asignan a una necesidad abierta de una
-        organización. Desde que la registran, ves cada paso en Mis donaciones.</p>
-      <!--/* El depósito de ejemplo, solo en la maqueta: con datos reales todavía no hay de dónde sacarlo
-             (R11-09) y se ofrece escribir para saberlo. */-->
-      <p th:if="${depositoDeEjemplo}" class="deposito"><b>Depósito Central Ejemplo</b>
-        <span>Calle Ejemplo 1234, Ciudad Ejemplo</span>
-        <span>Lunes a viernes de 9 a 17 h; sábados de 9 a 13 h</span></p>
-      <p th:unless="${depositoDeEjemplo}">¿No sabés dónde queda el depósito?
-        <a href="/publico-contacto?volver=/donante-entidades"
-           th:href="@{/publico-contacto(volver='/donante-entidades')}">Escribinos</a> y te pasamos la
-        dirección y el horario.</p>
-      <a class="boton" data-tono="secundario" href="/donante-donaciones"
-         th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
-    </section>
   </div>
 </th:block>
-<!--/* Un pedido de una entidad: qué, de quién (el nombre en su línea y "Ya le donaste" debajo, R11-18),
-       la barra de lo recibido con su porcentaje cuando se sabe y lo que falta. */-->
-<li th:fragment="renglon(e, p)" th:data-ya="${e.ya} ? 'si' : null"
+
+<!--/* La franja de ayuda (R11-28): fondo agua, filete verde, sin sombra y el ícono de información,
+       decorativo (no es un botón). conDeposito: el depósito de ejemplo de la maqueta; sin él,
+       "Escribinos" (R11-09). "Ver Mis donaciones" es un enlace: es una ayuda y no compite con Buscar. */-->
+<aside th:fragment="ayuda(conDeposito)" data-v="ayuda" aria-labelledby="como-titulo">
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <circle data-v="ayuda-circulo" cx="12" cy="12" r="11"/>
+    <circle data-v="ayuda-letra" cx="12" cy="7.25" r="1.6"/>
+    <path data-v="ayuda-letra" d="M10.4 10.5h2.9v6.6h1.3v1.9h-4.2v-1.9h1.1v-4.7h-1.1z"/>
+  </svg>
+  <div>
+    <h2 id="como-titulo">Cómo llega tu donación</h2>
+    <p>Llevás la donación al depósito. Ahí la registran y la asignan a una necesidad abierta de una
+      organización. Desde que la registran, ves cada paso en Mis donaciones.</p>
+    <p th:if="${conDeposito}" data-v="deposito"><b>Depósito Central Ejemplo</b>
+      <span>Calle Ejemplo 1234, Ciudad Ejemplo</span>
+      <span>Lunes a viernes de 9 a 17 h; sábados de 9 a 13 h</span></p>
+    <p th:unless="${conDeposito}">¿No sabés dónde queda el depósito?
+      <a href="/publico-contacto?volver=/donante-entidades"
+         th:href="@{/publico-contacto(volver='/donante-entidades')}">Escribinos</a> y te pasamos la
+      dirección y el horario.</p>
+    <p><a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a></p>
+  </div>
+</aside>
+
+<!--/* Una organización (R11-27): la cabeza (el nombre en su línea y "Ya le donaste" debajo, R11-18),
+       lo que pide (hasta 3 a la vista; con una categoría elegida, los de esa categoría primero) y el
+       pie sobre un filete: las categorías en texto ("Otras" para un pedido sin categoría conocida) y,
+       con más de 3, el plegable con el resto, en el lugar y sin JavaScript. Sin pedidos, sin pie.
+       Los pedidos van en dos tandas (primero y resto) para no armar listas en la plantilla: los
+       primeros 3 de la suma quedan a la vista. */-->
+<li th:fragment="organizacion(e, categorias, elegida)" class="tarjeta" data-v="organizacion"
+    th:data-ya="${e.ya} ? 'si' : null"
+    th:with="conocidas=${categorias.![valor]},
+             primero=${elegida == '' ? e.pide : e.pide.?[categoria == #root.elegida]},
+             resto=${elegida == '' ? {} : e.pide.?[categoria != #root.elegida]},
+             antes=${#lists.size(primero)},
+             cuantos=${#lists.size(e.pide)},
+             valores=${e.pide.![categoria]},
+             nombres=${categorias.?[#root.valores.contains(valor)].![texto]},
+             otras=${!e.pide.?[categoria == null or !#root.conocidas.contains(categoria)].isEmpty()},
+             juntas=${#strings.listJoin(nombres, ' · ')},
+             pie=${nombres.isEmpty() ? 'Otras' : (otras ? juntas + ' · Otras' : juntas)},
+             cubierta=${elegida != '' and antes == 0 ? categorias.^[valor == #root.elegida] : null}">
+  <h2><span data-v="nombre" th:text="${e.nombre}">Comedor Barrio
+    Ejemplo</span><span th:if="${e.ya}" data-v="ya-donaste">Ya le donaste</span></h2>
+  <p th:if="${cubierta != null}" data-v="falta" th:text="|Lo que pedía de ${cubierta.texto} ya está cubierto.|">Lo que
+    pedía de Ropa ya está cubierto.</p>
+  <p th:if="${e.pide.isEmpty()}" data-v="falta">Hoy no pide nada.</p>
+  <ul th:unless="${e.pide.isEmpty()}" data-v="pide" role="list" th:aria-label="|Lo que pide ${e.nombre}|">
+    <th:block th:each="p, v : ${primero}" th:if="${v.index < 3}">
+      <li th:replace="~{donante-entidades :: pedido(${e}, ${p})}"></li>
+    </th:block>
+    <th:block th:each="p, v : ${resto}" th:if="${antes + v.index < 3}">
+      <li th:replace="~{donante-entidades :: pedido(${e}, ${p})}"></li>
+    </th:block>
+  </ul>
+  <div th:unless="${e.pide.isEmpty()}" data-v="pie">
+    <p><span class="solo-lectores">Categorías: </span><th:block th:text="${pie}">Alimentos · Ropa</th:block></p>
+    <details th:if="${cuantos > 3}" data-v="mas">
+      <summary><span data-v="ver-mas"><th:block th:text="${cuantos == 4} ? 'Ver 1 necesidad más' : |Ver ${cuantos - 3} necesidades más|">Ver
+        2 necesidades más</th:block><span class="solo-lectores" th:text="| de ${e.nombre}|"> de Comedor Barrio
+        Ejemplo</span></span><span data-v="ver-menos">Ver menos</span></summary>
+      <ul data-v="pide" role="list" th:aria-label="|Más necesidades de ${e.nombre}|">
+        <th:block th:each="p, v : ${primero}" th:if="${v.index >= 3}">
+          <li th:replace="~{donante-entidades :: pedido(${e}, ${p})}"></li>
+        </th:block>
+        <th:block th:each="p, v : ${resto}" th:if="${antes + v.index >= 3}">
+          <li th:replace="~{donante-entidades :: pedido(${e}, ${p})}"></li>
+        </th:block>
+      </ul>
+    </details>
+  </div>
+</li>
+
+<!--/* Un pedido: el ícono de su categoría (decorativo; el de respaldo si no se sabe), qué pide, lo que
+       falta y hasta cuándo, y la barra de lo recibido con su porcentaje solo cuando se sabe. */-->
+<li th:fragment="pedido(e, p)"
     th:with="pct=${p.recibido == null or p.total == null or p.total == 0 ? 0 : p.recibido * 100 / p.total}">
+  <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#cat-alimentos"
+       th:href="|#${p.cat != null ? p.cat : 'cat-generico'}|"/></svg>
   <b th:text="${p.que}">Lentejas secas</b>
-  <span th:replace="~{donante-entidades :: quien(${e})}"></span>
+  <span data-v="falta" th:text="|${p.falta} · ${p.cuando}|">Faltan 30 de 40 kg este mes · Se repite cada mes</span>
   <progress th:if="${p.recibido != null}" class="progreso" max="40" value="10" th:max="${p.total}" th:value="${p.recibido}"
             th:aria-label="|${p.que} para ${e.nombre}: recibió el ${pct} %|"
             aria-label="Lentejas secas para Comedor Barrio Ejemplo: recibió el 25 %"
             th:text="|${pct} %|">25 %</progress>
   <span th:if="${p.recibido != null}" data-v="cuanto" th:text="|${pct} %|" aria-hidden="true">25 %</span>
-  <span data-v="falta" th:text="|${p.falta} · ${p.cuando}|">Faltan 30 de 40 kg este mes · Se repite cada mes</span>
 </li>
-
-<span th:fragment="quien(e)" data-v="quien"><span data-v="nombre" th:text="${e.nombre}">Comedor Barrio
-    Ejemplo</span><span th:if="${e.ya}" data-v="ya-donaste">Ya le donaste</span></span>
 </body>
 </html>

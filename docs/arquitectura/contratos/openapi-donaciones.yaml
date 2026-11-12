@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.10.0
+  version: 1.13.0
   description: >-
     API REST para gestión de donaciones independientes (máquina de 8 estados; EN_PUERTA desde
     1.8.0, HB-22), necesidades de entidades beneficiarias, donantes y propuestas de asignación
@@ -14,11 +14,26 @@ info:
     Desde 1.10.0 (R11-24) las propuestas de asignación filtran, ordenan y paginan en la base y
     dicen qué algoritmo las sugirió y en qué puesto; se suman el resumen por situación y las
     donaciones que están en propuestas pendientes.
+    Desde 1.11.0 (R11-41) la cuenta cuya solicitud de entidad espera la aprobación lee y corrige
+    lo que envió (`/api/personas/{id}/solicitud-entidad`).
+    Desde 1.12.0 (R11-35) el motivo con que se descarta una propuesta se guarda
+    (`motivoDescarte`) y el listado de propuestas busca las decididas por texto, categoría, autor
+    y período de la decisión, y las ordena por la fecha de la decisión.
     Desde 1.10.0 (R11-20), `GET /api/donantes/archivos` lista las importaciones de donantes con el
     mismo patrón, y el archivo informa el nombre con que se subió y cuándo (campos opcionales).
     Desde 1.10.0 (R11-12), `GET /api/entidades/publicas` acepta `categoriaId` (opcional) y
     `GET /api/donantes/{id}/entidades` da las entidades activas vistas por un donante, con el
     filtro "solo a las que doné" y la marca `yaLeDono`.
+    Desde 1.11.0 (R11-26) hay un registro de actividad de administración: `GET /api/actividad`
+    lo lista de a una página y `POST /api/actividad` anota lo que pasa fuera de Donaciones;
+    `POST /api/entidades` acepta `origen` (opcional).
+    Desde 1.11.0 (R11-43), `GET /api/entidades` filtra por `estado`, `conNecesidades` y `rubro`;
+    `GET /donaciones-independientes` acepta `orden=ATENCION` e `id` (solo esa donación), y
+    `GET /donaciones-independientes/conteos` da las cifras de una organización.
+    Desde 1.12.0 (R11-42), `GET /api/donaciones/resumen/evolucion` da los gráficos del inicio del
+    admin: registradas y entregas confirmadas de los últimos 12 meses, por mes y por categoría.
+    Desde 1.13.0 (R11-34), `GET /donaciones-independientes` acepta `venceHasta` y `orden=VENCE`,
+    y `GET /api/donantes` acepta `altaDesde` y `altaHasta` (cambios aditivos, todos opcionales).
 servers:
   - url: http://localhost:8080
     description: Servidor local de desarrollo
@@ -99,14 +114,41 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: id
+          in: query
+          required: false
+          description: >-
+            Desde 1.11.0 (R11-43): solo esa donación. La organización, que no puede leer
+            `/donaciones-independientes/{id}`, la pide con su `entidadId`; si es de otra
+            organización, la página llega vacía.
+          schema:
+            type: string
+            format: uuid
+        - name: venceHasta
+          in: query
+          required: false
+          description: >-
+            Desde 1.13.0 (R11-34): las que tienen algún bien que vence a más tardar ese día
+            (inclusivo), aunque la fecha ya haya pasado. Las que no tienen bienes con vencimiento no
+            entran. Se combina con `estado=EN_DEPOSITO` para "vencen en los próximos 7 días".
+          schema:
+            type: string
+            format: date
         - $ref: '#/components/parameters/Q'
         - name: orden
           in: query
           required: false
-          description: Por fecha de registro; RECIENTES (la más nueva primero) si se omite.
+          description: >-
+            Por fecha de registro; RECIENTES (la más nueva primero) si se omite. Desde 1.11.0
+            (R11-43), ATENCION: lo que la organización tiene que atender primero, por grupos
+            (EN_PUERTA; ENTREGA_FALLIDA y VENCIDA; EN_TRASLADO; ASIGNACION_REALIZADA,
+            LISTA_PARA_ENTREGAR y EN_DEPOSITO; ENTREGADA) y, dentro de cada grupo, la más reciente
+            primero; desempata por id. Desde 1.13.0 (R11-34), VENCE: el vencimiento más próximo de
+            sus bienes primero y las que no vencen al final; desempata por la más reciente y por
+            id.
           schema:
             type: string
-            enum: [RECIENTES, ANTIGUAS]
+            enum: [RECIENTES, ANTIGUAS, ATENCION, VENCE]
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
       responses:
@@ -125,6 +167,39 @@ paths:
           description: >-
             Fecha mal formada, `desde` posterior a `hasta`, estado u orden desconocido, o `page`,
             `size` o `q` fuera de rango (ERR-CSR-003)
+  /donaciones-independientes/conteos:
+    get:
+      summary: Cifras de las donaciones asignadas a una organización (R11-43)
+      description: >-
+        Cuántas asignadas tiene la organización en cada estado, cuántas recibió en el mes en curso
+        (las que pasaron a ENTREGADA, con el reloj de Buenos Aires, como el resumen del admin) y lo
+        mismo por necesidad. Con `necesidadId`, todo se cuenta sobre esa necesidad. Los mismos
+        permisos que el listado: ADMIN, o la organización sobre sí misma con `VER_DONACIONES`.
+      operationId: contarDonacionesDeEntidad
+      parameters:
+        - name: entidadId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: necesidadId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Las cifras de la organización
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConteosDeEntidadDTO'
+        '400':
+          description: Sin `entidadId` o con un id mal formado
+        '403':
+          description: Otra organización, o sin `VER_DONACIONES`
   /donaciones-independientes/{id}:
     get:
       summary: Consultar donación independiente por ID
@@ -259,6 +334,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ResumenAdminDTO'
+        '401':
+          description: Sin token o token inválido
+        '403':
+          description: El token no es de un administrador
+  /api/donaciones/resumen/evolucion:
+    get:
+      summary: Gráficos del inicio del administrador
+      description: >
+        Solo ADMIN (R11-42), sin parámetros. Las donaciones independientes registradas y las que
+        pasaron a ENTREGADA (la misma cuenta que `entregadasEnElMes` del resumen) en los últimos 12
+        meses, contando el actual, por mes y por categoría. Todo se cuenta en la base, sin traer
+        listas. Si la primera donación es de hace menos de 12 meses, los meses empiezan en el suyo.
+        Los meses salen del reloj del servicio (America/Argentina/Buenos_Aires). Va aparte del
+        resumen para que una falla de las series no tape las cifras.
+      operationId: obtenerEvolucionAdmin
+      responses:
+        '200':
+          description: Series calculadas en el momento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvolucionAdminDTO'
         '401':
           description: Sin token o token inválido
         '403':
@@ -586,7 +683,9 @@ paths:
         Desde 1.10.0 (R11-24) filtra, ordena y pagina en la base: sin `page` ni `size` devuelve la
         página 0 de 20 (antes, todas). Los filtros se combinan con Y; los valores repetidos de un
         mismo filtro, con O. Cada propuesta dice qué algoritmo la sugirió y en qué puesto
-        (`sugeridaPor`) y, si está pendiente, su `situacion`.
+        (`sugeridaPor`) y, si está pendiente, su `situacion`. Desde 1.12.0 (R11-35), para Todas
+        las decididas: `q`, `categoriaId`, `decididaPor`, `decididaDesde`, `decididaHasta` y los
+        órdenes por la fecha de la decisión (cambio aditivo).
       operationId: listarPropuestasAsignacion
       parameters:
         - name: estado
@@ -623,13 +722,47 @@ paths:
           required: false
           description: Las que piden esta donación independiente.
           schema: { type: string, format: uuid }
+        - name: q
+          in: query
+          required: false
+          description: >-
+            Desde 1.12.0 (R11-35). "Contiene", sin distinguir mayúsculas ni tildes, en el nombre de
+            la organización de la necesidad, lo que pide la necesidad o la descripción de las
+            donaciones que la cubren. Hasta 100 caracteres.
+          schema: { type: string, maxLength: 100 }
+        - name: categoriaId
+          in: query
+          required: false
+          description: Desde 1.12.0 (R11-35). La categoría de la necesidad que cubre.
+          schema: { type: string, format: uuid }
+        - name: decididaPor
+          in: query
+          required: false
+          description: >-
+            Desde 1.12.0 (R11-35). El `sub` de la cuenta que la decidió. `SISTEMA` junta las
+            decididas sin cuenta y las que no tienen autor guardado (las de antes de 1.10.0).
+          schema: { type: string, maxLength: 100 }
+        - name: decididaDesde
+          in: query
+          required: false
+          description: >-
+            Desde 1.12.0 (R11-35). Primer día (inclusive) de la fecha de la decisión. Las que no
+            tienen fecha guardada no entran en un período.
+          schema: { type: string, format: date }
+        - name: decididaHasta
+          in: query
+          required: false
+          description: Desde 1.12.0 (R11-35). Último día (inclusive) de la fecha de la decisión.
+          schema: { type: string, format: date }
         - name: orden
           in: query
           required: false
           description: >-
             `puesto` (por defecto): el mejor puesto primero y, con `situacion=EN_CONFLICTO`, juntas
-            las que compiten por la misma donación. `reciente`: la más nueva primero.
-          schema: { type: string, enum: [puesto, reciente] }
+            las que compiten por la misma donación. `reciente`: la más nueva primero. Desde 1.12.0
+            (R11-35): `decision_reciente` (la decidida más recientemente primero; las que no
+            tienen fecha, al final) y `decision_antigua` (las que no tienen fecha, primero).
+          schema: { type: string, enum: [puesto, reciente, decision_reciente, decision_antigua] }
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
       responses:
@@ -646,12 +779,15 @@ paths:
                   $ref: '#/components/schemas/PropuestaDTO'
         '400':
           description: >-
-            Un `estado`, `situacion`, `algoritmo` u `orden` desconocido, `page` negativo o `size`
-            fuera de 1..100 (ERR-CSR-003)
+            Un `estado`, `situacion`, `algoritmo` u `orden` desconocido, `page` negativo, `size`
+            fuera de 1..100, una fecha mal escrita o `decididaDesde` después de `decididaHasta`
+            (ERR-CSR-003)
   /api/asignaciones/propuestas/resumen:
     get:
       summary: Cuántas propuestas pendientes hay en cada situación
-      description: Desde 1.10.0 (R11-24). Contado en la base.
+      description: >-
+        Desde 1.10.0 (R11-24). Contado en la base. Desde 1.12.0 (R11-35) suma cuántas decididas
+        no tienen fecha de decisión guardada.
       operationId: resumenPropuestasAsignacion
       responses:
         '200':
@@ -704,16 +840,36 @@ paths:
         nombre de la cuenta del token (su `sub`), nunca de un dato que mande el cliente: se guarda
         en `decididaPor` con `fechaDecision` y, al aprobar, es el `actor` del cambio de estado de
         cada donación asignada. Sin token (seguridad deshabilitada), "SISTEMA". Ruta, cuerpo,
-        respuestas y errores no cambian.
+        respuestas y errores no cambian. Desde 1.12.0 (R11-35), al descartar se guarda
+        `justificacion` como `motivoDescarte` (recortada; vacía es lo mismo que no mandarla); al
+        aprobar se ignora.
       operationId: actualizarEstadoPropuesta
       parameters:
         - name: id
           in: path
           required: true
           schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado]
+              properties:
+                estado: { type: string, enum: [APROBADA, DESCARTADA] }
+                justificacion:
+                  type: string
+                  nullable: true
+                  maxLength: 500
+                  description: El motivo del descarte. Desde 1.12.0 (R11-35), hasta 500 caracteres.
       responses:
         '200':
           description: Estado actualizado
+        '400':
+          description: >-
+            Sin `estado`, o una `justificacion` de más de 500 caracteres (ERR-CSR-003; el tope,
+            desde 1.12.0)
         '409':
           description: >
             La necesidad ya no está activa (NECESIDAD_INACTIVA), una donación es de la propia
@@ -729,6 +885,11 @@ paths:
         La jurídica debe existir, no ser EMPRESA y tener dirección. Si ya era entidad no se
         duplica; si estaba de baja se reactiva (sus necesidades no se reactivan).
       operationId: registrarEntidadBeneficiaria
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntidadBeneficiariaInput'
       responses:
         '201':
           description: Entidad creada. La respuesta incluye `activo`.
@@ -746,9 +907,31 @@ paths:
         Incluye las entidades dadas de baja; cada una expone `activo`. Ordena por razón social y
         devuelve un tramo (HB-15), resuelto en la base. Desde 1.9.0 (R11-01), sin `page` ni `size`
         devuelve la página 0 de 20, ya no todas. El cuerpo es siempre un arreglo; el total de las
-        que cumplen el filtro va en el header `X-Total-Count`.
+        que cumplen el filtro va en el header `X-Total-Count`. Desde 1.11.0 (R11-43), `estado`,
+        `conNecesidades` y `rubro`, opcionales; sin ellos, la respuesta es la misma que en 1.10.0.
       operationId: listarEntidadesBeneficiarias
       parameters:
+        - name: estado
+          in: query
+          required: false
+          description: ACTIVA o BAJA; sin él, las dos. Otro valor da 400.
+          schema:
+            type: string
+            enum: [ACTIVA, BAJA]
+        - name: conNecesidades
+          in: query
+          required: false
+          description: >-
+            true, las que tienen alguna necesidad activa y no vencida hoy; false, las que no tienen
+            ninguna.
+          schema:
+            type: boolean
+        - name: rubro
+          in: query
+          required: false
+          description: Igual al rubro de la jurídica, sin distinguir mayúsculas ni tildes.
+          schema:
+            type: string
         - name: nombre
           in: query
           required: false
@@ -780,7 +963,7 @@ paths:
               schema:
                 type: integer
         '400':
-          description: '`page` negativo, `size` fuera de 1..100 o `nombre` de más de 100 caracteres (ERR-CSR-003)'
+          description: '`page` negativo, `size` fuera de 1..100, `nombre` de más de 100 caracteres o un `estado` que no existe (ERR-CSR-003)'
   /api/entidades/publicas:
     get:
       summary: Listar entidades beneficiarias activas (ruta pública)
@@ -937,6 +1120,18 @@ paths:
           required: false
           description: Donó alguna vez un bien de una subcategoría de esta categoría.
           schema: { type: string, format: uuid }
+        - name: altaDesde
+          in: query
+          required: false
+          description: Desde 1.13.0 (R11-34). Día de alta como donante mínimo, inclusivo.
+          schema: { type: string, format: date }
+        - name: altaHasta
+          in: query
+          required: false
+          description: >-
+            Desde 1.13.0 (R11-34). Día de alta como donante máximo, inclusivo. Si es anterior a
+            `altaDesde`, responde 400.
+          schema: { type: string, format: date }
         - name: orden
           in: query
           required: false
@@ -958,7 +1153,9 @@ paths:
                 type: array
                 items: { $ref: '#/components/schemas/DonanteOutputDTO' }
         '400':
-          description: Tipo, orden o paginado inválidos, o `q` de más de 100 caracteres (ERR-CSR-003)
+          description: >-
+            Tipo, orden, fecha o paginado inválidos, `altaDesde` posterior a `altaHasta`, o `q` de
+            más de 100 caracteres (ERR-CSR-003)
   /api/donantes/{id}:
     get:
       summary: Consultar donante por ID
@@ -1251,6 +1448,98 @@ paths:
           description: '`page` negativo o `size` fuera de 1..100 (ERR-CSR-003)'
         '404':
           description: Archivo no encontrado
+  /api/actividad:
+    get:
+      summary: Listar el registro de actividad de administración (solo ADMIN)
+      description: >
+        Desde 1.11.0 (R11-26). Quién hizo qué y cuándo: una fila por acción de una persona de
+        administración, de la más reciente a la más vieja (desempata por id), de a una página; el
+        total de las que cumplen los filtros va en `X-Total-Count`. Sin `page` ni `size`, la página
+        0 de 20. Una página fuera de rango devuelve un arreglo vacío con el total real. El autor es
+        el `sub` del token de quien hizo la acción; el nombre se lee del proveedor de ingreso al
+        mostrarlo.
+      operationId: listarActividad
+      parameters:
+        - name: autor
+          in: query
+          required: false
+          description: >
+            El `sub` de una cuenta (hasta 64 caracteres), repitiendo el parámetro para varias
+            (hasta 20). Sin `autor`, todas.
+          style: form
+          explode: true
+          schema:
+            type: array
+            maxItems: 20
+            items: { type: string, maxLength: 64 }
+        - name: accion
+          in: query
+          required: false
+          description: Una o varias acciones, repitiendo el parámetro. Sin `accion`, todas.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/AccionDeAdministracion'
+        - name: desde
+          in: query
+          required: false
+          description: Primer día (AAAA-MM-DD, inclusivo), en la hora de Buenos Aires.
+          schema: { type: string, format: date }
+        - name: hasta
+          in: query
+          required: false
+          description: Último día (AAAA-MM-DD, inclusivo), en la hora de Buenos Aires.
+          schema: { type: string, format: date }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Una página del registro
+          headers:
+            X-Total-Count:
+              $ref: '#/components/headers/XTotalCount'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActividadResponse'
+        '400':
+          description: >
+            `page`, `size`, `autor`, `accion` o una fecha inválidos, más de 20 `autor`, o `desde`
+            posterior a `hasta` (ERR-CSR-003)
+        '401': { description: Sin token }
+        '403': { description: El token no es de ADMIN }
+    post:
+      summary: Anotar una acción de administración hecha fuera de Donaciones (solo ADMIN)
+      description: >
+        Desde 1.11.0 (R11-26). Solo para lo que pasa por Keycloak o Logística: dar de alta un
+        administrador, generar otra contraseña provisoria y agregar, deshabilitar o volver a
+        habilitar un camión. Las acciones que pasan por Donaciones las registra Donaciones y no se
+        aceptan acá. El autor (el `sub` del token) y la hora los pone Donaciones: el cuerpo no los
+        trae. No es idempotente: el sitio llama una vez por acción hecha.
+      operationId: anotarActividad
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnotacionActividad'
+      responses:
+        '201':
+          description: La acción anotada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActividadResponse'
+        '400':
+          description: >
+            Otra `accion` (una de las que registra Donaciones), falta `objetoId`, un largo excedido
+            o un `detalle` para una cuenta (ERR-CSR-003)
+        '401': { description: Sin token }
+        '403': { description: El token no es de ADMIN }
   /api/categorias:
     get:
       summary: Listar categorías de donación
@@ -1600,6 +1889,61 @@ paths:
         '400': { description: Falta la versión o no es la vigente (ERR-VAL-114) }
         '403': { description: La persona no es la del token }
         '404': { description: Persona no encontrada }
+  /api/personas/{id}/solicitud-entidad:
+    get:
+      summary: Consultar la solicitud de entidad que espera la aprobación
+      description: >
+        R11-41. Lo que la cuenta envió al registrar su organización: razón social, rubro, tipo
+        jurídico, dirección de entrega y quien la representa, con el correo del representante (solo
+        lectura). La propia cuenta (con sesión y ese `personaId`, aunque todavía no tenga rol) o el
+        administrador. Una jurídica está pendiente si no es entidad beneficiaria ni donante y no
+        está anonimizada; si no, 409.
+      operationId: consultarSolicitudEntidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: La solicitud
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SolicitudEntidadDTO' }
+        '401': { description: Sin token }
+        '403': { description: La persona no es la del token }
+        '404': { description: Persona no encontrada }
+        '409': { description: La persona no es una jurídica con la solicitud pendiente (ERR-EST-115) }
+    put:
+      summary: Corregir la solicitud de entidad que espera la aprobación
+      description: >
+        R11-41. Cambia solo la razón social, el rubro, el tipo jurídico, la dirección de entrega (el
+        país, el piso y el departamento se conservan) y el nombre y el apellido del primer
+        representante. El documento, los medios de contacto y los demás representantes no se tocan;
+        `correo` se ignora. Publica la sincronización de la persona hacia Notificaciones. Mismo
+        acceso que la lectura; si ya no está pendiente, 409 y no cambia nada.
+      operationId: corregirSolicitudEntidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SolicitudEntidadDTO' }
+      responses:
+        '200':
+          description: Lo guardado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SolicitudEntidadDTO' }
+        '400': { description: Falta un dato o el tipo jurídico es EMPRESA; el detalle por campo va en `errors` }
+        '401': { description: Sin token }
+        '403': { description: La persona no es la del token }
+        '404': { description: Persona no encontrada }
+        '409': { description: La persona no es una jurídica con la solicitud pendiente (ERR-EST-115) }
   /api/logistica/proveedores:
     get:
       summary: Listar los proveedores de logística del broker
@@ -1688,6 +2032,127 @@ components:
         type: integer
         minimum: 0
   schemas:
+    AccionDeAdministracion:
+      type: string
+      description: >
+        Desde 1.11.0 (R11-26). Las nueve primeras las registra Donaciones; las cinco últimas las
+        anota el sitio con `POST /api/actividad`.
+      enum:
+        - PROPUESTA_APROBADA
+        - PROPUESTA_DESCARTADA
+        - ASIGNACION_CORRIDA
+        - DONACION_REGISTRADA
+        - DONACION_VENCIDA
+        - DONANTE_REGISTRADO
+        - IMPORTACION_SUBIDA
+        - ORGANIZACION_APROBADA
+        - ORGANIZACION_REGISTRADA
+        - ADMINISTRADOR_DADO_DE_ALTA
+        - CONTRASENA_PROVISORIA_NUEVA
+        - CAMION_AGREGADO
+        - CAMION_DESHABILITADO
+        - CAMION_HABILITADO
+    ActividadResponse:
+      type: object
+      description: >
+        Una acción de administración (R11-26). `detalle` es un rótulo sin datos de una persona
+        humana: la razón social de la organización (propuestas y organizaciones) o del donante
+        persona jurídica, el nombre del archivo importado, la patente del camión o la cantidad de
+        propuestas nuevas de una asignación.
+      required: [id, ocurrioEn, autor, accion]
+      properties:
+        id: { type: string, format: uuid }
+        ocurrioEn:
+          type: string
+          format: date-time
+          description: Hora local de Argentina, sin zona (como `fechaAlta`).
+        autor:
+          type: string
+          description: El `sub` del token de quien hizo la acción.
+        accion:
+          $ref: '#/components/schemas/AccionDeAdministracion'
+        objetoId:
+          type: string
+          nullable: true
+          description: >
+            Lo que tocó: la propuesta, la ejecución de la asignación, la donación, el donante, el
+            archivo, la organización, el `sub` de la cuenta o el id del camión.
+        detalle:
+          type: string
+          nullable: true
+          maxLength: 200
+    AnotacionActividad:
+      type: object
+      required: [accion, objetoId]
+      properties:
+        accion:
+          type: string
+          enum:
+            - ADMINISTRADOR_DADO_DE_ALTA
+            - CONTRASENA_PROVISORIA_NUEVA
+            - CAMION_AGREGADO
+            - CAMION_DESHABILITADO
+            - CAMION_HABILITADO
+        objetoId:
+          type: string
+          maxLength: 64
+          description: El `sub` de la cuenta o el id del camión.
+        detalle:
+          type: string
+          maxLength: 20
+          description: Para los camiones, la patente. Para las cuentas, no se acepta.
+    EntidadBeneficiariaInput:
+      type: object
+      required: [juridicaId]
+      properties:
+        juridicaId: { type: string, format: uuid }
+        origen:
+          type: string
+          enum: [SOLICITUD, ADMIN]
+          description: >
+            Desde 1.11.0 (R11-26), opcional: `SOLICITUD` al aprobar la solicitud de una
+            organización; `ADMIN` (por defecto) al registrarla la administración. Solo cambia la
+            acción que queda en el registro de actividad.
+    ConteosDeEntidadDTO:
+      type: object
+      description: Las cifras de una organización (R11-43), contadas por el servicio.
+      properties:
+        porEstado:
+          type: array
+          description: Los 8 estados, siempre, en el orden del ciclo de vida, con 0 si no hay.
+          items:
+            $ref: '#/components/schemas/ConteoPorEstado'
+        entregadasEnElMes:
+          type: object
+          properties:
+            mes: { type: string, example: '2026-11', description: 'AAAA-MM' }
+            cantidad: { type: integer, format: int64 }
+        porNecesidad:
+          type: array
+          description: Solo las necesidades con alguna asignada; en cada una, los estados con alguna.
+          items:
+            type: object
+            properties:
+              necesidadId: { type: string, format: uuid }
+              porEstado:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConteoPorEstado'
+    ConteoPorEstado:
+      type: object
+      properties:
+        estado:
+          type: string
+          enum:
+            - EN_DEPOSITO
+            - ASIGNACION_REALIZADA
+            - EN_TRASLADO
+            - EN_PUERTA
+            - LISTA_PARA_ENTREGAR
+            - ENTREGADA
+            - ENTREGA_FALLIDA
+            - VENCIDA
+        cantidad: { type: integer, format: int64 }
     PropuestaDTO:
       type: object
       description: Propuesta de asignación de donaciones a una necesidad.
@@ -1740,6 +2205,14 @@ components:
           type: integer
           minimum: 0
           description: Desde 1.10.0 (R11-24). Otras pendientes para la misma necesidad.
+        motivoDescarte:
+          type: string
+          nullable: true
+          maxLength: 500
+          description: >-
+            Desde 1.12.0 (R11-35). El motivo que anotó la cuenta al descartarla; `null` si se
+            aprobó, si no se anotó o si se descartó antes de este cambio. Texto de la
+            administración: quien lo muestra lo escapa.
     SugerenciaDTO:
       type: object
       description: Desde 1.10.0 (R11-24). Un algoritmo que sugirió la propuesta.
@@ -1756,6 +2229,12 @@ components:
         libres: { type: integer, minimum: 0 }
         enConflicto: { type: integer, minimum: 0 }
         sinStock: { type: integer, minimum: 0 }
+        decididasSinFecha:
+          type: integer
+          minimum: 0
+          description: >-
+            Desde 1.12.0 (R11-35). Aprobadas o descartadas sin fecha de decisión guardada: no
+            entran en un período de `decididaDesde` y `decididaHasta`.
     DonacionEnPropuestasDTO:
       type: object
       description: Desde 1.10.0 (R11-24). Una donación pedida por al menos una pendiente.
@@ -1834,6 +2313,65 @@ components:
           format: int64
           minimum: 0
           description: Propuestas de asignación que esperan respuesta
+        calculadoEn: { type: string, format: date-time }
+    EvolucionAdminDTO:
+      type: object
+      description: >
+        Gráficos del inicio del administrador (R11-42). Sin donaciones, `desde` y `hasta` son null
+        y las listas vienen vacías.
+      required:
+        - meses
+        - categorias
+        - calculadoEn
+      properties:
+        desde:
+          type: string
+          nullable: true
+          description: 'Primer mes, AAAA-MM: hace 11 meses, o el de la primera donación si es posterior'
+          example: '2025-11'
+        hasta:
+          type: string
+          nullable: true
+          description: 'El mes en curso, AAAA-MM'
+          example: '2026-10'
+        meses:
+          type: array
+          description: Uno por mes de `desde` a `hasta`, todos presentes (0 si no hay)
+          items:
+            type: object
+            required: [mes, registradas, entregadas]
+            properties:
+              mes: { type: string, example: '2025-11' }
+              registradas: { type: integer, format: int64, minimum: 0 }
+              entregadas:
+                type: integer
+                format: int64
+                minimum: 0
+                description: Las que pasaron a ENTREGADA en el mes
+        categorias:
+          type: array
+          maxItems: 8
+          description: >
+            Todas las del catálogo, también con 0, de más a menos registradas (y por nombre), como
+            mucho 8. Cada donación independiente cuenta en la categoría de la subcategoría de sus
+            bienes, sumado en todo el período.
+          items:
+            type: object
+            required: [categoriaId, nombre, registradas, entregadas]
+            properties:
+              categoriaId: { type: string, format: uuid }
+              nombre: { type: string, example: Alimentos }
+              registradas: { type: integer, format: int64, minimum: 0 }
+              entregadas: { type: integer, format: int64, minimum: 0 }
+        otras:
+          type: object
+          nullable: true
+          description: La suma de las categorías que pasan de 8; null si no hay
+          required: [categorias, registradas, entregadas]
+          properties:
+            categorias: { type: integer, minimum: 1 }
+            registradas: { type: integer, format: int64, minimum: 0 }
+            entregadas: { type: integer, format: int64, minimum: 0 }
         calculadoEn: { type: string, format: date-time }
     DonanteOutputDTO:
       type: object
@@ -2423,6 +2961,29 @@ components:
         version:
           type: integer
           description: Versión de los legales que se acepta; tiene que ser la vigente
+    SolicitudEntidadDTO:
+      type: object
+      required: [razonSocial, rubro, tipoJuridico, direccion, representante]
+      properties:
+        razonSocial: { type: string }
+        rubro: { type: string, description: 'Qué es la organización (por ejemplo, Merendero)' }
+        tipoJuridico: { type: string, enum: [ONG, INSTITUCION, GUBERNAMENTAL], description: 'EMPRESA responde 400' }
+        direccion:
+          type: object
+          required: [calle, altura, codigoPostal, localidad, provincia]
+          properties:
+            calle: { type: string }
+            altura: { type: integer, minimum: 1 }
+            codigoPostal: { type: string }
+            localidad: { type: string }
+            provincia: { type: string }
+        representante:
+          type: object
+          required: [nombre, apellido]
+          properties:
+            nombre: { type: string }
+            apellido: { type: string }
+        correo: { type: string, description: 'Del representante; solo de lectura (se ignora al corregir)' }
     LegalesDTO:
       type: object
       required: [versionVigente, vigenteAceptada]

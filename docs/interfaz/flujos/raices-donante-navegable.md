@@ -11,6 +11,11 @@
 > `donante-entidades` y `donante-notificaciones`. Ya aprobadas y enlazadas:
 > [`donante-seguimiento`](raices-seguir-entregas.md) y [`donante-perfil`](raices-mi-perfil.md)
 > (con `-guardado`).
+>
+> **Cambio de la revisión del 2026-11-11 (lote `p2-entidades-donante`, R11-27 y R11-28):** **en
+> revisión** desde el 2026-11-12. La nueva [sección 10](#10-organizaciones-una-tarjeta-por-organización-y-la-franja-de-ayuda-r11-27-y-r11-28)
+> rediseña `donante-entidades` (una tarjeta por organización y la franja de ayuda) y manda sobre lo
+> que dicen de esa pantalla las secciones 4, 5, 6 y 8. El resto de la ficha sigue aprobado.
 
 ## 1. Para quién y para qué
 
@@ -99,6 +104,10 @@ raíz o siembra por pantalla, en el título grande; nunca en botones, datos ni e
 
 ### donante-inicio (nivel 1)
 
+> **Tablero (R11-25, 2026-11-12, aprobada):** el bloque "Donación por donación" pasa al boceto A,
+> con tres columnas de a 3 donaciones y un paginador en cada una; el detalle, en la ficha
+> [r11-p2-tablero](r11-p2-tablero.md).
+
 ```text
 [Inicio]  Hola, Distribuidora Ejemplo SA
           bajada
@@ -170,6 +179,11 @@ menú marca Mis donaciones.
 
 ### donante-entidades (nivel 2)
 
+> **Actualización R11-27 y R11-28 (2026-11-12, aprobada):** una tarjeta por organización, de
+> alto igual, con lo que pide adentro, y "Cómo llega tu donación" como franja de ayuda arriba de la
+> lista. Lo que dice la [sección 10](#10-organizaciones-una-tarjeta-por-organización-y-la-franja-de-ayuda-r11-27-y-r11-28)
+> manda sobre esta pantalla en las secciones 4, 5, 6 y 8; lo de abajo queda como estaba antes.
+
 ```text
 [Entidades]   Quiénes reciben las donaciones
               Entidades activas y lo que piden hoy. …
@@ -196,7 +210,7 @@ menú marca Mis donaciones.
 
 ### donante-notificaciones (nivel 2)
 
-> **Actualización R11-14 (2026-11-12, en revisión):** la bandeja va de a 20 por página, con los
+> **Actualización R11-14 (2026-11-12, aprobada):** la bandeja va de a 20 por página, con los
 > filtros resueltos en Notificaciones, y cambia cómo se ven las leídas y las sin leer, sus vínculos
 > y el ícono de "Marcar como no leída". Lo que dice la
 > [ficha del lote `p1-notificaciones`](r11-p1-notificaciones.md) sobre la bandeja manda sobre esta
@@ -335,6 +349,9 @@ pública y de la entidad) y el destino "Escuela Ejemplo 12" se muestra "Escuela 
 | Con datos reales | Noticias, una por cambio de estado: "Recibimos tu donación en el depósito." · "Asignamos tu donación a una necesidad de <entidad>." · "Tu donación quedó lista para entregar." · "El camión salió a entregar tu donación a <entidad>." · "<Entidad> confirmó que recibió tu donación y sumó una foto." (sin foto, "<Entidad> confirmó que recibió tu donación.") · "El camión no pudo llegar a <entidad>: <motivo>." · "Tu donación venció en el depósito." Aviso: "No pudo llegar a <entidad>." con "<Motivo>. Última noticia: 11 de octubre, 16:10.", o "Venció en el depósito.". Entregada sin foto (o con Logística sin responder): "<Entidad> confirmó la entrega el 5 de octubre.". Alt de la foto: "Foto de la entrega que subió <entidad>" Etapas: "11 de octubre: no pudo llegar" · "1 de octubre: venció" | Aprobados por el usuario el 2026-11-07, al conectar el detalle con Donaciones y Logística. Las noticias salen del historial de la donación (Notificaciones no dice a qué donación es cada aviso, HB-09); el motivo, de la justificación del cambio; la nueva salida no existe en la API. "Figura como" no se muestra hasta HB-20. Una donación de otro donante dice "No encontramos esa donación" |
 
 ### donante-entidades
+
+> **R11-27 y R11-28 (2026-11-12, aprobada):** la bajada, la franja y los textos nuevos de la
+> tarjeta están en la [sección 10.6](#106-textos); los estados, en la [10.5](#105-estados).
 
 | Elemento | Texto | Nota |
 |---|---|---|
@@ -491,6 +508,373 @@ Preguntas abiertas para el usuario (siguen abiertas después de elegir el sitio 
    con los algoritmos (RF-17); Entidades solo informa (Recomendada)" · "Sí: un 'Donar' por necesidad,
    como en el primer prototipo (pide un requerimiento y un hueco nuevos)".
 
+## 10. Organizaciones: una tarjeta por organización y la franja de ayuda (R11-27 y R11-28)
+
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
+> Lote `p2-entidades-donante` del
+> [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P2, ruta STANDARD).
+> Las decisiones ya las tomó el usuario (sección 3 del backlog, filas "Entidades (donante)" y
+> "Cómo llega tu donación"): esta sección no las reabre, las baja a la pantalla.
+> **Manda sobre** lo que dicen de `donante-entidades` las secciones 4, 5, 6 y 8 de esta ficha. Lo
+> que no se nombra acá (la búsqueda, "Ya doné", el paginador, los textos del resultado, el error y
+> el vacío) sigue como está.
+> Archivos del lote: `templates/donante-entidades.html`, `templates/persona/donante-entidades.html`
+> y `static/css/donante-entidades.css`. No cambian el controller, la vista ni el puerto.
+
+### 10.0 Qué hay hoy (evidencia)
+
+Leído en `e9331b3a2`. `[V]` es leído en el código; `[H]`, hipótesis.
+
+| # | Hoy | Dónde |
+|---|---|---|
+| E1 | La versión común agrupa **los pedidos** por categoría: un bloque por categoría con su ícono y, adentro, un renglón por pedido con el nombre de la organización. Una organización que pide de tres categorías aparece en tres renglones de tres bloques (es el "no entiendo la división" de la ronda) `[V]` | `templates/donante-entidades.html:112-166` |
+| E2 | Además de las categorías hay tres casos de respaldo: el grupo "Otros pedidos" (pedidos sin categoría conocida), el grupo "Sin pedidos pendientes" y, con una categoría elegida, el renglón "Lo que pedía de <Categoría> ya está cubierto." `[V]` | `donante-entidades.html:132-136,140-165` |
+| E3 | La categoría **ya es un filtro** (`?categoria=`, el menú del componente `filtros`), resuelto en Donaciones sobre todas las organizaciones activas (R11-12). Lo que falta es que la lista deje de agruparse por ella `[V]` | `donante-entidades.html:75-80`, `rest/DonanteEntidadesRest.java:62-69` |
+| E4 | Lo que trae cada organización: `nombre`, `ya` (si la cuenta ya le donó) y `pide`; cada pedido trae `que`, `categoria` (puede ser nula), `cat` (el ícono), `falta`, `cuando`, `recibido` y `total`. Con datos reales `recibido` es nulo (HB-18) y no hay tipo ni zona (HB-08, HB-15) `[V]` | `vistas/DonanteEntidadesVista.java:44-60` |
+| E5 | Las tarjetas de `.lista` de la persona no miden todas lo mismo: cada una mide lo que trae (`align-items: start` desde 53,75 em) `[V]` | `static/css/donante-entidades.css:151-157` |
+| E6 | La versión de persona de la maqueta (`?cuenta=persona`) **ya dibuja una tarjeta por organización** (`.ejemplar`: nombre, tipo y zona, "Lo que ya donaste", hasta 3 pedidos y "Ver las N necesidades" plegable), pero no tiene el filtro de categoría `[V]` | `templates/persona/donante-entidades.html:82-93,127-165` |
+| E7 | "Cómo llega tu donación" es una `.tarjeta.lamina` al final de la página, con el mismo papel y la misma sombra que los renglones: se confunde con un elemento más de la lista (R11-28) `[V]` | `donante-entidades.html:173-188`, `persona/donante-entidades.html:171-180` |
+| E8 | Con login real ya no muestra el depósito de ejemplo: "¿No sabés dónde queda el depósito? Escribinos…" (R11-09). En la maqueta, el depósito de ejemplo `[V]` | `donante-entidades.html:177-185`, `web/DonanteEntidadesSinMaquetaTest.java:85-88` |
+| E9 | El catálogo no tiene una "franja de ayuda": el `.banner` informativo es papel claro con sombra, como una tarjeta. Las plantillas no suman clases nuevas (`clases-heredadas.txt` solo baja): lo propio de la pantalla va con `data-v` `[V]` | `docs/interfaz/componentes.md` (`.banner`, `.tarjeta`, `.plegable`), `src/test/resources/verificacion/clases-heredadas.txt:1-2` |
+| E10 | Los tests de la pantalla miran los grupos por categoría (`id="grupo-2"`, "Otros pedidos", "Sin pedidos pendientes"): cambian con este diseño, sin debilitar lo que comprueban `[V]` | `web/DonanteEntidadesControllerTest.java:182,191,205,233,251` |
+
+### 10.1 Para quién y para qué
+
+| | |
+|---|---|
+| Quién | Quien dona (la persona de RSE de la empresa, o la persona que dona, con sus textos) y quiere saber a quién le llega lo que lleva al depósito. Mira en la computadora; a veces en el celular |
+| Tono | Organizaciones: respetuoso, en contexto, digno. La franja: pantalla de trabajo, clara y útil ([tono según la pantalla](../tono-y-comunicacion.md#tono-según-la-pantalla)) |
+| Qué quiere lograr | "Ver cada organización una sola vez, con todo lo que pide, y entender cómo llega lo que dono" |
+| Dispositivo principal | Ambos; la computadora primero |
+| Requerimientos | RF-06 (organizaciones activas, paginadas, con búsqueda por nombre). RF-15 y RF-17 (la donación la registra el depósito y la asigna el admin: no hay "Donar" por organización). RF-CL-07 (la lista dice cuándo se actualizó). RNF-CL-02 (sin JavaScript, igual funciona) |
+| Datos que usa | Los de hoy: `misEntidades` (`DonanteEntidadesPuerto`; con Donaciones, `GET /api/donantes/{id}/entidades` con `nombre`, `categoriaId`, `soloDonadas` y la página, de a 6). Nada nuevo: ninguna lista completa, el total como número (`X-Total-Count`). Huecos que siguen: HB-18 (lo recibido), HB-08 y HB-15 (tipo y zona), y no hay endpoint de depósitos (H7 de [r11-p0-persona](r11-p0-persona.md)) |
+| Boceto de E1 | Pág. 17 (beneficiarios). Ya se había alejado (ver §4); este cambio vuelve a una tarjeta por organización, más cerca del boceto |
+
+### 10.2 Dónde está en el sitio
+
+Sin cambios: `donante-inicio` → menú **Organizaciones** → `donante-entidades` (nivel 2). Los
+filtros y la página viajan en la dirección (`?nombre=&categoria=&ya=si&pagina=N`): el "atrás" del
+navegador y un enlace compartido muestran lo mismo.
+
+### 10.3 Recorrido
+
+```mermaid
+flowchart TD
+  inicio([donante-inicio]) -->|menú Organizaciones| lista[donante-entidades: franja de ayuda, filtros y 6 tarjetas]
+  lista -->|lee la franja| franja{¿Sabe dónde queda el depósito?}
+  franja -->|maqueta: lo ve en la franja| lista
+  franja -->|datos reales: Escribinos| contacto[publico-contacto?volver=/donante-entidades]
+  contacto -->|Volver| lista
+  franja -->|Ver Mis donaciones| donaciones[donante-donaciones]
+  lista -->|elige una categoría| filtrada[solo las organizaciones que piden de esa categoría]
+  filtrada -->|Ver todas| lista
+  lista -->|Ya doné| ya[las organizaciones a las que ya donó]
+  ya -->|Ver todas| lista
+  lista -->|busca por nombre| buscada[las que tienen eso en el nombre]
+  buscada -->|Ver todas| lista
+  lista -->|una tarjeta con más de 3 pedidos| abierta[Ver N necesidades más: se despliega en el lugar]
+  abierta -->|Ver menos| lista
+  lista -->|paginador| lista
+  filtrada -->|nada coincide| sinres[aviso sin resultados y Ver todas]
+  lista -->|Donaciones no responde| error[banner de error con código y Volver a intentar; la franja sigue]
+```
+
+Desvíos considerados:
+
+- **Cancelar o volver:** "Ver todas" saca la búsqueda y los filtros; el "atrás" del navegador
+  vuelve al filtro anterior (todo va en la dirección).
+- **Error de datos:** una categoría que no existe se ignora y se ven todas (como hoy); una página
+  más allá de la última muestra la última (`Tramo`).
+- **Error del servidor:** el banner de error con su código; la franja de ayuda sigue, porque es
+  texto fijo.
+- **Sin conexión o pedido lento:** "Cargando las organizaciones…" con el esqueleto; si la llamada
+  pasa el límite de espera (R11-04), la página de falla con su código.
+- **Sin permiso:** la pantalla es del área del donante; sin sesión lleva a Ingresar, y la cuenta
+  con la solicitud pendiente, a "Recibimos la solicitud" (como hoy).
+- **Sin JavaScript:** la búsqueda y los filtros son un formulario `GET`; el plegable es un
+  `details` nativo. Todo funciona igual.
+
+### 10.4 Pantalla
+
+Orden de la página: **encabezado → franja de ayuda → búsqueda y filtros → resultado → tarjetas →
+paginador.** La franja va arriba de la lista (decisión del usuario) y antes de los filtros, para
+que los filtros queden pegados a lo que filtran.
+
+Escritorio (1280 px, tres columnas; en 1920 px igual, porque el contenido no pasa de 82 rem):
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ ORGANIZACIONES                                                                 │
+│ Quiénes reciben las donaciones                                                 │
+│ Las organizaciones activas y lo que pide cada una. Actualizado hoy, 15 de …    │
+│                                                                                │
+│ ┃(i) Cómo llega tu donación                                  ← fondo agua,     │
+│ ┃    Llevás la donación al depósito. Ahí la registran y la     filete verde a  │
+│ ┃    asignan a una necesidad abierta de una organización…      la izquierda,   │
+│ ┃    Depósito Central Ejemplo · Calle Ejemplo 1234 · L a V…    sin sombra      │
+│ ┃    Ver Mis donaciones                                                        │
+│                                                                                │
+│ Buscar por nombre [____________][Buscar]   [Categoría ▾] [ ] Ya doné  Ver todas│
+│ 46 organizaciones activas. Página 1 de 8.                                      │
+│                                                                                │
+│ ┌──────────────────────┐ ┌──────────────────────┐ ┌──────────────────────┐     │
+│ │ Comedor Barrio       │ │ Escuela Ejemplo N.º12│ │ Merendero Ejemplo Sur│     │
+│ │ Ejemplo              │ │ Ya le donaste        │ │ Ya le donaste        │     │
+│ │ Ya le donaste        │ │                      │ │                      │     │
+│ │ ▣ Lentejas secas     │ │ ▣ Sillas             │ │ ▣ Galletitas         │     │
+│ │   Faltan 30 de 40 kg │ │   Faltan 14 de 20 …  │ │   Faltan 10 de 20 kg │     │
+│ │   ▓▓▓░░░░░░  25 %    │ │   ▓▓▓░░░░░░  30 %    │ │   ▓▓▓▓▓░░░░  50 %    │     │
+│ │ ▣ Arroz …            │ │ ▣ Útiles escolares   │ │ ▣ Leche en polvo     │     │
+│ │ ▣ Aceite de girasol …│ │   Faltan 4 cajas     │ │   Faltan 20 unidades │     │
+│ │                      │ │                      │ │                      │     │
+│ │        (aire)        │ │        (aire)        │ │        (aire)        │     │
+│ │ ──────────────────── │ │ ──────────────────── │ │ ──────────────────── │     │
+│ │ Alimentos · Ropa     │ │ Muebles · Escolares  │ │ Alimentos            │     │
+│ │ Ver 2 necesidades más│ │                      │ │                      │     │
+│ └──────────────────────┘ └──────────────────────┘ └──────────────────────┘     │
+│ ┌──────────────────────┐ ┌──────────────────────┐ ┌──────────────────────┐     │
+│ │ Hogar Casa Ejemplo   │ │ Club Ejemplo Norte   │ │ Biblioteca Popular … │     │
+│ │ …                    │ │ …                    │ │ …                    │     │
+│ └──────────────────────┘ └──────────────────────┘ └──────────────────────┘     │
+│                         « ‹ 1 2 3 … 8 › »                                      │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+Celular (360 px, una columna):
+
+```text
+┌──────────────────────────────┐
+│ ORGANIZACIONES               │
+│ Quiénes reciben las …        │
+│ Las organizaciones activas … │
+│ ┃(i) Cómo llega tu donación  │
+│ ┃ Llevás la donación al …    │
+│ ┃ Escribinos y te pasamos …  │
+│ ┃ Ver Mis donaciones         │
+│ Buscar por nombre            │
+│ [______________][Buscar]     │
+│ [Categoría ▾] [ ] Ya doné    │
+│ 46 organizaciones activas. … │
+│ ┌──────────────────────────┐ │
+│ │ Comedor Barrio Ejemplo   │ │
+│ │ Ya le donaste            │ │
+│ │ ▣ Lentejas secas …       │ │
+│ │ ▣ Arroz …                │ │
+│ │ ▣ Aceite de girasol …    │ │
+│ │ ──────────────────────── │ │
+│ │ Alimentos · Ropa         │ │
+│ │ Ver 2 necesidades más    │ │
+│ └──────────────────────────┘ │
+│ … (una debajo de otra)       │
+│        ‹ 1 de 8 ›            │
+└──────────────────────────────┘
+```
+
+Los nombres y pedidos del dibujo son los de la maqueta (página 1); qué tarjeta lleva "Ya le donaste"
+lo dicen los datos de cada versión.
+
+**La tarjeta de una organización** (`li.tarjeta` con `data-v="organizacion"`, dentro de una
+`ul.lista`):
+
+1. **Cabeza:** el nombre (`h2`, corta palabras largas, R11-18) y, debajo, "Ya le donaste" si
+   corresponde. Se conserva el marcado de hoy, `<span data-v="nombre">…</span><span
+   data-v="ya-donaste">Ya le donaste</span>`, que ya cuida que no se pisen.
+2. **Lo que pide:** una lista con **hasta 3 pedidos a la vista**. Cada uno con el ícono de su
+   categoría (decorativo; el de respaldo, `cat-generico`, si no se sabe), qué pide en negrita, lo
+   que falta y hasta cuándo, y la barra con su porcentaje solo si se sabe lo recibido (en la
+   maqueta sí; con datos reales no, HB-18). Con una categoría elegida, sus pedidos de esa categoría
+   van primero.
+3. **Aire:** el espacio que sobra va acá, entre lo que pide y el pie. Así las cabezas quedan
+   alineadas arriba y los pies alineados abajo en toda la fila.
+4. **Pie:** sobre un filete fino, las categorías de lo que pide, en texto ("Alimentos · Ropa"; un
+   pedido sin categoría suma "Otras") y, si pide más de 3 cosas, el plegable "Ver 2 necesidades
+   más" / "Ver menos", que despliega el resto **en el lugar** (sin ir a otra página y sin
+   JavaScript). Una organización sin pedidos no lleva pie.
+
+**Mismo alto.** Desde dos columnas (a partir de 53,75 em), todas las tarjetas de la página miden lo
+mismo: el alto de la más alta (filas de alto igual en la grilla). En una sola columna (celular),
+cada una mide lo suyo: con una por fila el alto igual no se ve y solo agregaría aire. Mientras una
+tarjeta está desplegada, las filas vuelven a medir cada una lo suyo (`:has(details[open])`), para
+que abrir una no estire las seis; donde el navegador no entiende `:has`, crecen todas, sin romper
+nada.
+
+**Las que ya recibieron algo de la cuenta** siguen atenuadas como hoy (papel de la página, filete
+en lugar de sombra, "Ya le donaste" en palabras): es la decisión de la ronda del 2026-11-09 (tarde)
+y la sección 3 del backlog no la cambia.
+
+**La franja de ayuda** (`aside` con `data-v="ayuda"`, R11-28):
+
+- **Otro fondo:** `--color-agua` (verde agua, el único fondo claro que no usan las tarjetas, la
+  página, los sellos ni "Ya le donaste"), con un filete de `--color-acento` a la izquierda y **sin
+  sombra**: las tarjetas tienen sombra y la franja no, así no parece una más de la lista.
+- **Ícono:** el círculo con la "i" de información (el mismo dibujo del componente `info`), grande y
+  decorativo (`aria-hidden`), a la izquierda del título. No es un botón.
+- **Ocupa todo el ancho del contenido** (no las 44 rem de la lámina de hoy), como una franja.
+- **Contenido:** el título "Cómo llega tu donación", el texto de cómo funciona, el depósito (en la
+  maqueta) o "Escribinos…" (con datos reales, R11-09) y "Ver Mis donaciones" como **enlace**, no
+  como botón: es una ayuda y no compite con "Buscar".
+- Sigue en todos los estados (con datos, vacío, error y cargando), porque es texto fijo.
+- Los enlaces de la franja van en `--color-acento-hondo` (5,53 : 1 sobre el agua; el acento común
+  da 4,43 : 1 y no llega a AA). El texto, en tinta (10,58 : 1).
+
+**Las dos versiones dicen lo mismo.** La de persona de la maqueta (`persona/donante-entidades`)
+pasa a la misma tarjeta, la misma franja y la misma barra de filtros, con **Categoría** sumada
+(alimentos, ropa, muebles y escolares, las de la maqueta, que filtran sus datos de ejemplo; no
+llama a ningún servicio). Su tarjeta deja "Tipo y zona" y el detalle de "Lo que ya donaste": con
+datos reales no existen (HB-08, HB-15) y el detalle de lo donado está en Mis donaciones. Le queda
+la marca "Ya le donaste", como a la común.
+
+**Qué se va:** los bloques por categoría, sus títulos con ícono grande y los grupos "Otros pedidos"
+y "Sin pedidos pendientes". Lo que decían pasa a cada tarjeta: el ícono en cada pedido, "Otras" en
+el pie y "Hoy no pide nada." en la tarjeta.
+
+**Qué cambia respecto del boceto (pág. 17) y de la ronda del 2026-11-09 (tarde):** la ronda había
+elegido agrupar por categoría para comparar el avance de los pedidos; la revisión del 2026-11-11
+mostró que una organización quedaba partida en varios renglones. Una tarjeta por organización
+responde mejor a RF-06 (recorrer organizaciones) y la mirada por categoría queda en el filtro.
+
+### 10.5 Estados
+
+| Estado | Qué se ve | Texto | Patrón conocido |
+|---|---|---|---|
+| Con datos | Encabezado, franja, barra, resultado, 6 tarjetas y paginador | "46 organizaciones activas. Página 1 de 8." | Tarjetas en grilla (Material: Cards, [criterios §5](../criterios-catedra-ux-ui.md#5-patrones-de-interacción)) y paginado ([§4](../criterios-catedra-ux-ui.md#4-patrones-de-navegación)) |
+| Con más de 3 pedidos, plegada | 3 pedidos; en el pie, "Ver 2 necesidades más" | "Ver 2 necesidades más" (con una: "Ver 1 necesidad más") | Divulgación progresiva ([criterios §6](../criterios-catedra-ux-ui.md#6-arquitectura-de-la-información), principio 3) con panel desplegable (Material: Expansion panel) |
+| Con más de 3 pedidos, desplegada | Todos los pedidos; en el pie, "Ver menos" | "Ver menos" | Ídem |
+| Organización sin pedidos | La cabeza y el texto; sin pie | "Hoy no pide nada." | Tarjeta |
+| Categoría elegida | Solo las que piden de esa categoría; en cada una, sus pedidos de esa categoría primero | "5 organizaciones coinciden con lo que elegiste. Página 1 de 1." | Filtro de una lista ([criterios §6](../criterios-catedra-ux-ui.md#6-arquitectura-de-la-información), principio 6, clasificación múltiple) |
+| Categoría elegida, ya cubierta en una | La tarjeta, con el aviso arriba de lo demás que pide | "Lo que pedía de Ropa ya está cubierto." | Ídem |
+| Ya doné, con resultados | Las organizaciones a las que donó, de a 6 | "2 organizaciones coinciden con lo que elegiste. Página 1 de 1." | Ídem |
+| Ya doné, sin resultados | La caja vacía con "Ver todas" | "Todavía no le donaste a ninguna organización." · "Cuando el depósito asigne una de tus donaciones, la organización aparece acá." | Estado vacío (`.vacio`) |
+| Filtros sin resultados | La caja vacía con "Ver todas" | "Ninguna organización coincide con lo que elegiste." · "Probá con otra categoría o sacá los filtros." | Estado vacío |
+| Búsqueda sin resultados | La caja vacía con "Ver todas" | "Ninguna organización activa se llama así." · "Probá con otra parte del nombre." | Estado vacío |
+| Página no dibujada (maqueta, `?pagina=3` o más) | El aviso con "Volver a la página 1" | "En la maqueta solo están dibujadas las dos primeras páginas." | Estado vacío |
+| Nombre muy largo (maqueta, página 2) | El nombre corta dentro de la tarjeta; la tarjeta no se ensancha | — | — |
+| Vacío | La franja y la caja vacía; sin barra ni tarjetas | "Por ahora no hay organizaciones activas." · "Cuando una organización se sume y la aprueben, aparece acá con lo que pide." | Estado vacío |
+| Cargando | La franja, la barra y dos esqueletos con la forma de una tarjeta | "Cargando las organizaciones…" | Esqueleto |
+| Error del servidor | La franja y el banner de error con código y "Volver a intentar" | "No pudimos cargar las organizaciones." | Banner de error (Material: Banners) |
+| Éxito | No aplica: la pantalla no envía nada | — | — |
+| Sin permiso | No aplica en la pantalla (lo resuelve el área del donante, §10.3) | — | — |
+
+La franja en cada estado: en la maqueta, con el depósito de ejemplo; con datos reales, con
+"Escribinos".
+
+### 10.6 Textos
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Rótulo | Organizaciones | Como hoy (`p1-nombres`) |
+| Título | Quiénes reciben las donaciones | Como hoy |
+| Bajada | "Las organizaciones activas y lo que pide cada una. Actualizado hoy, 15 de octubre, 16:25." | Cambia: ya no dice "por categoría" ni "cuánto recibió cada necesidad" (con datos reales no se sabe, HB-18). La fecha es la de `misEntidades.actualizado`; en la persona, la de su maqueta |
+| Franja: título | Cómo llega tu donación | Como hoy |
+| Franja: texto | "Llevás la donación al depósito. Ahí la registran y la asignan a una necesidad abierta de una organización. Desde que la registran, ves cada paso en Mis donaciones." | Como hoy (RF-15 y RF-17) |
+| Franja: depósito (maqueta) | "Depósito Central Ejemplo · Calle Ejemplo 1234, Ciudad Ejemplo · Lunes a viernes de 9 a 17 h; sábados de 9 a 13 h" | Como hoy, solo en la maqueta |
+| Franja: depósito (datos reales) | "¿No sabés dónde queda el depósito? Escribinos y te pasamos la dirección y el horario." | Como hoy (R11-09); "Escribinos" lleva a Contacto con `volver=/donante-entidades` |
+| Franja: enlace | Ver Mis donaciones | Pasa de botón a enlace |
+| Lista: nombre accesible | "Organizaciones de esta página" | `aria-label` de la `ul` |
+| Lo que pide: nombre accesible | "Lo que pide <organización>" | `aria-label` de la lista de pedidos |
+| Pedido | "Lentejas secas" · "Faltan 30 de 40 kg este mes · Se repite cada mes" · barra "25 %" | Como hoy; con datos reales, "Piden 40 kg · Hasta el 20 de octubre", sin barra |
+| Pie: categorías | "Alimentos · Ropa" · con un pedido sin categoría: "Alimentos · Otras" | Antes del texto, "Categorías:" en `solo-lectores` |
+| Plegable | "Ver 2 necesidades más" · "Ver 1 necesidad más" · "Ver menos" | Suma " de <organización>" en `solo-lectores`, para que cada plegable se distinga en la lista de controles |
+| Marca | Ya le donaste | Como hoy |
+| Cubierto | "Lo que pedía de <Categoría> ya está cubierto." | Como hoy, dentro de la tarjeta |
+| Sin pedidos | "Hoy no pide nada." | Como hoy, dentro de la tarjeta |
+
+Los textos del resultado, de los vacíos y del error no cambian (están en la tabla de estados).
+
+Filtro de tono (7 preguntas):
+
+- La organización **pide** y **confirma**: ninguna se describe por una carencia; el pie dice de qué
+  categorías pide, no "qué le falta".
+- Lo que no se sabe no se inventa: con datos reales no hay barra ni porcentaje (HB-18), y la bajada
+  ya no promete "cuánto recibió".
+- Sin ranking ni orden por "más necesitada": el orden es el del servidor, como hoy.
+- "Ya le donaste" es un dato, sin premio ni culpa; las demás no dicen "todavía no le donaste".
+- La franja explica el camino real (depósito, registro, asignación) y no ofrece un "Donar" que no
+  existe (RF-17).
+
+### 10.7 Accesibilidad
+
+- **Zonas:** el `h1` de la pantalla; la franja es un `aside` con nombre ("Cómo llega tu donación",
+  por `aria-labelledby`); la búsqueda, `role="search"`; el paginador, su `nav`.
+- **Orden del foco:** "Escribinos" (datos reales) → "Ver Mis donaciones" → búsqueda → Buscar →
+  Categoría → Ya doné → Ver todas → en cada tarjeta, su plegable (si tiene) → el paginador. El
+  orden del código es el visual.
+- **Títulos:** un `h2` por tarjeta (el nombre de la organización) y el `h2` de la franja: con el
+  lector de pantalla se salta de organización en organización.
+- **El resultado** sigue en `role="status"` y recibe el foco al llegar desde el paginador.
+- **Íconos decorativos:** el de la franja y el de cada pedido, `aria-hidden`; la categoría está en
+  texto en el pie.
+- **Plegable:** `details` y `summary` nativos (se abren con Enter o Espacio); el texto cambia de
+  "Ver 2 necesidades más" a "Ver menos" sin JavaScript, como hoy en la persona.
+- **Barras:** `progress` con su `aria-label` completo ("Lentejas secas para Comedor Barrio
+  Ejemplo: recibió el 25 %"); el porcentaje visible repite el texto.
+- **Contraste:** tinta sobre agua, 10,58 : 1; enlaces de la franja en acento hondo, 5,53 : 1; el
+  filete de la franja (acento sobre agua, 4,43 : 1) pasa el 3 : 1 de lo que no es texto. "Ya le
+  donaste", como hoy.
+- **Toque:** el `summary` del plegable y los enlaces de la franja, 48 px de alto como mínimo.
+- **Reducir movimiento:** nada se anima al desplegar.
+- **360 px:** nada desborda; el nombre largo corta; la franja no lleva columnas.
+
+### 10.8 Revisión de usabilidad
+
+| # | Heurística | Cómo la cumple | Riesgo que queda |
+|---|---|---|---|
+| 1 | Visibilidad del estado | El resultado dice cuántas coinciden y en qué página; la bajada, cuándo se actualizó; "Ya le donaste" en cada tarjeta; el plegable dice cuántas necesidades más hay | — |
+| 2 | Lenguaje del usuario | "Organización", "lo que pide", "Ver 2 necesidades más", "Cómo llega tu donación"; nada de "grupo" ni de categorías como estructura | En la pantalla conviven "pedido" (en el código) y "necesidad" (en lo que se ve): lo nuevo dice "necesidad" |
+| 3 | Control y libertad | "Ver todas" saca todo; "Ver menos" vuelve a plegar; el "atrás" vuelve al filtro anterior | — |
+| 4 | Consistencia | Una tarjeta por organización, como Organizaciones de la portada (plegable) y como la versión de persona; las dos versiones dicen lo mismo; la franja usa el ícono de información del sitio | La franja es una pieza de la pantalla y no del catálogo: si otra pantalla la necesita, conviene pasarla al catálogo |
+| 5 | Prevención de errores | Categoría con opciones cerradas; un valor desconocido se ignora | — |
+| 6 | Reconocer antes que recordar | Cada organización aparece una sola vez con todo lo suyo: no hay que recordar que estaba en otro bloque | Con una categoría elegida, lo que pide de otras sigue en la tarjeta, después, para no esconder nada |
+| 7 | Flexibilidad | Quien quiere el panorama mira las tarjetas; quien busca algo filtra por categoría, por nombre o por "Ya doné" | — |
+| 8 | Diseño minimalista | 3 pedidos a la vista y el resto a pedido; el aire va en el medio y no en los bordes | Con seis tarjetas de alto igual, una que pide poco queda con mucho aire en el medio |
+| 9 | Recuperarse de errores | El error con código y "Volver a intentar"; los vacíos dicen qué probar y ofrecen "Ver todas" | — |
+| 10 | Ayuda | La franja "Cómo llega tu donación", con otro fondo e ícono, arriba de la lista y en todos los estados | La "i" es el ícono del botón de información: alguien puede intentar tocarla (no hace nada) |
+
+Los 7 factores de la experiencia:
+
+| Factor | Cómo lo cumple |
+|---|---|
+| Útil | Responde de un vistazo a quién le llega lo donado y qué pide cada organización |
+| Usable | Una tarjeta, una organización; filtros de opciones cerradas; el plegable se abre en el lugar |
+| Deseable | La grilla pareja, con cabezas y pies alineados, y la franja en el verde agua de la paleta Huerta |
+| Valioso | "Ya le donaste" muestra a la cuenta a quién ya ayudó, sin rankings |
+| Ubicable | La franja arriba; la categoría, el nombre y "Ya doné" en la barra; nada cambia de lugar entre páginas |
+| Accesible | Un `h2` por organización, íconos decorativos con el texto al lado, contraste AA y `details` nativo |
+| Creíble | Sin barra donde no se sabe lo recibido; la fecha de actualización; el depósito real o "Escribinos", nunca uno de ejemplo con login real |
+
+Qué conviene probar con personas reales (la revisión heurística no reemplaza al test con
+usuarios): si alguien que dona encuentra en menos de un minuto qué organizaciones piden ropa, y si
+lee la franja antes de buscar un botón "Donar".
+
+### 10.9 Decisiones y preguntas
+
+Decisiones tomadas (agente, dentro de lo que decidió el usuario):
+
+- La franja va **arriba de los filtros**, no entre los filtros y la lista: así los filtros quedan
+  pegados a lo que filtran.
+- **Fondo agua** (`--color-agua`), sin sombra y con filete verde: es el único fondo claro de la
+  paleta que no usan las tarjetas, la página, los sellos ni "Ya le donaste". Descartados: el fondo
+  de "pendiente", que se confundiría con "Ya le donaste", y la tierra oscura de la portada, que pesa
+  demasiado para una ayuda.
+- **Ícono de la "i"** (el del componente `info`), decorativo. Descartado dibujar un ícono nuevo de
+  camión o de caja: suma una pieza sin necesidad.
+- La franja es propia de la pantalla (`data-v="ayuda"`), no una variante de `.banner`: el lote no
+  toca componentes y las plantillas no suman clases. Si otra pantalla la pide, pasa al catálogo.
+- **3 pedidos a la vista**, como el resumen de la regla general 2, y el resto en un plegable en el
+  lugar. Descartado: una página de detalle de la organización, que no existe y no es de este lote.
+- **Alto igual desde dos columnas**, el mismo para toda la página; en una columna, el natural. Al
+  desplegar una, las filas se sueltan (`:has`). Descartado: alto igual también en el celular (solo
+  agrega aire con una por fila).
+- **Con una categoría elegida**, se ven todos los pedidos de la organización, con los de esa
+  categoría primero. Descartado: esconder los demás, que vuelve a partir la organización.
+- La versión de persona de la maqueta adopta la misma tarjeta y suma Categoría, para que las dos
+  digan lo mismo; deja "Tipo y zona" y el detalle de "Lo que ya donaste", que con datos reales no
+  existen.
+- El cambio de grupos por categoría a una tarjeta por organización va a la
+  [bitácora](../bitacora.md) al construir, con el lote.
+
+Preguntas abiertas: ninguna. Lo que queda es el OK del usuario a esta sección.
+
 ## Huecos de backend
 
 Datos que la maqueta inventa porque el backend no los da hoy. Van también a la lista de la
@@ -509,3 +893,14 @@ corrida ([raices-ab-huecos-backend.md](raices-ab-huecos-backend.md)), sin DTI ni
 | donante-entidades | Dirección y horario del depósito | No hay endpoint de depósitos |
 | donante-notificaciones | Tipo de evento e id de la donación en `NotificacionDTO` | Sin ellos no se pone el sello ni se enlaza al detalle (hoy trae solo `mensaje`) |
 | donante-notificaciones | Avisos "recibida en el depósito" y "lista para entregar" | No están en `EventoNotificableDTO`; RF-08 pide asignación y recepción (HB-09) |
+
+## Aprobación del diseño p2-entidades-donante (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. Tests que cambian al construir: DonanteEntidadesControllerTest (líneas 182, 191, 205, 233 y 251) comprueba los grupos por categoría (id="grupo-2", 'Otros pedidos', 'Sin pedidos pendientes'). Esos archivos están fuera de los tres del lote. Recomiendo que el constructor los adapte al nuevo marcado, para que sigan comprobando lo mismo sin debilitarlos, y lo anote en fueraDeZona.
+   **Resuelto: la opción recomendada.**
+2. Si la persona deja de usar las clases .ejemplar*, quedan sin uso en clases-heredadas.txt. Recomiendo que el constructor las saque de esa lista, que solo puede bajar, en el mismo lote.
+   **Resuelto: la opción recomendada.**
+3. Riesgo: la 'i' de la franja es el mismo dibujo del botón de información y alguien puede intentar tocarla. Recomiendo dejarla así y probarlo en la demo; si confunde, se cambia por otro dibujo sin tocar el resto.
+   **Resuelto: la opción recomendada.**

@@ -164,7 +164,7 @@ class AdminOperacionRest implements AdminOperacionPuerto {
 
   private AdminOperacionAsignaciones asignaciones() {
     return new AdminOperacionAsignaciones(
-        donaciones, LocalDateTime.now(reloj.withZone(Comun.ARGENTINA)));
+        donaciones, LocalDateTime.now(reloj.withZone(Comun.ARGENTINA)), cuentas);
   }
 
   private static Camion camion(LogisticaApi.Camion c) {

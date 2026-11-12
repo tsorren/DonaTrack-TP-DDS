@@ -1,5 +1,6 @@
 package grupo5.logistica.seguridad;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -25,6 +26,7 @@ import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.EntregasDelMapaPublico;
+import grupo5.logistica.dto.entregas.SeguimientosDeEntregas;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.services.ICamionesService;
@@ -308,6 +310,11 @@ class SeguridadLogisticaTest {
 
   @Test
   void elSeguimientoPorDonanteYPorBeneficiariaEsDeSuDuenio() throws Exception {
+    // R11-43: el servicio da una página con su total; el mock vacío devolvería null
+    when(entregasService.listarSeguimientoPorDonante(any(), any()))
+        .thenReturn(new SeguimientosDeEntregas(List.of(), 0));
+    when(entregasService.listarSeguimientoPorBeneficiaria(any(), any()))
+        .thenReturn(new SeguimientosDeEntregas(List.of(), 0));
     pedir(get(ENTREGAS + "/seguimiento/donantes/" + DONANTE), "donante").andExpect(status().isOk());
     pedir(get(ENTREGAS + "/seguimiento/donantes/" + AJENO), "donante")
         .andExpect(status().isForbidden());

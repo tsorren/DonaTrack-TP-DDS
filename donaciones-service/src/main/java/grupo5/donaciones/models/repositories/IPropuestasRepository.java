@@ -19,9 +19,16 @@ public interface IPropuestasRepository extends CrudRepository<Propuesta> {
 
   /**
    * Una página de propuestas con el filtro y el orden de {@code criterio}, cada una con su
-   * situación y lo que piden las otras pendientes (R11-24).
+   * situación y lo que piden las otras pendientes (R11-24), con la búsqueda de las decididas
+   * (R11-35).
    */
   Tramo<PropuestaEnListado> buscar(CriterioPropuestas criterio);
+
+  /**
+   * Cuántas aprobadas o descartadas no tienen fecha de decisión guardada (las de antes de V22;
+   * R11-35).
+   */
+  long contarDecididasSinFecha();
 
   /** Cuántas pendientes hay en cada situación; las tres claves siempre están (R11-24). */
   Map<SituacionPropuesta, Long> contarPendientesPorSituacion();

@@ -36,6 +36,7 @@
 @import url("componentes/registro.css") layer(bloques);
 @import url("componentes/plegable.css") layer(bloques);
 @import url("componentes/chip.css") layer(bloques);
+@import url("componentes/campanita.css") layer(bloques);
 @import url("componentes/necesidad.css") layer(bloques);
 @import url("componentes/recorte.css") layer(bloques);
 @import url("componentes/segmentos.css") layer(bloques);
@@ -103,7 +104,8 @@ body {
 .saltar:focus {
   left: 1rem;
   top: 1rem;
-  z-index: 3;
+  /* Encima de la cabecera fija (R11-33). */
+  z-index: var(--capa-saltar);
   background: var(--color-papel);
   padding: 0.75rem 1rem;
 }
@@ -129,6 +131,194 @@ body {
 .raices-cabecera,
 .armazon {
   padding-bottom: 1rem;
+}
+
+/* --- Lo que queda fijo al desplazarse (R11-33, regla general 5; ficha r11-p2-armazon) -----------
+   Desde la tableta, con la ventana de al menos 37,5 em de alto, la cabecera (con el menú) queda
+   pegada arriba. En el celular arriba no queda nada: el menú ya es la barra fija de abajo
+   (componentes/navegacion.css). Lo que queda fijo es solo visual: el orden del foco y de lectura no
+   cambia. --medida-cabecera-fija es el alto de la cabecera medido el 2026-11-12 en el navegador,
+   con las letras ya cargadas, redondeado hacia arriba a 1/8 rem: la privada de 5 secciones
+   (donante y entidad) mide 8 rem hasta 68,75 em y 4,5 rem desde ahí; la de la administración (7
+   secciones, con "Más"), 11,375 rem hasta 53,75 em y 8 rem desde ahí; la pública (también la de
+   la portada), 12,25 rem, 8,875 rem desde 53,75 em y 5,5 rem desde 68,75 em. La barra de filtros
+   se pega debajo (componentes/filtros.css); --medida-filtros-fijos es su alto más alto en esos
+   anchos (el de la administración), y solo sirve para que el foco no quede debajo. */
+@media (min-width: 37.5em) and (min-height: 37.5em) {
+  /* `header` pesa más que `.armazon { position: relative }` de privado.css. */
+  body > header:is(.raices-cabecera, .armazon) {
+    position: sticky;
+    top: 0;
+    z-index: var(--capa-encabezado-fijo);
+  }
+
+  /* La pública corta su menú en una, dos o tres filas según el ancho, y esos cortes no caen en los
+     puntos de quiebre: medida el 2026-11-12 en publico-donaciones, publico-entidades y la portada,
+     mide 12,25 rem hasta 640 px, 8,875 rem de 660 a 900 px y 5,5 rem desde 920 px. Para que la
+     barra de filtros se pegue siempre justo debajo, la cabecera mide al menos lo que dice su
+     medida, con lo de adentro centrado. */
+  body > header.raices-cabecera {
+    min-height: var(--medida-cabecera-fija);
+    align-content: center;
+  }
+
+  :root:has(body > .armazon) {
+    --medida-cabecera-fija: 8rem;
+    --medida-filtros-fijos: 18rem;
+  }
+
+  :root:has(body > .armazon .navegacion-mas) {
+    --medida-cabecera-fija: 11.375rem;
+  }
+
+  :root:has(body > .raices-cabecera) {
+    --medida-cabecera-fija: 12.25rem;
+    --medida-filtros-fijos: 18rem;
+  }
+}
+
+/* En el celular la barra de filtros queda fija si la ventana mide 45 em de alto o más y la barra
+   tiene hasta dos pastillas (componentes/filtros.css). --medida-filtros-fijos es el alto de la más
+   alta de esas barras, medido el 2026-11-12 de 360 a 412 px con las letras cargadas y redondeado
+   hacia arriba a 1/8 rem (157 px, en admin-camiones y donante-entidades). Sin barra fija, no suma
+   nada. Un :has no puede ir dentro de otro, por eso la condición se escribe sobre la página; con
+   :where pesa como :root, menos que las medidas de la tableta de arriba, que mandan desde 37,5 em. */
+@media (min-height: 45em) {
+  :root:where(:has(.filtros-barra):not(:has(.filtros-pildora ~ .filtros-pildora ~ .filtros-pildora))) {
+    --medida-filtros-fijos: 9.875rem;
+  }
+}
+
+@media (min-width: 53.75em) and (min-height: 37.5em) {
+  :root:is(:has(body > .armazon), :has(body > .raices-cabecera)) {
+    --medida-filtros-fijos: 14.5rem;
+  }
+
+  :root:has(body > .armazon .navegacion-mas) {
+    --medida-cabecera-fija: 8rem;
+  }
+
+  :root:has(body > .raices-cabecera) {
+    --medida-cabecera-fija: 8.875rem;
+  }
+}
+
+@media (min-width: 68.75em) and (min-height: 37.5em) {
+  :root:is(:has(body > .armazon), :has(body > .raices-cabecera)) {
+    --medida-filtros-fijos: 11rem;
+  }
+
+  :root:has(body > .armazon) {
+    --medida-cabecera-fija: 4.5rem;
+  }
+
+  :root:has(body > .armazon .navegacion-mas) {
+    --medida-cabecera-fija: 8rem;
+  }
+
+  :root:has(body > .raices-cabecera) {
+    --medida-cabecera-fija: 5.5rem;
+  }
+}
+
+/* El foco no queda tapado (WCAG 2.4.11): Tab, "Saltar al contenido", los enlaces a una parte de la
+   página y el foco que pone el paginador llegan debajo de lo fijo de arriba y encima del menú y del
+   botón fijos de abajo. */
+html {
+  scroll-padding-top: var(--medida-cabecera-fija);
+  scroll-padding-bottom: var(--medida-menu-celular);
+}
+
+html:has(.filtros-barra, form.filtro) {
+  scroll-padding-top: calc(var(--medida-cabecera-fija) + var(--medida-filtros-fijos));
+}
+
+html:has([data-fijo="celular"]) {
+  scroll-padding-bottom: calc(var(--medida-menu-celular) + var(--medida-boton-fijo));
+}
+
+/* El botón principal fijo en el celular (data-fijo="celular"): la envoltura del botón de un
+   formulario largo (y de su indicador de envío) queda pegada abajo, encima del menú, sobre papel y
+   con el filete arriba, hasta llegar al final del formulario, donde vuelve a su lugar. Desde la
+   tableta, la envoltura desaparece de la disposición y sus hijos quedan como estaban. */
+[data-fijo="celular"] {
+  position: sticky;
+  bottom: var(--medida-menu-celular);
+  z-index: var(--capa-fijo-pantalla);
+  display: grid;
+  gap: var(--espacio-1);
+  padding-block: var(--espacio-2);
+  border-top: 1px solid var(--color-filete);
+  background: var(--color-papel);
+}
+
+@media (min-width: 37.5em) {
+  [data-fijo="celular"] {
+    display: contents;
+  }
+
+  html,
+  html:has([data-fijo="celular"]) {
+    scroll-padding-bottom: 0;
+  }
+}
+
+/* --- La pantalla de carga (R11-40; ficha r11-p2-armazon, sección 4.4) ----------------------------
+   El papel y la marca, centrada, toda la ventana, mientras llegan las letras. Su estado de reposo
+   es oculta: la animación la muestra desde el primer dibujo y la apaga, así que a los 0,5 s ya no
+   está, siempre, aunque falle el JavaScript (no lo usa). Si el navegador no anima, si se pide
+   "reducir movimiento" o al imprimir, no aparece. No recibe toques ni el foco y no tiene texto: los
+   lectores de pantalla leen la página, que ya está debajo. Vuelve en cada página que se carga
+   entera; no en los cambios de HTMX (no se vuelve a dibujar el body) ni al volver con Atrás. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: var(--capa-carga);
+  visibility: hidden;
+  background: url("../img/logo.svg") 50% 50% / 3rem auto no-repeat, var(--color-papel);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body::before {
+    animation: pantalla-de-carga
+      calc(var(--movimiento-retraso-entrada) + var(--movimiento-duracion-corta))
+      var(--movimiento-curva-salida);
+  }
+}
+
+/* Opaca hasta los 0,3 s (60 % de 0,5 s) y un fundido de 0,2 s. */
+@keyframes pantalla-de-carga {
+  from,
+  60% {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  to {
+    visibility: visible;
+    opacity: 0;
+  }
+}
+
+@media (forced-colors: active) {
+  body::before {
+    background: url("../img/logo.svg") 50% 50% / 3rem auto no-repeat, Canvas;
+  }
+}
+
+@media print {
+  body::before {
+    content: none;
+  }
+
+  body > header:is(.raices-cabecera, .armazon),
+  .filtros-barra,
+  form.filtro,
+  [data-fijo="celular"] {
+    position: static;
+  }
 }
 
 /* La marca: el nombre en la letra de los títulos, con "Track" en verde (piel Huerta). */

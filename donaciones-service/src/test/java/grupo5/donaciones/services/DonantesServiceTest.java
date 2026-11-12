@@ -284,6 +284,42 @@ class DonantesServiceTest {
   }
 
   @Test
+  void buscar_conPeriodoDeAlta_loPasaAlRepositorio_R1134() {
+    when(donantesRepository.buscar(any())).thenReturn(new Tramo<>(List.of(), 0));
+    java.time.LocalDate desde = java.time.LocalDate.of(2026, 11, 1);
+    java.time.LocalDate hasta = java.time.LocalDate.of(2026, 11, 12);
+
+    donantesService.buscar(
+        new FiltroDonantes(null, null, null, null, null, desde, hasta),
+        ParametrosListado.primeraPagina());
+
+    ArgumentCaptor<CriterioDonantes> criterio = ArgumentCaptor.forClass(CriterioDonantes.class);
+    verify(donantesRepository).buscar(criterio.capture());
+    assertEquals(desde, criterio.getValue().altaDesde());
+    assertEquals(hasta, criterio.getValue().altaHasta());
+  }
+
+  @Test
+  void buscar_conAltaDesdeDespuesDeAltaHasta_lanza400SinConsultar_R1134() {
+    FiltroDonantes filtro =
+        new FiltroDonantes(
+            null,
+            null,
+            null,
+            null,
+            null,
+            java.time.LocalDate.of(2026, 11, 12),
+            java.time.LocalDate.of(2026, 11, 1));
+    ParametrosListado listado = ParametrosListado.primeraPagina();
+
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> donantesService.buscar(filtro, listado));
+
+    assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, ex.getError());
+    verify(donantesRepository, never()).buscar(any());
+  }
+
+  @Test
   void buscar_conOrdenDesconocido_lanza400() {
     FiltroDonantes filtro = FiltroDonantes.ninguno();
     ParametrosListado listado = new ParametrosListado(null, null, null, "PRECIO");

@@ -21,7 +21,9 @@ import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ContadoresPublicosDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
+import grupo5.donaciones.dto.donaciones.outputs.EvolucionAdminDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ResumenAdminDTO;
+import grupo5.donaciones.models.entities.actividad.AccionDeAdministracion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.services.ParametrosListado;
 import java.time.LocalDate;
@@ -79,6 +81,10 @@ class DonacionesControllerTest extends AbstractDonacionesWebMvcTest {
                 .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isCreated())
         .andExpect(header().exists("X-Trace-Id"));
+
+    // R11-26: la donación registrada queda en el registro (si el token es de ADMIN).
+    verify(actividadService)
+        .registrar(AccionDeAdministracion.DONACION_REGISTRADA, output.id().toString(), null);
   }
 
   @Test
@@ -160,6 +166,29 @@ class DonacionesControllerTest extends AbstractDonacionesWebMvcTest {
         .andExpect(jsonPath("$.donacionesPorEstado.EN_DEPOSITO").value(3))
         .andExpect(jsonPath("$.donantes.activos").value(8))
         .andExpect(jsonPath("$.propuestasPendientes").value(1));
+  }
+
+  @Test
+  void obtenerEvolucion_devuelveLasSeriesDelInicioDelAdmin_R1142() throws Exception {
+    when(evolucionAdminService.calcular())
+        .thenReturn(
+            new EvolucionAdminDTO(
+                "2026-10",
+                "2026-11",
+                List.of(
+                    new EvolucionAdminDTO.Mes("2026-10", 5, 2),
+                    new EvolucionAdminDTO.Mes("2026-11", 3, 1)),
+                List.of(new EvolucionAdminDTO.Categoria(UUID.randomUUID(), "Alimentos", 8, 3)),
+                null,
+                OffsetDateTime.of(2026, 11, 11, 12, 0, 0, 0, ZoneOffset.UTC)));
+
+    mockMvc
+        .perform(get("/api/donaciones/resumen/evolucion"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.desde").value("2026-10"))
+        .andExpect(jsonPath("$.meses[1].registradas").value(3))
+        .andExpect(jsonPath("$.categorias[0].nombre").value("Alimentos"))
+        .andExpect(jsonPath("$.otras").doesNotExist());
   }
 
   @Test

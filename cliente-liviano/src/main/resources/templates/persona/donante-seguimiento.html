@@ -97,9 +97,9 @@
             <li th:replace="~{donante-seguimiento :: entrega(${d}, ${#lists.size(vanEnCamino) + #lists.size(tienenProblema) + vuelta.count}, ${puntos.get(d.clave)})}"></li>
           </th:block>
         </ol>
-        <p class="seguimiento-pie" th:unless="${#lists.isEmpty(sinDestino)}"
-           th:text="|${#strings.listJoin(sinDestino, ' y ')} todavía ${#lists.size(sinDestino) == 1 ? 'espera' : 'esperan'} destino: aparece acá cuando se le asigne una organización. Las que ya llegaron, con la foto de la organización, están en Mis donaciones.|">Fideos
-          secos todavía espera destino.</p>
+        <th:block th:unless="${#lists.isEmpty(sinDestino)}">
+          <aside th:replace="~{donante-seguimiento :: sinDestino(${sinDestino})}"></aside>
+        </th:block>
         <a class="boton" data-tono="secundario" href="/donante-donaciones"
            th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
       </section>

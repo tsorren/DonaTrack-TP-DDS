@@ -260,11 +260,15 @@
 
           <div class="firma">
             <p class="firma-quien" th:text="|Recibe ${cuenta.nombre}, el ${hoyActa}|">Recibe Comedor Barrio Ejemplo, el 15 de octubre de 2026</p>
-            <button class="boton" data-tono="principal" type="submit"
-                    th:disabled="${escenario == 'lento'}"
-                    th:text="${escenario == 'lento'} ? 'Confirmando…' : (${problema} ? 'Confirmar y contar el problema' : 'Confirmar recepción')">Confirmar
-              recepción</button>
-            <p th:replace="~{envio :: indicador('enviando-entidad-seguimiento-confirmar', 'Subiendo las fotos y confirmando la entrega…')}"></p>
+            <!--/* En el celular, el botón y su indicador quedan pegados abajo, encima del menú, hasta
+                   llegar al final del acta (R11-33, data-fijo de app.css; ficha r11-p2-armazon). */-->
+            <div data-fijo="celular">
+              <button class="boton" data-tono="principal" type="submit"
+                      th:disabled="${escenario == 'lento'}"
+                      th:text="${escenario == 'lento'} ? 'Confirmando…' : (${problema} ? 'Confirmar y contar el problema' : 'Confirmar recepción')">Confirmar
+                recepción</button>
+              <p th:replace="~{envio :: indicador('enviando-entidad-seguimiento-confirmar', 'Subiendo las fotos y confirmando la entrega…')}"></p>
+            </div>
             <p th:if="${problema}" class="nota">Al confirmar, la entrega queda como entregada, con el
               problema anotado, y quien donó recibe el aviso.</p>
             <p th:unless="${problema}" class="nota">Al confirmar, la entrega queda como entregada y quien donó recibe el aviso.

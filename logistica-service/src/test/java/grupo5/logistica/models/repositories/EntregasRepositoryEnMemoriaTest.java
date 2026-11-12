@@ -8,6 +8,7 @@ import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.repositories.impl.EntregasRepository;
 import grupo5.logistica.testutils.EntregaMother;
+import grupo5.logistica.testutils.SeguimientoDePrueba;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -66,5 +67,10 @@ class EntregasRepositoryEnMemoriaTest {
         repositorio.findEntregadasParaMapa(DESDE, HASTA, 2).stream().map(Entrega::getId).toList());
     assertEquals(3, repositorio.contarEntregadasParaMapa(DESDE, HASTA));
     assertTrue(repositorio.findEntregadasParaMapa(null, HASTA, 10).isEmpty());
+  }
+
+  @Test
+  void buscarSeguimiento_filtraOrdenaCortaYCuentaComoLaBase() {
+    SeguimientoDePrueba.verificar(new EntregasRepository());
   }
 }

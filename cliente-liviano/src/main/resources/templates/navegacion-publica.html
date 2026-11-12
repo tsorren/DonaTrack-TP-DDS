@@ -35,10 +35,12 @@
     <!--/* Con la sesión iniciada (ficha r11-p1-portada.md): en lugar de Ingresar y Crear una cuenta, la
            salida a lo propio, destacada y sin sección marcada. En la barra del celular, el nombre
            corto ("Mi inicio"); el largo ("Ir a mi inicio") es el que leen los lectores y el que se ve
-           desde la tableta (publico-navegacion.css). Con la solicitud pendiente, "Ver mi solicitud". */-->
+           desde la tableta (publico-navegacion.css). Con la solicitud pendiente, "Ver mi solicitud",
+           marcado como la página actual en "Recibimos la solicitud" (enLaSolicitud, R11-41). */-->
     <li th:if="${salidaDeLaCuenta != null}" class="navegacion-aparte navegacion-destacado"
         th:with="pendiente=${salidaDeLaCuenta.pendiente}"><a href="/donante-inicio"
-           th:href="${salidaDeLaCuenta.ruta}"><span class="navegacion-largo"
+           th:href="${salidaDeLaCuenta.ruta}"
+           th:aria-current="(${pendiente} and ${enLaSolicitud}) ? 'page' : null"><span class="navegacion-largo"
           th:text="${pendiente} ? 'Ver mi solicitud' : 'Ir a mi inicio'">Ir a mi inicio</span><span
           aria-hidden="true" th:text="${pendiente} ? 'Mi solicitud' : 'Mi inicio'">Mi inicio</span></a></li>
   </ul>

@@ -22,16 +22,17 @@
        Fragmentos:
        - pagina(ruta, rutaLeidas, b, sinLeer, paginador, marcadas, noLeidas): la bandeja paginada
          (R11-14, ficha docs/interfaz/flujos/r11-p1-notificaciones.md) de las notificaciones del
-         donante y de la entidad: la barra, la lista de una página que ya filtró la fuente,
+         donante, de la entidad y de la administración (R11-30): la barra, la lista de una página que ya filtró la fuente,
          «Mostrando X a Y de N» y el paginador (componentes/paginas). La lista dice cuántas sin
          leer tiene la cuenta junto a «Marcar todas como leídas» y vuelve a la misma página después
          de marcar. Detalle en su comentario.
        - aviso(n, reloj, temas, leida): una fila de la bandeja paginada: título (en negrita solo
-         sin leer), mensaje y vínculo aparte; tilde para marcarla leída y sobre cerrado para
-         dejarla sin leer.
+         sin leer), mensaje y vínculo aparte (sin destino, sin vínculo: el aviso de contacto del
+         admin); tilde para marcarla leída y sobre cerrado para dejarla sin leer.
        - buzon(ruta, rutaLeidas, ahora, fuentes, temas, todasLeidas): la barra y la lista que filtra
-         en la plantilla, con datos de ejemplo (la bandeja del admin, hasta p2-campanita). ruta es la
-         pantalla ('/admin-notificaciones'); rutaLeidas, a dónde va el post; ahora, el "ahora" de la
+         en la plantilla, con datos de ejemplo. Desde R11-30 solo la usa la bandeja de la persona de
+         la maqueta (templates/persona/donante-notificaciones.html); se borra cuando esa pase a
+         pagina(...). ruta es la pantalla ('/donante-notificaciones'); rutaLeidas, a dónde va el post; ahora, el "ahora" de la
          maqueta en ISO ('2026-10-15T18:30'); fuentes, una lista de listas de notificaciones {id,
          fecha (ISO), texto, tema, destino, leida} y, si hace falta, boton (el texto de la acción
          principal, que reemplaza al enlace del mensaje), que (lo que nombra el botón, para lectores) y
@@ -286,7 +287,7 @@
         th:if="${leida}" th:text="${n.titulo}"></th:block></p>
     <p th:text="${n.texto}">El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
     <p th:if="${n.nota != null}" class="texto-chico" th:text="${n.nota}">Confirmaste la recepción.</p>
-    <a th:if="${n.boton == null}" class="buzon-vinculo" href="#" th:href="${n.destino}"><th:block
+    <a th:if="${n.boton == null and n.destino != null}" class="buzon-vinculo" href="#" th:href="${n.destino}"><th:block
         th:text="${n.vinculo}">Ver la donación</th:block><span class="solo-lectores">: <th:block
         th:text="${n.titulo}">Donación en camino</th:block>, <time
         th:replace="~{componentes/buzon :: cuando(${n.fecha}, ${reloj})}"></time></span></a>

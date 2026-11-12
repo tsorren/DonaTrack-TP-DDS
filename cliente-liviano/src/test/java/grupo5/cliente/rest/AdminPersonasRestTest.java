@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import grupo5.cliente.cuentas.SolicitudesDeEntidad;
@@ -19,6 +20,7 @@ import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminEntidadesVista.Entidad;
+import grupo5.cliente.vistas.AdminEntidadesVista.Filtro;
 import grupo5.cliente.vistas.AdminInicioVista;
 import grupo5.cliente.vistas.ConsultaDonantes;
 import java.time.Clock;
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -98,6 +101,70 @@ class AdminPersonasRestTest {
       ]
       """;
 
+  /** R11-43: cuántas registradas hay en un estado, un número del servicio. */
+  private void cuantas(String estado, int total) {
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/entidades?estado=" + estado + "&size=1"))
+        .andRespond(withSuccess("[]", JSON).header("X-Total-Count", String.valueOf(total)));
+  }
+
+  @Test
+  void losFiltrosDeLasRegistradasLosResuelveDonacionesYConActivasNoVanLasQuePidenSumarse() {
+    SolicitudesDeEntidad solicitudes = mock(SolicitudesDeEntidad.class);
+    when(solicitudes.pendientes())
+        .thenReturn(List.of(new Pendiente("cuenta-1", "Comedor Norte", "c@ejemplo.org", null)));
+    cuentas.addBean("solicitudes", solicitudes);
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "/api/entidades?estado=ACTIVA&conNecesidades=false&rubro=Comedor&page=0&size=20"))
+        .andRespond(withSuccess("[]", JSON).header("X-Total-Count", "0"));
+    cuantas("ACTIVA", 40);
+    cuantas("BAJA", 3);
+
+    AdminEntidadesVista vista = adaptador.entidades("", new Filtro("activas", "sin", "Comedor"), 1);
+
+    donaciones.verify();
+    assertEquals(List.of(), vista.todas());
+    // Las cifras del menú no dependen de los filtros
+    assertEquals(40, vista.activas());
+    assertEquals(3, vista.enPaginas().inactivas());
+    assertEquals(1, vista.enPaginas().pendientes());
+  }
+
+  @Test
+  void conPendientesSoloLasQuePidenSumarseSinPedirRegistradasYConSuTipo() {
+    UUID juridica = UUID.fromString("00000000-0000-4000-8000-0000000000e3");
+    SolicitudesDeEntidad solicitudes = mock(SolicitudesDeEntidad.class);
+    when(solicitudes.pendientes())
+        .thenReturn(
+            List.of(
+                new Pendiente("cuenta-1", "Hogar Norte", "h@ejemplo.org", juridica),
+                new Pendiente("cuenta-2", "Club Sur", "c@ejemplo.org", null)));
+    cuentas.addBean("solicitudes", solicitudes);
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES + "/api/personas?id=00000000-0000-4000-8000-0000000000e3&size=100"))
+        .andRespond(
+            withSuccess(
+                """
+                [{"tipo": "JURIDICA", "id": "00000000-0000-4000-8000-0000000000e3",
+                  "razonSocial": "Hogar Norte", "tipoJuridico": "ONG", "rubro": "Hogar"}]
+                """,
+                JSON));
+    cuantas("ACTIVA", 40);
+    cuantas("BAJA", 3);
+
+    AdminEntidadesVista vista = adaptador.entidades("", new Filtro("pendientes", "", "Hogar"), 1);
+
+    donaciones.verify();
+    assertEquals(List.of("Hogar Norte"), vista.todas().stream().map(Entidad::nombre).toList());
+    assertEquals(1, vista.enPaginas().total());
+    assertEquals(2, vista.enPaginas().pendientes());
+  }
+
   @Test
   void lasEntidadesSalenPorNombreConSusNecesidadesYLasQuePidenSumarseConSusDatos() {
     UUID juridica = UUID.fromString("00000000-0000-4000-8000-0000000000e3");
@@ -145,11 +212,10 @@ class AdminPersonasRestTest {
                                 "localidad": "Localidad Ejemplo", "provincia": "Buenos Aires"}}]
                 """,
                 JSON));
-    donaciones
-        .expect(requestTo(DONACIONES + "/api/entidades/publicas?size=1"))
-        .andRespond(withSuccess("[]", JSON).header("X-Total-Count", "57"));
+    cuantas("ACTIVA", 57);
+    cuantas("BAJA", 4);
 
-    AdminEntidadesVista vista = adaptador.entidades("", 1);
+    AdminEntidadesVista vista = adaptador.entidades("", Filtro.NINGUNO, 1);
 
     donaciones.verify();
     // Las activas, un número del servicio: no se cuentan sobre la página.
@@ -191,11 +257,10 @@ class AdminPersonasRestTest {
     donaciones
         .expect(requestTo(DONACIONES + "/api/entidades?page=0&size=20"))
         .andRespond(withSuccess("[]", JSON));
-    donaciones
-        .expect(requestTo(DONACIONES + "/api/entidades/publicas?size=1"))
-        .andRespond(withSuccess("[]", JSON).header("X-Total-Count", "0"));
+    cuantas("ACTIVA", 0);
+    cuantas("BAJA", 4);
 
-    assertEquals(List.of(), adaptador.entidades("", 1).todas());
+    assertEquals(List.of(), adaptador.entidades("", Filtro.NINGUNO, 1).todas());
     donaciones.verify();
   }
 
@@ -214,11 +279,10 @@ class AdminPersonasRestTest {
     donaciones
         .expect(requestTo(DONACIONES + "/api/necesidades?estado=VIGENTE"))
         .andRespond(withSuccess("[]", JSON));
-    donaciones
-        .expect(requestTo(DONACIONES + "/api/entidades/publicas?size=1"))
-        .andRespond(withSuccess("[]", JSON).header("X-Total-Count", "30"));
+    cuantas("ACTIVA", 30);
+    cuantas("BAJA", 4);
 
-    AdminEntidadesVista vista = adaptador.entidades(" jose ", 2);
+    AdminEntidadesVista vista = adaptador.entidades(" jose ", Filtro.NINGUNO, 2);
 
     donaciones.verify();
     assertEquals(
@@ -253,6 +317,21 @@ class AdminPersonasRestTest {
                                            "fechaVencimiento": "2026-11-12"}},
                  "donantes": {"total": 20003, "activos": 20001},
                  "entidadesActivas": 1, "propuestasPendientes": 1,
+                 "calculadoEn": "2026-11-10T18:30:00-03:00"}
+                """,
+                JSON));
+    // R11-42: los gráficos, aparte del resumen, ya contados por Donaciones
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donaciones/resumen/evolucion"))
+        .andRespond(
+            withSuccess(
+                """
+                {"desde": "2026-10", "hasta": "2026-11",
+                 "meses": [{"mes": "2026-10", "registradas": 4, "entregadas": 8},
+                           {"mes": "2026-11", "registradas": 2, "entregadas": 1}],
+                 "categorias": [{"categoriaId": "00000000-0000-4000-8000-0000000000c1",
+                                 "nombre": "Alimentos", "registradas": 6, "entregadas": 9}],
+                 "otras": null,
                  "calculadoEn": "2026-11-10T18:30:00-03:00"}
                 """,
                 JSON));
@@ -298,6 +377,9 @@ class AdminPersonasRestTest {
             20003,
             new AdminInicioVista.Camiones(1, 2)),
         inicio.cifras());
+    assertEquals("de octubre a noviembre de 2026", inicio.evolucion().periodo());
+    assertEquals("Noviembre 2026, del 1 al 10", inicio.evolucion().meses().get(1).nombre());
+    assertEquals(9, inicio.evolucion().categorias().get(0).entregadas());
     donaciones.verify();
   }
 
@@ -380,6 +462,145 @@ class AdminPersonasRestTest {
     assertEquals(3, vista.donantes().paginas());
     assertEquals(41, vista.donantes().total());
     assertEquals("jose", vista.consulta().buscar());
+    donaciones.verify();
+  }
+
+  @Test
+  void elPeriodoDeAltaLoResuelveDonacionesConDiasInclusivosYLaPastillaSeOfrece() {
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
+        .andRespond(withSuccess("[]", JSON));
+    // El reloj marca el 10 de noviembre en Buenos Aires: los últimos 7 días van del 4 al 10
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "/api/donantes?altaDesde=2026-11-04&altaHasta=2026-11-10"
+                    + "&orden=nuevos&page=0&size=20"))
+        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "0"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes?activo=true&size=1"))
+        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "0"));
+
+    AdminDonantesVista vista =
+        adaptador.donantes(new ConsultaDonantes("", "", "", "", "", 1, "7-dias"));
+
+    assertEquals("7-dias", vista.consulta().alta());
+    assertTrue(vista.consulta().filtrada());
+    assertEquals(6, vista.opciones().altas().size());
+    assertEquals("", vista.opciones().altas().getFirst().valor());
+    donaciones.verify();
+  }
+
+  @Test
+  void laFichaTraeElContactoConElPredeterminadoPrimeroYSiOcultaSuNombre() {
+    String conContacto =
+        """
+        [{"idDonante": "00000000-0000-4000-8000-000000000001", "activo": true,
+          "mostrarNombre": false,
+          "persona": {"tipo": "HUMANA", "nombre": "Ana", "apellido": "Ejemplo",
+                      "direccion": {"calle": "Calle Ejemplo", "altura": 123, "localidad": "CABA"},
+                      "mediosDeContacto": [
+                        {"tipo": "CORREO", "esPredeterminado": false,
+                         "direccionCorreo": "otro@ejemplo.test"},
+                        {"tipo": "WHATSAPP", "esPredeterminado": true, "codigoArea": "11",
+                         "numero": "5555-0000"},
+                        {"tipo": "CORREO", "esPredeterminado": true,
+                         "direccionCorreo": "ana@ejemplo.test"}]}},
+         {"idDonante": "00000000-0000-4000-8000-000000000002", "activo": true,
+          "persona": {"tipo": "HUMANA", "nombre": "Juan", "apellido": "Ejemplo"}}]
+        """;
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
+        .andRespond(withSuccess("[]", JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes?orden=nuevos&page=0&size=20"))
+        .andRespond(withSuccess(conContacto, JSON).header(Paginas.TOTAL, "2"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes?activo=true&size=1"))
+        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "2"));
+
+    AdminDonantesVista vista = adaptador.donantes(ConsultaDonantes.primera());
+
+    AdminDonantesVista.Contacto ana = vista.donantes().filas().get(0).contacto();
+    assertEquals("ana@ejemplo.test", ana.correo());
+    assertEquals("11 5555-0000 (WhatsApp)", ana.telefono());
+    assertEquals("Calle Ejemplo 123, CABA", ana.direccion());
+    assertTrue(ana.ocultaNombre());
+    AdminDonantesVista.Contacto juan = vista.donantes().filas().get(1).contacto();
+    assertTrue(juan.sinMedios());
+    assertNull(juan.direccion());
+    assertFalse(juan.ocultaNombre());
+    donaciones.verify();
+  }
+
+  @Test
+  void susDonacionesSonUnaPaginaDeTresConElTotalDeDonaciones() {
+    UUID ana = UUID.fromString("00000000-0000-4000-8000-000000000001");
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "/donaciones-independientes?donanteId="
+                    + ana
+                    + "&orden=recientes&page=0&size=3"))
+        .andRespond(
+            withSuccess(
+                    """
+                    [{"id": "00000000-0000-4000-8000-0000000000d1", "descripcion": "Arroz",
+                      "estadoActual": "EN_DEPOSITO", "fechaRegistro": "2026-11-09T10:00:00",
+                      "cantidad": 25, "items": []}]
+                    """,
+                    JSON)
+                .header(Paginas.TOTAL, "12"));
+
+    AdminDonantesVista.SusDonaciones suyas = adaptador.donacionesDe(ana.toString());
+
+    assertTrue(suyas.cargaron());
+    assertEquals(12, suyas.total());
+    assertEquals(1, suyas.recientes().size());
+    assertEquals("00000000-0000-4000-8000-0000000000d1", suyas.recientes().getFirst().clave());
+    assertEquals("deposito", suyas.recientes().getFirst().estado());
+    assertTrue(suyas.recientes().getFirst().que().startsWith("Arroz · "));
+    donaciones.verify();
+  }
+
+  // R11-34 (ficha r11-p2-admin-bandeja §4 y §5): el donante que no está en la página, por su clave
+  @Test
+  void unDonantePorSuClaveConSuContactoYNullSiNoExiste() {
+    UUID ana = UUID.fromString("00000000-0000-4000-8000-000000000001");
+    UUID nadie = UUID.fromString("00000000-0000-4000-8000-000000000009");
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes/" + ana))
+        .andRespond(
+            withSuccess(
+                """
+                {"idDonante": "00000000-0000-4000-8000-000000000001", "activo": false,
+                 "persona": {"tipo": "HUMANA", "nombre": "Ana", "apellido": "Ejemplo",
+                             "mediosDeContacto": [{"tipo": "CORREO",
+                                                   "direccionCorreo": "ana@ejemplo.test"}]}}
+                """,
+                JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donantes/" + nadie))
+        .andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+    AdminDonantesVista.Donante encontrado = adaptador.donante(ana.toString());
+
+    assertEquals(ana.toString(), encontrado.clave());
+    assertEquals("baja", encontrado.estado());
+    assertEquals("ana@ejemplo.test", encontrado.contacto().correo());
+    assertNull(adaptador.donante(nadie.toString()));
+    assertNull(adaptador.donante("no-es-un-id"));
+    donaciones.verify();
+  }
+
+  @Test
+  void unaClaveQueNoEsUnIdNoPideSusDonaciones() {
+    AdminDonantesVista.SusDonaciones suyas = adaptador.donacionesDe("ana");
+
+    assertEquals(0, suyas.total());
+    assertTrue(suyas.recientes().isEmpty());
     donaciones.verify();
   }
 

@@ -4,19 +4,22 @@ import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.propuestas.SituacionPropuesta;
 import grupo5.donaciones.models.entities.propuestas.SugerenciaDeAlgoritmo;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
+import grupo5.donaciones.models.repositories.listados.BusquedaDecididas;
 import grupo5.donaciones.models.repositories.listados.CriterioPropuestas;
-import grupo5.donaciones.models.repositories.listados.OrdenPropuestas;
 import grupo5.donaciones.models.repositories.listados.Paginado;
 import grupo5.donaciones.models.repositories.listados.PropuestaEnListado;
 import grupo5.donaciones.models.repositories.listados.StockEnPropuestas;
+import grupo5.donaciones.models.repositories.listados.TextoBuscado;
 import grupo5.donaciones.models.repositories.listados.Tramo;
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -36,7 +39,8 @@ import org.springframework.stereotype.Repository;
 /**
  * Las propuestas sin base (perfil distinto de {@code postgres}). La situación de cada pendiente y
  * los filtros del listado (R11-24) se calculan sobre lo guardado en memoria, con la misma regla que
- * la consulta de PostgreSQL ({@link SituacionPropuesta#de}).
+ * la consulta de PostgreSQL ({@link SituacionPropuesta#de}). La búsqueda de las decididas (R11-35)
+ * mira lo que pide la necesidad y lo donado; el nombre de la organización solo lo busca PostgreSQL.
  */
 @Repository
 @Profile("!postgres")
@@ -45,19 +49,31 @@ public class PropuestaRepositoryEnMemoria extends CrudRepositoryEnMemoria<Propue
 
   private final IDonacionesIndependientesRepository donaciones;
   private final ISubcategoriasRepository subcategorias;
+  private final INecesidadesRepository necesidades;
 
   /**
    * Sin depósito: toda donación pedida cuenta como que ya no está (para los tests que no lo usan).
    */
   public PropuestaRepositoryEnMemoria() {
-    this(null, null);
+    this(null, null, null);
   }
 
   @Autowired
   public PropuestaRepositoryEnMemoria(
-      IDonacionesIndependientesRepository donaciones, ISubcategoriasRepository subcategorias) {
+      IDonacionesIndependientesRepository donaciones,
+      ISubcategoriasRepository subcategorias,
+      INecesidadesRepository necesidades) {
     this.donaciones = donaciones;
     this.subcategorias = subcategorias;
+    this.necesidades = necesidades;
+  }
+
+  @Override
+  public long contarDecididasSinFecha() {
+    return storage.values().stream()
+        .filter(p -> p.getEstado() != EstadoPropuesta.PENDIENTE)
+        .filter(p -> p.getFechaDecision() == null)
+        .count();
   }
 
   @Override
@@ -69,12 +85,27 @@ public class PropuestaRepositoryEnMemoria extends CrudRepositoryEnMemoria<Propue
   public Tramo<PropuestaEnListado> buscar(CriterioPropuestas c) {
     Foto foto = new Foto();
     Comparator<PropuestaEnListado> orden =
-        c.orden() == OrdenPropuestas.RECIENTE
-            ? recientes()
-            : Comparator.comparing(
-                    (PropuestaEnListado p) -> mejorPuesto(p.propuesta(), c),
-                    Comparator.nullsLast(Comparator.naturalOrder()))
-                .thenComparing(recientes());
+        switch (c.orden()) {
+          case RECIENTE -> recientes();
+          case DECISION_RECIENTE ->
+              Comparator.comparing(
+                      (PropuestaEnListado p) -> p.propuesta().getFechaDecision(),
+                      Comparator.nullsLast(Comparator.<LocalDateTime>reverseOrder()))
+                  .thenComparing(recientes());
+          case DECISION_ANTIGUA ->
+              Comparator.comparing(
+                      (PropuestaEnListado p) -> p.propuesta().getFechaDecision(),
+                      Comparator.nullsFirst(Comparator.<LocalDateTime>naturalOrder()))
+                  .thenComparing(
+                      p -> p.propuesta().getFechaCreacion(),
+                      Comparator.nullsLast(Comparator.<LocalDateTime>naturalOrder()))
+                  .thenComparing(p -> p.propuesta().getId());
+          case PUESTO ->
+              Comparator.comparing(
+                      (PropuestaEnListado p) -> mejorPuesto(p.propuesta(), c),
+                      Comparator.nullsLast(Comparator.naturalOrder()))
+                  .thenComparing(recientes());
+        };
     if (c.agrupaPorDonacion()) {
       orden =
           Comparator.comparing(
@@ -87,6 +118,7 @@ public class PropuestaRepositoryEnMemoria extends CrudRepositoryEnMemoria<Propue
             .filter(p -> c.estados().isEmpty() || c.estados().contains(p.getEstado()))
             .filter(p -> c.donacionId() == null || pide(p, c.donacionId()))
             .filter(p -> sugeridaSegun(p, c))
+            .filter(p -> coincide(p, c.decididas()))
             .map(foto::enListado)
             .filter(p -> c.situaciones().isEmpty() || c.situaciones().contains(p.situacion()))
             .sorted(orden)
@@ -147,6 +179,49 @@ public class PropuestaRepositoryEnMemoria extends CrudRepositoryEnMemoria<Propue
     }
     return c.algoritmo() == null
         || p.getSugerencias().stream().anyMatch(s -> s.algoritmo() == c.algoritmo());
+  }
+
+  /** La búsqueda de las decididas (R11-35), con la misma regla que la consulta de PostgreSQL. */
+  private boolean coincide(Propuesta p, BusquedaDecididas b) {
+    if (b.deSistema()) {
+      if (p.getDecididaPor() != null && !BusquedaDecididas.SISTEMA.equals(p.getDecididaPor())) {
+        return false;
+      }
+    } else if (b.decididaPor() != null && !b.decididaPor().equals(p.getDecididaPor())) {
+      return false;
+    }
+    if (!enElPeriodo(p.getFechaDecision(), b)) {
+      return false;
+    }
+    Optional<Necesidad> necesidad =
+        necesidades == null || p.getNecesidadQueSatisfaceId() == null
+            ? Optional.empty()
+            : necesidades.findById(p.getNecesidadQueSatisfaceId());
+    if (b.categoriaId() != null
+        && necesidad
+            .map(n -> !subcategoriasDe(b.categoriaId()).contains(n.getSubcategoriaId()))
+            .orElse(true)) {
+      return false;
+    }
+    return b.q() == null
+        || necesidad.map(n -> TextoBuscado.contiene(n.getDescripcion(), b.q())).orElse(false)
+        || p.getPosiblesFragmentaciones().stream()
+            .map(PosibleFragmentacion::getDonacionOriginalId)
+            .map(this::donacion)
+            .flatMap(Optional::stream)
+            .flatMap(d -> d.getItems().stream())
+            .anyMatch(i -> TextoBuscado.contiene(i.bien().bienOriginal().descripcion(), b.q()));
+  }
+
+  private static boolean enElPeriodo(LocalDateTime fecha, BusquedaDecididas b) {
+    if (b.desde() == null && b.hasta() == null) {
+      return true;
+    }
+    if (fecha == null) {
+      return false;
+    }
+    return (b.desde() == null || !fecha.toLocalDate().isBefore(b.desde()))
+        && (b.hasta() == null || !fecha.toLocalDate().isAfter(b.hasta()));
   }
 
   private static boolean pide(Propuesta p, UUID donacion) {

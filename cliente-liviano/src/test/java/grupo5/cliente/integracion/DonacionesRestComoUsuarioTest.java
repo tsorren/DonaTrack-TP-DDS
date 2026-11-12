@@ -90,6 +90,7 @@ class DonacionesRestComoUsuarioTest {
         .expect(requestTo(BASE + "/api/entidades"))
         .andExpect(method(POST))
         .andExpect(jsonPath("$.juridicaId").value(PERSONA.toString()))
+        .andExpect(jsonPath("$.origen").value("SOLICITUD"))
         .andRespond(withStatus(HttpStatus.CREATED));
 
     donaciones.registrarEntidad(PERSONA);

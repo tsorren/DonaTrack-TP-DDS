@@ -52,6 +52,11 @@ import org.springframework.util.MultiValueMap;
  * ?entidadId}, por {@code necesidadId}: las entregas y quién donó) y los períodos de las que se
  * repiten. Lo recibido de una que es una sola vez no está en la API (fuera de alcance): va sin
  * cifra. "En tu puerta" son las que llegaron ({@code EN_PUERTA}, HB-22).
+ *
+ * <p>Desde R11-43 no se leen todas las asignadas: las cifras de cada necesidad salen de una sola
+ * llamada a {@code /donaciones-independientes/conteos} y, de cada vigente, se piden como mucho
+ * {@value Necesidad#MUESTRA} en curso (las más urgentes, {@code orden=ATENCION}) y {@value
+ * Necesidad#MUESTRA} recibidas (las más recientes), solo si las hay.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -72,6 +77,17 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
           "TERMINADA", "Terminó sin cumplirse.",
           "DADA_DE_BAJA", "La diste de baja.");
 
+  /** Los estados de lo que todavía no se recibió, de lo más urgente a lo que espera salir. */
+  private static final List<String> EN_CURSO =
+      List.of(
+          "EN_PUERTA",
+          "ENTREGA_FALLIDA",
+          "VENCIDA",
+          "EN_TRASLADO",
+          "ASIGNACION_REALIZADA",
+          "LISTA_PARA_ENTREGAR",
+          "EN_DEPOSITO");
+
   private final DonacionesApi api;
   private final Clock reloj;
 
@@ -91,21 +107,20 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
         catalogo.stream()
             .filter(s -> s.id() != null)
             .collect(Collectors.toMap(Subcategoria::id, Function.identity(), (a, b) -> a));
-    Map<UUID, List<DonacionesApi.Donacion>> porNecesidad =
+    Map<UUID, Map<String, Long>> porNecesidad =
         suyas.stream().noneMatch(n -> VIGENTE.equals(n.estado()))
             ? Map.of()
-            : api.asignadas(entidad).stream()
-                .filter(d -> d.necesidadId() != null)
-                .collect(Collectors.groupingBy(DonacionesApi.Donacion::necesidadId));
+            : porNecesidad(api.conteos(entidad, null));
     List<Necesidad> vigentes =
         suyas.stream()
             .filter(n -> VIGENTE.equals(n.estado()))
             .map(
                 n ->
                     necesidad(
+                        entidad,
                         n,
                         subcategorias.get(n.idSubcategoria()),
-                        porNecesidad.getOrDefault(n.id(), List.of()),
+                        porNecesidad.getOrDefault(n.id(), Map.of()),
                         hoy))
             .toList();
     List<Rubro> rubros =
@@ -142,11 +157,71 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
             .orElse(null));
   }
 
+  /** De cada necesidad con alguna asignada, cuántas hay en cada estado. */
+  private static Map<UUID, Map<String, Long>> porNecesidad(DonacionesApi.Conteos conteos) {
+    if (conteos == null || conteos.porNecesidad() == null) {
+      return Map.of();
+    }
+    return conteos.porNecesidad().stream()
+        .filter(n -> n.necesidadId() != null && n.porEstado() != null)
+        .collect(
+            Collectors.toMap(
+                DonacionesApi.PorNecesidad::necesidadId,
+                n ->
+                    n.porEstado().stream()
+                        .filter(e -> e.estado() != null && e.cantidad() != null)
+                        .collect(
+                            Collectors.toMap(
+                                DonacionesApi.PorEstado::estado,
+                                DonacionesApi.PorEstado::cantidad,
+                                Long::sum)),
+                (a, b) -> a));
+  }
+
+  /**
+   * Como mucho {@value Necesidad#MUESTRA} asignadas a la necesidad en {@code estados}; sin llamada
+   * si no hay ninguna ({@code cuantas} 0).
+   */
+  private List<DonacionesApi.Donacion> muestra(
+      UUID entidad, UUID necesidad, List<String> estados, String orden, long cuantas) {
+    if (cuantas <= 0) {
+      return List.of();
+    }
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    filtros.add("entidadId", entidad.toString());
+    filtros.add("necesidadId", necesidad.toString());
+    estados.forEach(e -> filtros.add("estado", e));
+    filtros.add("orden", orden);
+    filtros.add("size", String.valueOf(Necesidad.MUESTRA));
+    List<DonacionesApi.Donacion> pagina = api.pagina(filtros).getBody();
+    return pagina == null ? List.of() : pagina;
+  }
+
+  private static int suma(Map<String, Long> porEstado, List<String> estados) {
+    return (int) estados.stream().mapToLong(e -> porEstado.getOrDefault(e, 0L)).sum();
+  }
+
   private Necesidad necesidad(
+      UUID entidad,
       DonacionesApi.Necesidad n,
       Subcategoria sub,
-      List<DonacionesApi.Donacion> asignadas,
+      Map<String, Long> porEstado,
       LocalDate hoy) {
+    int puerta = suma(porEstado, RecibidasRest.ESTADOS.get("puerta"));
+    int problema = suma(porEstado, RecibidasRest.ESTADOS.get("problema"));
+    int salieron = suma(porEstado, RecibidasRest.ESTADOS.get("camino"));
+    int noSalieron = suma(porEstado, RecibidasRest.ESTADOS.get("salir"));
+    int recibidas = suma(porEstado, RecibidasRest.ESTADOS.get("recibida"));
+    List<DonacionesApi.Donacion> asignadas = new ArrayList<>();
+    asignadas.addAll(
+        muestra(
+            entidad,
+            n.id(),
+            EN_CURSO,
+            "ATENCION",
+            (long) puerta + problema + salieron + noSalieron));
+    asignadas.addAll(
+        muestra(entidad, n.id(), RecibidasRest.ESTADOS.get("recibida"), "RECIENTES", recibidas));
     Categoria conUnidad = new Categoria(null, null, n.unidad(), null, null, null);
     String unidad = unidad(conUnidad);
     boolean repite = RECURRENTE.equals(n.tipo());
@@ -164,9 +239,6 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
         actual != null ? actual.fin() : (n.fechaLimite() != null ? n.fechaLimite() : n.fechaFin());
     List<Entrega> entregas = new ArrayList<>();
     List<Donacion> donaron = new ArrayList<>();
-    int puerta = 0;
-    int camino = 0;
-    int problema = 0;
     for (DonacionesApi.Donacion d : asignadas) {
       String estado = normalizado(d.estadoActual());
       String cuanto = cantidad(d.cantidad(), categoria(d));
@@ -188,13 +260,10 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
       String tono;
       if (conProblema) {
         tono = "con-problema";
-        problema++;
       } else if (enLaPuerta) {
         tono = "puerta";
-        puerta++;
       } else {
         tono = TRASLADO.equals(estado) ? "en-camino" : "pendiente";
-        camino++;
       }
       entregas.add(
           new Entrega(
@@ -223,12 +292,16 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
         cambio(n.ultimoCambio(), pedida, unidad, hoy, true),
         n.descripcion(),
         puerta,
-        camino,
+        salieron + noSalieron,
         problema,
         entregas,
         donaron,
         periodos.isEmpty() ? null : "Desde " + periodos.getLast().inicio().format(MES_Y_ANIO),
-        periodos.stream().map(p -> periodo(p, unidad)).toList());
+        periodos.stream().map(p -> periodo(p, unidad)).toList(),
+        salieron,
+        noSalieron,
+        problema,
+        recibidas);
   }
 
   private static Periodo periodo(DonacionesApi.Periodo p, String unidad) {

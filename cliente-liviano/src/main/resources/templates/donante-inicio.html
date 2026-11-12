@@ -10,7 +10,8 @@
        todas y los árboles son más altos. Lo propio de la pantalla va con data-v.
        Los datos vienen del controller (miInicio: de la maqueta, las de viaje-datos con las fechas
        del 15 de octubre de 2026; o de Donaciones, Logística y Notificaciones, con las de hoy).
-       ?escenario=vacio, error y lento. */-->
+       ?escenario=vacio, error y lento; ?escenario=muchas llena el tablero (1, 5 y 48) para ver
+       los paginadores de cada columna. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-inicio', ~{::contenido})}">
 <head>
@@ -22,13 +23,12 @@
 </th:block>
 
 <th:block th:fragment="cuerpo"
-    th:with="conDatos=${escenario == '' and !miInicio.donaciones.isEmpty()},
+    th:with="conDatos=${(escenario == '' or escenario == 'muchas') and !miInicio.donaciones.isEmpty()},
              donaciones=${miInicio.donaciones},
              entregadas=${donaciones.?[estado.tono == 'entregada']},
              enCamino=${donaciones.?[estado.tono == 'en-camino']},
              porSalir=${donaciones.?[destino != null and estado.tono == 'pendiente']},
              conProblema=${donaciones.?[estado.tono == 'con-problema']},
-             sinDestino=${donaciones.?[destino == null and estado.tono == 'pendiente']},
              primera=${entregadas.isEmpty() ? null : entregadas[#lists.size(entregadas) - 1]},
              entidades=${#sets.size(#sets.toSet(donaciones.?[destino != null].![destino]))}">
   <div class="inicio" data-v="inicio-empresa">
@@ -52,7 +52,7 @@
     <th:block th:if="${escenario == 'error'}">
       <section th:replace="~{datos-donante :: error('No pudimos cargar tu inicio.', '/donante-inicio')}"></section>
     </th:block>
-    <section th:if="${escenario == 'vacio' or (escenario == '' and miInicio.donaciones.isEmpty())}" class="vacio" aria-labelledby="vacio-titulo">
+    <section th:if="${escenario == 'vacio' or ((escenario == '' or escenario == 'muchas') and miInicio.donaciones.isEmpty())}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no hay donaciones de tu empresa.</h2>
       <p>Cuando lleves tu primera donación al depósito y la registren, la vas a ver acá, con cada paso
         hasta que la organización confirme la entrega.</p>
@@ -79,7 +79,7 @@
           <li class="huerta-cifra">
             <img src="/img/ilustraciones/paso-3-brote.svg" th:src="@{/img/ilustraciones/paso-3-brote.svg}"
                  data-dibujo="paso-3-brote" alt="" width="95" height="166">
-            <b th:text="${#lists.size(enCamino) + #lists.size(porSalir) + #lists.size(conProblema)}">3</b>
+            <b th:text="${tablero.enCurso() != null ? tablero.enCurso() : #lists.size(enCamino) + #lists.size(porSalir) + #lists.size(conProblema)}">3</b>
             <span>entregas en curso hoy, [[${miInicio.hoy}]]</span>
           </li>
           <li class="huerta-cifra">
@@ -95,15 +95,100 @@
           entrega confirmada: fideos secos, el 5 de octubre, en Comedor Barrio Ejemplo.</p>
       </section>
 
-      <!--/* 2. El tablero: lo que llegó, lo que está en curso y lo que conviene mirar, con el dibujo de
-             cada donación. Cada renglón lleva al detalle. */-->
+      <!--/* 2. El tablero (R11-25, ficha r11-p2-tablero; boceto A): lo que conviene mirar, lo que está
+             en curso y lo que llegó, en ese orden. Cada columna es una página de 3 que pide el
+             controller (tablero, paginasTener, paginasCamino y paginasLlego), con la cifra del
+             servicio en la cabeza y su paginador corto al pie. Con JavaScript, la flecha cambia solo
+             su columna (hx-target y hx-select por data-columna) y manda X-Tablero; esa respuesta va
+             sin el id de la columna (tableroParcial), así el ancla de la dirección no mueve la
+             pantalla. La misma respuesta renueva el pie y el "Volver a intentar" de las otras dos
+             (hx-select-oob por id): sus enlaces llevan la página nueva de la columna tocada y la
+             dirección no pierde ninguna al seguir paginando. Sin JavaScript, carga la pantalla y baja hasta la columna por el ancla.
+             Cada renglón lleva al detalle. */-->
       <section data-v="tablero" aria-labelledby="tablero-titulo">
         <h2 id="tablero-titulo" class="huerta-rotulo">Donación por donación</h2>
         <div class="grilla">
-          <section class="tarjeta" data-v="columna" data-estado="entregada" aria-labelledby="llego-titulo">
-            <h3 id="llego-titulo">Ya llegó</h3>
-            <ul role="list">
-              <li th:each="d : ${entregadas}"
+          <section class="tarjeta" data-v="columna" data-estado="con-problema" data-columna="tener"
+                   id="tablero-tener" th:id="${tableroParcial} ? null : 'tablero-tener'"
+                   aria-labelledby="tener-titulo" hx-target="[data-columna='tener']"
+                   hx-select="[data-columna='tener']" hx-swap="outerHTML show:none"
+                   hx-select-oob="#pie-camino,#pie-llego,#reintentar-camino,#reintentar-llego"
+                   hx-headers='{"X-Tablero": "tener"}'
+                   th:with="t=${tablero.tener}, p=${paginasTener}"
+                   th:attr="data-paginas=${p != null ? p.paginas : null}">
+            <h3 th:replace="~{::cabeza('tener', 'Para tener en cuenta', ${t}, ${p})}">Para tener en cuenta · 1</h3>
+            <div th:replace="~{::sinCargar('tener', ${t})}"></div>
+            <ul th:if="${t != null and t.total > 0}" role="list">
+              <li th:each="d : ${t.filas}">
+                <img src="/img/ilustraciones/reintentar.svg" th:src="@{/img/ilustraciones/reintentar.svg}"
+                     data-dibujo="reintentar" alt="" width="117" height="121">
+                <a href="/donante-donaciones-detalle?donacion=utiles"
+                   th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
+                   th:text="|${d.titulo}, ${d.cantidad}|">Útiles escolares, 2 cajas</a>
+                <span th:text="|${d.nota}.|">No pudo llegar el 14 de octubre.</span>
+              </li>
+            </ul>
+            <p th:if="${t != null and t.total == 0}"
+               th:text="${tablero.esperanDestino > 0} ? 'Ninguna donación con problema.' : 'Nada para tener en cuenta por ahora.'">Ninguna
+              donación con problema.</p>
+            <!--/* Las que esperan destino: una cifra (pedida como número), no una lista. */-->
+            <div th:if="${t != null and tablero.esperanDestino > 0}" data-v="esperan">
+              <a href="/donante-donaciones?estado=pendiente" th:href="@{/donante-donaciones(estado='pendiente')}"
+                 th:text="${tablero.esperanDestino == 1} ? '1 donación espera destino en el depósito.' : |${#numbers.formatInteger(tablero.esperanDestino, 1, 'POINT')} donaciones esperan destino en el depósito.|">2
+                donaciones esperan destino en el depósito.</a>
+              <span>Se asignan cuando una organización pida algo así.</span>
+            </div>
+            <footer th:replace="~{::pie('tener', ${t}, ${p})}"></footer>
+          </section>
+
+          <section class="tarjeta" data-v="columna" data-estado="en-camino" data-columna="camino"
+                   id="tablero-camino" th:id="${tableroParcial} ? null : 'tablero-camino'"
+                   aria-labelledby="camino-titulo" hx-target="[data-columna='camino']"
+                   hx-select="[data-columna='camino']" hx-swap="outerHTML show:none"
+                   hx-select-oob="#pie-tener,#pie-llego,#reintentar-tener,#reintentar-llego"
+                   hx-headers='{"X-Tablero": "camino"}'
+                   th:with="t=${tablero.camino}, p=${paginasCamino}"
+                   th:attr="data-paginas=${p != null ? p.paginas : null}">
+            <h3 th:replace="~{::cabeza('camino', 'En camino o por salir', ${t}, ${p})}">En camino o por salir · 5</h3>
+            <div th:replace="~{::sinCargar('camino', ${t})}"></div>
+            <ul th:if="${t != null and t.total > 0}" role="list">
+              <li th:each="d : ${t.filas}">
+                <th:block th:if="${d.estado.tono == 'en-camino'}">
+                  <img src="/img/ilustraciones/paso-3-brote.svg" th:src="@{/img/ilustraciones/paso-3-brote.svg}"
+                       data-dibujo="paso-3-brote" alt="" width="95" height="166">
+                  <a href="/donante-donaciones-detalle?donacion=lentejas"
+                     th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
+                     th:text="|${d.titulo}, ${d.cantidad}|">Lentejas secas, 15 kg</a>
+                  <span th:text="|${d.nota}, hacia ${d.destino}.|">Salió hoy a las 14:30, hacia Comedor Barrio Ejemplo.</span>
+                </th:block>
+                <th:block th:unless="${d.estado.tono == 'en-camino'}">
+                  <img src="/img/ilustraciones/paso-2-maceta.svg" th:src="@{/img/ilustraciones/paso-2-maceta.svg}"
+                       data-dibujo="paso-2-maceta" alt="" width="97" height="92">
+                  <a href="/donante-donaciones-detalle?donacion=leche"
+                     th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
+                     th:text="|${d.titulo}, ${d.cantidad}|">Leche en polvo, 6 kg</a>
+                  <span th:text="|${d.seguimiento != null ? d.seguimiento + ' ' : ''}Va a ${d.destino}.|">Sale del depósito el 16 de octubre. Va a Merendero Ejemplo Sur.</span>
+                </th:block>
+              </li>
+            </ul>
+            <p th:if="${t != null and t.total == 0}"
+               th:text="|Ninguna en camino ni por salir hoy, ${miInicio.hoy}.|">Ninguna en camino ni por salir
+              hoy, 15 de octubre.</p>
+            <footer th:replace="~{::pie('camino', ${t}, ${p})}"></footer>
+          </section>
+
+          <section class="tarjeta" data-v="columna" data-estado="entregada" data-columna="llego"
+                   id="tablero-llego" th:id="${tableroParcial} ? null : 'tablero-llego'"
+                   aria-labelledby="llego-titulo" hx-target="[data-columna='llego']"
+                   hx-select="[data-columna='llego']" hx-swap="outerHTML show:none"
+                   hx-select-oob="#pie-tener,#pie-camino,#reintentar-tener,#reintentar-camino"
+                   hx-headers='{"X-Tablero": "llego"}'
+                   th:with="t=${tablero.llego}, p=${paginasLlego}"
+                   th:attr="data-paginas=${p != null ? p.paginas : null}">
+            <h3 th:replace="~{::cabeza('llego', 'Ya llegó', ${t}, ${p})}">Ya llegó · 48</h3>
+            <div th:replace="~{::sinCargar('llego', ${t})}"></div>
+            <ul th:if="${t != null and t.total > 0}" role="list">
+              <li th:each="d : ${t.filas}"
                   th:with="planta=${d.categoria == 'cat-alimentos' ? 'naranjo' : (d.categoria == 'cat-vestimenta' or d.categoria == 'cat-ropa' ? 'algodon' : 'orejas')}">
                 <img src="/img/ilustraciones/planta-naranjo.svg" alt="" width="90" height="230"
                      th:src="@{/img/ilustraciones/planta-{p}.svg(p=${planta})}" data-dibujo="planta-naranjo"
@@ -111,54 +196,13 @@
                 <a href="/donante-donaciones-detalle?donacion=fideos"
                    th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
                    th:text="|${d.titulo}, ${d.cantidad}|">Fideos secos, 8 kg</a>
-                <span th:text="|${d.nota} a ${d.destino}.|">Llegó el 5 de octubre a Comedor Barrio Ejemplo.</span>
+                <span th:text="|${d.nota} a ${d.destino}.|">Entrega confirmada el 5 de octubre a Comedor Barrio Ejemplo.</span>
               </li>
             </ul>
-          </section>
-
-          <section class="tarjeta" data-v="columna" data-estado="en-camino" aria-labelledby="curso-titulo">
-            <h3 id="curso-titulo">En camino o por salir</h3>
-            <ul role="list">
-              <li th:each="d : ${enCamino}">
-                <img src="/img/ilustraciones/paso-3-brote.svg" th:src="@{/img/ilustraciones/paso-3-brote.svg}"
-                     data-dibujo="paso-3-brote" alt="" width="95" height="166">
-                <a href="/donante-donaciones-detalle?donacion=lentejas"
-                   th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
-                   th:text="|${d.titulo}, ${d.cantidad}|">Lentejas secas, 15 kg</a>
-                <span th:text="|${d.nota}, hacia ${d.destino}.|">Salió hoy a las 14:30, hacia Comedor Barrio Ejemplo.</span>
-              </li>
-              <li th:each="d : ${porSalir}">
-                <img src="/img/ilustraciones/paso-2-maceta.svg" th:src="@{/img/ilustraciones/paso-2-maceta.svg}"
-                     data-dibujo="paso-2-maceta" alt="" width="97" height="92">
-                <a href="/donante-donaciones-detalle?donacion=leche"
-                   th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
-                   th:text="|${d.titulo}, ${d.cantidad}|">Leche en polvo, 6 kg</a>
-                <span th:text="|${d.seguimiento != null ? d.seguimiento + ' ' : ''}Va a ${d.destino}.|">Sale del depósito el 16 de octubre. Va a Merendero Ejemplo Sur.</span>
-              </li>
-            </ul>
-          </section>
-
-          <section class="tarjeta" data-v="columna" data-estado="con-problema" aria-labelledby="mirar-titulo">
-            <h3 id="mirar-titulo">Para tener en cuenta</h3>
-            <ul role="list">
-              <li th:each="d : ${conProblema}">
-                <img src="/img/ilustraciones/reintentar.svg" th:src="@{/img/ilustraciones/reintentar.svg}"
-                     data-dibujo="reintentar" alt="" width="117" height="121">
-                <a href="/donante-donaciones-detalle?donacion=utiles"
-                   th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
-                   th:text="|${d.titulo}, ${d.cantidad}|">Útiles escolares, 2 cajas</a>
-                <span th:text="|${d.nota}.|">No pudo llegar; sale de nuevo el 17 de octubre.</span>
-              </li>
-              <li th:unless="${sinDestino.isEmpty()}">
-                <img src="/img/ilustraciones/paso-2-maceta.svg" th:src="@{/img/ilustraciones/paso-2-maceta.svg}"
-                     data-dibujo="paso-2-maceta" alt="" width="97" height="92">
-                <a href="/donante-donaciones?estado=pendiente"
-                   th:href="@{/donante-donaciones(estado='pendiente')}"
-                   th:text="|${#lists.size(sinDestino)} esperan destino|">2 esperan destino</a>
-                <span th:text="|${#strings.listJoin(sinDestino.![titulo], ' y ')}: se asignan cuando una organización pida algo así.|">Arroz
-                  largo fino y Zapatillas: se asignan cuando una organización pida algo así.</span>
-              </li>
-            </ul>
+            <p th:if="${t != null and t.total == 0}"
+               th:text="'Todavía no llegó ninguna. Cuando una organización confirme una entrega, la vas a ver acá.'">Todavía
+              no llegó ninguna.</p>
+            <footer th:replace="~{::pie('llego', ${t}, ${p})}"></footer>
           </section>
         </div>
       </section>
@@ -193,5 +237,36 @@
     </div>
   </div>
 </th:block>
+
+<!--/* La cabeza de una columna del tablero: la pastilla con el nombre y la cifra ("Ya llegó · 48");
+       el lector oye "Ya llegó, 48 donaciones, página 2 de 16". Toma el foco solo si su paginador
+       cambió (p.cambio). Sin la columna (t null), solo el nombre. */-->
+<h3 th:fragment="cabeza(clave, titulo, t, p)" id="llego-titulo" th:id="|${clave}-titulo|" tabindex="-1"
+    th:autofocus="${p != null and p.cambio}"><th:block th:if="${t != null}"><span aria-hidden="true"
+    th:text="|${titulo} · ${#numbers.formatInteger(t.total, 1, 'POINT')}|">Ya llegó · 48</span><span class="solo-lectores"
+    th:text="|${titulo}, ${#numbers.formatInteger(t.total, 1, 'POINT')} ${t.total == 1 ? 'donación' : 'donaciones'}${p != null ? ', página ' + #numbers.formatInteger(p.pagina, 1, 'POINT') + ' de ' + #numbers.formatInteger(p.paginas, 1, 'POINT') : ''}|">Ya
+    llegó, 48 donaciones, página 1 de 16</span></th:block><span th:unless="${t != null}"
+    th:text="${titulo}">Ya llegó</span></h3>
+
+<!--/* Una columna que no se pudo leer: lo dice y ofrece la misma dirección (la arma el controller).
+       El enlace lleva id (reintentar-<clave>) para que la respuesta de otra columna lo renueve con
+       las páginas vigentes; el aviso no se reemplaza, así no se vuelve a anunciar. */-->
+<div th:fragment="sinCargar(clave, t)" th:if="${t == null}" class="banner" data-estado="error" role="alert">
+  <p>No pudimos cargar esta columna.</p>
+  <a class="boton" data-tono="secundario" hx-boost="true" href="/donante-inicio"
+     id="reintentar-llego" th:id="|reintentar-${clave}|"
+     th:href="${tableroDireccion}">Volver a intentar</a>
+</div>
+
+<!--/* El pie: qué parte se ve y el paginador corto. Con una sola página, nada. Lleva id (pie-<clave>)
+       para que la respuesta de otra columna lo renueve (hx-select-oob): sus enlaces conservan así
+       la página vigente de las tres columnas. */-->
+<footer th:fragment="pie(clave, t, p)" th:if="${p != null}" data-v="pie-columna"
+        id="pie-llego" th:id="|pie-${clave}|"
+        th:with="desde=${(t.pagina - 1) * 3 + 1}, hasta=${t.pagina * 3 > t.total ? t.total : t.pagina * 3}">
+  <p th:text="|Mostrando ${#numbers.formatInteger(desde, 1, 'POINT')} a ${#numbers.formatInteger(hasta, 1, 'POINT')} de ${#numbers.formatInteger(t.total, 1, 'POINT')}.|">Mostrando
+    1 a 3 de 48.</p>
+  <nav th:replace="~{componentes/paginas :: corta(${p})}"></nav>
+</footer>
 </body>
 </html>

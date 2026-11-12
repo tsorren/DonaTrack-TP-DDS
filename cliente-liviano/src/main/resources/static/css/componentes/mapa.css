@@ -297,7 +297,7 @@ figure.mapa-dibujo {
 
   .mapa-dibujo {
     position: sticky;
-    top: 1rem;
+    top: calc(var(--medida-cabecera-fija) + 1rem);
   }
 
   .mapa-real {
@@ -308,7 +308,7 @@ figure.mapa-dibujo {
   /* El mapa y los botones quedan fijos mientras se recorre la lista. */
   .mapa-cuerpo > [data-parte="mapa"] {
     position: sticky;
-    top: 1rem;
+    top: calc(var(--medida-cabecera-fija) + 1rem);
   }
 
   .mapa-cuerpo > [data-parte="mapa"] .mapa-real {

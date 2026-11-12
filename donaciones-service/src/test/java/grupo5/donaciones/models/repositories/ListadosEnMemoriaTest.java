@@ -135,6 +135,59 @@ class ListadosEnMemoriaTest {
   }
 
   @Test
+  void donantes_porPeriodoDeAlta_diasInclusivos() {
+    LocalDateTime dia = LocalDateTime.of(2026, 11, 10, 23, 59);
+    Donante antes = donanteDe(PersonaMother.mariaGomez(), true, dia.minusDays(5));
+    Donante enElDia = donanteDe(PersonaMother.juanPerez(), true, dia);
+    Donante despues = donanteDe(PersonaMother.empresaSA(), true, dia.plusDays(3));
+
+    Tramo<Donante> delDia =
+        donantes.buscar(
+            new CriterioDonantes(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                OrdenDonantes.NUEVOS,
+                PRIMERA,
+                LocalDate.of(2026, 11, 10),
+                LocalDate.of(2026, 11, 10)));
+    Tramo<Donante> desdeElDia =
+        donantes.buscar(
+            new CriterioDonantes(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                OrdenDonantes.NUEVOS,
+                PRIMERA,
+                LocalDate.of(2026, 11, 10),
+                null));
+    Tramo<Donante> hastaElDia =
+        donantes.buscar(
+            new CriterioDonantes(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                OrdenDonantes.NUEVOS,
+                PRIMERA,
+                null,
+                LocalDate.of(2026, 11, 10)));
+
+    assertEquals(List.of(enElDia.getId()), ids(delDia));
+    assertEquals(1, delDia.total());
+    assertEquals(List.of(despues.getId(), enElDia.getId()), ids(desdeElDia));
+    assertEquals(List.of(enElDia.getId(), antes.getId()), ids(hastaElDia));
+  }
+
+  @Test
   void donantes_porTipoJuridico_yTramoConElTotal() {
     donanteDe(PersonaMother.juanPerez(), true, LocalDateTime.now());
     Donante empresa = donanteDe(PersonaMother.empresaSA(), true, LocalDateTime.now());

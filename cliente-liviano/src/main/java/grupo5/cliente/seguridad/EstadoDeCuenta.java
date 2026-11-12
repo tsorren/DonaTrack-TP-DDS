@@ -11,6 +11,7 @@ public enum EstadoDeCuenta {
    */
   SOLICITUD_RECIBIDA(
       "/publico-registro-entidad-enviada",
+      "/publico-registro-entidad-corregir",
       "/",
       "/publico-portada",
       "/publico-entidades",

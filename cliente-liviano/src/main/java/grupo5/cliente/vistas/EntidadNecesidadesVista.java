@@ -27,6 +27,11 @@ public record EntidadNecesidadesVista(
    * valor}, lo recibido (del período en curso, si se repite), o null si no se sabe; {@code max}, lo
    * que pide. {@code cambio} y {@code cambiada}, el cartel y la marca del último cambio, o null.
    * {@code puerta}, {@code camino} y {@code problema}, cuántas entregas hay de cada una.
+   *
+   * <p>Desde R11-43 {@code entregas} y {@code donaron} son como mucho las {@value #MUESTRA} más
+   * urgentes y las {@value #MUESTRA} más recientes: las cifras ({@code puerta}, {@code camino},
+   * {@code problema}, {@code salieron}, {@code noSalieron}, {@code noLlegaron} y {@code recibidas})
+   * las cuenta Donaciones, no el largo de esas listas.
    */
   public record Necesidad(
       String clave,
@@ -50,7 +55,83 @@ public record EntidadNecesidadesVista(
       List<Entrega> entregas,
       List<Donacion> donaron,
       String desde,
-      List<Periodo> periodos) {}
+      List<Periodo> periodos,
+      int salieron,
+      int noSalieron,
+      int noLlegaron,
+      int recibidas) {
+
+    /** Cuántas entregas y cuántos donantes se muestran de cada necesidad (R11-43). */
+    public static final int MUESTRA = 3;
+
+    /** Con las listas completas (la maqueta): las cifras salen de ellas. */
+    @SuppressWarnings("java:S107") // Es la forma corta del record: los mismos campos que ya tenía.
+    public Necesidad(
+        String clave,
+        String id,
+        Long version,
+        String nombre,
+        String categoria,
+        String rubro,
+        String unidad,
+        String plazo,
+        String faltan,
+        String repite,
+        Integer valor,
+        int max,
+        String cambio,
+        String cambiada,
+        String motivo,
+        int puerta,
+        int camino,
+        int problema,
+        List<Entrega> entregas,
+        List<Donacion> donaron,
+        String desde,
+        List<Periodo> periodos) {
+      this(
+          clave,
+          id,
+          version,
+          nombre,
+          categoria,
+          rubro,
+          unidad,
+          plazo,
+          faltan,
+          repite,
+          valor,
+          max,
+          cambio,
+          cambiada,
+          motivo,
+          puerta,
+          camino,
+          problema,
+          entregas,
+          donaron,
+          desde,
+          periodos,
+          contar(entregas, "en-camino"),
+          contar(entregas, "pendiente"),
+          contar(entregas, "con-problema"),
+          donaron.size());
+    }
+
+    /** Si hay más entregas en curso que las que se muestran. */
+    public boolean hayMasEntregas() {
+      return puerta + camino + problema > entregas.size();
+    }
+
+    /** Si hay más recibidas que los donantes que se muestran. */
+    public boolean hayMasRecibidas() {
+      return recibidas > donaron.size();
+    }
+
+    private static int contar(List<Entrega> entregas, String tono) {
+      return (int) entregas.stream().filter(e -> tono.equals(e.tono())).count();
+    }
+  }
 
   /**
    * Una entrega para la necesidad: {@code tono}, el del sello ({@code puerta}, {@code en-camino},

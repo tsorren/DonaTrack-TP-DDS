@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-12T09:22:58.166Z",
+  "generatedAt": "2026-11-12T15:14:40.731Z",
   "harnessVersion": "6.4.0",
   "stats": {
     "servicesCount": 4,
-    "endpointsCount": 126,
+    "endpointsCount": 129,
     "schemasCount": 28,
     "eventsCount": 9
   },
@@ -11,7 +11,7 @@
     {
       "title": "DonaTrack - Donaciones Service API",
       "fileName": "openapi-donaciones.yaml",
-      "version": "1.10.0",
+      "version": "1.11.0",
       "serverUrl": "http://localhost:8080",
       "endpoints": [
         {
@@ -23,6 +23,18 @@
           "responses": {
             "200": "DonacionIndependienteResponseDTO",
             "400": "-"
+          }
+        },
+        {
+          "path": "/donaciones-independientes/conteos",
+          "method": "GET",
+          "summary": "Cifras de las donaciones asignadas a una organización (R11-43)",
+          "operationId": "contarDonacionesDeEntidad",
+          "requestBody": "-",
+          "responses": {
+            "200": "ConteosDeEntidadDTO",
+            "400": "-",
+            "403": "-"
           }
         },
         {
@@ -212,7 +224,7 @@
           "operationId": "ejecutarAsignacion",
           "requestBody": "-",
           "responses": {
-            "201": "-"
+            "201": "PropuestaDTO"
           }
         },
         {
@@ -222,7 +234,8 @@
           "operationId": "historialEjecucionesAsignacion",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "-",
+            "400": "-"
           }
         },
         {
@@ -232,7 +245,29 @@
           "operationId": "listarPropuestasAsignacion",
           "requestBody": "-",
           "responses": {
-            "200": "PropuestaDTO"
+            "200": "PropuestaDTO",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/asignaciones/propuestas/resumen",
+          "method": "GET",
+          "summary": "Cuántas propuestas pendientes hay en cada situación",
+          "operationId": "resumenPropuestasAsignacion",
+          "requestBody": "-",
+          "responses": {
+            "200": "ResumenPropuestasDTO"
+          }
+        },
+        {
+          "path": "/api/asignaciones/donaciones",
+          "method": "GET",
+          "summary": "Donaciones que están en alguna propuesta pendiente",
+          "operationId": "listarDonacionesEnPropuestas",
+          "requestBody": "-",
+          "responses": {
+            "200": "DonacionEnPropuestasDTO",
+            "400": "-"
           }
         },
         {
@@ -702,7 +737,7 @@
     {
       "title": "DonaTrack - Incentivos Service API",
       "fileName": "openapi-incentivos.yaml",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "serverUrl": "http://localhost:8082",
       "endpoints": [
         {
@@ -723,7 +758,8 @@
           "operationId": "obtenerHistorialRankings",
           "requestBody": "-",
           "responses": {
-            "200": "RankingMensualDTO"
+            "200": "RankingMensualDTO",
+            "400": "-"
           }
         },
         {
@@ -912,7 +948,7 @@
     {
       "title": "DonaTrack - Logística Service API",
       "fileName": "openapi-logistica.yaml",
-      "version": "1.9.0",
+      "version": "1.11.0",
       "serverUrl": "http://localhost:8083",
       "endpoints": [
         {
@@ -944,7 +980,8 @@
           "operationId": "listarMapaPublico",
           "requestBody": "-",
           "responses": {
-            "200": "EntregaMapaPublicoResponseDTO"
+            "200": "EntregaMapaPublicoResponseDTO",
+            "400": "-"
           }
         },
         {
@@ -965,7 +1002,8 @@
           "operationId": "listarSeguimientoPorBeneficiaria",
           "requestBody": "-",
           "responses": {
-            "200": "SeguimientoEntregaResponseDTO"
+            "200": "SeguimientoEntregaResponseDTO",
+            "400": "-"
           }
         },
         {
@@ -975,7 +1013,8 @@
           "operationId": "listarSeguimientoPorDonante",
           "requestBody": "-",
           "responses": {
-            "200": "SeguimientoEntregaResponseDTO"
+            "200": "SeguimientoEntregaResponseDTO",
+            "400": "-"
           }
         },
         {
@@ -1262,7 +1301,7 @@
     {
       "title": "DonaTrack - Notificaciones Service API",
       "fileName": "openapi-notificaciones.yaml",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "serverUrl": "http://localhost:8081",
       "endpoints": [
         {
@@ -1290,21 +1329,23 @@
         {
           "path": "/notificaciones/persona/{personaId}",
           "method": "GET",
-          "summary": "Obtener historial de notificaciones de una persona (Legacy/Deprecated)",
+          "summary": "Una página de la bandeja de una persona (Legacy/Deprecated, solo QA)",
           "operationId": "obtenerNotificacionesPorPersona",
           "requestBody": "-",
           "responses": {
-            "200": "NotificacionDTO"
+            "200": "NotificacionDTO",
+            "400": "ErrorResponse"
           }
         },
         {
           "path": "/api/notificaciones/persona/{personaId}",
           "method": "GET",
-          "summary": "Obtener historial de notificaciones de una persona",
+          "summary": "Una página de la bandeja de notificaciones de una persona",
           "operationId": "obtenerNotificacionesPorPersonaApi",
           "requestBody": "-",
           "responses": {
-            "200": "NotificacionDTO"
+            "200": "NotificacionDTO",
+            "400": "ErrorResponse"
           }
         },
         {

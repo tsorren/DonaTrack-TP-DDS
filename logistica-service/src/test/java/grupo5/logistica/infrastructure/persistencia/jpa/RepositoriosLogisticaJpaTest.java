@@ -67,6 +67,7 @@ import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudPlanificacionRepository;
 import grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository;
 import grupo5.logistica.testutils.EntregaMother;
+import grupo5.logistica.testutils.SeguimientoDePrueba;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -735,5 +736,10 @@ class RepositoriosLogisticaJpaTest {
     camionRepository.save(camion);
 
     assertEquals(posicion, camionRepository.findById(camion.getId()).orElseThrow().getPosicion());
+  }
+
+  @Test
+  void buscarSeguimiento_deberiaFiltrarOrdenarCortarYContarEnLaBase() {
+    SeguimientoDePrueba.verificar(entregasRepository);
   }
 }

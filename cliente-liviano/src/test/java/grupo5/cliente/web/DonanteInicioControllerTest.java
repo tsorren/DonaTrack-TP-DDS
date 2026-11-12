@@ -4,6 +4,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,7 +24,9 @@ import grupo5.cliente.vistas.DonanteDonacionVista;
 import grupo5.cliente.vistas.DonanteDonacionVista.Carta;
 import grupo5.cliente.vistas.DonanteInicioVista;
 import grupo5.cliente.vistas.DonanteInicioVista.Aviso;
+import grupo5.cliente.vistas.DonanteTableroVista;
 import grupo5.cliente.vistas.EstadoEntrega;
+import grupo5.cliente.vistas.Tramo;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -106,10 +110,194 @@ class DonanteInicioControllerTest {
   @MockitoBean private CuentaActual cuentas;
   @Autowired private MockMvc mvc;
 
+  /** El tablero con la silla en "En camino o por salir" y las otras dos columnas vacías. */
+  private static final DonanteTableroVista TABLERO_CON_SILLA =
+      new DonanteTableroVista(
+          new Tramo<>(List.of(), 0, 1, 1),
+          new Tramo<>(List.of(SILLA), 1, 1, 1),
+          new Tramo<>(List.of(), 0, 1, 1),
+          0);
+
   @BeforeEach
   void cuentaDeEmpresa() {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
     when(perfiles.tipo(DONANTE)).thenReturn(Tipo.EMPRESA);
+    when(inicios.tablero(eq(DONANTE), anyInt(), anyInt(), anyInt())).thenReturn(TABLERO_CON_SILLA);
+  }
+
+  /** Una columna de {@code total} donaciones en la página {@code pagina}, con la silla. */
+  private static Tramo<DonanteDonacionVista> columna(long total, int pagina) {
+    return new Tramo<>(
+        List.of(SILLA), total, pagina, Tramo.paginas(total, DonanteTableroVista.POR_COLUMNA));
+  }
+
+  @Test
+  void elTableroVaEnElOrdenDelBocetoConLaCifraDeCadaColumna() throws Exception {
+    when(inicios.inicio(DONANTE)).thenReturn(CON_SILLA);
+    when(inicios.tablero(DONANTE, 1, 1, 1))
+        .thenReturn(new DonanteTableroVista(columna(1, 1), columna(5, 1), columna(1284, 1), 2));
+
+    mvc.perform(get("/donante-inicio"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        Pattern.compile(
+                            "(?s).*Para tener en cuenta · 1<.*En camino o por salir · 5<"
+                                + ".*Ya llegó · 1.284<.*"))))
+        .andExpect(content().string(containsString("Ya llegó, 1.284 donaciones, página 1 de 428")))
+        .andExpect(content().string(containsString("Para tener en cuenta, 1 donación<")))
+        .andExpect(content().string(containsString("Mostrando 1 a 3 de 5.")))
+        .andExpect(content().string(containsString("Mostrando 1 a 3 de 1.284.")))
+        .andExpect(content().string(containsString("aria-label=\"Páginas de Ya llegó\"")))
+        .andExpect(
+            content().string(containsString("aria-label=\"Páginas de En camino o por salir\"")))
+        .andExpect(content().string(not(containsString("Páginas de Para tener en cuenta"))))
+        .andExpect(
+            content().string(containsString("href=\"/donante-inicio?llego=2#tablero-llego\"")))
+        .andExpect(content().string(containsString("2 donaciones esperan destino en el depósito.")))
+        .andExpect(content().string(containsString("id=\"tablero-llego\"")))
+        // Las cifras de arriba salen de los totales de las columnas: 1 con problema + 5 en curso.
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        Pattern.compile("(?s).*<b>6</b>\\s*<span>entregas en curso hoy.*"))))
+        .andExpect(content().string(not(containsString("autofocus"))));
+  }
+
+  @Test
+  void cadaColumnaLeeSuPaginaDeLaDireccionYConservaLasOtras() throws Exception {
+    when(inicios.inicio(DONANTE)).thenReturn(CON_SILLA);
+    when(inicios.tablero(DONANTE, 1, 2, 1))
+        .thenReturn(new DonanteTableroVista(columna(1, 1), columna(5, 2), columna(48, 1), 0));
+
+    mvc.perform(get("/donante-inicio?camino=2&llego=abc"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    containsString("href=\"/donante-inicio?camino=2&amp;llego=2#tablero-llego\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/donante-inicio?llego=abc&amp;camino=1#tablero-camino\"")))
+        .andExpect(content().string(containsString("Mostrando 4 a 5 de 5.")));
+    verify(inicios).tablero(DONANTE, 1, 2, 1);
+  }
+
+  @Test
+  void conHtmxLaColumnaTocadaTomaElFocoYNoLlevaElAncla() throws Exception {
+    when(inicios.inicio(DONANTE)).thenReturn(CON_SILLA);
+    when(inicios.tablero(DONANTE, 1, 1, 2))
+        .thenReturn(new DonanteTableroVista(columna(1, 1), columna(5, 1), columna(48, 2), 0));
+
+    mvc.perform(
+            get("/donante-inicio?llego=2")
+                .header("HX-Request", "true")
+                .header("X-Tablero", "llego"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        Pattern.compile(
+                            "(?s).*<h3 id=\"llego-titulo\" tabindex=\"-1\" autofocus.*"))))
+        .andExpect(content().string(not(containsString("id=\"tablero-llego\""))))
+        .andExpect(content().string(containsString("data-columna=\"llego\"")));
+  }
+
+  @Test
+  void conHtmxLaRespuestaRenuevaLosPiesDeLasOtrasColumnasConLasPaginasVigentes() throws Exception {
+    when(inicios.inicio(DONANTE)).thenReturn(CON_SILLA);
+    when(inicios.tablero(DONANTE, 1, 2, 1))
+        .thenReturn(new DonanteTableroVista(columna(1, 1), columna(5, 2), columna(48, 1), 0));
+
+    // Se tocó "›" en "En camino": el pie de "Ya llegó" que viene en la respuesta (y que HTMX pone
+    // en lugar del viejo con hx-select-oob) ya lleva camino=2.
+    mvc.perform(
+            get("/donante-inicio?camino=2")
+                .header("HX-Request", "true")
+                .header("X-Tablero", "camino"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("id=\"pie-llego\"")))
+        .andExpect(content().string(containsString("id=\"pie-camino\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("href=\"/donante-inicio?camino=2&amp;llego=2#tablero-llego\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "hx-select-oob=\"#pie-tener,#pie-llego,#reintentar-tener,#reintentar-llego\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "hx-select-oob=\"#pie-tener,#pie-camino,#reintentar-tener,#reintentar-camino\"")));
+  }
+
+  @Test
+  void elVolverAIntentarDeUnaColumnaQueNoCargoLlevaLaDireccionVigente() throws Exception {
+    when(inicios.inicio(DONANTE)).thenReturn(CON_SILLA);
+    when(inicios.tablero(DONANTE, 1, 2, 1))
+        .thenReturn(new DonanteTableroVista(columna(1, 1), columna(5, 2), null, 0));
+
+    mvc.perform(
+            get("/donante-inicio?camino=2")
+                .header("HX-Request", "true")
+                .header("X-Tablero", "camino"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        Pattern.compile(
+                            "(?s).*href=\"/donante-inicio\\?camino=2\"\\s+id=\"reintentar-llego\".*"))));
+  }
+
+  @Test
+  void unaColumnaQueNoCargaNoTumbaLasOtras() throws Exception {
+    when(inicios.inicio(DONANTE)).thenReturn(CON_SILLA);
+    when(inicios.tablero(DONANTE, 1, 1, 1))
+        .thenReturn(new DonanteTableroVista(columna(1, 1), columna(5, 1), null, 0));
+
+    mvc.perform(get("/donante-inicio"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No pudimos cargar esta columna.")))
+        .andExpect(content().string(containsString("Volver a intentar")))
+        .andExpect(content().string(containsString("En camino o por salir · 5<")))
+        .andExpect(content().string(matchesPattern(Pattern.compile("(?s).*>Ya llegó</span>.*"))));
+  }
+
+  @Test
+  void lasColumnasVaciasLoDicenSinCelebrar() throws Exception {
+    when(inicios.inicio(DONANTE)).thenReturn(CON_SILLA);
+    Tramo<DonanteDonacionVista> ninguna = new Tramo<>(List.of(), 0, 1, 1);
+    when(inicios.tablero(DONANTE, 1, 1, 1))
+        .thenReturn(new DonanteTableroVista(ninguna, ninguna, ninguna, 1));
+
+    mvc.perform(get("/donante-inicio"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Ninguna donación con problema.")))
+        .andExpect(content().string(containsString("1 donación espera destino en el depósito.")))
+        .andExpect(
+            content().string(containsString("Ninguna en camino ni por salir hoy, 7 de noviembre.")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Todavía no llegó ninguna. Cuando una organización confirme una entrega, la"
+                            + " vas a ver acá.")))
+        .andExpect(content().string(not(containsString("Mostrando"))));
+
+    when(inicios.tablero(DONANTE, 1, 1, 1))
+        .thenReturn(new DonanteTableroVista(ninguna, ninguna, ninguna, 0));
+    mvc.perform(get("/donante-inicio"))
+        .andExpect(content().string(containsString("Nada para tener en cuenta por ahora.")));
   }
 
   @Test
@@ -168,6 +356,7 @@ class DonanteInicioControllerTest {
         .andExpect(content().string(not(containsString("tu empresa"))));
     // La persona no pide la lista entera del inicio de la empresa (regla 1 del backlog R11).
     verify(inicios, never()).inicio(any());
+    verify(inicios, never()).tablero(any(), anyInt(), anyInt(), anyInt());
   }
 
   @Test

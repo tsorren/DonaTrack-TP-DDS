@@ -47,6 +47,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 /**
  * Donaciones fuera de la maqueta: el detalle de una donación que está (y el 404 de una que no),
@@ -129,6 +130,62 @@ class AdminDonacionesEnviosTest {
                     containsString(
                         "href=\"/admin-donaciones?estado=deposito&amp;orden=antigua&amp;pagina=1\"")))
         .andExpect(content().string(not(containsString("En los próximos 7 días"))));
+  }
+
+  private static AdminDonacionesVista pagina2(ConsultaDonaciones consulta) {
+    return new AdminDonacionesVista(
+        new Tramo<>(List.of(LECHE), 41, 2, 3),
+        consulta,
+        List.of(new AdminDonacionesVista.Criterio("", "Registradas más recientes", "Recientes.")),
+        false,
+        null,
+        "1 en el depósito.");
+  }
+
+  // R11-34 (ficha r11-p2-admin-bandeja §4): elegir un renglón de la página 2 la conserva
+  @Test
+  void elegirUnRenglonDeLaPagina2NoVuelveALaPrimera() throws Exception {
+    when(operacion.donaciones(any(), any())).thenAnswer(i -> pagina2(i.getArgument(0)));
+    mvc.perform(get("/admin-donaciones?estado=deposito&pagina=2&donacion=" + ID))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/admin-donaciones?estado=deposito&amp;pagina=2&amp;donacion="
+                            + ID
+                            + "#donacion-"
+                            + ID
+                            + "\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/admin-donaciones?estado=deposito&amp;pagina=2&amp;#donacion-"
+                            + ID
+                            + "\"")))
+        .andExpect(content().string(containsString("aria-current=\"true\"")));
+  }
+
+  // R11-34 (§5): la pedida que no existe o no se pudo leer se avisa en el lugar de la ficha
+  @Test
+  void unaDonacionQueNoExisteONoCargaSeAvisaEnElLugarDeLaFicha() throws Exception {
+    when(operacion.donaciones(any(), any())).thenAnswer(i -> pagina2(i.getArgument(0)));
+    mvc.perform(get("/admin-donaciones?donacion=otra"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No encontramos esa donación.")))
+        .andExpect(
+            content()
+                .string(containsString("Puede que el enlace esté mal; elegí una de la lista.")))
+        .andExpect(content().string(containsString("Leche en polvo")))
+        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
+    when(operacion.donacion("caida", "")).thenThrow(new ResourceAccessException("caída"));
+    mvc.perform(get("/admin-donaciones?donacion=caida"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No pudimos cargar la ficha de esta donación.")))
+        .andExpect(
+            content().string(containsString("La lista sigue a mano; probá elegirla de nuevo.")))
+        .andExpect(content().string(containsString("Leche en polvo")));
   }
 
   @Test

@@ -4,6 +4,8 @@ import grupo5.cliente.puertos.AdminOperacionPuerto;
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import grupo5.cliente.vistas.ConsultaDonaciones;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -24,6 +27,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class AdminDonacionesController {
 
   private static final String DETALLE = "admin-donaciones-detalle";
+
+  /** El aviso en el lugar de la ficha (R11-34): {@code no-existe} o {@code no-cargo}. */
+  static final String FICHA_AVISO = "fichaAviso";
+
+  private static final Logger LOG = LoggerFactory.getLogger(AdminDonacionesController.class);
 
   private final AdminOperacionPuerto operacion;
   private final Pantallas pantallas;
@@ -41,16 +49,64 @@ public class AdminDonacionesController {
       @RequestParam(required = false) String estado,
       @RequestParam(required = false) String vence,
       @RequestParam(required = false) String orden,
+      @RequestParam(required = false) String buscar,
+      @RequestParam(required = false) String categoria,
+      @RequestParam(required = false) String registrada,
+      @RequestParam(required = false) String donante,
+      @RequestParam(required = false) String donacion,
       Model model,
       HttpServletRequest pedido) {
     String vista = pantallas.mostrar("admin-donaciones", model);
     ConsultaDonaciones consulta =
-        new ConsultaDonaciones(estado, "pronto".equals(vence), orden, Paginadores.pedida(pedido));
-    AdminDonacionesVista datos = operacion.donaciones(consulta, "");
+        new ConsultaDonaciones(
+            estado,
+            "pronto".equals(vence),
+            orden,
+            Paginadores.pedida(pedido),
+            buscar,
+            categoria,
+            registrada,
+            donante,
+            donacion);
+    AdminDonacionesVista datos = elegida(operacion.donaciones(consulta, ""), model);
     model.addAttribute("adminDonaciones", datos);
     model.addAttribute(
         "paginador", Paginadores.de(pedido, "Páginas de donaciones", datos.donaciones()));
     return vista;
+  }
+
+  /**
+   * La bandeja (R11-34, ficha r11-p2-admin-bandeja §4 y §5): la ficha de la pedida con {@code
+   * ?donacion=} (aunque no esté en la página) o, si no se pidió ninguna, la de la primera de la
+   * página, de partida. Una lectura por clave. Si la pedida no existe, {@code fichaAviso} es {@code
+   * no-existe}; si no se pudo leer, {@code no-cargo} (con {@code fichaAvisoPartida} si era la de
+   * partida, que en el celular no se abre sola): la pantalla lo avisa en el lugar de la ficha y la
+   * lista se ve igual.
+   */
+  private AdminDonacionesVista elegida(AdminDonacionesVista datos, Model model) {
+    String pedida = datos.consulta().donacion();
+    boolean dePartida = pedida.isEmpty();
+    if (dePartida) {
+      if (datos.donaciones() == null || datos.donaciones().filas().isEmpty()) {
+        return datos;
+      }
+      pedida = datos.donaciones().filas().getFirst().clave();
+    }
+    AdminDonacionesVista.Donacion ficha;
+    try {
+      ficha = operacion.donacion(pedida, "");
+    } catch (RestClientException sinFicha) {
+      LOG.warn("No se pudo leer la donación {}", pedida, sinFicha);
+      model.addAttribute(FICHA_AVISO, "no-cargo");
+      model.addAttribute("fichaAvisoPartida", dePartida);
+      return datos;
+    }
+    if (ficha == null) {
+      model.addAttribute(FICHA_AVISO, "no-existe");
+      model.addAttribute("fichaAvisoPartida", dePartida);
+      return datos;
+    }
+    return datos.conElegida(ficha, dePartida);
   }
 
   /** El detalle, pedido por su clave ({@code ?donacion=}): ya no se busca en la lista entera. */

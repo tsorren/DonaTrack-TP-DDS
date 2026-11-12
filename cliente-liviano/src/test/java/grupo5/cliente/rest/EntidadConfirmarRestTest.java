@@ -35,6 +35,34 @@ class EntidadConfirmarRestTest {
   private static final String LEGUMBRES = "6f1c2c1e-0000-4000-8000-0000000000c5";
   private static final String LOGISTICA = "http://logistica/api/entregas/";
 
+  /** R11-43: de Donaciones, solo la donación del acta, si es de la entidad y espera. */
+  private static final String LA_PEDIDA =
+      "http://donaciones/donaciones-independientes?entidadId="
+          + ENTIDAD
+          + "&id="
+          + DONACION
+          + "&estado=EN_PUERTA&estado=EN_TRASLADO&orden=ATENCION&size=1";
+
+  /** R11-43: y una página de 2 de las que esperan, la puerta primero, para ofrecer la que sigue. */
+  private static final String LA_OTRA =
+      "http://donaciones/donaciones-independientes?entidadId="
+          + ENTIDAD
+          + "&estado=EN_PUERTA&estado=EN_TRASLADO&orden=ATENCION&size=2";
+
+  /** R11-43: de Logística, solo las entregas de esas donaciones. */
+  private static String esperando(String... donaciones) {
+    return deLaDonacion(donaciones) + "&estado=EN_PUERTA&estado=EN_TRASLADO";
+  }
+
+  private static String deLaDonacion(String... donaciones) {
+    StringBuilder direccion =
+        new StringBuilder(LOGISTICA + "seguimiento/beneficiarios/" + ENTIDAD + "?");
+    for (String donacion : donaciones) {
+      direccion.append("idDonacion=").append(donacion).append('&');
+    }
+    return direccion.append("size=100").toString();
+  }
+
   private final RestClient.Builder deLogistica = RestClient.builder();
   private final MockRestServiceServer logistica = MockRestServiceServer.bindTo(deLogistica).build();
   private final RestClient.Builder deDonaciones = RestClient.builder();
@@ -50,7 +78,7 @@ class EntidadConfirmarRestTest {
   @Test
   void esperanLasEnTrasladoConLoQueLlevanYLaNecesidadQueCubren() {
     logistica
-        .expect(requestTo(LOGISTICA + "seguimiento/beneficiarios/" + ENTIDAD))
+        .expect(requestTo(esperando(DONACION)))
         .andRespond(
             withSuccess(
                 """
@@ -63,19 +91,21 @@ class EntidadConfirmarRestTest {
                 """
                     .formatted(ENTREGA, DONACION, DONACION, DONACION),
                 MediaType.APPLICATION_JSON));
+    String lentejas =
+        """
+        [{"id": "%s", "descripcion": "Lentejas secas", "estadoActual": "EnTraslado",
+          "items": [{"bien": {"categoria": {"id": "%s", "nombre": "Alimentos", "unidad": "KILOGRAMO"}}}],
+          "cantidad": 15, "necesidadId": "%s",
+          "quienDono": {"tipo": "JURIDICA", "nombreVisible": "Distribuidora Ejemplo SA"}}]
+        """
+            .formatted(DONACION, NECESIDAD, NECESIDAD);
     donaciones
-        .expect(
-            requestTo("http://donaciones/donaciones-independientes?size=100&entidadId=" + ENTIDAD))
-        .andRespond(
-            withSuccess(
-                """
-                [{"id": "%s", "descripcion": "Lentejas secas", "estadoActual": "EnTraslado",
-                  "items": [{"bien": {"categoria": {"id": "%s", "nombre": "Alimentos", "unidad": "KILOGRAMO"}}}],
-                  "cantidad": 15, "necesidadId": "%s",
-                  "quienDono": {"tipo": "JURIDICA", "nombreVisible": "Distribuidora Ejemplo SA"}}]
-                """
-                    .formatted(DONACION, NECESIDAD, NECESIDAD),
-                MediaType.APPLICATION_JSON));
+        .expect(requestTo(LA_PEDIDA))
+        .andRespond(withSuccess(lentejas, MediaType.APPLICATION_JSON));
+    // La única que espera es la pedida: no hay otra para ofrecer
+    donaciones
+        .expect(requestTo(LA_OTRA))
+        .andRespond(withSuccess(lentejas, MediaType.APPLICATION_JSON));
     donaciones
         .expect(requestTo("http://donaciones/api/necesidades/" + NECESIDAD))
         .andRespond(
@@ -93,7 +123,7 @@ class EntidadConfirmarRestTest {
                 "[{\"id\": \"" + LEGUMBRES + "\", \"nombre\": \"Lentejas secas\"}]",
                 MediaType.APPLICATION_JSON));
 
-    List<EntidadEntregaVista> entregas = adaptador.entregas(ENTIDAD);
+    List<EntidadEntregaVista> entregas = adaptador.entregas(ENTIDAD, DONACION);
 
     logistica.verify();
     donaciones.verify();
@@ -119,19 +149,28 @@ class EntidadConfirmarRestTest {
   }
 
   @Test
-  void sinNingunaEnLaPuertaNoPideLasDonaciones() {
-    logistica
-        .expect(requestTo(LOGISTICA + "seguimiento/beneficiarios/" + ENTIDAD))
+  void siLaPedidaNoEsperaOEsDeOtraEntidadNoPideNadaMas() {
+    donaciones
+        .expect(requestTo(LA_PEDIDA))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
-    assertFalse(adaptador.entregas(ENTIDAD).iterator().hasNext());
+    assertFalse(adaptador.entregas(ENTIDAD, DONACION).iterator().hasNext());
     donaciones.verify();
+    logistica.verify();
+  }
+
+  @Test
+  void sinUnaClaveQueSeaUnIdNoLlamaANingunServicio() {
+    assertFalse(adaptador.entregas(ENTIDAD, null).iterator().hasNext());
+    assertFalse(adaptador.entregas(ENTIDAD, "lentejas").iterator().hasNext());
+    donaciones.verify();
+    logistica.verify();
   }
 
   @Test
   void confirmarSubeLasFotosYDejaLaEntregaEntregadaConElProblema() {
     logistica
-        .expect(requestTo(LOGISTICA + "seguimiento/beneficiarios/" + ENTIDAD))
+        .expect(requestTo(deLaDonacion(DONACION)))
         .andRespond(
             withSuccess(
                 """
@@ -178,7 +217,7 @@ class EntidadConfirmarRestTest {
   void primeroLasQueLlegaronALaPuertaConLaHoraDeLlegadaDelHistorial() {
     String otraDonacion = "6f1c2c1e-0000-4000-8000-0000000000d2";
     logistica
-        .expect(requestTo(LOGISTICA + "seguimiento/beneficiarios/" + ENTIDAD))
+        .expect(requestTo(esperando(DONACION, otraDonacion)))
         .andRespond(
             withSuccess(
                 """
@@ -189,22 +228,30 @@ class EntidadConfirmarRestTest {
                 """
                     .formatted(otraDonacion, ENTREGA, DONACION),
                 MediaType.APPLICATION_JSON));
+    String lentejasEnLaPuerta =
+        """
+        {"id": "%s", "descripcion": "Lentejas secas", "estadoActual": "EN_PUERTA",
+          "cantidad": 15,
+          "historial": [{"estadoNuevo": "EnPuerta", "timestamp": "2026-11-08T18:20:00"}]}
+        """
+            .formatted(DONACION);
     donaciones
-        .expect(
-            requestTo("http://donaciones/donaciones-independientes?size=100&entidadId=" + ENTIDAD))
+        .expect(requestTo(LA_PEDIDA))
+        .andRespond(withSuccess("[" + lentejasEnLaPuerta + "]", MediaType.APPLICATION_JSON));
+    // De la página de 2, la que no es la pedida
+    donaciones
+        .expect(requestTo(LA_OTRA))
         .andRespond(
             withSuccess(
-                """
-                [{"id": "%s", "descripcion": "Lentejas secas", "estadoActual": "EN_PUERTA",
-                  "cantidad": 15,
-                  "historial": [{"estadoNuevo": "EnPuerta", "timestamp": "2026-11-08T18:20:00"}]},
-                 {"id": "%s", "descripcion": "Arroz", "estadoActual": "EN_TRASLADO",
-                  "cantidad": 5}]
-                """
-                    .formatted(DONACION, otraDonacion),
+                "["
+                    + lentejasEnLaPuerta
+                    + ", {\"id\": \""
+                    + otraDonacion
+                    + "\", \"descripcion\": \"Arroz\", \"estadoActual\": \"EN_TRASLADO\","
+                    + " \"cantidad\": 5}]",
                 MediaType.APPLICATION_JSON));
 
-    List<EntidadEntregaVista> entregas = adaptador.entregas(ENTIDAD);
+    List<EntidadEntregaVista> entregas = adaptador.entregas(ENTIDAD, DONACION);
 
     assertEquals(
         List.of(DONACION, otraDonacion),

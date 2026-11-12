@@ -94,7 +94,19 @@ public class DonacionEventListener {
         () -> notificacionService.procesar(evento, messageId), evento.personaId(), messageId);
   }
 
-  // 7. Persona Sincronizada
+  // 7. Importación terminada o cortada: el aviso es para la Administración (R11-30)
+  @RabbitHandler
+  public void onImportacionTerminada(
+      @Valid EventoImportacionTerminadaV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+    log.info(
+        "Consumiendo evento importacion.terminada.v1: archivoId={}, resultado={}",
+        evento.archivoId(),
+        evento.resultado());
+    notificacionService.procesar(evento, messageId);
+  }
+
+  // 8. Persona Sincronizada
   @RabbitHandler
   public void onPersonaSincronizada(
       @Valid EventoPersonaSincronizadaV1 evento,

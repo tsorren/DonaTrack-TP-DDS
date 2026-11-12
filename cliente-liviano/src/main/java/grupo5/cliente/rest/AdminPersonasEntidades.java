@@ -33,11 +33,22 @@ import org.springframework.util.MultiValueMap;
  * con los datos de su persona jurídica, leídas por id. Cuántas activas hay es un número del
  * servicio, no el largo de la página. Lo que nadie guarda (la misión, la fecha de alta y de baja,
  * las entregas confirmadas, el motivo de la baja, la constancia) queda null.
+ *
+ * <p>Desde R11-43 vuelven los filtros Estado, Necesidades y Tipo: los de las registradas los
+ * resuelve Donaciones ({@code estado=ACTIVA|BAJA}, {@code conNecesidades}, {@code rubro}); las que
+ * piden sumarse siguen saliendo de Keycloak y se filtran acá (no tienen necesidades; su tipo es el
+ * rubro de su jurídica). Con "Pendientes" no se piden registradas; con "Activas" o "Inactivas", no
+ * van las que piden sumarse. Las cifras de cada estado son dos números del servicio ({@code
+ * size=1}) y las solicitudes: no dependen de los filtros.
  */
 final class AdminPersonasEntidades {
 
   private static final String ACTIVA = "activa";
   private static final String SIZE = "size";
+  private static final String ESTADO = "estado";
+  private static final String ACTIVA_EN_DONACIONES = "ACTIVA";
+  private static final String BAJA = "BAJA";
+  private static final String PENDIENTES = "pendientes";
 
   /** De a 20 entidades por página, como los donantes (ficha, decisiones de R11). */
   static final int POR_PAGINA = 20;
@@ -54,33 +65,83 @@ final class AdminPersonasEntidades {
     this.solicitudes = solicitudes;
   }
 
-  AdminEntidadesVista entidades(String al, String buscar, int pagina) {
+  AdminEntidadesVista entidades(
+      String al, String buscar, AdminEntidadesVista.Filtro filtro, int pagina) {
     String nombre = buscar == null ? "" : buscar.strip();
+    Collator orden = Collator.getInstance(Comun.ES_AR);
+    List<Pendiente> todasLasPendientes = pendientesDeKeycloak();
+    // Las que piden sumarse no tienen necesidades ni van con "Activas" o "Inactivas"
+    boolean conPendientes =
+        (filtro.ver().isEmpty() || PENDIENTES.equals(filtro.ver()))
+            && !"con".equals(filtro.pedidos());
+    List<Pendiente> buscadas = conPendientes ? buscadas(todasLasPendientes, nombre) : List.of();
+    if (PENDIENTES.equals(filtro.ver())) {
+      // Solo las que piden sumarse, de a una página: la lista es la que dio Keycloak
+      Tramo<Entidad> tramo =
+          Tramo.de(delTipo(pendientes(buscadas, orden), filtro), pagina, POR_PAGINA);
+      return new AdminEntidadesVista(
+          cuantas(ACTIVA_EN_DONACIONES),
+          al,
+          tramo.filas(),
+          new AdminEntidadesVista.EnPaginas(
+              nombre, tramo.total(), tramo, cuantas(BAJA), todasLasPendientes.size()));
+    }
     Tramo<DonacionesApi.Entidad> tramo =
-        Paginas.pedir(pagina, POR_PAGINA, numero -> donaciones.entidades(filtros(nombre, numero)));
+        Paginas.pedir(
+            pagina, POR_PAGINA, numero -> donaciones.entidades(filtros(nombre, filtro, numero)));
     Map<UUID, List<Necesidad>> necesidades =
         tramo.filas().isEmpty() ? Map.of() : necesidadesVigentes();
-    Collator orden = Collator.getInstance(Comun.ES_AR);
     List<Entidad> registradas =
         tramo.filas().stream()
             .map(e -> registrada(e, necesidades.getOrDefault(e.id(), List.of())))
             .sorted(Comparator.comparing(Entidad::nombre, orden))
             .toList();
-    List<Pendiente> buscadas = buscadas(nombre);
-    List<Entidad> todas =
-        new ArrayList<>(tramo.pagina() == 1 ? pendientes(buscadas, orden) : List.of());
+    // Sus datos (y su tipo) se leen solo si se muestran o si hay que filtrarlas por tipo
+    boolean leerPendientes = tramo.pagina() == 1 || !filtro.tipo().isEmpty();
+    List<Entidad> pendientes =
+        leerPendientes ? delTipo(pendientes(buscadas, orden), filtro) : List.of();
+    long cuantasPendientes = leerPendientes ? pendientes.size() : buscadas.size();
+    List<Entidad> todas = new ArrayList<>(tramo.pagina() == 1 ? pendientes : List.of());
     todas.addAll(registradas);
-    long total = tramo.total() + buscadas.size();
     Tramo<Entidad> paginada =
         new Tramo<>(registradas, tramo.total(), tramo.pagina(), tramo.paginas());
     return new AdminEntidadesVista(
-        activas(), al, todas, new AdminEntidadesVista.EnPaginas(nombre, total, paginada));
+        cuantas(ACTIVA_EN_DONACIONES),
+        al,
+        todas,
+        new AdminEntidadesVista.EnPaginas(
+            nombre,
+            tramo.total() + cuantasPendientes,
+            paginada,
+            cuantas(BAJA),
+            todasLasPendientes.size()));
   }
 
-  private static MultiValueMap<String, String> filtros(String nombre, int pagina) {
+  /** Las del rubro del filtro Tipo; sin él, todas. */
+  private static List<Entidad> delTipo(List<Entidad> entidades, AdminEntidadesVista.Filtro filtro) {
+    return filtro.tipo().isEmpty()
+        ? entidades
+        : entidades.stream().filter(e -> filtro.tipo().equals(e.tipo())).toList();
+  }
+
+  private static MultiValueMap<String, String> filtros(
+      String nombre, AdminEntidadesVista.Filtro filtro, int pagina) {
     MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
     if (!nombre.isEmpty()) {
       filtros.add("nombre", nombre);
+    }
+    switch (filtro.ver()) {
+      case "activas" -> filtros.add(ESTADO, ACTIVA_EN_DONACIONES);
+      case "inactivas" -> filtros.add(ESTADO, BAJA);
+      default -> {
+        // Todas: activas y dadas de baja
+      }
+    }
+    if (!filtro.pedidos().isEmpty()) {
+      filtros.add("conNecesidades", String.valueOf("con".equals(filtro.pedidos())));
+    }
+    if (!filtro.tipo().isEmpty()) {
+      filtros.add("rubro", filtro.tipo());
     }
     filtros.add("page", String.valueOf(pagina));
     filtros.add(SIZE, String.valueOf(POR_PAGINA));
@@ -88,14 +149,14 @@ final class AdminPersonasEntidades {
   }
 
   /**
-   * Cuántas entidades activas hay: el total de una página de una de las públicas (solo activas),
-   * sin traer la lista ni contar sobre una página.
+   * Cuántas registradas hay en {@code estado} ({@code ACTIVA} o {@code BAJA}): el total de una
+   * página de una, sin traer la lista ni contar sobre una página (R11-43).
    */
-  private long activas() {
+  private long cuantas(String estado) {
     MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    filtros.add(ESTADO, estado);
     filtros.add(SIZE, "1");
-    ResponseEntity<List<DonacionesApi.EntidadPublica>> respuesta =
-        donaciones.entidadesPublicas(filtros);
+    ResponseEntity<List<DonacionesApi.Entidad>> respuesta = donaciones.entidades(filtros);
     return Paginas.total(respuesta, List.of(), 1, 1);
   }
 
@@ -111,14 +172,15 @@ final class AdminPersonasEntidades {
         .toList();
   }
 
-  /** Las solicitudes cuyo nombre contiene {@code nombre}, sin distinguir mayúsculas ni tildes. */
-  private List<Pendiente> buscadas(String nombre) {
+  private List<Pendiente> pendientesDeKeycloak() {
     SolicitudesDeEntidad cuentas = solicitudes.getIfAvailable();
-    if (cuentas == null) {
-      return List.of();
-    }
+    return cuentas == null ? List.of() : cuentas.pendientes();
+  }
+
+  /** Las solicitudes cuyo nombre contiene {@code nombre}, sin distinguir mayúsculas ni tildes. */
+  private static List<Pendiente> buscadas(List<Pendiente> pendientes, String nombre) {
     String buscado = sinTildes(nombre);
-    return cuentas.pendientes().stream()
+    return pendientes.stream()
         .filter(p -> buscado.isEmpty() || sinTildes(p.razonSocial()).contains(buscado))
         .toList();
   }
@@ -131,10 +193,7 @@ final class AdminPersonasEntidades {
 
   /** Los nombres de las entidades que piden sumarse, como los traen sus solicitudes. */
   List<String> pendientes() {
-    SolicitudesDeEntidad cuentas = solicitudes.getIfAvailable();
-    return cuentas == null
-        ? List.of()
-        : cuentas.pendientes().stream().map(Pendiente::razonSocial).toList();
+    return pendientesDeKeycloak().stream().map(Pendiente::razonSocial).toList();
   }
 
   /**

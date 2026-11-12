@@ -51,12 +51,12 @@ interface DonacionesApi {
   List<Donacion> donaciones(@RequestParam UUID donanteId);
 
   /**
-   * Las asignadas a una entidad beneficiaria, con el mismo tope de una página de {@link #TOPE}
-   * (R11-01): se cruzan con sus entregas y sus necesidades. Las pantallas de la entidad pasan a
-   * pedir su página o un número del servicio en el lote {@code p2-listas-restantes} (DTI-39).
+   * Las cifras de las asignadas a una organización (R11-43): cuántas en cada estado, cuántas
+   * recibió en el mes en curso y lo mismo por necesidad. Con {@code necesidadId}, solo de esa.
+   * Reemplaza leer todas las asignadas para contarlas.
    */
-  @GetExchange("/donaciones-independientes?size=" + TOPE)
-  List<Donacion> asignadas(@RequestParam UUID entidadId);
+  @GetExchange("/donaciones-independientes/conteos")
+  Conteos conteos(@RequestParam UUID entidadId, @RequestParam(required = false) UUID necesidadId);
 
   /**
    * Una página con filtros ({@code page}, {@code size}); el total viene en {@code X-Total-Count}.
@@ -85,6 +85,13 @@ interface DonacionesApi {
   /** Solo ADMIN: las cifras del inicio del admin, cada una contada en Donaciones (R11-01). */
   @GetExchange("/api/donaciones/resumen")
   Resumen resumen();
+
+  /**
+   * Solo ADMIN: los gráficos del inicio del admin (R11-42), los últimos 12 meses por mes y por
+   * categoría, contados en Donaciones.
+   */
+  @GetExchange("/api/donaciones/resumen/evolucion")
+  Evolucion evolucion();
 
   /** La donación original, para saber quién donó: el donante (dueño) o ADMIN. */
   @GetExchange("/api/donaciones/{id}")
@@ -198,6 +205,17 @@ interface DonacionesApi {
   Legales aceptarLegales(@PathVariable UUID id, @RequestBody AceptarLegales aceptar);
 
   /**
+   * La solicitud de entidad que espera la aprobación (R11-41): la propia cuenta, sin rol, o ADMIN.
+   * 409 si ya no está pendiente.
+   */
+  @GetExchange("/api/personas/{id}/solicitud-entidad")
+  SolicitudEntidad solicitudEntidad(@PathVariable UUID id);
+
+  @PutExchange("/api/personas/{id}/solicitud-entidad")
+  SolicitudEntidad corregirSolicitudEntidad(
+      @PathVariable UUID id, @RequestBody SolicitudEntidad solicitud);
+
+  /**
    * Solo ADMIN. De a una página (R11-01), con la búsqueda y los filtros resueltos en Donaciones:
    * {@code q}, {@code tipo}, {@code tipoJuridico}, {@code activo}, {@code categoriaId}, {@code
    * canal}, {@code orden} (nuevos, antiguos o nombre), {@code page} y {@code size}; el total, en
@@ -230,6 +248,20 @@ interface DonacionesApi {
    */
   @GetExchange("/api/donantes/archivos")
   ResponseEntity<List<Archivo>> archivos(@RequestParam MultiValueMap<String, String> filtros);
+
+  // --- Actividad de administración (R11-26) ---------------------------------------------------
+
+  /**
+   * Solo ADMIN: de a una página, de la más reciente a la más vieja, con {@code autor} y {@code
+   * accion} (repetibles), {@code desde}, {@code hasta}, {@code page} y {@code size}; el total, en
+   * {@code X-Total-Count}.
+   */
+  @GetExchange("/api/actividad")
+  ResponseEntity<List<Actividad>> actividad(@RequestParam MultiValueMap<String, String> filtros);
+
+  /** Solo ADMIN: anota una acción hecha fuera de Donaciones, a nombre del token. */
+  @PostExchange("/api/actividad")
+  void anotarActividad(@RequestBody AnotacionActividad anotacion);
 
   @GetExchange("/api/donantes/archivos/{id}")
   Archivo archivo(@PathVariable UUID id);
@@ -497,6 +529,19 @@ interface DonacionesApi {
 
   record AceptarLegales(int version) {}
 
+  record SolicitudEntidad(
+      String razonSocial,
+      String rubro,
+      String tipoJuridico,
+      DireccionDeLaSolicitud direccion,
+      Representante representante,
+      String correo) {}
+
+  record DireccionDeLaSolicitud(
+      String calle, Integer altura, String codigoPostal, String localidad, String provincia) {}
+
+  record Representante(String nombre, String apellido) {}
+
   record DonanteNuevo(UUID idPersona) {}
 
   record Preferencias(boolean mostrarNombre) {}
@@ -539,6 +584,40 @@ interface DonacionesApi {
   /** {@code mes}: "2026-11". */
   record EntregadasEnElMes(String mes, Long cantidad) {}
 
+  /**
+   * Los gráficos del inicio del admin (R11-42). {@code desde} y {@code hasta}: "2025-11" y
+   * "2026-10", o null si no hay ninguna donación; {@code otras}: la suma de las categorías que
+   * pasan de 8, o null.
+   */
+  record Evolucion(
+      String desde,
+      String hasta,
+      List<MesEvolucion> meses,
+      List<CategoriaEvolucion> categorias,
+      OtrasCategorias otras,
+      OffsetDateTime calculadoEn) {}
+
+  /** {@code entregadas}: las que pasaron a ENTREGADA en el mes. */
+  record MesEvolucion(String mes, Long registradas, Long entregadas) {}
+
+  record CategoriaEvolucion(UUID categoriaId, String nombre, Long registradas, Long entregadas) {}
+
+  record OtrasCategorias(Integer categorias, Long registradas, Long entregadas) {}
+
+  /**
+   * Las cifras de una organización (R11-43). {@code porEstado}: los 8 estados, con 0 si no hay;
+   * {@code porNecesidad}: solo las necesidades con alguna asignada.
+   */
+  record Conteos(
+      List<PorEstado> porEstado,
+      EntregadasEnElMes entregadasEnElMes,
+      List<PorNecesidad> porNecesidad) {}
+
+  /** {@code estado}: EN_DEPOSITO, ASIGNACION_REALIZADA… */
+  record PorEstado(String estado, Long cantidad) {}
+
+  record PorNecesidad(UUID necesidadId, List<PorEstado> porEstado) {}
+
   /** {@code proxima}: la de vencimiento más cercano, o null. */
   record PorVencer(Integer dias, Long cantidad, Proxima proxima) {}
 
@@ -551,7 +630,8 @@ interface DonacionesApi {
   /**
    * Una propuesta de asignación. Desde R11-24: {@code sugeridaPor} (vacía si se generó antes),
    * {@code situacion} (LIBRE, EN_CONFLICTO o SIN_STOCK; null si no está pendiente) y cuántas otras
-   * pendientes cubren la misma necesidad.
+   * pendientes cubren la misma necesidad. Quién la decidió y cuándo ({@code decididaPor}, el id de
+   * la cuenta o "SISTEMA"; null en las de antes de R11-10) y, desde R11-35, el motivo del descarte.
    */
   record Propuesta(
       UUID id,
@@ -561,7 +641,10 @@ interface DonacionesApi {
       List<Fragmento> fragmentaciones,
       List<Sugerencia> sugeridaPor,
       String situacion,
-      Integer otrasPendientesMismaNecesidad) {}
+      Integer otrasPendientesMismaNecesidad,
+      String decididaPor,
+      LocalDateTime fechaDecision,
+      String motivoDescarte) {}
 
   /** {@code entidadId}, {@code entidadNombre} y {@code unidad}, desde R11-24. */
   record NecesidadResumen(
@@ -589,7 +672,9 @@ interface DonacionesApi {
   record Sugerencia(
       String algoritmo, Integer puesto, Integer deCuantas, Boolean eligioLasDonaciones) {}
 
-  record ResumenPropuestas(Long pendientes, Long libres, Long enConflicto, Long sinStock) {}
+  /** {@code decididasSinFecha}, desde R11-35: las decididas sin fecha guardada. */
+  record ResumenPropuestas(
+      Long pendientes, Long libres, Long enConflicto, Long sinStock, Long decididasSinFecha) {}
 
   record DonacionEnPropuestas(
       Donacion donacionIndependiente,
@@ -601,4 +686,18 @@ interface DonacionesApi {
   record Ejecucion(UUID id, LocalDateTime fechaEjecucion, Integer cantidadPropuestasGeneradas) {}
 
   record Decision(String estado, String justificacion) {}
+
+  /**
+   * Una acción del registro de actividad (R11-26); {@code objetoId} y {@code detalle}, nullable.
+   */
+  record Actividad(
+      UUID id,
+      LocalDateTime ocurrioEn,
+      String autor,
+      String accion,
+      String objetoId,
+      String detalle) {}
+
+  /** Lo que el sitio anota: una de las cinco acciones del sitio; el autor lo pone Donaciones. */
+  record AnotacionActividad(String accion, String objetoId, String detalle) {}
 }

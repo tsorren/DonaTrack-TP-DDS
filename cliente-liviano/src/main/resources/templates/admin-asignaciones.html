@@ -68,19 +68,59 @@
         se asignó nada; podés descartar la propuesta.</p>
     </section>
 
-    <!--/* Todas las decididas (?vista=decididas): sin pestañas ni panel. */-->
-    <section th:if="${pestana == 'decididas'}" class="pila" data-espacio="3" aria-labelledby="decididas-titulo">
+    <!--/* Todas las decididas (?vista=decididas): sin pestañas ni panel. La búsqueda, los filtros y el
+           orden (R11-35, ficha r11-p2-admin-bandeja §4.3) se resuelven en Donaciones; un solo
+           formulario GET, con pastillas (componentes/filtros). */-->
+    <section th:if="${pestana == 'decididas'}" class="pila" data-espacio="3" aria-labelledby="decididas-titulo"
+             th:with="b=${c.decididas}, n=${vacioDeEjemplo ? 0 : a.decididas.total},
+                      nTexto=${#numbers.formatInteger(n, 1, 'POINT')}">
       <a class="boton" data-tono="secundario" href="/admin-asignaciones" th:href="@{/admin-asignaciones}"
          hx-boost="true">← Volver a las propuestas</a>
       <h2 id="decididas-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
           th:text="${a.decididas.total > 0} ? |Decididas · ${#numbers.formatInteger(a.decididas.total, 1, 'POINT')}| : 'Decididas'">Decididas
         · 7</h2>
-      <section th:if="${a.decididas.total == 0 or vacioDeEjemplo}" class="vacio" aria-labelledby="sin-decididas">
-        <h3 id="sin-decididas">Todavía no decidiste ninguna propuesta.</h3>
+      <form th:if="${n > 0 or b.filtrada()}" hx-boost="true" class="filtros-barra" action="/admin-asignaciones"
+            th:action="@{/admin-asignaciones}" method="get" role="search" data-al-cambiar>
+        <input type="hidden" name="vista" value="decididas">
+        <div class="campo filtro-buscar">
+          <label for="buscar-decididas">Buscar por organización o donación</label>
+          <div class="filtro-buscar-fila">
+            <input id="buscar-decididas" name="buscar" type="search" autocomplete="off" maxlength="100"
+                   th:value="${b.buscar}" placeholder="Por ejemplo: Comedor o arroz">
+            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+          </div>
+        </div>
+        <div class="filtros" role="group" aria-label="Filtrar las decididas">
+          <details th:replace="~{componentes/filtros :: menu('estado', 'Estado', ${b.estado}, ${a.estadosDecididas()})}"></details>
+          <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${b.categoria}, ${a.categoriasDelFiltro()})}"></details>
+          <details th:replace="~{componentes/filtros :: menu('decidida', 'Decidida', ${b.decidida}, ${a.periodosDecididas()})}"></details>
+          <details th:replace="~{componentes/filtros :: menu('decidio', 'Decidió', ${b.decidio}, ${a.autores})}"></details>
+          <details th:replace="~{componentes/filtros :: menu('orden', 'Más recientes primero', ${b.orden}, ${a.ordenesDecididas()})}"></details>
+          <a th:if="${b.filtrada()}" class="filtros-sacar" href="/admin-asignaciones?vista=decididas"
+             th:href="@{/admin-asignaciones(vista='decididas')}">Sacar los filtros</a>
+        </div>
+      </form>
+      <p th:if="${n > 0 and b.filtrada()}" role="status"
+         th:text="${n == 1} ? 'Coincide 1 propuesta decidida.' : |Coinciden ${nTexto} propuestas decididas.|">Coinciden 4
+        propuestas decididas.</p>
+      <p th:if="${a.sinFecha > 0}"
+         th:text="${a.sinFecha == 1} ? 'Hay 1 decidida de antes de que guardáramos la fecha: no entra en este período.' : |Hay ${#numbers.formatInteger(a.sinFecha, 1, 'POINT')} decididas de antes de que guardáramos la fecha: no entran en este período.|">Hay
+        2 decididas de antes de que guardáramos la fecha: no entran en este período.</p>
+      <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-decididas">
+        <h3 id="sin-decididas"
+            th:text="${b.filtrada()} ? 'Ninguna propuesta decidida coincide con lo que buscaste.' : 'Todavía no se decidió ninguna propuesta.'">Todavía
+          no se decidió ninguna propuesta.</h3>
+        <a th:if="${b.filtrada()}" class="boton" data-tono="secundario" href="/admin-asignaciones?vista=decididas"
+           th:href="@{/admin-asignaciones(vista='decididas')}">Sacar los filtros</a>
       </section>
-      <ul th:unless="${a.decididas.total == 0 or vacioDeEjemplo}" class="lista pila" data-espacio="2" role="list">
+      <ul th:unless="${n == 0}" class="lista pila" data-espacio="2" data-lista="decididas" role="list">
         <li th:each="x : ${a.decididas.filas}" th:insert="~{admin-asignaciones :: decidida(${x})}"></li>
       </ul>
+      <p th:if="${n > 0}" th:with="t=${a.decididas}, cuantas=${#lists.size(t.filas)},
+                                    desde=${t.pagina < t.paginas ? (t.pagina - 1) * cuantas + 1 : t.total - cuantas + 1},
+                                    hasta=${desde + cuantas - 1}"
+         th:text="|Mostrando ${desde} a ${hasta} de ${nTexto} propuestas decididas.|">Mostrando 1 a 4 de 4
+        propuestas decididas.</p>
       <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
     </section>
 
@@ -171,7 +211,7 @@
 
             <section class="pila" data-espacio="2" aria-labelledby="recientes-titulo">
               <h2 id="recientes-titulo">Decididas</h2>
-              <p th:if="${#lists.isEmpty(a.recientes) or vacioDeEjemplo}">Todavía no decidiste ninguna propuesta.</p>
+              <p th:if="${#lists.isEmpty(a.recientes) or vacioDeEjemplo}">Todavía no se decidió ninguna propuesta.</p>
               <ul th:unless="${#lists.isEmpty(a.recientes) or vacioDeEjemplo}" class="lista pila" data-espacio="2"
                   role="list">
                 <li th:each="x : ${a.recientes}" th:insert="~{admin-asignaciones :: decidida(${x})}"></li>
@@ -366,8 +406,11 @@
         <input type="hidden" name="pestana" th:value="${pestana}" value="propuestas">
         <div class="campo">
           <label th:for="|motivo-${p.clave}|" for="motivo-arroz">Motivo (opcional)</label>
-          <textarea th:id="|motivo-${p.clave}|" id="motivo-arroz" name="motivo" rows="3"
+          <textarea th:id="|motivo-${p.clave}|" id="motivo-arroz" name="motivo" rows="3" maxlength="500"
+                    th:attr="aria-describedby=|motivo-${p.clave}-ayuda|" aria-describedby="motivo-arroz-ayuda"
                     placeholder="Contanos el motivo"></textarea>
+          <small th:id="|motivo-${p.clave}-ayuda|" id="motivo-arroz-ayuda">Queda guardado con la propuesta. Lo ven
+            solo las cuentas de administración.</small>
         </div>
         <button class="boton" data-tono="quitar" type="submit">Descartar propuesta</button>
         <p th:replace="~{envio :: indicador(|enviando-descartar-${p.clave}|, 'Guardando…')}"></p>
@@ -376,12 +419,24 @@
   </div>
 </article>
 
-<!--/* Una propuesta decidida: su sello y la palabra, qué cubría y para qué organización. */-->
+<!--/* Una propuesta decidida (R11-35): su sello y la palabra, qué pedía y para qué organización, la
+       categoría, quién y cuándo, el motivo (solo en Todas las decididas, si se descartó) y lo que la
+       cubría, con enlace a cada donación. */-->
 <th:block th:fragment="decidida(x)">
-  <span class="estado"><svg
-      th:replace="~{componentes/sello :: sello(${x.estado == 'Aprobada'} ? 'hecho' : 'falta')}"></svg><th:block
-      th:text="${x.estado}">Aprobada</th:block></span>
-  · <span th:text="|${x.que} para ${x.entidad}|">Fideos, 20 kg para Comedor Barrio Ejemplo</span>
+  <div class="pila" data-espacio="1" data-parte="decidida">
+    <p data-parte="decidida-cabeza"><span class="estado"><svg
+        th:replace="~{componentes/sello :: sello(${x.estado == 'Aprobada'} ? 'hecho' : 'falta')}"></svg><th:block
+        th:text="${x.estado}">Aprobada</th:block></span>
+      · <span th:text="|${x.que} para ${x.entidad}|">Fideos, 20 kg para Comedor Barrio Ejemplo</span>
+      <span th:if="${x.categoria != null}" class="chip" th:text="${x.categoria}">Alimentos</span></p>
+    <small th:if="${x.quien != null}" th:text="${x.quien}">Aprobó Ana Pérez el 12 de noviembre de 2026, 10:15.</small>
+    <small th:if="${x.motivo != null}"
+           th:text="${x.motivo == ''} ? 'Sin motivo anotado.' : |Motivo: «${x.motivo}»|">Motivo: «El merendero cerró
+      por vacaciones.»</small>
+    <small th:unless="${#lists.isEmpty(x.cubria)}">La cubría: <th:block th:each="d, i : ${x.cubria}"><a
+        href="/admin-donaciones?donacion=arroz" th:href="@{/admin-donaciones(donacion=${d.clave})}"
+        th:text="${d.texto}">Arroz · 25 kg (de Ana Ejemplo)</a><th:block th:unless="${i.last}">, </th:block></th:block></small>
+  </div>
 </th:block>
 </body>
 </html>

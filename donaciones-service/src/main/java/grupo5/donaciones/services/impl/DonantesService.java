@@ -3,6 +3,7 @@ package grupo5.donaciones.services.impl;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
@@ -97,6 +98,11 @@ public class DonantesService implements IDonantesService {
   public Pagina<DonanteOutputDTO> buscar(FiltroDonantes filtro, ParametrosListado listado) {
     // Filtrar por canal es para contactar: un donante de baja o una persona anonimizada no aplican
     String canal = filtro.canal() == null || filtro.canal().isBlank() ? null : filtro.canal();
+    if (filtro.altaDesde() != null
+        && filtro.altaHasta() != null
+        && filtro.altaDesde().isAfter(filtro.altaHasta())) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
     Tramo<Donante> tramo =
         donantesRepository.buscar(
             new CriterioDonantes(
@@ -107,7 +113,9 @@ public class DonantesService implements IDonantesService {
                 filtro.categoriaId(),
                 canal,
                 listado.orden(OrdenDonantes.class, OrdenDonantes.NUEVOS),
-                listado.paginado()));
+                listado.paginado(),
+                filtro.altaDesde(),
+                filtro.altaHasta()));
     return new Pagina<>(donanteMapper.toOutputDTOs(tramo.elementos()), (int) tramo.total());
   }
 

@@ -4,11 +4,13 @@ import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.puertos.DescargaDeFilas;
 import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.vistas.AdminDonantesVista;
+import grupo5.cliente.vistas.AdminDonantesVista.Contacto;
 import grupo5.cliente.vistas.AdminDonantesVista.Donante;
 import grupo5.cliente.vistas.AdminDonantesVista.FilaConError;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import grupo5.cliente.vistas.AdminDonantesVista.Opcion;
 import grupo5.cliente.vistas.AdminDonantesVista.Opciones;
+import grupo5.cliente.vistas.AdminDonantesVista.SusDonaciones;
 import grupo5.cliente.vistas.AdminDonantesVista.Ultimo;
 import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminImportacionesVista;
@@ -22,9 +24,12 @@ import grupo5.cliente.vistas.Tramo;
 import java.text.Collator;
 import java.text.Normalizer;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -204,7 +209,30 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
               new Opcion("antiguo", "Más antiguos primero"),
               new Opcion("nombre", "Por nombre, de la A a la Z")),
           true,
-          true);
+          true,
+          Opciones.periodos());
+
+  /** El día de la maqueta: las altas de ejemplo son de 2026 y la cifra es del 15 de octubre. */
+  private static final LocalDate HOY = LocalDate.of(2026, 10, 15);
+
+  private static final DateTimeFormatter DIA_DE_ALTA =
+      DateTimeFormatter.ofPattern("d 'de' MMMM yyyy", ES_AR);
+
+  private static final Contacto SIN_CONTACTO = new Contacto(null, null, null, false);
+
+  /** El contacto de ejemplo de cada donante; quien no está, no cargó correo ni teléfono. */
+  private static final Map<String, Contacto> CONTACTOS =
+      Map.of(
+          "ana",
+          new Contacto("ana@ejemplo.test", "11 5555-0000", "Calle Ejemplo 123, CABA", true),
+          "lucia",
+          new Contacto("lucia@ejemplo.test", null, null, false),
+          "super",
+          new Contacto(
+              "compras@ejemplo.test",
+              "11 5555-0101 (WhatsApp)",
+              "Avenida Ejemplo 456, Avellaneda",
+              false));
 
   private static final String ARCHIVO = "donantes-octubre.csv";
   private static final String HORA = "18:34:12";
@@ -248,7 +276,9 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
             Opciones.elegido(pedida.dona(), OPCIONES.categorias()),
             Opciones.elegido(pedida.estado(), OPCIONES.estados()),
             Opciones.elegido(pedida.orden(), OPCIONES.ordenes()),
-            pedida.pagina());
+            pedida.pagina(),
+            Opciones.elegido(pedida.alta(), OPCIONES.altas()));
+    LocalDate[] alta = consulta.periodoDeAlta(HOY);
     List<Donante> orden =
         switch (consulta.orden()) {
           case "nombre" -> POR_NOMBRE;
@@ -261,14 +291,41 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
             .filter(d -> consulta.tipo().isEmpty() || consulta.tipo().equals(d.tipo()))
             .filter(d -> consulta.dona().isEmpty() || consulta.dona().equals(d.dona()))
             .filter(d -> consulta.estado().isEmpty() || consulta.estado().equals(d.estado()))
+            .filter(d -> alta[0] == null || entre(diaDeAlta(d), alta[0], alta[1]))
             .filter(
                 d ->
                     buscado.isEmpty()
                         || sinTildes(d.nombre()).contains(buscado)
                         || sinTildes(d.documento()).contains(buscado))
+            .map(d -> d.conContacto(CONTACTOS.getOrDefault(d.clave(), SIN_CONTACTO)))
             .toList();
     return new AdminDonantesVista(
         86, AL, Tramo.de(encontrados, consulta.pagina(), POR_PAGINA), consulta, OPCIONES, null);
+  }
+
+  /** "14 de octubre" → el 14 de octubre de 2026. */
+  private static LocalDate diaDeAlta(Donante donante) {
+    return LocalDate.parse(donante.alta() + " 2026", DIA_DE_ALTA);
+  }
+
+  private static boolean entre(LocalDate dia, LocalDate desde, LocalDate hasta) {
+    return !dia.isBefore(desde) && !dia.isAfter(hasta);
+  }
+
+  /** El donante de ejemplo con esa clave y su contacto; null si no es uno de ellos. */
+  @Override
+  public Donante donante(String clave) {
+    return DONANTES.stream()
+        .filter(d -> d.clave().equals(clave))
+        .findFirst()
+        .map(d -> d.conContacto(CONTACTOS.getOrDefault(d.clave(), SIN_CONTACTO)))
+        .orElse(null);
+  }
+
+  /** Las donaciones de ejemplo del donante (las de Ana, en la maqueta de Donaciones). */
+  @Override
+  public SusDonaciones donacionesDe(String clave) {
+    return AdminOperacionDonaciones.susDonaciones(clave);
   }
 
   /** Sin tildes ni mayúsculas, como busca Donaciones: "gomez" encuentra "Gómez". */
@@ -467,7 +524,8 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
 
   /** La lista entera de ejemplo: la pantalla busca y filtra sobre ella. */
   @Override
-  public AdminEntidadesVista entidades(String buscar, int pagina) {
+  public AdminEntidadesVista entidades(
+      String buscar, AdminEntidadesVista.Filtro filtro, int pagina) {
     return AdminPersonasEntidadesDeEjemplo.ENTIDADES;
   }
 
@@ -479,7 +537,8 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
 
   /**
    * El inicio de la ficha (R11-21): 3 organizaciones, 7 donaciones sin asignar (4 vencen) y 2
-   * propuestas; las cifras por tema, con 1 que no se pudo entregar, 2 vencidas y 1.284 entregas.
+   * propuestas; las cifras por tema, con 1 que no se pudo entregar, 2 vencidas y 1.284 entregas; y
+   * los gráficos de los últimos 12 meses (R11-42).
    */
   @Override
   public AdminInicioVista inicio() {
@@ -497,6 +556,7 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
             2),
         AL,
         new Cifras(
-            7, 4, 1, 1, 2, 9, "en octubre, del 1 al 15", 1_284, 46, 86, 92, new Camiones(1, 3)));
+            7, 4, 1, 1, 2, 9, "en octubre, del 1 al 15", 1_284, 46, 86, 92, new Camiones(1, 3)),
+        AdminInicioGraficosDeEjemplo.evolucion());
   }
 }

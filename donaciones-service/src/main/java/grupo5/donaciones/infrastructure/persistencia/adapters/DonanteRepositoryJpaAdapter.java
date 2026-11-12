@@ -49,7 +49,17 @@ public class DonanteRepositoryJpaAdapter
         SqlPersona.filtrar(
                 new ConsultaListado(DESDE), criterio.q(), criterio.tipo(), criterio.tipoJuridico())
             .siHay(criterio.activo(), "d.activo = :activo", "activo")
-            .siHay(criterio.categoriaId(), DE_LA_CATEGORIA, "categoriaId");
+            .siHay(criterio.categoriaId(), DE_LA_CATEGORIA, "categoriaId")
+            .siHay(
+                criterio.altaDesde() == null ? null : criterio.altaDesde().atStartOfDay(),
+                "d.fecha_alta >= :altaDesde",
+                "altaDesde")
+            .siHay(
+                criterio.altaHasta() == null
+                    ? null
+                    : criterio.altaHasta().plusDays(1).atStartOfDay(),
+                "d.fecha_alta < :altaHasta",
+                "altaHasta");
     if (criterio.canal() != null) {
       // Para contactar: activos, no anonimizados y con ese medio
       consulta

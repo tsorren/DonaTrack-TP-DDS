@@ -1,6 +1,7 @@
 package grupo5.donaciones.models.repositories.impl;
 
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
+import grupo5.donaciones.dto.entidadBeneficiaria.FiltroOrganizaciones;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
@@ -71,11 +72,17 @@ public class EntidadesBeneficiariasRepositoryEnMemoria
 
   @Override
   public Tramo<EntidadBeneficiaria> buscar(CriterioEntidades criterio) {
-    Map<UUID, String> razonSocial =
+    Map<UUID, Juridica> juridicas =
         personas.findAll().stream()
             .filter(Juridica.class::isInstance)
             .map(Juridica.class::cast)
+            .collect(Collectors.toMap(Juridica::getId, j -> j));
+    Map<UUID, String> razonSocial =
+        juridicas.values().stream()
             .collect(Collectors.toMap(Juridica::getId, Juridica::getRazonSocial));
+    FiltroOrganizaciones filtro = criterio.filtro();
+    Set<UUID> conNecesidades =
+        filtro.conNecesidades() == null ? Set.of() : conNecesidadesVigentes(criterio);
     Set<UUID> deLaCategoria =
         criterio.categoriaId() == null ? Set.of() : pidenDeLaCategoria(criterio);
     Set<UUID> donadas =
@@ -88,6 +95,12 @@ public class EntidadesBeneficiariasRepositoryEnMemoria
             .filter(e -> TextoBuscado.contiene(razonSocial.get(e.getId()), criterio.nombre()))
             .filter(e -> criterio.categoriaId() == null || deLaCategoria.contains(e.getId()))
             .filter(e -> criterio.donadasPor() == null || donadas.contains(e.getId()))
+            .filter(e -> filtro.activa() == null || filtro.activa() == e.estaActivo())
+            .filter(
+                e ->
+                    filtro.conNecesidades() == null
+                        || filtro.conNecesidades() == conNecesidades.contains(e.getId()))
+            .filter(e -> filtro.rubro() == null || delRubro(juridicas.get(e.getId()), filtro))
             .sorted(
                 Comparator.comparing(
                         (EntidadBeneficiaria e) ->
@@ -104,6 +117,25 @@ public class EntidadesBeneficiariasRepositoryEnMemoria
       return Set.of();
     }
     return asignadasA(donanteId).stream().filter(entidadIds::contains).collect(Collectors.toSet());
+  }
+
+  /** R11-43: el rubro de la jurídica, sin mayúsculas ni tildes; sin rubro, ninguno. */
+  private static boolean delRubro(Juridica juridica, FiltroOrganizaciones filtro) {
+    return juridica != null
+        && juridica.getRubro() != null
+        && TextoBuscado.normalizar(juridica.getRubro().trim())
+            .equals(TextoBuscado.normalizar(filtro.rubro()));
+  }
+
+  /** R11-43: las entidades con alguna necesidad activa y no vencida hoy, de cualquier categoría. */
+  private Set<UUID> conNecesidadesVigentes(CriterioEntidades criterio) {
+    if (necesidades == null) {
+      return Set.of();
+    }
+    return necesidades.findAll().stream()
+        .filter(n -> n.getEntidadId() != null && n.admiteAsignaciones(criterio.hoy()))
+        .map(Necesidad::getEntidadId)
+        .collect(Collectors.toSet());
   }
 
   /** Las entidades con una necesidad activa y no vencida de una subcategoría de la categoría. */

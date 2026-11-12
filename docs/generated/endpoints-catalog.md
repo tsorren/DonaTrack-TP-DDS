@@ -1,19 +1,20 @@
 # Catálogo Unificado de Endpoints REST — DonaTrack
 
 > **Fuente Canónica:** Especificaciones OpenAPI 3.0 en [`docs/arquitectura/contratos/`](../arquitectura/contratos/)
-> **Total de Endpoints:** 126
+> **Total de Endpoints:** 129
 
 <!-- AUTO-GENERATED: DO NOT EDIT MANUALLY -->
 
 ## Microservicio: DonaTrack - Donaciones Service API (`openapi-donaciones.yaml`)
 
-* **Versión:** `1.10.0`
+* **Versión:** `1.11.0`
 * **Descripción:** >-
 * **Servidor Local:** `http://localhost:8080`
 
 | Método | Path | Operación | Request Body | Códigos de Respuesta |
 |:---:|---|---|---|---|
 | `GET` | `/donaciones-independientes` | `listarDonacionesIndependientes` | `-` | `200 (DonacionIndependienteResponseDTO), 400 (-)` |
+| `GET` | `/donaciones-independientes/conteos` | `contarDonacionesDeEntidad` | `-` | `200 (ConteosDeEntidadDTO), 400 (-), 403 (-)` |
 | `GET` | `/donaciones-independientes/{id}` | `obtenerDonacionIndependientePorId` | `-` | `200 (DonacionIndependienteResponseDTO), 404 (-)` |
 | `PATCH` | `/donaciones-independientes/{id}/estado` | `cambiarEstadoDonacionIndependiente` | `CambioEstadoDonacionIndependienteRequestDTO` | `200 (DonacionIndependienteResponseDTO), 400 (-), 409 (-)` |
 | `POST` | `/api/donaciones` | `registrarDonacion` | `DonacionInputDTO` | `201 (DonacionOutputDTO), 400 (-), 409 (-)` |
@@ -30,9 +31,11 @@
 | `PUT` | `/api/necesidades/{id}` | `actualizarNecesidad` | `NecesidadDTO` | `200 (NecesidadDTO), 400 (-), 404 (-), 409 (-)` |
 | `DELETE` | `/api/necesidades/{id}` | `eliminarNecesidad` | `-` | `204 (-), 404 (-)` |
 | `GET` | `/api/necesidades/{id}/periodos` | `listarPeriodosDeNecesidad` | `-` | `200 (PeriodoNecesidadDTO), 404 (-)` |
-| `POST` | `/api/asignaciones/ejecuciones` | `ejecutarAsignacion` | `-` | `201 (-)` |
-| `GET` | `/api/asignaciones/ejecuciones` | `historialEjecucionesAsignacion` | `-` | `200 (-)` |
-| `GET` | `/api/asignaciones/propuestas` | `listarPropuestasAsignacion` | `-` | `200 (PropuestaDTO)` |
+| `POST` | `/api/asignaciones/ejecuciones` | `ejecutarAsignacion` | `-` | `201 (PropuestaDTO)` |
+| `GET` | `/api/asignaciones/ejecuciones` | `historialEjecucionesAsignacion` | `-` | `200 (-), 400 (-)` |
+| `GET` | `/api/asignaciones/propuestas` | `listarPropuestasAsignacion` | `-` | `200 (PropuestaDTO), 400 (-)` |
+| `GET` | `/api/asignaciones/propuestas/resumen` | `resumenPropuestasAsignacion` | `-` | `200 (ResumenPropuestasDTO)` |
+| `GET` | `/api/asignaciones/donaciones` | `listarDonacionesEnPropuestas` | `-` | `200 (DonacionEnPropuestasDTO), 400 (-)` |
 | `PUT` | `/api/asignaciones/propuestas/{id}/estado` | `actualizarEstadoPropuesta` | `-` | `200 (-), 409 (-)` |
 | `POST` | `/api/entidades` | `registrarEntidadBeneficiaria` | `-` | `200 (-), 201 (-), 400 (-), 404 (-), 409 (-)` |
 | `GET` | `/api/entidades` | `listarEntidadesBeneficiarias` | `-` | `200 (-), 400 (-)` |
@@ -76,14 +79,14 @@
 
 ## Microservicio: DonaTrack - Incentivos Service API (`openapi-incentivos.yaml`)
 
-* **Versión:** `1.0.0`
+* **Versión:** `1.1.0`
 * **Descripción:** API REST para gamificación, misiones por Template Method, asignación de insignias y cómputo de ranking mensual de donantes.
 * **Servidor Local:** `http://localhost:8082`
 
 | Método | Path | Operación | Request Body | Códigos de Respuesta |
 |:---:|---|---|---|---|
 | `GET` | `/api/incentivos/ranking/ultimo` | `obtenerUltimoRanking` | `-` | `200 (RankingMensualDTO), 204 (-)` |
-| `GET` | `/api/incentivos/ranking/historial` | `obtenerHistorialRankings` | `-` | `200 (RankingMensualDTO)` |
+| `GET` | `/api/incentivos/ranking/historial` | `obtenerHistorialRankings` | `-` | `200 (RankingMensualDTO), 400 (-)` |
 | `POST` | `/api/incentivos/ranking/calcular` | `calcularRanking` | `-` | `200 (RankingMensualDTO)` |
 | `GET` | `/api/incentivos/ranking/posicion/{donanteId}` | `obtenerPosicionRanking` | `-` | `200 (-), 204 (-)` |
 | `GET` | `/api/incentivos/ranking/{periodo}` | `obtenerRankingPorPeriodo` | `-` | `200 (RankingMensualDTO), 400 (-), 404 (-)` |
@@ -104,7 +107,7 @@
 
 ## Microservicio: DonaTrack - Logística Service API (`openapi-logistica.yaml`)
 
-* **Versión:** `1.9.0`
+* **Versión:** `1.11.0`
 * **Descripción:** API REST para planificación de rutas de transporte, seguimiento por paradas planificadas, asignación de choferes, mapa público de donaciones entregadas y trazabilidad de entregas.
 * **Servidor Local:** `http://localhost:8083`
 
@@ -112,10 +115,10 @@
 |:---:|---|---|---|---|
 | `POST` | `/api/entregas` | `crearEntrega` | `CrearEntregaRequestDTO` | `201 (EntregaResponseDTO), 400 (-), 409 (-)` |
 | `GET` | `/api/entregas` | `listarEntregas` | `-` | `200 (EntregaResponseDTO)` |
-| `GET` | `/api/entregas/mapa` | `listarMapaPublico` | `-` | `200 (EntregaMapaPublicoResponseDTO)` |
+| `GET` | `/api/entregas/mapa` | `listarMapaPublico` | `-` | `200 (EntregaMapaPublicoResponseDTO), 400 (-)` |
 | `GET` | `/api/entregas/seguimiento/donaciones/{idDonacion}` | `obtenerSeguimientoPorDonacion` | `-` | `200 (SeguimientoEntregaResponseDTO), 404 (-)` |
-| `GET` | `/api/entregas/seguimiento/beneficiarios/{idBeneficiaria}` | `listarSeguimientoPorBeneficiaria` | `-` | `200 (SeguimientoEntregaResponseDTO)` |
-| `GET` | `/api/entregas/seguimiento/donantes/{donanteId}` | `listarSeguimientoPorDonante` | `-` | `200 (SeguimientoEntregaResponseDTO)` |
+| `GET` | `/api/entregas/seguimiento/beneficiarios/{idBeneficiaria}` | `listarSeguimientoPorBeneficiaria` | `-` | `200 (SeguimientoEntregaResponseDTO), 400 (-)` |
+| `GET` | `/api/entregas/seguimiento/donantes/{donanteId}` | `listarSeguimientoPorDonante` | `-` | `200 (SeguimientoEntregaResponseDTO), 400 (-)` |
 | `GET` | `/api/entregas/{id}` | `obtenerEntregaPorId` | `-` | `200 (EntregaResponseDTO), 404 (-)` |
 | `PATCH` | `/api/entregas/{id}/estado` | `cambiarEstadoEntrega` | `CambioEstadoEntregaRequestDTO` | `200 (EntregaResponseDTO), 400 (-), 404 (-)` |
 | `PATCH` | `/api/entregas/{id}/fotos` | `adjuntarFotoRecepcion` | `AdjuntarFotoRecepcionRequestDTO` | `200 (EntregaResponseDTO), 400 (-), 404 (-)` |
@@ -144,7 +147,7 @@
 
 ## Microservicio: DonaTrack - Notificaciones Service API (`openapi-notificaciones.yaml`)
 
-* **Versión:** `1.2.0`
+* **Versión:** `1.3.0`
 * **Descripción:** API REST para despacho de alertas multicanal (Email, WhatsApp, SMS), sincronización idempotente de personas replicadas y gestión de historial de notificaciones.
 * **Servidor Local:** `http://localhost:8081`
 
@@ -152,8 +155,8 @@
 |:---:|---|---|---|---|
 | `POST` | `/notificaciones` | `procesarEventoNotificable` | `EventoNotificableDTO` | `202 (-), 400 (-)` |
 | `POST` | `/api/notificaciones/eventos` | `procesarEventoNotificableApi` | `EventoNotificableDTO` | `202 (-), 400 (-)` |
-| `GET` | `/notificaciones/persona/{personaId}` | `obtenerNotificacionesPorPersona` | `-` | `200 (NotificacionDTO)` |
-| `GET` | `/api/notificaciones/persona/{personaId}` | `obtenerNotificacionesPorPersonaApi` | `-` | `200 (NotificacionDTO)` |
+| `GET` | `/notificaciones/persona/{personaId}` | `obtenerNotificacionesPorPersona` | `-` | `200 (NotificacionDTO), 400 (ErrorResponse)` |
+| `GET` | `/api/notificaciones/persona/{personaId}` | `obtenerNotificacionesPorPersonaApi` | `-` | `200 (NotificacionDTO), 400 (ErrorResponse)` |
 | `GET` | `/api/notificaciones` | `obtenerNotificaciones` | `-` | `200 (NotificacionDTO), 400 (-)` |
 | `GET` | `/api/notificaciones/{id}` | `obtenerNotificacionPorId` | `-` | `200 (NotificacionDTO), 404 (-)` |
 | `GET` | `/api/notificaciones/persona/{personaId}/no-leidas/conteo` | `contarNoLeidas` | `-` | `200 (-)` |

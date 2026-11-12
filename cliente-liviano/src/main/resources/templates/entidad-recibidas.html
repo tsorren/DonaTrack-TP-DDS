@@ -10,7 +10,11 @@
        en el cuaderno de la portada, una fila por fecha. Las donaciones vienen del controller
        (recibidas: de la maqueta o de Donaciones); de piezas-entidad.html (datos) salen los grupos.
        ?escenario=vacio, lento, error y sin-resultados (el aceite ya no está y el filtro
-       queda en Con problema: el filtro sin resultados). */-->
+       queda en Con problema: el filtro sin resultados).
+       R11-43: con los datos reales llega una página de 20 (ya filtrada por Donaciones) y las cifras
+       de cada grupo (recibidas.cuantas) y del mes (recibidas.enElMes) las cuenta Donaciones; se
+       muestran todas las recibidas, no solo las del mes, con su paginador. La maqueta deja cuantas
+       en null: las cifras salen de la lista. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-recibidas', ~{::contenido})}">
 <head>
@@ -23,7 +27,8 @@
 
 <th:block th:fragment="cuerpo"
     th:with="asignadas=${escenario == 'vacio' ? {} : recibidas.asignadas.?[clave != 'aceite' or #root.escenario != 'sin-resultados']},
-             nombreRecibidas=${'Recibidas en ' + recibidas.mes},
+             paginada=${recibidas.cuantas != null},
+             nombreRecibidas=${paginada ? 'Recibidas' : 'Recibidas en ' + recibidas.mes},
              pedidos=${param.estado != null ? ',' + #strings.arrayJoin(param.estado, ',') + ',' : (escenario == 'sin-resultados' ? ',con-problema,' : '')},
              filtros=${ {
       {valor: 'en-tu-puerta', nombre: 'Esperan tu confirmación', grupo: 'puerta'},
@@ -69,7 +74,7 @@
       <input th:if="${escenario == 'sin-resultados'}" type="hidden" name="escenario" value="sin-resultados">
       <div class="filtros" role="group" aria-label="Estado">
         <th:block th:each="f : ${filtros}"
-                  th:with="rotulo=|${f.nombre} (${#lists.size(asignadas.?[grupo == #root.f.grupo])})|,
+                  th:with="rotulo=|${f.nombre} (${paginada ? recibidas.cuantas[f.grupo] : #lists.size(asignadas.?[grupo == #root.f.grupo])})|,
                            prendido=${claves.contains(f.grupo)}">
           <label th:replace="~{componentes/filtros :: interruptor('estado', ${f.valor}, ${rotulo}, ${prendido})}"></label>
         </th:block>
@@ -85,7 +90,7 @@
     <th:block th:if="${conDatos}">
       <!--/* Con un filtro puesto: cuál es y "Ver todas". */-->
       <p th:if="${filtrada and !#lists.isEmpty(encontradas)}" class="mostrando">
-        <span th:text="|Mostrando: ${#strings.listJoin(elegidos.![nombre], ', ')} (${#lists.size(encontradas)}).|">Mostrando:
+        <span th:text="|Mostrando: ${#strings.listJoin(elegidos.![nombre], ', ')} (${paginada ? recibidas.total : #lists.size(encontradas)}).|">Mostrando:
           En camino (1).</span>
         <a href="/entidad-recibidas" th:href="@{/entidad-recibidas}">Ver todas</a>
       </p>
@@ -103,7 +108,10 @@
                  th:aria-labelledby="|grupo-${g.clave}|">
           <!--/* Al filtrar, el foco va al título del grupo mostrado. */-->
           <h2 th:id="|grupo-${g.clave}|" th:attr="tabindex=${filtrada} ? '-1' : null, autofocus=${filtrada} ? 'autofocus' : null"
-              th:text="|${g.clave == 'recibida' ? nombreRecibidas : g.nombre} (${#lists.size(lista)})|">Esperan tu confirmación (2)</h2>
+              th:text="|${g.clave == 'recibida' ? nombreRecibidas : g.nombre} (${paginada ? recibidas.cuantas[g.clave] : #lists.size(lista)})|">Esperan tu confirmación (2)</h2>
+          <p th:if="${g.clave == 'recibida' and recibidas.enElMes != null}" class="mostrando"
+             th:text="${recibidas.enElMes == 1} ? |1 este mes (${recibidas.mes}).| : |${recibidas.enElMes} este mes (${recibidas.mes}).|">4
+            este mes (noviembre).</p>
 
           <!--/* Lo que todavía no se recibió: un acta por donación, con su estado y su próximo paso. */-->
           <ul th:if="${g.clave != 'recibida'}" class="lista actas" role="list">
@@ -146,7 +154,7 @@
             <li th:each="d : ${lista}">
               <article class="asiento" th:aria-labelledby="|don-${d.clave}|">
                 <p class="asiento-fecha"><time datetime="2026-10-10" th:datetime="${d.fecha}"><b
-                    th:text="${d.dia}">10</b><th:block th:text="| de ${recibidas.mes}|"> de octubre</th:block></time></p>
+                    th:text="${d.dia}">10</b><th:block th:text="| de ${recibidas.mesDe(d)}|"> de octubre</th:block></time></p>
                 <svg th:replace="~{componentes/sello :: sello('recibida')}"></svg>
                 <div class="asiento-texto">
                   <h3 th:id="|don-${d.clave}|" th:text="|${d.nombre}, ${d.cuanto}|">Lentejas secas, 10 kg</h3>
@@ -164,6 +172,7 @@
         </section>
       </th:block>
       </div>
+      <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
     </th:block>
   </div>
 </th:block>

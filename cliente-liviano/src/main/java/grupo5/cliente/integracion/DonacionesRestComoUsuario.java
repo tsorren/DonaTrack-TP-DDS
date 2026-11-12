@@ -54,7 +54,8 @@ class DonacionesRestComoUsuario implements DonacionesComoUsuario {
 
   @Override
   public void registrarEntidad(UUID juridicaId) {
-    var cuerpo = Map.of("juridicaId", juridicaId);
+    // origen=SOLICITUD (R11-26): el registro de actividad la anota como "aprobó la solicitud".
+    var cuerpo = Map.of("juridicaId", juridicaId, "origen", "SOLICITUD");
     donaciones.post().uri("/api/entidades").body(cuerpo).retrieve().toBodilessEntity();
   }
 

@@ -21,14 +21,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -46,6 +44,12 @@ import org.springframework.web.multipart.MultipartFile;
  * /api/necesidades/{id}}. Cuánto lleva recibido esa necesidad y la categoría del ranking de quien
  * ocultó su nombre no se piden. Confirmar sube las fotos ({@code POST /api/entregas/{id}/fotos}) y
  * pasa la entrega a ENTREGADA con el remito y, si lo hay, el reporte del problema.
+ *
+ * <p>Desde R11-43 no se leen todas las asignadas ni todas las entregas: el acta pide a Donaciones
+ * solo la donación de su clave ({@code id}, con la entidad) y, para ofrecer la que sigue, una
+ * página de 2 de las que están en la puerta o en traslado ({@code orden=ATENCION}, la puerta
+ * primero); de Logística, solo las entregas de esas donaciones. Confirmar busca la entrega por la
+ * donación ({@code idDonacion}).
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -73,29 +77,61 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
   }
 
   @Override
-  public List<EntidadEntregaVista> entregas(UUID entidad) {
-    List<Seguimiento> enLaPuerta =
-        porConfirmar(entidad)
-            .sorted(Comparator.comparingInt(s -> SE_CONFIRMAN.indexOf(s.estadoEntrega())))
-            .toList();
-    if (enLaPuerta.isEmpty()) {
+  public List<EntidadEntregaVista> entregas(UUID entidad, String pedida) {
+    UUID clave = comoId(pedida);
+    if (clave == null) {
       return List.of();
     }
-    Map<UUID, DonacionesApi.Donacion> asignadas =
-        donaciones.asignadas(entidad).stream()
-            .filter(d -> d.id() != null)
-            .collect(
-                Collectors.toMap(DonacionesApi.Donacion::id, Function.identity(), (a, b) -> a));
-    return enLaPuerta.stream()
-        .filter(s -> asignadas.containsKey(s.idDonacion()))
+    Map<UUID, DonacionesApi.Donacion> asignadas = new LinkedHashMap<>();
+    porConfirmar(entidad, clave, 1).forEach(d -> asignadas.put(d.id(), d));
+    if (asignadas.isEmpty()) {
+      // La pedida no espera la confirmación o no es de la entidad: el acta dice que no la encontró
+      return List.of();
+    }
+    porConfirmar(entidad, null, 2).stream()
+        .filter(d -> !clave.equals(d.id()))
+        .findFirst()
+        .ifPresent(d -> asignadas.put(d.id(), d));
+    MultiValueMap<String, String> filtros =
+        EntidadSeguimientoRest.deLasDonaciones(
+            asignadas.keySet().stream().map(UUID::toString).toList());
+    SE_CONFIRMAN.forEach(e -> filtros.add("estado", e));
+    return logistica.seguimientoDeEntidad(entidad, filtros).stream()
+        .filter(s -> SE_CONFIRMAN.contains(s.estadoEntrega()))
+        .filter(s -> s.idEntrega() != null && asignadas.containsKey(s.idDonacion()))
+        .sorted(Comparator.comparingInt(s -> SE_CONFIRMAN.indexOf(s.estadoEntrega())))
         .map(s -> entrega(s, asignadas.get(s.idDonacion())))
         .toList();
   }
 
-  private Stream<Seguimiento> porConfirmar(UUID entidad) {
-    return logistica.seguimientoDeEntidad(entidad).stream()
-        .filter(s -> SE_CONFIRMAN.contains(s.estadoEntrega()))
-        .filter(s -> s.idEntrega() != null && s.idDonacion() != null);
+  private static UUID comoId(String clave) {
+    if (clave == null || clave.isBlank()) {
+      return null;
+    }
+    try {
+      return UUID.fromString(clave.strip());
+    } catch (IllegalArgumentException noEsUnId) {
+      return null;
+    }
+  }
+
+  /**
+   * Las asignadas que esperan la confirmación, de a una página chica de Donaciones (R11-43): con
+   * {@code id}, solo esa (si es de la entidad y espera); sin {@code id}, las primeras {@code
+   * cuantas} en el orden de atención, la puerta primero. Ningún tope depende de cuántas haya.
+   */
+  private List<DonacionesApi.Donacion> porConfirmar(UUID entidad, UUID id, int cuantas) {
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    filtros.add("entidadId", entidad.toString());
+    if (id != null) {
+      filtros.add("id", id.toString());
+    }
+    SE_CONFIRMAN.forEach(e -> filtros.add("estado", e));
+    filtros.add("orden", "ATENCION");
+    filtros.add("size", String.valueOf(cuantas));
+    List<DonacionesApi.Donacion> pagina = donaciones.pagina(filtros).getBody();
+    return (pagina == null ? List.<DonacionesApi.Donacion>of() : pagina)
+        .stream().filter(d -> d.id() != null).toList();
   }
 
   private EntidadEntregaVista entrega(Seguimiento s, DonacionesApi.Donacion d) {
@@ -185,13 +221,17 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
   public void confirmar(UUID entidad, String clave, Acta acta) {
     // La clave es la donación; una clave que ya es la entrega (enlaces viejos) se usa tal cual
     // En cualquier estado: una segunda confirmación recibe el 400 de Logística, no un 404
+    // Solo la entrega de esa donación (R11-43); una clave que no es un id no llega a Logística
+    UUID pedida = UUID.fromString(clave);
     UUID entrega =
-        logistica.seguimientoDeEntidad(entidad).stream()
-            .filter(s -> s.idEntrega() != null && s.idDonacion() != null)
-            .filter(s -> s.idDonacion().toString().equals(clave))
+        logistica
+            .seguimientoDeEntidad(
+                entidad, EntidadSeguimientoRest.deLasDonaciones(List.of(pedida.toString())))
+            .stream()
+            .filter(s -> s.idEntrega() != null && pedida.equals(s.idDonacion()))
             .min(Comparator.comparing(s -> "CANCELADA".equals(s.estadoEntrega())))
             .map(Seguimiento::idEntrega)
-            .orElseGet(() -> UUID.fromString(clave));
+            .orElse(pedida);
     MultiValueMap<String, Object> partes = new LinkedMultiValueMap<>();
     acta.fotos().stream()
         .filter(f -> f != null && !f.isEmpty())

@@ -137,6 +137,26 @@ class DonanteMisionesControllerTest {
         .andExpect(content().string(containsString("Ver a quién donar")));
   }
 
+  /**
+   * R11-37: con una maceta elegida, "Ver toda la huerta" es el enlace que la suelta (el JavaScript
+   * lo toca al tocar afuera o con Esc) y la ficha marca lo que es "adentro"; sin elegir, no hay
+   * nada que soltar.
+   */
+  @Test
+  void conUnaMacetaElegidaTocarAfueraOEscLaSueltaPorElEnlaceDeVerTodaLaHuerta() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(misiones.misiones(eq(DONANTE))).thenReturn(conUnaCompleta());
+
+    mvc.perform(get("/donante-misiones?variante=misiones-b&lugar=estante-izq"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("data-suelta")))
+        .andExpect(content().string(containsString("data-suelta-adentro")));
+    mvc.perform(get("/donante-misiones?variante=misiones-b"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(not(containsString("data-suelta>"))))
+        .andExpect(content().string(not(containsString("data-suelta "))));
+  }
+
   @Test
   void quienNoEsUnaPersonaVeSinPermiso() throws Exception {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));

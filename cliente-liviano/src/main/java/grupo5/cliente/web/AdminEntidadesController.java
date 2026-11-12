@@ -43,8 +43,14 @@ public class AdminEntidadesController {
   private String mostrar(String pantalla, Model model, HttpServletRequest pedido) {
     String vista = pantallas.mostrar(pantalla, model);
     String buscar = pedido.getParameter("buscar");
+    AdminEntidadesVista.Filtro filtro =
+        new AdminEntidadesVista.Filtro(
+            pedido.getParameter("ver"),
+            pedido.getParameter("pedidos"),
+            pedido.getParameter("tipo"));
     AdminEntidadesVista datos =
-        personas.entidades(buscar == null ? "" : buscar.strip(), Paginadores.pedida(pedido));
+        personas.entidades(
+            buscar == null ? "" : buscar.strip(), filtro, Paginadores.pedida(pedido));
     model.addAttribute("adminEntidades", datos);
     model.addAttribute(
         "paginador",

@@ -72,6 +72,8 @@ class RutasGatewayTest {
     "GET, /api/donaciones/resumen, donaciones",
     "GET, /api/donaciones/destacadas, donaciones",
     "PUT, /api/subcategorias/3, donaciones",
+    "GET, /api/actividad, donaciones",
+    "POST, /api/actividad, donaciones",
     "GET, /api/asignaciones/propuestas, donaciones",
     "GET, /api/logistica/proveedores, donaciones",
     "PUT, /api/logistica/proveedor-preferido, donaciones",

@@ -4,6 +4,7 @@ import grupo5.donaciones.dto.donaciones.FiltroDonaciones;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ContadoresPublicosDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
+import grupo5.donaciones.dto.donaciones.outputs.EvolucionAdminDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ResumenAdminDTO;
 import grupo5.donaciones.services.ParametrosListado;
 import java.util.List;
@@ -17,6 +18,8 @@ public interface IDonacionesController {
       FiltroDonaciones filtro, ParametrosListado listado);
 
   ResponseEntity<ResumenAdminDTO> obtenerResumen();
+
+  ResponseEntity<EvolucionAdminDTO> obtenerEvolucion();
 
   ResponseEntity<DonacionOutputDTO> obtenerDonacion(UUID id);
 

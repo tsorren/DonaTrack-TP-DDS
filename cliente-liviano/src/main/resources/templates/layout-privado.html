@@ -57,46 +57,22 @@
       </li>
     </ul>
   </nav>
-  <!--/* El acceso fijo a Notificaciones del donante y de la entidad (fichas raices-donante-navegable.md
-         y raices-entidad-navegable.md, sección 2): no es una sección del menú; va en todas las
-         pantallas del rol, con la cantidad sin leer. En la maqueta son 4 del donante y 3 de la
-         entidad, y ninguna en la pantalla de después de marcarlas como leídas (al volver a otra
-         pantalla, la cuenta vuelve a la de ejemplo: límite de la maqueta). Un agregado: no mueve nada.
-         Desde la conexión de pantallas (SPEC-08) la cantidad la trae el modelo (sinLeer, de
-         Pantallas y el puerto AvisosSinLeer): en la maqueta, las de ejemplo; fuera, Notificaciones.
-         Desde el pulido del 2026-11-03 va también en Mi perfil, Seguimiento, Necesidades y Confirmar
-         recepción, que la corrida A/B había dejado sin tocar. Con la cuenta de la persona que dona
-         (F5), las 3 sin leer de su bandeja (templates/persona/donante-notificaciones.html). */-->
-  <a th:if="${perfil != null and (#strings.endsWith(perfil, '/donante-perfil') or #strings.endsWith(perfil, '/entidad-perfil'))}"
-     th:with="pantalla=${#execInfo.processedTemplateName},
-              avisos=${#strings.replace(perfil, '-perfil', '-notificaciones')},
-              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : sinLeer}"
-     class="armazon-avisos" href="/donante-notificaciones"
-     th:href="${avisos}"
-     th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
-     th:aria-current="${#strings.contains(pantalla, #strings.substringAfter(avisos, '/'))} ? 'page' : null">
-    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-      <path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>
-    </svg>
-    <span class="armazon-avisos-texto">Notificaciones</span>
-    <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">4</b>
-  </a>
-  <!--/* La campana de la administración (usuario, ronda 2026-11-09: "agregá la bell de notificaciones"):
-         la misma pieza, hacia admin-notificaciones, con 3 sin leer en la maqueta y ninguna después de
-         marcarlas como leídas. Se reconoce por su Mi perfil (R11-10: la administración tiene el suyo).
-         Un agregado: no cambia la de los otros roles ni el controlador. */-->
-  <a th:if="${perfil != null and #strings.endsWith(perfil, '/admin-perfil')}"
-     th:with="pantalla=${#execInfo.processedTemplateName},
-              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : sinLeer}"
-     class="armazon-avisos" href="/admin-notificaciones" th:href="@{/admin-notificaciones}"
-     th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
-     th:aria-current="${#strings.contains(pantalla, 'admin-notificaciones')} ? 'page' : null">
-    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-      <path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>
-    </svg>
-    <span class="armazon-avisos-texto">Notificaciones</span>
-    <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">3</b>
-  </a>
+  <!--/* La campanita de los tres roles (fichas raices-donante-navegable.md y raices-entidad-navegable.md,
+         sección 2; la del admin, ronda 2026-11-09; desplegable, R11-29 y R11-30, ficha
+         r11-p2-campanita.md): no es una sección del menú; va en todas las pantallas del rol, con la
+         cantidad sin leer, y abre un desplegable con las 5 sin leer más nuevas y «Ver todas» hacia la
+         bandeja del rol (pieza componentes/campanita.html). Se reconoce el área por su Mi perfil. La cantidad la
+         trae el modelo (sinLeer, de Pantallas y el puerto AvisosSinLeer): en la maqueta, 4 del
+         donante, 3 de la entidad y 3 de la administración, y ninguna en la pantalla de después de
+         marcarlas como leídas; fuera, Notificaciones (el admin, la bandeja de la Administración). */-->
+  <th:block th:if="${perfil != null and (#strings.endsWith(perfil, '/donante-perfil')
+                     or #strings.endsWith(perfil, '/entidad-perfil') or #strings.endsWith(perfil, '/admin-perfil'))}"
+            th:with="pantalla=${#execInfo.processedTemplateName},
+                     areaAvisos=${#strings.endsWith(perfil, '/donante-perfil') ? 'donante'
+                         : (#strings.endsWith(perfil, '/entidad-perfil') ? 'entidad' : 'admin')},
+                     sinLeerAvisos=${#strings.endsWith(pantalla, '-leidas') ? 0 : sinLeer}">
+    <details th:replace="~{componentes/campanita :: campana(${areaAvisos}, ${sinLeerAvisos})}"></details>
+  </th:block>
   <!--/* La cuenta: la foto de perfil y su menú (cuenta-menu.html), el mismo que lo público muestra
          con la sesión iniciada (docs/interfaz/flujos/r11-p1-portada.md). */-->
   <details th:replace="~{cuenta-menu :: menu}"></details>

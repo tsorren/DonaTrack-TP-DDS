@@ -10,6 +10,7 @@ import grupo5.notificaciones.dto.input.EventoDonacionEntregaFallidaV1;
 import grupo5.notificaciones.dto.input.EventoDonacionRecibidaV1;
 import grupo5.notificaciones.dto.input.EventoDonacionVencidaV1;
 import grupo5.notificaciones.dto.input.EventoDonanteRegistradoV1;
+import grupo5.notificaciones.dto.input.EventoImportacionTerminadaV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoDonanteInactivoV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoMisionCumplidaV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoSubioCategoriaV1;
@@ -164,6 +165,16 @@ public class NotificacionService {
     persistirYPublicar(mapper.toEntity(evento));
   }
 
+  /** Terminó o se cortó una importación: un aviso para la Administración (R11-30). */
+  @Transactional
+  public void procesar(EventoImportacionTerminadaV1 evento, @Nullable String messageId) {
+    UUID eventId = resolverEventId(messageId);
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
+    }
+    persistirYPublicar(mapper.toEntity(evento));
+  }
+
   @Transactional
   public void procesarPersonaSincronizada(
       grupo5.notificaciones.dto.PersonaReplicaDTO dto, @Nullable String messageId) {
@@ -237,10 +248,14 @@ public class NotificacionService {
     persistirYPublicar(mapper.toEntity(dto));
   }
 
-  /** Un aviso directo a una persona (hoy, el de mensaje de contacto nuevo a la Administración). */
+  /**
+   * Un aviso directo a una persona: hoy, solo el de mensaje de contacto nuevo a la Administración,
+   * por eso lleva el tipo {@code MENSAJE_CONTACTO} (R11-30) y ninguna referencia.
+   */
   @Transactional
   public void notificarPersona(UUID personaId, String mensaje) {
     Notificacion notificacion = new Notificacion(personaId, mensaje);
+    notificacion.etiquetar(TipoEvento.MENSAJE_CONTACTO.name(), null);
     repository.save(notificacion);
     publicarYLimpiarDomainEvents(notificacion);
   }

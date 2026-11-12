@@ -4,10 +4,13 @@ import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.repositories.CriterioSeguimiento;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
+import grupo5.logistica.models.repositories.TramoDeEntregas;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -193,5 +196,23 @@ public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
   private static int indiceEnRuta(UUID idEntrega, List<UUID> ordenRuta) {
     int index = ordenRuta.indexOf(idEntrega);
     return index >= 0 ? index : Integer.MAX_VALUE;
+  }
+
+  @Override
+  public List<Entrega> findByIds(Collection<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    return ids.stream().distinct().map(storage::get).filter(Objects::nonNull).toList();
+  }
+
+  @Override
+  public TramoDeEntregas buscarSeguimiento(CriterioSeguimiento criterio) {
+    return TramoDeEntregas.de(
+        storage.values().stream()
+            .filter(criterio::cumple)
+            .sorted(CriterioSeguimiento.ORDEN)
+            .toList(),
+        criterio);
   }
 }

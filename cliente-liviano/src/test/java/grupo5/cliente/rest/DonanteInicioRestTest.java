@@ -2,6 +2,7 @@ package grupo5.cliente.rest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
@@ -9,6 +10,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import grupo5.cliente.vistas.DonanteAnioVista;
 import grupo5.cliente.vistas.DonanteInicioVista;
+import grupo5.cliente.vistas.DonanteTableroVista;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.YearMonth;
@@ -65,7 +67,9 @@ class DonanteInicioRestTest {
 
   @Test
   void armaLasCifrasDelMesLasNoticiasYLasSinLeer() {
-    apis.expect(requestTo("http://logistica/api/entregas/seguimiento/donantes/" + DONANTE))
+    apis.expect(
+            requestTo(
+                "http://logistica/api/entregas/seguimiento/donantes/" + DONANTE + "?size=100"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
     apis.expect(
             requestTo("http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE))
@@ -101,7 +105,9 @@ class DonanteInicioRestTest {
 
   @Test
   void sinNotificacionesNiLogisticaElInicioSaleIgual() {
-    apis.expect(requestTo("http://logistica/api/entregas/seguimiento/donantes/" + DONANTE))
+    apis.expect(
+            requestTo(
+                "http://logistica/api/entregas/seguimiento/donantes/" + DONANTE + "?size=100"))
         .andRespond(withServerError());
     apis.expect(
             requestTo("http://donaciones/donaciones-independientes?size=100&donanteId=" + DONANTE))
@@ -211,5 +217,70 @@ class DonanteInicioRestTest {
     assertEquals(0, vista.total());
     assertFalse(vista.algunaVez());
     assertEquals(0, vista.sinLeer());
+  }
+
+  private static final String TENER = "&estado=ENTREGA_FALLIDA&estado=VENCIDA";
+  private static final String CAMINO =
+      "&estado=EN_TRASLADO&estado=EN_PUERTA&estado=ASIGNACION_REALIZADA"
+          + "&estado=LISTA_PARA_ENTREGAR";
+  private static final String LLEGO = "&estado=ENTREGADA";
+
+  /** Una asignada que espera el camión, hacia la entidad de ejemplo. */
+  private static final String ASIGNADA =
+      """
+      [{"id": "6f1c2c1e-0000-4000-8000-000000000004", "descripcion": "Leche en polvo",
+        "estadoActual": "AsignacionRealizada", "fechaRegistro": "2026-10-12T10:00:00",
+        "cantidad": 6, "entidadBeneficiariaId": "%s",
+        "historial": [{"estadoNuevo": "AsignacionRealizada", "timestamp": "2026-10-13T09:00:00"}]}]
+      """
+          .formatted(ENTIDAD);
+
+  @Test
+  void elTableroPideUnaPaginaDeTresPorColumnaYLasQueEsperanDestinoComoCifra() {
+    pagina(TENER + "&page=0&size=3", "[]", 0);
+    pagina("&estado=EN_DEPOSITO&page=0&size=1", "[]", 2);
+    pagina(CAMINO + "&page=1&size=3", ASIGNADA, 5);
+    pagina(LLEGO + "&page=0&size=3", "[]", 48);
+    apis.expect(requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
+        .andRespond(
+            withSuccess(
+                "[{\"id\": \"" + ENTIDAD + "\", \"razonSocial\": \"Comedor Barrio Ejemplo\"}]",
+                MediaType.APPLICATION_JSON));
+    apis.expect(
+            requestTo(
+                "http://logistica/api/entregas/seguimiento/donantes/" + DONANTE + "?size=100"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+    DonanteTableroVista tablero = adaptador.tablero(DONANTE, 1, 2, 1);
+
+    apis.verify();
+    assertEquals(0, tablero.tener().total());
+    assertEquals(2, tablero.esperanDestino());
+    assertEquals(5, tablero.camino().total());
+    assertEquals(2, tablero.camino().pagina());
+    assertEquals(2, tablero.camino().paginas());
+    assertEquals("Leche en polvo", tablero.camino().filas().getFirst().titulo());
+    assertEquals("Comedor Barrio Ejemplo", tablero.camino().filas().getFirst().destino());
+    assertEquals(48, tablero.llego().total());
+    assertEquals(16, tablero.llego().paginas());
+    assertEquals(5, tablero.enCurso());
+  }
+
+  @Test
+  void unaPaginaQueSePasaMuestraLaUltimaYUnaColumnaQueFallaQuedaSola() {
+    pagina(TENER + "&page=0&size=3", "[]", 0);
+    pagina("&estado=EN_DEPOSITO&page=0&size=1", "[]", 0);
+    apis.expect(requestTo(DONACIONES + DONANTE + CAMINO + "&page=0&size=3"))
+        .andRespond(withServerError());
+    pagina(LLEGO + "&page=98&size=3", "[]", 48);
+    pagina(LLEGO + "&page=15&size=3", "[]", 48);
+
+    DonanteTableroVista tablero = adaptador.tablero(DONANTE, 1, 1, 99);
+
+    apis.verify();
+    assertNull(tablero.camino());
+    assertNull(tablero.enCurso());
+    assertEquals(16, tablero.llego().pagina());
+    assertEquals(0, tablero.tener().total());
   }
 }

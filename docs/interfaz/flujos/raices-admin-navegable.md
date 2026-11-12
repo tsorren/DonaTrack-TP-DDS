@@ -153,6 +153,10 @@ sobria como su inicio, con la tierra, el papel y los sellos de estado del sitio.
 
 ### 4.1 `admin-donantes`, con importar CSV
 
+> **Desde R11 P2 (2026-11-12, aprobada):** la lista de esta sección pasa a ser una bandeja con
+> la ficha de cada donante al lado, según la ficha [Donantes y Donaciones como bandeja](r11-p2-admin-bandeja.md#41-admin-donantes)
+> (lote `p2-admin-bandeja`, R11-34). La importación, su avance y su resultado no cambian.
+
 ```text
 Donantes
 86 donantes activos, al 15 de octubre de 2026, 18:30.
@@ -397,6 +401,11 @@ localidad, provincia, país), Responsable y correo de contacto*
 
 ### 4.5 `admin-donaciones` y su detalle
 
+> **Desde R11 P2 (2026-11-12, aprobada):** la lista y el detalle de esta sección los reemplaza
+> la ficha [Donantes y Donaciones como bandeja](r11-p2-admin-bandeja.md#42-admin-donaciones)
+> (lote `p2-admin-bandeja`, R11-34): la ficha de la donación al lado de la lista, los filtros en
+> pastillas y el detalle aparte como puerta delantera. Marcar como vencida no cambia.
+
 ```text
 Donaciones
 Estado: [Todas ▾]  [Vencen en los próximos 7 días]  [Filtrar]
@@ -468,7 +477,7 @@ Donaciones › Registrar donación
 
 ### 4.7 `admin-asignaciones`
 
-> **Desde R11 (2026-11-12, en revisión):** esta sección la reemplaza la ficha
+> **Desde R11 (2026-11-12, aprobada):** esta sección la reemplaza la ficha
 > [Asignar donaciones, con lo que propuso cada algoritmo](r11-p1-asignaciones.md) (lote
 > `p1-asignaciones`, R11-24): pestañas Propuestas / Conflictos / Destino y el algoritmo y el puesto
 > de cada propuesta. Lo de abajo queda como estaba antes de R11.

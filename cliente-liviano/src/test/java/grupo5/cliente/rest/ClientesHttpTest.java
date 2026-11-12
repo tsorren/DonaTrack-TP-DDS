@@ -36,9 +36,9 @@ class ClientesHttpTest {
 
   private static final Caso INCENTIVOS =
       new Caso(
-          "/api/incentivos/ranking/historial",
+          "/api/incentivos/ranking/historial?page=0&size=12",
           "[]",
-          (http, token) -> http.incentivosApi(URL, token).historial());
+          (http, token) -> http.incentivosApi(URL, token).historial(0, 12));
   private static final Caso DONACIONES =
       new Caso(
           "/api/donaciones/contadores",

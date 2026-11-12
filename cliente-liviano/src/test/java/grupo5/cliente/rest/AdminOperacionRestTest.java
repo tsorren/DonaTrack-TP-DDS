@@ -3,6 +3,7 @@ package grupo5.cliente.rest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -20,6 +21,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import grupo5.cliente.puertos.AdminOperacionPuerto;
 import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
+import grupo5.cliente.vistas.AdminAsignacionesVista.Cubre;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Cuentas;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Decidida;
 import grupo5.cliente.vistas.AdminAsignacionesVista.DonacionEnJuego;
@@ -30,6 +32,7 @@ import grupo5.cliente.vistas.AdminCamionesVista.Camion;
 import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import grupo5.cliente.vistas.ConsultaAsignaciones;
+import grupo5.cliente.vistas.ConsultaDecididas;
 import grupo5.cliente.vistas.ConsultaDonaciones;
 import java.time.Clock;
 import java.time.Instant;
@@ -96,7 +99,9 @@ class AdminOperacionRestTest {
   private static final String RESUMEN_PROPUESTAS = ASIGNACIONES + "/propuestas/resumen";
   private static final String ULTIMA = ASIGNACIONES + "/ejecuciones?page=0&size=1";
   private static final String RECIENTES =
-      ASIGNACIONES + "/propuestas?page=0&size=3&estado=APROBADA&estado=DESCARTADA&orden=reciente";
+      ASIGNACIONES
+          + "/propuestas?page=0&size=3&estado=APROBADA&estado=DESCARTADA"
+          + "&orden=decision_reciente";
   private static final String D_ARROZ = "6f1c2c1e-0000-4000-8000-0000000000d1";
 
   /**
@@ -207,7 +212,16 @@ class AdminOperacionRestTest {
                 null)),
         vista.propuestas().filas());
     assertEquals(
-        List.of(new Decidida("Hogar Ejemplo", "Fideos, 20 kg", "Aprobada")), vista.recientes());
+        List.of(
+            new Decidida(
+                "Hogar Ejemplo",
+                "Fideos, 20 kg",
+                "Aprobada",
+                null,
+                "Se decidió antes de que guardáramos quién y cuándo.",
+                null,
+                List.of())),
+        vista.recientes());
     // Ni una necesidad ni una organización por propuesta, ni listas sin página (A11)
     donaciones.verify();
   }
@@ -352,6 +366,41 @@ class AdminOperacionRestTest {
     donaciones.verify();
   }
 
+  // R11-34: "La cubría" dice quién donó una sola vez, y nada si el donante ocultó su nombre
+  @Test
+  void lasDecididasDicenDeQuienEraCadaDonacionUnaSolaVez() {
+    resumen(0, 0, 0);
+    ultima("[]");
+    donaciones
+        .expect(
+            requestTo(ASIGNACIONES + "/propuestas?page=0&size=10&estado=PENDIENTE&situacion=LIBRE"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+
+    donaciones
+        .expect(requestTo(RECIENTES))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "%s", "estado": "APROBADA",
+                  "necesidad": {"descripcion": "Arroz", "cantidadNecesitada": 35,
+                                "entidadNombre": "Comedor Ejemplo", "unidad": "KILOGRAMO"},
+                  "fragmentaciones": [
+                    {"cantidadNecesaria": 25, "donacionIndependiente":
+                      {"id": "%s", "descripcion": "Arroz", "cantidad": 25,
+                       "quienDono": {"tipo": "HUMANA", "nombreVisible": "Ana Ejemplo"}}},
+                    {"cantidadNecesaria": 10, "donacionIndependiente":
+                      {"id": "%s", "descripcion": "Arroz", "cantidad": 10,
+                       "quienDono": {"tipo": "JURIDICA", "nombreVisible": null}}}]}]"""
+                    .formatted(P1, D_ARROZ, P2),
+                MediaType.APPLICATION_JSON));
+    AdminAsignacionesVista vista = adaptador.asignaciones(ConsultaAsignaciones.primera(), "");
+
+    assertEquals(
+        List.of(
+            new Cubre(D_ARROZ, "Arroz · 25 kg (de Ana Ejemplo)"), new Cubre(P2, "Arroz · 10 kg")),
+        vista.recientes().getFirst().cubria());
+  }
+
   @Test
   void todasLasDecididasSonUnaPaginaDeVeinteSinResumen() {
     donaciones
@@ -359,14 +408,79 @@ class AdminOperacionRestTest {
             requestTo(
                 ASIGNACIONES
                     + "/propuestas?page=1&size=20&estado=APROBADA&estado=DESCARTADA"
-                    + "&orden=reciente"))
+                    + "&orden=decision_reciente"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "25"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
     AdminAsignacionesVista vista =
         adaptador.asignaciones(ConsultaAsignaciones.de(null, "decididas", null, null, null, 2), "");
 
     assertEquals(25, vista.decididas().total());
     assertNull(vista.cuentas());
+    assertEquals(0, vista.sinFecha());
+    donaciones.verify();
+  }
+
+  // R11-35: la búsqueda, los filtros y el orden van a Donaciones; el motivo y quién decidió vuelven
+  @Test
+  void todasLasDecididasBuscaYFiltraEnDonaciones() {
+    String categoria = "6f1c2c1e-0000-4000-8000-0000000000ca";
+    donaciones
+        .expect(
+            requestTo(
+                ASIGNACIONES
+                    + "/propuestas?page=0&size=20&estado=DESCARTADA&orden=decision_antigua"
+                    + "&q=arroz&categoriaId="
+                    + categoria
+                    + "&decididaPor=SISTEMA&decididaDesde=2026-11-04&decididaHasta=2026-11-10"))
+        .andRespond(
+            withSuccess(
+                    """
+                    [{"id": "%s", "estado": "DESCARTADA", "decididaPor": "SISTEMA",
+                      "fechaDecision": "2026-11-09T17:40:00",
+                      "motivoDescarte": "  El merendero cerró por vacaciones. ",
+                      "necesidad": {"descripcion": "Arroz", "cantidadNecesitada": 10,
+                                    "entidadNombre": "Merendero Ejemplo", "unidad": "KILOGRAMO"}},
+                     {"id": "%s", "estado": "DESCARTADA",
+                      "necesidad": {"descripcion": "Arroz", "cantidadNecesitada": 5,
+                                    "entidadNombre": "Comedor Ejemplo", "unidad": "KILOGRAMO"}}]"""
+                        .formatted(P1, P2),
+                    MediaType.APPLICATION_JSON)
+                .header(Paginas.TOTAL, "2"));
+    donaciones
+        .expect(requestTo(RESUMEN_PROPUESTAS))
+        .andRespond(
+            withSuccess(
+                """
+                {"pendientes": 0, "libres": 0, "enConflicto": 0, "sinStock": 0,
+                 "decididasSinFecha": 4}""",
+                MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
+        .andRespond(
+            withSuccess(
+                "[{\"id\": \"%s\", \"nombre\": \"Alimentos\"}]".formatted(categoria),
+                MediaType.APPLICATION_JSON));
+
+    AdminAsignacionesVista vista =
+        adaptador.asignaciones(
+            ConsultaAsignaciones.de(null, "decididas", null, null, null, 1)
+                .conDecididas(
+                    new ConsultaDecididas(
+                        "arroz", "descartadas", categoria, "7-dias", "antes", "antiguas", "")),
+            "");
+
+    assertEquals(4, vista.sinFecha());
+    Decidida primera = vista.decididas().filas().getFirst();
+    assertEquals("Se descartó el 9 de noviembre de 2026, 17:40.", primera.quien());
+    assertEquals("El merendero cerró por vacaciones.", primera.motivo());
+    Decidida segunda = vista.decididas().filas().get(1);
+    assertEquals("Se decidió antes de que guardáramos quién y cuándo.", segunda.quien());
+    assertEquals("", segunda.motivo());
+    assertEquals(
+        List.of("", "vos", "antes"), vista.autores().stream().map(o -> o.valor()).toList());
     donaciones.verify();
   }
 
@@ -544,6 +658,9 @@ class AdminOperacionRestTest {
                 [{"tipo": "HUMANA", "id": "%s", "nombre": "Ana", "apellido": "Ejemplo"}]"""
                     .formatted(H1),
                 MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
     AdminDonacionesVista vista = adaptador.donaciones(new ConsultaDonaciones("", false, "", 1), "");
 
@@ -560,7 +677,7 @@ class AdminOperacionRestTest {
     assertEquals(true, leche.prontaAVencer());
     assertEquals("entregada", vista.donaciones().filas().get(0).estado());
     assertEquals("asignada", vista.donaciones().filas().get(2).estado());
-    assertFalse(vista.conVence());
+    assertTrue(vista.conVence());
     assertNull(vista.porVencer());
     assertEquals(
         "1 en el depósito · 1 asignada · 0 en camino · 1 entrega confirmada en noviembre. Al 10 de"
@@ -569,8 +686,9 @@ class AdminOperacionRestTest {
     donaciones.verify();
   }
 
+  // R11-34: "vencen pronto" lo filtra y lo ordena Donaciones (venceHasta y orden=vence)
   @Test
-  void elEstadoYElOrdenLosResuelveDonacionesYVencenProntoMuestraElDeposito() {
+  void elEstadoYElOrdenLosResuelveDonacionesYVencenProntoLoFiltraDonaciones() {
     donaciones
         .expect(requestTo(DONACIONES + "/api/donaciones/resumen"))
         .andRespond(withSuccess(RESUMEN, MediaType.APPLICATION_JSON));
@@ -582,28 +700,95 @@ class AdminOperacionRestTest {
                     + "&orden=antiguas&page=1&size=20"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "21"));
     donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    donaciones
         .expect(requestTo(DONACIONES + "/api/donaciones/resumen"))
         .andRespond(withSuccess(RESUMEN, MediaType.APPLICATION_JSON));
     donaciones
         .expect(
             requestTo(
                 DONACIONES
-                    + "/donaciones-independientes?estado=EN_DEPOSITO&orden=recientes&page=0&size=20"))
+                    + "/donaciones-independientes?estado=EN_DEPOSITO&orden=vence"
+                    + "&venceHasta=2026-11-17&page=0&size=20"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donaciones/resumen"))
+        .andRespond(withSuccess(RESUMEN, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "/donaciones-independientes?estado=EN_DEPOSITO&orden=antiguas"
+                    + "&venceHasta=2026-11-17&page=0&size=20"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
     AdminDonacionesVista enCamino =
         adaptador.donaciones(new ConsultaDonaciones("camino", false, "antigua", 2), "");
     AdminDonacionesVista pronto =
         adaptador.donaciones(new ConsultaDonaciones(null, true, "nombre", 1), "");
+    AdminDonacionesVista prontoPorRegistro =
+        adaptador.donaciones(new ConsultaDonaciones(null, true, "antigua", 1), "");
 
     assertEquals(2, enCamino.donaciones().pagina());
     assertEquals("antigua", enCamino.consulta().orden());
+    // "nombre" no es un orden de la fuente: queda el de partida, que con "vencen pronto" es vence
     assertEquals("", pronto.consulta().orden());
+    assertTrue(pronto.conVence());
+    assertNull(pronto.porVencer());
+    assertEquals("antigua", prontoPorRegistro.consulta().orden());
     assertEquals(
-        "1 donación del depósito vence en los próximos 7 días; la primera, Leche en polvo, el 12"
-            + " de noviembre. Esta lista todavía no se puede filtrar por vencimiento: te mostramos"
-            + " todas las del depósito.",
-        pronto.porVencer());
+        List.of("", "antigua", "vence"),
+        pronto.criterios().stream().map(AdminDonacionesVista.Criterio::valor).toList());
+    donaciones.verify();
+  }
+
+  // R11-34: la búsqueda, la categoría, el período de registro y el donante van a Donaciones
+  @Test
+  void laBandejaDeDonacionesBuscaYFiltraEnDonaciones() {
+    String categoria = "6f1c2c1e-0000-4000-8000-0000000000ca";
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/donaciones/resumen"))
+        .andRespond(withSuccess(RESUMEN, MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "/donaciones-independientes?orden=recientes&q=leche&categoriaId="
+                    + categoria
+                    + "&donanteId="
+                    + H1
+                    + "&desde=2026-11-04&hasta=2026-11-10&page=0&size=20"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/categorias"))
+        .andRespond(
+            withSuccess(
+                "[{\"id\": \"%s\", \"nombre\": \"Alimentos\"}]".formatted(categoria),
+                MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(requestTo(DONACIONES + "/api/personas?id=" + H1 + "&size=1"))
+        .andRespond(
+            withSuccess(
+                """
+                [{"tipo": "HUMANA", "id": "%s", "nombre": "Ana", "apellido": "Ejemplo"}]"""
+                    .formatted(H1),
+                MediaType.APPLICATION_JSON));
+
+    AdminDonacionesVista vista =
+        adaptador.donaciones(
+            new ConsultaDonaciones("", false, "", 1, "leche", categoria, "7-dias", H1, ""), "");
+
+    assertEquals("Ana Ejemplo", vista.donante());
+    assertEquals(
+        List.of(new AdminDonacionesVista.Opcion(categoria, "Alimentos")), vista.categorias());
+    assertEquals(0, vista.donaciones().total());
     donaciones.verify();
   }
 

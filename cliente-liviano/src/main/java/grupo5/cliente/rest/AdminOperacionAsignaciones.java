@@ -3,7 +3,10 @@ package grupo5.cliente.rest;
 import static grupo5.cliente.vistas.AdminAsignacionesVista.MENOS_RECIBIERON;
 import static grupo5.cliente.vistas.AdminAsignacionesVista.PARECIDO;
 
+import grupo5.cliente.puertos.DirectorioDeAdministradores;
+import grupo5.cliente.puertos.DirectorioDeAdministradores.Administrador;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
+import grupo5.cliente.vistas.AdminAsignacionesVista.Cubre;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Cuentas;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Decidida;
 import grupo5.cliente.vistas.AdminAsignacionesVista.DonacionEnJuego;
@@ -11,10 +14,12 @@ import grupo5.cliente.vistas.AdminAsignacionesVista.Opcion;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Propuesta;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Sugerencia;
 import grupo5.cliente.vistas.ConsultaAsignaciones;
+import grupo5.cliente.vistas.ConsultaDecididas;
 import grupo5.cliente.vistas.Tramo;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,13 +28,17 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
 
 /**
  * Asignar donaciones desde Donaciones (R11-24, ficha r11-p1-asignaciones). Cada pestaña hace un
  * número fijo de pedidos, todos acotados: una página de la lista, el resumen (las cifras de las
  * pestañas) y la última ejecución; Propuestas suma las 3 decididas más recientes. Nunca pide la
  * lista entera ni una necesidad o una organización por propuesta: la propuesta ya trae la
- * organización, la unidad, quién la sugirió y su situación.
+ * organización, la unidad, quién la sugirió y su situación. Todas las decididas (R11-35) suma la
+ * búsqueda y los filtros resueltos en Donaciones, el nombre de quien decidió (por {@link
+ * AutoresDelHistorial}), las opciones de "Decidió" (hasta {@link #CUENTAS_EN_EL_MENU} cuentas del
+ * directorio, de a 10) y cuántas decididas no tienen fecha (del resumen).
  */
 final class AdminOperacionAsignaciones {
 
@@ -37,6 +46,7 @@ final class AdminOperacionAsignaciones {
   static final int DECIDIDAS_POR_PAGINA = 20;
   static final int EN_DESTINO = 20;
   static final int RECIENTES = 3;
+  static final int CUENTAS_EN_EL_MENU = 30;
 
   private static final String ESTADO = "estado";
   private static final String SITUACION = "situacion";
@@ -50,24 +60,51 @@ final class AdminOperacionAsignaciones {
 
   private final DonacionesApi donaciones;
   private final LocalDateTime ahora;
+  private final DirectorioDeAdministradores cuentas;
+  private final AutoresDelHistorial autores;
 
   /** {@code ahora}: la hora de la Argentina, para "hoy, 0:00" y los días en el depósito. */
   AdminOperacionAsignaciones(DonacionesApi donaciones, LocalDateTime ahora) {
+    this(donaciones, ahora, null);
+  }
+
+  /** {@code cuentas}: el directorio que da el nombre de quien decidió (null: sin nombres). */
+  AdminOperacionAsignaciones(
+      DonacionesApi donaciones, LocalDateTime ahora, DirectorioDeAdministradores cuentas) {
     this.donaciones = donaciones;
     this.ahora = ahora;
+    this.cuentas = cuentas;
+    this.autores = AutoresDelHistorial.con(cuentas);
   }
 
   AdminAsignacionesVista vista(ConsultaAsignaciones consulta) {
     if (ConsultaAsignaciones.DECIDIDAS.equals(consulta.pestana())) {
+      ConsultaDecididas busqueda = consulta.decididas();
       Tramo<Decidida> decididas =
           mapear(
               Paginas.pedir(
                   consulta.pagina(),
                   DECIDIDAS_POR_PAGINA,
-                  n -> donaciones.propuestas(decididas(n, DECIDIDAS_POR_PAGINA))),
-              this::decidida);
+                  n -> donaciones.propuestas(decididas(n, DECIDIDAS_POR_PAGINA, busqueda))),
+              p -> decidida(p, true));
+      long sinFecha =
+          busqueda.decidida().isEmpty()
+              ? 0
+              : Optional.ofNullable(donaciones.resumenPropuestas())
+                  .map(r -> numero(r.decididasSinFecha()))
+                  .orElse(0L);
       return new AdminAsignacionesVista(
-          consulta, null, null, null, List.of(), decididas, List.of(), null, null);
+          consulta,
+          null,
+          null,
+          null,
+          List.of(),
+          decididas,
+          categorias(),
+          null,
+          null,
+          opcionesDeAutor(busqueda),
+          sinFecha);
     }
     Cuentas cuentas = cuentas();
     String ultima = ultima();
@@ -139,8 +176,9 @@ final class AdminOperacionAsignaciones {
   private List<Decidida> recientes() {
     List<DonacionesApi.Propuesta> filas =
         Objects.requireNonNullElse(
-            donaciones.propuestas(decididas(0, RECIENTES)).getBody(), List.of());
-    return filas.stream().map(this::decidida).toList();
+            donaciones.propuestas(decididas(0, RECIENTES, ConsultaDecididas.ninguna())).getBody(),
+            List.of());
+    return filas.stream().map(p -> decidida(p, false)).toList();
   }
 
   private AdminAsignacionesVista destino(
@@ -194,14 +232,53 @@ final class AdminOperacionAsignaciones {
                   return donaciones.donacionesEnPropuestas(filtros);
                 }),
             this::enJuego);
-    List<Opcion> categorias =
-        Objects.requireNonNullElse(donaciones.categorias(), List.<DonacionesApi.Categoria>of())
-            .stream()
-            .filter(c -> c.id() != null && c.nombre() != null)
-            .map(c -> new Opcion(c.id().toString(), c.nombre()))
-            .toList();
     return new AdminAsignacionesVista(
-        consulta, cuentas, ultima, null, List.of(), null, categorias, enJuego, null);
+        consulta, cuentas, ultima, null, List.of(), null, categorias(), enJuego, null);
+  }
+
+  private List<Opcion> categorias() {
+    return Objects.requireNonNullElse(donaciones.categorias(), List.<DonacionesApi.Categoria>of())
+        .stream()
+        .filter(c -> c.id() != null && c.nombre() != null)
+        .map(c -> new Opcion(c.id().toString(), c.nombre()))
+        .toList();
+  }
+
+  /**
+   * Las opciones de "Decidió": Cualquiera, Vos, cada cuenta de administración por su nombre (si son
+   * hasta 30; se piden de a 10) y "Antes de las cuentas". Si el directorio no responde o son más de
+   * 30, solo las tres fijas; una cuenta elegida que no está en la lista se agrega con su nombre,
+   * para que la pastilla diga lo aplicado.
+   */
+  private List<Opcion> opcionesDeAutor(ConsultaDecididas busqueda) {
+    List<Opcion> opciones = new ArrayList<>();
+    opciones.add(new Opcion("", "Cualquiera"));
+    opciones.add(new Opcion(ConsultaDecididas.VOS, "Vos"));
+    if (cuentas != null) {
+      try {
+        long total = cuentas.total();
+        if (total <= CUENTAS_EN_EL_MENU) {
+          int paginas = (int) Math.ceil(total / (double) DirectorioDeAdministradores.POR_PAGINA);
+          for (int n = 1; n <= paginas; n++) {
+            for (Administrador a : cuentas.pagina(n)) {
+              if (!a.id().equals(busqueda.vos())) {
+                opciones.add(new Opcion(a.id(), autores.de(a.id())));
+              }
+            }
+          }
+        }
+      } catch (RestClientException noResponde) {
+        // Sin el directorio, quedan las opciones fijas
+      }
+    }
+    String elegida = busqueda.decidio();
+    if (!elegida.isEmpty()
+        && !ConsultaDecididas.ANTES.equals(elegida)
+        && opciones.stream().noneMatch(o -> o.valor().equals(elegida))) {
+      opciones.add(new Opcion(elegida, autores.de(elegida)));
+    }
+    opciones.add(new Opcion(ConsultaDecididas.ANTES, "Antes de las cuentas"));
+    return opciones;
   }
 
   private Cuentas cuentas() {
@@ -356,12 +433,54 @@ final class AdminOperacionAsignaciones {
     };
   }
 
-  private Decidida decidida(DonacionesApi.Propuesta p) {
+  /** {@code conMotivo}: Todas las decididas muestra el motivo; las 3 recientes, no. */
+  private Decidida decidida(DonacionesApi.Propuesta p, boolean conMotivo) {
     String unidad = p.necesidad() == null ? null : p.necesidad().unidad();
+    boolean aprobada = APROBADA.equals(p.estado());
+    List<DonacionesApi.Fragmento> fragmentos = fragmentos(p);
     return new Decidida(
         entidad(p),
         pide(p.necesidad(), unidad),
-        APROBADA.equals(p.estado()) ? "Aprobada" : "Descartada");
+        aprobada ? "Aprobada" : "Descartada",
+        fragmentos.stream()
+            .map(DonacionesApi.Fragmento::donacionIndependiente)
+            .filter(Objects::nonNull)
+            .map(Comun::categoria)
+            .filter(Objects::nonNull)
+            .map(DonacionesApi.Categoria::nombre)
+            .findFirst()
+            .orElse(null),
+        quien(p, aprobada),
+        conMotivo && !aprobada ? motivo(p.motivoDescarte()) : null,
+        fragmentos.stream()
+            .filter(f -> f.donacionIndependiente() != null)
+            .map(f -> cubre(f, unidad))
+            .toList());
+  }
+
+  /** "Aprobó Ana Pérez el 12 de noviembre de 2026, 10:15.", o la frase sin dato. */
+  private String quien(DonacionesApi.Propuesta p, boolean aprobada) {
+    String verbo = aprobada ? "Aprobó" : "Descartó";
+    String autor = autores.de(p.decididaPor());
+    if (p.fechaDecision() == null) {
+      return autor.isEmpty()
+          ? "Se decidió antes de que guardáramos quién y cuándo."
+          : verbo + " " + autor + ".";
+    }
+    String cuando =
+        Comun.DIA_Y_ANIO.format(p.fechaDecision()) + ", " + Comun.HORA.format(p.fechaDecision());
+    return autor.isEmpty()
+        ? (aprobada ? "Se aprobó" : "Se descartó") + " el " + cuando + "."
+        : verbo + " " + autor + " el " + cuando + ".";
+  }
+
+  private static String motivo(String motivo) {
+    return motivo == null || motivo.isBlank() ? "" : motivo.strip();
+  }
+
+  private static Cubre cubre(DonacionesApi.Fragmento f, String unidad) {
+    // fragmento() ya agrega " (de <nombre>)" si el donante no lo ocultó
+    return new Cubre(f.donacionIndependiente().id().toString(), fragmento(f, unidad));
   }
 
   // --- Destino -----------------------------------------------------------------------------------
@@ -437,11 +556,33 @@ final class AdminOperacionAsignaciones {
     return filtros;
   }
 
-  private static MultiValueMap<String, String> decididas(int numero, int tamanio) {
+  /** Las decididas, con la búsqueda y los filtros de Todas las decididas (R11-35). */
+  private MultiValueMap<String, String> decididas(int numero, int tamanio, ConsultaDecididas b) {
     MultiValueMap<String, String> filtros = pagina(numero, tamanio);
-    filtros.add(ESTADO, APROBADA);
-    filtros.add(ESTADO, DESCARTADA);
-    filtros.add("orden", "reciente");
+    if (!ConsultaDecididas.DESCARTADAS.equals(b.estado())) {
+      filtros.add(ESTADO, APROBADA);
+    }
+    if (!ConsultaDecididas.APROBADAS.equals(b.estado())) {
+      filtros.add(ESTADO, DESCARTADA);
+    }
+    filtros.add(
+        "orden",
+        ConsultaDecididas.ANTIGUAS.equals(b.orden()) ? "decision_antigua" : "decision_reciente");
+    if (!b.buscar().isEmpty()) {
+      filtros.add("q", b.buscar());
+    }
+    UUID categoria = uuid(b.categoria());
+    if (categoria != null) {
+      filtros.add("categoriaId", categoria.toString());
+    }
+    if (b.autor() != null) {
+      filtros.add("decididaPor", b.autor());
+    }
+    LocalDate[] periodo = b.periodo(hoy());
+    if (periodo[0] != null) {
+      filtros.add("decididaDesde", periodo[0].toString());
+      filtros.add("decididaHasta", periodo[1].toString());
+    }
     return filtros;
   }
 

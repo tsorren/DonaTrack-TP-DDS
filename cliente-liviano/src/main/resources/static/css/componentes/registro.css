@@ -95,7 +95,8 @@
    hueco de siempre. */
 .registro-indice {
   position: sticky;
-  top: 0;
+  /* Debajo de la cabecera fija (R11-33). */
+  top: var(--medida-cabecera-fija);
   z-index: 1;
   margin-inline: -0.25rem;
   padding: 0.5rem 0.25rem 0.25rem;

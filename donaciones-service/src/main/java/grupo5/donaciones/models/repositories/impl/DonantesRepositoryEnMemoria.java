@@ -70,6 +70,14 @@ public class DonantesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Donante
             .filter(d -> criterio.activo() == null || d.estaActivo() == criterio.activo())
             .filter(d -> criterio.categoriaId() == null || deLaCategoria.contains(d.getId()))
             .filter(
+                d ->
+                    criterio.altaDesde() == null
+                        || !d.getFechaAlta().toLocalDate().isBefore(criterio.altaDesde()))
+            .filter(
+                d ->
+                    criterio.altaHasta() == null
+                        || !d.getFechaAlta().toLocalDate().isAfter(criterio.altaHasta()))
+            .filter(
                 d -> {
                   Persona persona = personaPorId.get(d.personaId());
                   return persona != null && cumple(persona, d, criterio);

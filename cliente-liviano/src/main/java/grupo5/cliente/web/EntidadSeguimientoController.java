@@ -3,6 +3,7 @@ package grupo5.cliente.web;
 import grupo5.cliente.puertos.CuentaActual;
 import grupo5.cliente.puertos.EntidadSeguimientoPuerto;
 import grupo5.cliente.puertos.RecibidasPuerto;
+import grupo5.cliente.vistas.RecibidasVista;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,7 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  * Seguir entregas de la entidad (RF-14): lo asignado (el puerto de Donaciones recibidas) y la
- * última noticia de cada entrega. Sin entidad, manda a ingresar.
+ * última noticia de cada entrega. Sin entidad, manda a ingresar. Desde R11-43, de a una página de
+ * lo que todavía no se recibió, y las noticias solo de las entregas de esa página.
  */
 @Controller
 public class EntidadSeguimientoController {
@@ -40,8 +42,15 @@ public class EntidadSeguimientoController {
     if (entidad.isEmpty()) {
       return Entidad.INGRESAR;
     }
-    model.addAttribute("recibidas", recibidas.recibidas(entidad.get()));
-    model.addAttribute("noticiasDeEntregas", seguimientos.noticias(entidad.get()));
+    RecibidasVista datos =
+        recibidas.recibidas(entidad.get(), RecibidasVista.SIN_RECIBIR, Paginadores.pedida(pedido));
+    model.addAttribute("recibidas", datos);
+    model.addAttribute("paginador", Paginadores.de(pedido, "Páginas de entregas", datos.tramo()));
+    model.addAttribute(
+        "noticiasDeEntregas",
+        seguimientos.noticias(
+            entidad.get(),
+            datos.asignadas().stream().map(RecibidasVista.Recibida::clave).toList()));
     model.addAttribute("dibujoDeEjemplo", seguimientos.dibujoDeEjemplo());
     return vista;
   }

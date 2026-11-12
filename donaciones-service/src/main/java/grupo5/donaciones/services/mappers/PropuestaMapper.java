@@ -148,7 +148,8 @@ public class PropuestaMapper {
         propuesta.getFechaDecision(),
         sugeridaPor,
         enListado.situacion(),
-        enListado.otrasPendientesMismaNecesidad());
+        enListado.otrasPendientesMismaNecesidad(),
+        propuesta.getMotivoDescarte());
   }
 
   /** Lo que hace falta para armar una página, leído una vez y por lote. */

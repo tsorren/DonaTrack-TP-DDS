@@ -29,6 +29,11 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
 
   private LocalDateTime fechaDecision;
 
+  /**
+   * Por qué se descartó (R11-35), recortado; null si se aprobó, si no se anotó o si es de antes.
+   */
+  private String motivoDescarte;
+
   /** Qué algoritmos la sugirieron y en qué puesto (R11-24); vacía en las anteriores a V24. */
   @Getter(AccessLevel.NONE)
   private List<SugerenciaDeAlgoritmo> sugerencias = new ArrayList<>();
@@ -95,6 +100,11 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
     }
     sugerencias.removeIf(s -> s.algoritmo() == sugerencia.algoritmo());
     sugerencias.add(sugerencia);
+  }
+
+  /** Lo hidrata el adaptador de persistencia, sin validar (R11-35). */
+  public void reconstituirMotivoDescarte(String guardado) {
+    this.motivoDescarte = guardado;
   }
 
   /** Lo hidrata el adaptador de persistencia, sin validar. */
@@ -167,6 +177,12 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
     }
     this.estado = EstadoPropuesta.DESCARTADA;
     registrarDecision(actorODefecto(actor));
+  }
+
+  /** Descarta y guarda por qué (R11-35): el texto recortado; vacío o nulo, sin motivo. */
+  public void rechazar(String actor, String motivo) {
+    rechazar(actor);
+    this.motivoDescarte = motivo == null || motivo.isBlank() ? null : motivo.strip();
   }
 
   private void registrarDecision(String actor) {

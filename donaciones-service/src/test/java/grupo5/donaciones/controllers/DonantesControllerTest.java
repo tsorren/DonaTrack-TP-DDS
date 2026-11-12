@@ -139,6 +139,8 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
                 .param("activo", "true")
                 .param("categoriaId", categoriaId.toString())
                 .param("orden", "NOMBRE")
+                .param("altaDesde", "2026-11-01")
+                .param("altaHasta", "2026-11-12")
                 .param("page", "1")
                 .param("size", "50"))
         .andExpect(status().isOk())
@@ -146,7 +148,14 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
 
     verify(donantesService)
         .buscar(
-            new FiltroDonantes("CORREO", TipoPersona.HUMANA, null, true, categoriaId),
+            new FiltroDonantes(
+                "CORREO",
+                TipoPersona.HUMANA,
+                null,
+                true,
+                categoriaId,
+                LocalDate.of(2026, 11, 1),
+                LocalDate.of(2026, 11, 12)),
             new ParametrosListado(1, 50, "gómez", "NOMBRE"));
   }
 

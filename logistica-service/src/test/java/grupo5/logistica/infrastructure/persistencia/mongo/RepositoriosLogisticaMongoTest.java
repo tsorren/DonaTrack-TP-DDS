@@ -40,6 +40,7 @@ import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.testutils.CamionMother;
 import grupo5.logistica.testutils.ChoferMother;
 import grupo5.logistica.testutils.EntregaMother;
+import grupo5.logistica.testutils.SeguimientoDePrueba;
 import grupo5.logistica.testutils.SolicitudPlanificacionMother;
 import java.time.Clock;
 import java.time.Instant;
@@ -385,5 +386,10 @@ class RepositoriosLogisticaMongoTest {
             .map(IndexInfo::getName)
             .toList();
     assertTrue(indices.contains("idx_entrega_estado_hora_arribo"));
+  }
+
+  @Test
+  void elSeguimiento_seFiltraOrdenaCortaYCuentaEnLaBase() {
+    SeguimientoDePrueba.verificar(entregas);
   }
 }

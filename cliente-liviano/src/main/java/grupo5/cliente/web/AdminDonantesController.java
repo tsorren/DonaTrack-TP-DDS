@@ -3,7 +3,9 @@ package grupo5.cliente.web;
 import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.puertos.DescargaDeFilas;
 import grupo5.cliente.vistas.AdminDonantesVista;
+import grupo5.cliente.vistas.AdminDonantesVista.Donante;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
+import grupo5.cliente.vistas.AdminDonantesVista.SusDonaciones;
 import grupo5.cliente.vistas.ConsultaDonantes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,8 +13,11 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
@@ -50,9 +55,14 @@ public class AdminDonantesController {
   /** La última importación que subió el admin en esta sesión. */
   static final String SESION = "adminDonantesImportacion";
 
+  private static final Logger LOG = LoggerFactory.getLogger(AdminDonantesController.class);
+
   private static final String DONANTES = "admin-donantes";
   private static final String MODELO = "adminDonantes";
   private static final String IMPORTAR_ERROR = "importar-error";
+
+  /** El aviso en el lugar de la ficha (R11-34): {@code no-existe} o {@code no-cargo}. */
+  static final String FICHA_AVISO = "fichaAviso";
 
   /** Lo que se guarda en la sesión: el archivo y el nombre con que se subió. */
   record DeLaSesion(UUID archivo, String nombre) implements Serializable {}
@@ -71,15 +81,70 @@ public class AdminDonantesController {
       @RequestParam(required = false) String tipo,
       @RequestParam(required = false) String dona,
       @RequestParam(required = false) String estado,
+      @RequestParam(required = false) String alta,
       @RequestParam(required = false) String orden,
+      @RequestParam(required = false) String donante,
       HttpServletRequest pedido,
       HttpSession sesion,
       Model model) {
     String vista = pantallas.mostrar(DONANTES, model);
     ConsultaDonantes consulta =
-        new ConsultaDonantes(buscar, tipo, dona, estado, orden, Paginadores.pedida(pedido));
-    lista(personas.donantes(consulta).conImportacion(franja(sesion)), pedido, model);
+        new ConsultaDonantes(buscar, tipo, dona, estado, orden, Paginadores.pedida(pedido), alta);
+    AdminDonantesVista datos = personas.donantes(consulta).conImportacion(franja(sesion));
+    lista(datos, pedido, model);
+    elegido(datos, donante, model);
     return vista;
+  }
+
+  /**
+   * La bandeja (R11-34, ficha r11-p2-admin-bandeja §4 y §5): {@code donanteElegido}, la clave del
+   * donante cuya ficha se abre, y {@code donantePartida}, si es el de partida (sin {@code
+   * ?donante=}: el primero de la página; en el celular su ficha no se abre sola). Si el pedido no
+   * está en la página, se lee por su clave y va en {@code donanteFuera} (su ficha, antes de los
+   * renglones; ninguno queda marcado); si no existe o no se pudo leer, {@code fichaAviso} dice
+   * {@code no-existe} o {@code no-cargo} y la pantalla lo avisa en el lugar de la ficha. La ficha
+   * pide aparte sus 3 donaciones más recientes con el total ({@code susDonaciones}); si Donaciones
+   * no responde, la ficha lo dice y el resto se muestra igual.
+   */
+  private void elegido(AdminDonantesVista datos, String pedido, Model model) {
+    List<Donante> filas = datos.donantes() == null ? List.of() : datos.donantes().filas();
+    if (pedido == null || pedido.isBlank()) {
+      if (!filas.isEmpty()) {
+        ficha(filas.getFirst().clave(), true, model);
+      }
+      return;
+    }
+    if (filas.stream().anyMatch(d -> d.clave().equals(pedido))) {
+      ficha(pedido, false, model);
+      return;
+    }
+    Donante fuera;
+    try {
+      fuera = personas.donante(pedido);
+    } catch (RestClientException noRespondio) {
+      LOG.warn("No se pudo leer el donante {}", pedido, noRespondio);
+      model.addAttribute(FICHA_AVISO, "no-cargo");
+      return;
+    }
+    if (fuera == null) {
+      model.addAttribute(FICHA_AVISO, "no-existe");
+      return;
+    }
+    model.addAttribute("donanteFuera", fuera);
+    ficha(fuera.clave(), false, model);
+  }
+
+  private void ficha(String clave, boolean dePartida, Model model) {
+    model.addAttribute("donanteElegido", clave);
+    model.addAttribute("donantePartida", dePartida);
+    SusDonaciones suyas;
+    try {
+      suyas = personas.donacionesDe(clave);
+    } catch (RestClientException noRespondio) {
+      LOG.warn("No se pudieron leer las donaciones del donante {}", clave, noRespondio);
+      suyas = SusDonaciones.noCargaron();
+    }
+    model.addAttribute("susDonaciones", suyas);
   }
 
   @GetMapping("/" + DONANTES + "-{accion:importando|importado|importar-error}")
