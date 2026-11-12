@@ -59,6 +59,8 @@ __pycache__/
 
 # Credenciales locales de docker compose (ver .env.example)
 .env
+# Claves y URL de la demo pública (scripts/demo-publica.sh)
+.env.publica
 
 # Reportes de analyze_preprod_logs.py --export-report
 docker-logs/

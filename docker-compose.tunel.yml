@@ -1,0 +1,25 @@
+# Túneles de la demo pública (E6): un Quick Tunnel de Cloudflare por cada origen que abre el navegador.
+# Proyecto aparte (`name`), para que recrear el stack no corte los túneles ni cambie sus URLs.
+# Cada túnel entra por el puerto que el compose base publica en el host. Sin cuenta ni dominio: la URL
+# (https://<algo>.trycloudflare.com) cambia si el contenedor se recrea. La lee scripts/demo-publica.sh.
+# Protocolo http2: con QUIC, los túneles se cortaban por "no recent network activity" en la prueba del 2026-11-12.
+# Guía: docs/testing/demo-publica-tunel.md
+name: donatrack-tunel
+
+x-tunel: &tunel
+  image: cloudflare/cloudflared:2025.11.1
+  restart: unless-stopped
+
+services:
+  tunel-cliente:
+    <<: *tunel
+    command: tunnel --no-autoupdate --protocol http2 --url http://host.docker.internal:8090
+  tunel-keycloak:
+    <<: *tunel
+    command: tunnel --no-autoupdate --protocol http2 --url http://host.docker.internal:8180
+  tunel-minio:
+    <<: *tunel
+    command: tunnel --no-autoupdate --protocol http2 --url http://host.docker.internal:9000
+  tunel-gateway:
+    <<: *tunel
+    command: tunnel --no-autoupdate --protocol http2 --url http://host.docker.internal:8086
