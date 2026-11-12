@@ -5,6 +5,9 @@
 /publico-portada?escenario=vacio
 /publico-portada?escenario=error
 /publico-portada?escenario=lento
+/publico-portada?escenario=con-sesion
+/publico-portada?escenario=con-sesion-pendiente
+/publico-mapa?escenario=con-sesion
 /donante-seguimiento
 /donante-seguimiento?escenario=vacio
 /donante-seguimiento?escenario=error

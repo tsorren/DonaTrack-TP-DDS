@@ -11,6 +11,7 @@ import grupo5.cliente.vistas.EstadoEntrega;
 import grupo5.cliente.vistas.OpcionNavegacion;
 import grupo5.cliente.vistas.PasoRecorrido;
 import grupo5.cliente.vistas.PasoRecorrido.Avance;
+import grupo5.cliente.vistas.SalidaDeLaCuenta;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
@@ -132,6 +133,21 @@ public class Pantallas {
    */
   private static final Set<String> CON_MARCO_DE_LA_CUENTA =
       Set.of("publico-contacto", "publico-contacto-enviado", "publico-contacto-error");
+
+  /** El prefijo de las pantallas públicas, las que no son de ningún área. */
+  private static final String PUBLICO = "publico";
+
+  /**
+   * En el modelo de lo público con la sesión iniciada: la salida a lo propio ({@link
+   * SalidaDeLaCuenta}). Las plantillas eligen el final de la navegación por esta marca.
+   */
+  static final String SALIDA_DE_LA_CUENTA = "salidaDeLaCuenta";
+
+  /** El rol que muestra el menú de la cuenta cuya solicitud de entidad espera la aprobación. */
+  private static final String EN_REVISION = "Solicitud en revisión";
+
+  /** Adonde lleva "Ver mi solicitud". */
+  private static final String SOLICITUD = "/publico-registro-entidad-enviada";
 
   /** El layout de las páginas con sesión; sin ella, y por defecto, el público. */
   static final String MARCO_PRIVADO = "layout-privado";
@@ -268,9 +284,12 @@ public class Pantallas {
     model.addAttribute("cuenta", cuentas.de(prefijo).orElse(null));
     model.addAttribute("sinLeer", area.isPresent() ? sinLeer(prefijo) : 0L);
     model.addAttribute("perfil", area.map(Pantallas::miPerfil).orElse(null));
-    if (CON_MARCO_DE_LA_CUENTA.contains(pantalla)
-        && RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes pedido) {
-      conMarcoDeLaCuenta(pedido.getRequest(), model);
+    if (RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes pedido) {
+      if (CON_MARCO_DE_LA_CUENTA.contains(pantalla)) {
+        conMarcoDeLaCuenta(pedido.getRequest(), model);
+      } else if (PUBLICO.equals(prefijo)) {
+        conLaCuentaEnLoPublico(pedido.getRequest(), model);
+      }
     }
     return dibujada ? pantalla : SIN_DIBUJAR;
   }
@@ -330,6 +349,43 @@ public class Pantallas {
     } catch (RuntimeException noSePudoArmar) {
       // Una página de error nunca falla por su marco: "marco" es lo último que se pone, y sin él la
       // plantilla usa el público.
+    }
+  }
+
+  /**
+   * Lo público (la portada y las páginas de {@code layout-publico}) con la sesión iniciada
+   * (docs/interfaz/flujos/r11-p1-portada.md, R11-15): la navegación pública sigue igual y, en lugar
+   * de "Ingresar" y "Crear una cuenta", la salida a lo propio y el menú de la cuenta. Con la cuenta
+   * activa, "Ir a mi inicio" y su Mi perfil; con la solicitud de su entidad pendiente, "Ver mi
+   * solicitud" y "Solicitud en revisión", sin Mi perfil. Las mismas reglas que {@link
+   * #conMarcoDeLaCuenta}: solo lo que hay en la sesión, sin campanita ni ningún servicio. Sin
+   * sesión, o si la cuenta no se puede armar, el modelo queda sin la salida y la página muestra el
+   * encabezado de visitante.
+   */
+  void conLaCuentaEnLoPublico(HttpServletRequest pedido, Model model) {
+    AreaDeLaSesion sesion = sesiones == null ? null : sesiones.getIfAvailable();
+    if (sesion == null) {
+      return;
+    }
+    try {
+      Optional<Area> activa = sesion.activa(pedido);
+      Area area = activa.or(() -> sesion.pendiente(pedido)).orElse(null);
+      CuentaVista cuenta = area == null ? null : cuentas.deLaSesion(area.prefijo()).orElse(null);
+      if (cuenta == null) {
+        return;
+      }
+      if (activa.isPresent()) {
+        model.addAttribute("cuenta", cuenta);
+        model.addAttribute("perfil", miPerfil(area));
+        model.addAttribute(SALIDA_DE_LA_CUENTA, new SalidaDeLaCuenta(area.inicio(), false));
+      } else {
+        model.addAttribute(
+            "cuenta", new CuentaVista(cuenta.nombre(), EN_REVISION, cuenta.cambiarClave()));
+        model.addAttribute(SALIDA_DE_LA_CUENTA, new SalidaDeLaCuenta(SOLICITUD, true));
+      }
+    } catch (RuntimeException noSePudoArmar) {
+      // La página nunca falla por su encabezado: la salida es lo último que se pone, y sin ella la
+      // plantilla muestra el de visitante.
     }
   }
 

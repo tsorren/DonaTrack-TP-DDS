@@ -26,12 +26,14 @@
 <body>
 <a class="saltar" href="#contenido">Saltar al contenido</a>
 <header class="raices-cabecera">
-  <a class="marca" href="/" th:href="@{/}" aria-label="DonaTrack, ir al inicio">
+  <a class="marca" href="/" th:href="@{/}" aria-label="DonaTrack, ir a la portada">
     <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
     <span>Dona<em>Track</em></span>
   </a>
-  <!--/* La navegación pública (ficha raices-publico-navegable.md, sección 2): la misma de las demás públicas. */-->
+  <!--/* La navegación pública (ficha raices-publico-navegable.md, sección 2): la misma de las demás
+         públicas. Con la sesión iniciada, "Ir a mi inicio" y la cuenta (ficha r11-p1-portada.md). */-->
   <nav th:replace="~{navegacion-publica :: navegacion('')}"></nav>
+  <th:block th:replace="~{navegacion-publica :: cuenta}"></th:block>
 </header>
 <main id="contenido" tabindex="-1" hx-target="#contenido" hx-select="#contenido" hx-swap="outerHTML show:none"
       th:with="estado=${param.escenario != null ? param.escenario[0] : ''},

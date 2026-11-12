@@ -9,11 +9,21 @@ import java.util.Optional;
  * Contacto (docs/interfaz/flujos/raices-paginas-de-error.md). Si hay una cuenta con su perfil
  * completo y sin solicitud pendiente, dice su área y la página se arma con el marco privado; si no,
  * queda vacío y la página usa el marco público. Fuera de {@code maqueta} lo dice el token y no pide
- * nada a ningún servicio.
+ * nada a ningún servicio. Lo público (la portada y las páginas de {@code layout-publico},
+ * docs/interfaz/flujos/r11-p1-portada.md) muestra además la cuenta cuya solicitud de entidad espera
+ * la aprobación: {@link #pendiente}.
  */
 @FunctionalInterface
 public interface AreaDeLaSesion {
 
   /** El área de la cuenta con la sesión iniciada y activa; vacío si no la hay. */
   Optional<Area> activa(HttpServletRequest pedido);
+
+  /**
+   * El área de la cuenta con la sesión iniciada cuya solicitud de entidad espera la aprobación;
+   * vacío si no la hay. Por defecto, ninguna.
+   */
+  default Optional<Area> pendiente(HttpServletRequest pedido) {
+    return Optional.empty();
+  }
 }
