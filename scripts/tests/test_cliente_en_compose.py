@@ -174,9 +174,14 @@ class IngresoRealTests(unittest.TestCase):
     def test_el_boton_de_cerrar_sesion_existe_donde_el_recorrido_lo_busca(self):
         self.assertIn("form[action$='/logout'] [type=submit]", self.test)
         self.assertIn('action="/logout"', leer(self.templates, "cerrar-sesion.html"))
-        # La cuenta recién registrada (sin perfil) y el admin ven ese botón.
+        # La cuenta recién registrada (sin perfil) ve ese botón suelto. En las pantallas privadas vive en el
+        # menú de la foto (cuenta-menu.html, que incluye layout-privado), y el recorrido lo abre antes del clic.
         self.assertIn("cerrar-sesion", leer(self.templates, "publico-registro-donante.html"))
-        self.assertIn("cerrar-sesion", leer(self.templates, "layout-privado.html"))
+        menu = leer(self.templates, "cuenta-menu.html")
+        self.assertIn("cerrar-sesion", menu)
+        self.assertIn('class="navegacion-cuenta"', menu)
+        self.assertIn("cuenta-menu :: menu", leer(self.templates, "layout-privado.html"))
+        self.assertIn("details.navegacion-cuenta > summary", self.test)
 
     def test_el_formulario_de_completar_perfil_tiene_la_clase_que_busca(self):
         self.assertIn("form.registro-formulario", self.test)

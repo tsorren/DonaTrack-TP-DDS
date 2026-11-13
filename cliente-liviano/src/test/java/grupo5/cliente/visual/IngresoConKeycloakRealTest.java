@@ -39,6 +39,7 @@ class IngresoConKeycloakRealTest {
   private static final Path VIDEOS = Path.of("target/ingreso-real");
   private static final String SUBMIT = "form input[type=submit], form button[type=submit]";
   private static final String CERRAR_SESION = "form[action$='/logout'] [type=submit]";
+  private static final String MENU_DE_LA_CUENTA = "details.navegacion-cuenta > summary";
   private static final String TARJETA_PERSONA_DONANTE = "a.registro-tipo[href*='tipo=persona']";
   private static final double ESPERA_MS = 30_000;
   private static final int LARGO_DEL_TEXTO = 400;
@@ -135,7 +136,12 @@ class IngresoConKeycloakRealTest {
 
   /** Cierra sesión y comprueba que volver a entrar pide la clave (cayó la sesión de Keycloak). */
   private static void cerrarSesionYVerificarQuePideLaClave(Page pagina, String pantallaProtegida) {
-    pagina.locator(CERRAR_SESION).first().click();
+    Locator cerrarSesion = pagina.locator(CERRAR_SESION).first();
+    if (!cerrarSesion.isVisible()) {
+      // En las pantallas con la cuenta, el botón vive en el menú de la foto (cuenta-menu.html).
+      pagina.locator(MENU_DE_LA_CUENTA).first().click();
+    }
+    cerrarSesion.click();
     pagina.waitForURL(url -> url.equals(sitio() + "/"));
 
     pagina.navigate(sitio() + pantallaProtegida);
