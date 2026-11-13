@@ -1,5 +1,6 @@
 package grupo5.cliente.sesion;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -122,19 +123,26 @@ class SesionSerializableTest {
   @Test
   void loQueElSitioGuardaPorSuCuentaEnLaSesionEsSerializable() throws Exception {
     // CuentaPorParametro y CuentaDeEjemplo guardan un UUID o un texto, y los flash attributes que
-    // deja el sitio entre un POST y su redirección son un texto (el aviso) y un long (el número del
-    // mensaje de contacto): todos tipos del JDK.
+    // deja el sitio entre un POST y su redirección son un texto (el aviso), un long (el número del
+    // mensaje de contacto), un boolean ("guardado") y la contraseña provisoria cifrada, que es un
+    // texto: todos tipos del JDK.
     UUID id = UUID.randomUUID();
+    String provisoria =
+        new CifradoDeLaSesion("", false).cifrar("K7pQ-m4Rt-x9Wa-2Lse".getBytes(UTF_8));
     Map<String, Object> atributos = new HashMap<>();
     atributos.put("cuenta", id);
     atributos.put("perfil", "pendiente");
     atributos.put("numeroDelMensaje", 4821L);
+    atributos.put("guardado", true);
+    atributos.put("provisoria", provisoria);
 
     Map<String, Object> recuperados = viajar(atributos);
 
     assertThat(recuperados)
         .containsEntry("cuenta", id)
         .containsEntry("perfil", "pendiente")
-        .containsEntry("numeroDelMensaje", 4821L);
+        .containsEntry("numeroDelMensaje", 4821L)
+        .containsEntry("guardado", true)
+        .containsEntry("provisoria", provisoria);
   }
 }

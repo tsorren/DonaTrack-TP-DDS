@@ -9,12 +9,20 @@ import grupo5.cliente.puertos.DirectorioDeAdministradores.Administrador;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.Alta;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.AltaIncompleta;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.CorreoEnUso;
+import grupo5.cliente.sesion.CifradoDeLaSesion;
 import grupo5.cliente.vistas.Tramo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpStatus;
@@ -81,13 +89,40 @@ public class AdminAdministradoresController {
     }
   }
 
-  /** Lo que muestra la pantalla de la contraseña: una sola vez. */
-  record Provisoria(String nombre, String correo, String contrasena, boolean otra) {}
+  /**
+   * Lo que muestra la pantalla de la contraseña: una sola vez. Viaja a esa pantalla cifrado en la
+   * sesión ({@link CifradoDeLaSesion}), para que la contraseña no quede en claro en la base.
+   */
+  record Provisoria(String nombre, String correo, String contrasena, boolean otra) {
+
+    byte[] enBytes() {
+      ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+      try (DataOutputStream salida = new DataOutputStream(bytes)) {
+        salida.writeUTF(Objects.requireNonNullElse(nombre, ""));
+        salida.writeUTF(Objects.requireNonNullElse(correo, ""));
+        salida.writeUTF(contrasena);
+        salida.writeBoolean(otra);
+      } catch (IOException imposible) {
+        throw new UncheckedIOException(imposible);
+      }
+      return bytes.toByteArray();
+    }
+
+    static Provisoria de(byte[] bytes) {
+      try (DataInputStream entrada = new DataInputStream(new ByteArrayInputStream(bytes))) {
+        return new Provisoria(
+            entrada.readUTF(), entrada.readUTF(), entrada.readUTF(), entrada.readBoolean());
+      } catch (IOException imposible) {
+        throw new UncheckedIOException(imposible);
+      }
+    }
+  }
 
   private final DirectorioDeAdministradores directorio;
   private final AdministradorActual actual;
   private final Pantallas pantallas;
   private final AdminActividadPuerto actividad;
+  private final CifradoDeLaSesion cifrado;
   private final boolean maqueta;
 
   AdminAdministradoresController(
@@ -95,12 +130,26 @@ public class AdminAdministradoresController {
       AdministradorActual actual,
       Pantallas pantallas,
       AdminActividadPuerto actividad,
+      CifradoDeLaSesion cifrado,
       Environment entorno) {
     this.directorio = directorio;
     this.actual = actual;
     this.pantallas = pantallas;
     this.actividad = actividad;
+    this.cifrado = cifrado;
     this.maqueta = entorno.acceptsProfiles(Profiles.of("maqueta"));
+  }
+
+  /** La provisoria cifrada, lista para el flash: en la sesión no queda en claro. */
+  private String cifrada(Provisoria provisoria) {
+    return cifrado.cifrar(provisoria.enBytes());
+  }
+
+  /** La provisoria del flash, o null si no hay o no se puede descifrar (otra clave, alterada). */
+  private Provisoria descifrada(Object delFlash) {
+    return delFlash instanceof String texto
+        ? cifrado.descifrar(texto).map(Provisoria::de).orElse(null)
+        : null;
   }
 
   @GetMapping("/" + PANTALLA)
@@ -161,8 +210,9 @@ public class AdminAdministradoresController {
         actividad.anotar(AccionDelSitio.ADMINISTRADOR_DADO_DE_ALTA, nueva, null);
         atributos.addFlashAttribute(
             PROVISORIA,
-            new Provisoria(
-                datos.nombre() + " " + datos.apellido(), datos.correo(), contrasena, false));
+            cifrada(
+                new Provisoria(
+                    datos.nombre() + " " + datos.apellido(), datos.correo(), contrasena, false)));
         return "redirect:/" + ALTA;
       } catch (CorreoEnUso repetido) {
         errores = Map.of(DatosDeAdministrador.CORREO, DatosDeAdministrador.CORREO_EN_USO);
@@ -196,7 +246,8 @@ public class AdminAdministradoresController {
       RedirectAttributes atributos) {
     cuentaDe(pedido);
     HttpSession sesion = pedido.getSession();
-    if (!(model.getAttribute(PROVISORIA) instanceof Provisoria provisoria)) {
+    Provisoria provisoria = descifrada(model.getAttribute(PROVISORIA));
+    if (provisoria == null) {
       if (!maqueta) {
         sesion.removeAttribute(AVISO_DEL_ALTA);
         return Envios.listo(PANTALLA, YA_MOSTRADA, atributos);
@@ -205,6 +256,7 @@ public class AdminAdministradoresController {
           PROVISORIA,
           new Provisoria("Bruno Díaz", "bruno.diaz@ejemplo.org", "K7pQ-m4Rt-x9Wa-2Lse", false));
     } else {
+      model.addAttribute(PROVISORIA, provisoria);
       sesion.setAttribute(
           AVISO_DEL_ALTA,
           provisoria.nombre() + " ya puede entrar con su correo y la contraseña provisoria.");
@@ -235,7 +287,7 @@ public class AdminAdministradoresController {
       }
       actividad.anotar(AccionDelSitio.CONTRASENA_PROVISORIA_NUEVA, cuenta, null);
       atributos.addFlashAttribute(
-          PROVISORIA, new Provisoria(nombre, elegida.correo(), contrasena, true));
+          PROVISORIA, cifrada(new Provisoria(nombre, elegida.correo(), contrasena, true)));
       return "redirect:/" + ALTA;
     } catch (RestClientException noRespondio) {
       String codigo = AdminPerfilController.codigo(pedido);

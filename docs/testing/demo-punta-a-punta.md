@@ -26,7 +26,9 @@ docker compose up -d --build --wait
 ```
 
 El `.env` versionado trae valores de desarrollo para todo (`CLIENTE_LIVIANO_SECRET`, `AUTH_ADMIN_*`,
-`PRUEBAS_CLIENT_SECRET`, `CLIENTE_DB_PASSWORD`). **Si ya tenías el stack levantado de antes, hacé
+`PRUEBAS_CLIENT_SECRET`, `CLIENTE_DB_PASSWORD`, `CLIENTE_SESIONES_CIFRADO_CLAVE`). Un `.env` propio de antes
+necesita la línea `CLIENTE_SESIONES_CIFRADO_CLAVE` (32 bytes en Base64, `openssl rand -base64 32`), o el compose
+no levanta el sitio. **Si ya tenías el stack levantado de antes, hacé
 `docker compose down -v`:** el realm de Keycloak y la base `cliente` (con su rol) solo se crean con el volumen
 de Postgres vacío, y sin ellas el sitio no arranca. La primera vez construye las imágenes desde el código, así
 que tarda.

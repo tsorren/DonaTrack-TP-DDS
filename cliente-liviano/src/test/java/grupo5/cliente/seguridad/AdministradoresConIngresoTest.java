@@ -29,6 +29,7 @@ import grupo5.cliente.puertos.DirectorioDeAdministradores.Administrador;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.Alta;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.AltaIncompleta;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.CorreoEnUso;
+import grupo5.cliente.sesion.CifradoDeLaSesion;
 import grupo5.cliente.web.AdminAdministradoresController;
 import grupo5.cliente.web.AdminPerfilController;
 import grupo5.cliente.web.Pantallas;
@@ -60,7 +61,8 @@ import org.springframework.web.client.RestClientException;
   SeguridadConfig.class,
   Pantallas.class,
   SeguridadTest.Keycloak.class,
-  AdministradorDelToken.class
+  AdministradorDelToken.class,
+  CifradoDeLaSesion.class
 })
 @TestPropertySource(
     properties = {
@@ -176,6 +178,11 @@ class AdministradoresConIngresoTest {
         .alta(
             eq(new Alta("Bruno", "Díaz", "bruno.diaz@ejemplo.org")), contrasena.capture(), eq(ANA));
     assertThat(contrasena.getValue().replace("-", "")).hasSize(16);
+    // En la sesión (y con Spring Session JDBC, en la base) la contraseña viaja cifrada, como texto.
+    assertThat(alta.getFlashMap().get("provisoria"))
+        .isInstanceOf(String.class)
+        .asString()
+        .doesNotContain(contrasena.getValue());
     // R11-26, C13: el alta que salió bien queda anotada con la cuenta nueva
     verify(actividad).anotar(AccionDelSitio.ADMINISTRADOR_DADO_DE_ALTA, "cuenta-nueva", null);
 
@@ -197,6 +204,17 @@ class AdministradoresConIngresoTest {
                     "avisoDelServidor",
                     "La contraseña provisoria se mostró una sola vez. Si no la anotaste, generá"
                         + " otra desde la cuenta."));
+  }
+
+  @Test
+  void unaContrasenaQueNoSePuedeDescifrarNoSeMuestra() throws Exception {
+    // Otra clave (otra instancia mal configurada) o un texto alterado: como si ya se hubiera visto.
+    mvc.perform(
+            get("/admin-administradores-alta")
+                .with(como("ADMIN"))
+                .flashAttr("provisoria", "no-es-un-texto-cifrado"))
+        .andExpect(redirectedUrl("/admin-administradores"))
+        .andExpect(flash().attributeExists("avisoDelServidor"));
   }
 
   // C3

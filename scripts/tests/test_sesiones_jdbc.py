@@ -11,6 +11,7 @@ Postgres funcione de verdad se comprobó contra un PostgreSQL 16 real; que la se
 `SesionSerializableTest`, y el resto se prueba levantando el stack (docs/testing/demo-punta-a-punta.md).
 """
 
+import base64
 import os
 import re
 import shutil
@@ -146,6 +147,20 @@ class VariablesYComposeTests(unittest.TestCase):
             self.assertIn("CLIENTE_SESIONES_JDBC_USUARIO=cliente_user", e, compose)
             self.assertIn("CLIENTE_SESIONES_JDBC_CLAVE=${CLIENTE_DB_PASSWORD:?ver .env.example}", e, compose)
 
+    def test_la_clave_de_cifrado_de_la_sesion_llega_al_cliente_y_es_obligatoria(self):
+        # CifradoDeLaSesion: con la sesión en la base, todas las instancias necesitan la misma clave.
+        for archivo in (".env", ".env.example"):
+            clave = variables_env(leer(archivo)).get("CLIENTE_SESIONES_CIFRADO_CLAVE", "")
+            self.assertEqual(len(base64.b64decode(clave, validate=True)), 32, archivo)
+        self.assertIn('echo "CLIENTE_SESIONES_CIFRADO_CLAVE=$(openssl rand -base64 32)"', leer("scripts", "generar-env-db.sh"))
+        for compose in COMPOSES:
+            e = entorno(bloque(compose, "cliente-liviano"))
+            self.assertIn("CLIENTE_SESIONES_CIFRADO_CLAVE=${CLIENTE_SESIONES_CIFRADO_CLAVE:?ver .env.example}", e, compose)
+            for servicio in ("donaciones-service", "incentivos-service", "notificaciones-service", "logistica-service", "api-gateway", "keycloak"):
+                self.assertNotIn("CLIENTE_SESIONES_CIFRADO_CLAVE", bloque(compose, servicio), "%s %s" % (compose, servicio))
+        props = leer("cliente-liviano", "src", "main", "resources", "application.properties")
+        self.assertIn("cliente.sesiones.cifrado-clave=${CLIENTE_SESIONES_CIFRADO_CLAVE:}", props)
+
     def test_la_base_el_rol_y_el_esquema_se_llaman_igual_en_el_script_y_en_la_url(self):
         sql = leer("persistencia", "init-db", "01-init-schemas-roles.sql")
         url = re.search(r"CLIENTE_SESIONES_JDBC_URL=jdbc:postgresql://postgres:5432/(\w+)\?currentSchema=(\w+)", leer("docker-compose.yml"))
@@ -232,15 +247,28 @@ class JavaYPomTests(unittest.TestCase):
                     self.assertNotIn("@SessionAttributes", texto, a)
                     self.assertNotIn("@SessionScope", texto, a)
 
-    def test_los_flash_attributes_son_solo_los_dos_conocidos(self):
-        # Los flash attributes van a la sesión y se serializan: hoy son un texto y un long. Un tercero, o uno
-        # de otro tipo, tiene que revisarse a propósito (y sumarse a SesionSerializableTest).
-        llamadas = 0
+    def test_los_flash_attributes_son_solo_los_conocidos(self):
+        # Los flash attributes van a la sesión y se serializan. Hoy: el aviso (texto, Envios), el número del
+        # mensaje de contacto (long), "guardado" (boolean, AccesoController) y la contraseña provisoria, que
+        # viaja cifrada como texto (CifradoDeLaSesion). Uno nuevo, o de otro tipo, tiene que revisarse a
+        # propósito (y sumarse a SesionSerializableTest).
+        esperadas = {
+            "Envios.java": 1,
+            "PublicoContactoEnvioController.java": 1,
+            "AccesoController.java": 1,
+            "AdminAdministradoresController.java": 2,
+        }
+        llamadas = {}
         for ruta, _, archivos in os.walk(os.path.join(RAIZ, "cliente-liviano", "src", "main", "java")):
             for a in archivos:
                 if a.endswith(".java"):
-                    llamadas += len(re.findall(r"\.addFlashAttribute\(", open(os.path.join(ruta, a), encoding="utf-8").read()))
-        self.assertEqual(llamadas, 2, "cambió la cantidad de addFlashAttribute: ¿lo que guarda es Serializable?")
+                    n = len(re.findall(r"\.addFlashAttribute\(", open(os.path.join(ruta, a), encoding="utf-8").read()))
+                    if n:
+                        llamadas[a] = n
+        self.assertEqual(llamadas, esperadas, "cambiaron los addFlashAttribute: ¿lo que guardan es Serializable?")
+        controller = leer(CLIENTE, "main", "java", "grupo5", "cliente", "web", "AdminAdministradoresController.java")
+        self.assertEqual(len(re.findall(r"PROVISORIA,\s*cifrada\(", controller)), 2,
+                         "la contraseña provisoria tiene que ir al flash cifrada")
 
     def test_existen_los_tests_java_de_la_sesion(self):
         for nombre in ("SesionSerializableTest.java", "SesionesJdbcConfigTest.java"):

@@ -18,6 +18,7 @@ pw() { openssl rand -hex 16; }
   echo "DONACIONES_DB_PASSWORD=$(pw)"
   echo "KEYCLOAK_DB_PASSWORD=$(pw)"
   echo "CLIENTE_DB_PASSWORD=$(pw)"
+  echo "CLIENTE_SESIONES_CIFRADO_CLAVE=$(openssl rand -base64 32)"
   echo "KC_BOOTSTRAP_ADMIN_USERNAME=kc-admin"
   echo "KC_BOOTSTRAP_ADMIN_PASSWORD=$(pw)"
   echo "KC_HOSTNAME=http://localhost:8180"

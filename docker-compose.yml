@@ -252,6 +252,7 @@ services:
       - CLIENTE_SESIONES_JDBC_URL=jdbc:postgresql://postgres:5432/cliente?currentSchema=cliente
       - CLIENTE_SESIONES_JDBC_USUARIO=cliente_user
       - CLIENTE_SESIONES_JDBC_CLAVE=${CLIENTE_DB_PASSWORD:?ver .env.example}
+      - CLIENTE_SESIONES_CIFRADO_CLAVE=${CLIENTE_SESIONES_CIFRADO_CLAVE:?ver .env.example}
       - DONACIONES_URL=http://api-gateway:8086
       - NOTIFICACIONES_URL=http://api-gateway:8086
       - INCENTIVOS_URL=http://api-gateway:8086
