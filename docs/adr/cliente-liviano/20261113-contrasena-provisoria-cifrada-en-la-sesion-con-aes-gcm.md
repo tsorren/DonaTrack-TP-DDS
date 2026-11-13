@@ -2,7 +2,7 @@
 
 - Status: proposed
 - Date: 2026-11-13
-- Deciders: el usuario (eligió la opción D, "cifrarla", entre cuatro, 2026-11-13); los detalles de la construcción, el agente. Pendiente de aprobación del equipo en el PR 969
+- Deciders: el usuario (eligió la opción D, "cifrarla", entre cuatro, 2026-11-13); los detalles de la construcción, el agente. Pendiente de aprobación del equipo en el PR que lleve la rama de la etapa 2 de auth (`E6_auth_etapa2_merge`) a ENTREGA_6
 - Tags: cliente-liviano, seguridad, sesion, spring-session-jdbc, entrega-6
 
 ## Contexto y Problema
@@ -32,6 +32,18 @@ implicancias de seguridad (una contraseña en la base) y suma un secreto a la co
 | **D. Cifrarla con una clave compartida** (elegida) | Cifrada | Anda | 1 clase, la clave en `.env`, compose y generador |
 | B. Mostrarla en la respuesta del POST, sin redirección | Nunca | Anda | Rompe POST-redirect-GET: recargar repite el alta |
 | C. Guardarla en memoria con un código de un solo uso | Nunca | Falla si la redirección cae en la otra instancia | 2 archivos |
+
+### Análisis por alternativa
+
+- **A. Serializable en claro.** Pro: una línea, nada que configurar. Contra: la contraseña queda
+  legible en la base, en sus registros borrados y en las copias, aunque sea por milisegundos.
+- **D. Cifrarla.** Pro: nunca queda legible en la base; anda con dos instancias. Contra: un secreto
+  más en `.env`, compose y generador; si la clave cambia en medio de un alta, esa contraseña se
+  pierde y hay que generar otra.
+- **B. Sin redirección.** Pro: la contraseña nunca pasa por la sesión. Contra: rompe
+  POST-redirect-GET; recargar repite el alta o genera otra contraseña, y cambia un flujo aprobado.
+- **C. Memoria local con un código.** Pro: nunca va a la base. Contra: si la redirección cae en la
+  otra instancia, la contraseña no aparece (rompe RNF-CL-04).
 
 ## Decisión
 

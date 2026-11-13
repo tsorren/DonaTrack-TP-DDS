@@ -214,7 +214,12 @@ class AdministradoresConIngresoTest {
                 .with(como("ADMIN"))
                 .flashAttr("provisoria", "no-es-un-texto-cifrado"))
         .andExpect(redirectedUrl("/admin-administradores"))
-        .andExpect(flash().attributeExists("avisoDelServidor"));
+        .andExpect(
+            flash()
+                .attribute(
+                    "avisoDelServidor",
+                    "La contraseña provisoria se mostró una sola vez. Si no la anotaste, generá"
+                        + " otra desde la cuenta."));
   }
 
   // C3
