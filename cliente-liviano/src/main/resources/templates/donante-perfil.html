@@ -29,15 +29,15 @@
     <h1 th:text="${nombre}">Distribuidora Ejemplo SA</h1>
     <p class="perfil-cuenta" th:text="${miPerfil.cuenta}">Empresa donante · contacto@distribuidora-ejemplo.test</p>
 
-    <p th:if="${guardado == 'oculto'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+    <p th:if="${guardado == 'oculto'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
        th:text="|Listo. Las organizaciones ya no ven tu nombre: ven «${anonimo}».|">Listo. Las organizaciones ya no
       ven tu nombre: ven «Empresa donante · Sostenedor».</p>
-    <p th:if="${guardado == 'visible'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+    <p th:if="${guardado == 'visible'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
        th:text="|Listo. Las organizaciones ven tu nombre: «${nombre}».|">Listo. Las organizaciones ven tu nombre:
       «Distribuidora Ejemplo SA».</p>
-    <p th:if="${seccion == 'datos'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus>Listo.
+    <p th:if="${seccion == 'datos'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus>Listo.
       Guardamos los datos de tu cuenta.</p>
-    <p th:if="${seccion == 'avisos'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus>Listo.
+    <p th:if="${seccion == 'avisos'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus>Listo.
       Guardamos cómo te avisamos.</p>
     <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="error-titulo">

@@ -69,10 +69,12 @@ public class Pantallas {
 
   private static final String SIN_DIBUJAR = "sin-dibujar";
   private static final String INICIO = "Inicio";
+  /* Los íconos del menú: el símbolo nav-<icono> de iconos :: navegacion (usuario, 2026-11-12). */
   private static final String ICONO_INICIO = "inicio";
   private static final String ICONO_DONACIONES = "donaciones";
+  private static final String ICONO_ENTIDADES = "entidades";
   private static final String ICONO_SEGUIMIENTO = "seguimiento";
-  private static final String ICONO_INCENTIVOS = "incentivos";
+  private static final String ICONO_ESTRELLA = "estrella";
 
   /** Una sección del menú: su nombre, el corto de la barra del celular, su ícono y su pantalla. */
   private record Seccion(String texto, String textoCorto, String icono, String pantalla) {
@@ -89,24 +91,23 @@ public class Pantallas {
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "donante-inicio"),
               new Seccion("Mis donaciones", "Donaciones", ICONO_DONACIONES, "donante-donaciones"),
-              new Seccion("Organizaciones", "entidades", "donante-entidades"),
+              new Seccion("Organizaciones", ICONO_ENTIDADES, "donante-entidades"),
               new Seccion("Seguimiento", ICONO_SEGUIMIENTO, "donante-seguimiento")),
           Area.ENTIDAD,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "entidad-inicio"),
-              new Seccion("Necesidades", "cat-alimentos", "entidad-necesidades"),
-              new Seccion(
-                  "Donaciones recibidas", "Recibidas", ICONO_DONACIONES, "entidad-recibidas"),
+              new Seccion("Necesidades", "necesidades", "entidad-necesidades"),
+              new Seccion("Donaciones", ICONO_DONACIONES, "entidad-recibidas"),
               new Seccion("Seguir entregas", "Entregas", ICONO_SEGUIMIENTO, "entidad-seguimiento")),
           Area.ADMIN,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "admin-inicio"),
-              new Seccion("Donantes", ICONO_INCENTIVOS, "admin-donantes"),
-              new Seccion("Organizaciones", "entidades", "admin-entidades"),
+              new Seccion("Donantes", "donantes", "admin-donantes"),
+              new Seccion("Organizaciones", ICONO_ENTIDADES, "admin-entidades"),
               new Seccion("Donaciones", ICONO_DONACIONES, "admin-donaciones"),
-              new Seccion("Asignar donaciones", "Asignar", ICONO_SEGUIMIENTO, "admin-asignaciones"),
+              new Seccion("Asignar donaciones", "Asignar", "asignar", "admin-asignaciones"),
               new Seccion("Camiones", "camiones", "admin-camiones"),
-              new Seccion("Ranking", ICONO_INCENTIVOS, "admin-ranking")));
+              new Seccion("Ranking", ICONO_ESTRELLA, "admin-ranking")));
 
   /**
    * El menú de la persona que dona: el del donante con Misiones antes de Seguimiento (RF-07; la
@@ -117,7 +118,7 @@ public class Pantallas {
           MENUS.get(Area.DONANTE).get(0),
           MENUS.get(Area.DONANTE).get(1),
           MENUS.get(Area.DONANTE).get(2),
-          new Seccion("Misiones", ICONO_INCENTIVOS, "donante-misiones"),
+          new Seccion("Misiones", ICONO_ESTRELLA, "donante-misiones"),
           MENUS.get(Area.DONANTE).get(3));
 
   /** Las pantallas del donante con diseño propio de persona, en templates/persona/. */

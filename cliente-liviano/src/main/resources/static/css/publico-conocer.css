@@ -41,7 +41,7 @@ main details {
 /* Cada pregunta se toca con el dedo: 48 px de alto, sin perder el triángulo del summary. */
 main summary {
   box-sizing: border-box;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding-block: 0.75rem;
 }
 

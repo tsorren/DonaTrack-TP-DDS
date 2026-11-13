@@ -54,8 +54,8 @@
            aviso se agrega a la región #avisos del layout, que sí lo anuncia. */-->
     <p th:if="${escenario == 'lento'}" class="seguimiento-aviso">Cargando tus entregas en curso…</p>
     <div th:if="${escenario == 'lento'}" class="seguimiento-cuerpo" aria-busy="true">
-      <div class="seguimiento-dibujo seguimiento-reserva"></div>
-      <div class="seguimiento-lista seguimiento-reserva"></div>
+      <div class="seguimiento-dibujo seguimiento-reserva esqueleto"></div>
+      <div class="seguimiento-lista seguimiento-reserva esqueleto"></div>
     </div>
 
     <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"

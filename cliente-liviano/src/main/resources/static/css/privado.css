@@ -11,6 +11,28 @@
   padding-bottom: 4.5rem;
 }
 
+/* La administración no tiene barra abajo: su menú es el botón del final de la cabecera, después de
+   la campana y la cuenta (usuario, 2026-11-12). */
+.raices-privado:has(.navegacion[data-forma="panel"]) {
+  padding-bottom: 0;
+}
+
+.armazon .navegacion[data-forma="panel"] {
+  order: 1;
+}
+
+/* Marca, campana, cuenta y botón de menú en una fila también a 360 px: más juntos. Desde la
+   tableta hay lugar y vuelven a separarse. */
+.armazon:has(.navegacion[data-forma="panel"]) {
+  column-gap: 0.25rem;
+}
+
+@media (min-width: 37.5em) {
+  .armazon:has(.navegacion[data-forma="panel"]) {
+    column-gap: 1rem;
+  }
+}
+
 .armazon {
   position: relative;
   display: flex;
@@ -29,8 +51,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.625rem;
-  min-width: 3rem;
-  min-height: 3rem;
+  min-width: var(--medida-toque-minimo);
+  min-height: var(--medida-toque-minimo);
   margin-left: auto;
   color: var(--color-tinta);
   font-weight: 700;
@@ -156,7 +178,7 @@ main h1 {
 
   /* En la tableta, el menú (componentes/navegacion.css) va en una segunda fila a todo el ancho de la
      cabecera. */
-  .armazon .navegacion {
+  .armazon .navegacion:not([data-forma="panel"]) {
     order: 1;
     flex-basis: 100%;
   }
@@ -169,32 +191,21 @@ main h1 {
     column-gap: 1rem;
   }
 
-  .armazon .navegacion {
+  .armazon .navegacion:not([data-forma="panel"]) {
     order: 0;
     flex: 1 1 auto;
   }
 
   /* El menú en un solo renglón: si se parte, la segunda fila deja un hueco a su lado (pulido,
-     2026-11-03: "Seguir entregas" de la entidad bajaba a 1280 px). Se achica la cuenta. Solo con
-     hasta 5 secciones (donante y entidad): las 7 de la administración no entran en una fila. */
-  .armazon .navegacion ul:not(:has(li:nth-child(6))) {
+     2026-11-03: "Seguir entregas" de la entidad bajaba a 1280 px). Se achica la cuenta. La
+     administración tiene su botón de menú y no entra acá. */
+  .armazon .navegacion:not([data-forma="panel"]) ul {
     flex-wrap: nowrap;
   }
 
-  .armazon .navegacion ul:not(:has(li:nth-child(6))) a {
+  .armazon .navegacion:not([data-forma="panel"]) a {
     padding-inline: 0.5rem;
     white-space: nowrap;
-  }
-
-  /* Con más (las 7 de la administración), el menú en su propia fila, como en la tableta: partido
-     al lado de la cuenta dejaba un hueco. */
-  .armazon:has(.navegacion li:nth-child(6)) {
-    flex-wrap: wrap;
-  }
-
-  .armazon .navegacion:has(li:nth-child(6)) {
-    order: 1;
-    flex-basis: 100%;
   }
 
   .armazon-avisos,
@@ -203,10 +214,10 @@ main h1 {
   }
 }
 
-/* La campana de la administración (ronda 2026-11-09): con el menú en su propia fila, la campana va a
-   la derecha, junto a la cuenta, y no en el medio de la primera fila. */
+/* La campana de la administración (ronda 2026-11-09): sin el menú en la fila, la campana va a la
+   derecha, junto a la cuenta y el botón de menú. */
 @media (min-width: 68.75em) {
-  .armazon:has(.navegacion li:nth-child(6)) .campanita {
+  .armazon:has(.navegacion[data-forma="panel"]) .campanita {
     margin-left: auto;
   }
 }

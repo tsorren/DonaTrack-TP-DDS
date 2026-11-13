@@ -211,7 +211,7 @@
           th:text="${palabras[d.estado]}">En el depósito</th:block></span></p>
     </header>
 
-    <p th:if="${accion == 'vencida'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+    <p th:if="${accion == 'vencida'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
        autofocus>La marcaste como vencida el 15 de octubre de 2026, 18:35.</p>
 
     <section th:if="${escenario == 'cambio'}" class="banner" data-estado="error" role="alert" tabindex="-1"

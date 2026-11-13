@@ -98,7 +98,7 @@ body {
   left: -100vw;
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
 }
 
 .saltar:focus {
@@ -326,7 +326,7 @@ body::before {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0.25rem 0.25rem 0.25rem 0;
   color: var(--color-tinta);
   text-decoration: none;
@@ -376,7 +376,7 @@ body::before {
 .raices-pie a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   color: var(--color-texto-suelo);
   font-weight: 600;
   text-decoration: none;

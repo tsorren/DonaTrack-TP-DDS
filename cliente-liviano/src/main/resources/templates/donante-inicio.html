@@ -37,6 +37,7 @@
       <h1>Hola, <em th:text="${cuenta.nombre}">Distribuidora Ejemplo SA</em></h1>
       <p class="bajada">Así va lo que donó tu empresa en [[${miInicio.mes}]]. Actualizado hoy,
         [[${miInicio.actualizado}]].</p>
+      <aside th:replace="~{componentes/pista :: pista('inicio', 'Este es tu resumen', 'Desde acá podés revisar tus donaciones, ver su seguimiento y entrar a la huerta para conocer tus misiones.')}"></aside>
       <div class="racimo" th:if="${conDatos}">
         <a class="boton" data-tono="secundario" href="/donante-donaciones"
            th:href="@{/donante-donaciones}">Mis donaciones</a>

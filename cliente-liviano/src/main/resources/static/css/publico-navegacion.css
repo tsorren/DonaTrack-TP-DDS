@@ -6,20 +6,24 @@
 
 /* La barra no tapa el pie. */
 body {
-  padding-bottom: 4.5rem;
+  padding-bottom: 5rem;
 }
 
-/* Con la sesión iniciada (ficha r11-p1-portada.md): en el celular, la foto de la cuenta arriba, a la
-   derecha de la marca, como en el área privada; la barra sigue abajo. */
-.raices-cabecera:has(> .navegacion-cuenta) {
+/* La marca a la izquierda y el menú a la derecha: en el celular, de él se ven Ingresar y Crear
+   cuenta (las secciones van en la barra de abajo). Con la sesión iniciada (ficha r11-p1-portada.md),
+   "Mi inicio" y, a la derecha, la foto de la cuenta, como en el área privada. */
+.raices-cabecera {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem 1rem;
 }
 
-@media (min-width: 37.5em) {
-  /* Desde la tableta, "Ir a mi inicio" con su nombre largo: el corto es solo de la barra. */
+/* Desde que el menú entra en una línea (--medida-quiebre-menu), arriba, en la cabecera. */
+@media (min-width: 56em) {
+  /* "Ir a mi inicio" con su nombre largo, como los demás nombres largos desde este ancho: el corto
+     es solo del celular y la tableta. */
   .raices-cabecera .navegacion-destacado [aria-hidden="true"] {
     display: none;
   }
@@ -29,9 +33,7 @@ body {
   }
 
   .raices-cabecera {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    justify-content: flex-start;
     gap: 0.5rem 2rem;
   }
 

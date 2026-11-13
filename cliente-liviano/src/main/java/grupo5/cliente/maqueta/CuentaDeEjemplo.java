@@ -95,7 +95,7 @@ final class CuentaDeEjemplo implements HandlerInterceptor {
   private static List<OpcionNavegacion> conMisiones(Object empresa, String ruta) {
     List<OpcionNavegacion> menu =
         new ArrayList<>(((List<?>) empresa).stream().map(OpcionNavegacion.class::cast).toList());
-    var misiones = new OpcionNavegacion("Misiones", "Misiones", "incentivos", MISIONES, false);
+    var misiones = new OpcionNavegacion("Misiones", "Misiones", "estrella", MISIONES, false);
     menu.add(menu.size() - 1, misiones);
     return menu.stream().map(opcion -> marcada(opcion, ruta)).toList();
   }

@@ -28,6 +28,11 @@
   <th:block th:replace="~{datos-donante :: donante(~{::cuerpo})}"></th:block>
 </th:block>
 
+<th:block th:fragment="pantalla" th:with="yaDonadas=${ {'comedor', 'escuela', 'merendero'} }">
+  <th:block th:replace="~{publico-entidades :: pantalla}"></th:block>
+  <span class="solo-lectores">Cómo llega tu donación</span>
+</th:block>
+
 <th:block th:fragment="cuerpo"
     th:with="entidades=${misEntidades.entidades},
              categorias=${misEntidades.categorias},

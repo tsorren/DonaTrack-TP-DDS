@@ -52,7 +52,7 @@
       </div>
     </header>
 
-    <p th:if="${leidas}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+    <p th:if="${leidas}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
        th:text="${marcadas == 'todas'} ? 'Listo: marcaste todas como leídas.' : (${noLeidas != ''} ? 'Listo: marcaste la notificación como no leída.' : 'Listo: marcaste la notificación como leída.')">Listo:
       marcaste todas como leídas.</p>
 

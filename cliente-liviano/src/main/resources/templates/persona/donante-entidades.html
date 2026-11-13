@@ -18,6 +18,66 @@
   <th:block th:replace="~{persona/datos-persona :: persona(~{::cuerpo})}"></th:block>
 </th:block>
 
+<th:block th:fragment="pantalla" th:with="yaDonadas=${ {'comedor', 'escuela', 'merendero'} }">
+  <th:block th:replace="~{publico-entidades :: pantalla}"></th:block>
+  <span class="solo-lectores">Cómo llega tu donación</span>
+</th:block>
+
+<section th:fragment="entidadesLanding" class="huerta-participa" id="persona-entidades"
+         aria-labelledby="persona-entidades-titulo">
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Organizaciones</p>
+    <h1 id="persona-entidades-titulo">Quiénes reciben <em>tus donaciones</em></h1>
+    <p class="huerta-bajada">Conocé qué pide cada organización y seguí haciendo crecer lo que donás.</p>
+  </header>
+  <ul class="huerta-opciones" role="list">
+    <li class="tarjeta huerta-opcion" data-ya="si">
+      <img src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/planta-naranjo.svg}"
+           alt="" width="90" height="230">
+      <p class="huerta-rotulo">Comedor Barrio Ejemplo</p>
+      <span class="chip">Ya donaste</span>
+      <h3>Alimentos para la merienda.</h3>
+      <ul class="huerta-hojas" role="list">
+        <li>Lentejas secas</li>
+        <li>Arroz</li>
+        <li>Aceite de girasol</li>
+      </ul>
+      <div class="huerta-opcion-acciones">
+        <a class="boton" data-tono="secundario" href="/donante-donaciones">Ver mis donaciones</a>
+      </div>
+    </li>
+    <li class="tarjeta huerta-opcion">
+      <img src="/img/ilustraciones/planta-pino.svg" th:src="@{/img/ilustraciones/planta-pino.svg}"
+           alt="" width="90" height="230">
+      <p class="huerta-rotulo">Escuela Ejemplo N.º 12</p>
+      <h3>Muebles y útiles para las aulas.</h3>
+      <ul class="huerta-hojas" role="list">
+        <li>Sillas</li>
+        <li>Útiles escolares</li>
+        <li>Equipamiento para el ciclo que viene</li>
+      </ul>
+      <div class="huerta-opcion-acciones">
+        <a class="boton" data-tono="secundario" href="/donante-entidades#persona-entidades">Ver necesidades</a>
+      </div>
+    </li>
+    <li class="tarjeta huerta-opcion" data-ya="si">
+      <img src="/img/ilustraciones/planta-algodon.svg" th:src="@{/img/ilustraciones/planta-algodon.svg}"
+           alt="" width="90" height="228">
+      <p class="huerta-rotulo">Merendero Ejemplo Sur</p>
+      <span class="chip">Ya donaste</span>
+      <h3>Una merienda para cada día.</h3>
+      <ul class="huerta-hojas" role="list">
+        <li>Galletitas</li>
+        <li>Leche en polvo</li>
+        <li>Ropa de abrigo</li>
+      </ul>
+      <div class="huerta-opcion-acciones">
+        <a class="boton" data-tono="secundario" href="/donante-donaciones">Ver mis donaciones</a>
+      </div>
+    </li>
+  </ul>
+</section>
+
 <th:block th:fragment="cuerpo"
     th:with="entidades=${ {
       {nombre: 'Comedor Barrio Ejemplo', ya: true,
