@@ -217,6 +217,12 @@ Recibidas en octubre (6)
 
 ### 4.3 `entidad-notificaciones` y `entidad-notificaciones-leidas`
 
+> **Actualización R11-14 (2026-11-12, aprobada):** la bandeja va de a 20 por página, con los
+> filtros resueltos en Notificaciones, y cambia cómo se ven las leídas y las sin leer, sus vínculos
+> y el ícono de "Marcar como no leída". Lo que dice la
+> [ficha del lote `p1-notificaciones`](r11-p1-notificaciones.md) sobre la bandeja manda sobre esta
+> sección; el resto sigue igual.
+
 ```text
 Notificaciones
 Tus novedades
@@ -278,12 +284,699 @@ Cómo está todo (al 15 de octubre de 2026, 18:30)
 
 - Sin audacia de más: es la mesa de trabajo de quien decide (la del primer prototipo, sobria). Las cifras van
   sin gráficos y con su fecha.
+  > **Cambia con R11-42 (2026-11-12, aprobada):** el inicio suma dos gráficos, mes a mes y por
+  > categoría, cada uno con su tabla al lado. Ver
+  > [R11-42 · Los últimos 12 meses, en gráficos](#r11-42--los-últimos-12-meses-en-gráficos). Decidió
+  > el usuario en la ronda del 2026-11-11 ("Inicio del admin: … y, además, gráficos").
 - Cada bloque de decisión lleva a su lista: `admin-entidades`, `admin-donaciones?vence=pronto` y
   `admin-asignaciones`; las cifras, a `admin-donaciones` y `admin-camiones`. Todas caen en
   `sin-dibujar`.
 - Respecto del boceto (pág. 13): el boceto es un menú con saludo. Las 9 secciones quedaron en 6
   (mapa del sitio) y van en el menú; el inicio suma lo que espera una decisión, que el boceto no
   tiene.
+
+#### R11-21 · El inicio del admin, por temas (aprobada 2026-11-12)
+
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
+> Sale del [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (R11-21, lote
+> `p1-admin-inicio`, ruta STANDARD, solo `cliente-liviano`). **Manda sobre el esquema de arriba y
+> sobre las filas `admin-inicio` de §5, §6 y §8**; lo demás de la ficha sigue aprobado. La decisión
+> de la ronda ("Inicio del admin: tarjetas de cifras, pendientes arriba y, además, gráficos") ya
+> está tomada: esta parte no la reabre. Los gráficos son R11-42 y no entran acá; las tarjetas dejan
+> el lugar para sumarlos sin rearmar la pantalla.
+>
+> **Desde R11-42 (2026-11-12, aprobada):** lo que esta parte dice "sin gráficos" (§4, regla
+> final; §8, heurística 8; §9, última decisión) lo reemplaza
+> [R11-42 · Los últimos 12 meses, en gráficos](#r11-42--los-últimos-12-meses-en-gráficos). El resto
+> de R11-21 sigue igual.
+
+##### 1. Para quién y para qué
+
+| | |
+|---|---|
+| Quién | La persona de Administración, en el escritorio, al empezar el día o entre una tarea y otra |
+| Tono | Pantalla de trabajo: claro, útil, tranquilizador ([tono](../tono-y-comunicacion.md#tono-según-la-pantalla)) |
+| Qué quiere lograr | "Ver de un vistazo qué me espera hoy y cómo está todo, sin contar nada a mano" |
+| Dispositivo principal | Escritorio; en el celular se lee entera, una tarjeta debajo de la otra |
+| Requerimientos | RF-16, RF-17, RF-18 y RF-21, resumidos (como hasta ahora). Regla general 1 (ninguna lista entera) y regla 2 (un resumen muestra 3 elementos y lleva a la lista completa) del backlog |
+| Datos que usa | `GET /api/donaciones/resumen` (los 8 estados, las entregas del mes, lo que vence, los donantes activos y en total, las organizaciones activas y `propuestasPendientes`); las solicitudes pendientes de Keycloak (con su nombre); `GET /api/camiones` (la flota, ver Decisiones). **Deja de pedir** `GET /api/asignaciones/propuestas` |
+| Boceto de E1 | Pág. 13 (menú con saludo). Sin cambio respecto de lo de arriba |
+
+Qué cambia respecto de hoy (evidencia del backlog: `admin-inicio.html:82-123` y
+`admin-inicio.css:106-175`):
+
+- Las cifras de "Cómo está todo" eran dos registros planos de cuatro números, sin jerarquía y sin
+  decir de qué período es cada uno. Pasan a **tarjetas por tema** (Donaciones por estado, Entregas,
+  La red y Camiones), cada una con su título, su período y su salida a la lista.
+- Las frases que arma el adaptador ("Hoy esperan tu decisión 1234 entidades…") llevaban el número
+  crudo. Toda cifra, en la frase o en la tarjeta, va con separador de miles ("1.234").
+- Lo que espera una acción sigue arriba y suma **"Donaciones sin asignar"** (las del depósito),
+  que pide el backlog.
+- Las propuestas se cuentan con el número del resumen, sin traer la lista (DTI-40, ítem 1).
+
+##### 2. Dónde está en el sitio
+
+Sin cambio: `admin-inicio`, nivel 1 del admin, primer ítem del menú ([mapa del
+sitio](../mapa-del-sitio.md)). Cada tarjeta lleva a una pantalla de nivel 2 que ya existe.
+
+##### 3. Recorrido
+
+```mermaid
+flowchart TD
+  ingresar([Ingresar, cuenta del admin]) --> inicio[admin-inicio]
+  inicio -->|Revisar organizaciones| ent[admin-entidades]
+  inicio -->|Ver las del depósito| dep[admin-donaciones?estado=deposito]
+  inicio -->|Ver las que vencen| ven[admin-donaciones?vence=pronto]
+  inicio -->|Revisar propuestas| asg[admin-asignaciones]
+  inicio -->|Cada estado de la tarjeta Donaciones| est[admin-donaciones?estado=...]
+  inicio -->|Ver donantes| don[admin-donantes]
+  inicio -->|Ver camiones| cam[admin-camiones]
+  inicio -->|Donaciones no responde| err[Aviso de error de la página, con código]
+  inicio -->|Logística no responde| errcam[Solo la tarjeta Camiones con su aviso]
+  inicio -->|Nada espera una acción| vacio[Aviso: hoy no hay nada que espere tu decisión]
+  err -->|Volver a cargar| inicio
+  errcam -->|Volver a cargar| inicio
+```
+
+Desvíos considerados:
+
+- **Volver:** cada salida es un enlace común; el "atrás" del navegador vuelve al inicio.
+- **Error del servidor de Donaciones** (el resumen no llega): la página muestra el aviso de error
+  con su código, como hoy. Ninguna tarjeta se dibuja con ceros: un cero sería un dato falso.
+- **Error de Logística** (la flota no llega): solo la tarjeta Camiones muestra su aviso; el resto
+  de la página se ve. Es un servicio aparte y no tiene por qué tapar lo demás.
+- **Error de Keycloak** (las solicitudes no llegan): como hoy, la página entera muestra su error
+  (la llamada vive en `AdminPersonasRest`, fuera de los archivos del lote).
+- **Sin conexión o lento:** el estado Cargando de siempre (`?escenario=lento`).
+- **Sin permiso:** sin cambio (ver Desvíos de la ficha).
+- **Una lista vacía:** la tarjeta de lo que espera con 0 no se dibuja; si las tres dan 0, un solo
+  aviso tranquilo en su lugar.
+
+##### 4. Pantalla
+
+Patrones conocidos que sigue ([criterios de la cátedra](../criterios-catedra-ux-ui.md)):
+
+- **Tarjetas, un tema por tarjeta** (§5): cada tarjeta tiene un título, sus cifras y una sola
+  salida principal.
+- **Bandeja de pendientes arriba del panel de cifras:** lo que espera una acción va primero, donde
+  la mirada empieza (el recorrido en F, §3), y el resumen de cifras debajo.
+- **Divulgación progresiva** (§6, principio 3): el inicio da el número y como mucho 3 nombres; el
+  detalle está en la lista, a un toque.
+- **Resumen dentro de otra pantalla** (regla general 2 del backlog): 3 elementos y "Ver todas",
+  que lleva a la lista completa y paginada.
+
+Escritorio (1280 px y más), con los datos de la maqueta:
+
+```text
+Inicio
+Hola, Leo
+Jueves 15 de octubre de 2026
+Hoy esperan tu decisión 3 organizaciones y 2 propuestas de asignación.
+Hay 7 donaciones sin asignar en el depósito; 4 vencen en los próximos 7 días.
+
+Lo que espera tu decisión
+┌─ ORGANIZACIONES ────────┐ ┌─ DONACIONES SIN ASIGNAR ─┐ ┌─ PROPUESTAS DE ASIGNACIÓN ┐
+│ 3 piden sumarse         │ │ 7 en el depósito          │ │ 2 esperan tu revisión     │
+│ · Hogar Ejemplo Norte   │ │ 4 vencen en los próximos  │ │ Cada una dice qué         │
+│ · Merendero Ejemplo Este│ │ 7 días. La primera, Leche │ │ donación va a qué         │
+│ · Comedor Ejemplo Oeste │ │ en polvo, vence el 17 de  │ │ organización.             │
+│                         │ │ octubre, en 2 días.       │ │                           │
+│ [Revisar organizaciones]│ │ [Ver las que vencen]      │ │ [Revisar propuestas]      │
+│                         │ │ Ver las 7 del depósito    │ │                           │
+└─────────────────────────┘ └───────────────────────────┘ └───────────────────────────┘
+
+Cómo está todo
+Al 15 de octubre de 2026, 18:30.
+┌─ DONACIONES, POR ESTADO (ahora) ──────────────────────┐ ┌─ ENTREGAS CONFIRMADAS ───┐
+│     7  En el depósito, sin asignar          Ver ›     │ │     9  en octubre,        │
+│     4  Asignadas, por salir                 Ver ›     │ │        del 1 al 15        │
+│     1  En camino o en la puerta             Ver ›     │ │ 1.284  en total, desde la │
+│     1  No se pudo entregar: se ve entre las asignadas │ │        primera registrada │
+│     2  Vencidas en el depósito              Ver ›     │ │ Las confirma cada         │
+│ Ver todas las donaciones                              │ │ organización con su foto. │
+└───────────────────────────────────────────────────────┘ └───────────────────────────┘
+┌─ LA RED (ahora) ──────────────────┐ ┌─ CAMIONES (ahora) ────────────────────────────┐
+│    46  organizaciones activas     │ │     1  en ruta                                 │
+│    86  donantes activos, de 92    │ │     3  libres                                  │
+│        registrados                │ │ Ver camiones                                   │
+│ Ver donantes                      │ │                                                │
+└───────────────────────────────────┘ └────────────────────────────────────────────────┘
+```
+
+Celular (360 px): el mismo orden, una tarjeta debajo de la otra: las tres de lo que espera, después
+Donaciones por estado, Entregas confirmadas, La red y Camiones. El botón de cada tarjeta, a todo el
+ancho de la tarjeta.
+
+Reglas de la pantalla:
+
+- **Jerarquía de cada cifra:** el número grande, en la letra de cifras, alineado a la derecha de
+  su columna para que las cifras de una tarjeta se lean en fila; el nombre al lado, en la letra de
+  texto. El título de la tarjeta, como el rótulo de las etiquetas de herbario de hoy.
+- **Separador de miles en todo número**, también en las frases que arma `AdminPersonasInicio`
+  (la cabecera, "3 piden sumarse", "vencen en los próximos 7 días", "de 92 registrados"). Formato
+  es-AR: punto para los miles.
+- **Período en cada tarjeta:** "ahora" en las que cuentan cómo están las cosas en este momento
+  (por estado, la red, camiones); el mes y sus días en las entregas del mes ("en octubre, del 1 al
+  15"); "en total, desde la primera registrada" en el total. La fecha y hora de lectura va una vez,
+  debajo de "Cómo está todo", y sale de `calculadoEn` del resumen.
+- **Organizaciones:** el número es el de las solicitudes; los nombres, **como mucho 3**. Si hay
+  más, debajo de la lista: "y 12 más". El botón lleva a la lista completa.
+- **Donaciones sin asignar:** el número es el de `EN_DEPOSITO`. Si alguna vence en 7 días, la
+  frase de lo que vence y el botón "Ver las que vencen" (principal); "Ver las 7 del depósito" como
+  enlace. Si ninguna vence, el botón principal es "Ver las del depósito" y la frase dice "Ninguna
+  vence en los próximos 7 días.".
+- **Propuestas:** solo el número (`propuestasPendientes`), sin nombres, y "Revisar propuestas".
+- **Donaciones por estado:** los 8 estados del contrato en 5 filas, con el mismo agrupado que la
+  lista de Donaciones del admin, para que el número del inicio sea el que se ve al entrar:
+
+  | Fila | Estados que suma | Enlace |
+  |---|---|---|
+  | En el depósito, sin asignar | `EN_DEPOSITO` | `admin-donaciones?estado=deposito` |
+  | Asignadas, por salir | `ASIGNACION_REALIZADA` + `LISTA_PARA_ENTREGAR` | `?estado=asignada` |
+  | En camino o en la puerta | `EN_TRASLADO` + `EN_PUERTA` | `?estado=camino` |
+  | No se pudo entregar | `ENTREGA_FALLIDA` | Sin enlace propio: la lista la muestra entre las asignadas, y la fila lo dice |
+  | Vencidas en el depósito | `VENCIDA` | `?estado=vencida` |
+
+  `ENTREGADA` no va en esta tarjeta: es el total de la tarjeta Entregas confirmadas. Una fila en 0
+  se muestra igual, con su 0 (es un dato que llegó, no uno que falta), sin el enlace "Ver ›".
+- **La red:** organizaciones activas (`entidadesActivas`) y donantes activos, con el total de
+  registrados al lado (`donantes.activos` y `donantes.total`).
+- **Camiones:** en ruta y libres, contados sobre la flota como hasta ahora.
+- Sin gráficos, sin porcentajes y sin comparar con el mes anterior: no hay dato para hacerlo bien
+  todavía (R11-42).
+
+##### 5. Estados
+
+| Estado | Qué se ve | Texto |
+|---|---|---|
+| Con datos | La cabecera, las tarjetas de lo que espera con algo y las cuatro de cifras | Ver Textos |
+| Vacío: nada espera una acción (`?escenario=vacio`) | La cabecera sin la frase de resumen, el aviso en lugar de las tres tarjetas de arriba y las cuatro de cifras | "Hoy no hay nada que espere tu decisión." · "Ninguna organización pide sumarse, no hay donaciones sin asignar en el depósito y no hay propuestas de asignación para revisar." |
+| Vacío en una sola tarjeta de lo que espera | Esa tarjeta no se dibuja; las otras ocupan el lugar | — |
+| Una fila de estado en 0 | La fila con su 0 y sin "Ver ›" | "0 Vencidas en el depósito" |
+| Plataforma sin entregas todavía | La tarjeta con sus ceros y una frase | "Todavía no hay entregas confirmadas." · "Se cuentan cuando cada organización confirma lo que recibe, con su foto." |
+| Cargando (`?escenario=lento`) | La cabecera y el lugar de cada tarjeta, sin números inventados | "Cargando tu inicio…" |
+| Error de Donaciones (`?escenario=error`) | La cabecera y el aviso de error en lugar de todo lo demás, como hoy | "No pudimos cargar tu inicio." · "Es un problema nuestro: no cambió ninguna decisión. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · "Código: a1b2c3d4e5f6" · "Volver a cargar" |
+| Error de Logística (`?escenario=error-camiones`) | Todo con datos menos la tarjeta Camiones, que muestra su aviso | "No pudimos cargar los camiones." · "El resto de las cifras está al día. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · "Código: a1b2c3d4e5f6" · "Volver a cargar" |
+| Sin permiso | No se dibuja (ver Desvíos de la ficha) | "Esta pantalla es para la administración." · "Ir a tu inicio" |
+
+##### 6. Textos
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Cabecera, con todo | "Hoy esperan tu decisión 3 organizaciones y 2 propuestas de asignación." · "Hay 7 donaciones sin asignar en el depósito; 4 vencen en los próximos 7 días." | Con separador de miles |
+| Cabecera, en singular | "Hoy espera tu decisión 1 organización." · "Hay 1 donación sin asignar en el depósito; vence en los próximos 7 días." · "Hay 7 donaciones sin asignar en el depósito; 1 vence en los próximos 7 días." | — |
+| Cabecera, sin vencimientos | "Hay 7 donaciones sin asignar en el depósito." | — |
+| Título de la sección de arriba | "Lo que espera tu decisión" | Sin cambio |
+| Tarjeta 1 | "Organizaciones" · "3 piden sumarse" / "1 pide sumarse" · los nombres · "y 12 más" · "Revisar organizaciones" | Nombres como mucho 3 |
+| Tarjeta 2 | "Donaciones sin asignar" · "7 en el depósito" · "4 vencen en los próximos 7 días. La primera, Leche en polvo, vence el 17 de octubre, en 2 días." · "Ver las que vencen" · "Ver las 7 del depósito" | Sin descripción: "La primera vence el 17 de octubre, en 2 días."; hoy: "…vence hoy." |
+| Tarjeta 2, sin vencimientos | "Ninguna vence en los próximos 7 días." · "Ver las del depósito" | — |
+| Tarjeta 3 | "Propuestas de asignación" · "2 esperan tu revisión" / "1 espera tu revisión" · "Cada una dice qué donación va a qué organización." · "Revisar propuestas" | La frase explica qué hay detrás del botón (§6, principio 4) |
+| Título de la sección de cifras | "Cómo está todo" · "Al 15 de octubre de 2026, 18:30." | Sin cambio |
+| Tarjeta Donaciones | "Donaciones, por estado" · "ahora" · las 5 filas · "Ver ›" (con nombre accesible "Ver las donaciones en el depósito", etc.) · "No se pudo entregar: se ve entre las asignadas" · "Ver todas las donaciones" | — |
+| Tarjeta Entregas | "Entregas confirmadas" · "9 en octubre, del 1 al 15" · "1.284 en total, desde la primera registrada" · "Las confirma cada organización con su foto." | Resultado registrado, no impacto ([tono](../tono-y-comunicacion.md#cifras-y-datos)). El "del 1 al N" sale del día de `calculadoEn` |
+| Tarjeta La red | "La red" · "ahora" · "46 organizaciones activas" · "86 donantes activos, de 92 registrados" · "Ver donantes" | — |
+| Tarjeta Camiones | "Camiones" · "ahora" · "1 en ruta" · "3 libres" · "Ver camiones" | — |
+| Con datos del seed | "20.412 donantes activos, de 20.530 registrados" | Ejemplo de formato con miles, no dato de maqueta |
+
+Datos de maqueta: los de la ficha (jueves 15 de octubre de 2026, 18:30; Leo), con los nuevos
+coherentes con el resto: 1 donación que no se pudo entregar (el aceite de girasol de la
+entidad, §6), 2 vencidas, 1.284 entregas confirmadas en total y 92 donantes registrados.
+
+Filtro de tono: lo pendiente dice pendiente ("esperan tu revisión", "sin asignar"); cada cifra
+dice su período; "No se pudo entregar" dice qué pasó, sin culpa; sin urgencia (las que vencen se
+dicen con su fecha, sin "¡urgente!"); entregas confirmadas como resultado registrado, no como
+impacto.
+
+**"Organización":** los textos nuevos ya dicen "organización" por la decisión de la ronda (§3 del
+backlog). El código, las rutas y los campos siguen con "entidad"; el lote `p1-nombres` cambia el
+resto del sitio y en esta pantalla no tiene nada que tocar.
+
+##### 7. Accesibilidad
+
+- Orden del foco: menú, la cabecera, las tarjetas de arriba de izquierda a derecha (cada una, su
+  botón y su enlace), después las de cifras en el orden del esquema.
+- Cada tarjeta es una `section` con su `h3` y `aria-labelledby`; las cifras, una lista de
+  definiciones (`dt` el nombre, `dd` el número), como hoy. El número va primero a la vista, pero
+  el lector lee "En el depósito, sin asignar: 7".
+- Los "Ver ›" de cada fila llevan un nombre accesible completo ("Ver las donaciones en el
+  depósito"), no solo "Ver".
+- Mientras carga, cada sección con `aria-busy="true"` y el texto "Cargando tu inicio…" en
+  `role="status"`. El error de la página y el de Camiones, con `role="alert"` y el foco no se mueve
+  solo.
+- Contraste AA en los números grandes y en los rótulos; el número no depende del color para
+  entenderse. Objetivos de toque de 44 px en el celular.
+- Las cifras de una tarjeta alineadas a la derecha usan números tabulares para que no bailen.
+
+##### 8. Revisión de usabilidad
+
+| # | Heurística | Cómo la cumple | Riesgo que queda |
+|---|---|---|---|
+| 1 | Visibilidad del estado | Cada tarjeta dice su período y la sección, la hora de lectura; lo que espera, con su cuenta en el título | Las cifras no se actualizan solas: hay que volver a cargar |
+| 2 | Lenguaje del usuario | "Sin asignar", "esperan tu revisión", "no se pudo entregar": sin los nombres del enum | — |
+| 3 | Control y libertad | Cada tarjeta es un enlace común; "atrás" vuelve al inicio | — |
+| 4 | Consistencia | Las filas por estado suman como la lista de Donaciones y enlazan a su mismo filtro: el número del inicio es el que se ve al entrar | `ENTREGA_FALLIDA` no tiene filtro propio en la lista; la fila lo dice |
+| 5 | Prevención de errores | El inicio no decide nada: solo lleva a donde se decide | — |
+| 6 | Reconocer antes que recordar | Los nombres de las organizaciones y la primera que vence se ven sin entrar | Las propuestas no muestran nombres hasta que el servicio filtre por pendientes |
+| 7 | Flexibilidad | Cada fila por estado es un atajo a su lista filtrada | — |
+| 8 | Diseño minimalista | Tres tarjetas de lo que espera y cuatro de cifras, sin gráficos; las tarjetas en 0 no se dibujan | Con R11-42 suman gráficos: tienen que entrar en las tarjetas, no debajo de todo |
+| 9 | Recuperarse de errores | Error de Donaciones: aviso con código y "Volver a cargar"; error de Logística: solo la tarjeta Camiones | El error de Keycloak sigue tapando toda la página |
+| 10 | Ayuda | La frase de cada tarjeta de arriba explica qué hay detrás del botón; Entregas dice quién las confirma | — |
+
+Los 7 factores:
+
+- **Útil:** muestra lo que hay que hacer hoy antes que lo que ya pasó.
+- **Usable:** un número por fila, con su nombre al lado y su salida.
+- **Deseable:** sobria como la mesa de trabajo de hoy, con más orden.
+- **Valioso:** el admin no cuenta nada a mano ni entra a cada lista para saber cuántas hay.
+- **Ubicable:** cada cifra lleva a la lista que la explica.
+- **Accesible:** lista de definiciones, nombres accesibles completos y AA.
+- **Creíble:** cada cifra con su período y su hora; ningún cero en lugar de un dato que no llegó.
+
+Para probar con personas reales: si "Donaciones sin asignar" se entiende como "las que hay que
+asignar" o como "las que se olvidaron"; y si la persona de Administración busca primero las que
+vencen o las del depósito.
+
+##### 9. Decisiones y preguntas
+
+Decisiones (agente, 2026-11-12; quedan a confirmar con el OK del usuario):
+
+- **Donaciones sin asignar = las del depósito (`EN_DEPOSITO`).** Es el único estado en que una
+  donación todavía no tiene destino. Se descartó contar también las vencidas (ya no se pueden
+  asignar) y las que no se pudieron entregar (ya tienen destino y vuelven por otro camino).
+- **Las propuestas, solo con su número.** El resumen ya trae `propuestasPendientes`; traer 3
+  nombres sin la lista entera necesita que `GET /api/asignaciones/propuestas` filtre por estado y
+  pagine, y eso es de Donaciones (fuera del módulo del lote). Se descartó seguir trayendo la lista
+  entera para mostrar nombres (lo prohíbe la regla 1).
+- **Los camiones siguen contándose sobre la flota.** DTI-40, ítem 1, deja el conteo por estado a
+  `p2-listas-restantes`, que suma el número en Logística. La flota es corta; se descartó pedir un
+  endpoint nuevo desde un lote de solo `cliente-liviano`.
+- **5 filas para los 8 estados**, con el agrupado de la lista de Donaciones del admin. Se descartó
+  mostrar los 8 por separado: "lista para entregar" y "en la puerta" son pasos internos que el
+  admin no filtra por separado, y la cifra del inicio no coincidiría con la de la lista.
+- **El error de Logística no tapa la página.** Se descartó el error de página entera para un
+  servicio que solo alimenta una tarjeta.
+- **"Organización" ya en esta pantalla**, aunque el cambio general sea de `p1-nombres` (tanda 3):
+  la pantalla se reescribe ahora y escribirla dos veces no suma nada.
+- **Sin gráficos** (R11-42), pero las tarjetas de cifras tienen lugar para sumar uno adentro.
+
+Qué toca la construcción (solo `cliente-liviano`):
+
+- `AdminInicioVista`: `Decisiones` suma las donaciones sin asignar y "cuántas más" organizaciones
+  (los nombres, como mucho 3), y deja la lista de propuestas; `Cifras` pasa a las cuatro tarjetas
+  (las 5 filas por estado con su enlace, las entregas del mes con sus días y en total, la red con
+  activos y registrados, y los camiones, que pueden faltar si Logística no respondió).
+- `AdminPersonasInicio`: deja de llamar a `donaciones.propuestas()`; arma las frases con separador
+  de miles; agrupa los estados; atrapa la falla de Logística para la tarjeta Camiones; toma la hora
+  de `calculadoEn`.
+- `admin-inicio.html` y `admin-inicio.css`: las tarjetas, los estados nuevos
+  (`?escenario=error-camiones`) y la jerarquía de cada cifra.
+- **Fuera de los archivos del lote, imprescindible:** `maqueta/AdminPersonasMaqueta.java` (arma
+  la misma vista con los datos de ejemplo de arriba) y los tests que construyen `AdminInicioVista`
+  o miran sus textos (`AdminPersonasRestTest`, `AdminPersonasInicioEnPuertaTest`,
+  `AdminInicioControllerTest`). Se tocan solo para la forma nueva de la vista, sin debilitar
+  ninguna aserción.
+
+Preguntas abiertas: ninguna que frene la construcción. Las dos que quedan para el usuario van en
+el reporte del lote (nombres de las propuestas y si la fila "No se pudo entregar" merece su
+filtro).
+
+#### R11-42 · Los últimos 12 meses, en gráficos
+
+> **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
+> Sale del [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (R11-42, lote
+> `p2-admin-graficos`, P2, ruta CONTRATO, `donaciones-service` y `cliente-liviano`). La decisión de
+> la ronda ("Inicio del admin: tarjetas de cifras, pendientes arriba y, además, gráficos (cambia el
+> 'sin gráficos' de la ficha)", sección 3 del backlog) ya está tomada: esta parte la baja a la
+> pantalla, no la reabre. **Cambia el "sin gráficos"** de §4.4 y de R11-21 (§4, §8 y §9): desde acá
+> el inicio del admin tiene dos gráficos. Todo lo demás de R11-21 (lo que espera una acción, las
+> cuatro tarjetas de cifras, sus estados y textos) sigue igual.
+
+##### 1. Para quién y para qué
+
+| | |
+|---|---|
+| Quién | La persona de Administración, en el escritorio, cuando quiere saber si la plataforma va creciendo y qué se dona más, no solo cómo está hoy |
+| Tono | Pantalla de trabajo: claro, útil, tranquilizador ([tono](../tono-y-comunicacion.md#tono-según-la-pantalla)) |
+| Qué quiere lograr | "Ver cómo vinieron los últimos meses y qué categorías se mueven, sin armar una planilla" |
+| Dispositivo principal | Escritorio; en el celular se lee entero, el gráfico arriba y su tabla debajo |
+| Requerimientos | RF-16 a RF-21, resumidos (como el resto del inicio). Regla general 1 del backlog: los números llegan contados por Donaciones, ninguna lista se trae para contarla |
+| Datos que usa | **Nuevo:** `GET /api/donaciones/resumen/evolucion` (solo ADMIN), con los meses y las categorías ya contados en la base. El resto, sin cambio (`GET /api/donaciones/resumen`, Keycloak y la flota) |
+| Boceto de E1 | Pág. 13 (menú con saludo): no tiene gráficos. Se suman por la decisión de la ronda |
+
+Qué pasa hoy (evidencia): `admin-inicio.html:1-9` dice "Sin gráficos (R11-42): entran después
+dentro de cada tarjeta"; `ResumenAdminDTO` (Donaciones) solo da cifras de ahora y del mes en curso
+(`entregadasEnElMes`), ninguna serie; `admin-donaciones.html:95-110` filtra por estado, vencimiento
+y orden, no por mes ni por categoría.
+
+##### 2. Dónde está en el sitio
+
+Sin cambio: `admin-inicio`, nivel 1 del admin. Los gráficos no llevan a ninguna pantalla nueva:
+la salida de cada tarjeta es la lista de Donaciones que ya existe.
+
+##### 3. Recorrido
+
+```mermaid
+flowchart TD
+  inicio[admin-inicio] --> cifras[Cómo está todo: las cuatro tarjetas de R11-21]
+  cifras --> mes[Tarjeta Mes a mes: gráfico y su tabla]
+  cifras --> cat[Tarjeta Por categoría: gráfico y su tabla]
+  mes -->|Ver todas las donaciones| don[admin-donaciones]
+  cat -->|Ver todas las donaciones| don
+  inicio -->|La evolución no llega| errev[Una sola tarjeta con su aviso; el resto se ve]
+  inicio -->|Todavía no hay donaciones| vacia[Tarjeta con la frase, sin gráfico ni tabla]
+  inicio -->|La primera donación es de hace menos de 12 meses| corta[Los meses desde la primera]
+  errev -->|Volver a cargar| inicio
+```
+
+Desvíos considerados:
+
+- **Volver:** la única salida es un enlace común; el "atrás" del navegador vuelve al inicio.
+- **La evolución no llega** (Donaciones responde el resumen pero no la evolución, o tarda más del
+  límite): en lugar de las dos tarjetas, una sola con su aviso y su código, como la de Camiones. Las
+  cifras de arriba se ven igual: son otra llamada.
+- **Donaciones no responde nada:** el error de página entera de siempre (R11-21), sin gráficos.
+- **Plataforma sin donaciones:** la tarjeta lo dice con una frase; no se dibuja un gráfico de ceros.
+- **Plataforma nueva** (la primera donación es de hace menos de 12 meses): los meses empiezan en el
+  de la primera; los anteriores no se dibujan con 0, porque antes no había plataforma.
+- **El mes en curso:** se dibuja, pero marcado como incompleto ("del 1 al 15").
+- **Sin conexión o lento:** el estado Cargando de siempre (`?escenario=lento`).
+- **Sin permiso:** sin cambio (el endpoint es solo ADMIN, como el resumen).
+
+##### 4. Pantalla
+
+Patrones conocidos que sigue ([criterios de la cátedra](../criterios-catedra-ux-ui.md)):
+
+- **Tarjetas, un tema por tarjeta** (§5): cada gráfico es una tarjeta más de "Cómo está todo", con
+  su título, su período y su salida, como las cuatro de R11-21.
+- **Columnas para el tiempo, barras para comparar categorías:** la convención más conocida de los
+  gráficos de evolución (el tiempo corre de izquierda a derecha) y de comparación (la más larga
+  arriba, el nombre al lado, sin tener que mirar una leyenda).
+- **Tabla de datos al lado del gráfico:** el gráfico se mira, la tabla se lee. Es la alternativa en
+  texto del gráfico (§9, POUR: perceptible) y el lugar del número exacto.
+- **Divulgación progresiva** (§6, principio 3): el inicio da la forma y los totales; el detalle de
+  cada donación sigue en la lista.
+- **Color 60-30-10** (§8): neutro para lo registrado, el acento solo para las entregas confirmadas
+  (el resultado); el color nunca es la única pista.
+
+Lugar en la pantalla: dentro de "Cómo está todo", **después de las cuatro tarjetas** de R11-21. El
+orden se lee de lo de ahora a lo que pasó: primero cómo está todo hoy (y lo que espera, más
+arriba), después cómo vino. Cada gráfico es una tarjeta **a todo el ancho** de la grilla, con el
+gráfico a la izquierda y su tabla a la derecha.
+
+Escritorio (1024 px y más), con los datos de la maqueta (jueves 15 de octubre de 2026):
+
+```text
+Cómo está todo
+Al 15 de octubre de 2026, 18:30.
+[ Donaciones, por estado ] [ Entregas confirmadas ]       ← sin cambio (R11-21)
+[ La red ]                 [ Camiones ]
+
+┌─ MES A MES · de noviembre de 2025 a octubre de 2026 ─────────────────────────────────────────┐
+│ En los últimos 12 meses se registraron 1.424 donaciones y se confirmaron 1.161 entregas.     │
+│ El mes con más donaciones registradas fue agosto de 2026, con 165.                           │
+│ ■ Registradas   ■ Entregas confirmadas                                                       │
+│                                                     │ Mes            Registradas  Entregas   │
+│ 200 ┤                                               │ Noviembre 2025          96        71   │
+│     │                          ▐▌                   │ Diciembre 2025         132       104   │
+│ 100 ┤   ▐▌        ▐▌ ▐▌ ▐▌ ▐▌ ▐▌▐▌ ▐▌               │ Enero 2026              88        90   │
+│     │▐▌ ▐▌ ▐▌ ▐▌ ▐▌ ▐▌ ▐▌ ▐▌ ▐▌▐▌ ▐▌ ┆┆              │ …                                      │
+│   0 ┼──────────────────────────────────────         │ Octubre 2026,           58         9   │
+│      nov dic ene feb mar abr may jun jul ago sep oct│   del 1 al 15                          │
+│          2026                                  ┆en │ Total                1.424     1.161   │
+│                                                curso│                                        │
+│ Una entrega cuenta en el mes en que la organización la confirmó: puede ser de una donación   │
+│ registrada antes. Octubre todavía no terminó.                                                │
+│ Ver todas las donaciones                                                                     │
+└──────────────────────────────────────────────────────────────────────────────────────────────┘
+┌─ POR CATEGORÍA · de noviembre de 2025 a octubre de 2026 ─────────────────────────────────────┐
+│ Alimentos es la categoría con más donaciones registradas en estos 12 meses: 542 de 1.424.    │
+│ ■ Registradas   ■ Entregas confirmadas                                                       │
+│                                                     │ Categoría      Registradas  Entregas   │
+│ (ícono) Alimentos        ██████████████ 542         │ Alimentos              542       461   │
+│                          ████████████ 461           │ Ropa                   287       241   │
+│ (ícono) Ropa             ███████ 287                │ Higiene                164       139   │
+│                          ██████ 241                 │ Útiles escolares       131       102   │
+│ (ícono) Higiene          ████ 164                   │ Blanquería              98        77   │
+│ …                                                   │ Juguetes                86        64   │
+│ (ícono) Electrodomésticos █ 45                      │ Muebles                 71        48   │
+│                          █ 29                       │ Electrodomésticos       45        29   │
+│                                                     │ Total                1.424     1.161   │
+│ Ver todas las donaciones                                                                     │
+└──────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+Tableta (768 px): la misma tarjeta a todo el ancho, con la tabla **debajo** del gráfico.
+Celular (360 px): el mismo orden; el gráfico de meses con las 12 columnas dobles en el ancho de la
+tarjeta y los meses en tres letras (el año, debajo de enero); el de categorías con el nombre
+encima de sus dos barras. La tabla debajo, con los números alineados a la derecha.
+
+Reglas de la pantalla:
+
+- **Los dos gráficos miran el mismo período:** los últimos 12 meses, contando el actual. El período
+  va en la cabeza de cada tarjeta, como "ahora" en las otras ("de noviembre de 2025 a octubre de
+  2026").
+- **Dos series, siempre las mismas y en el mismo orden:** "Registradas" (donaciones que entraron
+  en ese mes) y "Entregas confirmadas" (donaciones que la organización confirmó en ese mes). Es la
+  distinción del tono entre actividad y resultado registrado; ninguna se llama "impacto". En cada
+  par, la registrada a la izquierda (o arriba, en categorías) y la entrega al lado.
+- **La unidad es la de toda la pantalla:** la donación como la lista de Donaciones del admin (la
+  donación independiente, ya separada por subcategoría). Así el total del gráfico se puede comparar
+  con las cifras de arriba.
+- **El mes en curso**, con su columna en trazo punteado y "en curso" debajo; en la tabla, "Octubre
+  2026, del 1 al 15". La frase de abajo lo dice: "Octubre todavía no terminó.".
+- **La escala empieza en 0** y tiene tres líneas de guía (0, la mitad y el tope), con el tope
+  redondeado hacia arriba a un número fácil (165 → 200). Sin porcentajes ni comparación con el año
+  anterior.
+- **Etiqueta directa en categorías:** cada barra lleva su número al final; no hace falta mirar el
+  eje. En meses, los números exactos están en la tabla (12 pares de números arriba de las columnas
+  no se leen).
+- **Categorías:** todas las del catálogo, de la que más registró a la que menos, también las que
+  dieron 0 (con su 0: es un dato que llegó). Si un día hay más de 8, las 8 primeras y una fila
+  "Otras 3 categorías" con la suma. Cada una con su ícono de categoría (`cat-…`, o `cat-generico`).
+- **La frase de arriba de cada gráfico** dice lo principal en palabras (los totales y el mes o la
+  categoría que más registró): es lo que se lleva quien no mira el dibujo.
+- **Sin enlaces por mes ni por categoría** todavía: la lista de Donaciones del admin no filtra por
+  fecha ni por categoría (ver Preguntas). La salida es "Ver todas las donaciones".
+- **Dibujado en el servidor**, como las barras de la flota (`componentes/flota :: barras`): un SVG
+  armado con Thymeleaf a partir de las alturas que calcula el adaptador. Sin JavaScript y sin
+  librería nueva; se ve igual sin red externa y al imprimir.
+
+##### 5. Estados
+
+| Estado | Qué se ve | Texto |
+|---|---|---|
+| Con datos | Las dos tarjetas, cada una con su frase, su leyenda, el gráfico, su tabla y la salida | Ver Textos |
+| Cargando (`?escenario=lento`) | El lugar de las dos tarjetas, con su esqueleto, sin números inventados | El "Cargando tu inicio…" de la página (un solo aviso) |
+| Plataforma nueva (`?escenario=evolucion-corta`) | Los meses desde el de la primera donación (por ejemplo, 4); las categorías, de ese mismo período | Cabeza: "de julio a octubre de 2026" · frase: "Desde julio de 2026, cuando se registró la primera donación, se registraron 312 donaciones y se confirmaron 198 entregas." |
+| Todavía no hay donaciones (`?escenario=evolucion-vacia`) | Una sola tarjeta, sin gráfico ni tabla | "Mes a mes" · "Todavía no hay donaciones registradas." · "Los gráficos aparecen cuando se registre la primera." |
+| Meses o categorías con 0 | La columna o la barra a ras del 0 y su 0 en la tabla | "Electrodomésticos · 0 · 0" |
+| Entregas sin registradas en el período | Igual que con datos; la frase de abajo explica por qué pasa | "Una entrega cuenta en el mes en que la organización la confirmó: puede ser de una donación registrada antes." |
+| La evolución no llega (`?escenario=error-evolucion`) | Una sola tarjeta "Los últimos 12 meses" con su aviso, en lugar de las dos; todo lo demás con datos | "No pudimos cargar los gráficos." · "Las cifras de arriba están al día. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · "Código: a1b2c3d4e5f6" · "Volver a cargar" |
+| Error de Donaciones en todo (`?escenario=error`) | El error de página de R11-21; los gráficos no se dibujan | Sin cambio |
+| Sin permiso | No se dibuja (ver Desvíos de la ficha) | Sin cambio |
+
+##### 6. Textos
+
+| Elemento | Texto | Nota |
+|---|---|---|
+| Tarjeta 1, título y período | "Mes a mes" · "de noviembre de 2025 a octubre de 2026" | El período sale de `desde` y `hasta` |
+| Tarjeta 1, frase | "En los últimos 12 meses se registraron 1.424 donaciones y se confirmaron 1.161 entregas. El mes con más donaciones registradas fue agosto de 2026, con 165." | Separador de miles; en singular, "se registró 1 donación" / "se confirmó 1 entrega" |
+| Leyenda | "Registradas" · "Entregas confirmadas" | La misma en las dos tarjetas |
+| Mes en curso | "en curso" (debajo de la columna) · "Octubre 2026, del 1 al 15" (en la tabla) | El día sale de `calculadoEn` |
+| Tarjeta 1, nota | "Una entrega cuenta en el mes en que la organización la confirmó: puede ser de una donación registrada antes. Octubre todavía no terminó." | La segunda oración solo si el último mes es el actual |
+| Tabla 1 | Título: "Donaciones registradas y entregas confirmadas, mes a mes" · columnas "Mes", "Registradas", "Entregas confirmadas" · última fila "Total" | El título es el `caption` (se ve chico, arriba de la tabla) |
+| Tarjeta 2, título y período | "Por categoría" · "de noviembre de 2025 a octubre de 2026" | — |
+| Tarjeta 2, frase | "Alimentos es la categoría con más donaciones registradas en estos 12 meses: 542 de 1.424." | Si empatan dos: "Alimentos y Ropa son las categorías con más donaciones registradas…" |
+| Tabla 2 | Título: "Donaciones registradas y entregas confirmadas, por categoría" · columnas "Categoría", "Registradas", "Entregas confirmadas" · "Otras 3 categorías" (si hay más de 8) · "Total" | — |
+| Salida | "Ver todas las donaciones" | En las dos tarjetas |
+| Plataforma nueva | "de julio a octubre de 2026" · "Desde julio de 2026, cuando se registró la primera donación, se registraron 312 donaciones y se confirmaron 198 entregas." | No dice "en los últimos 12 meses" si no son 12 |
+| Sin donaciones | "Todavía no hay donaciones registradas." · "Los gráficos aparecen cuando se registre la primera." | Un período sin datos no afirma más de lo que se sabe |
+| Error | "No pudimos cargar los gráficos." · "Las cifras de arriba están al día. Probá de nuevo en unos minutos; si sigue, escribinos con este código." · "Código: …" · "Volver a cargar" | Mismo molde que el de Camiones |
+
+Datos de maqueta (coherentes con R11-21: 9 entregas en octubre, del 1 al 15; 1.284 entregas en
+total desde la primera, así que hubo entregas antes de noviembre de 2025):
+
+| Mes | Registradas | Entregas confirmadas |
+|---|---|---|
+| Noviembre 2025 | 96 | 71 |
+| Diciembre 2025 | 132 | 104 |
+| Enero 2026 | 88 | 90 |
+| Febrero 2026 | 74 | 66 |
+| Marzo 2026 | 110 | 85 |
+| Abril 2026 | 121 | 102 |
+| Mayo 2026 | 138 | 117 |
+| Junio 2026 | 152 | 128 |
+| Julio 2026 | 147 | 131 |
+| Agosto 2026 | 165 | 139 |
+| Septiembre 2026 | 143 | 119 |
+| Octubre 2026, del 1 al 15 | 58 | 9 |
+| **Total** | **1.424** | **1.161** |
+
+| Categoría | Registradas | Entregas confirmadas |
+|---|---|---|
+| Alimentos | 542 | 461 |
+| Ropa | 287 | 241 |
+| Higiene | 164 | 139 |
+| Útiles escolares | 131 | 102 |
+| Blanquería | 98 | 77 |
+| Juguetes | 86 | 64 |
+| Muebles | 71 | 48 |
+| Electrodomésticos | 45 | 29 |
+| **Total** | **1.424** | **1.161** |
+
+Enero tiene más entregas que registradas a propósito: muestra el caso de la nota.
+
+Filtro de tono: cada cifra con su período (en la cabeza de la tarjeta y en la frase); "registradas"
+es actividad y "entregas confirmadas" es resultado registrado, ninguna se presenta como impacto; el
+mes que no terminó se dice incompleto, para que su columna baja no parezca una caída; sin "récord",
+"creció" ni flechas de suba o baja (no hay criterio para comparar); la plataforma nueva no muestra
+meses en 0 de antes de existir. "Organización" en los textos nuevos, como el resto de R11-21.
+
+##### 7. Accesibilidad
+
+- Cada tarjeta es una `section` con su `h3` y `aria-labelledby`, como las de R11-21. Dentro, un
+  `figure`: la frase es su `figcaption`; el SVG va con `aria-hidden="true"`, porque la tabla de al
+  lado es su equivalente completo y leer los dos repetiría todo.
+- La tabla es una `table` de verdad, con `caption`, `th scope="col"` en las columnas y `th
+  scope="row"` en el mes o la categoría; "Total" en `tfoot`. Números tabulares alineados a la
+  derecha.
+- Orden del foco y de lectura: título, período, frase, (gráfico, que se salta), tabla, salida. El
+  gráfico no tiene nada que se enfoque.
+- Color: las dos series con contraste de al menos 3:1 entre sí y contra el fondo de la tarjeta
+  (WCAG 1.4.11); además se distinguen por la posición en el par y por la leyenda en texto, y la
+  tabla dice cada número. El mes en curso se marca con el trazo punteado y la palabra "en curso",
+  no solo con un tono más claro.
+- Sin animación al dibujar. Los rótulos del gráfico, en la letra de texto y al menos de 12 px
+  (0,75 rem) en el celular; si no entran, se abrevian (tres letras), nunca se superponen.
+- Error de la evolución: `role="alert"` en el aviso de la tarjeta, sin mover el foco; cargando:
+  `aria-busy="true"` en las dos tarjetas, con el `role="status"` de la página.
+
+##### 8. Revisión de usabilidad
+
+| # | Heurística | Cómo la cumple | Riesgo que queda |
+|---|---|---|---|
+| 1 | Visibilidad del estado | Cada tarjeta dice su período; el mes en curso se marca incompleto; la hora de lectura es la de "Cómo está todo" | Los gráficos no se actualizan solos: hay que volver a cargar |
+| 2 | Lenguaje del usuario | "Registradas", "entregas confirmadas", "mes a mes", "por categoría": sin nombres de estados ni de campos | — |
+| 3 | Control y libertad | Solo se mira; la salida es un enlace común y "atrás" vuelve | — |
+| 4 | Consistencia | Mismas dos series, mismo orden, misma leyenda y mismo período en los dos gráficos; la unidad es la de la lista de Donaciones; el aviso de error es el molde de Camiones | El total del gráfico (12 meses) no es el "en total" de Entregas (desde la primera): cada uno dice su período |
+| 5 | Prevención de errores | No se decide nada; la escala empieza en 0 y el mes en curso se marca, para no leer una caída que no existe | — |
+| 6 | Reconocer antes que recordar | La frase dice el total y lo que más pesa; las categorías llevan nombre e ícono al lado de la barra, sin leyenda que recordar | En meses, el número exacto está en la tabla, no sobre la columna |
+| 7 | Flexibilidad | Quien quiere la forma mira el gráfico; quien quiere el número, la tabla | Sin elegir otro período ni saltar a la lista filtrada por mes o categoría (ver Preguntas) |
+| 8 | Diseño minimalista | Dos gráficos, dos series, tres líneas de guía, sin porcentajes ni comparaciones; van al final de "Cómo está todo", sin desplazar lo que espera una acción | La pantalla se alarga: en el celular, dos tarjetas más con su tabla |
+| 9 | Recuperarse de errores | Si la evolución no llega, solo su tarjeta muestra el aviso con código y "Volver a cargar"; el resto del inicio se ve | — |
+| 10 | Ayuda | La nota explica por qué un mes puede tener más entregas que registradas y que el mes en curso no terminó | — |
+
+Los 7 factores:
+
+- **Útil:** responde "¿cómo venimos?" y "¿qué se dona más?", que las cifras de ahora no responden.
+- **Usable:** la forma se ve de un vistazo y el número exacto está al lado.
+- **Deseable:** sobrio, con los colores de la casa y el acento solo en lo que llegó.
+- **Valioso:** el admin no arma una planilla para ver la evolución ni la reparte por categoría.
+- **Ubicable:** en el inicio, dentro de "Cómo está todo", donde ya mira las cifras.
+- **Accesible:** tabla de verdad como equivalente, contraste 3:1 entre series y nada solo con color.
+- **Creíble:** contado en la base, con su período, el mes en curso marcado y sin meses en 0 de antes
+  de la primera donación.
+
+Para probar con personas reales: si la columna baja del mes en curso se lee como una caída aunque
+diga "en curso"; y si la persona de Administración entiende sin ayuda que un mes puede tener más
+entregas que registradas.
+
+##### 9. Decisiones y preguntas
+
+Decisiones (agente, 2026-11-12; quedan a confirmar con el OK del usuario):
+
+- **Un endpoint aparte, `GET /api/donaciones/resumen/evolucion`,** y no campos nuevos en
+  `/resumen`. Así una falla de las series no tapa las cifras de arriba (el mismo criterio que
+  Camiones) y el resumen sigue siendo barato. Es un cambio **aditivo** del contrato de Donaciones
+  (versión menor de `openapi-donaciones.yaml`); implementa una decisión ya tomada (cifras contadas
+  en la base, R11-01), así que no lleva ADR nuevo (Gate A de AGENTS.md §9.1).
+- **12 meses fijos, contando el actual**, sin elegir período. Se descartó un selector (más estados,
+  más textos y una decisión que nadie pidió) y una ventana de 6 meses (no muestra un año de ciclo).
+- **Dos series, registradas y entregas confirmadas**, en los dos gráficos. Se descartó una sola
+  serie (no deja ver si lo que entra llega) y sumar "vencidas" (una tercera serie no se lee en 360
+  px; las vencidas de ahora ya están en Donaciones por estado).
+- **Pares de columnas, no una dentro de otra:** las entregas de un mes pueden ser de donaciones de
+  meses anteriores y superar a las registradas (enero en la maqueta); anidarlas mentiría.
+- **La unidad es la donación independiente**, la de la lista del admin y la del resumen. Se descartó
+  contar las donaciones originales (una original se separa en varias, y el total no coincidiría con
+  nada de la pantalla). Cada independiente tiene una sola subcategoría (los dos segmentadores
+  agrupan por subcategoría), así que cuenta en una sola categoría y la suma de categorías da el
+  total.
+- **Los meses empiezan en el de la primera donación** si es de hace menos de 12 meses. Se descartó
+  dibujar ceros antes: dirían "no se donó" cuando no había plataforma.
+- **Todas las categorías, con su 0, y un tope de 8 más "Otras"**: el catálogo tiene 8 hoy; el tope
+  respeta la regla 1 si crece. Se descartó mostrar solo las que tienen datos (esconde justo lo que
+  no se mueve).
+- **SVG armado en el servidor, sin librería:** sigue lo que ya hace la flota y no suma dependencias
+  (AGENTS.md §6). Se descartó una librería de gráficos en JavaScript (dependencia nueva, no anda sin
+  JavaScript y el sitio es mejora progresiva).
+- **Al final de "Cómo está todo", a todo el ancho**, no intercalados entre las tarjetas de R11-21.
+  La heurística 8 de R11-21 pedía que "entren en las tarjetas, no debajo de todo": entran como
+  tarjetas de la misma grilla y sección, antes del pie; intercalarlos rompía el orden "ahora → cómo
+  vino" y separaba La red de Camiones.
+- **Tabla siempre visible**, no plegada: lo pide el lote ("al lado su tabla") y es el equivalente
+  accesible. En el celular va debajo del gráfico.
+
+Contrato nuevo (lo escribe la construcción en `openapi-donaciones.yaml`):
+
+```text
+GET /api/donaciones/resumen/evolucion        solo ADMIN, sin parámetros
+200 EvolucionAdminDTO
+  desde: "2025-11"            primer mes (AAAA-MM): hace 11 meses, o el de la primera donación si es posterior;
+                              null si no hay ninguna
+  hasta: "2026-10"            el mes en curso; null si no hay ninguna
+  meses: [ { mes: "2025-11", registradas: 96, entregadas: 71 }, … ]
+                              uno por mes de desde a hasta, todos presentes (0 si no hay); vacía sin donaciones
+  categorias: [ { categoriaId, nombre: "Alimentos", registradas: 542, entregadas: 461 }, … ]
+                              todas las del catálogo, de más a menos registradas (y por nombre), como mucho 8
+  otras: { categorias: 3, registradas, entregadas } | null      la suma de las que pasan de 8
+  calculadoEn: fecha y hora del cálculo
+401 sin token · 403 no es admin
+```
+
+- **Registradas:** donaciones independientes con `fecha_registro` en el mes.
+- **Entregadas:** donaciones independientes que pasaron a `ENTREGADA` en el mes, con la misma
+  cuenta que `entregadasEnElMes` del resumen (historial de cambios de estado): el último mes de
+  `meses` da el mismo número que la tarjeta Entregas confirmadas.
+- **Por categoría:** lo mismo, sumado en todo el período, por la categoría de la subcategoría de los
+  bienes de cada donación.
+- Los meses salen del reloj del servicio (America/Argentina/Buenos_Aires), como el resumen. Todo
+  se cuenta en la base con `GROUP BY` (cuatro consultas); ninguna lista se trae. Los índices que
+  usa ya existen (`ix_donacion_independiente_fecha` y `ix_cambio_estado_di_timestamp`, de `V21`):
+  **no hace falta migración**. Si la construcción mide que sí, va con el número siguiente al último
+  de Donaciones (hoy `V25`).
+
+Qué toca la construcción:
+
+- **`donaciones-service`:** la consulta de las series (en el adaptador JPA de donaciones
+  independientes y su puerto), un servicio que arma `EvolucionAdminDTO` con el reloj, el endpoint en
+  `DonacionesController` / `IDonacionesController`, el contrato en `openapi-donaciones.yaml` y sus
+  tests (el servicio con reloj fijo: ventana completa, plataforma nueva, sin donaciones, más de 8
+  categorías; y el contrato).
+- **`cliente-liviano`, archivos del lote:** `AdminPersonasInicio` pide la evolución, atrapa su
+  falla como la de Logística y calcula las alturas, el tope redondeado, la frase y los textos de
+  cada mes; `admin-inicio.html` dibuja las dos tarjetas con su SVG y su tabla, y los estados
+  `error-evolucion`, `evolucion-corta` y `evolucion-vacia`; `admin-inicio.css`, la grilla
+  gráfico-tabla y las series.
+- **Fuera de los archivos del lote, imprescindible:** `DonacionesApi` (el método nuevo y su record),
+  `vistas/AdminInicioVista` (un campo `evolucion` que puede faltar, como `camiones`),
+  `maqueta/AdminPersonasMaqueta` (los datos de ejemplo de arriba) y los tests que construyen la
+  vista (`AdminPersonasInicioTest`, `AdminPersonasInicioEnPuertaTest`, `AdminInicioControllerTest`,
+  `AdminPersonasRestTest`), solo para la forma nueva y sin debilitar ninguna aserción.
+- Verificación visual de `admin-inicio` a 360, 1280 y 1920 px, con la maqueta y sus escenarios
+  nuevos.
+
+Preguntas abiertas (no frenan la construcción; van en el reporte del lote con la opción
+recomendada):
+
+1. ¿Cada mes y cada categoría de la tabla llevan a la lista de Donaciones filtrada? Recomiendo que
+   no en este lote: la lista no filtra por fecha ni por categoría; sumar esos filtros en
+   `p2-admin-bandeja`, que ya toca la lista, y recién ahí los enlaces.
+2. ¿El seed reparte las donaciones en varios meses? Si todas tienen la misma fecha de registro, el
+   gráfico de meses se ve como una sola columna. Recomiendo comprobarlo en la verificación con el
+   stack propio y, si pasa, anotarlo para el seeder, sin tocar el sistema.
+3. ¿Hace falta elegir otro período (por ejemplo, el año anterior)? Recomiendo que no por ahora: 12
+   meses fijos alcanzan para la demo y no suman estados.
 
 ### 4.5 `entidad-seguimiento`
 
@@ -676,3 +1369,25 @@ la mandaba a "En camino". En Necesidades, su sello es "puerta". El pedido que cu
 | Paso (Recibidas, Seguir entregas, Necesidades) | "Llegó a tu puerta el 8 de noviembre a las 18:20. Espera tu confirmación." | La maqueta dice "hoy"/"ayer"; con datos, la fecha |
 | Llegó (tarjeta de Inicio) | "Llegó el 8 de noviembre, 18:20." | Sin "desde el Depósito Central": el depósito no llega |
 | Breve (Lo que viene) | "llegó a tu puerta el 8 de noviembre" | — |
+
+
+## Aprobación del diseño p1-admin-inicio (2026-11-12)
+
+Aprobado por el usuario de forma automática: pidió que, en P1 y P2, cada duda se resuelva con la opción recomendada por el diseñador, sin parada. Cada duda queda resuelta así:
+
+1. ¿Mostrar hasta 3 propuestas con nombre? Recomiendo dejar solo el número en este lote. Si el usuario quiere los nombres, que p1-asignaciones agregue estado y tamaño de página a GET /api/asignaciones/propuestas, y recién ahí se suman 3 líneas a la tarjeta. **Resuelto: la opción recomendada.**
+2. ¿La fila 'No se pudo entregar' merece un filtro propio en la lista de Donaciones (?estado=fallida)? Recomiendo sumarlo en p2-admin-bandeja, que ya toca esos filtros. Hasta entonces, la fila sin enlace y con la aclaración. **Resuelto: la opción recomendada.**
+3. ¿'Donaciones sin asignar' se entiende como 'las que hay que asignar'? Recomiendo dejar ese nombre y anotarlo para probar con personas reales (ya figura en la ficha). La alternativa sería 'En el depósito, por asignar'. **Resuelto: la opción recomendada.**
+
+## Aprobación del diseño p2-admin-graficos (2026-11-12)
+
+Aprobado por el usuario el 2026-11-12 con las opciones recomendadas: pidió aprobar en forma automática todas las opciones recomendadas de P1 y P2 para que la corrida termine sin su intervención.
+
+1. ¿Cada mes y cada categoría de la tabla deberían llevar a la lista de Donaciones filtrada? Recomiendo que no en este lote: hoy esa lista no filtra por fecha ni por categoría (admin-donaciones.html:95-110). Esos filtros se pueden sumar en p2-admin-bandeja, que ya trabaja sobre esa lista, y recién entonces poner los enlaces.
+   **Resuelto: la opción recomendada.**
+2. ¿El seed reparte las donaciones en varios meses? Si todas tienen la misma fecha de registro, el gráfico mes a mes muestra una sola columna. Recomiendo comprobarlo en la verificación con el stack propio. Si pasa, se anota para el lote del seeder y no se toca el sistema.
+   **Resuelto: la opción recomendada.**
+3. ¿Hace falta poder elegir otro período, por ejemplo el año anterior? Recomiendo que no por ahora: 12 meses fijos alcanzan para la demo y no suman estados ni textos.
+   **Resuelto: la opción recomendada.**
+4. Al integrar, el aumento de versión de openapi-donaciones.yaml (1.10.0 → 1.11.0) puede chocar con otros lotes de P2 que también cambian el contrato de Donaciones. Recomiendo que el integrador junte todo en una sola versión menor.
+   **Resuelto: la opción recomendada.**

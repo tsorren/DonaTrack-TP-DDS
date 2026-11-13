@@ -18,8 +18,8 @@
     <header class="lectura">
       <p class="rotulo">Nosotros</p>
       <h1>Lo que donás, <em>seguido hasta que llega</em></h1>
-      <p class="lectura-bajada">DonaTrack une a quienes donan con entidades de la comunidad y sigue cada
-        donación desde el depósito hasta que la entidad confirma que llegó.</p>
+      <p class="lectura-bajada">DonaTrack une a quienes donan con organizaciones de la comunidad y sigue cada
+        donación desde el depósito hasta que la organización confirma que llegó.</p>
     </header>
 
     <section th:replace="~{componentes/huerta :: cifras(${estado}, ${cifrasDeNosotros})}"></section>
@@ -29,7 +29,7 @@
         <h2 id="somos-titulo">Quiénes somos</h2>
         <p>Somos un equipo que diseña herramientas para que donar sea simple y se pueda ver. Nacimos para
           acortar la distancia entre quienes quieren ayudar y las organizaciones que necesitan recibir.</p>
-        <p>Ordenamos lo que llega al depósito, lo asignamos a lo que cada entidad pidió y mostramos el
+        <p>Ordenamos lo que llega al depósito, lo asignamos a lo que cada organización pidió y mostramos el
           recorrido de cada entrega.</p>
       </div>
       <!--/* Una lámina con el árbol del último paso (ilustración de diseño, estética de K). Decorativa: el
@@ -42,19 +42,19 @@
       <ul class="grilla" data-espacio="3" role="list">
         <li class="tarjeta pila" data-espacio="2">
           <h3>Seguimos cada donación</h3>
-          <p>Se registra lo que es, cuánto hay y cuándo vence, y se ve por dónde va hasta que la entidad la
+          <p>Se registra lo que es, cuánto hay y cuándo vence, y se ve por dónde va hasta que la organización la
             recibe.</p>
         </li>
         <li class="tarjeta pila" data-espacio="2">
           <h3>Cuidamos los datos</h3>
           <p>Lo que se publica no muestra quién donó si esa persona lo prefiere, ni el contacto de las
-            entidades.</p>
+            organizaciones.</p>
         </li>
         <li class="tarjeta pila" data-espacio="2">
           <h3>Mostramos dónde llega</h3>
           <p>El <a href="/publico-mapa" th:href="@{/publico-mapa}">mapa</a> enseña qué barrios recibieron
             donaciones, y el <a href="/publico-entidades" th:href="@{/publico-entidades}">catálogo</a>, lo
-            que pide cada entidad.</p>
+            que pide cada organización.</p>
         </li>
       </ul>
     </section>
@@ -64,7 +64,7 @@
       <ul class="lista" role="list">
         <li><b>Transparencia:</b> cada donación tiene un destino que se puede ver.</li>
         <li><b>Orden:</b> el depósito, las asignaciones y los camiones trabajan con los mismos datos.</li>
-        <li><b>Datos reales:</b> cada asignación sale de lo que hay y de lo que cada entidad pidió.</li>
+        <li><b>Datos reales:</b> cada asignación sale de lo que hay y de lo que cada organización pidió.</li>
         <li><b>Compromiso:</b> herramientas que facilitan el trabajo de quienes reciben.</li>
       </ul>
     </section>
@@ -75,7 +75,7 @@
         <a class="boton" data-tono="principal" href="/publico-para-donantes"
            th:href="@{/publico-para-donantes}">Quiero donar</a>
         <a class="boton" data-tono="secundario" href="/publico-para-entidades"
-           th:href="@{/publico-para-entidades}">Represento a una entidad</a>
+           th:href="@{/publico-para-entidades}">Represento a una organización</a>
       </div>
     </section>
   </div>

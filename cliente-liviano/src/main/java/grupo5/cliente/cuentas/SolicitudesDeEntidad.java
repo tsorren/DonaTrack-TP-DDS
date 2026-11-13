@@ -8,6 +8,7 @@ import grupo5.cliente.puertos.DonacionesComoUsuario;
 import grupo5.cliente.puertos.DonacionesComoUsuario.Juridica;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class SolicitudesDeEntidad {
   private static final String ROL = "ENTIDAD";
   private static final String PLANTILLA = "RESPONSABLE_ENTIDAD";
   private static final String SOLICITUD = "solicitudEntidad";
-  private static final String SIN_NOMBRE = "Entidad sin razón social registrada";
+  private static final String SIN_NOMBRE = "Organización sin razón social registrada";
 
   /**
    * Lo que ve quien aprueba: qué entidad es, con qué cuenta pidió sumarse y su persona jurídica.
@@ -39,16 +40,32 @@ public class SolicitudesDeEntidad {
     this.cuentas = cuentas;
   }
 
+  /**
+   * Las que esperan, con la razón social de su jurídica: se leen solo las de las solicitudes, por
+   * su identificador (R11-01), no todas las jurídicas para cruzarlas.
+   */
   public List<Pendiente> pendientes() {
+    List<SolicitudDeEntidad> solicitudes = cuentas.solicitudesDeEntidad();
+    List<UUID> ids =
+        solicitudes.stream()
+            .map(SolicitudDeEntidad::personaId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
     Map<UUID, String> nombres =
-        donaciones.juridicas().stream().collect(toMap(Juridica::id, Juridica::razonSocial));
-    return cuentas.solicitudesDeEntidad().stream()
-        .map(solicitud -> pendiente(solicitud, nombres))
-        .toList();
+        ids.isEmpty()
+            ? Map.of()
+            : donaciones.juridicas(ids).stream()
+                .filter(j -> j.id() != null && j.razonSocial() != null)
+                .collect(toMap(Juridica::id, Juridica::razonSocial, (a, b) -> a));
+    return solicitudes.stream().map(solicitud -> pendiente(solicitud, nombres)).toList();
   }
 
   private static Pendiente pendiente(SolicitudDeEntidad solicitud, Map<UUID, String> nombres) {
-    String razonSocial = nombres.getOrDefault(solicitud.personaId(), SIN_NOMBRE);
+    String razonSocial =
+        solicitud.personaId() == null
+            ? SIN_NOMBRE
+            : nombres.getOrDefault(solicitud.personaId(), SIN_NOMBRE);
     return new Pendiente(
         solicitud.cuentaId(), razonSocial, solicitud.correo(), solicitud.personaId());
   }

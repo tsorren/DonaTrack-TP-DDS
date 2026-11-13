@@ -11,8 +11,10 @@ import grupo5.logistica.models.entities.camiones.EstadoCamion;
 import grupo5.logistica.models.entities.camiones.ValidadorPatentes;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.repositories.ICamionRepository;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -101,5 +103,13 @@ public class CamionRepositoryJpaAdapter
         .findFirstByIdCamionAndEstado(idCamion, EstadoRuta.EN_TRASLADO)
         .map(RutaEntity::getIdRuta)
         .orElse(null);
+  }
+
+  @Override
+  public List<Camion> findByIds(Collection<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    return springDataRepo.findAllById(Set.copyOf(ids)).stream().map(toDomain).toList();
   }
 }

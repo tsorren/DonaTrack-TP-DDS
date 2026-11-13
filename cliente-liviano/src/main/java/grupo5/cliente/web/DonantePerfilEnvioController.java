@@ -52,8 +52,8 @@ class DonantePerfilEnvioController {
     DonantePerfilVista perfil = perfiles.perfil(donante.get());
     String aviso =
         visible
-            ? "Listo. Las entidades ven tu nombre: «" + perfil.nombre() + "»."
-            : "Listo. Las entidades ya no ven tu nombre: ven «" + perfil.anonimo() + "».";
+            ? "Listo. Las organizaciones ven tu nombre: «" + perfil.nombre() + "»."
+            : "Listo. Las organizaciones ya no ven tu nombre: ven «" + perfil.anonimo() + "».";
     return Envios.listo("donante-perfil", aviso, atributos);
   }
 }

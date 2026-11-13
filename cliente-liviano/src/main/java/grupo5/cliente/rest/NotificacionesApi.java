@@ -3,6 +3,8 @@ package grupo5.cliente.rest;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -21,10 +23,15 @@ import org.springframework.web.service.annotation.PostExchange;
  */
 interface NotificacionesApi {
 
-  /** {@code leida}: sin valor, todas; {@code true} o {@code false}, solo esas. */
+  /**
+   * Una página de la bandeja (R11-14, OpenAPI 1.3.0): el cuerpo, el tramo pedido; {@code
+   * X-Total-Count}, cuántas cumplen los filtros. {@code filtros} lleva {@code page}, {@code size}
+   * y, si hacen falta, {@code leida}, {@code q}, {@code tipo} y {@code excluirTipo} (repetibles) y
+   * {@code orden}; los arma {@link Bandejas}.
+   */
   @GetExchange("/api/notificaciones/persona/{personaId}")
-  List<Notificacion> bandeja(
-      @PathVariable UUID personaId, @RequestParam(required = false) Boolean leida);
+  ResponseEntity<List<Notificacion>> bandeja(
+      @PathVariable UUID personaId, @RequestParam MultiValueMap<String, String> filtros);
 
   @GetExchange("/api/notificaciones/persona/{personaId}/no-leidas/conteo")
   Conteo sinLeer(@PathVariable UUID personaId);

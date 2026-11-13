@@ -14,8 +14,10 @@ import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import org.springframework.context.annotation.Profile;
@@ -97,5 +99,13 @@ public class RutasRepositoryMongoAdapter
       return List.of();
     }
     return aDominio(springDataRepo.findByIdCamionAndFecha(camionId, fecha));
+  }
+
+  @Override
+  public List<Ruta> findByIds(Collection<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    return aDominio(springDataRepo.findAllById(Set.copyOf(ids)));
   }
 }

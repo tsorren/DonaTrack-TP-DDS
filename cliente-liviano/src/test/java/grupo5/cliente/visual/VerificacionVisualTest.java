@@ -160,6 +160,37 @@ class VerificacionVisualTest {
   private static final String SITIO = "sitio";
 
   /**
+   * Con la campanita abierta: null si el desplegable entra en la pantalla, empieza debajo de la
+   * campana y lo que está en el centro de cada fila y de «Ver todas» es del desplegable; si no, qué
+   * falla.
+   */
+  private static final String CAMPANITA_MAL_UBICADA =
+      """
+      () => {
+        const panel = document.querySelector('details.campanita[open] .campanita-panel');
+        const campana = document.querySelector('details.campanita[open] > summary');
+        if (!panel || !campana) return 'el desplegable no se abrió';
+        const p = panel.getBoundingClientRect(), c = campana.getBoundingClientRect();
+        if (p.left < 0 || p.right > document.documentElement.clientWidth) {
+          return 'se sale de la pantalla: ' + Math.round(p.left) + ' a ' + Math.round(p.right);
+        }
+        if (p.top < c.bottom - 1) return 'tapa la campana';
+        const tocables = [...panel.querySelectorAll('.campanita-fila, .campanita-todas')];
+        if (tocables.length < 2) return 'faltan las filas o Ver todas';
+        for (const t of tocables) {
+          const r = t.getBoundingClientRect();
+          const x = r.left + r.width / 2, y = r.top + r.height / 2;
+          if (y > window.innerHeight) continue;
+          const arriba = document.elementFromPoint(x, y);
+          if (!arriba || !t.contains(arriba)) {
+            return 'algo tapa "' + t.textContent.trim().slice(0, 30) + '"';
+          }
+        }
+        return null;
+      }
+      """;
+
+  /**
    * Visor de capturas (index.html y comparacion.html), pensado para 1920 × 1080: índice de
    * secciones a la izquierda, una o dos variantes lado a lado, ancho y página a elección y
    * desplazamiento a la par. Un enlace con {@code #izq=<variante>&der=<variante>&ancho=<px>} abre
@@ -463,6 +494,176 @@ class VerificacionVisualTest {
           .isEqualTo(true);
       pagina.keyboard().press("Escape");
       assertThat(pagina.evaluate(abierto)).isEqualTo(false);
+    }
+  }
+
+  /**
+   * R11-32 (ficha r11-p2-ventanas): una ventana con data-bloquea se abre con showModal() en los
+   * tres motores: el foco entra en el control con autofocus, Tab no sale de la ventana, tocar
+   * afuera no la cierra, Esc sí, y el foco vuelve al botón que la abrió. La página no se desplaza.
+   */
+  @Test
+  void laVentanaQueBloqueaRetieneElFocoEnLosTresMotores() {
+    try (Playwright playwright = Playwright.create()) {
+      for (var tipo : List.of(playwright.chromium(), playwright.firefox(), playwright.webkit())) {
+        try (Browser navegador = tipo.launch()) {
+          Page pagina = navegador.newPage();
+          pagina.navigate("http://localhost:" + puerto + "/entidad-necesidades");
+          pagina.waitForFunction("() => window.Alpine");
+          String motor = tipo.name();
+          String modal = "() => document.getElementById('baja-lentejas').matches(':modal')";
+          pagina.locator("[popovertarget='baja-lentejas']:not([popovertargetaction])").click();
+          assertThat(pagina.evaluate(modal)).as(motor).isEqualTo(true);
+          assertThat(pagina.evaluate("() => document.activeElement.textContent.trim()"))
+              .as(motor)
+              .isEqualTo("No, dejarla");
+          for (int i = 0; i < 6; i++) {
+            pagina.keyboard().press("Tab");
+            assertThat(
+                    pagina.evaluate(
+                        "() => { const foco = document.activeElement;"
+                            + " return !foco || foco === document.body"
+                            + " || document.getElementById('baja-lentejas').contains(foco); }"))
+                .as(
+                    "%s: Tab %d no llega a la página de atrás (puede ir a la barra del navegador)",
+                    motor, i)
+                .isEqualTo(true);
+          }
+          assertThat(pagina.evaluate("() => getComputedStyle(document.documentElement).overflowY"))
+              .as(motor)
+              .isEqualTo("hidden");
+          pagina.mouse().click(5, 5);
+          assertThat(pagina.evaluate(modal))
+              .as("%s: tocar afuera no cierra", motor)
+              .isEqualTo(true);
+          pagina.keyboard().press("Escape");
+          assertThat(pagina.evaluate(modal)).as(motor).isEqualTo(false);
+          assertThat(
+                  pagina.evaluate(
+                      "() => document.activeElement.getAttribute('popovertarget') === 'baja-lentejas'"))
+              .as("%s: el foco vuelve al botón", motor)
+              .isEqualTo(true);
+        }
+      }
+    }
+  }
+
+  /**
+   * C18 (spec R11-p2-campanita): donante-inicio y admin-inicio con la campanita abierta, en los
+   * anchos de referencia. Abre el details con un toque, espera la lista de la maqueta (HTMX) y deja
+   * la captura en {@code target/capturas/campanita/}. El piso (axe, toque y desborde) se mide con
+   * el desplegable abierto, y además: el desplegable entra en la pantalla, empieza debajo de la
+   * campana (no la tapa) y nada se le superpone (lo que está en el centro de cada fila es la fila).
+   */
+  @Test
+  void laCampanitaAbiertaEntraEnLaPantallaYNoTapaLaCampana() throws IOException {
+    Path carpeta = CAPTURAS.resolve("campanita");
+    Files.createDirectories(carpeta);
+    List<Falla> fallas = new ArrayList<>();
+    Opcion sitio = new Opcion("");
+    try (Playwright playwright = Playwright.create();
+        Browser navegador = playwright.chromium().launch()) {
+      Page pagina = navegador.newPage();
+      for (String ruta : List.of("/donante-inicio", "/admin-inicio")) {
+        for (int ancho : AnchosDeReferencia.REFERENCIA) {
+          if (!abrir(pagina, ruta, sitio, ancho, fallas)) {
+            continue;
+          }
+          pagina.locator("details.campanita > summary").click();
+          pagina.locator("details.campanita[open] .campanita-filas").waitFor();
+          pagina.evaluate("() => window.scrollTo(0, 0)");
+          pagina.screenshot(
+              new Page.ScreenshotOptions()
+                  .setPath(carpeta.resolve(nombreDeCaptura(ruta, sitio, "abierta-" + ancho)))
+                  .setAnimations(ScreenshotAnimations.DISABLED));
+          revisarAccesibilidad(pagina, ruta, SITIO, ancho, fallas);
+          revisarToque(pagina, ruta, SITIO, ancho, fallas);
+          revisarDesborde(pagina, ruta, SITIO, ancho, fallas);
+          if (pagina.evaluate(CAMPANITA_MAL_UBICADA) instanceof String problema) {
+            fallas.add(new Falla(ruta, SITIO, ancho, "campanita", problema));
+          }
+        }
+      }
+    }
+    JsonMapper.builder()
+        .build()
+        .writerWithDefaultPrettyPrinter()
+        .writeValue(carpeta.resolve("reporte.json"), fallas);
+    assertThat(fallas).as("Detalle en %s", carpeta.resolve("reporte.json")).isEmpty();
+  }
+
+  /**
+   * R11-31: Publicar otra necesidad en 3 pasos. Siguiente revisa el paso con el texto de error del
+   * servidor, Atrás vuelve sin borrar, el resumen repite lo elegido y el envío es el de siempre.
+   */
+  @Test
+  void publicarOtraNecesidadVaEnTresPasos() {
+    try (Playwright playwright = Playwright.create();
+        Browser navegador = playwright.chromium().launch()) {
+      Page pagina = navegador.newPage();
+      pagina.navigate("http://localhost:" + puerto + "/entidad-necesidades");
+      pagina.waitForFunction("() => window.Alpine");
+      var ventana = pagina.locator("#publicar-ventana");
+      pagina
+          .getByText("Publicar otra necesidad", new Page.GetByTextOptions().setExact(true))
+          .first()
+          .click();
+      assertThat(
+              pagina.evaluate(
+                  "() => document.getElementById('publicar-ventana').matches(':modal')"))
+          .isEqualTo(true);
+      assertThat(pagina.evaluate("() => document.activeElement.id")).isEqualTo("que");
+      assertThat(ventana.locator("fieldset[data-paso='2']").isVisible()).isFalse();
+      ventana.locator("[data-boton=siguiente]").click();
+      assertThat(ventana.getByText("Elegí qué hace falta.").isVisible()).isTrue();
+      assertThat(pagina.evaluate("() => document.activeElement.id")).isEqualTo("que");
+      ventana
+          .locator("#que")
+          .selectOption(new com.microsoft.playwright.options.SelectOption().setIndex(1));
+      ventana.locator("#cuanto").fill("30");
+      ventana.locator("#cuanto").press("Enter");
+      assertThat(ventana.locator("fieldset[data-paso='2']").isVisible()).isTrue();
+      assertThat(pagina.evaluate("() => document.activeElement.textContent.trim()"))
+          .isEqualTo("Paso 2 de 3: Cuándo");
+      ventana.locator("input[name=repite][value=una]").check();
+      ventana.locator("[data-boton=siguiente]").click();
+      assertThat(ventana.locator("#hasta-error").isVisible()).isTrue();
+      ventana.locator("[data-boton=atras]").click();
+      assertThat(ventana.locator("#cuanto").inputValue()).isEqualTo("30");
+      ventana.locator("[data-boton=siguiente]").click();
+      ventana.locator("#hasta").fill("2099-10-30");
+      ventana.locator("[data-boton=siguiente]").click();
+      assertThat(ventana.locator("fieldset[data-paso='3']").isVisible()).isTrue();
+      assertThat(ventana.locator(".dialogo-resumen").innerText())
+          .contains("30")
+          .contains("Una sola vez, hasta el 30 de octubre.");
+      // axe mide colores ya mezclados: si el fundido de la ventana no terminó, ve la tinta y el
+      // papel a media opacidad y reporta un contraste que en pantalla no existe.
+      pagina.waitForFunction(
+          "() => getComputedStyle(document.getElementById('publicar-ventana')).opacity === '1'"
+              + " && document.getAnimations().every(a => a.playState !== 'running'"
+              + " || a.effect.getComputedTiming().iterations === Infinity)");
+      assertThat(
+              new AxeBuilder(pagina)
+                  .withTags(NORMAS_AXE).analyze().getViolations().stream()
+                      .map(Rule::getId)
+                      .toList())
+          .as("axe AA con la ventana abierta en el paso 3")
+          .isEmpty();
+      for (int ancho : List.of(360, 1280)) {
+        pagina.setViewportSize(ancho, AnchosDeReferencia.ALTO);
+        pagina.screenshot(
+            new Page.ScreenshotOptions()
+                .setPath(CAPTURAS.resolve("ventanas/publicar-paso-3-" + ancho + ".png")));
+      }
+      pagina.setViewportSize(1280, AnchosDeReferencia.ALTO);
+      ventana.locator("button[type=submit]").click();
+      assertThat(ventana.getByText("Contá en pocas palabras por qué hace falta.").isVisible())
+          .isTrue();
+      ventana.locator("#motivo").fill("Para la cena de los viernes.");
+      ventana.locator("button[type=submit]").click();
+      pagina.waitForURL("**/entidad-necesidades-publicada");
+      assertThat(pagina.getByText("Publicamos tu necesidad.").first().isVisible()).isTrue();
     }
   }
 

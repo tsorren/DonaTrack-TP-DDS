@@ -119,3 +119,94 @@
     --espacio-relleno: var(--espacio-4);
   }
 }
+
+/* --- Asignar donaciones (R11-24, ficha r11-p1-asignaciones) ------------------------------------- */
+
+/* La lista y el panel: uno debajo del otro en el celular; desde el ancho de escritorio, el panel a
+   la derecha, fijo al desplazarse. */
+[data-pantalla="asignaciones"] [data-parte="cuerpo"] {
+  display: grid;
+  gap: var(--espacio-4);
+  align-items: start;
+}
+
+[data-pantalla="asignaciones"] [data-lista="propuestas"] {
+  gap: var(--espacio-3);
+}
+
+/* La franja del choque: la marca, la frase y el enlace, en un renglón que baja si no entra. */
+[data-pantalla="asignaciones"] [data-parte="franja"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-2);
+}
+
+/* Cada donación de Destino se toca entera. */
+[data-pantalla="asignaciones"] [data-parte="donacion"] {
+  min-height: var(--medida-toque-minimo);
+}
+
+[data-pantalla="asignaciones"] dd {
+  margin: 0;
+}
+
+/* Los enlaces con forma de botón (volver, ver todas) miden lo que su texto. */
+[data-pantalla="asignaciones"] .pila > a.boton {
+  align-self: flex-start;
+}
+
+@media (min-width: 68.75em) {
+  [data-pantalla="asignaciones"] [data-parte="cuerpo"] {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+
+  [data-pantalla="asignaciones"] [data-parte="panel"] {
+    position: sticky;
+    top: calc(var(--medida-cabecera-fija) + var(--espacio-4));
+  }
+
+  /* Dos tarjetas por fila. */
+  [data-pantalla="asignaciones"] [data-lista="propuestas"] {
+    --medida-columna: 22rem;
+  }
+}
+
+/* Todas las decididas (R11-35): cada renglón, con la categoría al lado de lo que pedía. */
+[data-pantalla="asignaciones"] [data-parte="decidida-cabeza"] {
+  margin: 0;
+}
+
+/* --- Donaciones y Donantes como bandeja (R11-34, ficha r11-p2-admin-bandeja) ------------------- */
+
+/* En el celular, la ficha de partida (la primera de la página, sin elegir) no se abre sola: la
+   lista se ve primero. "Cerrar la ficha" vuelve al renglón. */
+:is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro > li[data-elegido="partida"] > .maestro-ficha {
+  display: none;
+}
+
+:is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro > li > a > span:not(.estado) {
+  gap: var(--espacio-1);
+}
+
+/* Desde la tableta: la ficha a la derecha, fija al desplazarse (el renglón elegido no queda fijo);
+   la de partida se ve y "Cerrar la ficha" ya no hace falta. */
+@media (min-width: 53.75em) {
+  :is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro > li[data-elegido="partida"] > .maestro-ficha {
+    display: grid;
+  }
+
+  :is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro-ficha {
+    position: sticky;
+    /* Debajo de la cabecera y de la barra de filtros fijas (R11-33). */
+    top: calc(var(--medida-cabecera-fija) + var(--medida-filtros-fijos) + var(--espacio-4));
+    max-height: calc(
+      100vh - 2 * var(--espacio-4) - var(--medida-cabecera-fija) - var(--medida-filtros-fijos)
+    );
+    overflow-y: auto;
+  }
+
+  :is([data-pantalla="donaciones"], [data-pantalla="donantes"]) [data-parte="cerrar"] {
+    display: none;
+  }
+}

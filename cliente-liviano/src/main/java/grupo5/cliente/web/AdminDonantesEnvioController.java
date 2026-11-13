@@ -2,6 +2,7 @@ package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.puertos.PersonaNueva;
+import jakarta.servlet.http.HttpSession;
 import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
@@ -17,7 +18,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Los envíos reales de Donantes, fuera de la maqueta (en la maqueta los atiende SitioController,
- * que vuelve sin guardar). Un archivo que Donaciones no acepta (400) lleva a su pantalla de error.
+ * que vuelve sin guardar). Un archivo que Donaciones no acepta (400) lleva a su pantalla de error;
+ * uno aceptado queda en la sesión del admin, para la franja de su avance en Donantes.
  */
 @Controller
 @Profile("!maqueta")
@@ -30,13 +32,18 @@ public class AdminDonantesEnvioController {
   }
 
   @PostMapping("/admin-donantes-importando")
-  String importar(@RequestParam MultipartFile archivo, RedirectAttributes atributos) {
+  String importar(
+      @RequestParam MultipartFile archivo, HttpSession sesion, RedirectAttributes atributos) {
     UUID id;
     try {
       id = personas.importar(archivo);
     } catch (HttpClientErrorException.BadRequest noSeAcepto) {
       return "redirect:/admin-donantes-importar-error";
     }
+    // Para la franja de Donantes: se puede salir del avance y volver (R11-02).
+    sesion.setAttribute(
+        AdminDonantesController.SESION,
+        new AdminDonantesController.DeLaSesion(id, archivo.getOriginalFilename()));
     String destino =
         UriComponentsBuilder.fromPath("admin-donantes-importando")
             .queryParam("archivo", id)

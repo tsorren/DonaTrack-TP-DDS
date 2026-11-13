@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<!--/* El registro de actividad de administración (R11-26), según su ficha de flujo
+       (docs/interfaz/flujos/r11-p2-actividad.md, secciones 4.1, 5 y 6). Es la pestaña Actividad de
+       la sección Administradores (Pantallas la marca así): arriba, las pestañas Cuentas · Actividad;
+       después, el título, la ayuda plegada "¿Qué se registra?" y cuándo se leyó, con "Actualizar";
+       la búsqueda por administrador y los filtros (Quién, Acción y Fecha) en un formulario GET; y
+       la lista, de a 20, de la más reciente a la más vieja, con el paginador.
+       La lista llega ya filtrada (adminActividad.acciones, un vistas.Tramo, con el total de
+       Donaciones): la plantilla no filtra ni cuenta. El nombre de cada fila filtra por esa cuenta;
+       "Ver…" va solo donde la acción tiene pantalla propia.
+       Lo que no se entendió o no se pudo aplicar (adminActividad.avisos) se avisa arriba de la lista.
+       En la maqueta, ?escenario=vacia, sin-resultados, sin-nombres y muchas. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Actividad - Administradores - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido"
+    th:with="datos=${adminActividad},
+             c=${datos.consulta},
+             tramo=${datos.acciones},
+             n=${tramo.total},
+             vacia=${n == 0 and !datos.filtrada},
+             inicio=${(tramo.pagina - 1) * 20 + 1},
+             fin=${(tramo.pagina - 1) * 20 + #lists.size(tramo.filas)}">
+  <div class="mesa">
+    <nav th:replace="~{admin-actividad :: pestanas('actividad')}"></nav>
+
+    <header class="mesa-cabecera">
+      <div>
+        <p class="rotulo">Administradores</p>
+        <h1>Actividad de administración</h1>
+        <p>Quién hizo qué y cuándo en el sitio.</p>
+      </div>
+    </header>
+
+    <details>
+      <summary class="boton" data-tono="secundario">¿Qué se registra?</summary>
+      <p>Cada vez que alguien de administración aprueba o descarta una propuesta, corre la asignación,
+        registra una donación o un donante, marca una donación como vencida, importa un archivo, aprueba
+        o registra una organización, da de alta a otro administrador, genera otra contraseña provisoria
+        o cambia un camión, queda acá con su nombre y la hora. Lo que se hace directo en la consola de
+        Keycloak no aparece. El registro empezó con esta versión del sitio: de antes, solo están las
+        propuestas aprobadas o descartadas.</p>
+    </details>
+
+    <p class="texto-chico">
+      <span th:text="|Leída el ${datos.al}.|">Leída el 12 de noviembre de 2026, 18:34.</span>
+      <a href="/admin-actividad" th:href="${actualizar}" hx-boost="true">Actualizar</a>
+    </p>
+
+    <p th:if="${vacia}" th:each="aviso : ${datos.avisos}" class="aviso-breve" role="status"
+       th:text="${aviso}">No pudimos traer los nombres de las cuentas.</p>
+
+    <section th:if="${vacia}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no hay actividad registrada.</h2>
+      <p>Acá vas a ver cada propuesta aprobada, cada archivo importado y cada cuenta dada de alta, con
+        quién lo hizo y cuándo.</p>
+    </section>
+
+    <section th:unless="${vacia}" class="pila" data-espacio="3" aria-labelledby="lista-titulo">
+      <h2 id="lista-titulo" tabindex="-1" class="solo-lectores"
+          th:autofocus="${paginador != null and paginador.cambio}">Todas las acciones</h2>
+
+      <!--/* La búsqueda y los filtros, un solo formulario GET (componentes/filtros, la barra). Enviarlo
+             no lleva ?pagina=: vuelve a la primera. Con fechas escritas en la dirección, van ocultas. */-->
+      <form hx-boost="true" class="filtros-barra" action="/admin-actividad"
+            th:action="@{/admin-actividad}" method="get" role="search"
+            hx-indicator="#buscando-actividad">
+        <div class="campo filtro-buscar">
+          <label for="buscar">Buscar por administrador</label>
+          <div class="filtro-buscar-fila">
+            <input id="buscar" name="buscar" type="search" autocomplete="off" maxlength="100"
+                   th:value="${c.buscar}" aria-describedby="buscar-ayuda">
+            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+          </div>
+          <p id="buscar-ayuda" class="texto-chico">Nombre, apellido o correo</p>
+        </div>
+        <th:block th:if="${c.conRango()}">
+          <input type="hidden" name="desde" th:if="${c.desde != null}" th:value="${c.desde}">
+          <input type="hidden" name="hasta" th:if="${c.hasta != null}" th:value="${c.hasta}">
+        </th:block>
+        <div class="filtros" role="group" aria-label="Filtrar la actividad">
+          <details th:replace="~{componentes/filtros :: menu('autor', 'Quién', ${c.autor}, ${datos.quienes})}"></details>
+          <details th:replace="~{componentes/filtros :: menu('accion', 'Acción', ${c.accion}, ${datos.grupos})}"></details>
+          <details th:replace="~{componentes/filtros :: menu('fecha', 'Fecha', ${c.fecha}, ${datos.fechas})}"></details>
+        </div>
+        <p th:replace="~{envio :: indicador('buscando-actividad', 'Buscando actividad…')}"></p>
+      </form>
+
+      <p th:each="aviso : ${datos.avisos}" class="aviso-breve" role="status" th:text="${aviso}">No
+        entendimos la fecha pedida: te mostramos todas las fechas.</p>
+
+      <div class="racimo" aria-live="polite">
+        <p th:if="${n > 0}"
+           th:text="${n == 1} ? 'Mostrando 1 a 1 de 1 acción.' : |Mostrando ${inicio} a ${fin} de ${#numbers.formatInteger(n, 1, 'POINT')} acciones.|">Mostrando
+          1 a 7 de 7 acciones.</p>
+        <a th:if="${c.filtrada()}" class="filtros-sacar" href="/admin-actividad"
+           th:href="@{/admin-actividad}">Sacar los filtros</a>
+      </div>
+
+      <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-titulo">
+        <h3 id="sin-titulo"
+            th:text="${c.soloLoMio()} ? 'Todavía no hay acciones tuyas registradas con estos filtros.' : 'Ninguna acción coincide con los filtros elegidos.'">Ninguna
+          acción coincide con los filtros elegidos.</h3>
+        <a class="boton" data-tono="secundario" href="/admin-actividad"
+           th:href="@{/admin-actividad}">Sacar los filtros</a>
+      </section>
+
+      <table th:if="${n > 0}" class="tabla">
+        <caption class="solo-lectores"
+                 th:text="|Actividad de administración, página ${tramo.pagina} de ${tramo.paginas}|">Actividad
+          de administración, página 1 de 1</caption>
+        <thead>
+          <tr>
+            <th scope="col">Cuándo</th>
+            <th scope="col">Quién</th>
+            <th scope="col">Qué</th>
+            <th scope="col"><span class="solo-lectores">A dónde lleva</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="f : ${tramo.filas}">
+            <th scope="row">
+              <time th:if="${f.cuando != null}" th:datetime="${f.cuandoIso}" th:text="${f.cuando}"
+                    datetime="2026-11-12T18:20:00">12 nov 2026, 18:20</time>
+            </th>
+            <td data-rotulo="Quién">
+              <p th:if="${f.filtrarPor != null}"><a href="/admin-actividad?autor=cuenta-bruno"
+                 th:href="@{/admin-actividad(autor=${f.filtrarPor})}" hx-boost="true"><th:block
+                 th:text="${f.quien}">Bruno Díaz</th:block><span
+                 class="solo-lectores">: ver solo sus acciones</span></a></p>
+              <th:block th:if="${f.filtrarPor == null}" th:text="${f.quien}">Una cuenta de administración
+                que ya no existe</th:block>
+            </td>
+            <td data-rotulo="Qué" th:text="${f.que}">Subió el archivo donantes-noviembre.csv para importar.</td>
+            <td data-rotulo="">
+              <a th:if="${f.enlace != null}" class="boton" data-tono="secundario"
+                 th:href="@{${f.enlace}}" href="/admin-donantes-importado"
+                 th:aria-label="${f.lectorEnlace}" th:text="|${f.accion} ›|">Ver la importación ›</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <nav th:replace="~{paginador :: paginador(${paginador})}"></nav>
+    </section>
+  </div>
+</th:block>
+
+<!--/* Las pestañas de la sección Administradores (ficha r11-p2-actividad, sección 2): enlaces reales;
+       la que se ve, con aria-current. Las usa también admin-administradores. */-->
+<nav th:fragment="pestanas(actual)" class="segmentos" aria-label="Vistas de administradores" hx-boost="true">
+  <a href="/admin-administradores" th:href="@{/admin-administradores}"
+     th:attr="aria-current=${actual == 'cuentas'} ? 'page' : null">Cuentas</a>
+  <a href="/admin-actividad" th:href="@{/admin-actividad}"
+     th:attr="aria-current=${actual == 'actividad'} ? 'page' : null">Actividad</a>
+</nav>
+</body>
+</html>

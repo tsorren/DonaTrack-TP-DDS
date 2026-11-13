@@ -528,17 +528,7 @@
           ],
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{donacionesUrl}}/api/asignaciones/propuestas",
-              "host": [
-                "{{donacionesUrl}}"
-              ],
-              "path": [
-                "api",
-                "asignaciones",
-                "propuestas"
-              ]
-            }
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas?orden=reciente&size=100"
           }
         },
         {

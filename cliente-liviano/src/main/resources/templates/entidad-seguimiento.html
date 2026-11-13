@@ -31,7 +31,7 @@
   <header class="cabecera-entidad">
     <p class="rotulo" th:text="${seccion}">Seguir entregas</p>
     <h1>Lo que viene a tu puerta</h1>
-    <p>Las entregas asignadas al <th:block th:text="${cuenta.rol}">Comedor Barrio Ejemplo</th:block>,
+    <p>Las entregas asignadas a <th:block th:text="${cuenta.nombre}">Comedor Barrio Ejemplo</th:block>,
       desde que salen del depósito hasta que confirmás la recepción. Tu dirección es exacta; la del
       camión, aproximada. <th:block th:text="|Al ${recibidas.actualizado}.|">Al 15 de octubre de 2026, 18:30.</th:block></p>
     <th:block th:if="${conDatos and sinLeer > 0}">
@@ -48,7 +48,7 @@
   <section th:if="${escenario == 'vacio' or (escenario == '' and #lists.isEmpty(vienen))}" class="vacio"
            aria-labelledby="vacio-titulo">
     <h2 id="vacio-titulo">No tenés entregas por recibir.</h2>
-    <p>Cuando se asigne una donación a tu entidad, vas a ver acá por dónde viene y cuándo llega a tu
+    <p>Cuando se asigne una donación a tu organización, vas a ver acá por dónde viene y cuándo llega a tu
       puerta.</p>
     <a class="boton" data-tono="secundario" href="/entidad-necesidades"
        th:href="@{/entidad-necesidades}">Ver tus necesidades</a>
@@ -83,7 +83,8 @@
               class="estado" th:data-estado="${g.clave}"><th:block
               th:replace="~{componentes/sello :: sello(${g.clave})}"></th:block><th:block
               th:text="${g.nombre}">Esperan tu confirmación</th:block></span></dt>
-          <dd th:text="${#lists.size(vienen.?[grupo == #root.g.clave])}">2</dd>
+          <!--/* R11-43: con los datos reales, la cifra la cuenta Donaciones (la lista es una página). */-->
+          <dd th:text="${recibidas.cuantas != null ? recibidas.cuantas[g.clave] : #lists.size(vienen.?[grupo == #root.g.clave])}">2</dd>
         </div>
       </dl>
     </section>
@@ -175,7 +176,7 @@
                su dirección exacta sobre la tierra. */-->
         <circle class="subte-estacion" cx="450" cy="80" r="22"/>
         <text class="dibujo-rotulo dibujo-rotulo--papel" x="486" y="38"
-              th:text="|Tu puerta · ${cuenta.rol}|">Tu puerta · Comedor Barrio Ejemplo</text>
+              th:text="|Tu puerta · ${cuenta.nombre}|">Tu puerta · Comedor Barrio Ejemplo</text>
         <text class="dibujo-rotulo dibujo-rotulo--papel" x="486" y="62">Calle Ejemplo 450</text>
       </svg>
     </figure>
@@ -216,6 +217,7 @@
              th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu necesidad</a>
         </li>
       </ol>
+      <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
       <p>Las que ya recibiste, con su foto, están en Donaciones recibidas.
         <a href="/entidad-recibidas?estado=recibidas" th:href="@{/entidad-recibidas(estado='recibidas')}">Ver
           las recibidas</a></p>

@@ -36,16 +36,19 @@ class ClientesHttpTest {
 
   private static final Caso INCENTIVOS =
       new Caso(
-          "/api/incentivos/ranking/historial",
+          "/api/incentivos/ranking/historial?page=0&size=12",
           "[]",
-          (http, token) -> http.incentivosApi(URL, token).historial());
+          (http, token) -> http.incentivosApi(URL, token).historial(0, 12));
   private static final Caso DONACIONES =
       new Caso(
           "/api/donaciones/contadores",
           "{}",
           (http, token) -> http.donacionesApi(URL, token).contadores());
   private static final Caso LOGISTICA =
-      new Caso("/api/entregas/mapa", "[]", (http, token) -> http.logisticaApi(URL, token).mapa());
+      new Caso(
+          "/api/entregas/mapa?desde=2026-10-13&hasta=2026-11-12&limite=200",
+          "[]",
+          (http, token) -> http.logisticaApi(URL, token).mapa("2026-10-13", "2026-11-12", 200));
   private static final Caso NOTIFICACIONES =
       new Caso(
           "/api/notificaciones/persona/" + ID + "/no-leidas/conteo",

@@ -34,6 +34,7 @@
 }
 
 .armazon {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -56,6 +57,16 @@
   color: var(--color-tinta);
   font-weight: 700;
   text-decoration: none;
+}
+
+/* La campanita (R11-29): la campana es el summary de un <details> (componentes/campanita.css); el
+   lugar en la cabecera lo toma el details, como antes el enlace. */
+.campanita {
+  margin-left: auto;
+}
+
+.campanita > .armazon-avisos {
+  margin-left: 0;
 }
 
 .armazon-avisos svg {
@@ -197,7 +208,8 @@ main h1 {
     white-space: nowrap;
   }
 
-  .armazon-avisos {
+  .armazon-avisos,
+  .campanita {
     margin-left: 0;
   }
 }
@@ -205,7 +217,7 @@ main h1 {
 /* La campana de la administración (ronda 2026-11-09): sin el menú en la fila, la campana va a la
    derecha, junto a la cuenta y el botón de menú. */
 @media (min-width: 68.75em) {
-  .armazon:has(.navegacion[data-forma="panel"]) .armazon-avisos {
+  .armazon:has(.navegacion[data-forma="panel"]) .campanita {
     margin-left: auto;
   }
 }

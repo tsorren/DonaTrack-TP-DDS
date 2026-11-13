@@ -6,10 +6,11 @@ import static grupo5.donaciones.seguridad.Acceso.DONANTE_O_ENTIDAD;
 import static grupo5.donaciones.seguridad.Acceso.SU_ID;
 
 import grupo5.donaciones.controllers.IPersonasController;
+import grupo5.donaciones.dto.personas.FiltroPersonas;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
-import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.services.IPersonasService;
+import grupo5.donaciones.services.ParametrosListado;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -49,9 +49,8 @@ public class PersonasController implements IPersonasController {
   @Override
   @GetMapping
   public ResponseEntity<List<PersonaOutputDTO>> consultarPersonas(
-      @RequestParam(required = false) TipoPersona tipo) {
-    List<PersonaOutputDTO> personas = service.consultarPersonas(tipo);
-    return ResponseEntity.ok(personas);
+      FiltroPersonas filtro, ParametrosListado listado) {
+    return Paginas.conTotal(service.buscar(filtro, listado));
   }
 
   @Override

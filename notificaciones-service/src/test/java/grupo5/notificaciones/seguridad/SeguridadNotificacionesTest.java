@@ -127,6 +127,8 @@ class SeguridadNotificacionesTest {
     when(notificacionService.personaDe(NOTIFICACION_AJENA)).thenReturn(Optional.of(AJENO));
     when(notificacionService.marcarComoLeida(NOTIFICACION_PROPIA)).thenReturn(Optional.of(dto));
     when(notificacionService.marcarComoLeida(NOTIFICACION_AJENA)).thenReturn(Optional.of(dto));
+    when(notificacionService.bandeja(any(), any()))
+        .thenReturn(new NotificacionService.PaginaNotificaciones(List.of(), 0));
     when(contactoService.recibir(any(), isNull()))
         .thenReturn(new ContactoService.Recepcion(1, true));
     when(contactoService.listar(isNull(), anyInt()))

@@ -16,23 +16,35 @@ import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.CambioEstadoRuta;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.repositories.CriterioSeguimiento;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository;
+import grupo5.logistica.models.repositories.TramoDeEntregas;
 import grupo5.logistica.services.ComunicadorEventosLogistica;
 import grupo5.logistica.services.IEntregasService;
 import grupo5.logistica.services.IGeocodificadorDestino;
 import grupo5.logistica.services.mappers.EntregaMapper;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +56,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class EntregasService implements IEntregasService {
   private static final Logger log = LoggerFactory.getLogger(EntregasService.class);
   private static final String ACTOR_BROKER = "broker-donaciones";
+  private static final ZoneId ARGENTINA = ZoneId.of("America/Argentina/Buenos_Aires");
+  static final int DIAS_DEL_MAPA = 30;
+  static final int LIMITE_DEL_MAPA = 200;
+  static final int LIMITE_MAXIMO_DEL_MAPA = 500;
+
+  /** Las del seguimiento del donante sin estados pedidos: las que todavía no terminaron. */
+  private static final Set<EstadoEntrega> ACTIVAS =
+      Set.of(EstadoEntrega.PENDIENTE, EstadoEntrega.EN_TRASLADO, EstadoEntrega.EN_PUERTA);
+
   private final IEntregasRepository entregasRepository;
   private final IRutasRepository rutasRepository;
   private final ICamionRepository camionRepository;
@@ -51,6 +72,7 @@ public class EntregasService implements IEntregasService {
   private final ComunicadorEventosLogistica comunicadorEventos;
   private final ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository;
   private final IGeocodificadorDestino geocodificadorDestino;
+  private final Clock reloj;
 
   public EntregasService(
       IEntregasRepository entregasRepository,
@@ -85,7 +107,6 @@ public class EntregasService implements IEntregasService {
         null);
   }
 
-  @Autowired
   public EntregasService(
       IEntregasRepository entregasRepository,
       IRutasRepository rutasRepository,
@@ -94,6 +115,30 @@ public class EntregasService implements IEntregasService {
       ComunicadorEventosLogistica comunicadorEventos,
       @Nullable ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository,
       @Nullable IGeocodificadorDestino geocodificadorDestino) {
+    this(
+        entregasRepository,
+        rutasRepository,
+        camionRepository,
+        entregaMapper,
+        comunicadorEventos,
+        solicitudesTransicionRepository,
+        geocodificadorDestino,
+        null);
+  }
+
+  /** {@code reloj}: el de la aplicación (hora de Argentina); sin él, el del sistema. */
+  @Autowired
+  @SuppressWarnings("java:S107")
+  public EntregasService(
+      IEntregasRepository entregasRepository,
+      IRutasRepository rutasRepository,
+      ICamionRepository camionRepository,
+      EntregaMapper entregaMapper,
+      ComunicadorEventosLogistica comunicadorEventos,
+      @Nullable ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository,
+      @Nullable IGeocodificadorDestino geocodificadorDestino,
+      @Nullable Clock reloj) {
+    this.reloj = reloj != null ? reloj : Clock.system(ARGENTINA);
     this.entregasRepository = entregasRepository;
     this.rutasRepository = rutasRepository;
     this.camionRepository = camionRepository;
@@ -130,12 +175,23 @@ public class EntregasService implements IEntregasService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<EntregaMapaPublicoResponseDTO> listarMapaPublico() {
-    return entregasRepository.findByEstado(EstadoEntrega.ENTREGADA).stream()
-        .filter(e -> e.getDestino() != null && e.getDestino().tieneCoordenadas())
-        .map(entregaMapper::toMapaPublicoResponseDTO)
-        .filter(Objects::nonNull)
-        .toList();
+  public EntregasDelMapaPublico listarMapaPublico(
+      LocalDate desde, LocalDate hasta, Integer limite) {
+    LocalDate fin = hasta != null ? hasta : LocalDate.now(reloj.withZone(ARGENTINA));
+    LocalDate inicio = desde != null ? desde : fin.minusDays(DIAS_DEL_MAPA);
+    int tope = limite != null ? limite : LIMITE_DEL_MAPA;
+    if (fin.isBefore(inicio) || tope < 1 || tope > LIMITE_MAXIMO_DEL_MAPA) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    Instant desdeInstante = inicio.atStartOfDay(ARGENTINA).toInstant();
+    Instant hastaInstante = fin.plusDays(1).atStartOfDay(ARGENTINA).toInstant();
+    List<EntregaMapaPublicoResponseDTO> entregas =
+        entregasRepository.findEntregadasParaMapa(desdeInstante, hastaInstante, tope).stream()
+            .map(entregaMapper::toMapaPublicoResponseDTO)
+            .filter(Objects::nonNull)
+            .toList();
+    long total = entregasRepository.contarEntregadasParaMapa(desdeInstante, hastaInstante);
+    return new EntregasDelMapaPublico(entregas, Math.max(total, entregas.size()));
   }
 
   @Override
@@ -171,31 +227,86 @@ public class EntregasService implements IEntregasService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<SeguimientoEntregaResponseDTO> listarSeguimientoPorBeneficiaria(UUID idBeneficiaria) {
+  public SeguimientosDeEntregas listarSeguimientoPorBeneficiaria(
+      UUID idBeneficiaria, ConsultaSeguimiento consulta) {
     if (idBeneficiaria == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
-    return entregasRepository.findByIdBeneficiaria(idBeneficiaria).stream()
-        .map(this::construirSeguimiento)
-        .toList();
+    return pagina(idBeneficiaria, null, consulta, Set.of());
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<SeguimientoEntregaResponseDTO> listarSeguimientoPorDonante(UUID donanteId) {
+  public SeguimientosDeEntregas listarSeguimientoPorDonante(
+      UUID donanteId, ConsultaSeguimiento consulta) {
     if (donanteId == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
-    return entregasRepository.findByDonanteId(donanteId).stream()
-        .filter(EntregasService::estaActiva)
-        .map(this::construirSeguimiento)
-        .toList();
+    return pagina(null, donanteId, consulta, ACTIVAS);
   }
 
-  private static boolean estaActiva(Entrega entrega) {
-    return entrega.getEstadoActual() == EstadoEntrega.PENDIENTE
-        || entrega.getEstadoActual() == EstadoEntrega.EN_TRASLADO
-        || entrega.getEstadoActual() == EstadoEntrega.EN_PUERTA;
+  /**
+   * La página pedida (R11-43): el filtro, el orden y el tramo en la base, y para armarla, una
+   * lectura de las rutas de la página, una de sus camiones y una de las entregas de esas rutas.
+   */
+  private SeguimientosDeEntregas pagina(
+      UUID idBeneficiaria,
+      UUID donanteId,
+      ConsultaSeguimiento consulta,
+      Set<EstadoEntrega> estadosPorDefecto) {
+    ConsultaSeguimiento pedida = consulta == null ? ConsultaSeguimiento.primeraPagina() : consulta;
+    int numero = pedida.page() == null ? 0 : pedida.page();
+    int tamanio = pedida.size() == null ? ConsultaSeguimiento.TAMANIO_POR_DEFECTO : pedida.size();
+    List<UUID> donaciones = pedida.idDonacion() == null ? List.of() : pedida.idDonacion();
+    if (numero < 0
+        || tamanio < 1
+        || tamanio > ConsultaSeguimiento.TAMANIO_MAXIMO
+        || donaciones.size() > ConsultaSeguimiento.TAMANIO_MAXIMO
+        || donaciones.stream().anyMatch(Objects::isNull)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    Set<EstadoEntrega> estados =
+        pedida.estado() == null || pedida.estado().isEmpty()
+            ? estadosPorDefecto
+            : pedida.estado().stream().filter(Objects::nonNull).collect(Collectors.toSet());
+    TramoDeEntregas tramo =
+        entregasRepository.buscarSeguimiento(
+            new CriterioSeguimiento(
+                idBeneficiaria, donanteId, estados, Set.copyOf(donaciones), numero, tamanio));
+    List<Entrega> entregas = tramo.entregas();
+
+    Map<UUID, Ruta> rutas =
+        porId(
+            rutasRepository.findByIds(idsDistintos(entregas.stream().map(Entrega::getIdRuta))),
+            Ruta::getId);
+    Map<UUID, Camion> camiones =
+        porId(
+            camionRepository.findByIds(
+                idsDistintos(rutas.values().stream().map(Ruta::getCamionId))),
+            Camion::getId);
+    Map<UUID, Entrega> paradas = porId(entregas, Entrega::getId);
+    Set<UUID> faltan =
+        rutas.values().stream()
+            .flatMap(ruta -> ruta.getEntregaIds().stream())
+            .filter(id -> id != null && !paradas.containsKey(id))
+            .collect(Collectors.toSet());
+    entregasRepository.findByIds(faltan).forEach(e -> paradas.put(e.getId(), e));
+
+    return new SeguimientosDeEntregas(
+        entregas.stream()
+            .map(e -> construirSeguimiento(e, rutas::get, camiones::get, paradas::get))
+            .toList(),
+        tramo.total());
+  }
+
+  private static Set<UUID> idsDistintos(Stream<UUID> ids) {
+    return ids.filter(Objects::nonNull).collect(Collectors.toSet());
+  }
+
+  private static <T> Map<UUID, T> porId(Collection<T> elementos, Function<T, UUID> id) {
+    Map<UUID, T> porId = new HashMap<>();
+    elementos.forEach(elemento -> porId.put(id.apply(elemento), elemento));
+    return porId;
   }
 
   @Override
@@ -332,9 +443,26 @@ public class EntregasService implements IEntregasService {
         .toList();
   }
 
+  /** El seguimiento de una sola entrega: lee su ruta, su camión y sus paradas de a una. */
   private SeguimientoEntregaResponseDTO construirSeguimiento(Entrega entrega) {
+    return construirSeguimiento(
+        entrega,
+        id -> rutasRepository.findById(id).orElse(null),
+        id -> camionRepository.findById(id).orElse(null),
+        id -> entregasRepository.findById(id).orElse(null));
+  }
+
+  /**
+   * El seguimiento de una entrega con su ruta, su camión y sus paradas buscadas en {@code rutas},
+   * {@code camiones} y {@code buscarParada} (nulo si no está).
+   */
+  private static SeguimientoEntregaResponseDTO construirSeguimiento(
+      Entrega entrega,
+      Function<UUID, Ruta> rutas,
+      Function<UUID, Camion> camiones,
+      Function<UUID, Entrega> buscarParada) {
     UUID idRuta = entrega.getIdRuta();
-    Ruta ruta = idRuta != null ? rutasRepository.findById(idRuta).orElse(null) : null;
+    Ruta ruta = idRuta != null ? rutas.apply(idRuta) : null;
     if (ruta == null) {
       return new SeguimientoEntregaResponseDTO(
           entrega.getId(),
@@ -355,10 +483,7 @@ public class EntregasService implements IEntregasService {
           List.of());
     }
 
-    Camion camion =
-        ruta.getCamionId() != null
-            ? camionRepository.findById(ruta.getCamionId()).orElse(null)
-            : null;
+    Camion camion = ruta.getCamionId() != null ? camiones.apply(ruta.getCamionId()) : null;
     String patenteCamion = camion != null ? camion.getPatente() : null;
 
     List<UUID> idsParadas = ruta.getEntregaIds();
@@ -372,8 +497,7 @@ public class EntregasService implements IEntregasService {
       UUID idParada = idsParadas.get(i);
       int ordenVisita = i + 1;
       boolean esConsultada = entrega.getId().equals(idParada);
-      Entrega paradaEntrega =
-          esConsultada ? entrega : entregasRepository.findById(idParada).orElse(null);
+      Entrega paradaEntrega = esConsultada ? entrega : buscarParada.apply(idParada);
 
       if (esConsultada) {
         ordenVisitaConsultada = ordenVisita;

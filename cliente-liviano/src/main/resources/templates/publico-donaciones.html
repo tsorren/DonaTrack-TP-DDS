@@ -28,8 +28,8 @@
     <header class="publica-cabeza">
       <p class="rotulo">Entregas confirmadas</p>
       <h1>Lo que ya llegó, <em>con su foto</em></h1>
-      <p class="lectura-bajada">Cada entrega la confirmó la entidad que la recibió, con la fecha y una foto
-        de lo entregado. Mostramos qué se donó, a qué entidad llegó y cuándo; no mostramos quién donó.</p>
+      <p class="lectura-bajada">Cada entrega la confirmó la organización que la recibió, con la fecha y una foto
+        de lo entregado. Mostramos qué se donó, a qué organización llegó y cuándo; no mostramos quién donó.</p>
     </header>
 
     <div th:if="${conDatos}" class="publica-barra">
@@ -55,9 +55,9 @@
 
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no hay entregas confirmadas en el último mes.</h2>
-      <p>Se cuentan cuando cada entidad confirma lo que recibe, con su foto.</p>
+      <p>Se cuentan cuando cada organización confirma lo que recibe, con su foto.</p>
       <a class="boton" data-tono="secundario" href="/publico-entidades"
-         th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a>
+         th:href="@{/publico-entidades}">Ver las organizaciones y lo que piden</a>
     </section>
 
     <!--/* Cargando: el aviso y el lugar de cada entrega, sin datos inventados. Viene con la página:

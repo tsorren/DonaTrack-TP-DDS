@@ -1,6 +1,7 @@
 package grupo5.cliente.maqueta;
 
 import grupo5.cliente.puertos.EntidadSeguimientoPuerto;
+import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -22,7 +23,7 @@ class EntidadSeguimientoMaqueta implements EntidadSeguimientoPuerto {
           "El camión va por la mitad del camino. Posición aproximada, actualizada hoy a las 18:25.");
 
   @Override
-  public Map<String, String> noticias(UUID entidad) {
+  public Map<String, String> noticias(UUID entidad, Collection<String> claves) {
     return NOTICIAS;
   }
 

@@ -12,11 +12,17 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.ConteosDeEntidadDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.ConteosDeEntidadDTO.EntregadasEnElMes;
+import grupo5.donaciones.dto.donacionesIndependientes.ConteosDeEntidadDTO.PorEstado;
+import grupo5.donaciones.dto.donacionesIndependientes.ConteosDeEntidadDTO.PorNecesidad;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.FiltroDonacionesIndependientes;
 import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.services.ParametrosListado;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -182,13 +188,15 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
             null);
 
     when(donacionesIndependientesService.obtenerConFiltros(
-            new FiltroDonacionesIndependientes(null, null, null, null, null, null, null, null)))
-        .thenReturn(List.of(response));
+            new FiltroDonacionesIndependientes(null, null, null, null, null, null, null, null),
+            ParametrosListado.primeraPagina()))
+        .thenReturn(new Pagina<>(List.of(response), 120));
 
     mockMvc
         .perform(get("/donaciones-independientes"))
         .andExpect(status().isOk())
         .andExpect(header().exists("X-Trace-Id"))
+        .andExpect(header().string("X-Total-Count", "120"))
         .andExpect(jsonPath("$.size()").value(1))
         .andExpect(jsonPath("$[0].id").value(id.toString()))
         .andExpect(jsonPath("$[0].descripcion").value("Descripcion"))
@@ -203,33 +211,45 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
     UUID donanteId = UUID.randomUUID();
     UUID entidadId = UUID.randomUUID();
     UUID necesidadId = UUID.randomUUID();
+    UUID id = UUID.randomUUID();
     FiltroDonacionesIndependientes esperado =
         new FiltroDonacionesIndependientes(
-            TipoEstadoDonacion.EN_DEPOSITO,
+            List.of(TipoEstadoDonacion.EN_DEPOSITO, TipoEstadoDonacion.ENTREGADA),
             subcategoriaId,
             categoriaId,
             donanteId,
             entidadId,
             LocalDate.of(2026, 11, 1),
             LocalDate.of(2026, 11, 5),
-            necesidadId);
-    when(donacionesIndependientesService.obtenerConFiltros(esperado)).thenReturn(List.of());
+            necesidadId,
+            id,
+            LocalDate.of(2026, 11, 19));
+    ParametrosListado listado = new ParametrosListado(3, 25, "campera", "ANTIGUAS");
+    when(donacionesIndependientesService.obtenerConFiltros(esperado, listado))
+        .thenReturn(new Pagina<>(List.of(), 0));
 
     mockMvc
         .perform(
             get(RUTA)
                 .param("estado", "EN_DEPOSITO")
+                .param("estado", "ENTREGADA")
+                .param("page", "3")
+                .param("size", "25")
+                .param("q", "campera")
+                .param("orden", "ANTIGUAS")
                 .param("subcategoriaId", subcategoriaId.toString())
                 .param("categoriaId", categoriaId.toString())
                 .param("donanteId", donanteId.toString())
                 .param("entidadId", entidadId.toString())
                 .param("desde", "2026-11-01")
                 .param("hasta", "2026-11-05")
-                .param("necesidadId", necesidadId.toString()))
+                .param("necesidadId", necesidadId.toString())
+                .param("id", id.toString())
+                .param("venceHasta", "2026-11-19"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.size()").value(0));
 
-    verify(donacionesIndependientesService).obtenerConFiltros(esperado);
+    verify(donacionesIndependientesService).obtenerConFiltros(esperado, listado);
   }
 
   @Test
@@ -239,7 +259,7 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
 
-    verify(donacionesIndependientesService, never()).obtenerConFiltros(any());
+    verify(donacionesIndependientesService, never()).obtenerConFiltros(any(), any());
   }
 
   @Test
@@ -252,7 +272,7 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
 
   @Test
   void obtenerTodas_conDesdePosteriorAHasta_retorna400() throws Exception {
-    when(donacionesIndependientesService.obtenerConFiltros(any()))
+    when(donacionesIndependientesService.obtenerConFiltros(any(), any()))
         .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
 
     mockMvc
@@ -299,5 +319,51 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
         .andExpect(status().isNotFound())
         .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$.details").value(id.toString()));
+  }
+
+  // ===================== R11-43: conteos de la organización =====================
+
+  @Test
+  void conteos_devuelveLasCifrasDeLaOrganizacion() throws Exception {
+    UUID entidad = UUID.randomUUID();
+    UUID necesidad = UUID.randomUUID();
+    when(donacionesIndependientesService.conteos(entidad, null))
+        .thenReturn(
+            new ConteosDeEntidadDTO(
+                List.of(new PorEstado("EN_PUERTA", 2)),
+                new EntregadasEnElMes("2026-11", 5),
+                List.of(new PorNecesidad(necesidad, List.of(new PorEstado("EN_PUERTA", 1))))));
+
+    mockMvc
+        .perform(get(RUTA + "/conteos").param("entidadId", entidad.toString()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.porEstado[0].estado").value("EN_PUERTA"))
+        .andExpect(jsonPath("$.porEstado[0].cantidad").value(2))
+        .andExpect(jsonPath("$.entregadasEnElMes.mes").value("2026-11"))
+        .andExpect(jsonPath("$.entregadasEnElMes.cantidad").value(5))
+        .andExpect(jsonPath("$.porNecesidad[0].necesidadId").value(necesidad.toString()))
+        .andExpect(jsonPath("$.porNecesidad[0].porEstado[0].cantidad").value(1));
+  }
+
+  @Test
+  void conteos_conNecesidad_laPasaAlService() throws Exception {
+    UUID entidad = UUID.randomUUID();
+    UUID necesidad = UUID.randomUUID();
+    when(donacionesIndependientesService.conteos(entidad, necesidad))
+        .thenReturn(
+            new ConteosDeEntidadDTO(List.of(), new EntregadasEnElMes("2026-11", 0), List.of()));
+
+    mockMvc
+        .perform(
+            get(RUTA + "/conteos")
+                .param("entidadId", entidad.toString())
+                .param("necesidadId", necesidad.toString()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.entregadasEnElMes.cantidad").value(0));
+  }
+
+  @Test
+  void conteos_sinEntidad_retorna400() throws Exception {
+    mockMvc.perform(get(RUTA + "/conteos")).andExpect(status().isBadRequest());
   }
 }

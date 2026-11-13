@@ -21,6 +21,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "entregas")
 // Va acá y no en DireccionSubdocument: ese subdocumento también se embebe en rutas.paradas.
 @CompoundIndex(name = "idx_entrega_destino_ubicacion", def = "{'destino.ubicacion': '2dsphere'}")
+// El mapa público (R11-19): las ENTREGADA del período, de la más reciente a la más vieja.
+@CompoundIndex(name = "idx_entrega_estado_hora_arribo", def = "{'estado': 1, 'horaArribo': -1}")
 @Getter
 @Setter
 @NoArgsConstructor

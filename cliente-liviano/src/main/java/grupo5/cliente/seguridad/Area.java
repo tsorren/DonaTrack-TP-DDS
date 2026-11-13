@@ -4,10 +4,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 
-/** Las áreas privadas del sitio, en orden de precedencia cuando una cuenta tiene más de un rol. */
+/**
+ * Las áreas privadas del sitio, en orden de precedencia cuando una cuenta tiene más de un rol. La
+ * etiqueta dice qué es la cuenta, debajo de su nombre; nunca reemplaza al nombre (R11-44). Quien
+ * recibe se llama "Organización" en todo lo que se ve (R11-45); el prefijo y el rol no cambian.
+ */
 public enum Area {
   ADMIN("admin", "Administración", false),
-  ENTIDAD("entidad", "Entidad", true),
+  ENTIDAD("entidad", "Organización", true),
   DONANTE("donante", "Donante", true);
 
   private final String prefijo;

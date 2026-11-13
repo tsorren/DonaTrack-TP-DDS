@@ -5,7 +5,13 @@
        La lista es la huerta de la empresa, como Mis donaciones de K (2026-11-08): una lámina por
        donación, la más reciente primero, con el dibujo según su estado; el texto dice lo mismo.
        Los datos vienen del controller (misDonaciones: de la maqueta o de Donaciones), no de
-       viaje-datos. Sin donaciones, o con ?escenario=vacio, la cuenta nueva; también error y lento. */-->
+       viaje-datos. Sin donaciones, o con ?escenario=vacio, la cuenta nueva; también error y lento.
+       Con ?mes=2026-10 ("Ver todas" de un mes del inicio de la persona), las de ese mes: lo dice
+       arriba, con el enlace para ver todas; el filtro de estado y categoría lo conserva. El mes, el
+       estado, la categoría, la subcategoría (?subcategoria=, RF-05, R11-13; manda sobre la categoría
+       y el select de Categoría muestra la suya) y la página (?pagina=2) los resuelve el servidor
+       (R11-01): acá llega una página y el total. Paginador: el componente paginas, que conserva el
+       mes y los filtros (lo arma el controller). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-donaciones', ~{::contenido})}">
 <head>
@@ -21,23 +27,36 @@
              pedidaCategoria=${param.categoria != null ? param.categoria[0] : ''},
              fEstado=${ {'pendiente', 'en-camino', 'entregada', 'con-problema'}.contains(pedidoEstado) ? pedidoEstado : ''},
              categorias=${misDonaciones.categorias},
-             fCategoria=${categorias.?[valor == #root.pedidaCategoria].isEmpty() ? '' : pedidaCategoria},
-             filtrado=${fEstado != '' or fCategoria != ''},
-             vacia=${escenario == 'vacio' or misDonaciones.donaciones.isEmpty()},
-             lista=${misDonaciones.donaciones.?[(#root.fEstado == '' or estado.tono == #root.fEstado)
-                     and (#root.fCategoria == '' or categoria == #root.fCategoria)]}">
+             pedidaSub=${param.subcategoria != null ? param.subcategoria[0] : ''},
+             deLaSub=${categorias.^[!subcategorias.?[valor == #root.pedidaSub].isEmpty()]},
+             fSubcategoria=${deLaSub == null ? '' : pedidaSub},
+             fCategoria=${deLaSub != null ? deLaSub.valor : (categorias.?[valor == #root.pedidaCategoria].isEmpty() ? '' : pedidaCategoria)},
+             conSubcategorias=${!categorias.?[!subcategorias.isEmpty()].isEmpty()},
+             filtrado=${fEstado != '' or fCategoria != '' or fSubcategoria != ''},
+             total=${misDonaciones.total},
+             vacia=${escenario == 'vacio' or (!filtrado and total == 0)},
+             lista=${misDonaciones.donaciones},
+             pagina=${misDonaciones.pagina},
+             paginas=${misDonaciones.paginas}">
   <div class="donaciones">
     <header>
       <p class="rotulo" th:text="${seccion}">Mis donaciones</p>
-      <h1>Lo que donó <em>tu empresa</em></h1>
+      <h1 th:if="${persona}">Lo que <em>donaste</em></h1>
+      <h1 th:unless="${persona}">Lo que donó <em>tu empresa</em></h1>
+      <p th:if="${mesTexto != null}" class="bajada" id="mes-elegido">
+        <span th:text="|Estás viendo las registradas en ${mesTexto}.|">Estás viendo las registradas
+          en octubre de 2026.</span>
+        <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver todas tus donaciones</a>
+      </p>
     </header>
 
     <section th:if="${vacia and escenario != 'error'}" class="vacio" aria-labelledby="vacio-titulo">
-      <h2 id="vacio-titulo">Tu empresa todavía no tiene donaciones registradas.</h2>
+      <h2 id="vacio-titulo" th:text="${mesTexto != null and escenario != 'vacio'} ? |No hay donaciones registradas en ${mesTexto}.| : (${persona} ? 'Todavía no tenés donaciones registradas.' : 'Tu empresa todavía no tiene donaciones registradas.')">Tu
+        empresa todavía no tiene donaciones registradas.</h2>
       <p>Las registra el equipo del depósito cuando las recibe. Desde ese momento ves cada una acá,
         con su estado.</p>
       <a class="boton" data-tono="secundario" href="/donante-entidades"
-         th:href="@{/donante-entidades}">Conocer las entidades</a>
+         th:href="@{/donante-entidades}">Conocer las organizaciones</a>
     </section>
 
     <th:block th:if="${escenario == 'error'}">
@@ -47,6 +66,7 @@
     <th:block th:unless="${vacia or escenario == 'error'}">
       <form hx-boost="true" class="filtro" action="/donante-donaciones"
             th:action="@{/donante-donaciones}" method="get" aria-label="Filtrar donaciones">
+        <input th:if="${mesClave != null}" type="hidden" name="mes" th:value="${mesClave}">
         <div class="campo">
           <label for="estado">Estado</label>
           <select id="estado" name="estado">
@@ -65,9 +85,20 @@
                     th:selected="${fCategoria == c.valor}" th:text="${c.texto}">Alimentos</option>
           </select>
         </div>
+        <!--/* La subcategoría, agrupada por categoría: sin JavaScript se elige y se toca Filtrar. */-->
+        <div th:if="${conSubcategorias}" class="campo">
+          <label for="subcategoria">Subcategoría</label>
+          <select id="subcategoria" name="subcategoria">
+            <option value="" th:selected="${fSubcategoria == ''}">Todas</option>
+            <optgroup th:each="c : ${categorias}" th:unless="${c.subcategorias.isEmpty()}" th:label="${c.texto}" label="Alimentos">
+              <option th:each="sc : ${c.subcategorias}" th:value="${sc.valor}"
+                      th:selected="${fSubcategoria == sc.valor}" th:text="${sc.texto}">Arroz</option>
+            </optgroup>
+          </select>
+        </div>
         <button class="boton" data-tono="principal" type="submit">Filtrar</button>
         <a th:if="${filtrado}" class="filtro-sacar" href="/donante-donaciones"
-           th:href="@{/donante-donaciones}">Sacar los filtros</a>
+           th:href="${mesClave != null} ? @{/donante-donaciones(mes=${mesClave})} : @{/donante-donaciones}">Sacar los filtros</a>
       </form>
     </th:block>
 
@@ -77,18 +108,19 @@
     </th:block>
 
     <th:block th:if="${escenario == '' and !vacia}">
-      <p th:unless="${filtrado and lista.isEmpty()}" class="bajada" role="status"
+      <p th:unless="${filtrado and total == 0}" class="bajada" role="status" tabindex="-1"
+         th:autofocus="${paginador != null and paginador.cambio}"
          th:text="${filtrado}
-           ? |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'donación' : 'donaciones'} con esos filtros.|
-           : |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'donación' : 'donaciones'}, de la más reciente a la primera. Actualizado ${misDonaciones.actualizado}.|">7
+           ? |${total} ${total == 1 ? 'donación' : 'donaciones'} con esos filtros.|
+           : |${total} ${total == 1 ? 'donación' : 'donaciones'}, de la más reciente a la primera. Actualizado ${misDonaciones.actualizado}.|">7
         donaciones, de la más reciente a la primera. Actualizado hoy, 15 de octubre, 16:25.</p>
 
-      <section th:if="${filtrado and lista.isEmpty()}" class="vacio" role="status"
+      <section th:if="${filtrado and total == 0}" class="vacio" role="status"
                aria-labelledby="sin-resultados">
         <h2 id="sin-resultados">No hay donaciones con esos filtros.</h2>
-        <p>Probá con otro estado o con otra categoría.</p>
+        <p>Probá con otro estado, categoría o subcategoría.</p>
         <a class="boton" data-tono="secundario" href="/donante-donaciones"
-           th:href="@{/donante-donaciones}">Sacar los filtros</a>
+           th:href="${mesClave != null} ? @{/donante-donaciones(mes=${mesClave})} : @{/donante-donaciones}">Sacar los filtros</a>
       </section>
 
       <!--/* La huerta, como Mis donaciones de K (estética de K, 2026-11-08; antes, un libro de asientos):
@@ -101,6 +133,8 @@
               categoria: d.icono, categoriaTexto: d.categoriaTexto, destino: d.destino, nota: d.nota, estado: d.estado} })}"></li>
         </th:block>
       </ul>
+
+      <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
 
       <div class="donaciones-pie">
         <p>Las que están en curso también se ven en Seguimiento, con dónde va el camión.</p>

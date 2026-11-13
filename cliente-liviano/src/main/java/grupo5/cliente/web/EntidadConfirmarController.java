@@ -42,7 +42,8 @@ public class EntidadConfirmarController {
     if (entidad.isEmpty()) {
       return Entidad.INGRESAR;
     }
-    model.addAttribute("entregasPorConfirmar", confirmar.entregas(entidad.get()));
+    model.addAttribute(
+        "entregasPorConfirmar", confirmar.entregas(entidad.get(), pedido.getParameter("entrega")));
     model.addAttribute("hoyActa", confirmar.hoy());
     return vista;
   }

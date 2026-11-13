@@ -9,9 +9,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.cliente.maqueta.MaquetaConfig;
 import grupo5.cliente.puertos.EntidadNotificacionesPuerto;
+import grupo5.cliente.vistas.ConsultaBandeja;
 import grupo5.cliente.vistas.EntidadNotificacionesVista;
 import grupo5.cliente.vistas.EntidadNotificacionesVista.Novedad;
 import grupo5.cliente.vistas.EntidadNotificacionesVista.Tema;
+import grupo5.cliente.vistas.Tramo;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -25,8 +27,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * La bandeja con lo que da Notificaciones: sin categoría propia ni botón de confirmar; la entidad
- * llega por {@code ?entidad=}.
+ * La bandeja con la página que da Notificaciones (R11-14): sin botón de confirmar, con todas las
+ * categorías del rol; la entidad llega por {@code ?entidad=}.
  */
 @WebMvcTest(
     controllers = {EntidadNotificacionesController.class, PantallasController.class},
@@ -52,34 +54,43 @@ class EntidadNotificacionesControllerTest {
     EntidadNotificacionesPuerto notificaciones() {
       return new EntidadNotificacionesPuerto() {
         @Override
-        public EntidadNotificacionesVista bandeja(UUID entidad) {
-          return new EntidadNotificacionesVista(
+        public EntidadNotificacionesVista bandeja(UUID entidad, ConsultaBandeja consulta) {
+          List<Novedad> novedades =
               VACIA.equals(entidad)
                   ? List.of()
                   : List.of(
                       new Novedad(
                           "a",
-                          "novedades",
+                          "camino",
                           "2026-11-08T09:15",
                           false,
+                          "Entrega en camino",
                           "Tu donación salió del depósito.",
+                          "Ver en Donaciones recibidas",
                           null,
                           null,
                           "/entidad-recibidas",
                           null),
                       new Novedad(
                           "b",
-                          "novedades",
+                          "otras",
                           "2026-11-01T10:00",
                           true,
+                          "Novedad",
                           "Llegó a tu puerta.",
+                          "Ver en Donaciones recibidas",
                           null,
                           null,
                           "/entidad-recibidas",
-                          null)),
+                          null));
+          return new EntidadNotificacionesVista(
+              new Tramo<>(novedades, novedades.size(), 1, 1),
+              novedades.isEmpty() ? 0 : 1,
               List.of(
                   new Tema("", "Todas las categorías", null),
-                  new Tema("novedades", "Novedades", "reloj")),
+                  new Tema("camino", "Entregas en camino", "camion"),
+                  new Tema("problemas", "Problemas", "problema"),
+                  new Tema("otras", "Otras novedades", "reloj")),
               "2026-11-08T18:30",
               "8 de noviembre de 2026, 18:30");
         }
@@ -121,7 +132,10 @@ class EntidadNotificacionesControllerTest {
         .andExpect(
             content().string(containsString("1 sin leer. Al 8 de noviembre de 2026, 18:30.")))
         .andExpect(content().string(containsString("Tu donación salió del depósito.")))
-        .andExpect(content().string(containsString("Novedades")))
+        .andExpect(content().string(containsString("Entrega en camino")))
+        .andExpect(content().string(containsString("Ver en Donaciones recibidas")))
+        // Todas las categorías del rol, también las que no tienen avisos en la página.
+        .andExpect(content().string(containsString("Problemas")))
         .andExpect(content().string(containsString("hace 9 horas")))
         .andExpect(content().string(not(containsString("Confirmar recepción"))));
 

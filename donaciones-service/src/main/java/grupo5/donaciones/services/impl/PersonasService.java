@@ -3,7 +3,10 @@ package grupo5.donaciones.services.impl;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.config.AdminConstantes;
+import grupo5.donaciones.dto.Pagina;
+import grupo5.donaciones.dto.personas.FiltroPersonas;
 import grupo5.donaciones.dto.personas.JuridicaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
@@ -11,13 +14,17 @@ import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoJuridico;
-import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.models.repositories.listados.CriterioPersonas;
+import grupo5.donaciones.models.repositories.listados.OrdenPorNombre;
+import grupo5.donaciones.models.repositories.listados.Tramo;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import grupo5.donaciones.services.IPersonasService;
+import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -60,12 +67,22 @@ public class PersonasService implements IPersonasService {
   }
 
   @Override
-  public List<PersonaOutputDTO> consultarPersonas(TipoPersona tipo) {
-    List<Persona> personas = repository.findAll();
-    if (tipo != null) {
-      personas = personas.stream().filter(p -> p.getTipoPersona() == tipo).toList();
+  public Pagina<PersonaOutputDTO> buscar(FiltroPersonas filtro, ParametrosListado listado) {
+    List<UUID> ids = filtro.id() == null ? List.of() : filtro.id();
+    if (ids.size() > FiltroPersonas.IDS_MAXIMOS) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
-    return personas.stream().map(mapper::toOutputDTO).toList();
+    listado.orden(OrdenPorNombre.class, OrdenPorNombre.NOMBRE);
+    Tramo<Persona> tramo =
+        repository.buscar(
+            new CriterioPersonas(
+                listado.texto(),
+                filtro.tipo(),
+                filtro.tipoJuridico(),
+                Set.copyOf(ids),
+                listado.paginado()));
+    return new Pagina<>(
+        tramo.elementos().stream().map(mapper::toOutputDTO).toList(), (int) tramo.total());
   }
 
   @Override

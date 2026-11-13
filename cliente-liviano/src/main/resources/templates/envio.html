@@ -16,6 +16,11 @@
          (RNF-UI-06, más de 300 ms); oculto el resto del tiempo, sin ocupar lugar.
        - hx-select-oob="#avisos": trae también la región de avisos de la respuesta, con el aviso del
          servidor que dejó web.Envios (aviso breve, data-estado="hecho"), y la cola de Alpine lo muestra.
+       - hx-disinherit="hx-indicator hx-select-oob": va en el formulario que lleva un enlace (el
+         "Cancelar", "Llegó con un problema") o un botón con hx-get adentro. HTMX hace que todo lo de
+         adentro herede el indicador y el avisos del formulario: sin esto, tocar "Cancelar" mostraba
+         "Registrando…" (R11-07). El envío del propio formulario no cambia. IndicadorEnFormulariosTest
+         lo exige. Los enlaces a un ancla de la misma página (href="#campo") no lo necesitan.
        El controller del envío es @Profile("!maqueta"), llama al puerto y termina con
        Envios.listo(destino, texto, atributos): redirige y deja el aviso. En la maqueta el mismo
        formulario lo atiende SitioController y vuelve a su pantalla sin guardar. */-->

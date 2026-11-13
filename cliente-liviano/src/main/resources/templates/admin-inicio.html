@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<!--/* Raíces, Inicio del admin (RF-16, RF-17, RF-21 y RF-18, resumidos), según su ficha de flujo
-       (docs/interfaz/flujos/raices-entidad-navegable.md, sección 4.4). Sin audacia de más: la mesa de
-       trabajo de quien decide. Lo que espera una decisión, una etiqueta de herbario por lista, con su
-       cantidad en el título y su botón; debajo, cómo está todo, en el registro de doble filete de
-       Necesidades, con nombre y fecha en cada cifra y sin gráficos. Sus secciones caen en
-       sin-dibujar. Los datos llegan en adminInicio (los de ejemplo, en maqueta.AdminPersonasMaqueta,
-       con "unidades" y 46 entidades activas, como la portada).
-       ?escenario=vacio (nada espera decisión), lento y error. */-->
+<!--/* Raíces, Inicio del admin (RF-16, RF-17, RF-21 y RF-18, resumidos), por temas (R11-21), según su
+       ficha de flujo (docs/interfaz/flujos/raices-entidad-navegable.md, sección 4.4, «El inicio del
+       admin, por temas»). Sin audacia de más: la mesa de trabajo de quien decide. Arriba, lo que
+       espera una decisión, una tarjeta por tema con su cantidad y su botón (la que da 0 no se dibuja);
+       debajo, cómo está todo en cuatro tarjetas (Donaciones por estado, Entregas confirmadas, La red y
+       Camiones), cada una con su período, sus cifras con separador de miles y su salida. Al final,
+       los gráficos de los últimos 12 meses (R11-42, cambia el «sin gráficos» de R11-21): Mes a mes y
+       Por categoría, cada uno a todo el ancho, con su tabla al lado (debajo en el celular); el
+       dibujo es un SVG armado en el servidor y oculto al lector, porque la tabla dice lo mismo. Los
+       datos llegan en adminInicio (los de ejemplo, en maqueta.AdminPersonasMaqueta y
+       maqueta.AdminInicioGraficosDeEjemplo).
+       ?escenario=vacio (nada espera decisión), lento, error, error-camiones (solo falta Logística),
+       error-evolucion (solo faltan los gráficos), evolucion-corta (plataforma nueva) y
+       evolucion-vacia (todavía sin donaciones). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-inicio', ~{::contenido})}">
 <head>
@@ -19,14 +25,19 @@
              d=${adminInicio.decisiones},
              c=${adminInicio.cifras},
              sinDecisiones=${escenario == 'vacio' or (conDatos and d.nada())},
-             conDecisiones=${conDatos and !sinDecisiones}">
+             conDecisiones=${conDatos and !sinDecisiones},
+             camiones=${escenario == 'error-camiones' ? null : c.camiones},
+             codigoCamiones=${escenario == 'error-camiones' or traceId == null ? 'a1b2c3d4e5f6' : traceId},
+             ev=${escenario == 'error-evolucion' ? null : adminInicio.evolucion},
+             codigoEvolucion=${escenario == 'error-evolucion' or traceId == null ? 'a1b2c3d4e5f6' : traceId}">
   <div class="mesa">
     <header class="mesa-cabecera">
       <p class="rotulo" th:text="${seccion}">Inicio</p>
       <h1 th:text="|Hola, ${cuenta.nombre}|">Hola, Leo</h1>
       <p class="mesa-fecha" th:text="${adminInicio.fecha}">Jueves 15 de octubre de 2026</p>
-      <p th:if="${conDecisiones}" class="mesa-resumen" th:text="${adminInicio.resumen}">Hoy esperan tu decisión 3 entidades y 2 propuestas de
-        asignación. 4 donaciones vencen en los próximos 7 días.</p>
+      <p th:if="${conDecisiones and adminInicio.resumen != null}" class="mesa-resumen" th:text="${adminInicio.resumen}">Hoy esperan tu decisión
+        3 organizaciones y 2 propuestas de asignación. Hay 7 donaciones sin asignar en el depósito; 4 vencen en los
+        próximos 7 días.</p>
     </header>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tu inicio…</p>
@@ -42,73 +53,329 @@
          th:href="@{/admin-inicio}">Volver a cargar</a>
     </section>
 
+    <!--/* Lo que espera una acción, arriba: organizaciones, donaciones sin asignar y propuestas. */-->
     <section th:if="${escenario != 'error'}" class="decisiones" aria-labelledby="decisiones-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <h2 id="decisiones-titulo">Lo que espera tu decisión</h2>
       <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
       <div th:if="${sinDecisiones}" class="vacio">
         <p><b>Hoy no hay nada que espere tu decisión.</b></p>
-        <p>Ninguna entidad pide sumarse, ninguna donación vence en los próximos 7 días y no hay propuestas de
-          asignación.</p>
+        <p>Ninguna organización pide sumarse, no hay donaciones sin asignar en el depósito y no hay propuestas de
+          asignación para revisar.</p>
       </div>
       <div th:if="${conDecisiones}" class="decisiones-lista">
-        <section th:if="${d.entidades > 0}" class="tarjeta decision" data-filete="doble" aria-labelledby="decision-entidades">
-          <h3 id="decision-entidades">Entidades <span th:text="${d.entidades == 1} ? '1 pide sumarse' : |${d.entidades} piden sumarse|">3 piden sumarse</span></h3>
+        <section th:if="${d.entidades > 0}" class="tarjeta decision" aria-labelledby="decision-entidades">
+          <h3 id="decision-entidades">Organizaciones <span th:text="${d.entidades == 1} ? '1 pide sumarse' : |${#numbers.formatInteger(d.entidades, 1, 'POINT')} piden sumarse|">3 piden sumarse</span></h3>
           <ul class="decision-nombres" role="list">
             <li th:each="nombre : ${d.nombresEntidades}" th:text="${nombre}">Hogar Ejemplo Norte</li>
           </ul>
-          <p th:if="${d.notaEntidades != null}" th:text="${d.notaEntidades}">La más antigua llegó el 9 de octubre. A una le falta la constancia de domicilio.</p>
+          <p th:if="${d.entidadesDeMas > 0}" th:text="|y ${#numbers.formatInteger(d.entidadesDeMas, 1, 'POINT')} más|">y 12 más</p>
           <a class="boton" data-tono="principal" href="/admin-entidades"
-             th:href="@{/admin-entidades}">Revisar entidades</a>
+             th:href="@{/admin-entidades}">Revisar organizaciones</a>
         </section>
-        <section th:if="${d.vencen > 0}" class="tarjeta decision" data-filete="doble" aria-labelledby="decision-vencen">
-          <h3 id="decision-vencen">Donaciones <span th:text="${d.vencen == 1} ? '1 vence en los próximos 7 días' : |${d.vencen} vencen en los próximos 7 días|">4 vencen en los próximos 7 días</span></h3>
-          <p th:if="${d.primeraQueVence != null}" th:text="${d.primeraQueVence}">La primera, Leche en polvo, vence el 17 de octubre, en 2 días.</p>
-          <a class="boton" data-tono="principal" href="/admin-donaciones?vence=pronto"
-             th:href="@{/admin-donaciones(vence='pronto')}">Ver las que vencen</a>
+        <section th:if="${d.sinAsignar > 0}" class="tarjeta decision" aria-labelledby="decision-sin-asignar"
+                 th:with="enDeposito=${#numbers.formatInteger(d.sinAsignar, 1, 'POINT')}">
+          <h3 id="decision-sin-asignar">Donaciones sin asignar <span th:text="|${enDeposito} en el depósito|">7 en el depósito</span></h3>
+          <th:block th:if="${d.vencen > 0}">
+            <p><span th:text="${d.vencen == 1} ? '1 vence en los próximos 7 días.' : |${#numbers.formatInteger(d.vencen, 1, 'POINT')} vencen en los próximos 7 días.|">4 vencen
+              en los próximos 7 días.</span>
+              <span th:if="${d.primeraQueVence != null}" th:text="${d.primeraQueVence}">La primera, Leche en polvo, vence el 17 de octubre, en 2
+                días.</span></p>
+            <a class="boton" data-tono="principal" href="/admin-donaciones?vence=pronto"
+               th:href="@{/admin-donaciones(vence='pronto')}">Ver las que vencen</a>
+            <a href="/admin-donaciones?estado=deposito" th:href="@{/admin-donaciones(estado='deposito')}"
+               th:text="${d.sinAsignar == 1} ? 'Ver la del depósito' : |Ver las ${enDeposito} del depósito|">Ver las 7 del depósito</a>
+          </th:block>
+          <th:block th:if="${d.vencen == 0}">
+            <p>Ninguna vence en los próximos 7 días.</p>
+            <a class="boton" data-tono="principal" href="/admin-donaciones?estado=deposito"
+               th:href="@{/admin-donaciones(estado='deposito')}">Ver las del depósito</a>
+          </th:block>
         </section>
-        <section th:if="${d.propuestas > 0}" class="tarjeta decision" data-filete="doble" aria-labelledby="decision-propuestas">
-          <h3 id="decision-propuestas">Asignar donaciones <span th:text="${d.propuestas == 1} ? '1 propuesta' : |${d.propuestas} propuestas|">2 propuestas</span></h3>
-          <ul class="decision-nombres" role="list">
-            <li th:each="propuesta : ${d.listaPropuestas}" th:text="${propuesta}">Leche en polvo, 10 unidades, para Merendero Ejemplo Sur.</li>
-          </ul>
+        <section th:if="${d.propuestas > 0}" class="tarjeta decision" aria-labelledby="decision-propuestas">
+          <h3 id="decision-propuestas">Propuestas de asignación <span th:text="${d.propuestas == 1} ? '1 espera tu revisión' : |${#numbers.formatInteger(d.propuestas, 1, 'POINT')} esperan tu revisión|">2 esperan tu revisión</span></h3>
+          <p>Cada una dice qué donación va a qué organización.</p>
           <a class="boton" data-tono="principal" href="/admin-asignaciones"
              th:href="@{/admin-asignaciones}">Revisar propuestas</a>
         </section>
       </div>
     </section>
 
-    <!--/* Las cifras: actividad y resultado registrado, con período y fecha; cada número, con su nombre. */-->
+    <!--/* Las cifras, en cuatro tarjetas: cada una con su período; cada número, con su nombre y separador
+           de miles. Una fila en 0 se muestra con su 0 y sin «Ver ›»: es un dato que llegó. */-->
     <section th:if="${escenario != 'error'}" class="todo" aria-labelledby="todo-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <h2 id="todo-titulo">Cómo está todo</h2>
-      <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
+      <div th:if="${escenario == 'lento'}" class="registros">
+        <div class="esqueleto" data-forma="hueco"></div>
+        <div class="esqueleto" data-forma="hueco"></div>
+        <div class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
+        <div class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
+        <div class="esqueleto" data-forma="hueco" data-tema="grafico"></div>
+        <div class="esqueleto" data-forma="hueco" data-tema="grafico"></div>
+      </div>
       <th:block th:if="${conDatos}">
         <p class="todo-fecha" th:text="|Al ${adminInicio.al}.|">Al 15 de octubre de 2026, 18:30.</p>
         <div class="registros">
-          <section class="registro-mesa" aria-labelledby="registro-donaciones">
-            <h3 id="registro-donaciones">Donaciones</h3>
+          <section class="tarjeta registro-mesa" data-tema="estados" aria-labelledby="registro-donaciones">
+            <div class="tarjeta-cabeza">
+              <h3 id="registro-donaciones">Donaciones, por estado</h3>
+              <p>ahora</p>
+            </div>
             <dl>
-              <div><dt>En el depósito</dt><dd th:text="${c.enDeposito}">7</dd></div>
-              <div><dt>Asignadas</dt><dd th:text="${c.asignadas}">4</dd></div>
-              <div><dt>En camino</dt><dd th:text="${c.enCamino}">1</dd></div>
-              <div><dt th:text="|Entregas confirmadas en ${c.mes}|">Entregas confirmadas en octubre</dt><dd th:text="${c.entregadasEnElMes}">9</dd></div>
+              <div>
+                <dt>En el depósito, sin asignar</dt>
+                <dd th:text="${#numbers.formatInteger(c.enDeposito, 1, 'POINT')}">7</dd>
+                <dd th:if="${c.enDeposito > 0}"><a href="/admin-donaciones?estado=deposito" th:href="@{/admin-donaciones(estado='deposito')}"
+                     aria-label="Ver las donaciones en el depósito">Ver ›</a></dd>
+              </div>
+              <div>
+                <dt>Asignadas, por salir</dt>
+                <dd th:text="${#numbers.formatInteger(c.asignadas, 1, 'POINT')}">4</dd>
+                <dd th:if="${c.asignadas > 0}"><a href="/admin-donaciones?estado=asignada" th:href="@{/admin-donaciones(estado='asignada')}"
+                     aria-label="Ver las donaciones asignadas">Ver ›</a></dd>
+              </div>
+              <div>
+                <dt>En camino o en la puerta</dt>
+                <dd th:text="${#numbers.formatInteger(c.enCamino, 1, 'POINT')}">1</dd>
+                <dd th:if="${c.enCamino > 0}"><a href="/admin-donaciones?estado=camino" th:href="@{/admin-donaciones(estado='camino')}"
+                     aria-label="Ver las donaciones en camino">Ver ›</a></dd>
+              </div>
+              <div>
+                <dt>No se pudo entregar</dt>
+                <dd th:text="${#numbers.formatInteger(c.fallidas, 1, 'POINT')}">1</dd>
+                <dd th:if="${c.fallidas > 0}" data-parte="nota">Se ve entre las asignadas.</dd>
+              </div>
+              <div>
+                <dt>Vencidas en el depósito</dt>
+                <dd th:text="${#numbers.formatInteger(c.vencidas, 1, 'POINT')}">2</dd>
+                <dd th:if="${c.vencidas > 0}"><a href="/admin-donaciones?estado=vencida" th:href="@{/admin-donaciones(estado='vencida')}"
+                     aria-label="Ver las donaciones vencidas en el depósito">Ver ›</a></dd>
+              </div>
             </dl>
+            <p class="salidas"><a href="/admin-donaciones" th:href="@{/admin-donaciones}">Ver todas las donaciones</a></p>
           </section>
-          <section class="registro-mesa" aria-labelledby="registro-red">
-            <h3 id="registro-red">La red</h3>
+
+          <section class="tarjeta registro-mesa" data-tema="entregas" aria-labelledby="registro-entregas">
+            <div class="tarjeta-cabeza">
+              <h3 id="registro-entregas">Entregas confirmadas</h3>
+            </div>
             <dl>
-              <div><dt>Entidades activas</dt><dd th:text="${c.entidadesActivas}">46</dd></div>
-              <div><dt>Donantes</dt><dd th:text="${c.donantes}">86</dd></div>
-              <div><dt>Camiones en ruta</dt><dd th:text="${c.camionesEnRuta}">1</dd></div>
-              <div><dt>Camiones libres</dt><dd th:text="${c.camionesLibres}">3</dd></div>
+              <div>
+                <dt th:text="${c.delMes}">en octubre, del 1 al 15</dt>
+                <dd th:text="${#numbers.formatInteger(c.entregadasEnElMes, 1, 'POINT')}">9</dd>
+              </div>
+              <div>
+                <dt>en total, desde la primera registrada</dt>
+                <dd th:text="${#numbers.formatInteger(c.entregadasEnTotal, 1, 'POINT')}">1.284</dd>
+              </div>
             </dl>
+            <p th:if="${c.entregadasEnTotal == 0}"><b>Todavía no hay entregas confirmadas.</b>
+              Se cuentan cuando cada organización confirma lo que recibe, con su foto.</p>
+            <p th:if="${c.entregadasEnTotal > 0}">Las confirma cada organización con su foto.</p>
           </section>
+
+          <section class="tarjeta registro-mesa" data-tema="red" aria-labelledby="registro-red">
+            <div class="tarjeta-cabeza">
+              <h3 id="registro-red">La red</h3>
+              <p>ahora</p>
+            </div>
+            <dl>
+              <div>
+                <dt>organizaciones activas</dt>
+                <dd th:text="${#numbers.formatInteger(c.entidadesActivas, 1, 'POINT')}">46</dd>
+              </div>
+              <div>
+                <dt th:text="|donantes activos, de ${#numbers.formatInteger(c.donantesTotal, 1, 'POINT')} registrados|">donantes activos, de 92
+                  registrados</dt>
+                <dd th:text="${#numbers.formatInteger(c.donantesActivos, 1, 'POINT')}">86</dd>
+              </div>
+            </dl>
+            <p class="salidas"><a href="/admin-donantes" th:href="@{/admin-donantes}">Ver donantes</a></p>
+          </section>
+
+          <section class="tarjeta registro-mesa" data-tema="camiones" aria-labelledby="registro-camiones">
+            <div class="tarjeta-cabeza">
+              <h3 id="registro-camiones">Camiones</h3>
+              <p>ahora</p>
+            </div>
+            <dl th:if="${camiones != null}">
+              <div>
+                <dt>en ruta</dt>
+                <dd th:text="${#numbers.formatInteger(camiones.enRuta, 1, 'POINT')}">1</dd>
+              </div>
+              <div>
+                <dt>libres</dt>
+                <dd th:text="${#numbers.formatInteger(camiones.libres, 1, 'POINT')}">3</dd>
+              </div>
+            </dl>
+            <div th:if="${camiones == null}" class="banner" data-estado="error" role="alert">
+              <p><b>No pudimos cargar los camiones.</b></p>
+              <p>El resto de las cifras está al día. Probá de nuevo en unos minutos; si sigue,
+                <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+                   th:href="@{/publico-contacto(codigo=${codigoCamiones},volver='/admin-inicio')}">escribinos
+                  con este código</a>.</p>
+              <p class="aviso-codigo">Código: <code th:text="${codigoCamiones}">a1b2c3d4e5f6</code></p>
+              <a class="boton" data-tono="secundario" href="/admin-inicio"
+                 th:href="@{/admin-inicio}">Volver a cargar</a>
+            </div>
+            <p th:if="${camiones != null}" class="salidas"><a href="/admin-camiones" th:href="@{/admin-camiones}">Ver camiones</a></p>
+          </section>
+
+          <!--/* R11-42: los gráficos, al final y a todo el ancho. Si no llegan, una sola tarjeta con su
+                 aviso; sin donaciones, una tarjeta con la frase y sin dibujo. */-->
+          <section th:if="${ev == null}" class="tarjeta registro-mesa" data-tema="grafico"
+                   aria-labelledby="grafico-error">
+            <div class="tarjeta-cabeza">
+              <h3 id="grafico-error">Los últimos 12 meses</h3>
+            </div>
+            <div class="banner" data-estado="error" role="alert">
+              <p><b>No pudimos cargar los gráficos.</b></p>
+              <p>Las cifras de arriba están al día. Probá de nuevo en unos minutos; si sigue,
+                <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+                   th:href="@{/publico-contacto(codigo=${codigoEvolucion},volver='/admin-inicio')}">escribinos
+                  con este código</a>.</p>
+              <p class="aviso-codigo">Código: <code th:text="${codigoEvolucion}">a1b2c3d4e5f6</code></p>
+              <a class="boton" data-tono="secundario" href="/admin-inicio"
+                 th:href="@{/admin-inicio}">Volver a cargar</a>
+            </div>
+          </section>
+
+          <section th:if="${ev != null and ev.vacia()}" class="tarjeta registro-mesa" data-tema="grafico"
+                   aria-labelledby="grafico-vacio">
+            <div class="tarjeta-cabeza">
+              <h3 id="grafico-vacio">Mes a mes</h3>
+            </div>
+            <p><b>Todavía no hay donaciones registradas.</b></p>
+            <p>Los gráficos aparecen cuando se registre la primera.</p>
+          </section>
+
+          <th:block th:if="${ev != null and !ev.vacia()}">
+            <section class="tarjeta registro-mesa" data-tema="grafico" aria-labelledby="grafico-meses">
+              <div class="tarjeta-cabeza">
+                <h3 id="grafico-meses">Mes a mes</h3>
+                <p th:text="${ev.periodo}">de noviembre de 2025 a octubre de 2026</p>
+              </div>
+              <div data-parte="grafico">
+                <figure>
+                  <figcaption th:text="${ev.frase}">En los últimos 12 meses se registraron 1.424 donaciones y se
+                    confirmaron 1.161 entregas. El mes con más donaciones registradas fue agosto de 2026, con 165.</figcaption>
+                  <p data-parte="leyenda"><span data-serie="registradas">Registradas</span>
+                    <span data-serie="entregadas">Entregas confirmadas</span></p>
+                  <div data-parte="dibujo" data-forma="columnas" aria-hidden="true">
+                    <p data-parte="escala">
+                      <span th:text="${#numbers.formatInteger(ev.tope, 1, 'POINT')}">200</span>
+                      <span th:text="${#numbers.formatInteger(ev.mitad, 1, 'POINT')}">100</span>
+                      <span>0</span>
+                    </p>
+                    <svg viewBox="0 0 120 100" th:attr="viewBox=|0 0 ${ev.meses.size() * 10} 100|"
+                         preserveAspectRatio="none" focusable="false">
+                      <line data-parte="guia" x1="0" y1="0" x2="120" y2="0" th:attr="x2=${ev.meses.size() * 10}"/>
+                      <line data-parte="guia" x1="0" y1="50" x2="120" y2="50" th:attr="x2=${ev.meses.size() * 10}"/>
+                      <line data-parte="base" x1="0" y1="100" x2="120" y2="100" th:attr="x2=${ev.meses.size() * 10}"/>
+                      <g th:each="m, i : ${ev.meses}" th:attr="data-curso=${m.enCurso} ? 'si' : null">
+                        <rect data-serie="registradas" width="3.25" x="1.5" y="52" height="48"
+                              th:attr="x=${i.index * 10 + 1.5},y=${100 - m.altoRegistradas},height=${m.altoRegistradas}"/>
+                        <rect data-serie="entregadas" width="3.25" x="5.25" y="64" height="36"
+                              th:attr="x=${i.index * 10 + 5.25},y=${100 - m.altoEntregadas},height=${m.altoEntregadas}"/>
+                      </g>
+                    </svg>
+                    <ol data-parte="meses" role="list">
+                      <li th:each="m : ${ev.meses}">
+                        <span th:text="${m.corto}">nov</span>
+                        <span th:if="${m.anio != null}" th:text="${m.anio}">2025</span>
+                        <span th:if="${m.enCurso}" data-parte="curso">en curso</span>
+                      </li>
+                    </ol>
+                  </div>
+                </figure>
+                <table>
+                  <caption>Donaciones registradas y entregas confirmadas, mes a mes</caption>
+                  <thead>
+                  <tr>
+                    <th scope="col">Mes</th>
+                    <th scope="col">Registradas</th>
+                    <th scope="col">Entregas confirmadas</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr th:each="m : ${ev.meses}">
+                    <th scope="row" th:text="${m.nombre}">Noviembre 2025</th>
+                    <td th:text="${#numbers.formatInteger(m.registradas, 1, 'POINT')}">96</td>
+                    <td th:text="${#numbers.formatInteger(m.entregadas, 1, 'POINT')}">71</td>
+                  </tr>
+                  </tbody>
+                  <tfoot>
+                  <tr>
+                    <th scope="row">Total</th>
+                    <td th:text="${#numbers.formatInteger(ev.total.registradas, 1, 'POINT')}">1.424</td>
+                    <td th:text="${#numbers.formatInteger(ev.total.entregadas, 1, 'POINT')}">1.161</td>
+                  </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <p data-parte="nota" th:text="${ev.nota}">Una entrega cuenta en el mes en que la organización la
+                confirmó: puede ser de una donación registrada antes. Octubre todavía no terminó.</p>
+              <p class="salidas"><a href="/admin-donaciones" th:href="@{/admin-donaciones}">Ver todas las donaciones</a></p>
+            </section>
+
+            <section class="tarjeta registro-mesa" data-tema="grafico" aria-labelledby="grafico-categorias">
+              <div class="tarjeta-cabeza">
+                <h3 id="grafico-categorias">Por categoría</h3>
+                <p th:text="${ev.periodo}">de noviembre de 2025 a octubre de 2026</p>
+              </div>
+              <div data-parte="grafico">
+                <figure>
+                  <figcaption th:text="${ev.fraseCategorias}">Alimentos es la categoría con más donaciones registradas
+                    en estos 12 meses: 542 de 1.424.</figcaption>
+                  <p data-parte="leyenda"><span data-serie="registradas">Registradas</span>
+                    <span data-serie="entregadas">Entregas confirmadas</span></p>
+                  <ul data-parte="dibujo" data-forma="barras" role="list" aria-hidden="true">
+                    <li th:each="c : ${ev.categorias}">
+                      <span data-parte="nombre"><svg viewBox="0 0 100 100" focusable="false"><use href="#cat-alimentos"
+                           th:href="|#${c.icono != null ? c.icono : 'cat-generico'}|"/></svg>
+                        <span th:text="${c.nombre}">Alimentos</span></span>
+                      <svg viewBox="0 0 100 4" preserveAspectRatio="none" focusable="false">
+                        <rect data-serie="registradas" x="0" y="0" height="4" width="100" th:attr="width=${c.largoRegistradas}"/>
+                      </svg>
+                      <span th:text="${#numbers.formatInteger(c.registradas, 1, 'POINT')}">542</span>
+                      <svg viewBox="0 0 100 4" preserveAspectRatio="none" focusable="false">
+                        <rect data-serie="entregadas" x="0" y="0" height="4" width="85" th:attr="width=${c.largoEntregadas}"/>
+                      </svg>
+                      <span th:text="${#numbers.formatInteger(c.entregadas, 1, 'POINT')}">461</span>
+                    </li>
+                  </ul>
+                </figure>
+                <table>
+                  <caption>Donaciones registradas y entregas confirmadas, por categoría</caption>
+                  <thead>
+                  <tr>
+                    <th scope="col">Categoría</th>
+                    <th scope="col">Registradas</th>
+                    <th scope="col">Entregas confirmadas</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr th:each="c : ${ev.categorias}">
+                    <th scope="row" th:text="${c.nombre}">Alimentos</th>
+                    <td th:text="${#numbers.formatInteger(c.registradas, 1, 'POINT')}">542</td>
+                    <td th:text="${#numbers.formatInteger(c.entregadas, 1, 'POINT')}">461</td>
+                  </tr>
+                  </tbody>
+                  <tfoot>
+                  <tr>
+                    <th scope="row">Total</th>
+                    <td th:text="${#numbers.formatInteger(ev.totalCategorias.registradas, 1, 'POINT')}">1.424</td>
+                    <td th:text="${#numbers.formatInteger(ev.totalCategorias.entregadas, 1, 'POINT')}">1.161</td>
+                  </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <p class="salidas"><a href="/admin-donaciones" th:href="@{/admin-donaciones}">Ver todas las donaciones</a></p>
+            </section>
+          </th:block>
         </div>
-        <p class="salidas">
-          <a href="/admin-donaciones" th:href="@{/admin-donaciones}">Ver donaciones</a>
-          <a href="/admin-camiones" th:href="@{/admin-camiones}">Ver camiones</a>
-        </p>
+        <th:block th:if="${ev != null and !ev.vacia()}"><svg th:replace="~{iconos :: categorias}"></svg></th:block>
       </th:block>
     </section>
   </div>

@@ -30,11 +30,11 @@ public class DonanteSeguimientoController {
 
   @GetMapping("/donante-seguimiento")
   String seguimiento(Model model, HttpServletRequest pedido) {
-    String vista = pantallas.mostrar("donante-seguimiento", model);
     Optional<UUID> donante = cuentas.donante(pedido);
     if (donante.isEmpty()) {
       return "redirect:/publico-ingresar";
     }
+    String vista = pantallas.mostrarDonante("donante-seguimiento", donante.get(), model, pedido);
     model.addAttribute("miSeguimiento", seguimientos.seguimiento(donante.get()));
     return vista;
   }

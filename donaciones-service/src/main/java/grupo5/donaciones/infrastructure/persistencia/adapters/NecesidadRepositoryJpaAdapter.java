@@ -9,6 +9,7 @@ import grupo5.donaciones.infrastructure.persistencia.mapper.NecesidadesPersisten
 import grupo5.donaciones.infrastructure.persistencia.repositories.SpringDataNecesidadRepository;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Repository
@@ -34,6 +36,16 @@ public class NecesidadRepositoryJpaAdapter
     super(springDataRepo, mapper::toEntity, mapper::toDomain);
     this.mapper = mapper;
     this.transacciones = new TransactionTemplate(transactionManager);
+  }
+
+  /** Una consulta para todas (la página de propuestas, R11-24). */
+  @Override
+  @Transactional(readOnly = true)
+  public List<Necesidad> findAllById(Collection<UUID> ids) {
+    if (ids.isEmpty()) {
+      return List.of();
+    }
+    return springDataRepo.findAllById(ids).stream().map(toDomain).toList();
   }
 
   /**

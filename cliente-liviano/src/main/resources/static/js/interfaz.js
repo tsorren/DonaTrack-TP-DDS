@@ -226,6 +226,235 @@ document.addEventListener("alpine:init", () => {
     },
   }));
 
+  // ventanas que bloquean (R11-32, regla 4 de la revisión del 2026-11-11): un <dialog class="dialogo"
+  // popover data-bloquea>. Sin JavaScript es el popover de siempre (se abre con popovertarget y se
+  // cierra con Esc o tocando afuera). Con JavaScript, un solo escucha de clics en el documento
+  // cancela el popover y la abre con showModal(): el fondo queda inerte, Tab no sale de la ventana y
+  // tocar afuera no la cierra (Esc sí). No se prepara cada ventana al cargar, así sirve también para
+  // las que llegan después con HTMX (la ficha de un camión). El foco vuelve al botón que la abrió
+  // (Safari no le da el foco a un botón al tocarlo, así que se guarda acá).
+  const abridores = new WeakMap();
+  const BLOQUEA = "dialog.dialogo[data-bloquea]";
+
+  document.addEventListener("click", (evento) => {
+    const boton = evento.target.closest("[popovertarget]");
+    const ventana = boton && document.getElementById(boton.getAttribute("popovertarget"));
+    if (!ventana || !ventana.matches(BLOQUEA)) return;
+    evento.preventDefault();
+    if (boton.getAttribute("popovertargetaction") === "hide") {
+      ventana.close();
+      return;
+    }
+    if (ventana.open) return;
+    abridores.set(ventana, boton);
+    // Antes de abrir: así un formulario en pasos vuelve al primero y el autofocus lo encuentra.
+    ventana
+      .querySelectorAll("form")
+      .forEach((formulario) => formulario.dispatchEvent(new CustomEvent("ventana-abierta")));
+    ventana.querySelectorAll("[data-corte]").forEach((aviso) => {
+      aviso.hidden = true;
+    });
+    ventana.showModal();
+  });
+
+  // close no burbujea: se escucha en la captura.
+  document.addEventListener(
+    "close",
+    (evento) => {
+      const boton = abridores.get(evento.target);
+      if (!boton) return;
+      abridores.delete(evento.target);
+      if (boton.isConnected) boton.focus();
+    },
+    true,
+  );
+
+  // Antes de que HTMX guarde la página en su historial: si no, el atributo open quedaría guardado y
+  // al volver la ventana aparecería pegada en la página.
+  document.addEventListener("htmx:beforeHistorySave", () => {
+    document.querySelectorAll(`${BLOQUEA}[open]`).forEach((ventana) => ventana.close());
+  });
+
+  // Mientras se envía un formulario de una ventana, sus botones no se pueden volver a tocar.
+  const botonesDe = (elemento) =>
+    elemento.closest && elemento.closest(BLOQUEA) ? elemento.querySelectorAll("button") : [];
+  const habilitar = (evento, disponible) =>
+    botonesDe(evento.detail.elt).forEach((boton) => {
+      boton.disabled = !disponible;
+    });
+  document.addEventListener("htmx:beforeRequest", (evento) => habilitar(evento, false));
+  document.addEventListener("htmx:afterRequest", (evento) => habilitar(evento, true));
+
+  // Se cortó la conexión: la ventana sigue abierta con lo escrito y muestra el aviso de corte que
+  // trae oculto. El texto viene en el HTML del servidor; acá solo se muestra.
+  document.addEventListener("htmx:sendError", (evento) => {
+    habilitar(evento, true);
+    const elemento = evento.detail.elt;
+    const ventana = elemento.closest && elemento.closest(BLOQUEA);
+    const aviso = ventana && ventana.open && ventana.querySelector("[data-corte]");
+    if (aviso) aviso.hidden = false;
+  });
+
+  // pasos (R11-31): Publicar otra necesidad en una ventana de 3 pasos (data-forma="pasos"). Muestra un
+  // paso a la vez, revisa el paso con la validación del navegador y, si falta algo, muestra el texto
+  // de error que trae el HTML para ese campo (el mismo del servidor) y le pasa el foco. El resumen
+  // repite con x-text lo que eligió la persona. El envío es el submit de siempre (hx-boost) y el
+  // servidor vuelve a validar. En el formulario de la página (sin ventana) no hay pasos: solo los
+  // textos de error y "Hasta cuándo" obligatoria con "Una sola vez".
+  Alpine.data("pasos", () => {
+    const CADA = { semana: "Cada semana", quincena: "Cada quincena", mes: "Cada mes" };
+    const PARA_EL_LECTOR = { hecho: "Hecho", actual: "Paso actual", falta: "Falta" };
+    let raiz = null;
+    let primero = null; // el primer campo con error al enviar
+    let revisando = false; // "Siguiente" revisa su paso y lleva el foco él mismo
+
+    const errorDe = (campo) => campo.name && document.getElementById(`${campo.name}-error`);
+    // El que lleva aria-invalid y aria-describedby: el campo o, en las opciones, su grupo.
+    const portadorDe = (campo) => (campo.type === "radio" ? campo.closest("fieldset") : campo);
+    const pasoDe = (elemento) => Number(elemento.closest(".dialogo-paso")?.dataset.paso || 0);
+
+    const mostrarError = (campo, error) => {
+      const portador = portadorDe(campo);
+      error.hidden = false;
+      portador.setAttribute("aria-invalid", "true");
+      const descrito = (portador.getAttribute("aria-describedby") || "").split(" ").filter(Boolean);
+      if (!descrito.includes(error.id)) {
+        portador.setAttribute("aria-describedby", [error.id, ...descrito].join(" "));
+      }
+      error.closest(".campo")?.setAttribute("data-estado", "error");
+    };
+
+    // El campo ya está bien: su error se va.
+    const ocultarError = (campo) => {
+      const error = errorDe(campo);
+      if (!error || error.hidden || !campo.validity.valid) return;
+      error.hidden = true;
+      portadorDe(campo).removeAttribute("aria-invalid");
+      error.closest(".campo")?.removeAttribute("data-estado");
+    };
+
+    return {
+      enPasos: false,
+      actual: 1,
+      que: "",
+      cuanto: "",
+      cuando: "",
+      init() {
+        raiz = this.$el;
+        this.enPasos = Boolean(raiz.closest('[data-forma="pasos"]'));
+        this.repite();
+        if (!this.enPasos) return;
+        raiz.setAttribute("data-pasos", "");
+        raiz.querySelector(".dialogo-indicador").hidden = false;
+        this.ir(1, false);
+      },
+      // Muestra el paso n, marca el indicador y deja los botones de ese paso.
+      ir(n, enfocar = true) {
+        this.actual = n;
+        raiz.querySelectorAll(".dialogo-paso").forEach((paso) => {
+          paso.hidden = Number(paso.dataset.paso) !== n;
+        });
+        raiz.querySelectorAll(".dialogo-indicador li").forEach((marca) => {
+          const numero = Number(marca.dataset.paso);
+          let estado = "falta";
+          if (numero < n) estado = "hecho";
+          if (numero === n) estado = "actual";
+          marca.dataset.estado = estado;
+          if (numero === n) marca.setAttribute("aria-current", "step");
+          else marca.removeAttribute("aria-current");
+          marca.querySelector(".solo-lectores").textContent =
+            `${marca.dataset.nombre}: ${PARA_EL_LECTOR[estado]}`;
+        });
+        raiz.querySelector("[data-boton='atras']").hidden = n === 1;
+        raiz.querySelector("[data-boton='siguiente']").hidden = n === 3;
+        raiz.querySelector("button[type='submit']").hidden = n !== 3;
+        raiz.querySelector(".dialogo-resumen").hidden = n !== 3;
+        if (n === 3) this.resumir();
+        if (enfocar) raiz.querySelector(`[data-paso="${n}"] .dialogo-paso-titulo`).focus();
+      },
+      alAbrir() {
+        if (this.enPasos) this.ir(1, false);
+      },
+      // Revisa los campos del paso (checkValidity avisa con invalid a cada uno que falta); si están
+      // bien, pasa al siguiente.
+      siguiente() {
+        const paso = raiz.querySelector(`.dialogo-paso[data-paso="${this.actual}"]`);
+        revisando = true;
+        const conError = Array.from(paso.querySelectorAll("input, select, textarea")).filter(
+          (campo) => campo.willValidate && !campo.checkValidity(),
+        );
+        revisando = false;
+        if (conError.length === 0) this.ir(this.actual + 1);
+        else conError[0].focus();
+      },
+      atras() {
+        this.ir(this.actual - 1);
+      },
+      // "Cambiar" del resumen: lleva data-ir con el número del paso.
+      cambiar(evento) {
+        this.ir(Number(evento.target.closest("[data-ir]").dataset.ir));
+      },
+      // Enter en los pasos 1 y 2 hace lo mismo que "Siguiente": nunca manda a medias.
+      enter(evento) {
+        if (!this.enPasos || this.actual === 3 || evento.target.matches("textarea, button")) return;
+        evento.preventDefault();
+        this.siguiente();
+      },
+      // El navegador encontró un campo sin completar (al revisar un paso o al enviar): en lugar de
+      // su globo, el texto de error del HTML; el foco, al primero, en su paso.
+      invalido(evento) {
+        const campo = evento.target;
+        const error = errorDe(campo);
+        if (!error) return;
+        evento.preventDefault();
+        mostrarError(campo, error);
+        if (revisando || primero) return;
+        primero = campo;
+        setTimeout(() => {
+          const paso = pasoDe(primero);
+          if (this.enPasos && paso && paso !== this.actual) this.ir(paso, false);
+          primero.focus();
+          primero = null;
+        });
+      },
+      // Al corregir un campo, su error se va.
+      limpiar(evento) {
+        const campo = evento.target;
+        if (campo.name === "repite") this.repite();
+        ocultarError(campo);
+      },
+      // "Hasta cuándo" es obligatoria solo si es una sola vez (la misma regla del servidor).
+      repite() {
+        const hasta = raiz.querySelector("[name='hasta']");
+        const elegida = raiz.querySelector("[name='repite']:checked");
+        if (!hasta) return;
+        hasta.required = Boolean(elegida) && elegida.value === "una";
+        if (!hasta.required) ocultarError(hasta);
+      },
+      // El resumen del último paso, con lo que eligió la persona (x-text, nunca x-html).
+      resumir() {
+        const que = raiz.querySelector("[name='que']");
+        const elegida = raiz.querySelector("[name='repite']:checked");
+        const hasta = raiz.querySelector("[name='hasta']").value;
+        this.que = que.selectedIndex > 0 ? que.options[que.selectedIndex].text : "";
+        this.cuanto = raiz.querySelector("[name='cuanto']").value;
+        if (!elegida) {
+          this.cuando = "";
+        } else if (elegida.value !== "una") {
+          this.cuando = `${CADA[elegida.value]}. El primer período empieza hoy.`;
+        } else if (hasta) {
+          const fecha = new Date(`${hasta}T00:00`).toLocaleDateString("es-AR", {
+            day: "numeric",
+            month: "long",
+          });
+          this.cuando = `Una sola vez, hasta el ${fecha}.`;
+        } else {
+          this.cuando = "Una sola vez.";
+        }
+      },
+    };
+  });
+
   // buzon (2026-11-10): las casillas de la bandeja de notificaciones (componentes/buzon). Muestra
   // «Seleccionar todas» (sin JavaScript queda oculta: no podría marcar las demás), la prende, la
   // apaga o la deja a medias según las casillas de las filas, y cambia el texto del botón de la

@@ -18,8 +18,11 @@
 //   Las de "Cómo funciona" se dan vuelta de lado a lado y se inclinan poco, como antes.
 // - El cuerpo se inclina según la concavidad del recorrido (abeja-partes.svg): la pose de "arriba"
 //   cuando la curva se abre hacia arriba, la de "abajo" cuando se cierra, con un paso suave.
+// - Fundido (R11-36): al pasar por detrás de una maceta (y al volver a salir) la abeja se desvanece
+//   hasta ser transparente justo donde cambia de capa, así nunca desaparece de golpe.
 // - Mejora progresiva: sin JavaScript, con "reducir movimiento" o con la pausa, las abejas quedan
-//   quietas (las del hero, donde las pone la hoja de estilos; las del camino no se muestran).
+//   quietas (las del hero, donde las pone la hoja de estilos, delante de las macetas; las del camino
+//   no se muestran).
 (() => {
   const RUTAS = [
     { d: "815 736 -14 -15 -17 -10 -20 -4 -19 -7 -17 -9 -18 -9 -18 -9 -19 -8 -18 -7 -19 -7 -19 -6 -19 -5 -20 -5 -19 -4 -20 -3 -20 -3 -20 -1 -20 -1 -20 1 -20 1 -20 2 -20 4 -19 5 -19 5 -19 7 -19 7 -18 9 -17 10 -16 12 -16 12 -15 13 -14 14 -14 15 -13 15 -12 16 -11 17 -11 17 -10 17 -9 18 -8 18 -7 19 -7 19 -6 19 -5 19 -4 20 -3 19 -3 20 -2 20 0 20 0 20 0 20 2 20 2 20 4 20 4 19 5 20 5 19 7 19 7 19 8 18 9 18 10 17 10 17 11 17 13 16 13 15 14 14 16 13 16 11 18 10 18 8 18 7 19 6 20 6 19 4 20 3 20 3 20 1 20 1 20 0 20 -1 20 -1 20 -2 20 -3 19 -3 20 -3 19 -5 20 -4 19 -6 19 -5 20 -6 19 -6 18 -7 19 -7 19 -8 18 -7 19 -8 18 -8 18 -8 18 -9 18 -9 18 -8 18 -9 18 -9 18 -9 18 -9 18 -9 18 -8 19 -6 18 -9 16 -12 17 -10 18 -10 17 -10 18 -10 17 -10 17 -10 17 -10 17 -11 17 -10 17 -11 17 -10 17 -11 17 -11 17 -11 16 -11 17 -12 16 -11 16 -12 16 -12 16 -12 16 -13 15 -13 15 -13 15 -13 14 -14 14 -15 13 -15 13 -15 11 -17 11 -17 9 -18 6 -19 5 -19 4 -20 3 -19 2 -20 1 -20 1 -20 0 -20 0 -20 1 -20 0 -20 0 -20 0 -20 0 -20 0 -20 0 -20 1 -20 0 -20 0 -20 0 -20 0 -20 0 -20 0 -20 0 -20 0 -20 0 -20 0 -21 1 -19 3 -20 5 -20 7 -18 8 -18 11 -17 12 -16 14 -14 18 -9 18 -9 13 -14 14 -15 17 -10 19 -8 18 -7 19 -6 20 -5 19 -5 20 -4 20 -3 20 -2 20 0 20 1 19 3 20 5 18 8 17 10 17 11 14 14 14 14 13 16 12 16 10 17 11 17 9 18 5 19 1 20 0 20 9 17 9 18 8 19 2 20 1 20 0 20 0 20 -2 20 -3 19 -4 20 -6 19 -8 18 -9 18 -10 18 -10 17 -11 16 -12 17 -13 15 -13 15 -14 14 -15 14 -16 12 -16 11 -18 10 -18 8 -19 7 -19 5 -20 4 -20 1 -20 -1 -19 -4 -20 -5 -18 -9 -17 -10 -16 -12 -14 -15 -12 -16 -9 -17 -7 -19 -4 -20 -1 -20 2 -20 3 -19 6 -19 7 -19 9 -18 11 -17 12 -16 13 -15 14 -14 15 -13 16 -12 17 -11 18 -10 17 -9 19 -8 18 -7 19 -7 20 -5 19 -5 20 -4 19 -4 20 -2 20 -3 20 -2 20 -2 20 -1 19 5 19 5 20 3 19 -6 20 -4 19 1 20 4 19 6 19 6 18 8 18 10 17 10 16 13 15 13 14 14 12 16 12 16 10 18 8 18 7 18 6 20 4 19 2 20 0 20 -2 20 -4 20 -5 19 -10 17 -11 17 -8 18 -14 14 -16 12 -17 11 -17 10 -18 9 -19 7 -18 7 -19 7 -19 6 -20 5 -19 5 -20 5 -19 4 -20 5 -19 4 -20 4 -19 4 -20 4 -20 3 -19 4 -20 4 -19 5 -20 4 -19 5 -20 5 -19 6 -19 5 -19 6 -19 6 -20 6 -19 6 -19 5 -19 6 -19 6 -20 5 -19 6 -19 5 -19 5 -20 5 -19 4 -20 5 -20 4 -19 3 -20 4 -20 3 -20 2 -19 2 -20 2 -20 2 -20 0 -20 1 -20 0 -20 -1 -20 -1 -20 -1 -20 -2 -20 -2 -20 -3 -20 -4 -19 -3 -20 -5 -19 -4 -20 -5 -19 -6 -19 -6 -19 -6 -19 -7 -18 -7 -19 -8 -18 -8 -19 -8 -18 -8 -18 -9 -18 -9 -17 -9 -18 -10 -17 -10 -17 -10 -17 -11 -15 -13 -14 -14", adelante: [[0, 110], [179, 303]] },
@@ -43,6 +46,9 @@
   const CURVA = 1 / 90;
   const POSE_S = 0.18;
   const VECINO = 4;
+  /* El fundido de las abejas del hero al cambiar de capa: cuántos puntos del recorrido (de a 2
+     unidades) tarda en volver a verse entera a cada lado del cambio. */
+  const FUNDIDO = 10;
 
   const pausa = document.getElementById("pausar-movimiento");
   const reducir = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -76,6 +82,26 @@
     return poses;
   }
 
+  /* Cuánto se ve la abeja en cada punto: 0 donde cambia de capa y entera a FUNDIDO puntos de ahí.
+     El ciclo es cerrado: el último punto linda con el primero. */
+  function opacidades(delante) {
+    const n = delante.length;
+    const cambios = [];
+    for (let i = 0; i < n; i++) {
+      if (delante[i] !== delante[(i + 1) % n]) {
+        cambios.push(i + 0.5);
+      }
+    }
+    const opacidad = new Float32Array(n).fill(1);
+    for (let i = 0; i < n; i++) {
+      for (const c of cambios) {
+        const d = Math.min(Math.abs(i - c), n - Math.abs(i - c));
+        opacidad[i] = Math.min(opacidad[i], suave(0.5, FUNDIDO, d));
+      }
+    }
+    return opacidad;
+  }
+
   /* Un punto del ciclo para la fracción t (0 a 1): posición, dirección, capa y pose. */
   function punto(ruta, t) {
     const n = ruta.puntos.length;
@@ -93,6 +119,7 @@
       dy: ruta.puntos[k][1] - ay,
       delante: ruta.delante ? ruta.delante[i] === 1 : true,
       pose: ruta.poses[i] + (ruta.poses[j] - ruta.poses[i]) * u,
+      opacidad: ruta.opacidades ? ruta.opacidades[i] + (ruta.opacidades[j] - ruta.opacidades[i]) * u : 1,
     };
   }
 
@@ -123,6 +150,17 @@
        abajo: el cuerpo nunca se ve transparente y el borde doble dura un tramo corto. */
     cuerpoArriba.style.opacity = suave(0.35, 0.6, pose).toFixed(3);
     cuerpoAbajo.style.opacity = (1 - suave(0.6, 0.75, pose)).toFixed(3);
+  }
+
+  /* Una abeja en reposo, como la deja la hoja de estilos: sin posición, giro, capa ni opacidad
+     puestos a mano y con la pose de "arriba". */
+  function reposo(abeja) {
+    abeja.removeAttribute("style");
+    delete abeja.dataset.capa;
+    abeja.querySelectorAll("[data-cuerpo]").forEach((cuerpo) => {
+      cuerpo.removeAttribute("transform");
+      cuerpo.style.removeProperty("opacity");
+    });
   }
 
   /* Una bandada: abejas que recorren rutas en un contenedor. `colocar(abeja, p)` las ubica (cada
@@ -177,6 +215,7 @@
         abeja.style.transform = `scaleX(${haciaIzquierda ? -1 : 1}) rotate(${angulo}deg)`;
       }
       abeja.dataset.capa = p.delante ? "delante" : "detras";
+      abeja.style.opacity = p.opacidad.toFixed(3);
       const pose = poses[i] === null ? p.pose : poses[i] + (p.pose - poses[i]) * (1 - Math.exp(-dt / POSE_S));
       poses[i] = pose;
       posar(abeja, pose);
@@ -200,6 +239,13 @@
           cancelAnimationFrame(pedido);
           pedido = null;
           anterior = null;
+        }
+        /* Con "reducir movimiento" quedan quietas delante, como las pone la hoja de estilos; con la
+           pausa, donde estaban. */
+        if (reducir.matches) {
+          abejas.forEach(reposo);
+          poses.fill(null);
+          contenedor.dataset.abejas = "quietas";
         }
         return;
       }
@@ -238,7 +284,13 @@
       }
       const delante = new Uint8Array(puntos.length);
       adelante.forEach(([desde, hasta]) => delante.fill(1, desde, hasta + 1));
-      return { puntos, delante, poses: concavidades(puntos), duracion: (puntos.length * 2) / VELOCIDAD };
+      return {
+        puntos,
+        delante,
+        poses: concavidades(puntos),
+        opacidades: opacidades(delante),
+        duracion: (puntos.length * 2) / VELOCIDAD,
+      };
     });
     bandada(laminas, [...laminas.querySelectorAll(".huerta-abeja")], () => rutasHeroe, [0, 0.35, 0.7], (abeja, p) => {
       abeja.style.left = `${((p.x - X0 - ABEJA_ANCHO / 2) / ANCHO) * 100}%`;

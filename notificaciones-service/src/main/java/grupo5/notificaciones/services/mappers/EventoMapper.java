@@ -2,6 +2,7 @@ package grupo5.notificaciones.services.mappers;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.notificaciones.config.AdminConstantes;
 import grupo5.notificaciones.dto.input.DestinoEventoDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
@@ -16,6 +17,7 @@ import grupo5.notificaciones.dto.input.EventoDonanteInactivoDTO;
 import grupo5.notificaciones.dto.input.EventoDonanteRegistradoDTO;
 import grupo5.notificaciones.dto.input.EventoDonanteRegistradoV1;
 import grupo5.notificaciones.dto.input.EventoEntregaFallidaDTO;
+import grupo5.notificaciones.dto.input.EventoImportacionTerminadaV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoDonanteInactivoV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoMisionCumplidaV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoSubioCategoriaV1;
@@ -30,6 +32,7 @@ import grupo5.notificaciones.models.entities.notificaciones.eventos.DonanteInact
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonanteRegistrado;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EntregaFallida;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EventoNotificable;
+import grupo5.notificaciones.models.entities.notificaciones.eventos.ImportacionTerminada;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.MisionCumplida;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.SubioCategoria;
 import grupo5.notificaciones.models.entities.personas.Persona;
@@ -99,6 +102,30 @@ public class EventoMapper {
     return conReferencia(
         new DonacionVencida(donante, admin, evento.descripcion(), evento.motivo(), evento.fecha()),
         evento.donacionIndependienteId());
+  }
+
+  /**
+   * El aviso de importación va a la persona de la Administración (R11-30): el evento cuenta el
+   * hecho y Notificaciones decide a quién avisar. Un resultado desconocido da 400 (va a la DLQ).
+   */
+  public ImportacionTerminada toEntity(EventoImportacionTerminadaV1 evento) {
+    boolean cortada =
+        switch (evento.resultado()) {
+          case EventoImportacionTerminadaV1.CORTADA -> true;
+          case EventoImportacionTerminadaV1.TERMINADA,
+                  EventoImportacionTerminadaV1.TERMINADA_CON_ERRORES ->
+              false;
+          default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+        };
+    return conReferencia(
+        new ImportacionTerminada(
+            buscarPersona(AdminConstantes.ID_ADMIN),
+            cortada,
+            new ImportacionTerminada.Cifras(
+                evento.procesadas(), evento.creadas(), evento.actualizadas(), evento.conError()),
+            evento.subidoEn(),
+            evento.fecha()),
+        evento.archivoId());
   }
 
   public DonanteInactivo toEntity(EventoIncentivoDonanteInactivoV1 evento) {

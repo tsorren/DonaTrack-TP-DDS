@@ -50,12 +50,19 @@ class AdminOperacionMaquetaTest {
   void asignacionesYSusPantallasDeResultado() throws Exception {
     mvc.perform(get("/admin-asignaciones"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Última asignación: hoy, 0:00 · generó 2")))
-        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 2")));
+        .andExpect(content().string(containsString("Última asignación: hoy, 0:00 · generó 12")))
+        .andExpect(content().string(containsString("Propuestas sin problemas · 4")))
+        .andExpect(content().string(containsString("Quienes menos recibieron · 2.º de 6")));
     mvc.perform(get("/admin-asignaciones-corrida?escenario=nuevas"))
-        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 4")));
+        .andExpect(content().string(containsString("Propuestas sin problemas · 6")));
     mvc.perform(get("/admin-asignaciones-aprobada"))
-        .andExpect(content().string(containsString("Decididas · 8")));
+        .andExpect(content().string(containsString("Propuestas sin problemas · 3")))
+        .andExpect(content().string(containsString("Lentejas, 15 kg para Comedor Barrio Ejemplo")));
+    mvc.perform(get("/admin-asignaciones?pestana=conflictos"))
+        .andExpect(content().string(containsString("Propuestas en conflicto · 4")))
+        .andExpect(content().string(containsString("Ya no alcanza: Azúcar · 15 kg")));
+    mvc.perform(get("/admin-asignaciones?pestana=destino&donacion=arroz-ana"))
+        .andExpect(content().string(containsString("La piden 2 propuestas y no alcanza")));
   }
 
   @Test

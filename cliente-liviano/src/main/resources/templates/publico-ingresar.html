@@ -28,7 +28,7 @@
       <header class="publica-cabeza">
         <p class="rotulo">Ingresar</p>
         <h1>Entrá a <em>tu cuenta</em></h1>
-        <p class="lectura-bajada">Para seguir tus donaciones o las entregas de tu entidad.</p>
+        <p class="lectura-bajada">Para seguir tus donaciones o las entregas de tu organización.</p>
       </header>
 
       <section th:if="${conError}" id="ingreso-error" class="banner" data-estado="error" role="alert" tabindex="-1"
@@ -57,8 +57,8 @@
            th:href="@{/publico-recuperar}">Pedir una contraseña nueva</a>
       </section>
       <section th:if="${escenario == 'pendiente'}" class="banner" role="status" aria-labelledby="revision-titulo">
-        <h2 id="revision-titulo">Tu entidad todavía está en revisión.</h2>
-        <p>El equipo de DonaTrack revisa cada entidad antes de sumarla. Te escribimos al correo de contacto
+        <h2 id="revision-titulo">Tu organización todavía está en revisión.</h2>
+        <p>El equipo de DonaTrack revisa cada organización antes de sumarla. Te escribimos al correo de contacto
           cuando esté aprobada; desde ese día podés ingresar.</p>
         <div class="aviso-acciones">
           <a class="boton" data-tono="secundario" href="/publico-contacto"
@@ -115,7 +115,7 @@
         <li><a href="/donante-misiones?cuenta=persona" th:href="@{/donante-misiones(cuenta='persona')}">
           <span class="ejemplo-inicial" aria-hidden="true">M</span>Martina Ruiz, persona donante</a></li>
         <li><a href="/entidad-inicio" th:href="@{/entidad-inicio}">
-          <span class="ejemplo-inicial" aria-hidden="true">C</span>Comedor Barrio Ejemplo, entidad</a></li>
+          <span class="ejemplo-inicial" aria-hidden="true">C</span>Comedor Barrio Ejemplo, organización</a></li>
         <li><a href="/admin-inicio" th:href="@{/admin-inicio}">
           <span class="ejemplo-inicial" aria-hidden="true">A</span>Administración</a></li>
       </ul>

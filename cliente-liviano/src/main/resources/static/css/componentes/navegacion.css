@@ -16,8 +16,9 @@
 .navegacion-barra {
   position: fixed;
   inset: auto 0 0;
-  /* Por encima de lo que se mueve o flota en la página (la pausa y las abejas del hero, hasta 4). */
-  z-index: 10;
+  /* Encima de la barra de filtros y del botón fijos (R11-33) y de lo que se mueve o flota en la
+     página (la pausa y las abejas del hero, hasta 4): se ve siempre. */
+  z-index: var(--capa-menu-celular);
   background: var(--color-tinta);
 }
 
@@ -56,6 +57,10 @@
   line-height: 1.15;
   text-align: center;
   text-decoration: none;
+  /* "Organizaciones" (R11-45) no entra entera en una celda de la barra del celular: se corta en
+     sílabas (el sitio está en es-AR) y, si el navegador no sabe cortar, en cualquier letra. */
+  hyphens: auto;
+  overflow-wrap: anywhere;
 }
 
 .navegacion:where([data-zona="publica"]) a {
@@ -315,6 +320,8 @@
     border-radius: 0.5rem;
     color: var(--color-tinta-suave);
     font-size: 0.95rem;
+    hyphens: manual;
+    overflow-wrap: normal;
   }
 
   .navegacion:not([data-zona="publica"], [data-forma="panel"]) a:hover {

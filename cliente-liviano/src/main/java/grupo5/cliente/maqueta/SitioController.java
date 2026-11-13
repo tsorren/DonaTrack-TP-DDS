@@ -1,5 +1,7 @@
 package grupo5.cliente.maqueta;
 
+import grupo5.cliente.vistas.Paginador;
+import grupo5.cliente.vistas.Tramo;
 import grupo5.cliente.web.Pantallas;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -8,6 +10,7 @@ import java.util.List;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +39,9 @@ class SitioController {
   /** IDs de notificaciones que pueden viajar en el formulario de la bandeja. */
   private static final String NOTIFICACION_ID = "[A-Za-z0-9:.-]+";
 
+  /** Cuántas páginas tienen las muestras del componente paginas en /estilos (R11-11). */
+  private static final int MUESTRA_PAGINAS = 9;
+
   private final Pantallas pantallas;
 
   SitioController(Pantallas pantallas) {
@@ -48,8 +54,27 @@ class SitioController {
    * componentes.md.
    */
   @GetMapping("/estilos")
-  String estilos() {
+  String estilos(@RequestParam(required = false) String pagina, Model modelo) {
+    int medio = pagina == null ? 5 : Tramo.pedida(pagina);
+    modelo.addAttribute("paginasPrimera", muestraDePaginas("en la primera", 1));
+    modelo.addAttribute("paginasMedio", muestraDePaginas("en el medio", medio));
+    modelo.addAttribute("paginasUltima", muestraDePaginas("en la última", MUESTRA_PAGINAS));
+    modelo.addAttribute("paginasCorta", muestraDePaginas("en la forma corta", 3));
     return "estilos";
+  }
+
+  /**
+   * Una muestra del componente paginas (R11-11) con datos fijos: sus enlaces vuelven a /estilos,
+   * para tocarla sin salir del catálogo; la del medio sigue la página pedida. Cada una con su
+   * nombre, para que las cuatro navegaciones no se llamen igual.
+   */
+  private static Paginador muestraDePaginas(String cual, int pagina) {
+    return Paginador.de(
+        "Páginas de la muestra " + cual,
+        pagina,
+        MUESTRA_PAGINAS,
+        n -> "/estilos?pagina=" + n + "#paginas",
+        false);
   }
 
   /**

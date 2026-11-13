@@ -1,7 +1,9 @@
 package grupo5.cliente.rest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -31,6 +33,19 @@ class EntidadNecesidadesRestTest {
   private static final String LEGUMBRES = "6f1c2c1e-0000-4000-8000-0000000000c1";
   private static final String MESAS = "6f1c2c1e-0000-4000-8000-0000000000c2";
   private static final String API = "http://donaciones/api/";
+  private static final String DONACIONES = "http://donaciones/donaciones-independientes";
+
+  /** Las 3 más urgentes de lo que todavía no se recibió para {@code necesidad} (R11-43). */
+  private static String enCurso(String necesidad) {
+    return DONACIONES
+        + "?entidadId="
+        + ENTIDAD
+        + "&necesidadId="
+        + necesidad
+        + "&estado=EN_PUERTA&estado=ENTREGA_FALLIDA&estado=VENCIDA&estado=EN_TRASLADO"
+        + "&estado=ASIGNACION_REALIZADA&estado=LISTA_PARA_ENTREGAR&estado=EN_DEPOSITO"
+        + "&orden=ATENCION&size=3";
+  }
 
   private final RestClient.Builder builder = RestClient.builder();
   private final MockRestServiceServer servidor = MockRestServiceServer.bindTo(builder).build();
@@ -69,8 +84,43 @@ class EntidadNecesidadesRestTest {
                 """
                     .formatted(LEGUMBRES, MESAS),
                 MediaType.APPLICATION_JSON));
+    // R11-43: las cifras, de una sola vez; de cada vigente, solo una muestra de 3 de cada lado
     servidor
-        .expect(requestTo("http://donaciones/donaciones-independientes?entidadId=" + ENTIDAD))
+        .expect(
+            requestTo("http://donaciones/donaciones-independientes/conteos?entidadId=" + ENTIDAD))
+        .andRespond(
+            withSuccess(
+                """
+                {"porEstado": [], "entregadasEnElMes": {"mes": "2026-11", "cantidad": 1},
+                 "porNecesidad": [
+                   {"necesidadId": "%s", "porEstado": [{"estado": "EN_TRASLADO", "cantidad": 1},
+                                                       {"estado": "ENTREGADA", "cantidad": 5}]},
+                   {"necesidadId": "%s", "porEstado": [{"estado": "EN_PUERTA", "cantidad": 1},
+                                                       {"estado": "ENTREGA_FALLIDA", "cantidad": 1}]}]}
+                """
+                    .formatted(LENTEJAS, SILLAS),
+                MediaType.APPLICATION_JSON));
+    servidor
+        .expect(requestTo(enCurso(LENTEJAS)))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "6f1c2c1e-0000-4000-8000-000000000002", "descripcion": "Lentejas",
+                  "estadoActual": "EnTraslado", "fechaRegistro": "2026-11-01T10:00:00",
+                  "historial": [{"estadoNuevo": "EnTraslado", "timestamp": "2026-11-08T09:15:00"}],
+                  "cantidad": 5, "necesidadId": "%s"}]
+                """
+                    .formatted(LENTEJAS),
+                MediaType.APPLICATION_JSON));
+    servidor
+        .expect(
+            requestTo(
+                DONACIONES
+                    + "?entidadId="
+                    + ENTIDAD
+                    + "&necesidadId="
+                    + LENTEJAS
+                    + "&estado=ENTREGADA&orden=RECIENTES&size=3"))
         .andRespond(
             withSuccess(
                 """
@@ -78,21 +128,9 @@ class EntidadNecesidadesRestTest {
                   "estadoActual": "Entregada", "fechaRegistro": "2026-11-01T10:00:00",
                   "historial": [{"estadoNuevo": "Entregada", "timestamp": "2026-11-05T17:00:00"}],
                   "cantidad": 10, "necesidadId": "%s",
-                  "quienDono": {"tipo": "JURIDICA", "nombreVisible": "Distribuidora Ejemplo SA"}},
-                 {"id": "6f1c2c1e-0000-4000-8000-000000000002", "descripcion": "Lentejas",
-                  "estadoActual": "EnTraslado", "fechaRegistro": "2026-11-01T10:00:00",
-                  "historial": [{"estadoNuevo": "EnTraslado", "timestamp": "2026-11-08T09:15:00"}],
-                  "cantidad": 5, "necesidadId": "%s"},
-                 {"id": "6f1c2c1e-0000-4000-8000-000000000003", "descripcion": "Mesa",
-                  "estadoActual": "EntregaFallida", "fechaRegistro": "2026-11-01T10:00:00",
-                  "historial": [{"estadoNuevo": "EntregaFallida", "timestamp": "2026-11-07T16:10:00"}],
-                  "cantidad": 1, "necesidadId": "%s"},
-                 {"id": "6f1c2c1e-0000-4000-8000-000000000004", "descripcion": "Silla",
-                  "estadoActual": "EN_PUERTA", "fechaRegistro": "2026-11-01T10:00:00",
-                  "historial": [{"estadoNuevo": "EN_PUERTA", "timestamp": "2026-11-08T18:20:00"}],
-                  "cantidad": 2, "necesidadId": "%s"}]
+                  "quienDono": {"tipo": "JURIDICA", "nombreVisible": "Distribuidora Ejemplo SA"}}]
                 """
-                    .formatted(LENTEJAS, LENTEJAS, SILLAS, SILLAS),
+                    .formatted(LENTEJAS),
                 MediaType.APPLICATION_JSON));
     servidor
         .expect(requestTo(API + "necesidades/" + LENTEJAS + "/periodos"))
@@ -104,6 +142,23 @@ class EntidadNecesidadesRestTest {
                  {"inicio": "2026-11-01", "fin": "2026-11-30", "objetivo": 40, "recibido": 10,
                   "resultado": "EN_CURSO"}]
                 """,
+                MediaType.APPLICATION_JSON));
+
+    servidor
+        .expect(requestTo(enCurso(SILLAS)))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "6f1c2c1e-0000-4000-8000-000000000004", "descripcion": "Silla",
+                  "estadoActual": "EN_PUERTA", "fechaRegistro": "2026-11-01T10:00:00",
+                  "historial": [{"estadoNuevo": "EN_PUERTA", "timestamp": "2026-11-08T18:20:00"}],
+                  "cantidad": 2, "necesidadId": "%s"},
+                 {"id": "6f1c2c1e-0000-4000-8000-000000000003", "descripcion": "Mesa",
+                  "estadoActual": "EntregaFallida", "fechaRegistro": "2026-11-01T10:00:00",
+                  "historial": [{"estadoNuevo": "EntregaFallida", "timestamp": "2026-11-07T16:10:00"}],
+                  "cantidad": 1, "necesidadId": "%s"}]
+                """
+                    .formatted(SILLAS, SILLAS),
                 MediaType.APPLICATION_JSON));
 
     EntidadNecesidadesVista vista = adaptador.necesidades(ENTIDAD, "");
@@ -132,6 +187,11 @@ class EntidadNecesidadesRestTest {
     assertEquals("Distribuidora Ejemplo SA", lentejas.donaron().getFirst().quien());
     assertEquals("empresa", lentejas.donaron().getFirst().tipo());
     assertEquals("5 de noviembre", lentejas.donaron().getFirst().cuando());
+    // La cifra es la de Donaciones: 5 recibidas, aunque se muestre una
+    assertEquals(5, lentejas.recibidas());
+    assertTrue(lentejas.hayMasRecibidas());
+    assertEquals(1, lentejas.salieron());
+    assertFalse(lentejas.hayMasEntregas());
     assertEquals("Desde octubre de 2026", lentejas.desde());
     assertEquals(
         List.of("curso", "parte"), lentejas.periodos().stream().map(p -> p.tono()).toList());
@@ -146,7 +206,8 @@ class EntidadNecesidadesRestTest {
     // HB-22: la que llegó a la puerta lleva su sello y el acta de su donación
     assertEquals(1, sillas.puerta());
     assertEquals(0, sillas.camino());
-    var enLaPuerta = sillas.entregas().get(1);
+    assertEquals(1, sillas.noLlegaron());
+    var enLaPuerta = sillas.entregas().getFirst();
     assertEquals("puerta", enLaPuerta.tono());
     assertEquals(
         "Llegó a tu puerta el 8 de noviembre a las 18:20. Espera tu confirmación.",

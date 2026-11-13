@@ -6,6 +6,7 @@ import static grupo5.notificaciones.seguridad.Acceso.MARCAR_SU_NOTIFICACION;
 import static grupo5.notificaciones.seguridad.Acceso.VER_SUS_NOTIFICACIONES;
 
 import grupo5.notificaciones.dto.ConteoNoLeidasDTO;
+import grupo5.notificaciones.dto.FiltroBandeja;
 import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
@@ -30,6 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize(ADMIN)
 @RequiredArgsConstructor
 public class NotificacionController implements INotificacionController {
+
+  static final String HEADER_TOTAL = "X-Total-Count";
 
   private final NotificacionService service;
 
@@ -77,20 +80,27 @@ public class NotificacionController implements INotificacionController {
         .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
+  /**
+   * Una página de la bandeja (R11-14): el cuerpo es el tramo pedido y {@code X-Total-Count},
+   * cuántas cumplen los filtros. Sin {@code page} ni {@code size}, la página 0 de 20.
+   */
   @Override
   @PreAuthorize(VER_SUS_NOTIFICACIONES)
   @GetMapping("/api/notificaciones/persona/{personaId}")
   public ResponseEntity<List<NotificacionDTO>> obtenerPorPersona(
-      @PathVariable UUID personaId, @RequestParam(required = false) Boolean leida) {
-    return ResponseEntity.ok(service.obtenerPorPersona(personaId, leida));
+      @PathVariable UUID personaId, FiltroBandeja filtro) {
+    NotificacionService.PaginaNotificaciones pagina = service.bandeja(personaId, filtro);
+    return ResponseEntity.ok()
+        .header(HEADER_TOTAL, String.valueOf(pagina.total()))
+        .body(pagina.notificaciones());
   }
 
   /** Alias legado de la ruta anterior, solo para QA: lo usa el ADMIN (matriz de permisos, §8). */
   @Override
   @GetMapping("/notificaciones/persona/{personaId}")
   public ResponseEntity<List<NotificacionDTO>> obtenerPorPersonaLegacy(
-      @PathVariable UUID personaId, @RequestParam(required = false) Boolean leida) {
-    return obtenerPorPersona(personaId, leida);
+      @PathVariable UUID personaId, FiltroBandeja filtro) {
+    return obtenerPorPersona(personaId, filtro);
   }
 
   @Override

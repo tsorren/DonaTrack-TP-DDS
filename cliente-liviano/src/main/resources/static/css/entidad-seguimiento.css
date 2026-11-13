@@ -52,7 +52,7 @@
 
   .mapa-cuerpo > div:first-child {
     position: sticky;
-    top: var(--espacio-4);
+    top: calc(var(--medida-cabecera-fija) + var(--espacio-4));
   }
 
   .mapa-cuerpo > div:first-child .mapa-dibujo {

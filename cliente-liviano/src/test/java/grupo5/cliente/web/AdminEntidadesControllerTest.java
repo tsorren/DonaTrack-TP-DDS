@@ -2,6 +2,9 @@ package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -17,6 +20,7 @@ import grupo5.cliente.puertos.PersonaNueva;
 import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.AdminEntidadesVista.Entidad;
 import grupo5.cliente.vistas.CuentaVista;
+import grupo5.cliente.vistas.Tramo;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,7 +66,7 @@ class AdminEntidadesControllerTest {
 
   @Test
   void conLoQueDaLaApiCadaFichaMuestraLoQueSabeYNoEscribeNull() throws Exception {
-    when(personas.entidades())
+    when(personas.entidades(anyString(), any(), anyInt()))
         .thenReturn(
             new AdminEntidadesVista(
                 1,
@@ -97,6 +101,50 @@ class AdminEntidadesControllerTest {
     mvc.perform(get("/admin-entidades?entidad=e2"))
         .andExpect(content().string(containsString(">Inactiva<")))
         .andExpect(content().string(not(containsString("Estuvo activa"))));
+  }
+
+  @Test
+  void deAUnaPaginaBuscaYFiltraEnLaFuenteConLasCifrasDeLaFuenteYElPaginador() throws Exception {
+    Entidad comedor = comoLaApi("e1", "activa", "Comedor Ejemplo", null);
+    AdminEntidadesVista.Filtro filtro = new AdminEntidadesVista.Filtro("activas", "con", "Comedor");
+    when(personas.entidades("jose", filtro, 2))
+        .thenReturn(
+            new AdminEntidadesVista(
+                46,
+                "10 de noviembre de 2026, 18:30",
+                List.of(comedor),
+                new AdminEntidadesVista.EnPaginas(
+                    "jose", 45, new Tramo<>(List.of(comedor), 45, 2, 3), 7, 2)));
+
+    mvc.perform(
+            get("/admin-entidades")
+                .param("buscar", " jose ")
+                .param("ver", "activas")
+                .param("pedidos", "con")
+                .param("tipo", "Comedor")
+                .param("pagina", "2"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Página 2 de 3")))
+        .andExpect(content().string(containsString("Coinciden 45 organizaciones.")))
+        .andExpect(content().string(containsString("Buscar por nombre</label>")))
+        .andExpect(content().string(containsString("pagina=3")))
+        // R11-43: los filtros vuelven, con las cifras de la fuente (no las de la página)
+        .andExpect(content().string(containsString("Activas · 46")))
+        .andExpect(content().string(containsString("Inactivas · 7")))
+        .andExpect(content().string(containsString("Pendientes · 2")))
+        .andExpect(content().string(containsString("Todas · 55")))
+        .andExpect(content().string(containsString("Sacar")));
+    verify(personas).entidades("jose", filtro, 2);
+  }
+
+  @Test
+  void unFiltroQueNoExisteNoFiltra() throws Exception {
+    when(personas.entidades(anyString(), any(), anyInt()))
+        .thenReturn(new AdminEntidadesVista(0, "10 de noviembre de 2026, 18:30", List.of()));
+
+    mvc.perform(get("/admin-entidades").param("ver", "todas").param("tipo", "Otro"))
+        .andExpect(status().isOk());
+    verify(personas).entidades("", AdminEntidadesVista.Filtro.NINGUNO, 1);
   }
 
   @Test

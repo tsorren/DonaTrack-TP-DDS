@@ -64,6 +64,7 @@ import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.models.repositories.impl.EventosEntregaRepository;
 import grupo5.logistica.models.repositories.impl.SolicitudesTransicionEntregaRepository;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -73,6 +74,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
 
 class RepositoriosJpaAdaptersTest {
 
@@ -425,5 +427,32 @@ class RepositoriosJpaAdaptersTest {
         new EntregaFallida(entrega.getId(), entrega.getIdDonacion(), "Motivo", true));
 
     assertEquals(3, memEventoRepo.findAll().size());
+  }
+
+  @Test
+  void entregasAdapter_paraElMapa_pideLaPrimeraPaginaConElTopeYCuentaEnLaBase() {
+    SpringDataEntregaRepository springDataRepo = mock(SpringDataEntregaRepository.class);
+    EntregasRepositoryJpaAdapter adapter =
+        new EntregasRepositoryJpaAdapter(
+            springDataRepo,
+            mock(SpringDataPaisRepository.class),
+            mock(SpringDataProvinciaRepository.class),
+            mock(SpringDataLocalidadRepository.class),
+            mock(SpringDataDireccionRepository.class),
+            new EntregaPersistenciaMapper());
+    Instant desde = Instant.parse("2026-10-13T03:00:00Z");
+    Instant hasta = Instant.parse("2026-11-13T03:00:00Z");
+    when(springDataRepo.buscarParaMapa(
+            EstadoEntrega.ENTREGADA, desde, hasta, PageRequest.of(0, 200)))
+        .thenReturn(List.of());
+    when(springDataRepo.contarParaMapa(EstadoEntrega.ENTREGADA, desde, hasta)).thenReturn(7L);
+
+    assertTrue(adapter.findEntregadasParaMapa(desde, hasta, 200).isEmpty());
+    assertEquals(7L, adapter.contarEntregadasParaMapa(desde, hasta));
+    verify(springDataRepo)
+        .buscarParaMapa(EstadoEntrega.ENTREGADA, desde, hasta, PageRequest.of(0, 200));
+    assertTrue(adapter.findEntregadasParaMapa(null, hasta, 200).isEmpty());
+    assertTrue(adapter.findEntregadasParaMapa(desde, hasta, 0).isEmpty());
+    assertEquals(0, adapter.contarEntregadasParaMapa(desde, null));
   }
 }

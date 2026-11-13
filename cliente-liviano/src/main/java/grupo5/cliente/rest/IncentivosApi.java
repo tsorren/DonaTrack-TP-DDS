@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.service.annotation.GetExchange;
@@ -24,8 +25,16 @@ import org.springframework.web.service.annotation.PutExchange;
 @HttpExchange("/api/incentivos")
 interface IncentivosApi {
 
+  /**
+   * Una página del historial, del mes más reciente al más viejo (R11-43); el total de meses va en
+   * {@code X-Total-Count}.
+   */
   @GetExchange("/ranking/historial")
-  List<RankingMensual> historial();
+  ResponseEntity<List<RankingMensual>> historial(@RequestParam int page, @RequestParam int size);
+
+  /** El ranking de un mes ({@code 2026-09}); 404 si no se calculó. */
+  @GetExchange("/ranking/{periodo}")
+  RankingMensual rankingDe(@PathVariable String periodo);
 
   /** El último ranking; 204 (null) si no hay. */
   @GetExchange("/ranking/ultimo")

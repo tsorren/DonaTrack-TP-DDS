@@ -9,7 +9,7 @@
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
-  <title>Registrar entidad - Entidades - DonaTrack</title>
+  <title>Registrar organización - Organizaciones - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
@@ -21,15 +21,16 @@
              escrito=${conError or escenario == 'error'}">
   <div class="mesa">
     <header class="mesa-cabecera">
-      <p class="rotulo"><a href="/admin-entidades" th:href="@{/admin-entidades}">Entidades</a> ›
-        Registrar entidad</p>
-      <h1>Registrar entidad</h1>
-      <p>La entidad tiene que ser una organización con dirección (no una empresa).</p>
+      <p class="rotulo"><a href="/admin-entidades" th:href="@{/admin-entidades}">Organizaciones</a> ›
+        Registrar organización</p>
+      <h1>Registrar organización</h1>
+      <p>La organización tiene que tener una dirección de entrega. Una empresa no se registra como organización: dona.</p>
     </header>
 
     <form class="formulario" action="/admin-entidades-registrada" th:action="@{/admin-entidades-registrada}"
           method="post" th:aria-busy="${escenario == 'lento'} ? 'true' : null" hx-boost="true"
-          hx-indicator="#enviando-admin-entidades-registrar" hx-select-oob="#avisos">
+          hx-indicator="#enviando-admin-entidades-registrar" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob">
       <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
                autofocus aria-labelledby="resumen-titulo">
         <h2 id="resumen-titulo">Revisá 1 dato para seguir.</h2>
@@ -40,7 +41,7 @@
       <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
                aria-labelledby="error-titulo">
         <h2 id="error-titulo">No pudimos guardar: no cambió nada.</h2>
-        <p>Es un problema nuestro: lo que escribiste sigue acá. Probá de nuevo con «Registrar entidad» en unos minutos; si sigue,
+        <p>Es un problema nuestro: lo que escribiste sigue acá. Probá de nuevo con «Registrar organización» en unos minutos; si sigue,
           <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
              th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-entidades-registrar')}">escribinos
             con este código</a>.</p>
@@ -109,11 +110,11 @@
 
       <div class="racimo">
         <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
-                th:text="${escenario == 'lento'} ? 'Registrando…' : 'Registrar entidad'">Registrar entidad</button>
+                th:text="${escenario == 'lento'} ? 'Registrando…' : 'Registrar organización'">Registrar organización</button>
         <a class="boton" data-tono="secundario" href="/admin-entidades" th:href="@{/admin-entidades}">Cancelar</a>
       </div>
-      <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Registrando la entidad…</p>
-      <p th:replace="~{envio :: indicador('enviando-admin-entidades-registrar', 'Registrando la entidad…')}"></p>
+      <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Registrando la organización…</p>
+      <p th:replace="~{envio :: indicador('enviando-admin-entidades-registrar', 'Registrando la organización…')}"></p>
     </form>
   </div>
 </th:block>

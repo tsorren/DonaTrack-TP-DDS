@@ -35,6 +35,12 @@
   color: var(--color-acento);
 }
 
+/* El corte va antes de la parte destacada y esta no se parte: "lo que donás" queda entero en su
+   renglón (R11-38). */
+.huerta-cierre h2 em {
+  white-space: nowrap;
+}
+
 .huerta-rotulo {
   margin: 0;
   color: var(--color-acento);
@@ -814,30 +820,50 @@
     border: 0;
   }
 
+  /* Cada rótulo tiene su franja (R11-17, ficha r11-p1-portada.md): además del punto, un ancho tope
+     en % del dibujo, y corta por palabras adentro de ella, sin guion. Las franjas de los rótulos a
+     la misma altura no se cruzan: un texto más largo crece hacia la tierra libre, nunca hacia el
+     vecino. Una palabra más ancha que su franja la ensancha (min-content), en lugar de salirse. La
+     letra crece con el dibujo, pero menos y con techo. Lo comprueba BajoTierraRotulosTest. */
   .huerta-bajo :is(.huerta-bajo-categoria, .huerta-bajo-entidad, .huerta-bajo-tu) {
     position: absolute;
     top: var(--medida-bajo-y);
     left: var(--medida-bajo-x);
+    inline-size: max-content;
+    min-inline-size: min-content;
+    max-inline-size: var(--medida-bajo-franja);
     margin: 0;
     padding: 0;
     border: 0;
-    font-size: max(0.875rem, 3.13cqi);
+    font-size: clamp(0.875rem, 2.6cqi, 2rem);
     line-height: 1;
+    text-align: start;
     translate: var(--medida-bajo-ancla, 0 0);
   }
 
-  .huerta-bajo :is(.huerta-bajo-categoria, .huerta-bajo-tu) {
-    white-space: nowrap;
-  }
-
-  /* Los rótulos de dos palabras largas van en dos renglones, como en el dibujo. */
-  .huerta-bajo-entidad {
-    width: min-content;
+  .huerta-bajo :is([data-lugar="comedores"], [data-lugar="religiosas"], [data-lugar="escuelas"],
+    [data-lugar="tu-entidad"]) {
     text-align: center;
   }
 
-  .huerta-bajo-entidad[data-lugar="comunitarios"] {
-    text-align: right;
+  .huerta-bajo :is([data-lugar="ropa"], [data-lugar="comunitarios"]) {
+    text-align: end;
+  }
+
+  /* El área táctil de "Tu entidad" (48 px) no empuja: la da una capa invisible sobre el enlace, y el
+     rótulo se ancla por su texto. */
+  .huerta-tierra .huerta-bajo-tu a {
+    position: relative;
+    display: inline;
+    min-height: 0;
+  }
+
+  .huerta-tierra .huerta-bajo-tu a::after {
+    position: absolute;
+    inset: 50% 0 auto;
+    height: 3rem;
+    content: "";
+    translate: 0 -50%;
   }
 
   .huerta-bajo :is(.huerta-bajo-categoria, .huerta-bajo-entidad)::before {
@@ -849,18 +875,20 @@
     -webkit-text-stroke: 0.12em var(--color-suelo);
   }
 
-  /* Dónde va cada rótulo, en porcentajes del dibujo (viewBox 60 14 1650 1146). */
-  .huerta-bajo [data-lugar="alimentos"] { --medida-bajo-x: 2.8%; --medida-bajo-y: 27.7%; }
-  .huerta-bajo [data-lugar="ropa"] { --medida-bajo-x: 47.2%; --medida-bajo-y: 39.1%; --medida-bajo-ancla: -100% 0; }
-  .huerta-bajo [data-lugar="muebles"] { --medida-bajo-x: 66.5%; --medida-bajo-y: 26.9%; }
-  .huerta-bajo [data-lugar="comedores"] { --medida-bajo-x: 9.5%; --medida-bajo-y: 64.9%; --medida-bajo-ancla: -50% 0; }
-  .huerta-bajo [data-lugar="merenderos"] { --medida-bajo-x: 23.7%; --medida-bajo-y: 80.5%; }
-  .huerta-bajo [data-lugar="religiosas"] { --medida-bajo-x: 36.1%; --medida-bajo-y: 57.2%; --medida-bajo-ancla: -50% 0; }
-  .huerta-bajo [data-lugar="hogares"] { --medida-bajo-x: 48.6%; --medida-bajo-y: 66.2%; }
-  .huerta-bajo [data-lugar="clubes"] { --medida-bajo-x: 57.9%; --medida-bajo-y: 51.4%; }
-  .huerta-bajo [data-lugar="escuelas"] { --medida-bajo-x: 60.5%; --medida-bajo-y: 81.3%; --medida-bajo-ancla: -50% 0; }
-  .huerta-bajo [data-lugar="comunitarios"] { --medida-bajo-x: 97.7%; --medida-bajo-y: 74.5%; --medida-bajo-ancla: -100% 0; }
-  .huerta-bajo [data-lugar="tu-entidad"] { --medida-bajo-x: 73.5%; --medida-bajo-y: 95.7%; --medida-bajo-ancla: -50% -50%; }
+  /* Dónde va cada rótulo, en porcentajes del dibujo (viewBox 60 14 1650 1146): el punto (x, y), la
+     franja (ancho tope) y el ancla (de qué lado del punto queda el texto). "Tu entidad" se apoya
+     en su punto por abajo y crece hacia arriba: abajo está el borde de la tierra. */
+  .huerta-bajo [data-lugar="alimentos"] { --medida-bajo-x: 2.8%; --medida-bajo-y: 27.7%; --medida-bajo-franja: 26%; }
+  .huerta-bajo [data-lugar="ropa"] { --medida-bajo-x: 47.2%; --medida-bajo-y: 39.1%; --medida-bajo-franja: 14%; --medida-bajo-ancla: -100% 0; }
+  .huerta-bajo [data-lugar="muebles"] { --medida-bajo-x: 66.5%; --medida-bajo-y: 26.9%; --medida-bajo-franja: 30%; }
+  .huerta-bajo [data-lugar="comedores"] { --medida-bajo-x: 9.5%; --medida-bajo-y: 64.9%; --medida-bajo-franja: 17%; --medida-bajo-ancla: -50% 0; }
+  .huerta-bajo [data-lugar="merenderos"] { --medida-bajo-x: 23.7%; --medida-bajo-y: 80.5%; --medida-bajo-franja: 20%; }
+  .huerta-bajo [data-lugar="religiosas"] { --medida-bajo-x: 34%; --medida-bajo-y: 55%; --medida-bajo-franja: 24%; --medida-bajo-ancla: -50% 0; }
+  .huerta-bajo [data-lugar="hogares"] { --medida-bajo-x: 48.6%; --medida-bajo-y: 66.2%; --medida-bajo-franja: 11%; }
+  .huerta-bajo [data-lugar="clubes"] { --medida-bajo-x: 57.9%; --medida-bajo-y: 51.4%; --medida-bajo-franja: 12%; }
+  .huerta-bajo [data-lugar="escuelas"] { --medida-bajo-x: 60.5%; --medida-bajo-y: 81.3%; --medida-bajo-franja: 14%; --medida-bajo-ancla: -50% 0; }
+  .huerta-bajo [data-lugar="comunitarios"] { --medida-bajo-x: 97.7%; --medida-bajo-y: 74.5%; --medida-bajo-franja: 26%; --medida-bajo-ancla: -100% 0; }
+  .huerta-bajo [data-lugar="tu-entidad"] { --medida-bajo-x: 73.5%; --medida-bajo-y: calc(95.7% + 0.5em); --medida-bajo-franja: 30%; --medida-bajo-ancla: -50% -100%; }
 }
 
 /* --- Las cifras: cada una, un árbol plantado en la misma línea de suelo ------------------------ */

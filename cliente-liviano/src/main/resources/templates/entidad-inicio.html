@@ -50,7 +50,7 @@
     <!--/* Recién aprobada: un aviso con un solo paso en lugar de las partes. */-->
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no tenés donaciones asignadas.</h2>
-      <p>Empezá por publicar lo que necesita tu entidad: lo ven los donantes y el catálogo público.
+      <p>Empezá por publicar lo que necesita tu organización: lo ven los donantes y el catálogo público.
         Cuando se te asigne una donación, aparece acá.</p>
       <a class="boton" data-tono="principal" href="/entidad-necesidades"
          th:href="@{/entidad-necesidades}">Publicar una necesidad</a>
@@ -167,8 +167,8 @@
         <div th:if="${conDatos}" class="recibido-rama">
           <p class="recibido-fruto" aria-hidden="true" th:text="${#lists.size(recibidas)}">6</p>
           <div class="recibido-texto">
-            <p th:text="|${#lists.size(recibidas)} donaciones recibidas, confirmadas por tu entidad. Al ${inicio.al}.|">6
-              donaciones recibidas, confirmadas por tu entidad. Al 15 de octubre, 18:30.</p>
+            <p th:text="|${#lists.size(recibidas)} donaciones recibidas, confirmadas por tu organización. Al ${inicio.al}.|">6
+              donaciones recibidas, confirmadas por tu organización. Al 15 de octubre, 18:30.</p>
             <a class="boton" data-tono="secundario" href="/entidad-recibidas?estado=recibidas"
                th:href="@{/entidad-recibidas(estado='recibidas')}">Ver las recibidas</a>
           </div>

@@ -1,24 +1,39 @@
 <!DOCTYPE html>
 <!--/* Raíces, Donaciones del admin (RF-15 y RF-16), según su ficha de flujo
-       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.5). Arriba, las cifras con su fecha
-       y "Registrar donación"; debajo, el filtro (un formulario GET: estado y "vencen en los próximos
-       7 días") y la lista en la tabla adaptable. Primero van las del depósito que vencen antes.
-       ?vence=pronto (desde el inicio): solo las del depósito que vencen en 7 días, con su título.
-       ?estado=deposito|asignada|camino|entregada|vencida filtra por estado.
-       ?orden=reciente|antigua|nombre|donante ordena la lista (usuario, 2026-11-10: "permitir ordenar
-       según distintos criterios"); sin orden, primero las del depósito que vencen antes. Cada orden es
-       la lista de claves en ese orden (ordenes), porque la plantilla no ordena: el sistema lo hará
-       en la consulta. El formulario lleva hx-boost: filtra y ordena sin recargar ni volver arriba.
-       ?escenario=vacio, lento y error.
-       Las donaciones, los órdenes y las cifras vienen del controller (adminDonaciones: de la maqueta o
-       de Donaciones); el historial de cada una ya viene escrito.
-       El detalle es la misma hoja: admin-donaciones-detalle?donacion=<clave> (de partida, la leche en
-       polvo, que está en el depósito y vence en 2 días). "Marcar como vencida" abre un diálogo del
-       navegador (popover) con el motivo opcional; es un formulario real (POST) que lleva a
-       admin-donaciones-detalle-vencida. Una donación que no está en el depósito no tiene el botón.
-       En el detalle, ?escenario=cambio es el 409 de concurrencia al marcarla vencida.
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.5, con R11-01). Arriba, las cifras
+       con su fecha y "Registrar donación"; debajo, el filtro (un formulario GET: estado, "vencen en
+       los próximos 7 días" y el orden) y la lista en la tabla adaptable.
+       R11-01: la lista llega de a una página (adminDonaciones.donaciones, un vistas.Tramo), con el
+       estado, el vencimiento y el orden ya resueltos por la fuente: la plantilla no filtra, no ordena
+       ni cuenta. Las cifras de la cabecera son números de la fuente. Debajo de la tabla, el paginador
+       provisorio (pieza paginador, ?pagina=N); cambiar el filtro vuelve a la página 1.
+       ?vence=pronto (desde el inicio): solo las del depósito que vencen en 7 días, con su título y,
+       sin otro orden elegido, la más próxima primero (desde R11-34 lo resuelve Donaciones con
+       venceHasta y orden=vence). Si una fuente no filtrara por vencimiento (adminDonaciones.conVence
+       en false), el filtro no se ofrece y ?vence=pronto muestra las del depósito con cuántas vencen
+       (adminDonaciones.porVencer).
+       ?estado=deposito|asignada|camino|entregada|vencida filtra por estado; ?orden= ordena según los
+       criterios que da la fuente (adminDonaciones.criterios). El formulario lleva hx-boost: filtra y
+       ordena sin recargar ni volver arriba. ?escenario=vacio, lento y error.
+       El detalle es la misma hoja: admin-donaciones-detalle?donacion=<clave>, pedido por su clave
+       (donacion; en la maqueta, de partida, la leche en polvo, que está en el depósito y vence en 2
+       días). "Marcar como vencida" abre un diálogo del navegador (popover) con el motivo opcional; es
+       un formulario real (POST) que lleva a admin-donaciones-detalle-vencida. Una donación que no está
+       en el depósito no tiene el botón. En el detalle, ?escenario=cambio es el 409 de concurrencia al
+       marcarla vencida.
+       R11-34 (ficha r11-p2-admin-bandeja §4.2): la lista es una bandeja (.maestro): cada renglón
+       elige su donación (?donacion=<clave>, en la misma página, con los filtros) y su ficha va dentro
+       del renglón; desde 53,75 em, a la derecha y fija al desplazarse. Sin pedir ninguna, la ficha es
+       la de la primera de la página (data-elegido="partida"): en el celular no se abre sola. Arriba
+       de la lista, un solo formulario GET con la búsqueda ("Buscar por lo que se donó") y las
+       pastillas (componentes/filtros): Estado, Categoría, Registrada, Vence (si la fuente lo
+       resuelve) y Ordenar. El donante (?donante=, desde su ficha en Donantes) se ve como "De <nombre>
+       · Quitar".
        Fragmentos:
-       - hoja(accion): la pantalla entera; accion es '' (la lista), 'detalle' o 'vencida'. */-->
+       - hoja(accion): la pantalla entera; accion es '' (la lista), 'detalle' o 'vencida'.
+       - ficha(d, dePartida): la ficha de una donación en la bandeja.
+       - bienes(d): la tabla de los bienes.
+       - vencer(d): "Marcar como vencida" y su diálogo (solo en el depósito). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
@@ -32,26 +47,20 @@
 <th:block th:fragment="hoja(accion)"
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              conDatos=${escenario != 'error' and escenario != 'lento' and escenario != 'vacio'},
-             pronto=${param.vence != null and param.vence[0] == 'pronto'},
-             filtro=${!pronto and param.estado != null ? param.estado[0] : ''},
+             datos=${accion == '' ? adminDonaciones : null},
+             c=${accion == '' ? datos.consulta : null},
+             pronto=${accion == '' and c.pronto},
+             filtro=${accion == '' ? c.estado : ''},
              palabras=${ {deposito: 'En el depósito', asignada: 'Asignada', camino: 'En camino',
                           entregada: 'Entregada', vencida: 'Vencida'} },
              sellos=${ {deposito: 'puerta', asignada: 'salir', camino: 'camino', entregada: 'entregada',
                         vencida: 'problema'} },
-             todas=${adminDonaciones.todas},
-             donaciones=${escenario == 'vacio' ? {} : todas.?[!nueva
-                 and (!#root.pronto or prontaAVencer) and (#root.filtro == '' or estado == #root.filtro)]},
-             orden=${param.orden != null and #lists.contains({'reciente', 'antigua', 'nombre', 'donante'}, param.orden[0]) ? param.orden[0] : ''},
-             ordenes=${adminDonaciones.ordenes},
-             criterios=${ {
-               {valor: '', texto: 'Vencen antes', caption: 'Primero, las del depósito que vencen antes.'},
-               {valor: 'reciente', texto: 'Registradas más recientes', caption: 'Primero, las registradas más recientemente.'},
-               {valor: 'antigua', texto: 'Registradas más antiguas', caption: 'Primero, las registradas hace más tiempo.'},
-               {valor: 'nombre', texto: 'Donación, de la A a la Z', caption: 'Por el nombre de la donación, de la A a la Z.'},
-               {valor: 'donante', texto: 'Donante, de la A a la Z', caption: 'Por el nombre de quien donó, de la A a la Z.'} } },
-             elegida=${param.donacion != null ? param.donacion[0] : 'leche'},
-             d=${accion == '' ? null : (todas.^[clave == #root.elegida] ?: todas[0])}">
-  <div class="mesa">
+             tramo=${accion == '' ? datos.donaciones : null},
+             donaciones=${escenario == 'vacio' or accion != '' ? {} : tramo.filas},
+             orden=${accion == '' ? c.orden : ''},
+             criterios=${accion == '' ? datos.criterios : {}},
+             d=${accion == '' ? null : donacion}">
+  <div class="mesa" data-pantalla="donaciones">
 
     <!--/* La lista. */-->
     <th:block th:if="${accion == ''}">
@@ -86,34 +95,43 @@
 
     <section th:if="${escenario != 'error'}" class="pila" data-espacio="3" aria-labelledby="lista-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <h2 id="lista-titulo" th:text="${pronto} ? 'Vencen en los próximos 7 días' : 'Todas las donaciones'">Todas
+      <!--/* Al cambiar de página, el foco vuelve al título de la lista. */-->
+      <h2 id="lista-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
+          th:text="${pronto} ? (${datos.conVence} ? 'Vencen en los próximos 7 días' : 'En el depósito') : 'Todas las donaciones'">Todas
         las donaciones</h2>
-      <form hx-boost="true" class="racimo" action="/admin-donaciones" th:action="@{/admin-donaciones}" method="get"
-            role="search">
-        <div class="campo">
-          <label for="estado">Estado</label>
-          <select id="estado" name="estado">
-            <option value="" th:selected="${filtro == ''}">Todas</option>
-            <option th:each="p : ${palabras}" th:value="${p.key}" th:text="${p.value}"
-                    th:selected="${filtro == p.key}">En el depósito</option>
-          </select>
+      <p th:if="${conDatos and pronto and datos.porVencer != null}" th:text="${datos.porVencer}">5 donaciones
+        del depósito vencen en los próximos 7 días; la primera, Leche en polvo, el 13 de noviembre.</p>
+      <form hx-boost="true" class="filtros-barra" action="/admin-donaciones" th:action="@{/admin-donaciones}"
+            method="get" role="search" data-al-cambiar>
+        <input th:if="${c.donante != ''}" type="hidden" name="donante" th:value="${c.donante}" value="ana">
+        <div class="campo filtro-buscar">
+          <label for="buscar">Buscar por lo que se donó</label>
+          <div class="filtro-buscar-fila">
+            <input id="buscar" name="buscar" type="search" autocomplete="off" maxlength="100"
+                   th:value="${c.buscar}" placeholder="Por ejemplo: leche">
+            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+          </div>
         </div>
-        <div class="campo">
-          <label for="vence">Vence</label>
-          <select id="vence" name="vence">
-            <option value="" th:selected="${!pronto}">Cuando sea</option>
-            <option value="pronto" th:selected="${pronto}">En los próximos 7 días</option>
-          </select>
+        <div class="filtros" role="group" aria-label="Filtrar las donaciones">
+          <details th:replace="~{componentes/filtros :: menu('estado', 'Estado', ${filtro}, ${datos.estados()})}"></details>
+          <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${c.categoria}, ${datos.categoriasDelFiltro()})}"></details>
+          <details th:replace="~{componentes/filtros :: menu('registrada', 'Registrada', ${c.registrada}, ${datos.periodos()})}"></details>
+          <th:block th:if="${datos.conVence}"><details
+              th:replace="~{componentes/filtros :: menu('vence', 'Vence', ${pronto ? 'pronto' : ''}, ${datos.vencimientos()})}"></details></th:block>
+          <details th:replace="~{componentes/filtros :: menu('orden', 'Ordenar', ${orden}, ${datos.ordenes()})}"></details>
+          <a th:if="${c.filtrada()}" class="filtros-sacar" href="/admin-donaciones"
+             th:href="${c.donante != ''} ? @{/admin-donaciones(donante=${c.donante})} : @{/admin-donaciones}"
+             >Sacar los filtros</a>
         </div>
-        <div class="campo">
-          <label for="orden">Ordenar por</label>
-          <select id="orden" name="orden">
-            <option th:each="c : ${criterios}" th:value="${c.valor}" th:text="${c.texto}"
-                    th:selected="${orden == c.valor}" value="">Vencen antes</option>
-          </select>
-        </div>
-        <button class="boton" data-tono="secundario" type="submit">Aplicar</button>
       </form>
+      <p th:if="${conDatos and datos.donante != null}" class="racimo" data-espacio="2">
+        <span class="chip" th:text="|De ${datos.donante}|">De Ana Ejemplo</span>
+        <a th:href="@{${c.sinDonante().direccion()}}" href="/admin-donaciones"
+           th:aria-label="|Quitar el filtro: De ${datos.donante}|">Quitar</a>
+      </p>
+      <p th:if="${conDatos and c.filtrada() and !#lists.isEmpty(donaciones)}" role="status"
+         th:text="${tramo.total == 1} ? 'Coincide 1 donación.' : |Coinciden ${#numbers.formatInteger(tramo.total, 1, 'POINT')} donaciones.|">Coinciden
+        3 donaciones.</p>
       <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
 
       <section th:if="${escenario == 'vacio' and !pronto}" class="vacio" aria-labelledby="vacio-titulo">
@@ -124,41 +142,61 @@
         <a class="boton" data-tono="secundario" href="/admin-donaciones" th:href="@{/admin-donaciones}">Ver
           todas</a>
       </section>
-      <section th:if="${conDatos and #lists.isEmpty(donaciones)}" class="vacio" aria-labelledby="filtro-vacio">
-        <h3 id="filtro-vacio">Ninguna donación tiene ese estado.</h3>
+      <section th:if="${conDatos and #lists.isEmpty(donaciones) and !c.filtrada()}" class="vacio"
+               aria-labelledby="vacio-real">
+        <h3 id="vacio-real">Todavía no hay donaciones registradas.</h3>
+      </section>
+      <section th:if="${conDatos and #lists.isEmpty(donaciones) and c.filtrada()}" class="vacio"
+               aria-labelledby="filtro-vacio">
+        <h3 id="filtro-vacio" th:text="${pronto and datos.conVence and c.buscar == '' and c.categoria == '' and c.registrada == ''} ? 'Ninguna donación del depósito vence en los próximos 7 días.' : 'Ninguna donación coincide con lo que buscaste.'">Ninguna
+          donación coincide con lo que buscaste.</h3>
         <a class="boton" data-tono="secundario" href="/admin-donaciones" th:href="@{/admin-donaciones}">Ver
           todas</a>
       </section>
 
-      <table th:if="${conDatos and !#lists.isEmpty(donaciones)}" class="tabla">
-        <caption th:text="${pronto and orden == ''} ? 'Las del depósito que vencen en los próximos 7 días, la más próxima primero.' : (${pronto} ? 'Las del depósito que vencen en los próximos 7 días. ' : '') + ${criterios.^[valor == #root.orden].caption}">Primero,
-          las del depósito que vencen antes.</caption>
-        <thead>
-          <tr>
-            <th scope="col">Donación</th>
-            <th scope="col">Donante</th>
-            <th scope="col">Registrada</th>
-            <th scope="col">Estado</th>
-            <th scope="col">Vence</th>
-          </tr>
-        </thead>
-        <tbody>
-          <th:block th:each="k : ${orden == '' ? donaciones.![clave] : ordenes.get(orden)}"
-                    th:with="x=${#root.donaciones.^[clave == #root.k]}">
-            <tr th:if="${x != null}">
-              <th scope="row"><a href="/admin-donaciones-detalle?donacion=leche"
-                                 th:href="@{/admin-donaciones-detalle(donacion=${x.clave})}"
-                                 th:text="|${x.que} · ${x.corto}|">Leche en polvo · 10 u</a></th>
-              <td data-rotulo="Donante" th:text="${x.donante}">Distribuidora Ejemplo SA</td>
-              <td data-rotulo="Registrada" th:text="${x.registrada}">10 de octubre</td>
-              <td data-rotulo="Estado"><span class="estado" th:data-estado="${sellos[x.estado]}"><svg
-                  th:replace="~{componentes/sello :: sello(${sellos[x.estado]})}"></svg><th:block
-                  th:text="${palabras[x.estado]}">En el depósito</th:block></span></td>
-              <td data-rotulo="Vence" th:text="${x.vence} ?: '—'">17 de octubre, en 2 días</td>
-            </tr>
-          </th:block>
-        </tbody>
-      </table>
+      <!--/* La bandeja (R11-34): el renglón elige su donación en la misma página y su ficha va dentro
+             del renglón. Sin JavaScript, el enlace recarga y el ancla lleva al renglón; con HTMX,
+             hx-get pide la misma dirección sin el ancla. Cada renglón y "Cerrar la ficha" conservan los
+             filtros, el orden y la página. La ficha de una pedida que no está en la página, o el aviso
+             de que no está o no cargó, van antes de los renglones: en el celular, arriba; desde la
+             tableta, en su columna. */-->
+      <p th:if="${conDatos and !#lists.isEmpty(donaciones)}" class="solo-lectores"
+         th:text="${pronto and datos.conVence and orden == ''} ? 'Las del depósito que vencen en los próximos 7 días, la más próxima primero.' : (${pronto} ? (${datos.conVence} ? 'Las del depósito que vencen en los próximos 7 días. ' : 'Las del depósito. ') : '') + ${criterios.^[valor == #root.orden].caption}">Primero,
+        las registradas más recientemente.</p>
+      <ul th:if="${conDatos and !#lists.isEmpty(donaciones)}" class="maestro" role="list"
+          th:with="elegida=${datos.elegida}, base=${c.renglon(tramo.pagina)}">
+        <li th:if="${fichaAviso != null}"
+            th:attr="data-elegido=${fichaAvisoPartida} ? 'partida' : null"><section
+            th:replace="~{admin-donaciones :: ficha-aviso(${fichaAviso})}"></section></li>
+        <li th:if="${datos.elegidaFuera()}"><section
+            th:replace="~{admin-donaciones :: ficha(${elegida}, ${base})}"></section></li>
+        <li th:each="x : ${donaciones}" th:id="|donacion-${x.clave}|"
+            th:attr="data-elegido=${elegida != null and elegida.clave == x.clave and datos.partida} ? 'partida' : null">
+          <a href="#" th:href="@{|${base}donacion=${x.clave}|} + |#donacion-${x.clave}|"
+             th:hx-get="@{|${base}donacion=${x.clave}|}" hx-push-url="true"
+             th:aria-current="${elegida != null and elegida.clave == x.clave and !datos.partida} ? 'true' : null">
+            <span><b th:text="|${x.que} · ${x.corto}|">Leche en polvo · 10 u</b>
+              <small th:text="|De ${x.donante}|">De Distribuidora Ejemplo SA</small>
+              <small th:text="|Registrada el ${x.registrada}|">Registrada el 10 de octubre</small></span>
+            <span class="estado" th:data-estado="${sellos[x.estado]}"><svg
+                th:replace="~{componentes/sello :: sello(${sellos[x.estado]})}"></svg><th:block
+                th:text="${palabras[x.estado]}">En el depósito</th:block><th:block
+                th:if="${x.prontaAVencer and x.vence != null}" th:text="| · vence el ${x.vence}|"> · vence el 17 de
+              octubre, en 2 días</th:block></span>
+          </a>
+          <th:block th:if="${elegida != null and elegida.clave == x.clave}"><section
+              th:replace="~{admin-donaciones :: ficha(${elegida}, ${base})}"></section></th:block>
+        </li>
+      </ul>
+      <p th:if="${conDatos and !#lists.isEmpty(donaciones)}"
+         th:with="cuantas=${#lists.size(donaciones)},
+                  desde=${tramo.pagina < tramo.paginas ? (tramo.pagina - 1) * cuantas + 1 : tramo.total - cuantas + 1},
+                  hasta=${desde + cuantas - 1}"
+         th:text="|Mostrando ${desde} a ${hasta} de ${#numbers.formatInteger(tramo.total, 1, 'POINT')} donaciones.|">Mostrando
+        1 a 14 de 14 donaciones.</p>
+      <th:block th:if="${conDatos}">
+        <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
+      </th:block>
     </section>
     </th:block>
 
@@ -182,15 +220,102 @@
       <p>Volvimos a cargar su estado.</p>
     </section>
 
-    <section class="tarjeta pila" data-filete="doble" data-espacio="3" aria-labelledby="que-titulo"
-             th:with="bienes=${d.bienes ?: { {que: d.que, cantidad: d.cantidad, bien: d.bien, vence: d.vence} }}">
+    <section class="tarjeta pila" data-filete="doble" data-espacio="3" aria-labelledby="que-titulo">
       <h2 id="que-titulo">Qué es</h2>
       <dl class="grilla" data-espacio="2">
         <div><dt>Donó</dt><dd th:text="${d.donante}">Distribuidora Ejemplo SA</dd></div>
         <div><dt>Depósito</dt><dd th:text="${d.deposito}">Depósito Central</dd></div>
         <div><dt>Registrada</dt><dd th:text="${d.registrada}">10 de octubre</dd></div>
       </dl>
-      <table class="tabla">
+      <table th:replace="~{admin-donaciones :: bienes(${d})}"></table>
+    </section>
+
+    <section class="pila" data-espacio="3" aria-labelledby="historial-titulo">
+      <h2 id="historial-titulo">Historial</h2>
+      <ol class="lista pila" data-espacio="2" role="list">
+        <li th:each="h : ${d.historial}" th:text="${h}">10 de octubre: llegó al Depósito Central. La registró
+          Leo, de Administración.</li>
+      </ol>
+    </section>
+
+    <th:block th:replace="~{admin-donaciones :: vencer(${d})}"></th:block>
+    <p th:if="${d.estado != 'deposito' and d.estado != 'vencida'}">Solo se puede marcar como vencida una
+      donación que está en el depósito.</p>
+
+    <p><a class="boton" data-tono="secundario" href="/admin-donaciones" th:href="@{/admin-donaciones}">Volver
+      a Donaciones</a></p>
+    </th:block>
+  </div>
+</th:block>
+
+<!--/* La ficha de una donación en la bandeja (R11-34): identidad (qué es y su estado), resumen (Donó,
+       Depósito, Registrada y, si está asignada, Organización), los
+       bienes, los 3 cambios más recientes del historial (con el resto en "Ver el historial
+       completo") y las acciones. "Cerrar la ficha" solo se ve en el celular: vuelve a la lista. */-->
+<section th:fragment="ficha(d, base)" id="ficha" class="tarjeta maestro-ficha" aria-labelledby="ficha-titulo"
+         th:with="palabras=${ {deposito: 'En el depósito', asignada: 'Asignada', camino: 'En camino',
+                              entregada: 'Entregada', vencida: 'Vencida'} },
+                  sellos=${ {deposito: 'puerta', asignada: 'salir', camino: 'camino', entregada: 'entregada',
+                             vencida: 'problema'} },
+                  n=${#lists.size(d.historial)}">
+  <div data-parte="identidad">
+    <div>
+      <h3 id="ficha-titulo" th:text="${d.que}">Leche en polvo</h3>
+      <p><span class="estado" th:data-estado="${sellos[d.estado]}"><svg
+          th:replace="~{componentes/sello :: sello(${sellos[d.estado]})}"></svg><th:block
+          th:text="${palabras[d.estado]}">En el depósito</th:block></span></p>
+    </div>
+  </div>
+  <div data-parte="resumen">
+    <dl>
+      <div><dt>Donó:</dt> <dd th:text="${d.donante}">Distribuidora Ejemplo SA</dd></div>
+      <div th:if="${d.deposito != null}"><dt>Depósito:</dt> <dd th:text="${d.deposito}">Depósito Central</dd></div>
+      <div><dt>Registrada:</dt> <dd th:text="${d.registrada}">10 de octubre</dd></div>
+      <div th:if="${d.entidad != null}"><dt>Organización:</dt> <dd th:text="${d.entidad}">Comedor Barrio
+        Ejemplo</dd></div>
+    </dl>
+  </div>
+  <div data-parte="bienes">
+    <table th:replace="~{admin-donaciones :: bienes(${d})}"></table>
+  </div>
+  <div th:if="${n > 0}" data-parte="historial" class="pila" data-espacio="2">
+    <h4 th:text="${n > 3} ? |Historial (últimos 3 de ${n})| : 'Historial'">Historial</h4>
+    <ol class="lista pila" data-espacio="1" role="list">
+      <li th:each="h : ${n > 3 ? d.historial.subList(n - 3, n) : d.historial}" th:text="${h}">10 de octubre:
+        llegó al Depósito Central.</li>
+    </ol>
+    <details th:if="${n > 3}">
+      <summary>Ver el historial completo</summary>
+      <ol class="lista pila" data-espacio="1" role="list">
+        <li th:each="h : ${d.historial}" th:text="${h}">10 de octubre: llegó al Depósito Central.</li>
+      </ol>
+    </details>
+  </div>
+  <div data-parte="acciones" class="racimo">
+    <a th:if="${d.estado == 'deposito'}" class="boton" data-tono="secundario"
+       href="/admin-asignaciones?pestana=destino&amp;donacion=leche"
+       th:href="@{/admin-asignaciones(pestana='destino',donacion=${d.clave})}">Ver las propuestas que la piden</a>
+    <th:block th:replace="~{admin-donaciones :: vencer(${d})}"></th:block>
+    <p th:if="${d.estado != 'deposito' and d.estado != 'vencida'}">Solo se puede marcar como vencida una
+      donación que está en el depósito.</p>
+    <a class="boton" data-tono="secundario" data-parte="cerrar" href="/admin-donaciones"
+       th:href="@{${base}} + |#donacion-${d.clave}|">Cerrar la ficha</a>
+  </div>
+</section>
+
+<!--/* En el lugar de la ficha (R11-34, ficha r11-p2-admin-bandeja §5): la donación pedida no existe
+       (no-existe) o no se pudo leer (no-cargo). La lista queda. */-->
+<section th:fragment="ficha-aviso(cual)" id="ficha" class="tarjeta maestro-ficha" data-parte="aviso"
+         aria-labelledby="ficha-titulo">
+  <h3 id="ficha-titulo"
+      th:text="${cual == 'no-existe'} ? 'No encontramos esa donación.' : 'No pudimos cargar la ficha de esta donación.'">No
+    encontramos esa donación.</h3>
+  <p th:text="${cual == 'no-existe'} ? 'Puede que el enlace esté mal; elegí una de la lista.' : 'La lista sigue a mano; probá elegirla de nuevo.'">Puede
+    que el enlace esté mal; elegí una de la lista.</p>
+</section>
+
+<table th:fragment="bienes(d)" class="tabla"
+       th:with="bienes=${d.bienes ?: { {que: d.que, cantidad: d.cantidad, bien: d.bien, vence: d.vence} }}">
         <caption th:text="${#lists.size(bienes) == 1} ? 'El bien de la donación' : |Los ${#lists.size(bienes)} bienes de la donación|">El
           bien de la donación</caption>
         <thead>
@@ -210,22 +335,14 @@
           </tr>
         </tbody>
       </table>
-    </section>
 
-    <section class="pila" data-espacio="3" aria-labelledby="historial-titulo">
-      <h2 id="historial-titulo">Historial</h2>
-      <ol class="lista pila" data-espacio="2" role="list">
-        <li th:each="h : ${d.historial}" th:text="${h}">10 de octubre: llegó al Depósito Central. La registró
-          Leo, de Administración.</li>
-      </ol>
-    </section>
-
-    <th:block th:if="${d.estado == 'deposito'}">
+<th:block th:fragment="vencer(d)">
+  <th:block th:if="${d.estado == 'deposito'}">
       <div class="racimo">
         <button type="button" class="boton" data-tono="quitar" popovertarget="vencida"
                 th:aria-label="|Marcar como vencida: ${d.que}|">Marcar como vencida</button>
       </div>
-      <dialog class="dialogo" data-tono="quitar" id="vencida" popover aria-labelledby="vencida-titulo">
+      <dialog class="dialogo" data-tono="quitar" id="vencida" popover data-bloquea aria-labelledby="vencida-titulo">
         <h2 class="dialogo-titulo" id="vencida-titulo" th:text="|¿Marcar ${d.que} como vencida?|">¿Marcar Leche
           en polvo como vencida?</h2>
         <p>Deja de estar disponible para asignar y no se puede deshacer. El sistema ya marca solas, cada
@@ -238,6 +355,12 @@
             <label for="motivo">Motivo (opcional)</label>
             <textarea id="motivo" name="motivo" rows="3" placeholder="Contanos el motivo"></textarea>
           </div>
+          <!--/* Sin conexión (R11-32): lo muestra static/js/interfaz.js, con la ventana abierta. */-->
+          <section class="banner" data-estado="error" role="alert" data-corte hidden>
+            <h3>No sabemos si se guardó.</h3>
+            <p>Se cortó la conexión mientras se enviaba. Revisá la señal y, antes de probar de nuevo,
+              recargá la página para ver cómo quedó.</p>
+          </section>
           <div class="racimo">
             <button class="boton" data-tono="quitar" type="submit">Marcar como vencida</button>
             <button type="button" class="boton" data-tono="secundario" popovertarget="vencida"
@@ -247,13 +370,6 @@
         </form>
       </dialog>
     </th:block>
-    <p th:if="${d.estado != 'deposito' and d.estado != 'vencida'}">Solo se puede marcar como vencida una
-      donación que está en el depósito.</p>
-
-    <p><a class="boton" data-tono="secundario" href="/admin-donaciones" th:href="@{/admin-donaciones}">Volver
-      a Donaciones</a></p>
-    </th:block>
-  </div>
 </th:block>
 </body>
 </html>

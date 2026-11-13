@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -17,6 +18,7 @@ import grupo5.cliente.vistas.MisDonacionesVista.Donacion;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -54,6 +56,12 @@ class MisDonacionesControllerTest {
     @Bean
     DonacionesPuerto donaciones() {
       return new DonacionesPuerto() {
+        // Una por página: las dos de ejemplo alcanzan para probar el paginador.
+        @Override
+        public int porPagina() {
+          return 1;
+        }
+
         @Override
         public MisDonacionesVista misDonaciones(UUID donante) {
           return new MisDonacionesVista(
@@ -82,7 +90,9 @@ class MisDonacionesControllerTest {
                       "1 de octubre de 2026",
                       EstadoEntrega.ENTREGADA,
                       "Entrega confirmada el 5 de octubre")),
-              List.of(new Categoria(ALIMENTOS, "Alimentos"), new Categoria(MUEBLES, MOBILIARIO)),
+              List.of(
+                  new Categoria(ALIMENTOS, "Alimentos", List.of(new Categoria("arroz", "Arroz"))),
+                  new Categoria(MUEBLES, MOBILIARIO)),
               "hoy, 7 de noviembre, 19:40");
         }
 
@@ -132,6 +142,102 @@ class MisDonacionesControllerTest {
     mvc.perform(get("/donante-donaciones?categoria=" + ALIMENTOS).session(sesion))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("1 donación con esos filtros.")))
+        .andExpect(content().string(containsString("Fideos secos")))
+        .andExpect(content().string(not(containsString("Silla plegable"))));
+  }
+
+  @Test
+  void conUnMesMuestraSoloLasDeEseMesYLoDice() throws Exception {
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(get("/donante-donaciones?mes=2026-10&donante=" + DONANTE).session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().string(containsString("Estás viendo las registradas en octubre de 2026.")))
+        .andExpect(content().string(containsString("Ver todas tus donaciones")))
+        .andExpect(content().string(containsString("name=\"mes\" value=\"2026-10\"")))
+        .andExpect(content().string(containsString("Silla plegable")));
+
+    mvc.perform(get("/donante-donaciones?mes=2026-09").session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(containsString("No hay donaciones registradas en septiembre de 2026.")))
+        .andExpect(content().string(not(containsString("Silla plegable"))));
+
+    mvc.perform(get("/donante-donaciones?mes=no-es-un-mes").session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(content().string(not(containsString("Estás viendo las registradas"))))
+        .andExpect(content().string(containsString("Silla plegable")));
+  }
+
+  @Test
+  void elPaginadorMuestraLaPaginaYConservaElMesYLosFiltros() throws Exception {
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(get("/donante-donaciones?mes=2026-10&donante=" + DONANTE).session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().string(containsString("2 donaciones, de la más reciente a la primera.")))
+        .andExpect(content().string(containsString("Página 1 de 2")))
+        .andExpect(content().string(containsString("Silla plegable")))
+        .andExpect(content().string(not(containsString("Fideos secos"))))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/donante-donaciones?mes=2026-10&amp;donante="
+                            + DONANTE
+                            + "&amp;pagina=2\"")))
+        // B7: el componente paginas, el mismo de las otras listas
+        .andExpect(content().string(containsString("aria-label=\"Páginas de tus donaciones\"")))
+        .andExpect(content().string(not(containsString("Página anterior"))));
+
+    mvc.perform(get("/donante-donaciones?mes=2026-10&pagina=2").session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Página 2 de 2")))
+        .andExpect(content().string(containsString("Fideos secos")))
+        .andExpect(content().string(not(containsString("Silla plegable"))))
+        .andExpect(
+            content()
+                .string(containsString("href=\"/donante-donaciones?mes=2026-10&amp;pagina=1\"")))
+        .andExpect(content().string(not(containsString("Página siguiente"))));
+
+    // Una página de más muestra la última; una mal escrita, la primera.
+    mvc.perform(get("/donante-donaciones?pagina=9").session(sesion))
+        .andExpect(content().string(containsString("Página 2 de 2")));
+    mvc.perform(get("/donante-donaciones?pagina=dos").session(sesion))
+        .andExpect(content().string(containsString("Página 1 de 2")));
+
+    // Con un filtro que deja una sola, no hay páginas; el total cuenta las filtradas.
+    mvc.perform(get("/donante-donaciones?estado=entregada").session(sesion))
+        .andExpect(content().string(containsString("1 donación con esos filtros.")))
+        .andExpect(content().string(not(containsString("Página 1 de"))));
+    mvc.perform(get("/donante-donaciones?estado=en-camino").session(sesion))
+        .andExpect(content().string(containsString("No hay donaciones con esos filtros.")))
+        .andExpect(content().string(not(containsString("Todavía no tenés donaciones"))))
+        .andExpect(content().string(not(containsString("todavía no tiene donaciones"))));
+  }
+
+  /** La opción {@code valor} del select, marcada como elegida. */
+  private static Pattern elegida(String valor, String texto) {
+    return Pattern.compile(
+        "(?s).*value=\"" + valor + "\"\\s+selected=\"selected\">" + texto + "</option>.*");
+  }
+
+  /** B6 (RF-05): la subcategoría elegida queda marcada y la categoría muestra la suya. */
+  @Test
+  void laSubcategoriaQuedaElegidaConSuCategoria() throws Exception {
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(
+            get("/donante-donaciones?categoria="
+                    + MUEBLES
+                    + "&subcategoria=arroz&donante="
+                    + DONANTE)
+                .session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().string(containsString("<label for=\"subcategoria\">Subcategoría</label>")))
+        .andExpect(content().string(matchesPattern(elegida("arroz", "Arroz"))))
+        .andExpect(content().string(matchesPattern(elegida(ALIMENTOS, "Alimentos"))))
         .andExpect(content().string(containsString("Fideos secos")))
         .andExpect(content().string(not(containsString("Silla plegable"))));
   }

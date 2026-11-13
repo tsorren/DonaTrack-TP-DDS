@@ -79,6 +79,86 @@ class DonanteSeguimientoControllerTest {
         .andExpect(content().string(containsString("Para Hogar Ejemplo")));
   }
 
+  /** R11-39: lo que espera destino es un aviso con ícono, título y lista, no un párrafo suelto. */
+  @Test
+  void loQueEsperaDestinoVaEnUnAvisoConIconoYEstructura() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    DonanteDonacionVista silla = donacion("s1", "Silla plegable", "Hogar Ejemplo");
+    DonanteDonacionVista arroz = donacion("a1", "Arroz largo fino", null);
+    DonanteDonacionVista fideos = donacion("f1", "Fideos secos", null);
+    when(seguimientos.seguimiento(DONANTE))
+        .thenReturn(
+            new DonanteSeguimientoVista(
+                List.of(silla, arroz, fideos),
+                Map.of("s1", new Punto(-34.6, -58.4, -34.7, -58.5)),
+                "hoy, 7 de noviembre, a las 19:40"));
+
+    mvc.perform(get("/donante-seguimiento"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("data-v=\"sin-destino\"")))
+        .andExpect(content().string(containsString("aria-labelledby=\"sin-destino-titulo\"")))
+        .andExpect(content().string(containsString("<h3 id=\"sin-destino-titulo\"")))
+        .andExpect(content().string(containsString("Todavía esperan destino")))
+        .andExpect(content().string(containsString("<li>Arroz largo fino</li>")))
+        .andExpect(content().string(containsString("<li>Fideos secos</li>")))
+        .andExpect(
+            content().string(containsString("Aparecen en esta lista cuando se les asigne una")))
+        .andExpect(content().string(not(containsString("seguimiento-pie"))));
+  }
+
+  @Test
+  void conUnaSolaSinDestinoElAvisoVaEnSingular() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(seguimientos.seguimiento(DONANTE))
+        .thenReturn(
+            new DonanteSeguimientoVista(
+                List.of(
+                    donacion("s1", "Silla plegable", "Hogar Ejemplo"),
+                    donacion("a1", "Arroz largo fino", null)),
+                Map.of("s1", new Punto(-34.6, -58.4, -34.7, -58.5)),
+                "hoy, 7 de noviembre, a las 19:40"));
+
+    mvc.perform(get("/donante-seguimiento"))
+        .andExpect(content().string(containsString("Todavía espera destino")))
+        .andExpect(
+            content().string(containsString("Aparece en esta lista cuando se le asigne una")));
+  }
+
+  @Test
+  void sinNadaSinDestinoNoHayAviso() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(seguimientos.seguimiento(DONANTE))
+        .thenReturn(
+            new DonanteSeguimientoVista(
+                List.of(donacion("s1", "Silla plegable", "Hogar Ejemplo")),
+                Map.of("s1", new Punto(-34.6, -58.4, -34.7, -58.5)),
+                "hoy, 7 de noviembre, a las 19:40"));
+
+    mvc.perform(get("/donante-seguimiento"))
+        .andExpect(content().string(not(containsString("data-v=\"sin-destino\""))));
+  }
+
+  private static DonanteDonacionVista donacion(String clave, String titulo, String destino) {
+    boolean conDestino = destino != null;
+    return new DonanteDonacionVista(
+        clave,
+        1,
+        titulo,
+        "1 unidad",
+        null,
+        "Mobiliario",
+        destino,
+        "1 de noviembre de 2026",
+        null,
+        conDestino ? EstadoEntrega.EN_CAMINO : EstadoEntrega.PENDIENTE,
+        null,
+        null,
+        null,
+        "Posición aproximada, actualizada hoy a las 19:30.",
+        List.of(new PasoRecorrido("En camino", "7 de noviembre", Avance.ACTUAL)),
+        List.of());
+  }
+
   @Test
   void sinCuentaMandaAIngresar() throws Exception {
     when(cuentas.donante(any())).thenReturn(Optional.empty());

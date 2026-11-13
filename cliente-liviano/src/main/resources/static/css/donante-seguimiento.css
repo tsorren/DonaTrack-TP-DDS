@@ -309,8 +309,63 @@ figure.seguimiento-dibujo {
   white-space: nowrap;
 }
 
-.seguimiento-pie {
-  max-width: 36rem;
+/* --- Lo que espera destino: un aviso con ícono, título y lista (R11-39) ------------------------- */
+/* En el celular, el ícono va arriba del título; desde 37,5 em, a la izquierda. Es información, no un
+   problema: el tono de info y un filete a la izquierda. */
+[data-v="sin-destino"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 0.5rem 1rem;
+  max-width: 40rem;
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.25rem;
+  border-left: 0.4rem solid var(--color-info-texto);
+  border-radius: 0 var(--radio-lamina) var(--radio-lamina) 0;
+  background: var(--color-info-fondo);
+  color: var(--color-info-texto);
+}
+
+[data-v="sin-destino"] > svg {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+[data-v="sin-destino-circulo"] {
+  fill: var(--color-info-texto);
+}
+
+[data-v="sin-destino-manos"] {
+  fill: none;
+  stroke: var(--color-papel);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.seguimiento-lista [data-v="sin-destino"] h3 {
+  margin: 0.25rem 0 0.5rem;
+  color: var(--color-info-texto);
+  font-size: 1.125rem;
+}
+
+[data-v="sin-destino"] ul {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+  font-weight: 700;
+}
+
+[data-v="sin-destino"] p {
+  margin: 0 0 0.5rem;
+}
+
+@media (min-width: 37.5em) {
+  [data-v="sin-destino"] {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
 }
 
 /* --- Cargando: el lugar de cada parte, sin datos ------------------------------------------------ */

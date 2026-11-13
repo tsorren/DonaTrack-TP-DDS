@@ -230,6 +230,7 @@
 | `ERR-EST-108` | `PERSONA_ANONIMIZADA_NO_OPERABLE` | La persona fue anonimizada: no se la puede editar ni registrarle o reactivarle un rol de donante o de entidad | `409` | |
 | `ERR-EST-112` | `JURIDICA_REPRESENTANTE_EN_OTRA_JURIDICA` | La humana ya es representante de otra jurídica (una humana representa a una sola) | `409` | |
 | `ERR-EST-113` | `PERSONA_DUPLICADA_EN_CONFLICTO` | El correo ya pertenece a otra persona con un documento distinto: no se puede decidir si es la misma | `409` | Lo usa el importador CSV: la fila cuenta como error |
+| `ERR-EST-115` | `SOLICITUD_ENTIDAD_NO_PENDIENTE` | La persona no es una jurídica con la solicitud de entidad pendiente (ya es entidad beneficiaria, es donante o está anonimizada) | `409` | `/api/personas/{id}/solicitud-entidad` (R11-41): el sitio lo muestra como "el equipo ya aprobó tu solicitud" |
 | `ERR-EST-211` | `DONANTE_INACTIVO` | El donante está dado de baja y no puede cargar donaciones | `409` | |
 | `ERR-EST-317` | `SUBCATEGORIA_EN_USO` | La subcategoría (o una de las subcategorías de la categoría) tiene necesidades que la usan | `409` | La FK `fk_necesidad_subcategoria` es la red de seguridad |
 | `ERR-EST-406` | `FRAGMENTACION_CANTIDAD_INSUFICIENTE` | Cantidad insuficiente para fragmentar | `409` | |

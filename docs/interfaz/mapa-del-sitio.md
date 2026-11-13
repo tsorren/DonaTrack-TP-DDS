@@ -1,7 +1,7 @@
 # Mapa del sitio
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 1 · 2026-10-30 · une el mapa de E1 con las pantallas de E6**
+> **Versión 1.1 · 2026-11-12 (cierre de la oleada P1 de la revisión del 2026-11-11) · une el mapa de E1 con las pantallas de E6**
 
 Fuentes: [`Mapa del Sitio.pdf`](../entregas/1/interfaz/Mapa%20del%20Sitio.pdf) de E1 y la tabla de pantallas de
 [`requerimientos-e6.md` §6.2](../requerimientos/requerimientos-e6.md). Regla: ninguna función clave
@@ -14,7 +14,7 @@ flowchart LR
   subgraph Publico["Público"]
     L[Landing] --> DR[Donaciones realizadas]
     L --> MP[Mapa de entregadas]
-    L --> EN[Entidades y necesidades]
+    L --> EN[Organizaciones y necesidades]
     L --> NO[Nosotros]
     L --> LD[Landing donante]
     L --> LB[Landing beneficiario]
@@ -23,7 +23,8 @@ flowchart LR
     L --> IS[Iniciar sesión]
     L --> RE[Registrarse: elegir]
     RE --> RD[Registro de donante]
-    RE --> RN[Registro de entidad]
+    RE --> RN[Registro de organización]
+    RN --> SS[Recibimos la solicitud] --> SC[Corregir la solicitud]
     IS --> RC[Recuperar contraseña]
     IS --> AC[Activar cuenta]
   end
@@ -35,7 +36,7 @@ flowchart LR
     ID --> ND[Notificaciones]
     ID --> PD[Mi perfil]
   end
-  subgraph Entidad
+  subgraph Entidad["Organización"]
     IE[Inicio] --> NE[Necesidades] --> DN[Detalle de necesidad]
     IE --> DRc[Donaciones recibidas]
     IE --> SE[Seguir entregas] --> CR[Confirmar recepción]
@@ -46,15 +47,20 @@ flowchart LR
     IA[Inicio] --> DOa[Donantes]
     DOa --> RDo[Registrar donante]
     DOa --> CSV[Importar CSV, con su resultado por fila]
-    IA --> ENa[Entidades]
-    ENa --> REn[Registrar entidad]
-    ENa --> AE[Aprobar entidades]
+    IA --> ENa[Organizaciones]
+    ENa --> REn[Registrar organización]
+    ENa --> AE[Aprobar organizaciones]
     IA --> DO[Donaciones]
     DO --> RDn[Registrar donación]
     DO --> DV[Detalle y vencimiento]
     IA --> AS[Asignaciones] --> PR[Propuesta]
     IA --> CA[Camiones]
     IA --> RK[Ranking]
+    IA --> PA[Mi perfil]
+    IA --> AD[Administradores] --> AN[Dar de alta un administrador]
+    AD --> ACT[Actividad]
+    IA --> NA[Notificaciones]
+    DOa --> IM[Importaciones]
   end
 ```
 
@@ -65,37 +71,43 @@ flowchart LR
 | Landing | Público | 1 | RF-01 | pág. 1 | E1 |
 | Donaciones realizadas | Público | 2 | RF-01 | pág. 2 | E1 |
 | Mapa de entregadas | Público | 2 | RF-02 | págs. 2 y 23 | E1 |
-| Entidades y necesidades | Público | 2 | RF-22 | — | E6 (D26) |
+| Organizaciones y necesidades | Público | 2 | RF-22 | — | E6 (D26) |
 | Nosotros | Público | 2 | RF-01 | pág. 3 | E1 |
 | Landing donante / beneficiario | Público | 2 | RF-01 | — | E1 (sin boceto) |
 | Legales y privacidad | Público | 2 | RF-01 | pie de página | E6 |
 | Contacto | Público | 2 | RF-01 (HB-21) | pie de página y avisos de error | E6 (Raíces, 2026-11-02) |
 | Iniciar sesión | Público | 2 | RF-04 | pág. 4 | E1 |
 | Registrarse: elegir | Público | 2 | RF-03 | pág. 5 | E1 |
-| Registro de donante / entidad | Público | 3 | RF-03 | pág. 11 (entidad) | E1 |
+| Registro de donante / organización | Público | 3 | RF-03 | pág. 11 (entidad) | E1 |
 | Recuperar contraseña / Activar cuenta | Público | 3 | RF-AUTH | — | E6 |
 | Inicio del donante | Donante | 1 | — | pág. 15 | E1 |
 | Mis donaciones → detalle | Donante | 2 → 3 | RF-05 | pág. 16 | E1 |
-| Beneficiarios | Donante | 2 | RF-06 | pág. 17 | E1 |
+| Beneficiarios (en el menú, "Organizaciones") | Donante | 2 | RF-06 | pág. 17 | E1 |
 | Misiones e insignias | Donante humano | 2 | RF-07 | pág. 18 | E1 |
 | Seguir entregas | Donante | 2 | RF-09 | pág. 19 | E1 |
 | Notificaciones | Donante | 2 | RF-08 | pág. 6 | E1 |
-| Mi perfil | Donante y entidad | 2 | RI-AUTH-02 | menú de usuario (pág. 14) | E6 |
-| Inicio de la entidad | Entidad | 1 | — | pág. 24 | E1 |
-| Necesidades → detalle | Entidad | 2 → 3 | RF-10 | págs. 26 y 29–31 | E1 |
-| Donaciones recibidas | Entidad | 2 | RF-11 | pág. 27 | E1 |
-| Seguir entregas → **Confirmar recepción** | Entidad | 2 → 3 | RF-14, **RF-12** | pág. 28 | E1 · **flujo piloto** |
-| Notificaciones | Entidad | 2 | RF-13 | — | E1 |
+| Mi perfil | Donante, organización y admin (el admin, desde R11-10) | 2 | RI-AUTH-02 | menú de usuario (pág. 14) | E6 |
+| Inicio de la organización | Organización | 1 | — | pág. 24 | E1 |
+| Necesidades → detalle | Organización | 2 → 3 | RF-10 | págs. 26 y 29–31 | E1 |
+| Donaciones recibidas | Organización | 2 | RF-11 | pág. 27 | E1 |
+| Seguir entregas → **Confirmar recepción** | Organización | 2 → 3 | RF-14, **RF-12** | pág. 28 | E1 · **flujo piloto** |
+| Notificaciones | Organización | 2 | RF-13 | — | E1 |
 | Inicio del admin | Admin | 1 | — | pág. 13 | E1 |
 | Donantes → registrar donante | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
-| Entidades → registrar entidad | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
-| Entidades → aprobar entidades | Admin | 2 → 3 | RF-21 | — | E6 |
+| Organizaciones → registrar organización | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
+| Organizaciones → aprobar organizaciones | Admin | 2 → 3 | RF-21 | — | E6 |
 | Donaciones → registrar donación | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
 | Donaciones → detalle y vencimiento | Admin | 2 → 3 | RF-16 | pág. 13 (menú) | E1 |
 | Asignaciones → propuesta | Admin | 2 → 3 | RF-17 | — | E6 |
 | Camiones | Admin | 2 | RF-18 | pág. 13 (menú) | E1 |
 | Ranking | Admin | 2 | RF-19 | — | E6 |
 | Donantes → importar CSV (resultado en la misma pantalla) | Admin | 2 → 3 | RF-20 | — | E6 |
+| Donantes → Importaciones (`/admin-importaciones`: en curso e históricas, con búsqueda y filtros) | Admin | 2 → 3 | RF-20 | [r11-p1-importaciones](flujos/r11-p1-importaciones.md) | E6 |
+| Mi perfil del admin (`/admin-perfil`, desde el menú de la cuenta) | Admin | 2 | RI-AUTH-02, R11-10 | [r11-p1-admins](flujos/r11-p1-admins.md) | E6 (R11, P1) |
+| Administradores → dar de alta (`/admin-administradores`, desde el menú de la cuenta; la ventana o, sin JavaScript, `/admin-administradores-nuevo`; el resultado con la contraseña provisoria, `/admin-administradores-alta`) | Admin | 2 → 3 | RF-AUTH-07, R11-10 | [r11-p1-admins](flujos/r11-p1-admins.md) | E6 (R11, P1) |
+| Administradores → Actividad (`/admin-actividad`: quién hizo qué y cuándo, de a 20, con búsqueda por administrador y filtros Quién, Acción y Fecha; "Ver su actividad" en cada cuenta y "Ver mi actividad" en Mi perfil) | Admin | 2 | R11-26, RI-SVC-04 | [r11-p2-actividad](flujos/r11-p2-actividad.md) | E6 (R11, P2) |
+| Recibimos la solicitud → Corregir los datos (`/publico-registro-entidad-corregir`: el formulario del registro lleno, en página aparte, mientras la solicitud espera) | Organización pendiente | 3 | RF-AUTH-06, R11-41 | [r11-p2-pendiente-solicitud](flujos/r11-p2-pendiente-solicitud.md) | E6 (R11, P2) |
+| Notificaciones del admin (`/admin-notificaciones`, bandeja compartida de la Administración, de a 20; desde la campanita) | Admin | 2 | R11-30 | [r11-p2-campanita](flujos/r11-p2-campanita.md) | E6 (R11, P2) |
 
 ## Pantallas dibujadas (sitios A y B de la corrida del 2026-11-02)
 
@@ -125,12 +137,90 @@ La columna "En B" es histórica: describe el sitio B al cerrar la corrida, antes
 | Donantes (registrar, importar CSV con su resultado) y Entidades (registrar, aprobar, pedir corrección, rechazar) del admin | Dibujadas (F2 del roadmap, 2026-11-07) | Dibujadas (F2 del roadmap, 2026-11-07) |
 | Donaciones (registrar, detalle, marcar vencida) y Asignar donaciones (aprobar, descartar, correr la asignación) del admin | Dibujadas (F3 del roadmap, 2026-11-07) | Dibujadas (F3 del roadmap, 2026-11-07) |
 | Camiones (agregar, deshabilitar, volver a habilitar) y Ranking (meses anteriores) del admin | Dibujadas (F4 del roadmap, 2026-11-07) | Dibujadas (F4 del roadmap, 2026-11-07) |
-| Páginas de error 404, 403 y 5xx (fuera del menú, con el marco público) | Dibujadas (F7 del roadmap, 2026-11-07; [ficha](flujos/raices-paginas-de-error.md)) | No están |
+| Páginas de error 404, 403 y 5xx (fuera del menú; con el marco público y, desde R11-05, con el de la cuenta si hay sesión) | Dibujadas (F7 del roadmap, 2026-11-07; [ficha](flujos/raices-paginas-de-error.md)) | No están |
 
 Lo público que no tiene plantilla no existe y muestra la página 404; lo privado que no tiene
 plantilla muestra "sin dibujar". Desde F7 (2026-11-07) ningún enlace del sitio lleva a "sin
-dibujar": lo comprueba `SitioControllerTest`. La administración no tiene Mi perfil, como dice este
-mapa.
+dibujar": lo comprueba `SitioControllerTest`. Hasta la oleada P1 la administración no tenía Mi
+perfil; desde R11-10 (`p1-admins`, 2026-11-12) tiene Mi perfil y Administradores en el menú de la
+cuenta, fuera del menú de secciones.
+
+## Cambios de la revisión del 2026-11-11 (oleada P0, 2026-11-12)
+
+Ninguna pantalla nueva ni ningún nivel más. Lo que cambia en el recorrido, del
+[backlog de la revisión](backlog-revision-2026-11-11.md):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Donantes → Importar CSV | La subida lleva a "Importando" (`admin-donantes-importando`, nivel 3), que se actualiza sola, y al terminar a "Importación terminada" (`admin-donantes-importado`, con el resumen y las filas con error de a página) o a la de error. Se puede salir: en Donantes, una franja recuerda la importación hasta que se abre el resultado | R11-02 |
+| Donantes, Donaciones y Entidades del admin | De a una página, con la búsqueda y los filtros en la dirección: el "atrás" del navegador vuelve a la página anterior | R11-01 |
+| Inicio del donante persona → Mis donaciones | Cada mes del año muestra 3 donaciones y "Ver todas", que lleva a Mis donaciones de ese mes (`?mes=AAAA-MM`, nivel 2) | R11-06 |
+| Inicio y Mi perfil del donante | Con login real, la persona ve los suyos (`persona/`) y la empresa los de la empresa | R11-06 |
+| Misiones e insignias | En el menú solo de la persona. La empresa que entra por la dirección ve un aviso con "Ir a tu inicio" | R11-06, RF-07 |
+| Páginas de error y Contacto | Con sesión activa, el encabezado y el menú del área de la cuenta; la salida es "Volver a mi inicio" (el inicio del área). Sin sesión, el marco público y "Ir al inicio" (la portada) | R11-05 |
+| "Recibimos la solicitud" (entidad pendiente) | La cuenta con la solicitud pendiente puede ir a la portada, Entidades, Donaciones, el Mapa, Nosotros, Para donantes, Para entidades, Legales y Contacto. Lo privado, Ingresar, Crear una cuenta, Recuperar y Activar la siguen llevando a "Recibimos la solicitud" | R11-08 |
+
+## Nombres visibles (oleada P1, lote `p1-nombres`)
+
+Ninguna ruta cambia: `/donante-entidades`, `/admin-entidades`, `/publico-entidades` y las pantallas
+`entidad-*` siguen igual. Cambia lo que se lee (R11-44, R11-45):
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Menú del donante y del admin, títulos y rótulos | Entidades | Organizaciones |
+| Área de quien recibe (renglón debajo del nombre de la cuenta) | Entidad | Organización |
+| Registro, landing y registro del admin | Entidad / entidad beneficiaria | Organización |
+| Saludo y menú de la cuenta | El rol ("Donante", "Entidad", "Administración") | El nombre y apellido, la razón social o el nombre de quien administra; el rol, debajo |
+| Tipo del donante persona jurídica (Donantes del admin, Mi perfil, registro) | Organización | Su tipo jurídico: Empresa, ONG, Institución o Gubernamental |
+
+## Cambios de la oleada P1 (2026-11-12)
+
+Dos pantallas nuevas del admin, ninguna a más de 3 niveles. Lo demás cambia dentro de pantallas que
+ya estaban ([backlog de la revisión](backlog-revision-2026-11-11.md#estado-de-p1-al-cierre-de-la-oleada-2026-11-12)):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Menú de la cuenta del admin | "Mi perfil" (`/admin-perfil`) y "Administradores" (`/admin-administradores`, de a 10, con "Dar de alta un administrador"). No suman secciones al menú principal | R11-10 |
+| Donantes del admin | Pestañas "Donantes · Importaciones"; Importaciones (`/admin-importaciones`) lleva al avance o al resultado de cada una, y el resultado ofrece descargar las filas con error | R11-20 |
+| Todas las listas paginadas | El paginador `« ‹ 1 2 3 … 9 › »` (`‹ 3 de 9 ›` en el celular), que conserva la búsqueda y los filtros en la dirección | R11-11 |
+| Organizaciones del donante | "Categoría" y "Ya doné" filtran todas las organizaciones en el servidor; al cambiar de página el filtro sigue | R11-12 |
+| Notificaciones del donante y de la organización | De a 20, con búsqueda, categoría y orden en la dirección | R11-14 |
+| Mapa de entregadas | Los botones de salida quedan debajo del mapa; la lista, plegada y de a 10 (`?pagina=` y `?abierta=`) | R11-19 |
+| Asignar donaciones | Tres pestañas que son direcciones propias: Propuestas, Conflictos y Destino; se borraron las variantes A, B y C | R11-24 |
+| Ranking | "Volver al último mes" cuando se mira un mes anterior | R11-23 |
+| Portada y públicas con la sesión iniciada | La navegación pública sigue; "Ingresar" y "Crear una cuenta" se cambian por "Ir a mi inicio" (el inicio del área) y la foto con el menú de la cuenta. Con la solicitud pendiente, "Ver mi solicitud" (lleva a "Recibimos la solicitud"). Integrado después del cierre (`p1-portada`) | R11-15 |
+El registro de actividad y las notificaciones del admin entraron con sus lotes de P2 (abajo).
+
+## Cambios de la oleada P2: lote `p2-admin-bandeja` (2026-11-12)
+
+Ninguna pantalla nueva ni ningún nivel más ([ficha](flujos/r11-p2-admin-bandeja.md)):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Donaciones del admin | Bandeja: cada renglón abre su ficha en la misma página (`?donacion=`), al lado desde la tableta y fija al desplazarse; en el celular, debajo del renglón y con "Cerrar la ficha". Desde la ficha: "Ver las propuestas que la piden" (Asignar donaciones, Destino) y "Marcar como vencida". `admin-donaciones-detalle` sigue para los enlaces que llegan de afuera | R11-34 |
+| Donantes del admin → Donaciones | La ficha del donante lleva a sus donaciones (`/admin-donaciones?donante=`), que se ven con "De <nombre> · Quitar" | R11-34 |
+| Asignar donaciones → Todas las decididas | Búsqueda y filtros (estado, categoría, fecha, quién decidió) y orden por la fecha de la decisión; cada decidida lleva a la ficha de sus donaciones en Donaciones | R11-35 |
+
+## Cambios de la oleada P2: los demás lotes (2026-11-12)
+
+Dos pantallas nuevas (Corregir la solicitud y Notificaciones del admin con datos reales) y una
+pestaña (Actividad); ninguna a más de 3 niveles
+([backlog de la revisión](backlog-revision-2026-11-11.md#estado-de-p2-al-cierre-de-la-oleada-2026-11-12)):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Cabecera privada de los tres roles | La campanita abre un desplegable con las 5 sin leer y "Ver todas", sin cambiar de pantalla; tocar una fila la marca leída y lleva a lo que nombra. Sin JavaScript, lleva a la bandeja sin leer | R11-29 |
+| Notificaciones del admin | Bandeja real y compartida de la Administración (avisos de importación terminada o cortada y mensajes de contacto), de a 20, con la misma forma que las otras dos | R11-30 |
+| Administradores | Pestañas "Cuentas · Actividad"; "Ver su actividad" en cada cuenta y "Ver mi actividad" en Mi perfil | R11-26 |
+| Inicio de la empresa | El tablero en tres columnas de a 3, cada una con su paginador y su parámetro en la dirección (`?llego=`, `?camino=`) | R11-25 |
+| Inicio del admin | Al final de "Cómo está todo", dos gráficos de los últimos 12 meses con su tabla | R11-42 |
+| Organizaciones del donante | Una tarjeta por organización; Categoría es un filtro; la franja "Cómo llega tu donación" arriba de la lista | R11-27, R11-28 |
+| Necesidades de la organización | "Publicar otra necesidad" es una ventana en 3 pasos; cada necesidad muestra 3 en curso y 3 recibidas con "Ver todas", que lleva a Donaciones recibidas | R11-31, R11-43 |
+| Toda ventana de confirmar o de un formulario corto | Bloquea el fondo y retiene el foco (con JavaScript) | R11-32 |
+| Donaciones recibidas, Seguir entregas y Ranking | De a una página con el paginador común; el menú "Mes" del ranking muestra los 12 meses de la página | R11-43 |
+| Organizaciones del admin | Vuelven los filtros Estado, Necesidades y Tipo | R11-43 |
+| Recibimos la solicitud | "Lo que nos enviaste" con los datos guardados y "Corregir los datos"; si ya la aprobaron, "Ingresar de nuevo" | R11-41 |
+| Listados (desde la tableta) | La cabecera y la barra de búsqueda y filtros quedan fijas al desplazarse; en el celular, el botón de Confirmar recepción queda fijo encima del menú | R11-33 |
 
 ## Observaciones para el diseño
 

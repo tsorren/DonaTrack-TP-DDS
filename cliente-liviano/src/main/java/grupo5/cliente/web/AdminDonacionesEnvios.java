@@ -3,8 +3,7 @@ package grupo5.cliente.web;
 import grupo5.cliente.puertos.AdminOperacionPuerto;
 import grupo5.cliente.puertos.AdminOperacionPuerto.BienNuevo;
 import grupo5.cliente.puertos.AdminOperacionPuerto.DonacionNueva;
-import grupo5.cliente.puertos.CuentasDelMenu;
-import grupo5.cliente.vistas.CuentaVista;
+import grupo5.cliente.puertos.AdministradorActual;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -25,11 +24,12 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
- * Los envíos de Donaciones fuera de la maqueta. Marcar vencida guarda en Donaciones (con el nombre
- * del admin en el historial) y vuelve al detalle con el aviso de la ficha del flujo; si la donación
- * cambió a la vez (409), vuelve al detalle con su estado de nuevo. Registrar donación guarda la
- * donación con sus bienes y fotos y vuelve a la lista. En la maqueta los atiende {@code
- * SitioController}, sin guardar.
+ * Los envíos de Donaciones fuera de la maqueta. Marcar vencida guarda en Donaciones (con la cuenta
+ * del admin en el historial: el {@code sub} de su sesión, R11-10; el detalle lo muestra con su
+ * nombre) y vuelve al detalle con el aviso de la ficha del flujo; si la donación cambió a la vez
+ * (409), vuelve al detalle con su estado de nuevo. Registrar donación guarda la donación con sus
+ * bienes y fotos y vuelve a la lista. En la maqueta los atiende {@code SitioController}, sin
+ * guardar.
  */
 @Controller
 @Profile("!maqueta")
@@ -42,12 +42,13 @@ class AdminDonacionesEnvios {
   private static final String REGISTRAR = "admin-donaciones-registrar";
 
   private final AdminOperacionPuerto operacion;
-  private final CuentasDelMenu cuentas;
+  private final AdministradorActual administrador;
   private final Clock reloj;
 
-  AdminDonacionesEnvios(AdminOperacionPuerto operacion, CuentasDelMenu cuentas, Clock reloj) {
+  AdminDonacionesEnvios(
+      AdminOperacionPuerto operacion, AdministradorActual administrador, Clock reloj) {
     this.operacion = operacion;
-    this.cuentas = cuentas;
+    this.administrador = administrador;
     this.reloj = reloj;
   }
 
@@ -55,8 +56,9 @@ class AdminDonacionesEnvios {
   String marcarVencida(
       @RequestParam String donacion,
       @RequestParam(required = false) String motivo,
+      HttpServletRequest pedido,
       RedirectAttributes atributos) {
-    String actor = cuentas.de("admin").map(CuentaVista::nombre).orElse("Administración");
+    String actor = administrador.cuenta(pedido).orElse("Administración");
     String aviso;
     try {
       operacion.marcarVencida(donacion, actor, motivo);

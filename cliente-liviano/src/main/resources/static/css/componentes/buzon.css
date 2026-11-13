@@ -5,7 +5,10 @@
    su `ol`) y una fila por notificación (`.buzon-fila`, `data-leida="no|si"`): el punto de la sin
    leer, la casilla (`.buzon-casilla`), el mensaje (`.buzon-mensaje`), la categoría y hace cuánto
    (`.buzon-meta`, con el `.buzon-icono`, un `.chip` y un `time`) y el tilde de «Marcar como leída»
-   (`.buzon-accion`). En el celular cada fila se apila (el mensaje y, debajo, categoría · hace
+   o el sobre cerrado de «Marcar como no leída» (`.buzon-accion`). En la bandeja paginada
+   (`.buzon-bandeja`, R11-14), la fila lleva su título (`.buzon-titulo`), el mensaje y el vínculo
+   aparte, y debajo de la lista van la nota del alcance de «Marcar todas» (`.buzon-nota`) y el
+   total (`.buzon-total`). En el celular cada fila se apila (el mensaje y, debajo, categoría · hace
    cuánto); desde 53,75 em es una grilla de columnas. El tilde aparece al pasar o enfocar la fila
    donde hay puntero. Fragmentos: templates/componentes/buzon.html. Se carga en la capa `bloques`
    desde app.css. Catálogo: docs/interfaz/componentes.md. */
@@ -50,6 +53,32 @@
 
 .buzon-cabeza .boton {
   margin-left: auto;
+}
+
+/* El alcance de «Marcar todas como leídas», debajo del botón, en su propio renglón. */
+.buzon-cabeza .buzon-nota {
+  flex-basis: 100%;
+  text-align: right;
+}
+
+/* «Mostrando 21 a 40 de 57 notificaciones.»; en el celular, «21 a 40 de 57». */
+.buzon-total {
+  margin: 0;
+  color: var(--color-texto-suave);
+}
+
+.buzon-total-largo {
+  display: none;
+}
+
+@media (min-width: 37.5em) {
+  .buzon-total-largo {
+    display: inline;
+  }
+
+  .buzon-total-corto {
+    display: none;
+  }
 }
 
 /* La casilla, del tamaño de una común (usuario, 2026-11-12: un cuarto de los 48 px de antes); lo
@@ -104,18 +133,25 @@
 
 .buzon-fila:hover,
 .buzon-fila:focus-within {
+  background: var(--color-papel);
+}
+
+/* Lo que no se leyó (R11-14): fondo suave, un punto verde al margen y solo el título en negrita
+   (el strong de .buzon-titulo). El estado no depende solo del color: el punto es una forma, la
+   negrita un peso y "Sin leer: " o "Leída: " van en texto para los lectores de pantalla. El punto
+   es un borde, que los colores forzados del sistema conservan. */
+.buzon-fila[data-leida="no"] {
   background: var(--color-acento-claro);
 }
 
-/* Lo que no se leyó: un punto verde al margen y el mensaje en negrita. "Sin leer" va en texto para
-   los lectores de pantalla. */
 .buzon-fila[data-leida="no"]::before {
   content: "";
   grid-area: punto;
+  box-sizing: border-box;
   width: 0.5rem;
   height: 0.5rem;
+  border: 0.25rem solid var(--color-acento);
   border-radius: 50%;
-  background: var(--color-acento);
 }
 
 .buzon-casilla {
@@ -144,15 +180,29 @@
   overflow-wrap: anywhere;
 }
 
-.buzon-mensaje > a:not(.boton) {
+/* El título de la fila: en peso normal; la negrita la pone el strong, solo si no se leyó. */
+.buzon-titulo {
+  font-weight: 400;
+}
+
+/* Leída: sin fondo propio y el título y el mensaje en el tono apagado. */
+.buzon-fila[data-leida="si"] .buzon-mensaje > p:not(.texto-chico) {
+  color: var(--color-texto-suave);
+}
+
+/* Los vínculos, leídos o no, en peso normal, subrayados y en el color de vínculo. */
+.buzon-vinculo,
+.buzon-bandeja .filtros-sacar {
+  color: var(--color-enlace);
+  font-weight: 400;
+  text-decoration: underline;
+}
+
+/* El vínculo va en su propio renglón, no dentro de un texto: su área táctil llega a los 48 px. */
+.buzon-vinculo {
   display: inline-flex;
   align-items: center;
   min-height: var(--medida-toque-minimo);
-}
-
-.buzon-fila[data-leida="no"] .buzon-mensaje > a:not(.boton),
-.buzon-fila[data-leida="no"] .buzon-mensaje > p:not(.texto-chico) {
-  font-weight: 700;
 }
 
 .buzon-mensaje > .texto-chico {

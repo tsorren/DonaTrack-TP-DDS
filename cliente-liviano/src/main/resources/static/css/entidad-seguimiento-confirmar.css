@@ -192,6 +192,41 @@ main .etiqueta-titulo {
   font-style: italic;
 }
 
+/* En el celular la firma no arma su caja (R11-33, ficha r11-p2-armazon): así la envoltura del botón
+   (data-fijo="celular", app.css) queda fija mientras se recorre todo el acta y no solo la firma. El
+   filete punteado pasa a "Recibe …" y el resto conserva su lugar y su espacio. */
+.firma {
+  display: contents;
+}
+
+.firma > :not([data-fijo]) {
+  justify-self: start;
+}
+
+.acta-formulario .firma > * + * {
+  margin-top: -1rem;
+}
+
+.firma > .firma-quien {
+  padding-top: 1rem;
+  border-top: 1px dotted var(--color-tinta-suave);
+}
+
+@media (min-width: 37.5em) {
+  .firma {
+    display: grid;
+  }
+
+  .acta-formulario .firma > * + * {
+    margin-top: 0;
+  }
+
+  .firma > .firma-quien {
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
 .firma .boton[disabled] {
   opacity: 0.7;
   cursor: progress;
@@ -333,7 +368,7 @@ main .etiqueta-titulo {
 
   .acta-entrega {
     position: sticky;
-    top: 1.5rem;
+    top: calc(var(--medida-cabecera-fija) + 1.5rem);
   }
 
   .acta-formulario {

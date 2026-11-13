@@ -3,7 +3,7 @@
        raices-paginas-de-error.md). "Volver a intentar" pide la misma dirección con GET, sin reenviar
        un formulario. En la maqueta, ?respuesta=500 en cualquier pantalla. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-error', ~{::contenido})}">
+      th:replace="~{${marco ?: 'layout-publico'} :: pagina(~{::title}, 'publico-error', ~{::contenido})}">
 <head>
   <title>No pudimos mostrar la página - DonaTrack</title>
 </head>

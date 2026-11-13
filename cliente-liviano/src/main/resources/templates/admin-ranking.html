@@ -9,7 +9,11 @@
        arriba de la tabla, con la fecha en que se calculó. El admin ve el nombre de cada donante.
        Los filtros "Tipo de donante" y "Período" (año, desde siempre) del rediseño quedan pendientes:
        Incentivos todavía no da el tipo de cada donante ni rankings más largos que un mes (decisión del
-       2026-11-10 al resolver la PR 959). En la maqueta, ?escenario=vacio, lento y error. */-->
+       2026-11-10 al resolver la PR 959). El mes va en el título; al elegir uno que no es el último,
+       "Volver al último mes" (R11-23). En la maqueta, ?escenario=vacio, lento y error.
+       R11-43: con los datos reales, el menú "Mes" muestra los 12 meses de una página (?pagina=) y el
+       paginador recorre las páginas; ranking.elegido es el mes que se muestra, aunque esté en otra
+       página. La maqueta lo deja en null: el mes sale del pedido, como antes. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
@@ -23,14 +27,14 @@
              meses=${ranking.meses},
              conDatos=${!meses.isEmpty() and escenario != 'error' and escenario != 'lento'},
              pedido=${param.mes != null ? param.mes[0] : ''},
-             m=${meses.isEmpty() ? null : (meses.^[clave == #root.pedido] ?: meses[0])},
+             m=${ranking.elegido ?: (meses.isEmpty() ? null : (meses.^[clave == #root.pedido] ?: meses[0]))},
              fMes=${m != null and m.clave matches '[0-9]{4}-[0-9]{2}' ? m.clave : ''},
-             filtrado=${!meses.?[clave == #root.pedido].isEmpty()}">
+             filtrado=${m != null and (ranking.pagina > 1 or m.clave != meses[0].clave)}">
   <div class="mesa">
     <header class="mesa-cabecera">
       <p class="rotulo">Administración</p>
-      <h1>Ranking de donantes</h1>
-      <p th:if="${conDatos}" th:text="${m.nombre}">Septiembre de 2026</p>
+      <h1 th:text="${conDatos} ? |Ranking de donantes de ${#strings.toLowerCase(m.nombre)}| : 'Ranking de donantes'">Ranking
+        de donantes de septiembre de 2026</h1>
     </header>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando el ranking…</p>
@@ -55,18 +59,19 @@
     <!--/* El filtro: el mes, un formulario GET (componentes/filtros). */-->
     <form th:if="${conDatos}" hx-boost="true" class="filtros-barra" action="/admin-ranking"
           th:action="@{/admin-ranking}" method="get" data-al-cambiar>
+      <input th:if="${ranking.pagina > 1}" type="hidden" name="pagina" th:value="${ranking.pagina}">
       <div class="filtros" role="group" aria-label="Filtrar el ranking">
         <details th:replace="~{componentes/filtros :: menu('mes', 'Mes', ${fMes},
             ${meses.![{valor: clave, texto: nombre}]})}"></details>
         <a th:if="${filtrado}" hx-boost="true" class="filtros-sacar" href="/admin-ranking"
-           th:href="@{/admin-ranking}">Sacar los filtros</a>
+           th:href="@{/admin-ranking}">Volver al último mes</a>
       </div>
     </form>
+    <th:block th:if="${conDatos}"><nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav></th:block>
 
     <section th:if="${escenario == 'lento' or conDatos}" class="pila" data-espacio="3"
              aria-labelledby="ranking-titulo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <h2 id="ranking-titulo" th:text="${conDatos} ? |El ranking de ${#strings.toLowerCase(m.nombre)}| : 'El ranking'">El
-        ranking de septiembre de 2026</h2>
+      <h2 id="ranking-titulo">Los puestos del mes</h2>
       <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
       <th:block th:if="${conDatos and !m.puestos.isEmpty()}">
         <p>Ordenado por la cantidad de misiones que cada donante completó en el mes.

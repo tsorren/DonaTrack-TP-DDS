@@ -27,20 +27,22 @@
 <p id="indicador-carga" class="cargando" role="status" aria-live="polite" aria-hidden="true">Cargando…</p>
 <a class="saltar" href="#contenido">Saltar al contenido</a>
 <header class="raices-cabecera">
-  <a class="marca" href="/" th:href="@{/}" aria-label="DonaTrack, ir al inicio">
+  <a class="marca" href="/" th:href="@{/}" aria-label="DonaTrack, ir a la portada">
     <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
     <span>Dona<em>Track</em></span>
   </a>
-  <!--/* La navegación pública (ficha raices-publico-navegable.md, sección 2): la misma de las demás públicas. */-->
+  <!--/* La navegación pública (ficha raices-publico-navegable.md, sección 2): la misma de las demás
+         públicas. Con la sesión iniciada, "Ir a mi inicio" y la cuenta (ficha r11-p1-portada.md). */-->
   <nav th:replace="~{navegacion-publica :: navegacion('publico-portada')}"></nav>
+  <th:block th:replace="~{navegacion-publica :: cuenta}"></th:block>
 </header>
 <main id="contenido" tabindex="-1" hx-target="#contenido" hx-select="#contenido" hx-swap="outerHTML show:none"
       th:with="estado=${param.escenario != null ? param.escenario[0] : ''},
                conDatos=${estado != 'vacio' and estado != 'error' and estado != 'lento'}">
   <div class="centro pila">
-    <aside th:replace="~{componentes/pista :: pista('portada', 'Conocé cómo funciona DonaTrack', 'Empezá por el recorrido de la donación: registrás lo que donás y después podés seguir a qué entidad llega.')}"></aside>
+    <aside th:replace="~{componentes/pista :: pista('portada', 'Conocé cómo funciona DonaTrack', 'Empezá por el recorrido de la donación: registrás lo que donás y después podés seguir a qué organización llega.')}"></aside>
     <section th:replace="~{componentes/huerta :: hero('Lo que donás echa raíces', 'en tu comunidad.',
-        'Registrás lo que donás, vos o tu empresa. DonaTrack te muestra a qué entidad se asignó, en qué estado está y la foto que sube la entidad cuando confirma la entrega.')}"></section>
+        'Registrás lo que donás, vos o tu empresa. DonaTrack te muestra a qué organización se asignó, en qué estado está y la foto que sube la organización cuando confirma la entrega.')}"></section>
     <section th:replace="~{componentes/huerta :: como}"></section>
   </div>
 

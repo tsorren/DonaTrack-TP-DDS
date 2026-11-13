@@ -21,9 +21,11 @@ import grupo5.cliente.cuentas.Perfil.DonanteEmpresa;
 import grupo5.cliente.cuentas.Perfil.DonantePersona;
 import grupo5.cliente.cuentas.Perfil.Entidad;
 import grupo5.cliente.cuentas.PerfilService;
+import grupo5.cliente.puertos.SolicitudEntidadPuerto;
 import grupo5.cliente.web.AccesoController;
 import grupo5.cliente.web.Pantallas;
 import grupo5.cliente.web.PantallasController;
+import grupo5.cliente.web.SolicitudEntidadController;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,8 +40,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 
-@WebMvcTest({PantallasController.class, AccesoController.class})
-@Import({SeguridadConfig.class, Pantallas.class, SeguridadTest.Keycloak.class})
+@WebMvcTest({PantallasController.class, AccesoController.class, SolicitudEntidadController.class})
+@Import({SeguridadConfig.class, Pantallas.class, SeguridadTest.Keycloak.class, AreaDelToken.class})
 @TestPropertySource(
     properties = {
       "CLIENTE_LIVIANO_SECRET=prueba",
@@ -53,6 +55,7 @@ class CompletarPerfilTest {
   private static final String PERSONA = UUID.randomUUID().toString();
 
   @MockitoBean private PerfilService perfiles;
+  @MockitoBean private SolicitudEntidadPuerto solicitudes;
   @Autowired private MockMvc mvc;
   @Autowired private ClientRegistrationRepository clientes;
 

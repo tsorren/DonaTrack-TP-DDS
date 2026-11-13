@@ -9,18 +9,25 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.List;
-import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 /**
- * Registrar donación desde Donaciones: los donantes activos para elegir y el alta. La foto de cada
- * bien se sube a la dirección firmada que da Donaciones ({@code POST /api/donaciones/fotos}) y el
- * bien guarda su referencia. Lo usa {@link AdminOperacionRest}.
+ * Registrar donación desde Donaciones: la búsqueda de donantes activos para elegir uno y el alta.
+ * La foto de cada bien se sube a la dirección firmada que da Donaciones ({@code POST
+ * /api/donaciones/fotos}) y el bien guarda su referencia. Lo usa {@link AdminOperacionRest}.
  */
 final class AdminOperacionRegistro {
+
+  /** Un buscador para elegir uno: como máximo 10 resultados (ficha, §4.6). */
+  static final int A_LA_VISTA = 10;
 
   private final DonacionesApi api;
   private final RestClient subidas;
@@ -30,25 +37,52 @@ final class AdminOperacionRegistro {
     this.subidas = subidas;
   }
 
-  AdminDonacionesRegistroVista registro(String buscar) {
-    List<Donante> donantes =
-        api.donantes(null).stream()
-            .filter(d -> !Boolean.FALSE.equals(d.activo()) && d.idDonante() != null)
+  /**
+   * Los donantes activos que coinciden con {@code buscar}, como máximo {@link #A_LA_VISTA}, con
+   * cuántos coinciden en total (R11-01: la búsqueda la resuelve Donaciones, sin tildes ni
+   * mayúsculas), y el elegido ({@code donante}, su clave), pedido por su identificador.
+   */
+  AdminDonacionesRegistroVista registro(String buscar, String donante) {
+    List<Donante> elegido = elegido(donante);
+    String texto = buscar == null ? "" : buscar.strip();
+    if (texto.isEmpty()) {
+      return new AdminDonacionesRegistroVista(elegido, List.of(), 0);
+    }
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    filtros.add("q", texto);
+    filtros.add("activo", "true");
+    filtros.add("orden", "nombre");
+    filtros.add("page", "0");
+    filtros.add("size", String.valueOf(A_LA_VISTA));
+    ResponseEntity<List<DonacionesApi.Donante>> respuesta = api.donantes(filtros);
+    List<DonacionesApi.Donante> filas =
+        Objects.requireNonNullElse(respuesta.getBody(), List.<DonacionesApi.Donante>of());
+    List<Donante> encontrados =
+        filas.stream()
+            .filter(d -> d.idDonante() != null)
             .map(AdminOperacionRegistro::donante)
             .toList();
-    String texto = buscar == null ? null : buscar.trim().toLowerCase(Locale.ROOT);
-    List<Donante> encontrados =
-        texto == null ? List.of() : donantes.stream().filter(d -> coincide(d, texto)).toList();
-    return new AdminDonacionesRegistroVista(donantes, encontrados);
+    return new AdminDonacionesRegistroVista(
+        elegido, encontrados, Paginas.total(respuesta, filas, 1, A_LA_VISTA));
   }
 
-  /** Por el nombre, o por el número de documento con o sin puntos y guiones. */
-  private static boolean coincide(Donante donante, String texto) {
-    if (donante.nombre().toLowerCase(Locale.ROOT).contains(texto)) {
-      return true;
+  /** El donante elegido por su clave (su id), o ninguno si no hay o no existe. */
+  private List<Donante> elegido(String clave) {
+    if (clave == null || clave.isBlank()) {
+      return List.of();
     }
-    String numero = texto.replaceAll("\\D", "");
-    return !numero.isEmpty() && donante.documento().replaceAll("\\D", "").contains(numero);
+    UUID id;
+    try {
+      id = UUID.fromString(clave.strip());
+    } catch (IllegalArgumentException noEsUnId) {
+      return List.of();
+    }
+    try {
+      DonacionesApi.Donante d = api.donante(id);
+      return d == null || d.idDonante() == null ? List.of() : List.of(donante(d));
+    } catch (HttpClientErrorException.NotFound noEsta) {
+      return List.of();
+    }
   }
 
   void registrar(DonacionNueva donacion) {

@@ -3,7 +3,10 @@ package grupo5.cliente.seguridad;
 import static org.springframework.http.HttpMethod.POST;
 
 import grupo5.cliente.puertos.CuentasDelMenu;
-import grupo5.cliente.vistas.CuentaVista;
+import grupo5.cliente.puertos.DirectorioDeAdministradores;
+import grupo5.cliente.puertos.DonantePerfilPuerto;
+import grupo5.cliente.puertos.EntidadPerfilPuerto;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -87,14 +90,15 @@ class SeguridadConfig {
   }
 
   /**
-   * El ID token no trae nombre (RNF-AUTH-09): hasta que Donaciones lo aporte, el menú dice el área.
-   * El cambio de contraseña es de la consola de cuenta de Keycloak.
+   * La cuenta del menú y del saludo: su nombre, pedido una vez por sesión (R11-44; el ID token no
+   * lo trae, RNF-AUTH-09). El cambio de contraseña es de la consola de cuenta de Keycloak.
    */
   @Bean
   CuentasDelMenu cuentasDelMenu(
-      @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}") String emisor) {
-    return prefijo ->
-        Area.deRuta(prefijo)
-            .map(area -> new CuentaVista(area.etiqueta(), "Sesión iniciada", emisor + "/account"));
+      @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}") String emisor,
+      ObjectProvider<DonantePerfilPuerto> donantes,
+      ObjectProvider<EntidadPerfilPuerto> entidades,
+      ObjectProvider<DirectorioDeAdministradores> administradores) {
+    return new CuentaDeLaSesion(emisor, donantes, entidades, administradores);
   }
 }
