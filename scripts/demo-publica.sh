@@ -16,10 +16,15 @@ stack() {
   docker compose -p donatrack-publica --env-file "$ENV_FILE" \
     -f docker-compose.yml -f docker-compose.seed.yml -f docker-compose.publica.yml "$@"
 }
+# Solo los logs desde el último arranque del contenedor: con restart: unless-stopped, un reinicio de Docker
+# conserva los logs viejos, y su URL ya no sirve.
 url_de() {
-  local u
+  local u id desde
+  id=$(tunel ps -q "$1")
+  [[ -n $id ]] || { echo "El túnel $1 no está corriendo" >&2; exit 1; }
+  desde=$(docker inspect -f '{{.State.StartedAt}}' "$id")
   for _ in $(seq 60); do
-    u=$(tunel logs "$1" 2>&1 | grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' | tail -1 || true)
+    u=$(docker logs --since "$desde" "$id" 2>&1 | grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' | tail -1 || true)
     [[ -n $u ]] && { echo "$u"; return; }
     sleep 2
   done
