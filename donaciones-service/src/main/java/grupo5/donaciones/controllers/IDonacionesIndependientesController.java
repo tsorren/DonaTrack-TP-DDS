@@ -8,6 +8,7 @@ import grupo5.donaciones.services.ParametrosListado;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 
 public interface IDonacionesIndependientesController {
   ResponseEntity<List<DonacionIndependienteResponseDTO>> obtenerTodas(
@@ -18,5 +19,8 @@ public interface IDonacionesIndependientesController {
   ResponseEntity<ConteosDeEntidadDTO> conteos(UUID entidadId, UUID necesidadId);
 
   ResponseEntity<DonacionIndependienteResponseDTO> cambiarEstado(
-      UUID id, CambioEstadoDonacionIndependienteRequestDTO request, String actor);
+      UUID id,
+      CambioEstadoDonacionIndependienteRequestDTO request,
+      String actorLegado,
+      Authentication autenticacion);
 }

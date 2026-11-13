@@ -7,8 +7,10 @@ import grupo5.tests.client.IncentivosApiClient;
 import grupo5.tests.client.LogisticaApiClient;
 import grupo5.tests.client.NotificacionesApiClient;
 import grupo5.tests.dto.PersonaTestDTO;
+import grupo5.tests.utils.FiltroDeToken;
 import grupo5.tests.utils.PollingUtils;
 import grupo5.tests.utils.TestIdGenerator;
+import grupo5.tests.utils.TokenDePruebas;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -17,6 +19,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,6 +43,8 @@ public abstract class BaseIT {
       Boolean.parseBoolean(
           System.getProperty("preprod.strict", System.getenv().getOrDefault("PREPROD_STRICT", "")));
 
+  private static final AtomicBoolean TOKEN_INSTALADO = new AtomicBoolean();
+
   protected static DonacionesApiClient donacionesClient;
   protected static NotificacionesApiClient notificacionesClient;
   protected static IncentivosApiClient incentivosClient;
@@ -48,10 +53,23 @@ public abstract class BaseIT {
   @BeforeAll
   static void setUpBase() {
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+    instalarTokenDePruebas();
     donacionesClient = new DonacionesApiClient(DONACIONES_URL);
     notificacionesClient = new NotificacionesApiClient(NOTIFICACIONES_URL);
     incentivosClient = new IncentivosApiClient(INCENTIVOS_URL);
     logisticaClient = new LogisticaApiClient(LOGISTICA_URL);
+  }
+
+  /**
+   * Con la seguridad encendida (run-preprod-tests.sh --auth) los servicios piden token: si hay
+   * {@code PRUEBAS_CLIENT_SECRET}, todos los pedidos de RestAssured llevan el token ADMIN de la
+   * cuenta de pruebas. Sin el secreto no se toca nada. Se instala una sola vez por JVM, porque este
+   * método corre en cada clase de test y un filtro global se acumularía.
+   */
+  private static void instalarTokenDePruebas() {
+    if (TOKEN_INSTALADO.compareAndSet(false, true)) {
+      TokenDePruebas.delEntorno().ifPresent(token -> RestAssured.filters(new FiltroDeToken(token)));
+    }
   }
 
   /** Ruta de un archivo de docs/arquitectura/contratos/, corriendo desde el módulo o la raíz. */

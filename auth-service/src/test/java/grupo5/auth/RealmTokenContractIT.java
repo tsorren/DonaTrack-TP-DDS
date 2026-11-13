@@ -94,6 +94,8 @@ class RealmTokenContractIT {
   private static final String ADMIN_USER = "kc-admin-" + UUID.randomUUID();
   private static final String ADMIN_PASSWORD = "adm-" + UUID.randomUUID();
   private static final String CLIENT_SECRET = "sec-" + UUID.randomUUID();
+  private static final String PRUEBAS_CLIENT_ID = "donatrack-pruebas";
+  private static final String PRUEBAS_SECRET = "pru-" + UUID.randomUUID();
   private static final String USER_PASSWORD = "usr-" + UUID.randomUUID();
   private static final String CLAVE_INCORRECTA = "mal-" + UUID.randomUUID();
   private static final String ADMIN_DONATRACK_CLAVE = "adm-app-" + UUID.randomUUID();
@@ -116,7 +118,8 @@ class RealmTokenContractIT {
         new ImageFromDockerfile("donatrack/keycloak-contrato", false)
             .withFileFromPath("Dockerfile", auth.resolve("Dockerfile"))
             .withFileFromPath("realm", auth.resolve("realm"))
-            .withFileFromPath("themes", auth.resolve("themes"));
+            .withFileFromPath("themes", auth.resolve("themes"))
+            .withFileFromPath("spi", auth.resolve("spi"));
 
     keycloak =
         new GenericContainer<>(imagen)
@@ -126,10 +129,12 @@ class RealmTokenContractIT {
             .withEnv("KC_BOOTSTRAP_ADMIN_PASSWORD", ADMIN_PASSWORD)
             .withEnv("CLIENTE_LIVIANO_SECRET", CLIENT_SECRET)
             .withEnv("CLIENTE_LIVIANO_BASE_URL", BASE_URL_CLIENTE)
+            .withEnv("PRUEBAS_CLIENT_SECRET", PRUEBAS_SECRET)
             .withEnv("AUTH_ADMIN_EMAIL", ADMIN_DONATRACK_EMAIL)
             .withEnv("AUTH_ADMIN_PASSWORD", ADMIN_DONATRACK_CLAVE)
             .withEnv("GOOGLE_CLIENT_ID", GOOGLE_CLIENT_ID)
             .withEnv("GOOGLE_CLIENT_SECRET", GOOGLE_CLIENT_SECRET)
+            .withEnv("GOOGLE_HABILITADO", "true")
             .withCommand("start-dev", "--import-realm")
             .withExposedPorts(8080)
             .waitingFor(
@@ -406,8 +411,28 @@ class RealmTokenContractIT {
     assertEquals("google", google.get("providerId").asText());
     assertTrue(google.get("enabled").asBoolean());
     assertEquals(GOOGLE_CLIENT_ID, google.get("config").get("clientId").asText());
-    // D4: el flujo por defecto pide la clave para vincular Google con una cuenta que ya existe.
-    assertEquals("first broker login", google.get("firstBrokerLoginFlowAlias").asText());
+    // D4: el flujo propio pide la clave para vincular Google con una cuenta que ya existe.
+    assertEquals("donatrack first broker login", google.get("firstBrokerLoginFlowAlias").asText());
+  }
+
+  @Test
+  void elFlujoDeVinculacionPideLaClaveYNoOfreceElCaminoPorEmail() throws Exception {
+    String alias =
+        URLEncoder.encode("donatrack first broker login", StandardCharsets.UTF_8)
+            .replace("+", "%20");
+    JsonNode ejecuciones =
+        admin("/admin/realms/" + REALM + "/authentication/flows/" + alias + "/executions");
+    List<String> autenticadores = new ArrayList<>();
+    for (JsonNode ejecucion : ejecuciones) {
+      if (ejecucion.hasNonNull("providerId")) {
+        autenticadores.add(ejecucion.get("providerId").asText());
+      }
+    }
+
+    assertTrue(autenticadores.contains("idp-confirm-link"), autenticadores.toString());
+    assertTrue(autenticadores.contains("idp-username-password-form"), autenticadores.toString());
+    // El camino por email de Keycloak mandaría el correo por SMTP, que acá no hay.
+    assertFalse(autenticadores.contains("idp-email-verification"), autenticadores.toString());
   }
 
   // Keycloak crea default-roles-donatrack con offline_access antes de leer el JSON, y el import
@@ -457,6 +482,55 @@ class RealmTokenContractIT {
     assertTrue(valores(access.get("aud")).contains(API_AUDIENCE), access.toString());
     assertFalse(access.has("permisos"));
     assertFalse(access.has("personaId"));
+  }
+
+  // E2-07: la cuenta de pruebas llama a los servicios como ADMIN con la seguridad encendida.
+  @Test
+  void laCuentaDePruebasObtieneUnTokenConElRolAdmin() throws Exception {
+    JsonNode access = claims(tokenDePruebas());
+    assertEquals(List.of("ADMIN"), valores(access.get("roles")));
+    assertTrue(valores(access.get("aud")).contains(API_AUDIENCE), access.toString());
+    assertFalse(access.has("permisos"));
+    assertFalse(access.has("personaId"));
+  }
+
+  // Es la credencial más poderosa del realm: ser ADMIN de DonaTrack no da poder sobre Keycloak.
+  @Test
+  void laCuentaDePruebasNoAdministraElRealm() throws Exception {
+    String pruebas = tokenDePruebas();
+    HttpResponse<String> roles = get(baseUrl + "/admin/realms/" + REALM + "/roles", pruebas);
+    assertEquals(403, roles.statusCode(), roles.body());
+    HttpResponse<String> usuarios = get(baseUrl + "/admin/realms/" + REALM + "/users", pruebas);
+    assertEquals(403, usuarios.statusCode(), usuarios.body());
+  }
+
+  @Test
+  void laCuentaDePruebasSoloHaceClientCredentials() throws Exception {
+    Map<String, String> campos = new LinkedHashMap<>();
+    campos.put("grant_type", "password");
+    campos.put("client_id", PRUEBAS_CLIENT_ID);
+    campos.put("client_secret", PRUEBAS_SECRET);
+    campos.put("username", ADMIN_DONATRACK_EMAIL);
+    campos.put("password", ADMIN_DONATRACK_CLAVE);
+    HttpResponse<String> respuesta = post(HTTP, urlDeToken(REALM), form(campos));
+    assertTrue(respuesta.statusCode() >= 400 && respuesta.statusCode() < 500, respuesta.body());
+    assertTrue(respuesta.body().contains("unauthorized_client"), respuesta.body());
+  }
+
+  // El secreto de una cuenta de servicio no sirve para la otra: no se pasa de SERVICIO a ADMIN.
+  @Test
+  void elSecretoDeUnaCuentaDeServicioNoSirveParaLaOtra() throws Exception {
+    Map<String, String> pidiendoAdmin = new LinkedHashMap<>();
+    pidiendoAdmin.put("grant_type", "client_credentials");
+    pidiendoAdmin.put("client_id", PRUEBAS_CLIENT_ID);
+    pidiendoAdmin.put("client_secret", CLIENT_SECRET);
+    assertEquals(401, post(HTTP, urlDeToken(REALM), form(pidiendoAdmin)).statusCode());
+
+    Map<String, String> alReves = new LinkedHashMap<>();
+    alReves.put("grant_type", "client_credentials");
+    alReves.put("client_id", CLIENT_ID);
+    alReves.put("client_secret", PRUEBAS_SECRET);
+    assertEquals(401, post(HTTP, urlDeToken(REALM), form(alReves)).statusCode());
   }
 
   // Lo que necesita el alta de perfil: crear la cuenta, buscarla y editarle personaId y roles.
@@ -603,6 +677,17 @@ class RealmTokenContractIT {
     campos.put("grant_type", "client_credentials");
     campos.put("client_id", CLIENT_ID);
     campos.put("client_secret", CLIENT_SECRET);
+    HttpResponse<String> respuesta = post(HTTP, urlDeToken(REALM), form(campos));
+    assertEquals(200, respuesta.statusCode(), respuesta.body());
+    return JSON.readTree(respuesta.body()).get("access_token").asText();
+  }
+
+  // Client credentials de la cuenta de pruebas: el token ADMIN de integration-tests, k6 y Postman.
+  private static String tokenDePruebas() throws IOException, InterruptedException {
+    Map<String, String> campos = new LinkedHashMap<>();
+    campos.put("grant_type", "client_credentials");
+    campos.put("client_id", PRUEBAS_CLIENT_ID);
+    campos.put("client_secret", PRUEBAS_SECRET);
     HttpResponse<String> respuesta = post(HTTP, urlDeToken(REALM), form(campos));
     assertEquals(200, respuesta.statusCode(), respuesta.body());
     return JSON.readTree(respuesta.body()).get("access_token").asText();
@@ -775,7 +860,9 @@ class RealmTokenContractIT {
     return HTTP.send(peticion, HttpResponse.BodyHandlers.ofString());
   }
 
-  // El tema se aplica, la pantalla está en español y Keycloak sirve el CSS y el logo del tema.
+  // El tema se aplica, la pantalla está en español y Keycloak sirve lo que el tema necesita: sus
+  // dos hojas
+  // (los tokens del sitio y el CSS propio), las tres tipografías y el logo.
   private static void verificarTema(String pantalla) throws IOException, InterruptedException {
     assertTrue(pantalla.contains("lang=\"es\""), "la pantalla no está en español");
     assertTrue(pantalla.contains("DonaTrack"), "la pantalla no muestra el nombre DonaTrack");
@@ -784,15 +871,28 @@ class RealmTokenContractIT {
     String rutaCss = css.group(1);
     HttpResponse<String> hoja = descargar(rutaCss);
     assertEquals(200, hoja.statusCode(), rutaCss);
-    assertTrue(hoja.body().contains("--color-accion-primaria"), "el CSS no define los tokens");
+    assertTrue(hoja.body().contains("var(--color-accion-primaria)"), "el CSS no usa los tokens");
+    assertTrue(
+        pantalla.contains("/login/donatrack/css/tokens.css"), "la pantalla no carga tokens.css");
+    String rutaTokens = rutaCss.replace("css/donatrack.css", "css/tokens.css");
+    HttpResponse<String> tokens = descargar(rutaTokens);
+    assertEquals(200, tokens.statusCode(), rutaTokens);
+    assertTrue(
+        tokens.body().contains("--color-accion-primaria:"), "tokens.css no define los tokens");
+    assertTrue(tokens.body().contains("@font-face"), "tokens.css no declara las tipografías");
+    for (String fuente :
+        List.of("archivo-latin.woff2", "archivo-cursiva-latin.woff2", "dm-sans-latin.woff2")) {
+      String rutaFuente = rutaCss.replace("css/donatrack.css", "fuentes/" + fuente);
+      assertEquals(200, descargar(rutaFuente).statusCode(), rutaFuente);
+    }
     String rutaLogo = rutaCss.replace("css/donatrack.css", "img/logo.svg");
     HttpResponse<String> logo = descargar(rutaLogo);
     assertEquals(200, logo.statusCode(), rutaLogo);
     assertTrue(logo.body().contains("<svg"), "el logo no es un SVG");
-    String rutaLogoOscuro = rutaCss.replace("css/donatrack.css", "img/logo-oscuro.svg");
-    HttpResponse<String> logoOscuro = descargar(rutaLogoOscuro);
-    assertEquals(200, logoOscuro.statusCode(), rutaLogoOscuro);
-    assertTrue(logoOscuro.body().contains("<svg"), "el logo oscuro no es un SVG");
+    // La marca se escribe Dona<em>Track</em> para que "Track" salga en verde.
+    assertTrue(pantalla.contains("Dona<em>Track</em>"), "el encabezado no lleva Track resaltado");
+    // Sin modo oscuro: el sitio tiene una sola piel.
+    assertFalse(pantalla.contains("pf-v5-theme-dark"), "el tema no debería cambiar al modo oscuro");
   }
 
   private record ResultadoDeLogin(HttpResponse<String> envio, List<String> galletasRecibidas) {}

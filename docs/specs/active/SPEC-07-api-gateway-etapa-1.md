@@ -73,7 +73,7 @@ L2 se descarta porque el yml no tiene un filtro con valor dinámico para el `X-T
 
 - No cambia rutas ni payloads de los servicios (ADR de evolución de contratos, `accepted`).
 - No toca `common-lib` ni `cliente-liviano/`.
-- Mientras falte la etapa 2, todas las rutas pasan sin token. Si esto llega a `main` sin F5, se registra como deuda (ADR-E6-02, punto 6).
+- Mientras falte la etapa 2, todas las rutas pasan sin token. Si esto llega a `main` sin F5, se registra como deuda (ADR-E6-02, punto 6). *Actualización 2026-11-11:* la etapa 2 está implementada y apagada por defecto (ver SPEC-06, iteración 4).
 
 ## Criterios de Aceptación
 

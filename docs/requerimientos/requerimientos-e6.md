@@ -115,9 +115,9 @@ Salvo que la fila diga otra cosa, los criterios de §4 a §8 son `[PROPOSED]`: a
 | ID | Requerimiento | Criterio de aceptación `[PROPOSED]` | Origen |
 |---|---|---|---|
 | RF-AUTH-01 | Inicio de sesión con email y contraseña | Login correcto → sesión iniciada; credenciales inválidas → mensaje genérico (no revela si el email existe) | RQ-E6-04, UI/UX 4 |
-| RF-AUTH-02 | Inicio de sesión con Google | Botón "Continuar con Google" en el login; flujo OIDC completo | RQ-E6-05, D3 |
-| RF-AUTH-03 | Vinculación de una cuenta Google a una cuenta existente con el mismo email | Si el email ya existe, se pide la contraseña de esa cuenta antes de vincular | D4 |
-| RF-AUTH-04 | Excepción de vinculación para cuentas sin contraseña (importadas por CSV o creadas en el depósito) | La vinculación se habilita cuando Google informa `email_verified=true`; el mecanismo final depende de la D12 | D4, D12 🎓 |
+| RF-AUTH-02 | Inicio de sesión con Google | Botón "Continuar con Google" en el login; flujo OIDC completo. **Hecho (2026-11-12):** el texto lo pone el tema de Keycloak y el proveedor se enciende con `GOOGLE_HABILITADO`; probado con un Google simulado, falta un proyecto real de Google ([ADR](../adr/auth-service/20261112-vinculacion-de-google-por-contrasena-con-flujo-propio-de-keycloak.md)) | RQ-E6-05, D3 |
+| RF-AUTH-03 | Vinculación de una cuenta Google a una cuenta existente con el mismo email | Si el email ya existe, se pide la contraseña de esa cuenta antes de vincular. **Hecho (2026-11-12):** flujo propio `donatrack first broker login`, sin el camino por email; la contraseña se pide también si Google dice que el email no está verificado | D4 |
+| RF-AUTH-04 | Excepción de vinculación para cuentas sin contraseña (importadas por CSV o creadas en el depósito) | La vinculación se habilita cuando Google informa `email_verified=true`; el mecanismo final depende de la D12. **Sin implementar:** hoy una cuenta sin contraseña no puede vincularse; el camino provisional es recuperar la clave y vincular, y queda verificado | D4, D12 🎓 |
 | RF-AUTH-05 | Autorregistro de donantes | Desde "Registrarse" → elegir "Soy Donante"; al primer login se completa el perfil (§4.3) | UI/UX 3, D10, D11 |
 | RF-AUTH-06 | Autorregistro de entidades beneficiarias, con aprobación | La cuenta queda **pendiente**; el rol `ENTIDAD` se asigna cuando un admin aprueba | UI/UX 3, D10 · **R11 (2026-11-12):** `[OBSERVED]` la cuenta pendiente navega lo público (portada, Entidades, Donaciones, Mapa, páginas informativas y Contacto); lo privado, el ingreso y el registro la llevan a "Recibimos la solicitud", que dice que la revisión suele llevar unos días hábiles (R11-08, `EstadoDeCuenta.SOLICITUD_RECIBIDA`). No hay plazo acordado; ver y corregir la solicitud, con `p2-pendiente-solicitud` (R11-41). **Oleada P1 (2026-11-12, `p1-portada`, R11-15):** `[OBSERVED]` en lo público, la cuenta pendiente ve su cuenta con "En revisión" y "Ver mi solicitud" en lugar de "Ingresar" y "Crear una cuenta" (`AreaDeLaSesion.pendiente`); sin capturas de ese estado ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42), ítem 1) **Oleada P2 (2026-11-12, `p2-pendiente-solicitud`, R11-41):** `[OBSERVED]` "Recibimos la solicitud" muestra lo que se envió (`GET /api/personas/{id}/solicitud-entidad`, con el token de la cuenta) y "Corregir los datos" lleva al formulario del registro lleno, en página aparte (`PUT`, 409 si el equipo ya la aprobó, ERR-EST-115); con la solicitud ya aprobada, "Ingresar de nuevo". Pendientes en [DTI-43](../adr/DEUDA_TECNICA.md#dti-43), ítem 6 |
 | RF-AUTH-07 | Alta de administradores | Solo un admin crea otro admin; el primero sale de un *seed* configurado por variables de entorno | D10 · **Estado (2026-11-12, cierre de P1):** hecho `[OBSERVED]` con el lote `p1-admins` (R11-10 del [backlog R11](../interfaz/backlog-revision-2026-11-11.md)): las cuentas de administración se marcan con un atributo del realm y un admin da de alta a otro desde el sitio, con una contraseña provisoria que se muestra una vez ([ADR `proposed`](../adr/auth-service/20261112-cuentas-de-administracion-marcadas-en-el-realm-y-alta-desde-el-sitio.md)). El primero sigue saliendo del realm importado; tras reimportarlo, las cuentas de demo tienen que conservar el atributo ([DTI-42](../adr/DEUDA_TECNICA.md#dti-42)). Desde R11-26 (`p2-actividad`, 2026-11-12) el alta queda en el registro de actividad, anotada por el sitio después de que Keycloak la crea **Oleada P2:** `[OBSERVED]` el alta de un admin y otra contraseña provisoria quedan en la Actividad, anotadas por el sitio (`POST /api/actividad`, [ADR `proposed`](../adr/donaciones-service/20261112-registro-de-actividad-de-administracion-en-donaciones.md)); `[VERIFIED]` el recorrido con login real del cierre (2026-11-12) pasó la pantalla de Actividad. Sigue pendiente reimportar el realm en el stack del usuario |
@@ -126,10 +126,10 @@ Salvo que la fila diga otra cosa, los criterios de §4 a §8 son `[PROPOSED]`: a
 | RF-AUTH-10 | Publicar las claves públicas (JWKS) | Endpoint JWKS estándar, consumido por el gateway y los servicios | D2 |
 | RF-AUTH-11 | Cerrar sesión | Revoca el refresh en el IdP, invalida la sesión del cliente y cierra la sesión SSO (OIDC *RP-initiated logout*) | — |
 | RF-AUTH-12 | Cambiar la contraseña con la sesión iniciada | Pide la contraseña actual; invalida las otras sesiones del usuario | — |
-| RF-AUTH-13 | Recuperar la contraseña por email | Link de un solo uso con vencimiento (sugerido: 30 min); la respuesta es la misma exista o no el email. El mecanismo de envío está pendiente (D8) | D8 ⏸️ |
+| RF-AUTH-13 | Recuperar la contraseña por email | Link de un solo uso con vencimiento (sugerido: 30 min); la respuesta es la misma exista o no el email. El mecanismo de envío está resuelto (D8): SPI de Keycloak → RabbitMQ → notificaciones. El realm lo permite (`resetPasswordAllowed`) y el enlace vale 30 minutos | D8 ⏸️ |
 | RF-AUTH-14 | Alta de usuarios para donantes importados por CSV y registrados en el depósito | La consigna pide *enviarles sus credenciales de acceso* y un *correo de bienvenida*; el mecanismo está pendiente de consulta (D12) | UI/UX 20, D12 🎓 |
 | RF-AUTH-15 | Alta en lote eficiente | Más de 10.000 usuarios por archivo, en lotes y sin bloquear la importación del negocio | UI/UX 20 |
-| RF-AUTH-16 | Verificación del email en el autorregistro `[PROPOSED]` | La cuenta no opera hasta confirmar el email; usa el mismo mecanismo que RF-AUTH-13 | D8 ⏸️ |
+| RF-AUTH-16 | Verificación del email en el autorregistro `[PROPOSED]` | La cuenta no opera hasta confirmar el email; usa el mismo mecanismo que RF-AUTH-13 (soportado por el SPI, pero `verifyEmail` sigue apagado en el realm: activarlo cambia el registro y es una decisión de producto) | D8 ⏸️ |
 | RF-AUTH-17 | Client credentials para procesos sin usuario | Un cliente OAuth2 por proceso (n8n, proveedor externo, jobs) con los permisos mínimos | D15, D25 |
 
 ### 4.2 No funcionales
@@ -598,7 +598,7 @@ Composición, utilidades, bloques (un componente por hoja y fragmento, con slots
   2. Ver con cuánto tiempo cuenta el equipo hasta la fecha de entrega de E6.
 - **Lo que no cambia con ninguna de las dos:** RNF-AUTH-08 (claim `roles` plano) y D9 hacen que cambiar de IdP cueste poco. *(Enmienda 2026-11-10: con el `personaId` en el IdP, D9 ya no aporta el desacople que se contó acá; ver el [ADR del vínculo](../adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md).)*
 
-### D8 — Envío del email de recuperación (y de verificación) ⏸️ · ADR-E6-01
+### D8 — Envío del email de recuperación (y de verificación) ✅ · ADR-E6-01
 Ya está decidido que el email sale por **notificaciones-service**. Falta el cómo, que depende de la D1:
 
 | Alternativa | Cómo funciona | A favor | En contra |
@@ -612,8 +612,8 @@ Con SAS, la primera opción es natural: el propio servicio publica el evento.
 - **Recomendación:** event listener → RabbitMQ → notificaciones. Es la única que cumple lo decidido sin duplicar lo que trae el IdP.
 - **Para cerrarla hace falta:**
   1. ~~Cerrar la D1.~~ Cerrada el 2026-11-04 (Keycloak): la opción es el SPI.
-  2. Si queda Keycloak, probar que el SPI se empaqueta en la imagen del IdP y que el evento llega a notificaciones con su `traceId`.
-  3. Definir el evento nuevo (`EnlaceDeCuentaSolicitado` o similar) en el [catálogo de eventos](../arquitectura/eventos-amqp.md).
+  2. ~~Si queda Keycloak, probar que el SPI se empaqueta en la imagen del IdP y que el evento llega a notificaciones con su `traceId`.~~ Hecho el 2026-11-12: el SPI `donatrack-amqp` se compila en una etapa del `Dockerfile` de `auth-service` y se probó contra un Keycloak 26.8.1 y un RabbitMQ reales ([ADR](../adr/auth-service/20261112-correo-de-cuenta-por-rabbitmq-con-spi-de-keycloak.md)).
+  3. ~~Definir el evento nuevo en el [catálogo de eventos](../arquitectura/eventos-amqp.md).~~ Hecho: `cuenta.enlace-solicitado.v1`. **Desvío de esta decisión:** no queda en el historial de notificaciones, porque el enlace da acceso a la cuenta mientras vale.
 
 ### D12 — Acceso de los donantes importados por CSV y del alta en depósito 🎓 · ADR-E6-01
 **Choque detectado** `[DOCUMENTED]`:

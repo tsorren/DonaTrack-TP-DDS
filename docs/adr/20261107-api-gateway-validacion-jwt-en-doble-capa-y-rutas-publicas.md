@@ -9,7 +9,7 @@
 > §11 (decisiones D2, D16 y D26, "Listo" para redactar) y E2-01 de
 > [SPEC-06](../specs/active/SPEC-06-auth-mvp-keycloak.md). El orden de implementación está en el
 > [plan del cliente con datos reales y gateway](../requerimientos/plan-e6-cliente-datos-reales-y-gateway.md).
-> **Implementación:** la etapa 1 (punto 6) está hecha en [SPEC-07](../specs/active/SPEC-07-api-gateway-etapa-1.md) (2026-11-07), con el tren de Spring Cloud 2025.1.1 (Gateway 5.0.1, variante WebMVC). La etapa 2 no está implementada.
+> **Implementación:** la etapa 1 (punto 6) está hecha en [SPEC-07](../specs/active/SPEC-07-api-gateway-etapa-1.md) (2026-11-07), con el tren de Spring Cloud 2025.1.1 (Gateway 5.0.1, variante WebMVC). **La etapa 2 está implementada** (iteración 4 de SPEC-06, 2026-11-11): el gateway valida el JWT con la misma cadena de seguridad de `common-lib` que los servicios, apagada por defecto (`GATEWAY_SEGURIDAD_HABILITADA`), y entró al preprod. Falta probarla encendida contra un Keycloak real.
 >
 > De dónde sale cada parte:
 >
@@ -143,6 +143,7 @@ a 6 agregan lo que esas decisiones no fijaban.
    - Iniciar sesión, Registrarse, Activar cuenta y Recuperar contraseña van al IdP (Keycloak), no
      al gateway.
    - Si una pantalla pública suma una llamada, su ruta entra a la allowlist en el mismo cambio.
+   - `[OBSERVED]` Implementación (2026-11-11): la allowlist se aplica **por ruta, sin método**, igual que las `ReglasDeAcceso` de los servicios; el método lo decide el `@PreAuthorize` de cada endpoint. Cada entrada se escribe como `"MÉTODO /ruta"` y una mal escrita corta el arranque. Un test estático exige que la allowlist sea exactamente el conjunto de endpoints `@PreAuthorize(PUBLICO)` de los servicios.
 4. **`traceId` de punta a punta (RI-GW-04).** `[PROPOSED]` El cliente genera un `traceId` por request de la
    página y lo manda en `X-Trace-Id`, así puede mostrarlo en las páginas de error (RF-CL-08) aunque
    el servicio no responda. El gateway lo propaga o lo genera si falta, y escribe logs NDJSON con
@@ -169,13 +170,14 @@ a 6 agregan lo que esas decisiones no fijaban.
   - Las rutas por ruta completa de `/api/logistica/**` hay que mantenerlas a mano: una ruta nueva
     bajo ese prefijo no se enruta sola.
   - Con la etapa 1 sola, la allowlist no protege nada: es un estado de transición, no de entrega.
+  - `[OBSERVED]` Como la allowlist abre la ruta sin distinguir método, `GET /api/contacto` (listado de mensajes, del ADMIN) pasa el gateway sin token y lo rechaza Notificaciones con `401`. Hacia afuera la respuesta es la misma, pero esa ruta solo está protegida por la segunda capa. Hoy es el único caso; hacerlo por método exigiría extender `ReglasDeAcceso` de `common-lib`.
 - **Neutras:** los contratos REST y AMQP de los servicios no cambian.
 
 ## Validación
 
 - Test de rutas del gateway: cada ruta de `contratos-rest.md` llega a su servicio, incluidas las
   de `/api/logistica/**` de los dos servicios.
-- Sin token: las rutas de la allowlist responden y las demás dan `401` (etapa 2).
+- Sin token: las rutas de la allowlist responden y las demás dan `401` (etapa 2). `[PROPOSED]` Cubierto por `SeguridadGatewayTest`, escrito y todavía sin correr.
 - Token vencido, de otro `iss` o sin el `aud` del API: `401` en el gateway y también en el servicio
   llamado por su puerto.
 - `X-Trace-Id` enviado por el cliente aparece en los logs del gateway y del servicio, y vuelve en

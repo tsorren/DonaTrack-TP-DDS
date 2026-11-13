@@ -11,6 +11,7 @@ import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteRespo
 import grupo5.donaciones.dto.donacionesIndependientes.FiltroDonacionesIndependientes;
 import grupo5.donaciones.models.entities.actividad.AccionDeAdministracion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.seguridad.AuditoriaDelActor;
 import grupo5.donaciones.services.IActividadService;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import grupo5.donaciones.services.ParametrosListado;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -82,8 +84,10 @@ public class DonacionesIndependientesController implements IDonacionesIndependie
   public ResponseEntity<DonacionIndependienteResponseDTO> cambiarEstado(
       @PathVariable UUID id,
       @Valid @RequestBody CambioEstadoDonacionIndependienteRequestDTO request,
-      @RequestHeader("X-Actor") String actor) {
-    DonacionIndependienteResponseDTO cambiada = service.cambiarEstado(id, request, actor);
+      @RequestHeader(value = "X-Actor", required = false) String actorLegado,
+      Authentication autenticacion) {
+    DonacionIndependienteResponseDTO cambiada =
+        service.cambiarEstado(id, request, AuditoriaDelActor.de(autenticacion, actorLegado));
     // R11-26: el autor del registro es el sub del token, no X-Actor (RI-SVC-04).
     if (request.estado() == TipoEstadoDonacion.VENCIDA) {
       actividad.registrar(AccionDeAdministracion.DONACION_VENCIDA, id.toString(), null);

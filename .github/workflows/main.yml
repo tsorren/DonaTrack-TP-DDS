@@ -502,6 +502,10 @@ jobs:
       - name: Verificar formato (Spotless) de auth-service
         run: mvn -B -f auth-service/pom.xml spotless:check
 
+      # SPI de correo de Keycloak (SPEC-06 E2-06): proyecto Maven autónomo, con su propio formato y sus tests.
+      - name: Formato y tests del SPI de correo (auth-service/spi)
+        run: mvn -B -f auth-service/spi/pom.xml spotless:check verify
+
       - name: Contrato del realm (Testcontainers sobre la imagen del Dockerfile)
         run: mvn -B -f auth-service/pom.xml -Pcontrato-auth verify
 
@@ -779,6 +783,9 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GH_REPOSITORY: ${{ github.repository }}
           RAW_BASE_REF: ${{ github.base_ref }}
+          # Servicios y gateway validando el JWT (run-preprod-tests.sh --auth). Se enciende creando la
+          # variable de repositorio PREPROD_AUTH=true; vacía o ausente, el preprod corre como siempre.
+          PREPROD_AUTH: ${{ vars.PREPROD_AUTH }}
         run: |
           export GHCR_BASE="ghcr.io/$(echo "$GH_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
           export PR_TAG="pr-${PR_NUMBER}"

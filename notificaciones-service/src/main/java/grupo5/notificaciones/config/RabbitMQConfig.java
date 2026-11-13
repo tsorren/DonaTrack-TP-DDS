@@ -1,5 +1,6 @@
 package grupo5.notificaciones.config;
 
+import grupo5.notificaciones.dto.input.EventoCuentaEnlaceSolicitadoV1;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
 import grupo5.notificaciones.dto.input.EventoDonacionEnCaminoV1;
 import grupo5.notificaciones.dto.input.EventoDonacionEntregaFallidaV1;
@@ -31,9 +32,14 @@ import tools.jackson.databind.json.JsonMapper;
 @Configuration
 public class RabbitMQConfig {
 
+  // Argumentos de RabbitMQ para el Dead Letter
+  private static final String ARG_DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
+  private static final String ARG_DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key";
+
   // Exchanges de Emisores (Topología Pub/Sub DDD)
   public static final String EXCHANGE_DONACIONES = "donaciones.exchange";
   public static final String EXCHANGE_INCENTIVOS = "incentivos.exchange";
+  public static final String EXCHANGE_AUTH = "auth.exchange";
 
   // Dead Letter Exchange
   public static final String DLX_NOTIFICACIONES = "notificaciones.dlx";
@@ -41,10 +47,16 @@ public class RabbitMQConfig {
   // Colas Segregadas Canónicas
   public static final String QUEUE_NOTIFICACIONES_DONACIONES = "notificaciones.donaciones";
   public static final String QUEUE_NOTIFICACIONES_INCENTIVOS = "notificaciones.incentivos";
+  public static final String QUEUE_NOTIFICACIONES_AUTH = "notificaciones.auth";
 
   // Colas Dead Letter (DLQ)
   public static final String QUEUE_NOTIFICACIONES_DONACIONES_DLQ = "notificaciones.donaciones.dlq";
   public static final String QUEUE_NOTIFICACIONES_INCENTIVOS_DLQ = "notificaciones.incentivos.dlq";
+  public static final String QUEUE_NOTIFICACIONES_AUTH_DLQ = "notificaciones.auth.dlq";
+
+  // Eventos de cuenta (auth-service, SPEC-06 E2-06)
+  public static final String ROUTING_KEY_CUENTA_WILDCARD = "cuenta.#";
+  public static final String ROUTING_KEY_CUENTA_ENLACE_SOLICITADO = "cuenta.enlace-solicitado.v1";
 
   // Routing Keys Canónicas
   public static final String ROUTING_KEY_DONACION_ASIGNADA = "donacion.asignada.v1";
@@ -101,6 +113,11 @@ public class RabbitMQConfig {
   }
 
   @Bean
+  public TopicExchange authExchange() {
+    return new TopicExchange(EXCHANGE_AUTH, true, false);
+  }
+
+  @Bean
   public TopicExchange notificacionesDlx() {
     return new TopicExchange(DLX_NOTIFICACIONES, true, false);
   }
@@ -114,16 +131,24 @@ public class RabbitMQConfig {
   @Bean
   public Queue queueNotificacionesDonaciones() {
     return QueueBuilder.durable(QUEUE_NOTIFICACIONES_DONACIONES)
-        .withArgument("x-dead-letter-exchange", DLX_NOTIFICACIONES)
-        .withArgument("x-dead-letter-routing-key", QUEUE_NOTIFICACIONES_DONACIONES_DLQ)
+        .withArgument(ARG_DEAD_LETTER_EXCHANGE, DLX_NOTIFICACIONES)
+        .withArgument(ARG_DEAD_LETTER_ROUTING_KEY, QUEUE_NOTIFICACIONES_DONACIONES_DLQ)
         .build();
   }
 
   @Bean
   public Queue queueNotificacionesIncentivos() {
     return QueueBuilder.durable(QUEUE_NOTIFICACIONES_INCENTIVOS)
-        .withArgument("x-dead-letter-exchange", DLX_NOTIFICACIONES)
-        .withArgument("x-dead-letter-routing-key", QUEUE_NOTIFICACIONES_INCENTIVOS_DLQ)
+        .withArgument(ARG_DEAD_LETTER_EXCHANGE, DLX_NOTIFICACIONES)
+        .withArgument(ARG_DEAD_LETTER_ROUTING_KEY, QUEUE_NOTIFICACIONES_INCENTIVOS_DLQ)
+        .build();
+  }
+
+  @Bean
+  public Queue queueNotificacionesAuth() {
+    return QueueBuilder.durable(QUEUE_NOTIFICACIONES_AUTH)
+        .withArgument(ARG_DEAD_LETTER_EXCHANGE, DLX_NOTIFICACIONES)
+        .withArgument(ARG_DEAD_LETTER_ROUTING_KEY, QUEUE_NOTIFICACIONES_AUTH_DLQ)
         .build();
   }
 
@@ -136,6 +161,11 @@ public class RabbitMQConfig {
   @Bean
   public Queue queueNotificacionesIncentivosDlq() {
     return new Queue(QUEUE_NOTIFICACIONES_INCENTIVOS_DLQ, true);
+  }
+
+  @Bean
+  public Queue queueNotificacionesAuthDlq() {
+    return new Queue(QUEUE_NOTIFICACIONES_AUTH_DLQ, true);
   }
 
   // --- Cola Legacy ---
@@ -166,6 +196,14 @@ public class RabbitMQConfig {
         .with(ROUTING_KEY_INCENTIVOS_WILDCARD);
   }
 
+  @Bean
+  public Binding bindingNotificacionesAuth(
+      Queue queueNotificacionesAuth, TopicExchange authExchange) {
+    return BindingBuilder.bind(queueNotificacionesAuth)
+        .to(authExchange)
+        .with(ROUTING_KEY_CUENTA_WILDCARD);
+  }
+
   // --- Bindings Dead Letter ---
   @Bean
   public Binding bindingNotificacionesDonacionesDlq(
@@ -181,6 +219,14 @@ public class RabbitMQConfig {
     return BindingBuilder.bind(queueNotificacionesIncentivosDlq)
         .to(notificacionesDlx)
         .with(QUEUE_NOTIFICACIONES_INCENTIVOS_DLQ);
+  }
+
+  @Bean
+  public Binding bindingNotificacionesAuthDlq(
+      Queue queueNotificacionesAuthDlq, TopicExchange notificacionesDlx) {
+    return BindingBuilder.bind(queueNotificacionesAuthDlq)
+        .to(notificacionesDlx)
+        .with(QUEUE_NOTIFICACIONES_AUTH_DLQ);
   }
 
   // --- Binding Legacy ---
@@ -217,6 +263,9 @@ public class RabbitMQConfig {
     idClassMapping.put(ROUTING_KEY_DONANTE_INACTIVO, EventoIncentivoDonanteInactivoV1.class);
     idClassMapping.put(ROUTING_KEY_MISION_CUMPLIDA, EventoIncentivoMisionCumplidaV1.class);
     idClassMapping.put(ROUTING_KEY_SUBIO_CATEGORIA, EventoIncentivoSubioCategoriaV1.class);
+
+    // Mapeos de Cuentas
+    idClassMapping.put(ROUTING_KEY_CUENTA_ENLACE_SOLICITADO, EventoCuentaEnlaceSolicitadoV1.class);
 
     classMapper.setIdClassMapping(idClassMapping);
     return classMapper;

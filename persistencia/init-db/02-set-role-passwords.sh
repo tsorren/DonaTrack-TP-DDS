@@ -5,6 +5,8 @@
 # KEYCLOAK_DB_PASSWORD es opcional: los compose de demo e híbrido usan este mismo script y no
 # levantan Keycloak. Sin ella, keycloak_user queda sin contraseña y no puede iniciar sesión. Los
 # compose local y de preprod sí la pasan (SPEC-06 A1-01 y E2-12).
+# CLIENTE_DB_PASSWORD es opcional por la misma razón: solo el compose local y el de preprod levantan el
+# cliente liviano (SPEC-06 E2-02). Sin ella, cliente_user queda sin contraseña y no puede iniciar sesión.
 set -eu
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" \
@@ -22,5 +24,12 @@ if [ -n "${KEYCLOAK_DB_PASSWORD:-}" ]; then
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" \
     -v keycloak="$KEYCLOAK_DB_PASSWORD" <<'SQL'
 ALTER ROLE keycloak_user WITH PASSWORD :'keycloak';
+SQL
+fi
+
+if [ -n "${CLIENTE_DB_PASSWORD:-}" ]; then
+  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" \
+    -v cliente="$CLIENTE_DB_PASSWORD" <<'SQL'
+ALTER ROLE cliente_user WITH PASSWORD :'cliente';
 SQL
 fi

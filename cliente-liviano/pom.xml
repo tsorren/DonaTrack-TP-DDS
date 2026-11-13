@@ -77,6 +77,22 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security-oauth2-client</artifactId>
         </dependency>
+        <!-- Sesión en PostgreSQL (SPEC-06 E2-02, D5). Solo las librerías, sin el starter de sesión de Spring Boot:
+             ese sumaría un DataSource y un store de sesión a todos los contextos, y el cliente no tiene base en
+             los tests. SesionesJdbcConfig las usa solo con cliente.sesiones.jdbc.habilitado=true. -->
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.webjars.npm</groupId>

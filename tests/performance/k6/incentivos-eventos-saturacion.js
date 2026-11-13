@@ -1,5 +1,6 @@
 ﻿import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { cabeceras, tokenDePruebas } from './token.js';
 
 export const options = {
   stages: [
@@ -15,9 +16,13 @@ export const options = {
 
 const BASE_URL = __ENV.INCENTIVOS_URL || 'http://incentivos-service:8082';
 
-export default function () {
+export function setup() {
+  return { token: tokenDePruebas() };
+}
+
+export default function (data) {
   const res = http.post(`${BASE_URL}/api/incentivos/donaciones`, null, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: cabeceras(data.token),
   });
 
   check(res, {
