@@ -1,0 +1,196 @@
+/* Las páginas públicas de Raíces que no son la portada (layout-publico.html): Contacto y Términos y
+   privacidad. Toman de privado.css el rótulo, el título y los avisos, y de formularios.css los
+   campos; el contenido va centrado y de ancho de lectura (criterios de la cátedra, sección 8). */
+@import url("privado.css");
+@import url("sellos.css");
+@import url("formularios.css");
+
+.raices-publico main {
+  max-width: 75rem;
+  margin: 0 auto;
+}
+
+.lectura {
+  max-width: 42rem;
+}
+
+.lectura-bajada {
+  margin: 0 0 1.5rem;
+  font-size: 1.125rem;
+}
+
+/* --- Contacto ---------------------------------------------------------------------------------- */
+.contacto .formulario {
+  margin-top: 0;
+}
+
+.contacto-cuenta {
+  margin: 0;
+}
+
+/* Enviado: el sello de recibido, como el de una entrega confirmada, y el número del mensaje. */
+.recibido {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin: 0 0 1.5rem;
+}
+
+.recibido svg {
+  flex: none;
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+.recibido p {
+  margin: 0;
+}
+
+.recibido b {
+  color: var(--color-tinta);
+  font: 900 1.5rem/1 var(--fuente-cifra);
+  font-stretch: 125%;
+}
+
+/* --- Términos y privacidad --------------------------------------------------------------------- */
+.legales-version {
+  margin: 0 0 1rem;
+  font-weight: 700;
+}
+
+.legales-indice {
+  margin: 1.5rem 0 2rem;
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+}
+
+.legales-indice h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.legales-indice ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.legales-indice a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+.legales section {
+  scroll-margin-top: 1rem;
+}
+
+.legales section h2 {
+  margin: 2rem 0 0.5rem;
+}
+
+/* --- Contacto, la lámina (A/B layout:contacto, A, 2026-11-04; nota de Nico) ------------------------
+   Como "Cómo funciona" de la portada: un brote cuya raíz llega a un sobre, y cuándo escribirnos. En
+   el celular va debajo del formulario; desde la tableta, a su derecha y a su misma altura. */
+.contacto-lamina {
+  display: flex;
+  flex-direction: column;
+  margin-top: 2.5rem;
+  padding: 1rem;
+  border: 0;
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: -7px;
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+}
+
+.lamina-cabeza {
+  margin: 0 0 0.75rem;
+  padding: 0.25rem 0.5rem 0.6rem;
+  border-bottom: 1.5px solid var(--color-tinta);
+  font-size: 0.875rem;
+}
+
+.lamina-dibujo {
+  display: block;
+  width: 100%;
+  height: 16rem;
+  margin: 0 0 1rem;
+}
+
+.contacto-lamina h2 {
+  margin: 0 0 0.5rem;
+  padding-inline: 0.5rem;
+  color: var(--color-tinta);
+  font: 800 1.5rem / 1.1 var(--fuente-titulo);
+  font-stretch: 118%;
+}
+
+.contacto-lamina ul {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0 0.5rem 0.5rem 1.75rem;
+}
+
+.dib-sol { fill: var(--color-acento-claro); }
+.dib-suelo { fill: var(--color-suelo); }
+.dib-tallo { fill: none; stroke: var(--color-tallo); stroke-width: 3; stroke-linecap: round; }
+.dib-hoja { fill: var(--color-hoja); }
+.dib-hoja--tinta { fill: var(--color-tallo); }
+.dib-horizonte { fill: none; stroke: var(--color-tinta); stroke-width: 4; }
+.dib-raiz { fill: none; stroke: var(--color-raiz); stroke-width: 6; stroke-linecap: round; }
+.dib-raicilla { fill: none; stroke: var(--color-raiz); stroke-width: 2.5; stroke-linecap: round; }
+.dib-cruce { fill: var(--color-suelo); stroke: var(--color-texto-suelo); stroke-width: 2.5; }
+.dib-sobre { fill: var(--color-papel); stroke: var(--color-tinta); stroke-width: 3; }
+.dib-sobre-tinta { fill: var(--color-hoja); }
+.dib-sobre-linea { fill: none; stroke: var(--color-tinta); stroke-width: 3; stroke-linejoin: round; }
+
+/* Al entrar, una vez: las raíces bajan del brote hasta el sobre, y el sobre aparece cuando llegan (como la
+   lámina de la portada). Sin movimiento si la persona lo pidió así. */
+@media (prefers-reduced-motion: no-preference) {
+  .lamina-dibujo :is(.dib-raiz, .dib-raicilla) {
+    stroke-dasharray: 1;
+    animation: var(--movimiento-animacion-traza);
+  }
+
+  .lamina-dibujo g:last-child {
+    animation: var(--movimiento-animacion-baja);
+  }
+}
+
+/* Desde la tableta: el rótulo, el título y la bajada arriba; el formulario y la lámina, en la misma
+   fila y del mismo alto (el dibujo crece con el formulario). */
+@media (min-width: 53.75em) {
+  .contacto {
+    display: grid;
+    grid-template-columns: minmax(0, 36rem) minmax(16rem, 1fr);
+    column-gap: 3.5rem;
+    max-width: none;
+  }
+
+  .contacto > * {
+    grid-column: 1;
+  }
+
+
+  .contacto > .formulario {
+    grid-row: 4;
+    align-self: start;
+  }
+
+  /* Sin alto propio (contain): la fila la manda el formulario y la lámina la llena. */
+  .contacto-lamina {
+    grid-column: 2;
+    grid-row: 4;
+    margin-top: 0;
+    contain: size;
+  }
+
+  .lamina-dibujo {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+  }
+}

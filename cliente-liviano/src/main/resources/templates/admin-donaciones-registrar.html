@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<!--/* Raíces, Registrar donación del admin (RF-15), según su ficha de flujo
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.6). Tres pasos: quién dona, qué
+       llegó y dónde quedó. "Quién dona" es un formulario aparte (GET): ?buscar=<texto> muestra los
+       donantes que coinciden y ?donante=<clave> deja uno elegido (así llega desde
+       admin-donantes-registrado, "en un mismo flujo" de RF-15). "Sumar otro bien" manda el formulario
+       por GET con ?bienes=<n> (sin validar) y vuelve con un bien más; sumarlo en el lugar con Alpine
+       queda para después: sin él, todo funciona. El registro es un formulario real (POST, multipart
+       por las fotos) que lleva a admin-donaciones-registrada. Estados: ?escenario=lento y error; el
+       error de datos es admin-donaciones-registrar-error. Los donantes vienen del controller
+       (registro: de la maqueta o de Donaciones); fuera de la maqueta el registro guarda de verdad
+       (pieza envio) y vuelve a Donaciones con el aviso.
+       Fragmentos:
+       - hoja(conError): la pantalla entera. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Registrar donación - Donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-donaciones-registrar :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(conError)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             inactivo=${conError and escenario == 'inactivo'},
+             datos=${conError and !inactivo},
+             escrito=${conError or escenario == 'error'},
+             donantes=${registro.donantes},
+             clave=${inactivo ? 'pedro-ejemplo' : (escrito ? 'ana-ejemplo' : (param.donante != null ? param.donante[0] : ''))},
+             donante=${donantes.^[clave == #root.clave]},
+             buscado=${param.buscar != null ? param.buscar[0] : null},
+             pedidos=${param.bienes != null ? param.bienes[0] : ''},
+             bienes=${escrito or pedidos == '3' ? 3 : (pedidos == '2' ? 2 : 1)}">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <p class="rotulo"><a href="/admin-donaciones" th:href="@{/admin-donaciones}">Donaciones</a> ›
+        Registrar donación</p>
+      <h1>Registrar donación</h1>
+    </header>
+
+    <section th:if="${datos}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
+             autofocus aria-labelledby="resumen-titulo">
+      <h2 id="resumen-titulo">Revisá 2 datos para seguir.</h2>
+      <ul>
+        <li><a href="#descripcion">Falta la descripción</a></li>
+        <li><a href="#cantidad-2">La cantidad del bien 2 tiene que ser un número</a></li>
+      </ul>
+    </section>
+    <section th:if="${inactivo}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
+             autofocus aria-labelledby="inactivo-titulo">
+      <h2 id="inactivo-titulo">Pedro Ejemplo está dado de baja como donante: no se le pueden registrar
+        donaciones.</h2>
+      <p>Si volvió, registralo de nuevo en <a href="/admin-donantes" th:href="@{/admin-donantes}">Donantes</a>.</p>
+    </section>
+    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos guardar: no cambió nada.</h2>
+      <p>Es un problema nuestro: lo que escribiste sigue acá. Probá de nuevo con «Registrar donación» en unos
+        minutos; si sigue,
+        <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-donaciones-registrar')}">escribinos
+          con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+    </section>
+
+    <!--/* 1. Quién dona: la búsqueda va en su propio formulario, para no anidar formularios. */-->
+    <section class="tarjeta pila" data-espacio="3" aria-labelledby="quien-titulo">
+      <h2 id="quien-titulo">1. Quién dona</h2>
+      <th:block th:if="${donante != null}">
+        <p><b th:text="${donante.nombre}">Ana Ejemplo</b> · <span th:text="${donante.documento}">DNI
+          20.000.001</span></p>
+        <p><a href="/admin-donaciones-registrar" th:href="@{/admin-donaciones-registrar}">Elegir otro
+          donante</a></p>
+      </th:block>
+      <th:block th:if="${donante == null}">
+        <form hx-boost="true" class="racimo" action="/admin-donaciones-registrar" th:action="@{/admin-donaciones-registrar}"
+              method="get" role="search">
+          <div class="campo">
+            <label for="buscar">Buscar por nombre o documento</label>
+            <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${buscado}" placeholder="Por ejemplo: comedor">
+          </div>
+          <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+        </form>
+        <th:block th:if="${buscado != null}">
+          <!--/* R11-01: Donaciones busca y da hasta 10, con cuántos coinciden; con más de 10, se pide escribir
+                 más (es un buscador para elegir uno, no un listado: no se pagina). */-->
+          <p role="status" th:with="n=${registro.coinciden}, vistos=${#lists.size(registro.encontrados)}"
+             th:text="${n > vistos} ? |Hay ${#numbers.formatInteger(n, 1, 'POINT')} donantes que coinciden. Escribí más del nombre o el documento para encontrarlo.| : (${n == 1} ? '1 donante coincide con la búsqueda.' : (${n == 0} ? 'Ningún donante coincide con la búsqueda.' : |${n} donantes coinciden con la búsqueda.|))">2
+            donantes coinciden con la búsqueda.</p>
+          <ul class="lista pila" data-espacio="2" role="list">
+            <li th:each="x : ${registro.encontrados}">
+              <a class="boton" data-tono="secundario" hx-boost="true" th:href="@{/admin-donaciones-registrar(donante=${x.clave})}"
+                 href="/admin-donaciones-registrar?donante=ana-ejemplo"><b th:text="${x.nombre}">Ana Ejemplo</b> ·
+                <span th:text="${x.documento}">DNI 20.000.001</span></a>
+            </li>
+          </ul>
+        </th:block>
+        <p>¿No está? <a href="/admin-donantes-registrar" th:href="@{/admin-donantes-registrar}">Registrar
+          donante</a>. Al terminar, vuelve acá con el donante elegido.</p>
+      </th:block>
+    </section>
+
+    <form class="formulario" action="/admin-donaciones-registrada" th:action="@{/admin-donaciones-registrada}"
+          method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null"
+          hx-boost="true" hx-indicator="#enviando-admin-donaciones-registrar" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob">
+      <input th:if="${donante != null}" type="hidden" name="donante" th:value="${donante.clave}"
+             value="ana-ejemplo">
+      <p class="obligatorios">* obligatorio</p>
+
+      <h2>2. Qué llegó</h2>
+      <div class="campo" th:data-estado="${datos} ? 'error'">
+        <label for="descripcion">Descripción *</label>
+        <small id="descripcion-ayuda">Por ejemplo: "Caja de alimentos del supermercado Ejemplo".</small>
+        <p th:if="${datos}" id="descripcion-error" class="campo-error">Falta la descripción. Por ejemplo: "Caja
+          de alimentos".</p>
+        <input id="descripcion" name="descripcion" type="text" required autocomplete="off"
+               th:value="${escrito and !datos} ? 'Caja de alimentos' : null"
+               th:attr="aria-describedby=${datos} ? 'descripcion-error descripcion-ayuda' : 'descripcion-ayuda',aria-invalid=${datos} ? 'true' : null" placeholder="Por ejemplo: leche en polvo, 10 cajas">
+      </div>
+
+      <fieldset th:each="n : ${#numbers.sequence(1, bienes)}" class="tarjeta pila" data-espacio="3">
+        <legend th:text="|Bien ${n}|">Bien 1</legend>
+        <div class="grilla" data-espacio="3"
+             th:with="enError=${datos and n == 2},
+                      que=${escrito ? (n == 1 ? 'Arroz' : (n == 2 ? 'Fideos' : 'Aceite')) : null}">
+          <div class="campo">
+            <label th:for="|que-${n}|" for="que-1">Qué es *</label>
+            <input th:id="|que-${n}|" id="que-1" th:name="|bienes[${n - 1}].que|" type="text" required
+                   autocomplete="off" th:value="${que}" placeholder="Por ejemplo: leche en polvo">
+          </div>
+          <div class="campo" th:data-estado="${enError} ? 'error'">
+            <label th:for="|cantidad-${n}|" for="cantidad-1">Cantidad *</label>
+            <p th:if="${enError}" th:id="|cantidad-${n}-error|" class="campo-error">La cantidad tiene que ser un
+              número. Por ejemplo: 20.</p>
+            <input th:id="|cantidad-${n}|" id="cantidad-1" th:name="|bienes[${n - 1}].cantidad|" type="text"
+                   inputmode="numeric" required autocomplete="off"
+                   th:value="${escrito} ? (${enError} ? 'veinte' : '10') : null"
+                   th:attr="aria-describedby=${enError} ? |cantidad-${n}-error| : null,aria-invalid=${enError} ? 'true' : null" placeholder="Por ejemplo: 10">
+          </div>
+          <div class="campo">
+            <label th:for="|vence-${n}|" for="vence-1">Vence el</label>
+            <input th:id="|vence-${n}|" id="vence-1" th:name="|bienes[${n - 1}].vence|" type="date">
+          </div>
+          <div class="campo">
+            <label th:for="|estado-${n}|" for="estado-1">Estado</label>
+            <select th:id="|estado-${n}|" id="estado-1" th:name="|bienes[${n - 1}].estado|">
+              <option>Nuevo</option>
+              <option>Usado</option>
+              <option>Desgastado</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label th:for="|foto-${n}|" for="foto-1">Foto</label>
+            <input th:id="|foto-${n}|" id="foto-1" th:name="|bienes[${n - 1}].foto|" type="file"
+                   accept="image/*">
+          </div>
+        </div>
+      </fieldset>
+      <div class="racimo" th:if="${bienes < 3}">
+        <button class="boton" data-tono="secundario" type="submit" formaction="/admin-donaciones-registrar"
+                th:formaction="@{/admin-donaciones-registrar}" formmethod="get" formenctype="application/x-www-form-urlencoded"
+                formnovalidate hx-get="/admin-donaciones-registrar" th:attr="hx-get=@{/admin-donaciones-registrar}" hx-include="closest form" hx-push-url="true" name="bienes" th:value="${bienes + 1}" value="2">Sumar otro bien</button>
+      </div>
+
+      <h2>3. Dónde quedó</h2>
+      <div class="grilla" data-espacio="3">
+        <div class="campo">
+          <label for="deposito">Depósito *</label>
+          <select id="deposito" name="deposito" required>
+            <option>Depósito Central</option>
+            <option>Depósito Sur</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="recepcion">Fecha de recepción *</label>
+          <input id="recepcion" name="recepcion" type="date" value="2026-10-15" required>
+        </div>
+      </div>
+
+      <div class="racimo">
+        <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
+                th:text="${escenario == 'lento'} ? 'Registrando…' : 'Registrar donación'">Registrar donación</button>
+        <a class="boton" data-tono="secundario" href="/admin-donaciones" th:href="@{/admin-donaciones}">Cancelar</a>
+      </div>
+      <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Registrando la donación…</p>
+      <p th:replace="~{envio :: indicador('enviando-admin-donaciones-registrar', 'Registrando la donación…')}"></p>
+    </form>
+  </div>
+</th:block>
+</body>
+</html>

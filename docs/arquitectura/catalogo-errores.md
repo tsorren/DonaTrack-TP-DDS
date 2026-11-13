@@ -34,7 +34,7 @@
 | `RecursoNoEncontradoException` | `DonaTrackException` | `404 Not Found` | Recurso buscado por ID no existe |
 | `InfrastructureException` | `DonaTrackException` | `500 Internal Server Error` | Fallo en capa de infraestructura (CSV, conexiones externas) |
 
-> \* `BusinessStateException` devuelve `404 Not Found` para los códigos `ERR-EST-702`, `ERR-EST-708` y `ERR-EST-716` (ver handler).
+> \* `BusinessStateException` devuelve `404 Not Found` para los códigos `ERR-EST-702`, `ERR-EST-708` y `ERR-EST-716`, y `429 Too Many Requests` para `ERR-EST-903` (ver handler).
 
 ---
 
@@ -56,6 +56,8 @@
 | `ERR-CSR-001` | `RECURSO_NO_ENCONTRADO` | El recurso solicitado no existe (búsqueda por UUID) | `404` | `RecursoNoEncontradoException` |
 | `ERR-CSR-002` | `ARGUMENTO_NULO` | Argumento obligatorio recibido como `null` | `400` | `ValidationException` |
 | `ERR-CSR-003` | `ARGUMENTO_INVALIDO` | Argumento con valor inválido (también usado por bean validation, headers faltantes, type mismatch, JSON malformado) | `400` | `ValidationException` / Spring MVC |
+| `ERR-CSR-401` | `NO_AUTENTICADO` | Falta el token de acceso o no es válido | `401` | Spring Security |
+| `ERR-CSR-403` | `ACCESO_DENEGADO` | El token no tiene el rol, el permiso o la pertenencia que pide la operación | `403` | Spring Security |
 | `ERR-CSR-500` | `ERROR_INTERNO` | Error interno del servidor (fallback genérico, FeignException) | `500` | `Exception` / `FeignException` |
 
 ---
@@ -76,6 +78,7 @@
 | `ERR-VAL-109` | `DIRECCION_ALTURA_INVALIDA` | Altura de dirección inválida | `400` |
 | `ERR-VAL-110` | `DIRECCION_CODIGO_POSTAL_VACIO` | Código postal vacío o nulo | `400` |
 | `ERR-VAL-111` | `DIRECCION_LOCALIDAD_NULA` | Localidad de dirección nula | `400` |
+| `ERR-VAL-114` | `LEGALES_VERSION_NO_VIGENTE` | La versión de los legales que se acepta no es la vigente (HB-20) | `400` |
 
 ### Donantes y Donaciones (2xx)
 
@@ -148,11 +151,13 @@
 | `ERR-VAL-506` | `NECESIDAD_SIN_SUBCATEGORIA` | Necesidad sin subcategoría definida | `400` |
 | `ERR-VAL-507` | `CANTIDAD_NECESITADA_INVALIDA` | Cantidad necesitada inválida (≤ 0) | `400` |
 | `ERR-VAL-508` | `DESCRIPCION_NECESIDAD_VACIA` | Descripción de necesidad vacía | `400` |
-| `ERR-VAL-512` | `NECESIDAD_RECURRENTE_SIN_PERIODO` | Necesidad recurrente sin periodo definido | `400` |
+| `ERR-VAL-512` | `NECESIDAD_RECURRENTE_SIN_PERIODO` | Necesidad recurrente sin periodo definido (desde HB-18, sin `periodicidad`) | `400` |
 | `ERR-VAL-513` | `FECHA_INICIO_NULA` | Fecha de inicio nula | `400` |
 | `ERR-VAL-514` | `FECHA_INICIO_FUTURA` | Fecha de inicio está en el futuro | `400` |
 | `ERR-VAL-517` | `ENTIDAD_BENEFICIARIA_TIPO_INVALIDO` | Una entidad beneficiaria no puede ser una empresa (organización sin fines de lucro) | `400` |
 | `ERR-VAL-518` | `ENTIDAD_BENEFICIARIA_SIN_DIRECCION` | Una entidad beneficiaria requiere dirección (la entrega se hace allí) | `400` |
+| `ERR-VAL-524` | `FECHA_LIMITE_NULA` | Una necesidad extraordinaria se crea con fecha límite (HB-18) | `400` |
+| `ERR-VAL-525` | `FECHA_LIMITE_NO_FUTURA` | La fecha límite de una necesidad extraordinaria tiene que ser posterior a hoy (HB-18) | `400` |
 
 > Códigos retirados (no reutilizar): `ERR-VAL-509` `ASIGNAR_DONACION_NULA`, `ERR-VAL-510` `DONACION_YA_ASIGNADA`, `ERR-VAL-511` `DONACION_NO_PERTENECE_A_NECESIDAD` y `ERR-VAL-516` `PERIODO_DONACION_NULA`. Quedaron sin uso cuando la necesidad dejó de guardar sus donaciones (DTI-06).
 
@@ -225,6 +230,7 @@
 | `ERR-EST-108` | `PERSONA_ANONIMIZADA_NO_OPERABLE` | La persona fue anonimizada: no se la puede editar ni registrarle o reactivarle un rol de donante o de entidad | `409` | |
 | `ERR-EST-112` | `JURIDICA_REPRESENTANTE_EN_OTRA_JURIDICA` | La humana ya es representante de otra jurídica (una humana representa a una sola) | `409` | |
 | `ERR-EST-113` | `PERSONA_DUPLICADA_EN_CONFLICTO` | El correo ya pertenece a otra persona con un documento distinto: no se puede decidir si es la misma | `409` | Lo usa el importador CSV: la fila cuenta como error |
+| `ERR-EST-115` | `SOLICITUD_ENTIDAD_NO_PENDIENTE` | La persona no es una jurídica con la solicitud de entidad pendiente (ya es entidad beneficiaria, es donante o está anonimizada) | `409` | `/api/personas/{id}/solicitud-entidad` (R11-41): el sitio lo muestra como "el equipo ya aprobó tu solicitud" |
 | `ERR-EST-211` | `DONANTE_INACTIVO` | El donante está dado de baja y no puede cargar donaciones | `409` | |
 | `ERR-EST-317` | `SUBCATEGORIA_EN_USO` | La subcategoría (o una de las subcategorías de la categoría) tiene necesidades que la usan | `409` | La FK `fk_necesidad_subcategoria` es la red de seguridad |
 | `ERR-EST-406` | `FRAGMENTACION_CANTIDAD_INSUFICIENTE` | Cantidad insuficiente para fragmentar | `409` | |
@@ -243,6 +249,7 @@
 | `ERR-EST-810` | `SOLICITUD_PLANIFICACION_TRANSICION_INVALIDA` | Transición de estado de solicitud de planificación inválida | `409` | |
 | `ERR-EST-816` | `ENTREGA_DONACION_DUPLICADA` | Ya existe una entrega registrada para la donación indicada | `409` | |
 | `ERR-EST-902` | `PERSONA_ANONIMIZADA` | La persona réplica ya está anonimizada y no admite nuevas sincronizaciones (notificaciones) | `409` | ADR [20261018](../adr/notificaciones-service/20261018-rechazo-de-sincronizacion-de-personas-anonimizadas-con-codigo-de-catalogo.md) (`proposed`) |
+| `ERR-EST-903` | `CONTACTO_LIMITE_EXCEDIDO` | El correo o la IP pasaron el límite de mensajes de contacto (5 por hora por correo, 20 por día por IP) | **`429`** | Excepción especial en handler. HB-21, ADR [20261110](../adr/notificaciones-service/20261110-recepcion-de-mensajes-de-contacto-en-notificaciones.md) (`proposed`) |
 
 ---
 

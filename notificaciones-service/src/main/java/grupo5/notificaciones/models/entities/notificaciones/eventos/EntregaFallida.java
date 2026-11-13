@@ -1,6 +1,7 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
+import grupo5.notificaciones.models.entities.notificaciones.TipoEvento;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,7 +29,7 @@ public class EntregaFallida extends EventoDeDonacion {
   }
 
   @Override
-  public List<Notificacion> generarNotificaciones() {
+  protected List<Notificacion> crearNotificaciones() {
     Notificacion aDonante =
         new Notificacion(this.getPersona().getId(), this.armarMensajeDonante(), this.getFecha());
     Notificacion aBeneficiario =
@@ -72,5 +73,10 @@ public class EntregaFallida extends EventoDeDonacion {
         + motivo
         + ". Replanificada: "
         + (replanificable ? "sí" : "no");
+  }
+
+  @Override
+  public TipoEvento tipoEvento() {
+    return TipoEvento.ENTREGA_FALLIDA;
   }
 }

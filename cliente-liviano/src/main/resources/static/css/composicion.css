@@ -1,0 +1,114 @@
+/* Capa de composición (D33, B0-03): cómo se disponen las cosas, sin color ni tipografía. Siete
+   primitivas con el nombre de Every Layout al lado: pila (stack), racimo (cluster), barra-lateral
+   (sidebar), cubierta (cover), grilla (grid), centro (center) y marco (frame). Se cargan en la capa
+   `composicion` desde app.css. El espacio entre hijos se cambia con data-espacio (utilidades.css).
+   Catálogo: docs/interfaz/componentes.md y /estilos. */
+
+/* pila (stack): hijos en columna con el mismo espacio entre ellos. */
+.pila {
+  display: flex;
+  flex-direction: column;
+}
+
+.pila > * {
+  margin-block: 0;
+}
+
+.pila > * + * {
+  margin-block-start: var(--espacio-entre, var(--espacio-3));
+}
+
+/* racimo (cluster): hijos en fila que bajan de renglón cuando no entran. data-alinea: centro, fin
+   o entre. */
+.racimo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-entre, var(--espacio-2));
+}
+
+.racimo[data-alinea="centro"] {
+  justify-content: center;
+}
+
+.racimo[data-alinea="fin"] {
+  justify-content: flex-end;
+}
+
+.racimo[data-alinea="entre"] {
+  justify-content: space-between;
+}
+
+/* barra-lateral (sidebar): dos hijos lado a lado; el primero es la barra (ancho --medida-barra) y
+   el segundo ocupa el resto. Cuando el segundo baja de la mitad del ancho, pasan a una columna. */
+.barra-lateral {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-entre, var(--espacio-3));
+}
+
+.barra-lateral > :first-child {
+  flex-grow: 1;
+  flex-basis: var(--medida-barra, 15rem);
+}
+
+.barra-lateral > :last-child {
+  flex-basis: 0;
+  flex-grow: 999;
+  min-inline-size: 50%;
+}
+
+/* cubierta (cover): llena la altura de la pantalla; el hijo con data-centro queda en el medio. */
+.cubierta {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100svh;
+  padding: var(--espacio-3);
+}
+
+.cubierta > * {
+  margin-block: var(--espacio-3);
+}
+
+.cubierta > [data-centro] {
+  margin-block: auto;
+}
+
+/* grilla (grid): tantas columnas como entren, cada una de al menos --medida-grilla. */
+.grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--medida-grilla, 16rem), 100%), 1fr));
+  gap: var(--espacio-entre, var(--espacio-3));
+}
+
+/* centro (center): contenido centrado con un ancho máximo (--medida-centro) y aire a los lados. */
+.centro {
+  box-sizing: border-box;
+  max-inline-size: var(--medida-centro, 75rem);
+  margin-inline: auto;
+  padding-inline: var(--espacio-3);
+}
+
+/* marco (frame): fuerza una proporción (data-proporcion: 1-1, 4-3 o 16-9) y recorta la imagen o
+   el video que lleva adentro. */
+.marco {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+}
+
+.marco[data-proporcion="1-1"] {
+  aspect-ratio: 1 / 1;
+}
+
+.marco[data-proporcion="4-3"] {
+  aspect-ratio: 4 / 3;
+}
+
+.marco > :is(img, video, svg) {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}

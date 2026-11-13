@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--/* La interacción del navegador (D31 y D32; B0-05 y B0-10), igual en los tres layouts:
+       layout-publico, layout-privado y la portada. No es una pantalla: su nombre no empieza con un
+       rol, así que SitioController no la muestra. Va en el head.
+       HTMX (ronda 2026-11-10): cambia de panel sin recargar ni volver arriba. Un formulario o un
+       enlace que filtra, cambia de pestaña o abre una ficha lleva hx-boost="true"; HTMX pide la
+       misma dirección, toma de la respuesta solo el main#contenido (hx-select en el main de cada
+       layout), lo reemplaza sin mover el scroll (show:none, scrollIntoViewOnBoost false) y deja la
+       dirección nueva con la History API (pushState), así Atrás vuelve al panel anterior. Sin
+       JavaScript, los mismos enlaces y formularios recargan la página. static/js/paneles.js envía
+       los filtros [data-al-cambiar] al tocarlos. Los avisos de éxito que renderiza el servidor llevan
+       hx-swap-oob="beforeend:#avisos": en una respuesta HTMX se agregan a la región aria-live y la
+       cola de Alpine los administra; sin JavaScript o en una navegación completa quedan en el panel.
+       Sin View Transitions en esos intercambios (con
+       ellas, a veces el panel no se cambiaba); entre páginas rige @view-transition de app.css.
+       Alpine.js, con defer. El orden importa: /js/interfaz.js registra los
+       componentes (Alpine.data) cuando Alpine avisa con alpine:init, así que se carga antes que
+       Alpine. Alpine viene del WebJar alpinejs__csp (build CSP, sin versión en la dirección: la
+       versión vive en el pom.xml).
+       responseHandling (conexión de pantallas, SPEC-08): una respuesta 4xx o 5xx también se muestra.
+       Sin esto, HTMX descarta la página de error (502, 404, 403) de un envío o un filtro con
+       hx-boost y la persona no ve nada; con esto, el main#contenido de la página de error reemplaza
+       al de la pantalla, como sin JavaScript. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="cargar">
+  <!--/* Las dos letras de todas las páginas se piden apenas se lee el head, no al final de la cadena
+         de @import de las hojas (R11-40, ficha r11-p2-armazon): así casi siempre llegan antes de
+         que se vaya la pantalla de carga. La cursiva de Archivo no: casi no se usa. */-->
+  <link rel="preload" href="/fuentes/archivo-latin.woff2" th:href="@{/fuentes/archivo-latin.woff2}"
+        as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fuentes/dm-sans-latin.woff2" th:href="@{/fuentes/dm-sans-latin.woff2}"
+        as="font" type="font/woff2" crossorigin>
+  <meta name="htmx-config" content='{"globalViewTransitions": false, "scrollIntoViewOnBoost": false, "defaultFocusScroll": false, "responseHandling": [{"code": "204", "swap": false}, {"code": "[23]..", "swap": true}, {"code": "[45]..", "swap": true, "error": true}]}'>
+  <script src="/webjars/htmx.org/dist/htmx.min.js" th:src="@{/webjars/htmx.org/dist/htmx.min.js}" defer></script>
+  <script src="/js/paneles.js" th:src="@{/js/paneles.js}" defer></script>
+  <script src="/js/interfaz.js" th:src="@{/js/interfaz.js}" defer></script>
+  <script src="/webjars/alpinejs__csp/dist/cdn.min.js"
+          th:src="@{/webjars/alpinejs__csp/dist/cdn.min.js}" defer></script>
+</th:block>
+</body>
+</html>

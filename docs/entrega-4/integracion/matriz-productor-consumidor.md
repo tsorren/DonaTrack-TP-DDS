@@ -8,7 +8,7 @@
 
 Donaciones-service **nunca declara colas en su propio exchange** — solo publica en `donaciones.exchange` (topología confirmada en la reunión del 15/9: un `TopicExchange` por servicio productor). La única decisión que le toca es qué routing key le pone a cada mensaje, en función del propio dominio (qué hecho/intención comunica), **nunca** en función de cuántos servicios lo consumen. Agregar un consumidor nuevo a una routing key que ya existe es 0 líneas de cambio en `donaciones-service` — el trabajo entero (cola + binding + listener) es del lado del consumidor que se suma. Por eso son **9 routing keys para 9 eventos**, sin necesidad de filas de "reuso" separadas: cuando un evento tiene más de un consumidor (`DonanteRegistradoV1`, `DonacionRecibidaV1`, `PersonaSincronizadaV1`), se listan todos en la misma fila.
 
-**Excepción: los comandos.** La regla anterior vale para **eventos**. Desde el broker de logística hay un **comando**, `EntregaSolicitadaV1`, que va a un único destinatario elegido y por eso lleva el destinatario en la routing key (`entrega.solicitada.<proveedorId>.v1`). Regla completa: **los eventos se rutean por hecho; los comandos, por destinatario** — formalizada en el [ADR 20261007](../../adr/20261007-broker-de-integracion-con-logistica.md). Total: 9 eventos + 1 comando.
+**Excepción: los comandos.** La regla anterior vale para **eventos**. Desde el broker de logística hay un **comando**, `EntregaSolicitadaV1`, que va a un único destinatario elegido y por eso lleva el destinatario en la routing key (`entrega.solicitada.<proveedorId>.v1`). Regla completa: **los eventos se rutean por hecho; los comandos, por destinatario** — formalizada en el [ADR 20261007](../../adr/20261007-broker-de-integracion-con-logistica.md). Total: 9 eventos + 1 comando, más `ImportacionTerminadaV1` (R11-30, 2026-11-12).
 
 | Evento | Routing key | Consumidor(es) | Trigger | Consecuencia | Origen (pre-RabbitMQ) |
 |---|---|---|---|---|---|
@@ -22,10 +22,11 @@ Donaciones-service **nunca declara colas en su propio exchange** — solo public
 | `PersonaSincronizadaV1` | `persona.sincronizada.v1` | Notificaciones, Incentivos | Alta, edición o anonimización de una `Persona` (`PersonasService.crearPersona`/`actualizarPersona`/`eliminarPersona`) | Notificaciones actualiza su réplica de contacto; Incentivos actualiza el nombre solo si el `personaId` corresponde a un donante ya registrado | `NotificacionesFeignClient.sincronizarPersona` (también reemplaza el `donante.modificado` que se había propuesto por separado) |
 | `EntregaSolicitadaV1` (**Command**) | `entrega.solicitada.<proveedorId>.v1` | El proveedor de logística elegido por el broker (hoy `logistica-service`, instancia `donatrack`) | El broker despacha el pedido de entrega de una donación asignada | El proveedor crea la Entrega | `LogisticaFeignClient.registrarEntregaPendiente` |
 | `DonacionSegmentadaV1` | `donacion.segmentada.v1` | Incentivos | `Donacion` completa termina de segmentarse (`SegmentacionService`) | Incentivos calcula puntos según categoría y cantidad donada | `IncentivosFeignClient.procesarDonacion` |
+| `ImportacionTerminadaV1` | `importacion.terminada.v1` | Notificaciones | Termina o se corta una importación de donantes (`ImportadorService.procesarImportacionAsincronica`, una vez, con el estado final guardado) | Notificaciones avisa a la Administración (`ID_ADMIN`) con las cifras y el archivo como referencia (R11-30) | — (no existía) |
 
 ## Consumo accidental en Notificaciones
 
-`notificaciones.donaciones` se bindea solo con las 7 claves que procesa (`RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS`). `donacion.segmentada.v1` y `donante.dado-de-baja.v1` ya no llegan a su cola; antes, con los comodines `donacion.#`, `donante.#` y `persona.#`, terminaban en `notificaciones.donaciones.dlq` (T18, resuelto; ver `catalogo-mensajes.md`).
+`notificaciones.donaciones` se bindea solo con las 8 claves que procesa (desde R11-30 también `importacion.terminada.v1`) (`RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS`). `donacion.segmentada.v1` y `donante.dado-de-baja.v1` ya no llegan a su cola; antes, con los comodines `donacion.#`, `donante.#` y `persona.#`, terminaban en `notificaciones.donaciones.dlq` (T18, resuelto; ver `catalogo-mensajes.md`).
 
 ## Notas que ya no aplican (dejadas fuera a propósito)
 

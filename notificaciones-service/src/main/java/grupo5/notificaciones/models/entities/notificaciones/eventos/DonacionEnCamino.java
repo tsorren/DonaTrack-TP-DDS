@@ -1,5 +1,6 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
+import grupo5.notificaciones.models.entities.notificaciones.TipoEvento;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -33,5 +34,10 @@ public class DonacionEnCamino extends EventoDeDonacion {
         + getDetalleDonacion()
         + " ya está en camino hacia tu sede. Seguí el recorrido en tiempo real: "
         + enlaceSeguimiento;
+  }
+
+  @Override
+  public TipoEvento tipoEvento() {
+    return TipoEvento.DONACION_EN_CAMINO;
   }
 }

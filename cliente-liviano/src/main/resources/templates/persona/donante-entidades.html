@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<!--/* Organizaciones de la persona que dona (Martina Ruiz, RF-06): la misma pantalla que la de la empresa
+       (ficha docs/interfaz/flujos/raices-donante-navegable.md, sección 10, R11-27 y R11-28): la misma
+       franja de ayuda, la misma barra de filtros (nombre, Categoría y "Ya doné") y la misma tarjeta
+       por organización (donante-entidades :: organizacion), con sus datos de ejemplo. Los filtros
+       se resuelven acá, sobre los datos de ejemplo de la primera página (no llama a ningún servicio);
+       ?pagina=2 trae los nombres largos y una organización sin pedidos (R11-18); el paginador común
+       lo arma el controller; ?escenario=vacio, error y lento. Los textos del resultado son los de la
+       versión común. Solo para la maqueta (?cuenta=persona): con login real la persona ve la versión
+       común (ficha r11-p0-persona.md). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-entidades', ~{::contenido})}">
+<head>
+  <title>Organizaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{persona/datos-persona :: persona(~{::cuerpo})}"></th:block>
+</th:block>
+
+<th:block th:fragment="pantalla" th:with="yaDonadas=${ {'comedor', 'escuela', 'merendero'} }">
+  <th:block th:replace="~{publico-entidades :: pantalla}"></th:block>
+  <span class="solo-lectores">Cómo llega tu donación</span>
+</th:block>
+
+<section th:fragment="entidadesLanding" class="huerta-participa" id="persona-entidades"
+         aria-labelledby="persona-entidades-titulo">
+  <header class="huerta-cabeza">
+    <p class="huerta-rotulo">Organizaciones</p>
+    <h1 id="persona-entidades-titulo">Quiénes reciben <em>tus donaciones</em></h1>
+    <p class="huerta-bajada">Conocé qué pide cada organización y seguí haciendo crecer lo que donás.</p>
+  </header>
+  <ul class="huerta-opciones" role="list">
+    <li class="tarjeta huerta-opcion" data-ya="si">
+      <img src="/img/ilustraciones/planta-naranjo.svg" th:src="@{/img/ilustraciones/planta-naranjo.svg}"
+           alt="" width="90" height="230">
+      <p class="huerta-rotulo">Comedor Barrio Ejemplo</p>
+      <span class="chip">Ya donaste</span>
+      <h3>Alimentos para la merienda.</h3>
+      <ul class="huerta-hojas" role="list">
+        <li>Lentejas secas</li>
+        <li>Arroz</li>
+        <li>Aceite de girasol</li>
+      </ul>
+      <div class="huerta-opcion-acciones">
+        <a class="boton" data-tono="secundario" href="/donante-donaciones">Ver mis donaciones</a>
+      </div>
+    </li>
+    <li class="tarjeta huerta-opcion">
+      <img src="/img/ilustraciones/planta-pino.svg" th:src="@{/img/ilustraciones/planta-pino.svg}"
+           alt="" width="90" height="230">
+      <p class="huerta-rotulo">Escuela Ejemplo N.º 12</p>
+      <h3>Muebles y útiles para las aulas.</h3>
+      <ul class="huerta-hojas" role="list">
+        <li>Sillas</li>
+        <li>Útiles escolares</li>
+        <li>Equipamiento para el ciclo que viene</li>
+      </ul>
+      <div class="huerta-opcion-acciones">
+        <a class="boton" data-tono="secundario" href="/donante-entidades#persona-entidades">Ver necesidades</a>
+      </div>
+    </li>
+    <li class="tarjeta huerta-opcion" data-ya="si">
+      <img src="/img/ilustraciones/planta-algodon.svg" th:src="@{/img/ilustraciones/planta-algodon.svg}"
+           alt="" width="90" height="228">
+      <p class="huerta-rotulo">Merendero Ejemplo Sur</p>
+      <span class="chip">Ya donaste</span>
+      <h3>Una merienda para cada día.</h3>
+      <ul class="huerta-hojas" role="list">
+        <li>Galletitas</li>
+        <li>Leche en polvo</li>
+        <li>Ropa de abrigo</li>
+      </ul>
+      <div class="huerta-opcion-acciones">
+        <a class="boton" data-tono="secundario" href="/donante-donaciones">Ver mis donaciones</a>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<th:block th:fragment="cuerpo"
+    th:with="entidades=${ {
+      {nombre: 'Comedor Barrio Ejemplo', ya: true,
+       pide: { {que: 'Lentejas secas', categoria: 'alimentos', cat: 'cat-alimentos', falta: 'Faltan 30 de 40 kg este mes', cuando: 'Se repite cada mes', recibido: 10, total: 40},
+               {que: 'Arroz', categoria: 'alimentos', cat: 'cat-alimentos', falta: 'Faltan 25 de 40 kg este mes', cuando: 'Se repite cada mes', recibido: 15, total: 40},
+               {que: 'Aceite de girasol', categoria: 'alimentos', cat: 'cat-alimentos', falta: 'Faltan 20 litros', cuando: 'Hasta el 20 de octubre', recibido: null, total: null},
+               {que: 'Leche en polvo', categoria: 'alimentos', cat: 'cat-alimentos', falta: 'Faltan 12 de 24 unidades', cuando: 'Hasta el 25 de octubre', recibido: 12, total: 24},
+               {que: 'Ropa de abrigo', categoria: 'ropa', cat: 'cat-ropa', falta: 'Faltan 25 de 30 unidades', cuando: 'Hasta el 15 de noviembre', recibido: 5, total: 30} } },
+      {nombre: 'Escuela Ejemplo N.º 12', ya: true,
+       pide: { {que: 'Sillas', categoria: 'muebles', cat: 'cat-muebles', falta: 'Faltan 14 de 20 unidades', cuando: 'Hasta el 30 de noviembre', recibido: 6, total: 20},
+               {que: 'Útiles escolares', categoria: 'escolares', cat: 'cat-escolares', falta: 'Faltan 4 cajas', cuando: 'Hasta el 30 de noviembre', recibido: null, total: null} } },
+      {nombre: 'Merendero Ejemplo Sur', ya: true,
+       pide: { {que: 'Galletitas', categoria: 'alimentos', cat: 'cat-alimentos', falta: 'Faltan 10 de 20 kg este mes', cuando: 'Se repite cada mes', recibido: 10, total: 20},
+               {que: 'Leche en polvo', categoria: 'alimentos', cat: 'cat-alimentos', falta: 'Faltan 20 unidades', cuando: 'Hasta el 31 de octubre', recibido: null, total: null} } },
+      {nombre: 'Hogar Casa Ejemplo', ya: true,
+       pide: { {que: 'Frazadas', categoria: 'ropa', cat: 'cat-ropa', falta: 'Faltan 10 de 20 unidades', cuando: 'Hasta el 15 de noviembre', recibido: 10, total: 20} } },
+      {nombre: 'Club Ejemplo Norte', ya: false,
+       pide: { {que: 'Camisetas deportivas', categoria: 'ropa', cat: 'cat-ropa', falta: 'Faltan 15 unidades', cuando: 'Hasta el 30 de noviembre', recibido: null, total: null} } },
+      {nombre: 'Biblioteca Popular Ejemplo', ya: false,
+       pide: { {que: 'Sillas', categoria: 'muebles', cat: 'cat-muebles', falta: 'Faltan 4 de 8 unidades', cuando: 'Hasta el 31 de diciembre', recibido: 4, total: 8} } }
+    } },
+             segunda=${ {
+      {nombre: 'CooperativaDeTrabajoYAyudaMutuaDelBarrioEjemploNorteYAledaño', ya: false,
+       pide: { {que: 'Frazadas', categoria: 'ropa', cat: 'cat-ropa', falta: 'Faltan 8 de 12 unidades', cuando: 'Hasta el 15 de noviembre', recibido: 4, total: 12} } },
+      {nombre: 'Asociación Civil de Vecinos y Amigos del Barrio Ejemplo para la Ayuda Comunitaria, la Educación Popular y el Deporte Sur', ya: false,
+       pide: { {que: 'Arroz', categoria: 'alimentos', cat: 'cat-alimentos', falta: 'Faltan 18 de 30 kg este mes', cuando: 'Se repite cada mes', recibido: 12, total: 30} } },
+      {nombre: 'Comedor Ejemplo Este', ya: false, pide: {} }
+    } },
+             categorias=${misEntidades.categorias},
+             busca=${param.nombre != null ? #strings.trim(param.nombre[0]) : ''},
+             pedidaCategoria=${param.categoria != null ? param.categoria[0] : ''},
+             categoria=${categorias.?[valor == #root.pedidaCategoria].isEmpty() ? '' : pedidaCategoria},
+             pagina=${misEntidades.pagina},
+             soloYa=${param.ya != null and param.ya[0] == 'si'},
+             filtrado=${categoria != '' or soloYa},
+             deLaPagina=${pagina == 2 and busca == '' and !filtrado ? segunda : entidades},
+             porNombre=${busca == '' ? deLaPagina : entidades.?[#strings.containsIgnoreCase(nombre, #root.busca)]},
+             porCategoria=${categoria == '' ? porNombre : porNombre.?[!pide.?[categoria == #root.categoria].isEmpty()]},
+             lista=${soloYa ? porCategoria.?[ya] : porCategoria},
+             cuantas=${#lists.size(lista)},
+             dibujada=${pagina <= 2}">
+  <div class="entidades" data-v="entidades">
+    <header>
+      <p class="rotulo" th:text="${seccion}">Organizaciones</p>
+      <h1>Quiénes reciben <em>las donaciones</em></h1>
+      <p class="bajada">Las organizaciones activas y lo que pide cada una. Actualizado hoy, 15 de
+        octubre, 16:25.</p>
+    </header>
+
+    <!--/* Cómo llega (RF-15 y RF-17): texto fijo, con los datos del depósito, sintéticos. */-->
+    <aside th:replace="~{donante-entidades :: ayuda(true)}"></aside>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{datos-donante :: error('No pudimos cargar las organizaciones.', '/donante-entidades')}"></section>
+    </th:block>
+
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Por ahora no hay organizaciones activas.</h2>
+      <p>Cuando una organización se sume y la aprueben, aparece acá con lo que pide.</p>
+    </section>
+
+    <form hx-boost="true" th:if="${escenario == '' or escenario == 'lento'}" class="filtros-barra" role="search"
+          action="/donante-entidades" th:action="@{/donante-entidades}"
+          method="get" aria-label="Buscar organizaciones">
+      <div class="campo filtro-buscar">
+        <label for="nombre">Buscar por nombre</label>
+        <div class="filtro-buscar-fila">
+          <input id="nombre" name="nombre" type="search" autocomplete="off" th:value="${busca}" placeholder="Por ejemplo: Comedor">
+          <button class="boton" data-tono="secundario" type="submit">Buscar</button>
+        </div>
+      </div>
+      <div class="filtros" role="group" aria-label="Filtrar las organizaciones">
+        <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${categoria}, ${misEntidades.opcionesDeCategoria()})}"></details>
+        <label th:replace="~{componentes/filtros :: interruptor('ya', 'si', 'Ya doné', ${soloYa})}"></label>
+        <a th:if="${busca != '' or filtrado}" class="filtros-sacar" href="/donante-entidades"
+           th:href="@{/donante-entidades}">Ver todas</a>
+      </div>
+    </form>
+
+    <th:block th:if="${escenario == 'lento'}">
+      <p class="cargando" role="status">Cargando las organizaciones…</p>
+      <div class="lista" data-v="organizaciones" aria-busy="true">
+        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+      </div>
+    </th:block>
+
+    <th:block th:if="${escenario == ''}">
+      <!--/* El resultado de la búsqueda, para que se lea después de buscar. */-->
+      <p class="resultado" role="status" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
+         th:text="${filtrado} ? (${cuantas == 0} ? (${soloYa and categoria == '' and busca == ''} ? 'Todavía no le donaste a ninguna organización.' : 'Ninguna organización coincide con lo que elegiste.') : |${cuantas} ${cuantas == 1 ? 'organización coincide' : 'organizaciones coinciden'} con lo que elegiste. Página 1 de 1.|)
+                 : (${busca != ''} ? (${cuantas == 0} ? 'Ninguna organización activa se llama así.' : |${cuantas} ${cuantas == 1 ? 'organización activa tiene' : 'organizaciones activas tienen'} «${busca}» en el nombre.|)
+                 : |46 organizaciones activas. Página ${pagina} de 8.|)">46
+        organizaciones activas. Página 1 de 8.</p>
+
+      <section th:if="${(busca != '' or filtrado) and cuantas == 0}" class="vacio"
+               aria-labelledby="sin-resultados">
+        <h2 id="sin-resultados" th:text="${soloYa and categoria == '' and busca == ''} ? 'Cuando el depósito asigne una de tus donaciones, la organización aparece acá.' : (${filtrado} ? 'Probá con otra categoría o sacá los filtros.' : 'Probá con otra parte del nombre.')">Probá
+          con otra parte del nombre.</h2>
+        <a class="boton" data-tono="secundario" href="/donante-entidades"
+           th:href="@{/donante-entidades}">Ver todas</a>
+      </section>
+
+      <section th:if="${busca == '' and !filtrado and !dibujada}" class="vacio"
+               aria-labelledby="no-dibujada">
+        <h2 id="no-dibujada">En la maqueta solo están dibujadas las dos primeras páginas.</h2>
+        <a class="boton" data-tono="secundario" href="/donante-entidades"
+           th:href="@{/donante-entidades}">Volver a la página 1</a>
+      </section>
+
+      <svg th:replace="~{iconos :: categorias}"></svg>
+
+      <ul th:if="${(dibujada or busca != '' or filtrado) and cuantas > 0}" class="lista" data-v="organizaciones"
+          role="list" aria-label="Organizaciones de esta página">
+        <th:block th:each="e : ${lista}">
+          <li th:replace="~{donante-entidades :: organizacion(${e}, ${categorias}, ${categoria})}"></li>
+        </th:block>
+      </ul>
+
+      <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

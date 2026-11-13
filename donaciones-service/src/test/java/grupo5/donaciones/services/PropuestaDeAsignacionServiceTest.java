@@ -1,6 +1,8 @@
 package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.argThat;
@@ -15,12 +17,16 @@ import static org.mockito.Mockito.when;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.comunicaciones.DestinoEventoDTO;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionAsignadaV1;
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
+import grupo5.donaciones.dto.propuestas.FiltroPropuestas;
 import grupo5.donaciones.dto.propuestas.NecesidadResumenDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
+import grupo5.donaciones.dto.propuestas.ResumenPropuestasDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
@@ -33,6 +39,8 @@ import grupo5.donaciones.models.entities.propuestas.GestorPropuestasDeAsignacion
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.propuestas.PropuestaAprobada;
+import grupo5.donaciones.models.entities.propuestas.SituacionPropuesta;
+import grupo5.donaciones.models.entities.propuestas.TipoAlgoritmo;
 import grupo5.donaciones.models.entities.ubicaciones.Direccion;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
@@ -42,17 +50,28 @@ import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
+import grupo5.donaciones.models.repositories.listados.BusquedaDecididas;
+import grupo5.donaciones.models.repositories.listados.CriterioPropuestas;
+import grupo5.donaciones.models.repositories.listados.OrdenPropuestas;
+import grupo5.donaciones.models.repositories.listados.Paginado;
+import grupo5.donaciones.models.repositories.listados.PropuestaEnListado;
+import grupo5.donaciones.models.repositories.listados.Tramo;
 import grupo5.donaciones.services.impl.AcumuladosDeAsignacion;
 import grupo5.donaciones.services.impl.PropuestaDeAsignacionService;
 import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import grupo5.donaciones.services.mappers.DireccionMapper;
+import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
 import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
 
 class PropuestaDeAsignacionServiceTest {
@@ -111,7 +130,8 @@ class PropuestaDeAsignacionServiceTest {
             donantesRepository,
             donacionesEventPublisher,
             logisticaBroker,
-            acumulados);
+            acumulados,
+            mock(DonacionIndependienteMapper.class));
   }
 
   @Test
@@ -123,19 +143,28 @@ class PropuestaDeAsignacionServiceTest {
 
     when(donacionRepository.findEnDeposito()).thenReturn(List.of(donacion));
     Necesidad satisfecha = mock(Necesidad.class);
-    when(necesidadRepository.findActivas()).thenReturn(List.of(necesidad, satisfecha));
+    // HB-18: una extraordinaria vencida (TERMINADA) sigue activa pero no recibe asignaciones
+    Necesidad vencida = mock(Necesidad.class);
+    when(necesidadRepository.findActivas()).thenReturn(List.of(necesidad, satisfecha, vencida));
+    when(necesidad.admiteAsignaciones(any())).thenReturn(true);
+    when(satisfecha.admiteAsignaciones(any())).thenReturn(true);
+    when(vencida.admiteAsignaciones(any())).thenReturn(false);
     when(acumulados.estaSatisfecha(satisfecha)).thenReturn(true);
     when(gestorPropuestas.generarPropuestas(eq(List.of(necesidad)), eq(List.of(donacion)), any()))
         .thenReturn(List.of(propuesta));
-    when(propuestaMapper.toDTO(propuesta)).thenReturn(dto);
+    when(propuestaMapper.toDTOsSinCalculo(List.of(propuesta))).thenReturn(List.of(dto));
 
-    List<PropuestaDTO> resultado = service.ejecutarAsignacion();
+    EjecucionRealizada resultado = service.ejecutarAsignacion();
 
-    assertEquals(1, resultado.size());
-    assertEquals(dto, resultado.getFirst());
+    assertEquals(List.of(dto), resultado.propuestas());
 
     verify(propuestaRepository).save(propuesta);
-    verify(asignacionRepository).save(any(EjecucionAsignacion.class));
+    // R11-26: devuelve el id de la ejecución que guardó, para el registro de actividad.
+    ArgumentCaptor<EjecucionAsignacion> guardada =
+        ArgumentCaptor.forClass(EjecucionAsignacion.class);
+    verify(asignacionRepository).save(guardada.capture());
+    assertEquals(guardada.getValue().getId(), resultado.ejecucionId());
+    assertEquals(1, guardada.getValue().getCantidadPropuestasGeneradas());
   }
 
   @Test
@@ -150,17 +179,77 @@ class PropuestaDeAsignacionServiceTest {
             EstadoPropuesta.APROBADA,
             java.time.LocalDateTime.now(),
             necesidadResumen,
-            List.of());
+            List.of(),
+            "sub-de-ana",
+            null);
 
-    when(propuestaRepository.findAll()).thenReturn(List.of(propuesta));
-    when(propuestaMapper.toDTO(propuesta)).thenReturn(dto);
+    PropuestaEnListado enListado = new PropuestaEnListado(propuesta, null, 0, Map.of());
+    when(propuestaRepository.buscar(any())).thenReturn(new Tramo<>(List.of(enListado), 45));
+    when(propuestaMapper.toDTOs(List.of(enListado))).thenReturn(List.of(dto));
 
-    List<PropuestaDTO> resultado = service.listarPropuestas();
+    Pagina<PropuestaDTO> resultado =
+        service.listarPropuestas(
+            new FiltroPropuestas(
+                List.of(EstadoPropuesta.PENDIENTE),
+                List.of(SituacionPropuesta.EN_CONFLICTO),
+                "prioridad_subatendidos",
+                null),
+            new ParametrosListado(1, 10, null, null));
 
-    assertEquals(1, resultado.size());
-    assertEquals(EstadoPropuesta.APROBADA, resultado.getFirst().estado());
-    verify(propuestaRepository).findAll();
-    verify(propuestaMapper).toDTO(propuesta);
+    assertEquals(1, resultado.elementos().size());
+    assertEquals(45, resultado.total());
+    assertEquals(EstadoPropuesta.APROBADA, resultado.elementos().getFirst().estado());
+    verify(propuestaRepository)
+        .buscar(
+            new CriterioPropuestas(
+                Set.of(EstadoPropuesta.PENDIENTE),
+                Set.of(SituacionPropuesta.EN_CONFLICTO),
+                TipoAlgoritmo.PRIORIDAD_SUBATENDIDOS,
+                false,
+                null,
+                OrdenPropuestas.PUESTO,
+                new Paginado(1, 10)));
+  }
+
+  @Test
+  void listarPropuestas_conAmbos_pideLasQueSugirieronLosDos() {
+    when(propuestaRepository.buscar(any())).thenReturn(new Tramo<>(List.of(), 0));
+
+    service.listarPropuestas(
+        new FiltroPropuestas(null, null, "AMBOS", null),
+        new ParametrosListado(null, null, null, "reciente"));
+
+    verify(propuestaRepository)
+        .buscar(
+            new CriterioPropuestas(
+                Set.of(),
+                Set.of(),
+                null,
+                true,
+                null,
+                OrdenPropuestas.RECIENTE,
+                new Paginado(0, 20)));
+  }
+
+  @Test
+  void listarPropuestas_conUnAlgoritmoDesconocido_esUnErrorDelPedido() {
+    FiltroPropuestas filtro = new FiltroPropuestas(null, null, "OTRO", null);
+    ParametrosListado listado = ParametrosListado.primeraPagina();
+
+    assertThrows(ValidationException.class, () -> service.listarPropuestas(filtro, listado));
+  }
+
+  // A8: el resumen suma las tres situaciones
+  @Test
+  void resumen_sumaLasTresSituaciones() {
+    when(propuestaRepository.contarPendientesPorSituacion())
+        .thenReturn(
+            Map.of(
+                SituacionPropuesta.LIBRE, 8L,
+                SituacionPropuesta.EN_CONFLICTO, 2L,
+                SituacionPropuesta.SIN_STOCK, 1L));
+
+    assertEquals(new ResumenPropuestasDTO(11, 8, 2, 1), service.resumen());
   }
 
   @Test
@@ -173,10 +262,13 @@ class PropuestaDeAsignacionServiceTest {
     when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
     when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
 
-    service.actualizarEstado(id, EstadoPropuesta.APROBADA);
+    service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana");
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
-    verify(eventPublisher, times(1)).publishEvent(any(PropuestaAprobada.class));
+    assertEquals("sub-de-ana", propuesta.getDecididaPor());
+    assertNotNull(propuesta.getFechaDecision());
+    verify(eventPublisher, times(1))
+        .publishEvent(argThat((PropuestaAprobada e) -> "sub-de-ana".equals(e.actor())));
     verify(propuestaRepository).save(propuesta);
   }
 
@@ -186,7 +278,7 @@ class PropuestaDeAsignacionServiceTest {
     Propuesta propuesta = new Propuesta();
     Necesidad necesidad = mock(Necesidad.class);
     when(necesidad.getId()).thenReturn(UUID.randomUUID());
-    when(necesidad.isActiva()).thenReturn(false);
+    when(necesidad.admiteAsignaciones(any())).thenReturn(false);
     propuesta.asociarNecesidad(necesidad.getId());
     when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
     when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
@@ -194,7 +286,7 @@ class PropuestaDeAsignacionServiceTest {
     BusinessStateException ex =
         assertThrows(
             BusinessStateException.class,
-            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA));
+            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana"));
 
     assertEquals(ErrorCatalog.NECESIDAD_INACTIVA, ex.getError());
     assertEquals(EstadoPropuesta.PENDIENTE, propuesta.getEstado());
@@ -214,7 +306,7 @@ class PropuestaDeAsignacionServiceTest {
     BusinessStateException ex =
         assertThrows(
             BusinessStateException.class,
-            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA));
+            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana"));
 
     assertEquals(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA, ex.getError());
     verify(necesidadRepository, never()).findById(any());
@@ -245,7 +337,7 @@ class PropuestaDeAsignacionServiceTest {
     BusinessStateException ex =
         assertThrows(
             BusinessStateException.class,
-            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA));
+            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana"));
 
     assertEquals(ErrorCatalog.DONACION_A_SI_MISMO, ex.getError());
     assertEquals(EstadoPropuesta.PENDIENTE, propuesta.getEstado());
@@ -273,10 +365,13 @@ class PropuestaDeAsignacionServiceTest {
     when(donacionRepository.findById(independiente.getId())).thenReturn(Optional.of(independiente));
     when(donacionesRepository.findById(donacionOriginalId)).thenReturn(Optional.of(donacion));
 
-    service.actualizarEstado(id, EstadoPropuesta.APROBADA);
+    service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana");
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
-    verify(eventPublisher, times(1)).publishEvent(any(PropuestaAprobada.class));
+    assertEquals("sub-de-ana", propuesta.getDecididaPor());
+    assertNotNull(propuesta.getFechaDecision());
+    verify(eventPublisher, times(1))
+        .publishEvent(argThat((PropuestaAprobada e) -> "sub-de-ana".equals(e.actor())));
   }
 
   @Test
@@ -291,7 +386,7 @@ class PropuestaDeAsignacionServiceTest {
     when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
     when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
 
-    service.actualizarEstado(id, EstadoPropuesta.APROBADA);
+    service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana");
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
   }
@@ -299,7 +394,7 @@ class PropuestaDeAsignacionServiceTest {
   private static Necesidad necesidadActivaDe(UUID entidadId) {
     Necesidad necesidad = mock(Necesidad.class);
     when(necesidad.getId()).thenReturn(UUID.randomUUID());
-    when(necesidad.isActiva()).thenReturn(true);
+    when(necesidad.admiteAsignaciones(any())).thenReturn(true);
     when(necesidad.getEntidadId()).thenReturn(entidadId);
     return necesidad;
   }
@@ -310,9 +405,11 @@ class PropuestaDeAsignacionServiceTest {
     Propuesta propuesta = new Propuesta();
     when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
 
-    service.actualizarEstado(id, EstadoPropuesta.DESCARTADA);
+    service.actualizarEstado(id, EstadoPropuesta.DESCARTADA, "sub-de-carla");
 
     assertEquals(EstadoPropuesta.DESCARTADA, propuesta.getEstado());
+    assertEquals("sub-de-carla", propuesta.getDecididaPor());
+    assertNotNull(propuesta.getFechaDecision());
     verify(propuestaRepository).save(propuesta);
   }
 
@@ -323,21 +420,22 @@ class PropuestaDeAsignacionServiceTest {
 
     assertThrows(
         RecursoNoEncontradoException.class,
-        () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA));
+        () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana"));
   }
 
   @Test
   void historialEjecuciones_debeRetornarLoDelRepositorioMapeado() {
     EjecucionAsignacion entity = mock(EjecucionAsignacion.class);
     EjecucionAsignacionDTO dto = mock(EjecucionAsignacionDTO.class);
-    when(asignacionRepository.obtenerHistorial()).thenReturn(List.of(entity));
+    when(asignacionRepository.historial(new Paginado(0, 1)))
+        .thenReturn(new Tramo<>(List.of(entity), 3));
     when(ejecucionMapper.toDTO(entity)).thenReturn(dto);
 
-    List<EjecucionAsignacionDTO> resultado = service.historialEjecuciones();
+    Pagina<EjecucionAsignacionDTO> resultado =
+        service.historialEjecuciones(new ParametrosListado(0, 1, null, null));
 
-    assertEquals(1, resultado.size());
-    assertEquals(dto, resultado.getFirst());
-    verify(asignacionRepository).obtenerHistorial();
+    assertEquals(List.of(dto), resultado.elementos());
+    assertEquals(3, resultado.total());
     verify(ejecucionMapper).toDTO(entity);
   }
 
@@ -506,7 +604,29 @@ class PropuestaDeAsignacionServiceTest {
                         && datos.destino() == destino
                         && datos.pesoTotalKG().equals(12.5)
                         && datos.volumenTotalM3().equals(0.3)
-                        && datos.fecha() != null));
+                        && datos.fecha() != null
+                        && datos.donanteId() == null));
+  }
+
+  @Test
+  void onPropuestaAprobada_debeMandarAlBrokerElDonanteDeLaDonacionOriginal() {
+    Necesidad necesidad = mock(Necesidad.class);
+    UUID necesidadId = UUID.randomUUID();
+    UUID juridicaId = UUID.randomUUID();
+    prepararBeneficiario(necesidad, necesidadId, juridicaId, mock(DestinoEventoDTO.class));
+    PosibleFragmentacion fragmentacion = mock(PosibleFragmentacion.class);
+    prepararFragmentacion(fragmentacion, necesidad, UUID.randomUUID(), 12.5, 0.3);
+    UUID donanteId = UUID.randomUUID();
+    Donacion donacion = mock(Donacion.class);
+    when(donacion.getDonanteId()).thenReturn(donanteId);
+    when(donacionesRepository.findById(any())).thenReturn(Optional.of(donacion));
+
+    service.onPropuestaAprobada(
+        new PropuestaAprobada(UUID.randomUUID(), necesidadId, List.of(fragmentacion), "actor"));
+
+    verify(logisticaBroker)
+        .solicitarEntrega(
+            argThat((DatosEntregaLogistica datos) -> donanteId.equals(datos.donanteId())));
   }
 
   @Test
@@ -604,5 +724,94 @@ class PropuestaDeAsignacionServiceTest {
     when(donacionAsignada.getDonacionOriginalId()).thenReturn(donacionOriginalId);
     when(donacionAsignada.getPesoTotal()).thenReturn(peso);
     when(donacionAsignada.getVolumenTotal()).thenReturn(volumen);
+  }
+
+  // --- R11-35: la búsqueda de las decididas y el motivo del descarte ----------------------------
+
+  @Test
+  void listarPropuestas_conLaBusquedaDeDecididas_laPasaAlRepositorio() {
+    when(propuestaRepository.buscar(any())).thenReturn(new Tramo<>(List.of(), 0));
+    UUID categoria = UUID.randomUUID();
+
+    service.listarPropuestas(
+        new FiltroPropuestas(
+            List.of(EstadoPropuesta.APROBADA, EstadoPropuesta.DESCARTADA),
+            null,
+            null,
+            null,
+            categoria,
+            "sub-de-ana",
+            LocalDate.of(2026, 11, 1),
+            LocalDate.of(2026, 11, 12)),
+        new ParametrosListado(null, null, "  arroz ", "decision_reciente"));
+
+    verify(propuestaRepository)
+        .buscar(
+            new CriterioPropuestas(
+                Set.of(EstadoPropuesta.APROBADA, EstadoPropuesta.DESCARTADA),
+                Set.of(),
+                null,
+                false,
+                null,
+                OrdenPropuestas.DECISION_RECIENTE,
+                new Paginado(0, 20),
+                new BusquedaDecididas(
+                    "arroz",
+                    categoria,
+                    "sub-de-ana",
+                    LocalDate.of(2026, 11, 1),
+                    LocalDate.of(2026, 11, 12))));
+  }
+
+  @Test
+  void listarPropuestas_conElPeriodoAlReves_esUnErrorDelPedido() {
+    FiltroPropuestas filtro =
+        new FiltroPropuestas(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            LocalDate.of(2026, 11, 12),
+            LocalDate.of(2026, 11, 1));
+    ParametrosListado listado = ParametrosListado.primeraPagina();
+
+    assertThrows(ValidationException.class, () -> service.listarPropuestas(filtro, listado));
+  }
+
+  @Test
+  void actualizarEstado_alDescartarConMotivo_loGuarda() {
+    UUID id = UUID.randomUUID();
+    Propuesta propuesta = new Propuesta();
+    when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
+
+    service.actualizarEstado(
+        id, EstadoPropuesta.DESCARTADA, "sub-de-carla", " El merendero cerró por vacaciones. ");
+
+    assertEquals("El merendero cerró por vacaciones.", propuesta.getMotivoDescarte());
+    verify(propuestaRepository).save(propuesta);
+  }
+
+  @Test
+  void actualizarEstado_alAprobarConMotivo_loIgnora() {
+    UUID id = UUID.randomUUID();
+    Propuesta propuesta = new Propuesta();
+    Necesidad necesidad = necesidadActivaDe(UUID.randomUUID());
+    propuesta.asociarNecesidad(necesidad.getId());
+    when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
+    when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
+
+    service.actualizarEstado(id, EstadoPropuesta.APROBADA, "sub-de-ana", "No hace falta.");
+
+    assertNull(propuesta.getMotivoDescarte());
+  }
+
+  @Test
+  void resumen_cuentaLasDecididasSinFecha() {
+    when(propuestaRepository.contarPendientesPorSituacion()).thenReturn(Map.of());
+    when(propuestaRepository.contarDecididasSinFecha()).thenReturn(4L);
+
+    assertEquals(new ResumenPropuestasDTO(0, 0, 0, 0, 4), service.resumen());
   }
 }

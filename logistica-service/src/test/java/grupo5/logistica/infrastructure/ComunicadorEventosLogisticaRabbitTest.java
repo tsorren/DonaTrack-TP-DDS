@@ -2,13 +2,17 @@ package grupo5.logistica.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import grupo5.logistica.dto.entregas.ReporteRecepcionDTO;
 import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
 import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.models.entities.camiones.Camion;
+import grupo5.logistica.models.entities.entregas.MotivoReporte;
+import grupo5.logistica.models.entities.entregas.ReporteRecepcion;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
@@ -48,6 +52,44 @@ class ComunicadorEventosLogisticaRabbitTest {
     assertEquals(camionId, payload.camionId());
     assertEquals("AA123BB", payload.patenteCamion());
     assertEquals(evento.getTimestamp(), payload.fechaEntrega());
+    assertNull(payload.reporte());
+  }
+
+  @Test
+  void entregaExitosaLlevaLasFotosDeRecepcionEnElPayload() {
+    List<String> fotos = List.of("http://localhost:8086/api/entregas/1/fotos/a");
+    EntregaConfirmada evento =
+        new EntregaConfirmada(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), null, fotos);
+    Camion camion = mock(Camion.class);
+    when(camion.getId()).thenReturn(UUID.randomUUID());
+
+    comunicador.comunicarEntregaExitosa(evento, camion);
+
+    ArgumentCaptor<EventoEntregaExitosa> captor =
+        ArgumentCaptor.forClass(EventoEntregaExitosa.class);
+    verify(eventPublisher).publicarEntregaExitosa(captor.capture());
+    assertEquals(fotos, captor.getValue().fotosRecepcion());
+  }
+
+  @Test
+  void entregaExitosaConReporteLoLlevaEnElPayload() {
+    EntregaConfirmada evento =
+        new EntregaConfirmada(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new ReporteRecepcion(MotivoReporte.INCOMPLETA, "Faltó una caja", 12.0));
+    Camion camion = mock(Camion.class);
+    when(camion.getId()).thenReturn(UUID.randomUUID());
+
+    comunicador.comunicarEntregaExitosa(evento, camion);
+
+    ArgumentCaptor<EventoEntregaExitosa> captor =
+        ArgumentCaptor.forClass(EventoEntregaExitosa.class);
+    verify(eventPublisher).publicarEntregaExitosa(captor.capture());
+    assertEquals(
+        new ReporteRecepcionDTO(MotivoReporte.INCOMPLETA, "Faltó una caja", 12.0),
+        captor.getValue().reporte());
   }
 
   @Test

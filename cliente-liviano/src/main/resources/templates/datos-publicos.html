@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--/* Piezas que repiten las públicas del sitio A. No es una pantalla: su nombre no empieza con un rol,
+       así que SitioController no la muestra.
+       - avisoError(titulo, texto, volver, recargar): el error del servidor, con el código y
+         "escribinos", que lleva a Contacto con el código y el regreso (volver: la pantalla);
+         recargar, el botón "Volver a cargar" de las que cargan datos.
+       - fotoVentana(id, e): la foto grande de una entrega, en el popover del navegador (se abre y
+         se cierra sin JavaScript, con Esc o tocando afuera), con el texto de la portada.
+       - filtroCategorias(leyenda, todas): las categorías de ?categoria=, como opciones con su
+         ícono; va dentro de un formulario get [data-al-cambiar]. */-->
+<section th:fragment="avisoError(titulo, texto, volver, recargar)" class="banner" data-estado="error" role="alert"
+         aria-labelledby="error-titulo">
+  <h2 id="error-titulo" th:text="${titulo}">No pudimos cargar las entregas confirmadas.</h2>
+  <p><th:block th:text="${texto}">Es un problema nuestro. Probá de nuevo en unos minutos;</th:block> si sigue,
+    <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+       th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver=${volver})}">escribinos</a>
+    con este código.</p>
+  <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+  <a th:if="${recargar}" class="boton" data-tono="secundario" href="/publico-donaciones"
+     th:href="${volver}">Volver a cargar</a>
+</section>
+
+<dialog th:fragment="fotoVentana(id, e)" class="dialogo" th:id="${id}" popover
+     th:attr="aria-labelledby=${id + '-titulo'}">
+  <img src="/img/ejemplo-entrega.svg" th:src="@{${e.foto}}" th:alt="${e.alt}" width="640" height="400"
+       loading="lazy">
+  <p class="dialogo-titulo" th:id="${id + '-titulo'}" th:text="${e.que}">Sillas, 6 unidades</p>
+  <p><th:block th:text="${e.entidad}">Escuela Ejemplo N.º 12</th:block> confirmó la entrega el
+    <time th:datetime="${e.fecha}" th:text="|${e.dia} de ${e.anio}|">14 de
+      octubre de 2026</time> y subió esta foto.</p>
+  <button type="button" class="boton" data-tono="secundario" th:attr="popovertarget=${id}"
+          popovertargetaction="hide">Cerrar</button>
+</dialog>
+
+<fieldset th:fragment="filtroCategorias(leyenda, todas)" class="filtro-opciones">
+  <legend th:text="${leyenda}">Qué se donó</legend>
+  <label class="filtro-opcion"><input type="radio" name="categoria" value=""
+         th:checked="${categoria == ''}"><span th:text="${todas}">Todas</span></label>
+  <label th:each="c : ${categorias}" class="filtro-opcion"><input type="radio" name="categoria"
+         th:value="${c.clave}" th:checked="${categoria == c.clave}"><svg class="filtro-icono"
+         viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use th:href="${'#cat-' + c.clave}"
+         href="#cat-alimentos"/></svg><span th:text="${c.texto}">Alimentos</span></label>
+</fieldset>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<!--/* Raíces, piezas de las pantallas de la entidad que dibuja la corrida A/B (Inicio, Donaciones
+       recibidas y Notificaciones), según su ficha (docs/interfaz/flujos/raices-entidad-navegable.md).
+       No es una pantalla: su nombre no empieza con un rol, así que SitioController no la muestra.
+       Fragmentos:
+       - datos(cuerpo): las donaciones asignadas a la entidad (recibidas.asignadas, del controller:
+         de la maqueta, las 11 del Comedor Barrio Ejemplo, o de Donaciones; una sola fuente para
+         Inicio, Donaciones recibidas y Seguir entregas, sección 6 de la ficha) y sus grupos por
+         estado; inserta cuerpo con esas variables. ?escenario=vacio las vacía; sin-puerta saca las que esperan en la puerta y
+         sin-resultados, la del aceite (para el filtro sin resultados).
+       - novedades(cuantas): el acceso a Notificaciones, con cuántas urgentes hay sin leer.
+       - error(titulo, texto, recargar): el aviso de error del servidor, con el código para escribir. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--/* grupo: puerta (espera tu confirmación), problema, camino, salir (por salir) o recibida
+       (vistas.RecibidasVista.Recibida). */-->
+<th:block th:fragment="datos(cuerpo)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             todas=${recibidas.asignadas},
+             asignadas=${escenario == 'vacio' ? {} : todas.?[(grupo != 'puerta' or #root.escenario != 'sin-puerta') and (clave != 'aceite' or #root.escenario != 'sin-resultados')]},
+             grupos=${ {
+      {clave: 'puerta', valor: 'en-tu-puerta', nombre: 'Esperan tu confirmación', estado: 'Espera tu confirmación'},
+      {clave: 'problema', valor: 'con-problema', nombre: 'Con problema', estado: 'Con problema'},
+      {clave: 'camino', valor: 'en-camino', nombre: 'En camino', estado: 'En camino'},
+      {clave: 'salir', valor: 'por-salir', nombre: 'Pendientes', estado: 'Pendiente'},
+      {clave: 'recibida', valor: 'recibidas', nombre: 'Recibidas en ' + recibidas.mes, estado: 'Recepción confirmada'} } }">
+  <svg th:replace="~{iconos :: categorias}"></svg>
+  <th:block th:replace="${cuerpo}"></th:block>
+</th:block>
+
+<!--/* El acceso a Notificaciones: no es una sección del menú (ficha, sección 2); va en la cabecera de
+       cada pantalla de la entidad que dibuja este grupo. Sin rojo ni signo de exclamación: es un dato. */-->
+<a th:fragment="novedades(cuantas)" class="novedades" href="/entidad-notificaciones"
+   th:href="@{/entidad-notificaciones}">
+  <span class="novedades-cuenta" th:text="${cuantas}">3</span>
+  <span th:text="${cuantas == 1} ? 'novedad urgente sin leer' : 'novedades urgentes sin leer'">novedades urgentes sin leer</span>
+</a>
+
+<!--/* El error del servidor al cargar: qué pasó, que no cambió nada, volver a cargar y el código. */-->
+<section th:fragment="error(titulo, texto, recargar)" class="banner" data-estado="error" role="alert"
+         aria-labelledby="error-titulo">
+  <h2 id="error-titulo" th:text="${titulo}">No pudimos cargar tu inicio.</h2>
+  <p><th:block th:text="${texto}">Es un problema nuestro: no cambió nada en tus entregas ni en tus
+    necesidades. Probá de nuevo en unos minutos; si sigue,</th:block> <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+       th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver=${recargar})}">escribinos
+      con este código</a>.</p>
+  <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+  <a class="boton" data-tono="secundario" href="/entidad-inicio" th:href="${recargar}">Volver
+    a cargar</a>
+</section>
+
+</body>
+</html>

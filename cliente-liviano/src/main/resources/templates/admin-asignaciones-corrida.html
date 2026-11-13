@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Raíces, Asignar donaciones después de correr la asignación a mano: de partida no encontró nada nuevo; ?escenario=nuevas, generó 2 propuestas (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.7). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Asignación corrida - Asignar donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-asignaciones :: hoja('corrida')}"></th:block>
+</th:block>
+</body>
+</html>

@@ -146,6 +146,17 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
+  void handleBusinessState_conLimiteDeContactoExcedido_deberiaRetornarTooManyRequests() {
+    BusinessStateException ex = new BusinessStateException(ErrorCatalog.CONTACTO_LIMITE_EXCEDIDO);
+
+    ResponseEntity<ErrorResponse> response = handler.handleBusinessState(ex);
+
+    assertEquals(HttpStatus.TOO_MANY_REQUESTS, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals("ERR-EST-903", response.getBody().code());
+  }
+
+  @Test
   void handleFeignException_deberiaMapearStatusRemoto() {
     Request request =
         Request.create(

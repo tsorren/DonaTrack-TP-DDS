@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!--/* Raíces, Activar cuenta, pedir otro enlace (ficha docs/interfaz/flujos/raices-conocer-y-activar.md,
+       4.4): sale del aviso de enlace vencido y de Ingresar ("¿Te crearon una cuenta?"). Copia Recuperar
+       la contraseña: un correo y el enlace. Es un formulario real (POST) que va a
+       publico-activar-pedido; el aviso no dice si el correo tiene cuenta (RNF-AUTH-10). Estados:
+       ?escenario=error y sin-conexion.
+       Fragmentos:
+       - hoja(enviado): la pantalla entera; con enviado, el aviso en lugar del formulario. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-ingresar', ~{::contenido})}">
+<head>
+  <title>Pedir otro enlace - Activar cuenta - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{publico-activar-pedir :: hoja(false)}"></th:block>
+</th:block>
+<th:block th:fragment="hoja(enviado)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''}">
+  <div class="publica cuenta">
+    <div class="cuenta-principal">
+      <header class="publica-cabeza">
+        <p class="rotulo">Activar cuenta</p>
+        <h1>Pedí <em>otro enlace</em></h1>
+        <p class="lectura-bajada">Escribí el correo con el que te registraron y te mandamos un enlace para
+          activar tu cuenta.</p>
+      </header>
+      <section th:if="${enviado}" class="banner" role="status" tabindex="-1" autofocus
+               aria-labelledby="enviado-titulo">
+        <h2 id="enviado-titulo">Si hay una cuenta con ese correo, te mandamos un enlace.</h2>
+        <p>Revisá tu bandeja de entrada: el enlace sirve una sola vez y por tiempo limitado.</p>
+        <a class="boton" data-tono="secundario" href="/publico-ingresar"
+           th:href="@{/publico-ingresar}">Volver a Ingresar</a>
+      </section>
+      <th:block th:unless="${enviado}">
+        <th:block th:if="${escenario == 'error'}">
+          <section th:replace="~{datos-publicos :: avisoError('No pudimos mandar el enlace.',
+              'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-activar-pedir', false)}"></section>
+        </th:block>
+        <section th:if="${escenario == 'sin-conexion'}" class="banner" data-estado="error" role="alert"
+                 aria-labelledby="red-titulo">
+          <h2 id="red-titulo">Se cortó la conexión.</h2>
+          <p>No sabemos si el enlace salió. Si en unos minutos no llega a tu bandeja, pedilo de nuevo.</p>
+        </section>
+        <form class="formulario" action="/publico-activar-pedido" th:action="@{/publico-activar-pedido}"
+              method="post" data-enviando="Enviando…">
+          <div class="campo">
+            <label for="correo">Correo electrónico</label>
+            <input id="correo" name="correo" type="email" required autocomplete="email"
+                   th:value="${escenario == 'error' or escenario == 'sin-conexion'} ? 'martina.ruiz@ejemplo.test' : null" placeholder="nombre@ejemplo.com">
+          </div>
+          <button class="boton" data-tono="principal" type="submit">Mandame el enlace</button>
+          <p class="cuenta-salida">¿Ya tenés contraseña? <a href="/publico-ingresar"
+             th:href="@{/publico-ingresar}">Volver a Ingresar</a></p>
+        </form>
+      </th:block>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

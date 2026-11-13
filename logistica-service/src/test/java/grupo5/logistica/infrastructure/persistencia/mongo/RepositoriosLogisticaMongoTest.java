@@ -12,6 +12,7 @@ import grupo5.logistica.infrastructure.persistencia.mongo.adapters.EventosEntreg
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.RutasRepositoryMongoAdapter;
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.SolicitudPlanificacionRepositoryMongoAdapter;
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.SolicitudesTransicionEntregaRepositoryMongoAdapter;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EventoEntregaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.SolicitudTransicionEntregaDocument;
@@ -23,6 +24,7 @@ import grupo5.logistica.infrastructure.persistencia.mongo.mappers.SolicitudPlani
 import grupo5.logistica.models.entities.camiones.CambioEstadoCamion;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.entregas.CambioEstadoEntrega;
 import grupo5.logistica.models.entities.entregas.Entrega;
@@ -31,13 +33,17 @@ import grupo5.logistica.models.entities.entregas.NoRecepcion;
 import grupo5.logistica.models.entities.entregas.RevisionEntrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.testutils.CamionMother;
 import grupo5.logistica.testutils.ChoferMother;
 import grupo5.logistica.testutils.EntregaMother;
+import grupo5.logistica.testutils.SeguimientoDePrueba;
 import grupo5.logistica.testutils.SolicitudPlanificacionMother;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -220,6 +226,37 @@ class RepositoriosLogisticaMongoTest {
   }
 
   @Test
+  void unaEntregaEnLaPuerta_seLeeEnLaPuertaYBloqueaOtraActivaDeLaMismaDonacion() {
+    UUID idDonacion = UUID.randomUUID();
+    Entrega enPuerta = entregaDeLaDonacion(idDonacion);
+    enPuerta.iniciarRuta("Chofer");
+    enPuerta.llegarAPuerta("SIMULADOR");
+    entregas.save(enPuerta);
+
+    assertEquals(
+        EstadoEntrega.EN_PUERTA,
+        entregas.findById(enPuerta.getId()).orElseThrow().getEstadoActual());
+    Entrega otraActiva = entregaDeLaDonacion(idDonacion);
+    assertThrows(DuplicateKeyException.class, () -> entregas.save(otraActiva));
+  }
+
+  @Test
+  void unaEntregaCancelada_noBloqueaOtraActivaDeLaMismaDonacion() {
+    UUID idDonacion = UUID.randomUUID();
+    Entrega cancelada = entregaDeLaDonacion(idDonacion);
+    cancelada.cancelar("broker-donaciones", "NECESIDAD_DADA_DE_BAJA");
+    entregas.save(cancelada);
+
+    Entrega nueva = entregas.save(entregaDeLaDonacion(idDonacion));
+
+    assertEquals(nueva.getId(), entregas.findByIdDonacion(idDonacion).orElseThrow().getId());
+    assertTrue(entregas.existsByIdDonacion(idDonacion));
+    assertEquals(1, entregas.findCanceladasByIdDonacion(idDonacion).size());
+    Entrega otraActiva = entregaDeLaDonacion(idDonacion);
+    assertThrows(DuplicateKeyException.class, () -> entregas.save(otraActiva));
+  }
+
+  @Test
   void dosCamionesConLaMismaPatente_violanElIndiceUnico() {
     camiones.save(new Camion("AA111AA", 20f, 5000f, 3f));
     Camion repetido = new Camion("AA111AA", 20f, 5000f, 3f);
@@ -296,5 +333,63 @@ class RepositoriosLogisticaMongoTest {
 
   private static Entrega entregaDeLaDonacion(UUID idDonacion) {
     return new Entrega(idDonacion, UUID.randomUUID(), EntregaMother.direccion(), 10f, 2f);
+  }
+
+  @Test
+  void laPosicionDelCamionSeGuardaYSeLee() {
+    Camion camion = camiones.save(CamionMother.disponible());
+    PosicionCamion posicion =
+        new PosicionCamion(-34.6037, -58.3816, java.time.Instant.parse("2026-11-08T12:00:30Z"));
+    camion.registrarPosicion(posicion);
+    camiones.save(camion);
+
+    assertEquals(posicion, camiones.findById(camion.getId()).orElseThrow().getPosicion());
+  }
+
+  @Test
+  void findByEstado_devuelveSoloLasRutasEnEseEstado() {
+    Ruta enTraslado = rutaEnTrasladoCon(UUID.randomUUID(), UUID.randomUUID());
+    rutas.save(rutaCon(UUID.randomUUID(), UUID.randomUUID()));
+
+    List<Ruta> resultado = rutas.findByEstado(EstadoRuta.EN_TRASLADO);
+
+    assertEquals(List.of(enTraslado.getId()), resultado.stream().map(Ruta::getId).toList());
+  }
+
+  @Test
+  void lasEntregadasDelMapa_seFiltranOrdenanTopeanYCuentanEnLaBase() {
+    CoordenadasGeograficas punto = new CoordenadasGeograficas(-34.6, -58.4);
+    Instant desde = Instant.parse("2026-10-13T03:00:00Z");
+    Instant hasta = Instant.parse("2026-11-13T03:00:00Z");
+    Entrega vieja = EntregaMother.entregadaEl(desde, punto);
+    Entrega media = EntregaMother.entregadaEl(Instant.parse("2026-11-01T15:00:00Z"), punto);
+    Entrega nueva = EntregaMother.entregadaEl(Instant.parse("2026-11-12T15:00:00Z"), punto);
+    entregas.save(vieja);
+    entregas.save(nueva);
+    entregas.save(media);
+    entregas.save(EntregaMother.entregadaEl(hasta, punto));
+    entregas.save(EntregaMother.entregadaEl(desde.minusSeconds(1), punto));
+    entregas.save(EntregaMother.entregadaEl(Instant.parse("2026-11-02T15:00:00Z"), null));
+    entregas.save(
+        EntregaMother.enEstadoEl(
+            EstadoEntrega.NO_RECIBIDA, Instant.parse("2026-11-03T15:00:00Z"), punto));
+
+    assertEquals(
+        List.of(nueva.getId(), media.getId(), vieja.getId()),
+        entregas.findEntregadasParaMapa(desde, hasta, 10).stream().map(Entrega::getId).toList());
+    assertEquals(
+        List.of(nueva.getId(), media.getId()),
+        entregas.findEntregadasParaMapa(desde, hasta, 2).stream().map(Entrega::getId).toList());
+    assertEquals(3, entregas.contarEntregadasParaMapa(desde, hasta));
+    List<String> indices =
+        mongoTemplate.indexOps(EntregaDocument.class).getIndexInfo().stream()
+            .map(IndexInfo::getName)
+            .toList();
+    assertTrue(indices.contains("idx_entrega_estado_hora_arribo"));
+  }
+
+  @Test
+  void elSeguimiento_seFiltraOrdenaCortaYCuentaEnLaBase() {
+    SeguimientoDePrueba.verificar(entregas);
   }
 }

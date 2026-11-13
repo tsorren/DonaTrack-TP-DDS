@@ -41,6 +41,29 @@ public class AcumuladosDeAsignacion {
     return donacionesIndependientes.sumarCantidadAsignada(periodoPorNecesidad);
   }
 
+  /** Lo recibido ({@code ENTREGADA}) por la necesidad, en su período actual si es recurrente. */
+  public int recibidoPor(Necesidad necesidad) {
+    return donacionesIndependientes.sumarCantidadRecibida(
+        necesidad.getId(), necesidad.periodoActualId());
+  }
+
+  /** Lo recibido por cada necesidad, en una sola consulta. */
+  public Map<UUID, Integer> recibidoPor(List<Necesidad> necesidades) {
+    Map<UUID, UUID> periodoPorNecesidad = new HashMap<>();
+    necesidades.forEach(n -> periodoPorNecesidad.put(n.getId(), n.periodoActualId()));
+    return donacionesIndependientes.sumarCantidadRecibida(periodoPorNecesidad);
+  }
+
+  /** Lo asignado a un período de la necesidad. */
+  public int asignadoEn(UUID necesidadId, UUID periodoId) {
+    return donacionesIndependientes.sumarCantidadAsignada(necesidadId, periodoId);
+  }
+
+  /** Lo recibido en un período de la necesidad. */
+  public int recibidoEn(UUID necesidadId, UUID periodoId) {
+    return donacionesIndependientes.sumarCantidadRecibida(necesidadId, periodoId);
+  }
+
   public boolean estaSatisfecha(Necesidad necesidad) {
     return necesidad.estaSatisfechaCon(asignadoA(necesidad));
   }

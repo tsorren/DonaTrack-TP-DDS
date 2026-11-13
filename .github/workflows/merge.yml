@@ -7,7 +7,7 @@
 # estado integrado en preprod y promover a los tags estables solo lo validado
 # (RM-06, ADR 20261020 promoción por digest).
 #
-# Flujo: docker-publish publica el candidato :sha-<7> → preprod-post-merge corre el
+# Flujo: docker-publish (y auth-publish, para Keycloak) publica el candidato :sha-<7> → preprod-post-merge corre el
 # preprod con esos digests (estricto, también los chequeos de contrato de RM-08) →
 # promote re-etiqueta el MISMO digest a :<branch> (y :latest en main) y publica el
 # manifiesto de versión (commit → digest por servicio), que consume main.yml.
@@ -105,10 +105,12 @@ jobs:
           ALL_SERVICES=()
           DOCKER_SERVICES=()
 
+          # auth-service (Keycloak) queda afuera de las matrices: no está en los <modules> del pom raíz
+          # y su imagen no sale de un JAR. Lo publica el job auth-publish (E2-12 de SPEC-06).
           for pom in */pom.xml; do
             [ -f "$pom" ] || continue
             dir=$(dirname "$pom")
-            if [[ "$dir" != "common-lib" && "$dir" != "integration-tests" && "$dir" != "adr-generator" ]]; then
+            if [[ "$dir" != "common-lib" && "$dir" != "integration-tests" && "$dir" != "adr-generator" && "$dir" != "auth-service" ]]; then
               ALL_SERVICES+=("$dir")
               if [ -f "$dir/Dockerfile" ]; then
                 DOCKER_SERVICES+=("$dir")
@@ -312,6 +314,81 @@ jobs:
           if-no-files-found: error
 
   # ──────────────────────────────────────────────────────────────────────────
+  # Job 3b: auth-service (Keycloak) — contrato del realm y candidato (SPEC-06 E2-12)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Equivale a build-and-verify + docker-publish para un servicio que no produce un JAR: verifica el
+  # contrato del realm sobre el estado mergeado (RealmTokenContractIT, Testcontainers), publica el
+  # candidato :sha-<7> construido desde auth-service/ y guarda su digest como digest-auth-service,
+  # que preprod-post-merge suma al manifiesto candidato junto con los de los demás servicios.
+  # ──────────────────────────────────────────────────────────────────────────
+  auth-publish:
+    needs: [detect-services]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Contrato del realm (Testcontainers sobre la imagen del Dockerfile)
+        run: mvn -B -f auth-service/pom.xml -Pcontrato-auth verify -Dspotless.check.skip=true
+
+      - name: Iniciar sesión en GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Calcular el tag candidato
+        id: meta
+        env:
+          GH_REPOSITORY: ${{ github.repository }}
+          SHA_SHORT: ${{ needs.detect-services.outputs.sha-short }}
+        run: |
+          REPO_LOWER=$(echo "$GH_REPOSITORY" | tr '[:upper:]' '[:lower:]')
+          # RM-06: solo el candidato inmutable; promote asigna :<branch> y :latest.
+          echo "tags=ghcr.io/${REPO_LOWER}/auth-service:sha-${SHA_SHORT}" >> "$GITHUB_OUTPUT"
+
+      - name: Construir y publicar candidato (auth-service)
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: ./auth-service
+          file: auth-service/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha,scope=auth-service
+          cache-to: type=gha,mode=max,scope=auth-service,ignore-error=true
+
+      - name: Guardar el digest del candidato
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p digests
+          echo "$DIGEST" > "digests/auth-service.digest"
+          echo "🔑 auth-service: ${DIGEST}"
+
+      - name: Subir el digest del candidato
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: digest-auth-service
+          path: digests/
+          retention-days: 1
+          if-no-files-found: error
+
+  # ──────────────────────────────────────────────────────────────────────────
   # Job 4: Preprod post-merge sobre los digests candidatos (RM-06)
   # ──────────────────────────────────────────────────────────────────────────
   # Mismo punto de entrada que el PR (run-preprod-tests.sh --images ghcr), con
@@ -319,8 +396,8 @@ jobs:
   # estricto: los chequeos nuevos de contratos (RM-08) fallan acá (D5).
   # ──────────────────────────────────────────────────────────────────────────
   preprod-post-merge:
-    needs: [detect-services, docker-publish]
-    if: ${{ needs.docker-publish.result == 'success' }}
+    needs: [detect-services, docker-publish, auth-publish]
+    if: ${{ needs.docker-publish.result == 'success' && needs.auth-publish.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -370,6 +447,9 @@ jobs:
           cat manifiesto-version.json
 
       - name: Validación pre-producción post-merge (estricta)
+        env:
+          # Igual que en main.yml: la variable de repositorio PREPROD_AUTH=true enciende la seguridad.
+          PREPROD_AUTH: ${{ vars.PREPROD_AUTH }}
         run: MANIFIESTO=manifiesto-version.json ./run-preprod-tests.sh --images ghcr
 
       # D5: un cambio incompatible de OpenAPI falla acá. En un push se compara con la cabeza
@@ -576,7 +656,7 @@ jobs:
   # de GitHub Actions. Útil para auditoría y diagnóstico rápido.
   # ──────────────────────────────────────────────────────────────────────────
   merge-summary:
-    needs: [ detect-services, build-and-verify, docker-publish, preprod-post-merge, promote, cleanup-pr-tags ]
+    needs: [ detect-services, build-and-verify, docker-publish, auth-publish, preprod-post-merge, promote, cleanup-pr-tags ]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -593,6 +673,7 @@ jobs:
           RES_DETECT: ${{ needs.detect-services.result }}
           RES_BUILD: ${{ needs.build-and-verify.result }}
           RES_DOCKER: ${{ needs.docker-publish.result }}
+          RES_AUTH: ${{ needs.auth-publish.result }}
           RES_POSTMERGE: ${{ needs.preprod-post-merge.result }}
           RES_PROMOTE: ${{ needs.promote.result }}
           RES_CLEANUP: ${{ needs.cleanup-pr-tags.result }}
@@ -615,6 +696,7 @@ jobs:
             echo "| detect-services | $RES_DETECT |"
             echo "| build-and-verify | $RES_BUILD |"
             echo "| docker-publish | $RES_DOCKER |"
+            echo "| auth-publish | $RES_AUTH |"
             echo "| preprod-post-merge | $RES_POSTMERGE |"
             echo "| promote | $RES_PROMOTE |"
             echo "| cleanup-pr-tags | $RES_CLEANUP |"
@@ -625,8 +707,8 @@ jobs:
             echo "✅ **Candidato validado y promovido.** \`:$BRANCH_TAG\` apunta a los digests de \`sha-$SHA_SHORT\`; el manifiesto de versión quedó como artefacto." >> "$GITHUB_STEP_SUMMARY"
           elif [[ "$RES_POSTMERGE" == "failure" ]]; then
             echo "❌ **El preprod post-merge falló: no se promovió.** \`:$BRANCH_TAG\` sigue en la última versión validada; hay que arreglar la rama hacia adelante." >> "$GITHUB_STEP_SUMMARY"
-          elif [[ "$RES_DOCKER" == "failure" ]]; then
+          elif [[ "$RES_DOCKER" == "failure" || "$RES_AUTH" == "failure" ]]; then
             echo "❌ **Fallo en la publicación del candidato.** No hubo post-merge ni promoción." >> "$GITHUB_STEP_SUMMARY"
           fi
           # La corrida falla si el candidato no llegó a promoverse.
-          [[ "$RES_DOCKER" != "failure" && "$RES_POSTMERGE" != "failure" && "$RES_PROMOTE" != "failure" ]]
+          [[ "$RES_DOCKER" != "failure" && "$RES_AUTH" != "failure" && "$RES_POSTMERGE" != "failure" && "$RES_PROMOTE" != "failure" ]]

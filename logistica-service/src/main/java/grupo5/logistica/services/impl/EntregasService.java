@@ -6,28 +6,47 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.models.entities.camiones.Camion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.entregas.*;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaEnPuerta;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.CambioEstadoRuta;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.repositories.CriterioSeguimiento;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository;
+import grupo5.logistica.models.repositories.TramoDeEntregas;
 import grupo5.logistica.services.ComunicadorEventosLogistica;
 import grupo5.logistica.services.IEntregasService;
 import grupo5.logistica.services.IGeocodificadorDestino;
 import grupo5.logistica.services.mappers.EntregaMapper;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -35,6 +54,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EntregasService implements IEntregasService {
+  private static final Logger log = LoggerFactory.getLogger(EntregasService.class);
+  private static final String ACTOR_BROKER = "broker-donaciones";
+  private static final ZoneId ARGENTINA = ZoneId.of("America/Argentina/Buenos_Aires");
+  static final int DIAS_DEL_MAPA = 30;
+  static final int LIMITE_DEL_MAPA = 200;
+  static final int LIMITE_MAXIMO_DEL_MAPA = 500;
+
+  /** Las del seguimiento del donante sin estados pedidos: las que todavía no terminaron. */
+  private static final Set<EstadoEntrega> ACTIVAS =
+      Set.of(EstadoEntrega.PENDIENTE, EstadoEntrega.EN_TRASLADO, EstadoEntrega.EN_PUERTA);
+
   private final IEntregasRepository entregasRepository;
   private final IRutasRepository rutasRepository;
   private final ICamionRepository camionRepository;
@@ -42,6 +72,7 @@ public class EntregasService implements IEntregasService {
   private final ComunicadorEventosLogistica comunicadorEventos;
   private final ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository;
   private final IGeocodificadorDestino geocodificadorDestino;
+  private final Clock reloj;
 
   public EntregasService(
       IEntregasRepository entregasRepository,
@@ -76,7 +107,6 @@ public class EntregasService implements IEntregasService {
         null);
   }
 
-  @Autowired
   public EntregasService(
       IEntregasRepository entregasRepository,
       IRutasRepository rutasRepository,
@@ -85,6 +115,30 @@ public class EntregasService implements IEntregasService {
       ComunicadorEventosLogistica comunicadorEventos,
       @Nullable ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository,
       @Nullable IGeocodificadorDestino geocodificadorDestino) {
+    this(
+        entregasRepository,
+        rutasRepository,
+        camionRepository,
+        entregaMapper,
+        comunicadorEventos,
+        solicitudesTransicionRepository,
+        geocodificadorDestino,
+        null);
+  }
+
+  /** {@code reloj}: el de la aplicación (hora de Argentina); sin él, el del sistema. */
+  @Autowired
+  @SuppressWarnings("java:S107")
+  public EntregasService(
+      IEntregasRepository entregasRepository,
+      IRutasRepository rutasRepository,
+      ICamionRepository camionRepository,
+      EntregaMapper entregaMapper,
+      ComunicadorEventosLogistica comunicadorEventos,
+      @Nullable ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository,
+      @Nullable IGeocodificadorDestino geocodificadorDestino,
+      @Nullable Clock reloj) {
+    this.reloj = reloj != null ? reloj : Clock.system(ARGENTINA);
     this.entregasRepository = entregasRepository;
     this.rutasRepository = rutasRepository;
     this.camionRepository = camionRepository;
@@ -121,18 +175,41 @@ public class EntregasService implements IEntregasService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<EntregaMapaPublicoResponseDTO> listarMapaPublico() {
-    return entregasRepository.findByEstado(EstadoEntrega.ENTREGADA).stream()
-        .filter(e -> e.getDestino() != null && e.getDestino().tieneCoordenadas())
-        .map(entregaMapper::toMapaPublicoResponseDTO)
-        .filter(Objects::nonNull)
-        .toList();
+  public EntregasDelMapaPublico listarMapaPublico(
+      LocalDate desde, LocalDate hasta, Integer limite) {
+    LocalDate fin = hasta != null ? hasta : LocalDate.now(reloj.withZone(ARGENTINA));
+    LocalDate inicio = desde != null ? desde : fin.minusDays(DIAS_DEL_MAPA);
+    int tope = limite != null ? limite : LIMITE_DEL_MAPA;
+    if (fin.isBefore(inicio) || tope < 1 || tope > LIMITE_MAXIMO_DEL_MAPA) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    Instant desdeInstante = inicio.atStartOfDay(ARGENTINA).toInstant();
+    Instant hastaInstante = fin.plusDays(1).atStartOfDay(ARGENTINA).toInstant();
+    List<EntregaMapaPublicoResponseDTO> entregas =
+        entregasRepository.findEntregadasParaMapa(desdeInstante, hastaInstante, tope).stream()
+            .map(entregaMapper::toMapaPublicoResponseDTO)
+            .filter(Objects::nonNull)
+            .toList();
+    long total = entregasRepository.contarEntregadasParaMapa(desdeInstante, hastaInstante);
+    return new EntregasDelMapaPublico(entregas, Math.max(total, entregas.size()));
   }
 
   @Override
   @Transactional(readOnly = true)
   public EntregaResponseDTO obtenerPorId(UUID id) {
     return entregaMapper.toResponseDTO(buscarEntrega(id));
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<UUID> beneficiariaDe(UUID id) {
+    return entregasRepository.findById(id).map(Entrega::getIdBeneficiaria);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<UUID> donanteDeDonacion(UUID idDonacion) {
+    return entregasRepository.findByIdDonacion(idDonacion).map(Entrega::getDonanteId);
   }
 
   @Override
@@ -150,13 +227,86 @@ public class EntregasService implements IEntregasService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<SeguimientoEntregaResponseDTO> listarSeguimientoPorBeneficiaria(UUID idBeneficiaria) {
+  public SeguimientosDeEntregas listarSeguimientoPorBeneficiaria(
+      UUID idBeneficiaria, ConsultaSeguimiento consulta) {
     if (idBeneficiaria == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
-    return entregasRepository.findByIdBeneficiaria(idBeneficiaria).stream()
-        .map(this::construirSeguimiento)
-        .toList();
+    return pagina(idBeneficiaria, null, consulta, Set.of());
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public SeguimientosDeEntregas listarSeguimientoPorDonante(
+      UUID donanteId, ConsultaSeguimiento consulta) {
+    if (donanteId == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    return pagina(null, donanteId, consulta, ACTIVAS);
+  }
+
+  /**
+   * La página pedida (R11-43): el filtro, el orden y el tramo en la base, y para armarla, una
+   * lectura de las rutas de la página, una de sus camiones y una de las entregas de esas rutas.
+   */
+  private SeguimientosDeEntregas pagina(
+      UUID idBeneficiaria,
+      UUID donanteId,
+      ConsultaSeguimiento consulta,
+      Set<EstadoEntrega> estadosPorDefecto) {
+    ConsultaSeguimiento pedida = consulta == null ? ConsultaSeguimiento.primeraPagina() : consulta;
+    int numero = pedida.page() == null ? 0 : pedida.page();
+    int tamanio = pedida.size() == null ? ConsultaSeguimiento.TAMANIO_POR_DEFECTO : pedida.size();
+    List<UUID> donaciones = pedida.idDonacion() == null ? List.of() : pedida.idDonacion();
+    if (numero < 0
+        || tamanio < 1
+        || tamanio > ConsultaSeguimiento.TAMANIO_MAXIMO
+        || donaciones.size() > ConsultaSeguimiento.TAMANIO_MAXIMO
+        || donaciones.stream().anyMatch(Objects::isNull)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    Set<EstadoEntrega> estados =
+        pedida.estado() == null || pedida.estado().isEmpty()
+            ? estadosPorDefecto
+            : pedida.estado().stream().filter(Objects::nonNull).collect(Collectors.toSet());
+    TramoDeEntregas tramo =
+        entregasRepository.buscarSeguimiento(
+            new CriterioSeguimiento(
+                idBeneficiaria, donanteId, estados, Set.copyOf(donaciones), numero, tamanio));
+    List<Entrega> entregas = tramo.entregas();
+
+    Map<UUID, Ruta> rutas =
+        porId(
+            rutasRepository.findByIds(idsDistintos(entregas.stream().map(Entrega::getIdRuta))),
+            Ruta::getId);
+    Map<UUID, Camion> camiones =
+        porId(
+            camionRepository.findByIds(
+                idsDistintos(rutas.values().stream().map(Ruta::getCamionId))),
+            Camion::getId);
+    Map<UUID, Entrega> paradas = porId(entregas, Entrega::getId);
+    Set<UUID> faltan =
+        rutas.values().stream()
+            .flatMap(ruta -> ruta.getEntregaIds().stream())
+            .filter(id -> id != null && !paradas.containsKey(id))
+            .collect(Collectors.toSet());
+    entregasRepository.findByIds(faltan).forEach(e -> paradas.put(e.getId(), e));
+
+    return new SeguimientosDeEntregas(
+        entregas.stream()
+            .map(e -> construirSeguimiento(e, rutas::get, camiones::get, paradas::get))
+            .toList(),
+        tramo.total());
+  }
+
+  private static Set<UUID> idsDistintos(Stream<UUID> ids) {
+    return ids.filter(Objects::nonNull).collect(Collectors.toSet());
+  }
+
+  private static <T> Map<UUID, T> porId(Collection<T> elementos, Function<T, UUID> id) {
+    Map<UUID, T> porId = new HashMap<>();
+    elementos.forEach(elemento -> porId.put(id.apply(elemento), elemento));
+    return porId;
   }
 
   @Override
@@ -178,18 +328,23 @@ public class EntregasService implements IEntregasService {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
 
+    if (request.estado() == EstadoEntrega.EN_PUERTA) {
+      // Sin solicitud de transición: la llegada no es un pedido de la entidad ni del admin (HB-22)
+      return marcarEnPuerta(id, request.actor());
+    }
+
     Entrega entrega = buscarEntrega(id);
 
     SolicitudTransicionEntrega solicitud =
         switch (request.estado()) {
-          case ENTREGADA ->
-              procesarEntregaEntregada(request.actor(), entrega, request.obtenerFotosRecepcion());
+          case ENTREGADA -> procesarEntregaEntregada(entrega, request);
           case NO_RECIBIDA ->
               procesarEntregaNoRecibida(
                   request.actor(), entrega, request.justificacion(), request.replanificable());
           case REVISION -> procesarEntregaEnRevision(request.actor(), entrega);
           case PENDIENTE -> procesarEntregaPendiente(request.actor(), entrega);
-          case EN_TRASLADO ->
+            // CANCELADA entra solo por el comando del broker (HB-19), nunca por PATCH
+          case EN_TRASLADO, CANCELADA ->
               throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
           default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
         };
@@ -204,6 +359,83 @@ public class EntregasService implements IEntregasService {
   }
 
   @Override
+  @Transactional
+  public EntregaResponseDTO marcarEnPuerta(UUID id, String actor) {
+    Entrega entrega = buscarEntrega(id);
+    if (entrega.getEstadoActual() == EstadoEntrega.EN_PUERTA) {
+      return entregaMapper.toResponseDTO(entrega);
+    }
+    entrega.llegarAPuerta(actor);
+    entregasRepository.save(entrega);
+    publicarEventos(entrega);
+    entrega.clearDomainEvents();
+    return entregaMapper.toResponseDTO(entrega);
+  }
+
+  /**
+   * Cancela la entrega de una donación que todavía no salió (HB-19, comando {@code
+   * entrega.cancelada.<instancia>.v1}). Idempotente: si ya estaba cancelada vuelve a publicar la
+   * confirmación, por si la primera se perdió; si ya salió, no hace nada (lo dice {@code
+   * ruta.iniciada}).
+   */
+  @Override
+  @Transactional
+  public void cancelarPorDonacion(UUID idDonacion, String motivo) {
+    if (idDonacion == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    Entrega activa = entregasRepository.findByIdDonacion(idDonacion).orElse(null);
+    if (activa == null) {
+      reconfirmarCancelacion(idDonacion, motivo);
+      return;
+    }
+    if (activa.getEstadoActual() != EstadoEntrega.PENDIENTE) {
+      log.info(
+          "Cancelación ignorada: la entrega {} de la donación {} ya salió (estado {})",
+          activa.getId(),
+          idDonacion,
+          activa.getEstadoActual());
+      return;
+    }
+
+    UUID idRuta = activa.getIdRuta();
+    activa.cancelar(ACTOR_BROKER, motivo);
+    if (idRuta != null) {
+      Ruta ruta =
+          rutasRepository
+              .findById(idRuta)
+              .orElseThrow(() -> new RecursoNoEncontradoException(idRuta));
+      ruta.quitarEntrega(activa.getId());
+      rutasRepository.save(ruta);
+    }
+    entregasRepository.save(activa);
+    publicarEventos(activa);
+    activa.clearDomainEvents();
+    log.info("Entrega {} de la donación {} cancelada ({})", activa.getId(), idDonacion, motivo);
+  }
+
+  private void reconfirmarCancelacion(UUID idDonacion, String motivo) {
+    entregasRepository.findCanceladasByIdDonacion(idDonacion).stream()
+        .max(Comparator.comparing(EntregasService::fechaUltimoCambio))
+        .ifPresentOrElse(
+            cancelada -> {
+              log.info(
+                  "Cancelación repetida: se vuelve a confirmar la entrega {}", cancelada.getId());
+              comunicadorEventos.comunicarEntregaCancelada(
+                  new EntregaCancelada(cancelada.getId(), idDonacion, motivo));
+            },
+            () ->
+                log.warn(
+                    "Cancelación ignorada: la donación {} no tiene entrega en esta instancia",
+                    idDonacion));
+  }
+
+  private static LocalDateTime fechaUltimoCambio(Entrega entrega) {
+    List<CambioEstadoEntrega> historial = entrega.getHistorialEstado();
+    return historial.isEmpty() ? LocalDateTime.MIN : historial.getLast().timeStamp();
+  }
+
+  @Override
   @Transactional(readOnly = true)
   public List<CambioEstadoEntregaResponseDTO> obtenerHistorial(UUID id) {
     return buscarEntrega(id).getHistorialEstado().stream()
@@ -211,9 +443,26 @@ public class EntregasService implements IEntregasService {
         .toList();
   }
 
+  /** El seguimiento de una sola entrega: lee su ruta, su camión y sus paradas de a una. */
   private SeguimientoEntregaResponseDTO construirSeguimiento(Entrega entrega) {
+    return construirSeguimiento(
+        entrega,
+        id -> rutasRepository.findById(id).orElse(null),
+        id -> camionRepository.findById(id).orElse(null),
+        id -> entregasRepository.findById(id).orElse(null));
+  }
+
+  /**
+   * El seguimiento de una entrega con su ruta, su camión y sus paradas buscadas en {@code rutas},
+   * {@code camiones} y {@code buscarParada} (nulo si no está).
+   */
+  private static SeguimientoEntregaResponseDTO construirSeguimiento(
+      Entrega entrega,
+      Function<UUID, Ruta> rutas,
+      Function<UUID, Camion> camiones,
+      Function<UUID, Entrega> buscarParada) {
     UUID idRuta = entrega.getIdRuta();
-    Ruta ruta = idRuta != null ? rutasRepository.findById(idRuta).orElse(null) : null;
+    Ruta ruta = idRuta != null ? rutas.apply(idRuta) : null;
     if (ruta == null) {
       return new SeguimientoEntregaResponseDTO(
           entrega.getId(),
@@ -234,10 +483,8 @@ public class EntregasService implements IEntregasService {
           List.of());
     }
 
-    String patenteCamion =
-        ruta.getCamionId() != null
-            ? camionRepository.findById(ruta.getCamionId()).map(Camion::getPatente).orElse(null)
-            : null;
+    Camion camion = ruta.getCamionId() != null ? camiones.apply(ruta.getCamionId()) : null;
+    String patenteCamion = camion != null ? camion.getPatente() : null;
 
     List<UUID> idsParadas = ruta.getEntregaIds();
     List<ParadaSeguimientoDTO> paradas = new ArrayList<>(idsParadas.size());
@@ -250,8 +497,7 @@ public class EntregasService implements IEntregasService {
       UUID idParada = idsParadas.get(i);
       int ordenVisita = i + 1;
       boolean esConsultada = entrega.getId().equals(idParada);
-      Entrega paradaEntrega =
-          esConsultada ? entrega : entregasRepository.findById(idParada).orElse(null);
+      Entrega paradaEntrega = esConsultada ? entrega : buscarParada.apply(idParada);
 
       if (esConsultada) {
         ordenVisitaConsultada = ordenVisita;
@@ -294,7 +540,23 @@ public class EntregasService implements IEntregasService {
         aInstantUtc(entrega.getHoraSalida()),
         aInstantUtc(entrega.getHoraArribo()),
         ultimaActualizacion,
-        List.copyOf(paradas));
+        List.copyOf(paradas),
+        posicionCamion(ruta, camion));
+  }
+
+  private static PosicionCamionDTO posicionCamion(Ruta ruta, @Nullable Camion camion) {
+    if (ruta.getEstado() != EstadoRuta.EN_TRASLADO || camion == null) {
+      return null;
+    }
+    PosicionCamion posicion = camion.getPosicion();
+    // Una posición anterior al inicio de esta ruta es de la ruta previa del camión.
+    boolean esDeEstaRuta =
+        posicion != null
+            && ruta.getHoraInicioReal() != null
+            && !posicion.registradaEn().isBefore(aInstantUtc(ruta.getHoraInicioReal()));
+    return esDeEstaRuta
+        ? new PosicionCamionDTO(posicion.latitud(), posicion.longitud(), posicion.registradaEn())
+        : null;
   }
 
   private static Instant calcularUltimaActualizacion(
@@ -345,9 +607,14 @@ public class EntregasService implements IEntregasService {
   }
 
   private static SolicitudTransicionEntrega procesarEntregaEntregada(
-      String actor, Entrega entrega, List<String> fotosRecepcion) {
+      Entrega entrega, CambioEstadoEntregaRequestDTO request) {
     SolicitudTransicionEntrega solicitud =
-        new ConfirmacionRecepcion(entrega, actor, fotosRecepcion);
+        new ConfirmacionRecepcion(
+            entrega,
+            request.actor(),
+            request.obtenerFotosRecepcion(),
+            request.numeroRemito(),
+            request.reporte() != null ? request.reporte().aDominio() : null);
 
     GestorDeEntregas.cambiarEstado(solicitud);
     return solicitud;
@@ -383,6 +650,8 @@ public class EntregasService implements IEntregasService {
         case EntregaConfirmada confirmada ->
             comunicadorEventos.comunicarEntregaExitosa(confirmada, buscarCamionDeEntrega(entrega));
         case EntregaFallida fallida -> comunicadorEventos.comunicarEntregaFallida(fallida);
+        case EntregaCancelada cancelada -> comunicadorEventos.comunicarEntregaCancelada(cancelada);
+        case EntregaEnPuerta enPuerta -> comunicadorEventos.comunicarEntregaEnPuerta(enPuerta);
       }
     }
   }

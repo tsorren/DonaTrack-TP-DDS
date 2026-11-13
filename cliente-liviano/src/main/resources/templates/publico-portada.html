@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<!--/* La portada, con la composición de la variante K de frontend-donatrack ("Huerta con abejas"; el
+       usuario pidió todo el sitio con la estética de K el 2026-11-08; antes, el corte de suelo de
+       Raíces con la red de subte, las etiquetas de herbario, los frutos y la libreta del mes). En orden,
+       como en K: la portada con tres láminas y el enjambre; cómo funciona, la escalera de pasos con la
+       ruta de las abejas y el árbol del final; bajo tierra, las raíces hasta cada tipo de entidad; lo
+       que ya dio frutos, las cifras en árboles y las entregas del mes con su foto; quién participa;
+       las preguntas y el cierre. Las piezas son del componente huerta (componentes/huerta.html).
+       Las cifras (cifrasDePortada) las da PublicoPuerto; las entregas del mes siguen fijas en
+       componentes/huerta :: mes, que es compartido (pendiente de la conexión). Textos según
+       el tono común (docs/interfaz/tono-y-comunicacion.md). Los estados de la maqueta
+       (?escenario=vacio, error o lento) se ven en las dos partes con datos: las cifras y las entregas
+       del mes. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DonaTrack: lo que donás echa raíces en tu comunidad</title>
+  <link rel="stylesheet" href="/css/publico-portada.css" th:href="@{/css/publico-portada.css}">
+  <link rel="stylesheet" href="/css/publico-navegacion.css" th:href="@{/css/publico-navegacion.css}">
+  <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
+        th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
+  <th:block th:replace="~{interaccion :: cargar}"></th:block>
+  <script src="/js/abejas.js" th:src="@{/js/abejas.js}" defer></script>
+</head>
+<body hx-indicator="#indicador-carga">
+<p id="indicador-carga" class="cargando" role="status" aria-live="polite" aria-hidden="true">Cargando…</p>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<header class="raices-cabecera">
+  <a class="marca" href="/" th:href="@{/}" aria-label="DonaTrack, ir a la portada">
+    <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
+    <span>Dona<em>Track</em></span>
+  </a>
+  <!--/* La navegación pública (ficha raices-publico-navegable.md, sección 2): la misma de las demás
+         públicas. Con la sesión iniciada, "Ir a mi inicio" y la cuenta (ficha r11-p1-portada.md). */-->
+  <nav th:replace="~{navegacion-publica :: navegacion('publico-portada')}"></nav>
+  <th:block th:replace="~{navegacion-publica :: cuenta}"></th:block>
+</header>
+<main id="contenido" tabindex="-1" hx-target="#contenido" hx-select="#contenido" hx-swap="outerHTML show:none"
+      th:with="estado=${param.escenario != null ? param.escenario[0] : ''},
+               conDatos=${estado != 'vacio' and estado != 'error' and estado != 'lento'}">
+  <div class="centro pila">
+    <aside th:replace="~{componentes/pista :: pista('portada', 'Conocé cómo funciona DonaTrack', 'Empezá por el recorrido de la donación: registrás lo que donás y después podés seguir a qué organización llega.')}"></aside>
+    <section th:replace="~{componentes/huerta :: hero('Lo que donás echa raíces', 'en tu comunidad.',
+        'Registrás lo que donás, vos o tu empresa. DonaTrack te muestra a qué organización se asignó, en qué estado está y la foto que sube la organización cuando confirma la entrega.')}"></section>
+    <section th:replace="~{componentes/huerta :: como}"></section>
+  </div>
+
+  <section th:replace="~{componentes/huerta :: raices}"></section>
+
+  <div class="centro pila">
+    <section th:replace="~{componentes/huerta :: cifras(${estado}, ${cifrasDePortada})}"></section>
+
+    <section th:replace="~{componentes/huerta :: mes(${estado})}"></section>
+
+    <section th:replace="~{componentes/huerta :: participa}"></section>
+    <section th:replace="~{componentes/huerta :: preguntas}"></section>
+    <section th:replace="~{componentes/huerta :: cierre}"></section>
+  </div>
+</main>
+<footer th:replace="~{pie :: pie}"></footer>
+</body>
+</html>

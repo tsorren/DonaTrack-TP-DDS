@@ -1,0 +1,131 @@
+/* Raíces, sitio A: Entidades (publico-entidades.html). Desde la ronda del 2026-11-09 (tarde), la lista
+   compacta por tipo de entidad; desde la del 2026-11-09 (noche), la tarjeta que dibujó la usuaria: un
+   plegable por entidad (.plegable) con su foto, sus categorías (.chip) y «Necesidades satisfechas»
+   (.progreso) y, desplegado, la misión (.recorte) y cada necesidad (.necesidad). Acá, solo la disposición de la pantalla. */
+@import url("publico-listas.css");
+
+/* --- El hero a todo el ancho ------------------------------------------------------------------- */
+
+/* Sin ilustración al lado, la cabeza ocupa la página: el título y la bajada a la izquierda, con su
+   largo de línea legible; la cifra con su árbol a la derecha, en dos o tres renglones. */
+.entidades > .publica-cabeza {
+  display: grid;
+  gap: 1.5rem 3rem;
+  align-items: end;
+  max-width: none;
+}
+
+.entidades > .publica-cabeza .lectura-bajada {
+  max-width: 70ch;
+}
+
+.entidades .cifra-fruto > p:first-child {
+  align-items: center;
+  max-width: 32rem;
+}
+
+/* La cifra al lado de su manzano, nunca encima (cuarta ronda, 2026-11-10: el «6» quedaba tapado por
+   el árbol). El árbol lleva ancho y alto propios, así ocupa su lugar aunque falte aspect-ratio. */
+.entidades .fruto {
+  align-items: center;
+  gap: var(--espacio-2);
+  font-size: 3.5rem;
+}
+
+.entidades .fruto::before {
+  width: 4.9rem;
+  height: 5.5rem;
+}
+
+/* --- El buscador y los filtros: la barra compartida (.filtros-barra); debajo, la nota de una línea
+   con su info, pegada a la barra (cuarta ronda, 2026-11-10). ------------------------------------- */
+
+.entidades > p.texto-chico {
+  margin: 0;
+}
+
+/* --- La lista por tipo de entidad, una tarjeta plegable por entidad ------------------------------- */
+
+.entidades ul.pila {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Entre un grupo y el título del siguiente, más aire que entre tarjetas: el data-espacio de cada
+   sección redefine --espacio-entre y la pila de afuera tomaba el chico. */
+.entidades > .pila > section + section {
+  margin-block-start: var(--espacio-5);
+}
+
+.entidades section > h2.racimo {
+  align-items: baseline;
+  margin: 0;
+  font-size: 1.375rem;
+}
+
+.entidades .plegable p,
+.entidades .plegable h3 {
+  margin: 0;
+}
+
+.entidades .plegable h3 {
+  align-items: center;
+  font-size: var(--tamano-grande);
+}
+
+/* La cabecera de la tarjeta. En el celular, la foto con el nombre y los chips al lado; la barra y
+   «Ver todas las necesidades», debajo, a todo el ancho. */
+.entidades .plegable > summary {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.entidades .plegable-medida,
+.entidades .plegable-ver {
+  grid-column: 1 / -1;
+}
+
+/* Desplegada, más aire en los cuatro lados (cuarta ronda, 2026-11-10). */
+.entidades .plegable-cuerpo {
+  padding: var(--espacio-4) var(--espacio-4) var(--espacio-5);
+}
+
+@media (min-width: 53.75em) {
+  .entidades > .publica-cabeza {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 28rem);
+  }
+
+  /* En ancho medio, en una fila: la foto, el nombre con los chips, la barra y el enlace. */
+  .entidades .plegable > summary {
+    grid-template-columns: auto minmax(0, 1.3fr) minmax(12rem, 1fr) auto;
+    gap: var(--espacio-3) var(--espacio-4);
+  }
+
+  .entidades .plegable-medida,
+  .entidades .plegable-ver {
+    grid-column: auto;
+  }
+
+  .entidades .plegable-foto {
+    width: 6.5rem;
+  }
+
+  .entidades .plegable-cuerpo {
+    padding: var(--espacio-4) var(--espacio-5) var(--espacio-5);
+  }
+}
+
+@media (min-width: 68.75em) {
+  /* En ancho (cuarta ronda, 2026-11-10, el dibujo de la usuaria): las cuatro columnas centradas en
+     alto, con ancho fijo salvo la del nombre, así la barra y el enlace quedan alineados de una
+     tarjeta a la otra. */
+  .entidades .plegable > summary {
+    grid-template-columns: 7.5rem minmax(0, 1fr) 17rem 10rem;
+    gap: var(--espacio-3) var(--espacio-5);
+    padding: var(--espacio-3) var(--espacio-4) var(--espacio-3) var(--espacio-3);
+  }
+
+  .entidades .plegable-foto {
+    width: 7.5rem;
+  }
+}

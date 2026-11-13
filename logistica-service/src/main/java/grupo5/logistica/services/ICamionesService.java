@@ -12,6 +12,9 @@ public interface ICamionesService {
 
   List<CamionResponseDTO> consultarTodos();
 
+  /** Todos los camiones, también los DESHABILITADO (HB-23). */
+  List<CamionResponseDTO> consultarIncluyendoDeshabilitados();
+
   CamionResponseDTO consultarPorId(UUID id);
 
   CamionResponseDTO cambiarEstado(UUID id, CambioEstadoCamionRequestDTO request);

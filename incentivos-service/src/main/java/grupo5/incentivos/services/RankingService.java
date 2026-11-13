@@ -1,5 +1,8 @@
 package grupo5.incentivos.services;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.incentivos.dto.HistorialDeRankings;
 import grupo5.incentivos.dto.RankingMensualDTO;
 import grupo5.incentivos.infrastructure.IN8nClient;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
@@ -48,7 +51,10 @@ public class RankingService implements IRankingService {
             .map(
                 existente ->
                     RankingMensual.reconstituir(
-                        existente.getId(), periodo, calculado.getEntradas()))
+                        existente.getId(),
+                        periodo,
+                        calculado.getEntradas(),
+                        calculado.getCalculadoEn()))
             .orElse(calculado);
 
     rankingRepository.save(ranking);
@@ -103,8 +109,15 @@ public class RankingService implements IRankingService {
   }
 
   @Override
-  public List<RankingMensualDTO> obtenerHistorial() {
-    return rankingRepository.findAll().stream().map(RankingMensualDTO::desde).toList();
+  public HistorialDeRankings obtenerHistorial(int pagina, int tamanio) {
+    if (pagina < 0 || tamanio < 1 || tamanio > HistorialDeRankings.TAMANIO_MAXIMO) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    return new HistorialDeRankings(
+        rankingRepository.buscarHistorial(pagina, tamanio).stream()
+            .map(RankingMensualDTO::desde)
+            .toList(),
+        rankingRepository.count());
   }
 
   @Override

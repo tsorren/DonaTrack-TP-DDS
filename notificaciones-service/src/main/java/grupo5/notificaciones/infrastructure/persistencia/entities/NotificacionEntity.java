@@ -46,6 +46,12 @@ public class NotificacionEntity {
   @Column(name = "fecha_lectura")
   private LocalDateTime fechaLectura;
 
+  @Column(name = "tipo_evento", length = 40)
+  private String tipoEvento;
+
+  @Column(name = "referencia_id")
+  private UUID referenciaId;
+
   @SuppressWarnings(
       "squid:S1319") // FetchType.EAGER justificado: Agregado Notificacion requiere consistencia
   // total de su historial

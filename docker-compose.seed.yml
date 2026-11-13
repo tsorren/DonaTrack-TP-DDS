@@ -1,0 +1,35 @@
+# Seeder de demo (SPEC-10). Solo agrega el servicio `seeder`; no cambia nada del compose base.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.seed.yml run --rm seeder        # todo
+#   docker compose -f docker-compose.yml -f docker-compose.seed.yml run --rm seeder vivo   # ruta de hoy
+#
+# Necesita la base vacía para `todo` (docker compose down -v) y DEMO_PASSWORD en .env.
+# Guía: docs/testing/demo-seeder.md
+services:
+  seeder:
+    build: ./demo/seeder
+    image: donatrack/demo-seeder:local
+    profiles: ["seed"]
+    env_file: .env
+    environment:
+      DEMO_PASSWORD: ${DEMO_PASSWORD:?Definí DEMO_PASSWORD en .env (10+ caracteres, sin @)}
+    networks:
+      - donatrack-network
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      donaciones-service:
+        condition: service_healthy
+      incentivos-service:
+        condition: service_healthy
+      notificaciones-service:
+        condition: service_healthy
+      logistica-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    restart: "no"

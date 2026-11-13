@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Raíces, Entidades del admin después de la acción 'correccion' (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.3). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Hecho - Organizaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-entidades :: hoja('correccion')}"></th:block>
+</th:block>
+</body>
+</html>

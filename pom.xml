@@ -15,6 +15,8 @@
         <module>notificaciones-service</module>
         <module>incentivos-service</module>
         <module>logistica-service</module>
+        <module>cliente-liviano</module>
+        <module>api-gateway</module>
         <module>integration-tests</module>
     </modules>
 
@@ -124,7 +126,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                         <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
-                        <argLine>-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseSerialGC @{argLine}</argLine>
+                        <argLine>-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:ReservedCodeCacheSize=256m -XX:+UseSerialGC @{argLine}</argLine>
                         <properties>
                             <configurationParameters>
                                 junit.jupiter.execution.parallel.enabled = true

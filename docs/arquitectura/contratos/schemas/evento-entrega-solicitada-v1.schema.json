@@ -45,6 +45,11 @@
       "type": "string",
       "format": "date-time",
       "description": "Fecha del hecho original (asignación de la donación), según event-time"
+    },
+    "donanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Opcional. Identificador del donante de la donación original; Logística lo guarda en la entrega para listar las entregas activas de un donante (ADR de réplicas por evento, 2026-11-06)"
     }
   },
   "required": [

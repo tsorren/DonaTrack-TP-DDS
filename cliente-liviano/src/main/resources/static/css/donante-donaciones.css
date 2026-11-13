@@ -1,0 +1,45 @@
+/* Mis donaciones de la empresa: el filtro y la huerta, como Mis donaciones de K (estética de K,
+   2026-11-08; antes, el libro de asientos colgado de la raíz). Las láminas son del componente huerta. */
+@import url("donante-comun.css");
+
+.donaciones {
+  max-width: 72rem;
+}
+
+.donaciones h1 {
+  margin-bottom: 1.25rem;
+}
+
+/* La huerta, como en K: las láminas de a dos en el celular y de al menos 12 rem desde la tableta. */
+.huerta-lista {
+  --medida-columna: 9rem;
+  column-gap: 1rem;
+}
+
+/* El paginador es el componente paginas (R11-11): debajo de las láminas, con aire. */
+.donaciones > .paginas {
+  margin-top: 2rem;
+}
+
+/* El pie, centrado y en el 80 % del ancho, con aire sobre las láminas (usuario, 2026-11-09). */
+.donaciones-pie {
+  display: grid;
+  justify-items: center;
+  width: 80%;
+  margin: 3.5rem auto 0;
+  text-align: center;
+}
+
+.donaciones-pie p {
+  margin: 0 0 1rem;
+}
+
+/* En pantalla grande, el libro de registro: un renglón por donación, con sus columnas a la vista y
+   la raíz por la columna de los números. */
+
+@media (min-width: 37.5em) {
+  .huerta-lista {
+    --medida-columna: 12rem;
+    column-gap: 1.5rem;
+  }
+}

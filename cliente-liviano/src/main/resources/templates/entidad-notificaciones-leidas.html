@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!--/* Raíces, Notificaciones de la entidad después de marcar como leídas (ficha
+       raices-entidad-navegable, sección 5): la misma bandeja (componentes/buzon), todas leídas, con
+       el aviso arriba, que toma el foco. Los filtros siguen andando sobre esta dirección. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-notificaciones', ~{::contenido})}">
+<head>
+  <title>Notificaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{entidad-notificaciones :: hoja('leidas')}"></th:block>
+</th:block>
+</body>
+</html>

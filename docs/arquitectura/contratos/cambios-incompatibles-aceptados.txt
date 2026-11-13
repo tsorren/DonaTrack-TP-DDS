@@ -13,3 +13,54 @@ POST /api/donaciones the request property `descripcion` became required
 # #908 (2026-10-29): el padrón llega como multipart/form-data; el body {"path"} permitía leer
 # cualquier archivo del contenedor y el front ya mandaba multipart.
 POST /api/donantes/archivos added required request body
+
+# HB-18 (DTI-30, 2026-11-09; ADR 20261102 del ciclo de vida de la necesidad, ajuste de la migración):
+# la spec omitía el body que el servicio siempre exigió. Ahora lo documenta, con dos reglas nuevas
+# que oasdiff no ve porque son condicionales: fechaLimite obligatoria en las EXTRAORDINARIA y
+# periodicidad obligatoria en las RECURRENTE. Los consumidores del repo (integration-tests y los
+# flujos 2, 4, 8 y 9 de Postman) se migraron en el mismo PR.
+POST /api/necesidades added required request body
+PUT /api/necesidades/{id} added required request body
+
+# HB-19 (DTI-31, 2026-11-09; ADR 20261109-cancelacion-de-entregas-que-no-salieron): Logística suma
+# CANCELADA al estado de la entrega que devuelve (EntregaResponseDTO, seguimiento, historial). Un
+# consumidor estricto del enum puede romperse; los del repo (cliente liviano, integration-tests) no
+# lo enumeran. oasdiff v1.34 clasifica "enum value added" en una respuesta como aviso (WARN), no
+# como error, así que no hace falta una línea para --err-ignore. [INFERRED] Se confirma con la
+# salida del job de contratos del PR; si lo marca como error, la línea va acá.
+
+# HB-22 (SPEC-09, 2026-11-11; ADR logistica-service/20261111-estado-en-puerta-de-la-entrega): el
+# camión que llega al destino pasa la entrega a EN_PUERTA. Logística (1.9.0) suma el valor al estado
+# de la entrega en las respuestas, el seguimiento, el historial y el request del PATCH de estado;
+# Donaciones (1.8.0) lo suma al estado de la donación independiente (respuestas, filtro y request
+# del cambio de estado). Un consumidor estricto del enum puede romperse; los del repo (cliente
+# liviano, integration-tests) leen el estado como texto. Como en HB-19, oasdiff clasifica "enum
+# value added" como aviso; en un request no rompe a quien no lo manda. [INFERRED] Se confirma con
+# la salida del job de contratos del PR; si lo marca como error, las líneas van acá.
+
+# R11-01 (p0-api-listados, 2026-11-11; spec R11-p0-api-listados §0): Donaciones 1.9.0.
+# 1) `estado` de GET /donaciones-independientes pasa de un valor a uno o varios repetidos (style
+#    form, explode): quien manda un solo valor sigue igual, pero oasdiff lo ve como cambio de tipo.
+# 2) `nombre` de GET /api/entidades queda acotado a 100 caracteres, el mismo tope que `q`.
+# Lo que oasdiff no ve, aprobado por el usuario: sin page ni size los listados devuelven la página
+# 0 de 20 (antes, todo). El seeder de demo ya recorre páginas; los consumidores del cliente
+# liviano los migra p0-admin-listados. [INFERRED] oasdiff no se pudo correr local (sin la imagen);
+# el texto exacto de cada línea se confirma con el job de contratos del PR y se corrige acá.
+GET /donaciones-independientes for the 'query' request parameter 'estado', the type/format was changed from 'string'/'' to 'array'/''
+GET /api/entidades for the 'query' request parameter 'nombre', the maxLength was set to '100'
+
+# R11-19 (p1-mapa, 2026-11-12; ficha raices-publico-navegable.md, ampliación R11-19, sección 10):
+# Logística 1.10.0. GET /api/entregas/mapa suma `desde`, `hasta` y `limite` (opcionales) y el total
+# en `X-Total-Count`. Lo que oasdiff no ve, aprobado por el usuario (aprobación del diseño p1-mapa,
+# punto 3): sin parámetros devuelve los últimos 30 días y hasta 200 (antes, toda la historia). El
+# único consumidor es el cliente liviano, que ya se quedaba con 30 días y ahora los pide. Los
+# parámetros nuevos son opcionales: [INFERRED] oasdiff no los marca como error; si el job de
+# contratos del PR marca algo, la línea exacta va acá.
+
+# R11-24 (p1-asignaciones, 2026-11-12; spec R11-p1-asignaciones): Donaciones 1.10.0.
+# GET /api/asignaciones/propuestas y GET /api/asignaciones/ejecuciones pasan a paginar en la base:
+# sin page ni size devuelven la página 0 de 20 (antes, todas), con el total en X-Total-Count. El
+# cuerpo sigue siendo un arreglo y los campos nuevos son opcionales. Los consumidores del repo
+# (cliente liviano, seeder de demo) se migran en el mismo lote. oasdiff no ve el cambio de
+# comportamiento; los parámetros nuevos son opcionales. [INFERRED] Si el job de contratos del PR
+# marca alguna línea como error, va acá.

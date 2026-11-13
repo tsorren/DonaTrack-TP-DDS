@@ -102,4 +102,24 @@ class DonacionEventListenerTest {
 
     verify(notificacionService).procesarPersonaSincronizada(replicaDto, messageId);
   }
+
+  @Test
+  void onImportacionTerminada_conMessageId_deberiaDelegarEnServicio() {
+    grupo5.notificaciones.dto.input.EventoImportacionTerminadaV1 evento =
+        new grupo5.notificaciones.dto.input.EventoImportacionTerminadaV1(
+            UUID.randomUUID(),
+            "TERMINADA",
+            3,
+            3,
+            3,
+            0,
+            0,
+            null,
+            LocalDateTime.of(2026, Month.NOVEMBER, 12, 18, 45));
+    String messageId = UUID.randomUUID().toString();
+
+    listener.onImportacionTerminada(evento, messageId);
+
+    verify(notificacionService, times(1)).procesar(evento, messageId);
+  }
 }

@@ -2,16 +2,24 @@ package grupo5.notificaciones.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import grupo5.common.CommonLibAutoConfiguration;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.common.logging.LoggingAutoConfiguration;
+import grupo5.notificaciones.dto.FiltroBandeja;
 import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.*;
 import grupo5.notificaciones.models.entities.personas.Persona;
@@ -26,11 +34,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(NotificacionController.class)
+@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
 class NotificacionControllerTest {
 
   @Autowired private MockMvc mockMvc;
@@ -94,7 +104,8 @@ class NotificacionControllerTest {
             personaMock.getId(),
             TEST_DATE_TIME,
             personaMock.getId(),
-            "10kg de arroz");
+            "10kg de arroz",
+            null);
 
     mockMvc
         .perform(
@@ -116,7 +127,8 @@ class NotificacionControllerTest {
             TEST_DATE_TIME,
             personaMock.getId(),
             "ropa",
-            "AB123CD");
+            "AB123CD",
+            null);
 
     mockMvc
         .perform(
@@ -138,7 +150,8 @@ class NotificacionControllerTest {
             TEST_DATE_TIME,
             personaMock.getId(),
             "ropa",
-            "https://donatrack.app/mapa/123");
+            "https://donatrack.app/mapa/123",
+            null);
 
     mockMvc
         .perform(
@@ -162,7 +175,8 @@ class NotificacionControllerTest {
             "ropa",
             personaMock.getId(),
             "Nadie respondió",
-            true);
+            true,
+            null);
 
     mockMvc
         .perform(
@@ -179,7 +193,7 @@ class NotificacionControllerTest {
   void procesarEvento_conDetalleDonacionEnBlanco_deberiaResponderBadRequest() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionAsignadaDTO(
-            UUID.randomUUID(), personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "");
+            UUID.randomUUID(), personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "", null);
 
     mockMvc
         .perform(
@@ -208,7 +222,8 @@ class NotificacionControllerTest {
             TEST_DATE_TIME,
             UUID.randomUUID(),
             "5 kg de leche en polvo",
-            "Expiró tiempo de acopio");
+            "Expiró tiempo de acopio",
+            null);
 
     mockMvc
         .perform(
@@ -225,7 +240,13 @@ class NotificacionControllerTest {
   void donacionVencida_conCamposEnBlanco_deberiaResponderBadRequest() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionVencidaDTO(
-            UUID.randomUUID(), personaMock.getId(), TEST_DATE_TIME, UUID.randomUUID(), "", "");
+            UUID.randomUUID(),
+            personaMock.getId(),
+            TEST_DATE_TIME,
+            UUID.randomUUID(),
+            "",
+            "",
+            null);
 
     mockMvc
         .perform(
@@ -247,7 +268,8 @@ class NotificacionControllerTest {
             LocalDateTime.now().plusDays(2),
             UUID.randomUUID(),
             "5 kg de leche en polvo",
-            "Expiró tiempo de acopio");
+            "Expiró tiempo de acopio",
+            null);
 
     mockMvc
         .perform(
@@ -318,23 +340,68 @@ class NotificacionControllerTest {
   }
 
   @Test
-  void obtenerPorPersona_conIdValido_deberiaResponderOk() throws Exception {
+  void obtenerPorPersona_sinParametros_respondeLaPaginaConElTotalEnLaCabecera() throws Exception {
     UUID personaId = UUID.randomUUID();
-    when(notificacionService.obtenerPorPersona(personaId)).thenReturn(List.of());
+    when(notificacionService.bandeja(personaId, FiltroBandeja.deLectura(null)))
+        .thenReturn(new NotificacionService.PaginaNotificaciones(List.of(), 45));
 
-    mockMvc.perform(get("/api/notificaciones/persona/" + personaId)).andExpect(status().isOk());
+    mockMvc
+        .perform(get("/api/notificaciones/persona/" + personaId))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "45"))
+        .andExpect(jsonPath("$").isArray());
   }
 
   // ==================== Endpoints In-App Front ====================
 
   @Test
-  void obtenerPorPersona_conFiltroLeida_deberiaResponderOk() throws Exception {
+  void obtenerPorPersona_pasaLosFiltrosRepetiblesYLaPaginaAlServicio() throws Exception {
     UUID personaId = UUID.randomUUID();
-    when(notificacionService.obtenerPorPersona(personaId, false)).thenReturn(List.of());
+    FiltroBandeja esperado =
+        new FiltroBandeja(
+            false,
+            "camion",
+            List.of("DONACION_EN_CAMINO"),
+            List.of("DONACION_ASIGNADA", "ENTREGA_FALLIDA"),
+            "antiguas",
+            1,
+            20);
+    when(notificacionService.bandeja(personaId, esperado))
+        .thenReturn(new NotificacionService.PaginaNotificaciones(List.of(), 3));
 
     mockMvc
-        .perform(get("/api/notificaciones/persona/" + personaId + "?leida=false"))
-        .andExpect(status().isOk());
+        .perform(
+            get(
+                "/api/notificaciones/persona/"
+                    + personaId
+                    + "?leida=false&q=camion&tipo=DONACION_EN_CAMINO&excluirTipo=DONACION_ASIGNADA"
+                    + "&excluirTipo=ENTREGA_FALLIDA&orden=antiguas&page=1&size=20"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "3"));
+  }
+
+  @Test
+  void obtenerPorPersona_elAliasLegadoUsaLaMismaPagina() throws Exception {
+    UUID personaId = UUID.randomUUID();
+    when(notificacionService.bandeja(personaId, FiltroBandeja.deLectura(null)))
+        .thenReturn(new NotificacionService.PaginaNotificaciones(List.of(), 0));
+
+    mockMvc
+        .perform(get("/notificaciones/persona/" + personaId))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "0"));
+  }
+
+  @Test
+  void obtenerPorPersona_conUnParametroFueraDeRango_responde400ConElCodigo() throws Exception {
+    UUID personaId = UUID.randomUUID();
+    when(notificacionService.bandeja(eq(personaId), any(FiltroBandeja.class)))
+        .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
+
+    mockMvc
+        .perform(get("/api/notificaciones/persona/" + personaId + "?size=101"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
   }
 
   @Test
@@ -391,5 +458,42 @@ class NotificacionControllerTest {
         .andExpect(status().isNoContent());
 
     verify(notificacionService, times(1)).marcarTodasComoLeidas(personaId);
+  }
+
+  @Test
+  void obtenerPorPersona_devuelveTipoEventoYReferenciaOpcionales() throws Exception {
+    UUID personaId = UUID.randomUUID();
+    UUID donacionId = UUID.randomUUID();
+    when(notificacionService.bandeja(personaId, FiltroBandeja.deLectura(null)))
+        .thenReturn(
+            new NotificacionService.PaginaNotificaciones(
+                List.of(
+                    new NotificacionDTO(
+                        UUID.randomUUID(),
+                        "Salió",
+                        "ENVIADA",
+                        TEST_DATE_TIME,
+                        false,
+                        null,
+                        "DONACION_EN_CAMINO",
+                        donacionId),
+                    new NotificacionDTO(UUID.randomUUID(), "Vieja", "ENVIADA", TEST_DATE_TIME)),
+                2));
+
+    mockMvc
+        .perform(get("/api/notificaciones/persona/" + personaId))
+        .andExpect(status().isOk())
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$[0].tipoEvento")
+                .value("DONACION_EN_CAMINO"))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$[0].referenciaId")
+                .value(donacionId.toString()))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$[1].tipoEvento")
+                .doesNotExist());
   }
 }

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Raíces, Camiones después de agregar uno: el aviso y el camión nuevo en la flota, con su ficha abierta; el aviso no se repite al elegir otro camión o filtrar (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.8). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Camión agregado - Camiones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-camiones :: hoja('agregado')}"></th:block>
+</th:block>
+</body>
+</html>

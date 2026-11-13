@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<!--/* Raíces, Mi perfil de la entidad (docs/interfaz/flujos/raices-mi-perfil.md, sección "Mi perfil de
+       la entidad"): la forma del perfil del donante, con Datos de la entidad y Avisos en pestañas y la
+       constancia de los legales debajo. Sin "Cómo te ven": el nombre de la entidad es público (RF-06).
+       La dirección de entrega se muestra fija (texto, no un campo): es a donde van los camiones y la
+       administración la revisó al aprobar la entidad; se cambia por Contacto. Los formularios son
+       reales (POST) y van a entidad-perfil-guardado, que dice qué se guardó (?seccion=datos o avisos).
+       Los datos vienen del controller (perfilEntidad: de la maqueta o de Donaciones). Guardar
+       todavía no cambia nada fuera de la maqueta: EntidadEnviosController vuelve con un aviso que
+       lo dice (el cuerpo compartido del PUT de personas no lleva documento, piso ni teléfonos).
+       ?escenario=lento (guardando), error (del servidor) y sin-conexion.
+       Fragmentos:
+       - hoja(enviado): la pantalla entera; enviado es true en entidad-perfil-guardado. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-perfil', ~{::contenido})}">
+<head>
+  <title>Mi perfil - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{entidad-perfil :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(enviado)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             guardo=${enviado and param.seccion != null ? param.seccion[0] : ''},
+             lento=${escenario == 'lento'},
+             ficha=${perfilEntidad}">
+  <div class="perfil">
+    <p class="rotulo">Mi perfil</p>
+    <h1 th:text="${cuenta.nombre}">Comedor Barrio Ejemplo</h1>
+    <p class="perfil-cuenta" th:text="${ficha.cuentaLinea}">Comedor · Marta, comedor@ejemplo.org</p>
+
+    <p th:if="${guardo == 'datos'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus>Listo.
+      Guardamos los datos de tu organización.</p>
+    <p th:if="${guardo == 'avisos'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus>Listo.
+      Guardamos cómo te avisamos.</p>
+    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="error-titulo">
+      <h2 id="error-titulo">No pudimos guardar los cambios.</h2>
+      <p>Es un problema nuestro: siguen como estaban. Probá de nuevo en unos minutos; si sigue,
+        <a href="/publico-contacto?codigo=b2c3d4e5f6a1"
+           th:href="@{/publico-contacto(codigo='b2c3d4e5f6a1',volver='/entidad-perfil')}">escribinos
+          con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>b2c3d4e5f6a1</code></p>
+    </section>
+    <section th:if="${escenario == 'sin-conexion'}" class="banner" data-estado="error" role="alert"
+             aria-labelledby="red-titulo">
+      <h2 id="red-titulo">No sabemos si se guardó.</h2>
+      <p>Se cortó la conexión mientras se guardaba. Recargá la página para ver qué quedó guardado.</p>
+    </section>
+
+    <!--/* Las pestañas, como en el perfil del donante (bloque .pestanas): enlaces a su sección, sin
+           JavaScript; al guardar vuelve a la misma. */-->
+    <div class="pestanas" x-data="pestanas" x-on:hashchange.window="desdeLaDireccion">
+    <nav class="pestanas-lista" aria-label="Secciones de tu perfil" x-on:keydown="teclear">
+      <a class="pestana" id="pestana-datos" href="#datos" x-on:click="elegir">Datos de la organización</a>
+      <a class="pestana" id="pestana-como-te-avisamos" href="#como-te-avisamos" x-on:click="elegir">Avisos</a>
+    </nav>
+
+    <div class="pestanas-panel" id="datos">
+    <form action="/entidad-perfil-guardado" th:action="@{/entidad-perfil-guardado#datos(seccion='datos')}"
+          method="post" class="formulario perfil-seccion" aria-labelledby="datos-titulo"
+          th:aria-busy="${lento} ? 'true' : null">
+      <h2 id="datos-titulo">Datos de la organización</h2>
+      <p class="obligatorios">Todos los datos son obligatorios, salvo los que dicen «opcional».</p>
+      <div class="campo">
+        <label for="entidad">Nombre de la organización</label>
+        <input id="entidad" name="entidad" type="text" required autocomplete="organization"
+               th:value="${ficha.nombre}" value="Comedor Barrio Ejemplo" placeholder="Por ejemplo: Comedor Barrio Ejemplo">
+      </div>
+      <div class="campo">
+        <label for="que-es">Qué es</label>
+        <select id="que-es" name="queEs" required>
+          <option th:selected="${ficha.queEs == 'Merendero'}">Merendero</option>
+          <option th:selected="${ficha.queEs == 'Comedor'}">Comedor</option>
+          <option th:selected="${ficha.queEs == 'Escuela'}">Escuela</option>
+          <option th:selected="${ficha.queEs == 'Hogar'}">Hogar</option>
+          <option th:selected="${ficha.queEs == 'Club'}">Club</option>
+          <option th:selected="${ficha.queEs == 'Biblioteca'}">Biblioteca</option>
+          <option th:selected="${ficha.queEs == 'Otra'}">Otra</option>
+        </select>
+      </div>
+      <fieldset class="opciones">
+        <legend>Tipo de organización</legend>
+        <label><input type="radio" name="tipo" value="asociacion" required th:checked="${ficha.tipo == 'asociacion'}">
+          <span>Asociación civil u ONG</span></label>
+        <label><input type="radio" name="tipo" value="institucion" th:checked="${ficha.tipo == 'institucion'}">
+          <span>Institución: escuela, club o biblioteca</span></label>
+        <label><input type="radio" name="tipo" value="organismo" th:checked="${ficha.tipo == 'organismo'}">
+          <span>Organismo público</span></label>
+      </fieldset>
+      <!--/* La dirección de entrega, fija: es texto, no un campo desactivado; se lee entera y no parece
+             un error (ficha, sección 7). */-->
+      <div class="perfil-grupo">
+        <h3>Dirección de entrega</h3>
+        <p><b th:text="${ficha.direccion}">Calle Ejemplo 450, Localidad Ejemplo, Buenos Aires</b></p>
+        <p class="nota">No se cambia desde acá: es a donde van los camiones. Para cambiarla,
+          <a href="/publico-contacto" th:href="@{/publico-contacto(volver='/entidad-perfil')}">escribinos</a>
+          y la revisamos como cuando sumaste tu organización.</p>
+      </div>
+      <fieldset class="perfil-grupo">
+        <legend>Quién la representa</legend>
+        <div class="perfil-par">
+          <div class="campo">
+            <label for="representante">Nombre y apellido</label>
+            <input id="representante" name="representante" type="text" required autocomplete="name"
+                   th:value="${ficha.representante}" value="Marta Ejemplo" placeholder="Por ejemplo: Marta Ejemplo">
+          </div>
+          <div class="campo">
+            <label for="correo-representante">Correo electrónico</label>
+            <input id="correo-representante" name="correoRepresentante" type="email" required
+                   autocomplete="email" th:value="${ficha.correoRepresentante}" value="comedor@ejemplo.org" placeholder="nombre@ejemplo.com">
+          </div>
+        </div>
+      </fieldset>
+      <button class="boton" data-tono="principal" type="submit" th:disabled="${lento}"
+              th:text="${lento} ? 'Guardando…' : 'Guardar los datos'">Guardar los datos</button>
+    </form>
+    </div>
+
+    <div class="pestanas-panel" id="como-te-avisamos">
+    <form action="/entidad-perfil-guardado" th:action="@{/entidad-perfil-guardado#como-te-avisamos(seccion='avisos')}"
+          method="post" class="formulario perfil-seccion" aria-labelledby="avisos-titulo">
+      <h2 id="avisos-titulo">Cómo te avisamos</h2>
+      <p>Te avisamos cuando se asigna una donación a tu organización, cuando sale hacia vos, si tiene un
+        problema y cuando llega a tu puerta. Los avisos también quedan en
+        <a href="/entidad-notificaciones" th:href="@{/entidad-notificaciones}">Notificaciones</a>.</p>
+      <div class="campo">
+        <label for="correo">Correo</label>
+        <input id="correo" name="correo" type="email" required autocomplete="email"
+               th:value="${ficha.correo}" value="comedor@ejemplo.org" placeholder="nombre@ejemplo.com">
+      </div>
+      <div class="perfil-par">
+        <div class="campo">
+          <label for="whatsapp">WhatsApp <small>(opcional)</small></label>
+          <input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" th:attr="value=${ficha.whatsapp}" value="11 5555-0200" placeholder="Por ejemplo: 11 5555 5555">
+        </div>
+        <div class="campo">
+          <label for="telefono">Teléfono <small>(opcional)</small></label>
+          <input id="telefono" name="telefono" type="tel" autocomplete="tel" th:attr="value=${ficha.telefono}" placeholder="Por ejemplo: 11 5555 5555">
+        </div>
+      </div>
+      <fieldset class="opciones">
+        <legend>Por dónde te avisamos</legend>
+        <label><input type="radio" name="medio" value="correo" th:checked="${ficha.medio == 'correo'}">
+          <span>Por correo</span></label>
+        <label><input type="radio" name="medio" value="whatsapp" th:checked="${ficha.medio == 'whatsapp'}">
+          <span>Por WhatsApp</span></label>
+        <label><input type="radio" name="medio" value="telefono" th:checked="${ficha.medio == 'telefono'}">
+          <span>Por mensaje de texto al teléfono</span></label>
+      </fieldset>
+      <fieldset class="opciones">
+        <legend>Qué te avisamos</legend>
+        <label><input type="radio" name="cuales" value="todos" checked>
+          <span>Todo: cuando se asigna, cuando sale, si tiene un problema y cuando llega</span></label>
+        <label><input type="radio" name="cuales" value="llegadas">
+          <span>Solo cuando llega a tu puerta</span></label>
+      </fieldset>
+      <button class="boton" data-tono="principal" type="submit" th:disabled="${lento}"
+              th:text="${lento} ? 'Guardando…' : 'Guardar los avisos'">Guardar los avisos</button>
+    </form>
+    </div>
+    </div>
+
+    <section class="perfil-legales" aria-labelledby="legales-titulo">
+      <h2 id="legales-titulo">Términos y privacidad</h2>
+      <p th:text="${ficha.legales}">Aceptaste la versión 1 el 1 de noviembre de 2026.</p>
+      <a href="/publico-legales" th:href="@{/publico-legales}">Leer los
+        términos y la política de privacidad</a>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

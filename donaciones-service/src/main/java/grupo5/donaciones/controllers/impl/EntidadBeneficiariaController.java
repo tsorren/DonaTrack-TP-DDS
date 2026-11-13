@@ -1,8 +1,18 @@
 package grupo5.donaciones.controllers.impl;
 
+import static grupo5.donaciones.seguridad.Acceso.ADMIN;
+import static grupo5.donaciones.seguridad.Acceso.ENTIDAD;
+import static grupo5.donaciones.seguridad.Acceso.PUBLICO;
+import static grupo5.donaciones.seguridad.Acceso.SU_ID;
+
 import grupo5.donaciones.controllers.IEntidadBeneficiariaController;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.entidadBeneficiaria.EstadoOrganizacion;
+import grupo5.donaciones.dto.entidadBeneficiaria.FiltroOrganizaciones;
+import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
+import grupo5.donaciones.services.IActividadService;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import grupo5.donaciones.services.ResultadoRegistro;
 import jakarta.validation.Valid;
@@ -10,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,16 +28,23 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/api/entidades")
 public class EntidadBeneficiariaController implements IEntidadBeneficiariaController {
 
-  private final IEntidadBeneficiariaService service;
+  static final String HEADER_TOTAL = "X-Total-Count";
 
-  public EntidadBeneficiariaController(IEntidadBeneficiariaService service) {
+  private final IEntidadBeneficiariaService service;
+  private final IActividadService actividad;
+
+  public EntidadBeneficiariaController(
+      IEntidadBeneficiariaService service, IActividadService actividad) {
     this.service = service;
+    this.actividad = actividad;
   }
 
   @Override
@@ -34,23 +52,60 @@ public class EntidadBeneficiariaController implements IEntidadBeneficiariaContro
   public ResponseEntity<EntidadBeneficiariaOutputDTO> crearEntidad(
       @Valid @RequestBody EntidadBeneficiariaInputDTO entidad) {
     ResultadoRegistro<EntidadBeneficiariaOutputDTO> resultado = service.crearEntidad(entidad);
+    if (resultado.creado()) {
+      actividad.organizacionCreada(resultado.recurso(), entidad.origenOPorDefecto());
+    }
     HttpStatus status = resultado.creado() ? HttpStatus.CREATED : HttpStatus.OK;
     return ResponseEntity.status(status).body(resultado.recurso());
   }
 
   @Override
+  @PreAuthorize(ENTIDAD + SU_ID)
   @GetMapping("/{id}")
   public ResponseEntity<EntidadBeneficiariaOutputDTO> obtenerEntidad(@PathVariable UUID id) {
     return ResponseEntity.ok(service.obtenerEntidad(id));
   }
 
+  /**
+   * Organizaciones del admin. R11-43: {@code estado} ({@code ACTIVA} o {@code BAJA}; otro valor da
+   * 400), {@code conNecesidades} y {@code rubro}; sin ellos, todas.
+   */
   @Override
   @GetMapping
-  public ResponseEntity<List<EntidadBeneficiariaOutputDTO>> obtenerTodas() {
-    return ResponseEntity.ok(service.obtenerTodas());
+  public ResponseEntity<List<EntidadBeneficiariaOutputDTO>> obtenerTodas(
+      @RequestParam(required = false) String nombre,
+      @RequestParam(required = false) EstadoOrganizacion estado,
+      @RequestParam(required = false) Boolean conNecesidades,
+      @RequestParam(required = false) String rubro,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size) {
+    return conTotal(
+        service.buscar(
+            nombre,
+            new FiltroOrganizaciones(EstadoOrganizacion.activa(estado), conNecesidades, rubro),
+            page,
+            size));
   }
 
   @Override
+  @PreAuthorize(PUBLICO)
+  @GetMapping("/publicas")
+  public ResponseEntity<List<EntidadPublicaDTO>> obtenerPublicas(
+      @RequestParam(required = false) String nombre,
+      @RequestParam(required = false) UUID categoriaId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size) {
+    return conTotal(service.buscarPublicas(nombre, categoriaId, page, size));
+  }
+
+  private static <T> ResponseEntity<List<T>> conTotal(Pagina<T> pagina) {
+    return ResponseEntity.ok()
+        .header(HEADER_TOTAL, String.valueOf(pagina.total()))
+        .body(pagina.elementos());
+  }
+
+  @Override
+  @PreAuthorize(ENTIDAD + "hasAuthority('EDITAR_DATOS_ORGANIZACION') and " + SU_ID)
   @PutMapping("/{id}")
   public ResponseEntity<EntidadBeneficiariaOutputDTO> actualizarEntidad(
       @PathVariable UUID id, @Valid @RequestBody EntidadBeneficiariaInputDTO entidad) {

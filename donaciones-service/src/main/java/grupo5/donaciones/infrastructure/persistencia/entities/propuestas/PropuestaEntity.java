@@ -2,11 +2,14 @@ package grupo5.donaciones.infrastructure.persistencia.entities.propuestas;
 
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
@@ -34,6 +37,22 @@ public class PropuestaEntity {
   @Column(name = "fecha_creacion", nullable = false)
   private LocalDateTime fechaCreacion;
 
+  @Column(name = "decidida_por")
+  private String decididaPor;
+
+  @Column(name = "fecha_decision")
+  private LocalDateTime fechaDecision;
+
+  @Column(name = "motivo_descarte")
+  private String motivoDescarte;
+
   @OneToMany(mappedBy = "propuesta", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<PosibleFragmentacionEntity> fragmentaciones = new ArrayList<>();
+
+  // R11-24 (V24): qué algoritmos la sugirieron; se leen por lote (default_batch_fetch_size)
+  @ElementCollection
+  @CollectionTable(
+      name = "sugerencia_propuesta",
+      joinColumns = @JoinColumn(name = "id_propuesta", nullable = false))
+  private List<SugerenciaPropuestaEmbeddable> sugerencias = new ArrayList<>();
 }

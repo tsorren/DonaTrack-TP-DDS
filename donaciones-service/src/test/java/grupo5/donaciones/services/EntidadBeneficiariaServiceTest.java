@@ -3,9 +3,11 @@ package grupo5.donaciones.services;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -16,25 +18,45 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.entidadBeneficiaria.FiltroOrganizaciones;
+import grupo5.donaciones.dto.publico.EntidadParaDonanteDTO;
+import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.models.repositories.impl.EntidadesBeneficiariasRepositoryEnMemoria;
+import grupo5.donaciones.models.repositories.listados.CriterioEntidades;
+import grupo5.donaciones.models.repositories.listados.Paginado;
+import grupo5.donaciones.models.repositories.listados.Tramo;
+import grupo5.donaciones.services.impl.CancelacionDeEntregas;
 import grupo5.donaciones.services.impl.EntidadBeneficiariaService;
 import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.EntidadBeneficiariaMapper;
 import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class EntidadBeneficiariaServiceTest {
   private IEntidadesBeneficiariasRepository repository;
@@ -42,6 +64,13 @@ class EntidadBeneficiariaServiceTest {
   private INecesidadesRepository necesidadesRepository;
   private EntidadBeneficiariaMapper mapper;
   private EntidadBeneficiariaService service;
+  // R11-01: la búsqueda se resuelve en el repositorio; estas pruebas usan el de memoria
+  private EntidadesBeneficiariasRepositoryEnMemoria enMemoria;
+  private EntidadBeneficiariaService serviceConBusqueda;
+  private final List<Persona> personasRegistradas = new ArrayList<>();
+
+  private CancelacionDeEntregas cancelacionDeEntregas = mock(CancelacionDeEntregas.class);
+  private final IDonantesRepository donantesRepository = mock(IDonantesRepository.class);
 
   @BeforeEach
   void setUp() {
@@ -55,7 +84,30 @@ class EntidadBeneficiariaServiceTest {
 
     service =
         new EntidadBeneficiariaService(
-            repository, personasRepository, necesidadesRepository, mapper);
+            repository,
+            personasRepository,
+            necesidadesRepository,
+            mapper,
+            cancelacionDeEntregas,
+            donantesRepository);
+
+    when(personasRepository.findAll()).thenAnswer(inv -> List.copyOf(personasRegistradas));
+    when(personasRepository.findAllById(any()))
+        .thenAnswer(
+            inv ->
+                inv.<Collection<UUID>>getArgument(0).stream()
+                    .map(personasRepository::findById)
+                    .flatMap(o -> o == null ? Stream.empty() : o.stream())
+                    .toList());
+    enMemoria = new EntidadesBeneficiariasRepositoryEnMemoria(personasRepository);
+    serviceConBusqueda =
+        new EntidadBeneficiariaService(
+            enMemoria,
+            personasRepository,
+            necesidadesRepository,
+            mapper,
+            cancelacionDeEntregas,
+            donantesRepository);
   }
 
   @Test
@@ -244,26 +296,15 @@ class EntidadBeneficiariaServiceTest {
   }
 
   @Test
-  void obtenerTodas_debeRetornarListaDeDTOs() {
-    Juridica juridica = PersonaMother.fundacionEsperanza();
-    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica.getId());
-
-    when(repository.findAll()).thenReturn(List.of(entidad));
-    when(personasRepository.findById(juridica.getId())).thenReturn(Optional.of(juridica));
-
-    List<EntidadBeneficiariaOutputDTO> resultado = service.obtenerTodas();
-
-    assertEquals(1, resultado.size());
-    assertEquals("Fundación Esperanza", resultado.getFirst().juridica().razonSocial());
-    verify(personasRepository, times(1)).findById(juridica.getId());
-  }
-
-  @Test
   void eliminarEntidad_daDeBajaDesactivaSusNecesidadesYNoBorra() {
     UUID id = UUID.randomUUID();
     EntidadBeneficiaria entidad = new EntidadBeneficiaria(id);
     Necesidad n1 = mock(Necesidad.class);
     Necesidad n2 = mock(Necesidad.class);
+    UUID idN1 = UUID.randomUUID();
+    UUID idN2 = UUID.randomUUID();
+    when(n1.getId()).thenReturn(idN1);
+    when(n2.getId()).thenReturn(idN2);
     when(repository.findById(id)).thenReturn(Optional.of(entidad));
     when(necesidadesRepository.buscarNecesidadesPorEntidad(id)).thenReturn(List.of(n1, n2));
 
@@ -276,6 +317,9 @@ class EntidadBeneficiariaServiceTest {
     verify(n2).desactivar();
     verify(necesidadesRepository).save(n1);
     verify(necesidadesRepository).save(n2);
+    // HB-19: la baja en cascada también cancela lo que no salió de cada necesidad
+    verify(cancelacionDeEntregas).cancelarLasQueNoSalieron(idN1);
+    verify(cancelacionDeEntregas).cancelarLasQueNoSalieron(idN2);
   }
 
   @Test
@@ -349,5 +393,311 @@ class EntidadBeneficiariaServiceTest {
     assertTrue(service.esEntidadActiva(activa));
     assertFalse(service.esEntidadActiva(deBaja));
     assertFalse(service.esEntidadActiva(inexistente));
+  }
+
+  // ===================== buscar (HB-15) =====================
+
+  private static final String COMEDOR_SUR = "Comedor Sur";
+  private static final String COMEDOR_NORTE = "COMEDOR Norte";
+  private static final String BANCO_DE_ROPA = "banco de Ropa";
+  private static final String ABRIGO_YA = "Abrigo Ya";
+
+  /** Registra una entidad cuya jurídica tiene esa razón social y la devuelve. */
+  private EntidadBeneficiaria entidadLlamada(String razonSocial) {
+    Juridica juridica =
+        new Juridica(PersonaMother.juanPerez(), razonSocial, TipoJuridico.ONG, "Social");
+    when(personasRepository.findById(juridica.getId())).thenReturn(Optional.of(juridica));
+    personasRegistradas.add(juridica);
+    return enMemoria.save(new EntidadBeneficiaria(juridica.getId()));
+  }
+
+  /** Una entidad cuya jurídica no se encuentra: el DTO sale con {@code juridica} nula. */
+  private EntidadBeneficiaria entidadSinJuridica() {
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(UUID.randomUUID());
+    when(personasRepository.findById(entidad.juridicaId())).thenReturn(Optional.empty());
+    return enMemoria.save(entidad);
+  }
+
+  /** Registra una entidad por cada razón social. */
+  private void conEntidades(String... razonesSociales) {
+    for (String razonSocial : razonesSociales) {
+      entidadLlamada(razonSocial);
+    }
+  }
+
+  private static List<String> nombres(Pagina<EntidadBeneficiariaOutputDTO> pagina) {
+    return pagina.elementos().stream()
+        .map(e -> e.juridica() == null ? null : e.juridica().razonSocial())
+        .toList();
+  }
+
+  @Test
+  void buscar_sinParametros_devuelveLaPrimeraPaginaOrdenadaPorNombreConElTotal_R1101() {
+    conEntidades(COMEDOR_SUR, BANCO_DE_ROPA);
+
+    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar(null, null, null, null);
+
+    assertEquals(List.of(BANCO_DE_ROPA, COMEDOR_SUR), nombres(pagina));
+    assertEquals(2, pagina.total());
+  }
+
+  @Test
+  void buscar_sinParametros_nuncaDevuelveMasDeLaPaginaPorDefecto_R1101() {
+    String[] razonesSociales =
+        new String[EntidadBeneficiariaService.TAMANIO_PAGINA_POR_DEFECTO + 1];
+    for (int i = 0; i < razonesSociales.length; i++) {
+      razonesSociales[i] = String.format("Entidad %02d", i);
+    }
+    conEntidades(razonesSociales);
+
+    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar(null, null, null, null);
+
+    assertEquals(EntidadBeneficiariaService.TAMANIO_PAGINA_POR_DEFECTO, pagina.elementos().size());
+    assertEquals(razonesSociales.length, pagina.total());
+  }
+
+  @Test
+  void buscar_porNombre_filtraPorContieneSinDistinguirMayusculas() {
+    conEntidades(COMEDOR_SUR, BANCO_DE_ROPA, COMEDOR_NORTE);
+
+    Pagina<EntidadBeneficiariaOutputDTO> pagina =
+        serviceConBusqueda.buscar("comedor", null, null, null);
+
+    assertEquals(List.of(COMEDOR_NORTE, COMEDOR_SUR), nombres(pagina));
+    assertEquals(2, pagina.total());
+  }
+
+  @Test
+  void buscar_porNombre_ignoraLasTildesEnAmbosSentidos_R1101() {
+    conEntidades("Asociación Gómez", "Comedor Gomez", BANCO_DE_ROPA);
+
+    assertEquals(
+        List.of("Asociación Gómez", "Comedor Gomez"),
+        nombres(serviceConBusqueda.buscar("gomez", null, null, null)));
+    assertEquals(
+        List.of("Asociación Gómez", "Comedor Gomez"),
+        nombres(serviceConBusqueda.buscar("GÓMEZ", null, null, null)));
+  }
+
+  @Test
+  void buscar_porNombre_descartaEntidadesSinJuridica() {
+    entidadSinJuridica();
+    entidadLlamada(COMEDOR_SUR);
+
+    assertEquals(List.of(COMEDOR_SUR), nombres(serviceConBusqueda.buscar("sur", null, null, null)));
+  }
+
+  @Test
+  void buscar_paginado_ordenaPorNombreYRecortaConElTotalDeLasFiltradas() {
+    conEntidades(COMEDOR_SUR, BANCO_DE_ROPA, ABRIGO_YA);
+
+    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar(null, null, 1, 2);
+
+    assertEquals(List.of(COMEDOR_SUR), nombres(pagina));
+    assertEquals(3, pagina.total());
+  }
+
+  @Test
+  void buscar_paginado_dejaAlFinalLasEntidadesSinJuridica() {
+    entidadSinJuridica();
+    entidadLlamada(ABRIGO_YA);
+
+    assertEquals(
+        Arrays.asList(ABRIGO_YA, null), nombres(serviceConBusqueda.buscar(null, null, 0, 2)));
+  }
+
+  @Test
+  void buscar_paginado_conNombresIgualesDesempataPorId() {
+    conEntidades(COMEDOR_SUR, COMEDOR_SUR);
+    List<UUID> idsOrdenados =
+        enMemoria.findAll().stream().map(EntidadBeneficiaria::getId).sorted().toList();
+
+    List<UUID> ids =
+        serviceConBusqueda.buscar(null, null, 0, 2).elementos().stream()
+            .map(EntidadBeneficiariaOutputDTO::id)
+            .toList();
+
+    assertEquals(idsOrdenados, ids);
+  }
+
+  @Test
+  void buscar_conSoloSize_empiezaPorLaPrimeraPagina() {
+    conEntidades(COMEDOR_SUR, ABRIGO_YA);
+
+    assertEquals(List.of(ABRIGO_YA), nombres(serviceConBusqueda.buscar(null, null, null, 1)));
+  }
+
+  @Test
+  void buscar_conSoloPage_usaElTamanioPorDefecto() {
+    String[] razonesSociales =
+        new String[EntidadBeneficiariaService.TAMANIO_PAGINA_POR_DEFECTO + 1];
+    for (int i = 0; i < razonesSociales.length; i++) {
+      razonesSociales[i] = String.format("Entidad %02d", i);
+    }
+    conEntidades(razonesSociales);
+
+    Pagina<EntidadBeneficiariaOutputDTO> pagina = serviceConBusqueda.buscar(null, null, 0, null);
+
+    assertEquals(EntidadBeneficiariaService.TAMANIO_PAGINA_POR_DEFECTO, pagina.elementos().size());
+    assertEquals(razonesSociales.length, pagina.total());
+  }
+
+  @Test
+  void buscar_conElTamanioMaximo_loAcepta() {
+    conEntidades(COMEDOR_SUR);
+
+    assertEquals(
+        List.of(COMEDOR_SUR),
+        nombres(
+            serviceConBusqueda.buscar(
+                null, null, 0, EntidadBeneficiariaService.TAMANIO_PAGINA_MAXIMO)));
+  }
+
+  @Test
+  void buscar_pasaLosFiltrosDeOrganizacionesAlCriterio() {
+    when(repository.buscar(any())).thenReturn(new Tramo<>(List.of(), 0));
+    FiltroOrganizaciones filtro = new FiltroOrganizaciones(false, true, "Comedor");
+
+    service.buscar("sur", filtro, 1, 5);
+
+    ArgumentCaptor<CriterioEntidades> criterio = ArgumentCaptor.forClass(CriterioEntidades.class);
+    verify(repository).buscar(criterio.capture());
+    assertEquals(filtro, criterio.getValue().filtro());
+    assertEquals("sur", criterio.getValue().nombre());
+    assertEquals(false, criterio.getValue().soloActivas());
+    assertEquals(new Paginado(1, 5), criterio.getValue().paginado());
+    // conNecesidades mira el día de hoy
+    assertEquals(LocalDate.now(ZoneId.systemDefault()), criterio.getValue().hoy());
+  }
+
+  @Test
+  void buscar_conPaginacionInvalida_lanzaValidationException() {
+    int maximo = EntidadBeneficiariaService.TAMANIO_PAGINA_MAXIMO;
+    for (Integer[] invalida : new Integer[][] {{-1, null}, {0, 0}, {0, maximo + 1}}) {
+      ValidationException ex =
+          assertThrows(
+              ValidationException.class,
+              () -> service.buscar(null, null, invalida[0], invalida[1]));
+      assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, ex.getError());
+    }
+    verify(repository, never()).buscar(any());
+  }
+
+  // ===================== buscarPublicas (HB-08) =====================
+
+  @Test
+  void buscarPublicas_devuelveSoloActivasConJuridicaYElDtoPublico() {
+    Juridica juridica =
+        new Juridica(PersonaMother.juanPerez(), COMEDOR_SUR, TipoJuridico.ONG, "Alimentos");
+    when(personasRepository.findById(juridica.getId())).thenReturn(Optional.of(juridica));
+    personasRegistradas.add(juridica);
+    enMemoria.save(new EntidadBeneficiaria(juridica.getId()));
+    EntidadBeneficiaria deBaja = entidadLlamada(ABRIGO_YA);
+    deBaja.darDeBaja();
+    enMemoria.save(deBaja);
+    entidadSinJuridica();
+
+    Pagina<EntidadPublicaDTO> pagina = serviceConBusqueda.buscarPublicas(null, null, null, null);
+
+    assertEquals(
+        List.of(new EntidadPublicaDTO(juridica.getId(), COMEDOR_SUR, "Alimentos")),
+        pagina.elementos());
+    assertEquals(1, pagina.total());
+  }
+
+  @Test
+  void buscarPublicas_conNombreYPaginado_aplicaLaMismaBusqueda() {
+    conEntidades(COMEDOR_SUR, COMEDOR_NORTE, BANCO_DE_ROPA);
+
+    Pagina<EntidadPublicaDTO> pagina = serviceConBusqueda.buscarPublicas("comedor", null, 0, 1);
+
+    assertEquals(
+        List.of(COMEDOR_NORTE),
+        pagina.elementos().stream().map(EntidadPublicaDTO::razonSocial).toList());
+    assertEquals(2, pagina.total());
+  }
+
+  @Test
+  void buscarPublicas_conPaginacionInvalida_lanzaValidationExceptionSinConsultar() {
+    int maximo = EntidadBeneficiariaService.TAMANIO_PAGINA_MAXIMO;
+    for (Integer[] invalida : new Integer[][] {{-1, null}, {null, 0}, {null, maximo + 1}}) {
+      ValidationException ex =
+          assertThrows(
+              ValidationException.class,
+              () -> service.buscarPublicas(null, null, invalida[0], invalida[1]));
+      assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, ex.getError());
+    }
+    verify(repository, never()).buscar(any());
+  }
+
+  // ===================== buscarParaDonante (R11-12) =====================
+
+  @Test
+  void buscarParaDonante_marcaYaLeDonoConUnaSolaConsultaParaLaPagina_A4_A9() {
+    UUID donante = UUID.randomUUID();
+    EntidadBeneficiaria comedor = entidadLlamada(COMEDOR_SUR);
+    EntidadBeneficiaria banco = entidadLlamada(BANCO_DE_ROPA);
+    when(donantesRepository.existsById(donante)).thenReturn(true);
+    when(repository.buscar(any())).thenReturn(new Tramo<>(List.of(banco, comedor), 46));
+    when(repository.recibieronDe(eq(donante), any())).thenReturn(Set.of(comedor.getId()));
+
+    Pagina<EntidadParaDonanteDTO> pagina =
+        service.buscarParaDonante(donante, null, null, false, 0, 6);
+
+    assertEquals(
+        List.of(
+            new EntidadParaDonanteDTO(banco.getId(), BANCO_DE_ROPA, "Social", false),
+            new EntidadParaDonanteDTO(comedor.getId(), COMEDOR_SUR, "Social", true)),
+        pagina.elementos());
+    assertEquals(46, pagina.total());
+    verify(repository, times(1)).recibieronDe(donante, List.of(banco.getId(), comedor.getId()));
+  }
+
+  @Test
+  void buscarParaDonante_pasaLaCategoriaYSoloDonadasAlRepositorio() {
+    UUID donante = UUID.randomUUID();
+    UUID categoria = UUID.randomUUID();
+    when(donantesRepository.existsById(donante)).thenReturn(true);
+    when(repository.buscar(any())).thenReturn(new Tramo<>(List.of(), 0));
+
+    service.buscarParaDonante(donante, " comedor ", categoria, true, 1, 6);
+    service.buscarParaDonante(donante, null, null, false, null, null);
+
+    ArgumentCaptor<CriterioEntidades> criterios = ArgumentCaptor.forClass(CriterioEntidades.class);
+    verify(repository, times(2)).buscar(criterios.capture());
+    CriterioEntidades conFiltros = criterios.getAllValues().get(0);
+    assertEquals("comedor", conFiltros.nombre());
+    assertTrue(conFiltros.soloActivas());
+    assertEquals(categoria, conFiltros.categoriaId());
+    assertEquals(donante, conFiltros.donadasPor());
+    assertNotNull(conFiltros.hoy());
+    assertEquals(new Paginado(1, 6), conFiltros.paginado());
+    CriterioEntidades sinFiltros = criterios.getAllValues().get(1);
+    assertNull(sinFiltros.categoriaId());
+    assertNull(sinFiltros.donadasPor());
+  }
+
+  @Test
+  void buscarParaDonante_conUnDonanteQueNoExiste_lanzaNoEncontrado() {
+    UUID donante = UUID.randomUUID();
+    when(donantesRepository.existsById(donante)).thenReturn(false);
+
+    assertThrows(
+        RecursoNoEncontradoException.class,
+        () -> service.buscarParaDonante(donante, null, null, false, null, null));
+    verify(repository, never()).buscar(any());
+  }
+
+  @Test
+  void buscarPublicas_conCategoria_laPasaAlRepositorioSinDonante() {
+    UUID categoria = UUID.randomUUID();
+    when(repository.buscar(any())).thenReturn(new Tramo<>(List.of(), 0));
+
+    service.buscarPublicas(null, categoria, null, null);
+
+    ArgumentCaptor<CriterioEntidades> criterio = ArgumentCaptor.forClass(CriterioEntidades.class);
+    verify(repository).buscar(criterio.capture());
+    assertEquals(categoria, criterio.getValue().categoriaId());
+    assertNull(criterio.getValue().donadasPor());
   }
 }

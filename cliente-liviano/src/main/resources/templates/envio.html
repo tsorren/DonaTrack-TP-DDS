@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<!--/* La pieza común de los envíos reales (conexión de pantallas, SPEC-08). No es una pantalla: su
+       nombre no empieza con un rol. La comparten los cuatro roles y la declara el esqueleto: ningún
+       frente la cambia.
+
+       Un formulario que guarda de verdad, fuera de la maqueta:
+         <form method="post" th:action="@{/<pantalla>}" hx-boost="true"
+               hx-indicator="#enviando-<pantalla>" hx-select-oob="#avisos">
+           …
+           <p th:replace="~{envio :: indicador('enviando-<pantalla>', 'Guardando…')}"></p>
+         </form>
+       - th:action (no action a secas): así Spring Security suma el token CSRF fuera de la maqueta.
+       - hx-boost: HTMX manda el formulario, sigue la redirección y cambia solo el main#contenido
+         (hx-select del layout) sin volver arriba. Sin JavaScript, el mismo formulario recarga.
+       - hx-indicator: el indicador (.cargando.htmx-indicator) aparece mientras dura el pedido
+         (RNF-UI-06, más de 300 ms); oculto el resto del tiempo, sin ocupar lugar.
+       - hx-select-oob="#avisos": trae también la región de avisos de la respuesta, con el aviso del
+         servidor que dejó web.Envios (aviso breve, data-estado="hecho"), y la cola de Alpine lo muestra.
+       - hx-disinherit="hx-indicator hx-select-oob": va en el formulario que lleva un enlace (el
+         "Cancelar", "Llegó con un problema") o un botón con hx-get adentro. HTMX hace que todo lo de
+         adentro herede el indicador y el avisos del formulario: sin esto, tocar "Cancelar" mostraba
+         "Registrando…" (R11-07). El envío del propio formulario no cambia. IndicadorEnFormulariosTest
+         lo exige. Los enlaces a un ancla de la misma página (href="#campo") no lo necesitan.
+       El controller del envío es @Profile("!maqueta"), llama al puerto y termina con
+       Envios.listo(destino, texto, atributos): redirige y deja el aviso. En la maqueta el mismo
+       formulario lo atiende SitioController y vuelve a su pantalla sin guardar. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--/* El aviso del servidor en la región #avisos de los layouts (sin role: la región ya es aria-live). */-->
+<p th:fragment="aviso(texto)" class="aviso-breve" data-estado="hecho"><th:block th:text="${texto}">Listo.</th:block><button
+    type="button" class="aviso-cerrar" data-cerrar aria-label="Cerrar el aviso">×</button></p>
+<!--/* El indicador de un envío: el id lo nombra el hx-indicator del formulario. */-->
+<p th:fragment="indicador(id, texto)" id="enviando" th:id="${id}" class="cargando htmx-indicator"
+   role="status" th:text="${texto}">Guardando…</p>
+</body>
+</html>

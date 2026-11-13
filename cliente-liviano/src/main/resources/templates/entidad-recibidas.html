@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<!--/* Raíces, Donaciones recibidas de la entidad (RF-11), según su ficha de flujo
+       (docs/interfaz/flujos/raices-entidad-navegable.md, sección 4.2): todo lo asignado a la entidad,
+       agrupado por estado, de la que espera en la puerta a la que ya se recibió. El filtro es el
+       componente de filtros (componentes/filtros.html, como en Entidades): una pastilla por estado,
+       con su cantidad, que se prende; se pueden prender varias (ronda del 2026-11-09: los estados son
+       filtros, no una progresión). Funciona sin JavaScript, con un formulario GET
+       (?estado=en-tu-puerta, en-camino, por-salir, con-problema o recibidas, repetido si son varios;
+       todas o un valor desconocido no filtran). Lo que espera, en actas de papel con su botón; lo recibido,
+       en el cuaderno de la portada, una fila por fecha. Las donaciones vienen del controller
+       (recibidas: de la maqueta o de Donaciones); de piezas-entidad.html (datos) salen los grupos.
+       ?escenario=vacio, lento, error y sin-resultados (el aceite ya no está y el filtro
+       queda en Con problema: el filtro sin resultados).
+       R11-43: con los datos reales llega una página de 20 (ya filtrada por Donaciones) y las cifras
+       de cada grupo (recibidas.cuantas) y del mes (recibidas.enElMes) las cuenta Donaciones; se
+       muestran todas las recibidas, no solo las del mes, con su paginador. La maqueta deja cuantas
+       en null: las cifras salen de la lista. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-recibidas', ~{::contenido})}">
+<head>
+  <title>Donaciones recibidas - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{piezas-entidad :: datos(~{entidad-recibidas :: cuerpo})}"></th:block>
+</th:block>
+
+<th:block th:fragment="cuerpo"
+    th:with="asignadas=${escenario == 'vacio' ? {} : recibidas.asignadas.?[clave != 'aceite' or #root.escenario != 'sin-resultados']},
+             paginada=${recibidas.cuantas != null},
+             nombreRecibidas=${paginada ? 'Recibidas' : 'Recibidas en ' + recibidas.mes},
+             pedidos=${param.estado != null ? ',' + #strings.arrayJoin(param.estado, ',') + ',' : (escenario == 'sin-resultados' ? ',con-problema,' : '')},
+             filtros=${ {
+      {valor: 'en-tu-puerta', nombre: 'Esperan tu confirmación', grupo: 'puerta'},
+      {valor: 'en-camino', nombre: 'En camino', grupo: 'camino'},
+      {valor: 'por-salir', nombre: 'Pendientes', grupo: 'salir'},
+      {valor: 'con-problema', nombre: 'Con problema', grupo: 'problema'},
+      {valor: 'recibidas', nombre: nombreRecibidas, grupo: 'recibida'} } },
+             elegidos=${filtros.?[#root.pedidos.contains(',' + valor + ',')]},
+             claves=${elegidos.![grupo]},
+             filtrada=${!#lists.isEmpty(elegidos)},
+             conLista=${escenario != 'vacio' and escenario != 'error'},
+             conDatos=${conLista and escenario != 'lento'},
+             mostrados=${filtrada ? grupos.?[#root.claves.contains(clave)] : grupos},
+             encontradas=${asignadas.?[#root.claves.contains(grupo)]}">
+  <div class="recibidas">
+    <header class="cabecera-entidad">
+      <p class="rotulo" th:text="${seccion}">Donaciones recibidas</p>
+      <h1>Lo asignado a <em>tu organización</em></h1>
+      <p>Las donaciones asignadas a <th:block th:text="${cuenta.nombre}">Comedor Barrio Ejemplo</th:block>,
+        de la que está en tu puerta a la que ya recibiste. <th:block th:text="|Al ${recibidas.actualizado}.|">Al 15 de octubre de 2026, 18:30.</th:block></p>
+      <th:block th:if="${conDatos and recibidas.novedades != null}">
+        <a th:replace="~{piezas-entidad :: novedades(${recibidas.novedades})}"></a>
+      </th:block>
+    </header>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{piezas-entidad :: error('No pudimos cargar tus donaciones.',
+               'Es un problema nuestro: no cambió nada en tus entregas. Probá de nuevo en unos minutos; si sigue,',
+               '/entidad-recibidas')}"></section>
+    </th:block>
+
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no se asignaron donaciones a tu organización.</h2>
+      <p>Se asignan a lo que pedís: publicá tus necesidades y aparecen acá cuando se asigne una.</p>
+      <a class="boton" data-tono="principal" href="/entidad-necesidades"
+         th:href="@{/entidad-necesidades}">Ver tus necesidades</a>
+    </section>
+
+    <!--/* El filtro: una pastilla por estado, con su cantidad (el componente de filtros). Sin
+           JavaScript, se prenden las que hagan falta y se envía con "Filtrar". */-->
+    <form hx-boost="true" th:if="${conLista}" class="filtro" action="/entidad-recibidas"
+          th:action="@{/entidad-recibidas}" method="get" aria-label="Filtrar por estado">
+      <input th:if="${escenario == 'sin-resultados'}" type="hidden" name="escenario" value="sin-resultados">
+      <div class="filtros" role="group" aria-label="Estado">
+        <th:block th:each="f : ${filtros}"
+                  th:with="rotulo=|${f.nombre} (${paginada ? recibidas.cuantas[f.grupo] : #lists.size(asignadas.?[grupo == #root.f.grupo])})|,
+                           prendido=${claves.contains(f.grupo)}">
+          <label th:replace="~{componentes/filtros :: interruptor('estado', ${f.valor}, ${rotulo}, ${prendido})}"></label>
+        </th:block>
+        <button class="boton" data-tono="secundario" type="submit">Filtrar</button>
+        <a th:if="${filtrada}" class="filtros-sacar" href="/entidad-recibidas"
+           th:href="@{/entidad-recibidas}">Sacar los filtros</a>
+      </div>
+    </form>
+
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tus donaciones…</p>
+    <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo" aria-busy="true"></div>
+
+    <th:block th:if="${conDatos}">
+      <!--/* Con un filtro puesto: cuál es y "Ver todas". */-->
+      <p th:if="${filtrada and !#lists.isEmpty(encontradas)}" class="mostrando">
+        <span th:text="|Mostrando: ${#strings.listJoin(elegidos.![nombre], ', ')} (${paginada ? recibidas.total : #lists.size(encontradas)}).|">Mostrando:
+          En camino (1).</span>
+        <a href="/entidad-recibidas" th:href="@{/entidad-recibidas}">Ver todas</a>
+      </p>
+      <section th:if="${filtrada and #lists.isEmpty(encontradas)}" class="vacio"
+               aria-labelledby="sinres-titulo" tabindex="-1" autofocus>
+        <h2 id="sinres-titulo" th:text="${#lists.size(elegidos) == 1} ? 'No hay donaciones en ese estado.' : 'No hay donaciones en esos estados.'">No hay donaciones en ese estado.</h2>
+        <p>Probá con otro estado o mirá todas.</p>
+        <a class="boton" data-tono="secundario" href="/entidad-recibidas"
+           th:href="@{/entidad-recibidas}">Ver todas</a>
+      </section>
+
+      <div class="grupos">
+      <th:block th:each="g : ${mostrados}" th:with="lista=${asignadas.?[grupo == #root.g.clave]}">
+        <section th:unless="${#lists.isEmpty(lista)}" class="grupo" th:classappend="|grupo--${g.clave}|"
+                 th:aria-labelledby="|grupo-${g.clave}|">
+          <!--/* Al filtrar, el foco va al título del grupo mostrado. */-->
+          <h2 th:id="|grupo-${g.clave}|" th:attr="tabindex=${filtrada} ? '-1' : null, autofocus=${filtrada} ? 'autofocus' : null"
+              th:text="|${g.clave == 'recibida' ? nombreRecibidas : g.nombre} (${paginada ? recibidas.cuantas[g.clave] : #lists.size(lista)})|">Esperan tu confirmación (2)</h2>
+          <p th:if="${g.clave == 'recibida' and recibidas.enElMes != null}" class="mostrando"
+             th:text="${recibidas.enElMes == 1} ? |1 este mes (${recibidas.mes}).| : |${recibidas.enElMes} este mes (${recibidas.mes}).|">4
+            este mes (noviembre).</p>
+
+          <!--/* Lo que todavía no se recibió: un acta por donación, con su estado y su próximo paso. */-->
+          <ul th:if="${g.clave != 'recibida'}" class="lista actas" role="list">
+            <li th:each="d : ${lista}">
+              <article class="tarjeta acta" data-filete="doble" th:aria-labelledby="|don-${d.clave}|">
+                <h3 th:id="|don-${d.clave}|" class="acta-titulo">
+                  <svg th:if="${d.categoria}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                    <use href="#cat-alimentos" th:href="|#${d.categoria}|"/>
+                  </svg>
+                  <span th:text="${d.nombre}">Lentejas secas</span>
+                </h3>
+                <p class="acta-cuanto" th:text="${d.categoriaNombre == null ? d.cuanto : d.categoriaNombre + ' · ' + d.cuanto}">Alimentos · 15 kg</p>
+                <p th:text="|Donó ${d.dono}|">Donó Distribuidora Ejemplo SA</p>
+                <p th:if="${d.pedido}"><a href="/entidad-necesidades?necesidad=lentejas"
+                   th:href="@{/entidad-necesidades(necesidad=${d.pedido})}"
+                   th:text="|Para tu necesidad de ${d.pedidoNombre}|">Para tu necesidad de lentejas secas</a></p>
+                <!--/* Bajo "Esperan tu confirmación", sin el estado: ya lo dice el grupo (ronda del
+                       2026-11-09); solo el paso. Los datos reales no traen "cuándo llegó" aparte: va el paso. */-->
+                <p class="acta-paso">
+                  <span th:unless="${d.grupo == 'puerta'}" class="estado" th:data-estado="${d.grupo}">
+                    <svg th:replace="~{componentes/sello :: sello(${d.grupo})}"></svg>
+                    <th:block th:text="${g.estado}">En camino</th:block></span>
+                  <span th:text="${d.paso}">Llegó hoy, 18:20, desde el
+                    Depósito Central.</span>
+                </p>
+                <a th:if="${d.grupo == 'puerta'}" class="boton" data-tono="principal"
+                   href="/entidad-seguimiento-confirmar?entrega=lentejas"
+                   th:href="@{/entidad-seguimiento-confirmar(entrega=${d.clave})}">Confirmar
+                  recepción<span class="solo-lectores" th:text="${d.pedidoNombre == null} ? '' : |: ${d.pedidoNombre}|">: lentejas secas</span></a>
+                <a th:if="${d.grupo == 'problema' and d.pedido != null}" class="boton" data-tono="secundario"
+                   href="/entidad-necesidades?necesidad=aceite"
+                   th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu necesidad</a>
+              </article>
+            </li>
+          </ul>
+
+          <!--/* Lo recibido: el cuaderno, una fila por fecha, de la más reciente a la más vieja, por una
+                 raíz impresa (cada recepción, confirmada). */-->
+          <ol th:if="${g.clave == 'recibida'}" class="cuaderno-recibidas" role="list">
+            <li th:each="d : ${lista}">
+              <article class="asiento" th:aria-labelledby="|don-${d.clave}|">
+                <p class="asiento-fecha"><time datetime="2026-10-10" th:datetime="${d.fecha}"><b
+                    th:text="${d.dia}">10</b><th:block th:text="| de ${recibidas.mesDe(d)}|"> de octubre</th:block></time></p>
+                <svg th:replace="~{componentes/sello :: sello('recibida')}"></svg>
+                <div class="asiento-texto">
+                  <h3 th:id="|don-${d.clave}|" th:text="|${d.nombre}, ${d.cuanto}|">Lentejas secas, 10 kg</h3>
+                  <p><th:block th:text="${(d.categoriaNombre == null ? '' : d.categoriaNombre + ' · ') + 'Donó ' + d.dono}">Alimentos · Donó Almacén Ejemplo
+                    SRL</th:block><th:block th:if="${d.pedido}"> · <a
+                      href="/entidad-necesidades?necesidad=lentejas"
+                      th:href="@{/entidad-necesidades(necesidad=${d.pedido})}"
+                      th:text="|Para tu necesidad de ${d.pedidoNombre}|">Para tu necesidad de lentejas secas</a></th:block></p>
+                  <p class="estado" data-estado="recibida" th:text="${d.paso}">Confirmaste la recepción el 10 de
+                    octubre.</p>
+                </div>
+              </article>
+            </li>
+          </ol>
+        </section>
+      </th:block>
+      </div>
+      <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

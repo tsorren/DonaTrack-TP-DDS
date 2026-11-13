@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -379,9 +380,32 @@ class RepositoriosIncentivosJpaTest {
     RankingMensual encontrado = rankingRepository.findByPeriodo(periodo).orElseThrow();
     assertEquals(ranking.getId(), encontrado.getId());
     assertEquals(
+        ranking.getCalculadoEn().truncatedTo(ChronoUnit.MILLIS),
+        encontrado.getCalculadoEn().truncatedTo(ChronoUnit.MILLIS));
+    assertEquals(
         List.of(1, 2, 3),
         encontrado.getEntradas().stream().map(EntradaRanking::getPosicion).toList());
     assertTrue(rankingRepository.findByPeriodo(YearMonth.of(2026, Month.SEPTEMBER)).isEmpty());
+  }
+
+  @Test
+  void deberiaTraerElHistorialDelMesMasRecienteAlMasViejoDeAUnaPagina() {
+    List.of(
+            YearMonth.of(2025, Month.NOVEMBER),
+            YearMonth.of(2026, Month.FEBRUARY),
+            YearMonth.of(2025, Month.DECEMBER),
+            YearMonth.of(2026, Month.JANUARY))
+        .forEach(periodo -> rankingRepository.save(RankingMensualMother.conNEntradas(periodo, 2)));
+
+    List<RankingMensual> primera = rankingRepository.buscarHistorial(0, 3);
+    List<RankingMensual> segunda = rankingRepository.buscarHistorial(1, 3);
+
+    assertEquals(
+        List.of("2026-02", "2026-01", "2025-12"),
+        primera.stream().map(r -> r.getPeriodo().toString()).toList());
+    assertEquals(List.of("2025-11"), segunda.stream().map(r -> r.getPeriodo().toString()).toList());
+    assertEquals(2, primera.get(0).getEntradas().size());
+    assertEquals(4, rankingRepository.count());
   }
 
   @Test

@@ -1,0 +1,100 @@
+package grupo5.cliente.integracion;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+
+import grupo5.cliente.puertos.DonacionesComoUsuario.Juridica;
+import grupo5.cliente.puertos.DonacionesComoUsuario.NecesidadDeEntidad;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.IntStream;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestClient;
+
+class DonacionesRestComoUsuarioTest {
+
+  private static final String BASE = "http://donaciones";
+  private static final UUID PERSONA = UUID.randomUUID();
+
+  private final RestClient.Builder base = RestClient.builder().baseUrl(BASE);
+  private final MockRestServiceServer servidor = MockRestServiceServer.bindTo(base).build();
+  private final DonacionesRestComoUsuario donaciones = new DonacionesRestComoUsuario(base.build());
+
+  @Test
+  void lasNecesidadesDeLaEntidadSeFiltranPorSuPersona() {
+    String json =
+        """
+        [{"id":"%s","tipo":"EXTRAORDINARIA","idEntidad":"%s","cantidadNecesitada":40,
+          "descripcion":"Lentejas","estaSatisfecha":false,"fechaFin":"2026-10-31"}]"""
+            .formatted(UUID.randomUUID(), PERSONA);
+    servidor
+        .expect(requestTo(BASE + "/api/necesidades?entidadId=" + PERSONA))
+        .andRespond(withSuccess(json, APPLICATION_JSON));
+
+    NecesidadDeEntidad necesidad = donaciones.necesidadesDe(PERSONA).get(0);
+
+    assertThat(necesidad.descripcion()).isEqualTo("Lentejas");
+    assertThat(necesidad.cantidadNecesitada()).isEqualTo(40);
+    assertThat(necesidad.fechaFin()).isEqualTo(LocalDate.of(2026, 10, 31));
+  }
+
+  @Test
+  void lasJuridicasSeLeenPorSuIdConSuRazonSocial() {
+    String json =
+        """
+        [{"tipo":"JURIDICA","id":"%s","razonSocial":"Merendero Oeste","documento":"30-1",
+          "mediosDeContacto":[],"representantes":[]}]"""
+            .formatted(PERSONA);
+    servidor
+        .expect(requestTo(BASE + "/api/personas?id=" + PERSONA + "&size=100"))
+        .andRespond(withSuccess(json, APPLICATION_JSON));
+
+    assertThat(donaciones.juridicas(List.of(PERSONA)))
+        .containsExactly(new Juridica(PERSONA, "Merendero Oeste"));
+    servidor.verify();
+  }
+
+  @Test
+  void conMasDeCienSolicitudesLasJuridicasSePidenDeACien() {
+    List<UUID> ids = IntStream.range(0, 101).mapToObj(i -> UUID.randomUUID()).toList();
+    servidor
+        .expect(requestTo(containsString("&id=" + ids.get(99) + "&size=100")))
+        .andRespond(withSuccess("[]", APPLICATION_JSON));
+    servidor
+        .expect(requestTo(BASE + "/api/personas?id=" + ids.get(100) + "&size=100"))
+        .andRespond(withSuccess("[]", APPLICATION_JSON));
+
+    assertThat(donaciones.juridicas(ids)).isEmpty();
+    servidor.verify();
+  }
+
+  @Test
+  void sinSolicitudesNoSePideNada() {
+    assertThat(donaciones.juridicas(List.of())).isEmpty();
+    servidor.verify();
+  }
+
+  @Test
+  void registrarUnaEntidadEnviaLaJuridica() {
+    servidor
+        .expect(requestTo(BASE + "/api/entidades"))
+        .andExpect(method(POST))
+        .andExpect(jsonPath("$.juridicaId").value(PERSONA.toString()))
+        .andExpect(jsonPath("$.origen").value("SOLICITUD"))
+        .andRespond(withStatus(HttpStatus.CREATED));
+
+    donaciones.registrarEntidad(PERSONA);
+
+    servidor.verify();
+  }
+}

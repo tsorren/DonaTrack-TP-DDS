@@ -1,0 +1,257 @@
+package grupo5.cliente.rest;
+
+import static grupo5.cliente.rest.Comun.ASIGNADA;
+import static grupo5.cliente.rest.Comun.ENTREGADA;
+import static grupo5.cliente.rest.Comun.FALLIDA;
+import static grupo5.cliente.rest.Comun.LISTA;
+import static grupo5.cliente.rest.Comun.PUERTA;
+import static grupo5.cliente.rest.Comun.TRASLADO;
+import static grupo5.cliente.rest.Comun.VENCIDA;
+import static grupo5.cliente.rest.Comun.cantidad;
+import static grupo5.cliente.rest.Comun.categoria;
+import static grupo5.cliente.rest.Comun.desde;
+import static grupo5.cliente.rest.Comun.icono;
+import static grupo5.cliente.rest.Comun.normalizado;
+
+import grupo5.cliente.puertos.RecibidasPuerto;
+import grupo5.cliente.rest.DonacionesApi.Categoria;
+import grupo5.cliente.vistas.RecibidasVista;
+import grupo5.cliente.vistas.RecibidasVista.Recibida;
+import grupo5.cliente.vistas.Tramo;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+/**
+ * Donaciones recibidas desde Donaciones: las asignadas a la entidad, agrupadas por estado, con
+ * quién donó ({@code quienDono} del listado: la entidad no puede leer la donación original). Las
+ * recibidas son las entregadas en el mes en curso. La que llegó a la puerta ({@code EN_PUERTA},
+ * HB-22) va a "Esperan tu confirmación", con la hora de su cambio de estado; la que viene en
+ * camino, a "En camino". El pedido que cubre no llega (HB-17), ni cuántas notificaciones hay sin
+ * leer.
+ *
+ * <p>Desde R11-43 la pantalla pide de a una página de {@value #POR_PAGINA}, con los grupos
+ * filtrados por Donaciones ({@code estado}) en el orden de lo que hay que atender ({@code
+ * orden=ATENCION}), y las cifras de cada grupo salen de {@code /conteos}, no del largo de la
+ * página.
+ */
+// @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
+@Component
+@Primary
+@ConditionalOnProperty(name = "cliente.datos.recibidas", havingValue = "rest")
+class RecibidasRest implements RecibidasPuerto {
+
+  private static final Locale ES_AR = Locale.forLanguageTag("es-AR");
+  private static final ZoneId ARGENTINA = ZoneId.of("America/Argentina/Buenos_Aires");
+  private static final DateTimeFormatter DIA = DateTimeFormatter.ofPattern("d 'de' MMMM", ES_AR);
+  private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern("H:mm", ES_AR);
+  private static final DateTimeFormatter MES = DateTimeFormatter.ofPattern("MMMM", ES_AR);
+  private static final DateTimeFormatter AHORA =
+      DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy, H:mm", ES_AR);
+  private static final String RECIBIDA = "recibida";
+  private static final String SALIR = "salir";
+  private static final String UN_DONANTE = "un donante";
+
+  /** El orden de lo que hay que hacer; las recibidas, al final. */
+  private static final List<String> ORDEN =
+      List.of("puerta", "problema", "camino", SALIR, RECIBIDA);
+
+  static final int POR_PAGINA = 20;
+
+  /** Los estados de Donaciones de cada grupo, en el orden de {@link #ORDEN}. */
+  static final Map<String, List<String>> ESTADOS =
+      Map.of(
+          "puerta",
+          List.of("EN_PUERTA"),
+          "problema",
+          List.of("ENTREGA_FALLIDA", "VENCIDA"),
+          "camino",
+          List.of("EN_TRASLADO"),
+          SALIR,
+          List.of("ASIGNACION_REALIZADA", "LISTA_PARA_ENTREGAR", "EN_DEPOSITO"),
+          RECIBIDA,
+          List.of("ENTREGADA"));
+
+  private final DonacionesApi api;
+  private final Clock reloj;
+
+  RecibidasRest(DonacionesApi api, Clock reloj) {
+    this.api = api;
+    this.reloj = reloj;
+  }
+
+  /** Una donación con su estado normalizado, su grupo y desde cuándo está así. */
+  private record Fila(DonacionesApi.Donacion d, String estado, String grupo, LocalDateTime desde) {}
+
+  /**
+   * Para Inicio: una sola página de {@value DonacionesApi#TOPE}, de la más urgente a la recibida
+   * (R11-43), con las recibidas del mes en curso.
+   */
+  @Override
+  public RecibidasVista recibidas(UUID entidad) {
+    LocalDateTime ahora = LocalDateTime.now(reloj.withZone(ARGENTINA));
+    YearMonth mes = YearMonth.from(ahora);
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    filtros.add("entidadId", entidad.toString());
+    filtros.add("orden", "ATENCION");
+    filtros.add("size", String.valueOf(DonacionesApi.TOPE));
+    List<DonacionesApi.Donacion> pagina = api.pagina(filtros).getBody();
+    List<Recibida> asignadas =
+        (pagina == null ? List.<DonacionesApi.Donacion>of() : pagina)
+            .stream()
+                .map(RecibidasRest::fila)
+                .filter(f -> !RECIBIDA.equals(f.grupo()) || YearMonth.from(f.desde()).equals(mes))
+                .sorted(
+                    Comparator.comparing((Fila f) -> ORDEN.indexOf(f.grupo()))
+                        .thenComparing(Fila::desde, Comparator.reverseOrder()))
+                .map(RecibidasRest::recibida)
+                .toList();
+    return new RecibidasVista(asignadas, ahora.format(MES), ahora.format(AHORA), null);
+  }
+
+  /**
+   * Una página de los {@code grupos} pedidos (vacío: todos), en el orden de Donaciones, y las
+   * cifras de cada grupo y del mes contadas por Donaciones.
+   */
+  @Override
+  public RecibidasVista recibidas(UUID entidad, Set<String> grupos, int pagina) {
+    LocalDateTime ahora = LocalDateTime.now(reloj.withZone(ARGENTINA));
+    MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
+    filtros.add("entidadId", entidad.toString());
+    ORDEN.stream()
+        .filter(grupos::contains)
+        .forEach(g -> ESTADOS.get(g).forEach(e -> filtros.add("estado", e)));
+    filtros.add("orden", "ATENCION");
+    Tramo<DonacionesApi.Donacion> tramo =
+        Paginas.pedir(
+            pagina,
+            POR_PAGINA,
+            p -> {
+              MultiValueMap<String, String> conPagina = new LinkedMultiValueMap<>(filtros);
+              conPagina.add("page", String.valueOf(p));
+              conPagina.add("size", String.valueOf(POR_PAGINA));
+              return api.pagina(conPagina);
+            });
+    DonacionesApi.Conteos conteos = api.conteos(entidad, null);
+    List<Recibida> asignadas =
+        tramo.filas().stream().map(RecibidasRest::fila).map(RecibidasRest::recibida).toList();
+    return new RecibidasVista(
+        asignadas,
+        ahora.format(MES),
+        ahora.format(AHORA),
+        null,
+        porGrupo(conteos.porEstado()),
+        conteos.entregadasEnElMes() == null ? null : conteos.entregadasEnElMes().cantidad(),
+        tramo.total(),
+        tramo.pagina(),
+        tramo.paginas());
+  }
+
+  /** Cuántas hay en cada grupo, sumando sus estados; un estado que no llega cuenta 0. */
+  static Map<String, Long> porGrupo(List<DonacionesApi.PorEstado> porEstado) {
+    Map<String, Long> deEstado = new LinkedHashMap<>();
+    if (porEstado != null) {
+      porEstado.forEach(
+          e -> deEstado.merge(e.estado(), e.cantidad() == null ? 0L : e.cantidad(), Long::sum));
+    }
+    Map<String, Long> cuantas = new LinkedHashMap<>();
+    ORDEN.forEach(
+        g ->
+            cuantas.put(
+                g, ESTADOS.get(g).stream().mapToLong(e -> deEstado.getOrDefault(e, 0L)).sum()));
+    return cuantas;
+  }
+
+  private static Fila fila(DonacionesApi.Donacion d) {
+    String estado = normalizado(d.estadoActual());
+    String grupo =
+        switch (estado) {
+          case ENTREGADA -> RECIBIDA;
+          case PUERTA -> "puerta";
+          case FALLIDA, VENCIDA -> "problema";
+          case TRASLADO -> "camino";
+          default -> SALIR;
+        };
+    // Una en depósito con entidad todavía no tiene su cambio a asignada: vale el registro.
+    String desdeQue = SALIR.equals(grupo) && !LISTA.equals(estado) ? ASIGNADA : estado;
+    return new Fila(d, estado, grupo, desde(d, desdeQue));
+  }
+
+  private static Recibida recibida(Fila f) {
+    DonacionesApi.Donacion d = f.d();
+    Categoria categoria = categoria(d);
+    boolean recibida = RECIBIDA.equals(f.grupo());
+    boolean enLaPuerta = PUERTA.equals(f.estado());
+    String dono = donante(d);
+    return new Recibida(
+        d.id().toString(),
+        d.descripcion(),
+        categoria == null ? null : icono(categoria.nombre()),
+        categoria == null ? null : categoria.nombre(),
+        cantidad(d.cantidad(), categoria),
+        dono,
+        null,
+        null,
+        f.grupo(),
+        paso(f.estado(), f.desde()),
+        recibida ? String.valueOf(f.desde().getDayOfMonth()) : null,
+        recibida ? f.desde().toLocalDate().toString() : null,
+        enLaPuerta
+            ? "Llegó el " + f.desde().format(DIA) + ", " + f.desde().format(HORA) + "."
+            : null,
+        breve(f.estado(), f.desde()));
+  }
+
+  /** El paso en pocas palabras, para Inicio; las recibidas no lo llevan. */
+  private static String breve(String estado, LocalDateTime desde) {
+    String dia = desde.format(DIA);
+    return switch (estado) {
+      case ENTREGADA -> null;
+      case PUERTA -> "llegó a tu puerta el " + dia;
+      case FALLIDA -> "no pudo llegar el " + dia;
+      case VENCIDA -> "venció en el depósito el " + dia;
+      case TRASLADO -> "salió del depósito el " + dia;
+      case LISTA -> "lista para entregar desde el " + dia;
+      default -> "asignada el " + dia;
+    };
+  }
+
+  /** El paso de una asignada en palabras; también lo usan las entregas de Necesidades. */
+  static String paso(String estado, LocalDateTime desde) {
+    String dia = desde.format(DIA);
+    return switch (estado) {
+      case ENTREGADA -> "Confirmaste la recepción el " + dia + ".";
+      case PUERTA ->
+          "Llegó a tu puerta el "
+              + dia
+              + " a las "
+              + desde.format(HORA)
+              + ". Espera tu confirmación.";
+      case FALLIDA -> "El camión no pudo llegar el " + dia + ".";
+      case VENCIDA -> "Venció en el depósito el " + dia + ".";
+      case TRASLADO -> "Salió del depósito el " + dia + " a las " + desde.format(HORA) + ".";
+      case LISTA -> "Lista para entregar desde el " + dia + ". Espera el camión.";
+      default -> "Asignada el " + dia + ". Espera el camión.";
+    };
+  }
+
+  /** El nombre visible de quien donó; si lo ocultó o no llega, uno. */
+  private static String donante(DonacionesApi.Donacion d) {
+    String nombre = d.quienDono() == null ? null : d.quienDono().nombreVisible();
+    return nombre == null || nombre.isBlank() ? UN_DONANTE : nombre.strip();
+  }
+}

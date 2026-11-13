@@ -8,7 +8,7 @@ Documentación técnica de PostgreSQL: un motor compartido con **una base por se
 
 ## Una base por servicio
 
-Un único servidor **PostgreSQL 16** ([OBSERVED]) aloja cuatro bases, una por microservicio. Cada base tiene como dueño el rol de su servicio y adentro el schema `<servicio>`. PostgreSQL no permite consultas entre bases, así que el aislamiento entre dominios no depende de los `GRANT`.
+Un único servidor **PostgreSQL 16** ([OBSERVED]) aloja cuatro bases, una por microservicio, más la de `keycloak` ([SPEC-06](../docs/specs/active/SPEC-06-auth-mvp-keycloak.md) A1-01) y la de `cliente` (la sesión del sitio, E2-02). Cada base tiene como dueño el rol de su servicio y adentro el schema `<servicio>`. PostgreSQL no permite consultas entre bases, así que el aislamiento entre dominios no depende de los `GRANT`.
 
 ```
 PostgreSQL 16
@@ -16,6 +16,8 @@ PostgreSQL 16
 ├── base: donaciones     → schema donaciones      ← donaciones-service     (dueño: donaciones_user)
 ├── base: logistica      → schema logistica       ← perfil postgres de logistica-service (dueño: logistica_user)
 ├── base: incentivos     → schema incentivos      ← incentivos-service     (dueño: incentivos_user)
+├── base: keycloak       → schema public          ← auth-service (Keycloak)  (dueño: keycloak_user)
+├── base: cliente        → schema cliente         ← cliente-liviano (sesión)  (dueño: cliente_user)
 └── base: donatrack      (POSTGRES_DB: solo administración, sin datos)
 ```
 
@@ -34,15 +36,17 @@ Todos los roles se crean idempotentemente y sin contraseña en [`01-init-schemas
 | `donaciones_user`     | `DONACIONES_DB_PASSWORD`        | `donaciones`     | **Activo** — JPA conectado |
 | `logistica_user`      | `LOGISTICA_DB_PASSWORD`         | `logistica`      | Congelado — solo el perfil `postgres`; en los composes corre MongoDB (ver [MongoDB](#mongodb-logistica-service)) |
 | `incentivos_user`     | `INCENTIVOS_DB_PASSWORD`        | `incentivos`     | **Activo** — JPA conectado |
+| `keycloak_user`       | `KEYCLOAK_DB_PASSWORD`          | `keycloak` (`public`) | **Activo** — Keycloak de `docker-compose.yml` y de `docker-compose.preprod.yml` (E2-12). En `02-set-role-passwords.sh` la variable es opcional: los compose de demo e híbrido no levantan Keycloak y no la pasan |
+| `cliente_user`        | `CLIENTE_DB_PASSWORD`           | `cliente`        | **Activo** — la sesión del cliente liviano (Spring Session JDBC, SPEC-06 E2-02) en `docker-compose.yml` y `docker-compose.preprod.yml`. Sin Flyway: las tablas las crea la librería al arrancar. En `02-set-role-passwords.sh` la variable es opcional por la misma razón que la de Keycloak |
 
-Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios; es lo que usan `run-preprod-tests*.sh` y CI). Sin `.env`, compose falla con `ver .env.example`. El init-db corre solo en el primer arranque: para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`). Los services reciben la misma variable como `SPRING_DATASOURCE_PASSWORD`, sin valor por defecto en `application-postgres.properties`. Con el mismo patrón, `.env` define `RABBITMQ_PASS` (broker y los 4 services; el usuario `donatrack` es fijo) `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` (raíz de MinIO, solo para `minio-init`) e `INCENTIVOS_MINIO_PASSWORD`/`DONACIONES_MINIO_PASSWORD` (secret key de cada servicio); `application.properties` no les da valor por defecto.
+Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios; es lo que usan `run-preprod-tests*.sh` y CI). Sin `.env`, compose falla con `ver .env.example`. El init-db corre solo en el primer arranque: para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`). Los services reciben la misma variable como `SPRING_DATASOURCE_PASSWORD`, sin valor por defecto en `application-postgres.properties`. Con el mismo patrón, `.env` define `RABBITMQ_PASS` (broker y los 4 services; el usuario `donatrack` es fijo) `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` (raíz de MinIO, solo para `minio-init`) e `INCENTIVOS_MINIO_PASSWORD`/`DONACIONES_MINIO_PASSWORD`/`LOGISTICA_MINIO_PASSWORD` (secret key de cada servicio); `application.properties` no les da valor por defecto.
 
 ### Política de permisos (aislamiento cruzado)
 
 ```sql
 -- Cada base es del rol de su servicio; nadie más se conecta
 CREATE DATABASE notificaciones OWNER notificaciones_user;   -- vía \gexec, solo si falta
-REVOKE CONNECT ON DATABASE notificaciones, incentivos, logistica, donaciones FROM PUBLIC;
+REVOKE CONNECT ON DATABASE notificaciones, incentivos, logistica, donaciones, keycloak, cliente FROM PUBLIC;
 -- También en POSTGRES_DB (donatrack) y en postgres
 
 \connect notificaciones
@@ -80,6 +84,7 @@ PostgreSQL ejecuta todos los archivos `.sql` del directorio `docker-entrypoint-i
 | `donaciones-service`     | 8080   | `jdbc:postgresql://postgres:5432/donaciones?currentSchema=donaciones`         | `donaciones_user`     |
 | `logistica-service`      | 8083   | `jdbc:postgresql://localhost:5432/logistica?currentSchema=logistica` (solo el perfil `postgres`; en los composes usa MongoDB) | `logistica_user`      |
 | `incentivos-service`     | 8082   | `jdbc:postgresql://postgres:5432/incentivos?currentSchema=incentivos`         | `incentivos_user`     |
+| `cliente-liviano`        | 8090   | `jdbc:postgresql://postgres:5432/cliente?currentSchema=cliente` (solo la sesión) | `cliente_user` |
 
 ### Acceso local (fuera de Docker)
 
@@ -194,6 +199,7 @@ Un usuario de MinIO por servicio, con acceso solo a sus buckets. Los crea el con
 |----------------------|-----------------------------|----------------|
 | `incentivos-service` | `INCENTIVOS_MINIO_PASSWORD` | `insignias`    |
 | `donaciones-service` | `DONACIONES_MINIO_PASSWORD` | `donaciones-*` |
+| `logistica-service` | `LOGISTICA_MINIO_PASSWORD` | `logistica-*` (fotos de recepción, ADR-E6-08) |
 
 ---
 

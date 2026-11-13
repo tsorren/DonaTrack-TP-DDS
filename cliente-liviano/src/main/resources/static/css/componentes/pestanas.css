@@ -1,0 +1,88 @@
+/* Bloque de pestañas (D33, B2-11): varias secciones de una misma pantalla, de a una por vez, como
+   pestañas de carpeta sobre una lámina. Se carga en la capa `bloques` desde app.css. Catálogo:
+   docs/interfaz/componentes.md.
+
+   Dos modos, el mismo aspecto:
+   - Sin JavaScript, cada pestaña (`.pestana`) es un enlace a su sección (`.pestanas-panel`, con un id) y
+     el CSS muestra la elegida con :target (la primera al entrar). La pestaña marcada se elige por
+     lugar (la 1.ª pestaña con el 1.er panel…, hasta 6): ponytail, una regla por número.
+   - Con JavaScript, Alpine (`Alpine.data("pestanas")`) pone `data-interactivo` en `.pestanas`, marca la
+     pestaña activa con `aria-selected="true"` y su panel con `data-activo`, y `data-recien` en el que
+     se acaba de abrir (se imprime con la segunda tinta corrida). */
+
+.pestanas-lista {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0 0 -2px;
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+
+.pestana {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  padding: 0 1rem;
+  border: 2px solid var(--color-tinta);
+  border-bottom: 0;
+  border-radius: var(--radio-lamina) var(--radio-lamina) 0 0;
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* La pestaña de la sección que se ve: del color de la lámina, pegada a ella. */
+.pestana[aria-selected="true"] {
+  position: relative;
+  z-index: 1;
+  background: var(--color-papel);
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.4em;
+}
+
+/* Sin JavaScript. En reglas separadas: sin :has() (navegadores viejos) se descartaría también la de
+   :target. */
+.pestanas-panel {
+  display: none;
+  scroll-margin-top: 8rem;
+}
+
+.pestanas:not([data-interactivo]) .pestanas-panel:target {
+  display: block;
+}
+
+.pestanas:not([data-interactivo]):not(:has(.pestanas-panel:target)) .pestanas-panel:first-of-type {
+  display: block;
+}
+
+.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(1):target) .pestana:nth-of-type(1),
+.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(2):target) .pestana:nth-of-type(2),
+.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(3):target) .pestana:nth-of-type(3),
+.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(4):target) .pestana:nth-of-type(4),
+.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(5):target) .pestana:nth-of-type(5),
+.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(6):target) .pestana:nth-of-type(6),
+.pestanas:not([data-interactivo]):not(:has(.pestanas-panel:target)) .pestana:first-of-type {
+  position: relative;
+  z-index: 1;
+  background: var(--color-papel);
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.4em;
+}
+
+/* Con JavaScript. */
+.pestanas[data-interactivo] .pestanas-panel[data-activo] {
+  display: block;
+}
+
+/* La pestaña elegida se imprime al abrirse: aparece con la segunda tinta corrida que calza (como la
+   portada). Sin movimiento si la persona lo pidió así. */
+@media (prefers-reduced-motion: no-preference) {
+  .pestanas:not([data-interactivo]) .pestanas-panel:target,
+  .pestanas-panel[data-recien] {
+    animation: var(--movimiento-animacion-registro-fino);
+  }
+}

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Notificaciones Service API
-  version: 1.0.0
+  version: 1.4.0
   description: API REST para despacho de alertas multicanal (Email, WhatsApp, SMS), sincronización idempotente de personas replicadas y gestión de historial de notificaciones.
 servers:
   - url: http://localhost:8081
@@ -42,51 +42,86 @@ paths:
           description: Payload inválido o campos obligatorios faltantes
   /notificaciones/persona/{personaId}:
     get:
-      summary: Obtener historial de notificaciones de una persona (Legacy/Deprecated)
+      summary: Una página de la bandeja de una persona (Legacy/Deprecated, solo QA)
+      description: Alias de GET /api/notificaciones/persona/{personaId}, con los mismos parámetros y respuesta.
       operationId: obtenerNotificacionesPorPersona
       deprecated: true
       parameters:
-        - name: personaId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/BandejaPersonaId'
+        - $ref: '#/components/parameters/BandejaLeida'
+        - $ref: '#/components/parameters/BandejaQ'
+        - $ref: '#/components/parameters/BandejaTipo'
+        - $ref: '#/components/parameters/BandejaExcluirTipo'
+        - $ref: '#/components/parameters/BandejaOrden'
+        - $ref: '#/components/parameters/BandejaPage'
+        - $ref: '#/components/parameters/BandejaSize'
       responses:
         '200':
-          description: Historial de notificaciones despachadas
+          description: >-
+            El tramo pedido, en el orden pedido. Sin page ni size, la página 0 de 20 (no hay modo
+            "devuelve todo"). Una página fuera de rango devuelve [] con el total real.
+          headers:
+            X-Total-Count:
+              description: Cuántas cumplen leida, q, tipo y excluirTipo, sin contar la página
+              schema:
+                type: integer
           content:
             application/json:
               schema:
                 type: array
+                maxItems: 100
                 items:
                   $ref: '#/components/schemas/NotificacionDTO'
+        '400':
+          description: >-
+            page negativo, size fuera de 1..100, q de más de 100 caracteres, orden desconocido o
+            un tipo/excluirTipo que no es un TipoEvento (ERR-CSR-003)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/notificaciones/persona/{personaId}:
     get:
-      summary: Obtener historial de notificaciones de una persona
+      summary: Una página de la bandeja de notificaciones de una persona
+      description: >-
+        Desde 1.3.0 (R11-14) pagina, filtra y ordena en el servidor y devuelve el total en
+        X-Total-Count. Antes devolvía todas las notificaciones de la persona sin orden definido.
+        Leerla no marca nada como leída.
       operationId: obtenerNotificacionesPorPersonaApi
       parameters:
-        - name: personaId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: leida
-          in: query
-          required: false
-          schema:
-            type: boolean
-          description: Filtro opcional. Si es false trae solo pendientes.
+        - $ref: '#/components/parameters/BandejaPersonaId'
+        - $ref: '#/components/parameters/BandejaLeida'
+        - $ref: '#/components/parameters/BandejaQ'
+        - $ref: '#/components/parameters/BandejaTipo'
+        - $ref: '#/components/parameters/BandejaExcluirTipo'
+        - $ref: '#/components/parameters/BandejaOrden'
+        - $ref: '#/components/parameters/BandejaPage'
+        - $ref: '#/components/parameters/BandejaSize'
       responses:
         '200':
-          description: Historial de notificaciones despachadas
+          description: >-
+            El tramo pedido, en el orden pedido. Sin page ni size, la página 0 de 20 (no hay modo
+            "devuelve todo"). Una página fuera de rango devuelve [] con el total real.
+          headers:
+            X-Total-Count:
+              description: Cuántas cumplen leida, q, tipo y excluirTipo, sin contar la página
+              schema:
+                type: integer
           content:
             application/json:
               schema:
                 type: array
+                maxItems: 100
                 items:
                   $ref: '#/components/schemas/NotificacionDTO'
+        '400':
+          description: >-
+            page negativo, size fuera de 1..100, q de más de 100 caracteres, orden desconocido o
+            un tipo/excluirTipo que no es un TipoEvento (ERR-CSR-003)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/notificaciones:
     get:
       summary: Obtener notificaciones por persona y/o estado
@@ -250,7 +285,223 @@ paths:
       responses:
         '204':
           description: Datos de la persona anonimizados o eliminados
+  /api/contacto:
+    post:
+      tags: [Contacto]
+      summary: Recibir un mensaje del formulario de contacto (HB-21)
+      description: >-
+        Público (ruta de la allowlist del gateway). Orden de los chequeos: primero la claveEnvio
+        (si ya estaba, 200 con el número del primer mensaje, aunque el correo esté en el límite),
+        después los límites (5 por hora por correo y 20 por día por IP, en configuración) y recién
+        entonces se guarda. Cada mensaje nuevo avisa a la Administración en su bandeja.
+      operationId: recibirMensajeContacto
+      parameters:
+        - name: X-Forwarded-For
+          in: header
+          required: false
+          description: >-
+            La IP del navegador va primera; el gateway suma la suya detrás. Sin el encabezado,
+            solo cuenta el límite por correo.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MensajeContactoInputDTO'
+      responses:
+        '201':
+          description: Mensaje recibido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumeroMensajeDTO'
+        '200':
+          description: La claveEnvio ya estaba; el número es el del primer mensaje
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumeroMensajeDTO'
+        '400':
+          description: Datos inválidos (ERR-CSR-003)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Límite de envíos superado (ERR-EST-903)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags: [Contacto]
+      summary: Listar los mensajes de contacto (solo ADMIN, con HB-13)
+      description: Del más nuevo al más viejo, 20 por página. El total va en el header X-Total-Count.
+      operationId: listarMensajesContacto
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/EstadoMensajeContacto'
+        - name: pagina
+          in: query
+          required: false
+          description: Desde 0.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Página de mensajes
+          headers:
+            X-Total-Count:
+              description: Cantidad total de mensajes con ese filtro
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MensajeContactoDTO'
+        '400':
+          description: Estado o página inválidos (ERR-CSR-003)
+  /api/contacto/{numero}:
+    get:
+      tags: [Contacto]
+      summary: Obtener un mensaje de contacto con su respuesta (solo ADMIN, con HB-13)
+      operationId: obtenerMensajeContacto
+      parameters:
+        - name: numero
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Mensaje encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MensajeContactoDTO'
+        '404':
+          description: No hay mensaje con ese número
+  /api/contacto/{numero}/respuesta:
+    post:
+      tags: [Contacto]
+      summary: Responder un mensaje de contacto por correo (solo ADMIN, con HB-13)
+      description: >-
+        Manda "Respuesta a tu mensaje Nº <numero>" y el texto al correo del mensaje. Queda en
+        RESPONDIDO si el correo salió, o en ENVIO_FALLIDO si el proveedor falló (se reintenta con
+        el mismo pedido).
+      operationId: responderMensajeContacto
+      parameters:
+        - name: numero
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RespuestaContactoInputDTO'
+      responses:
+        '200':
+          description: Mensaje con su nuevo estado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MensajeContactoDTO'
+        '400':
+          description: Respuesta vacía o de más de 5000 caracteres (ERR-CSR-003)
+        '404':
+          description: No hay mensaje con ese número
 components:
+  parameters:
+    BandejaPersonaId:
+      name: personaId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    BandejaLeida:
+      name: leida
+      in: query
+      required: false
+      description: true o false, solo esas; sin valor, todas.
+      schema:
+        type: boolean
+    BandejaQ:
+      name: q
+      in: query
+      required: false
+      description: >-
+        Las que contienen el texto en el mensaje, sin distinguir mayúsculas ni tildes (camion
+        encuentra "camión"). Vacío o solo espacios, sin filtro.
+      schema:
+        type: string
+        maxLength: 100
+    BandejaTipo:
+      name: tipo
+      in: query
+      required: false
+      description: Repetible. Solo las de esos tipos de evento.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/TipoEvento'
+    BandejaExcluirTipo:
+      name: excluirTipo
+      in: query
+      required: false
+      description: >-
+        Repetible. Todas menos las de esos tipos; las que no tienen tipo entran. Con tipo, se
+        combinan con "y".
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/TipoEvento'
+    BandejaOrden:
+      name: orden
+      in: query
+      required: false
+      description: Por fechaCreacion descendente (recientes) o ascendente (antiguas), desempatado por id en el mismo sentido.
+      schema:
+        type: string
+        enum: [recientes, antiguas]
+        default: recientes
+    BandejaPage:
+      name: page
+      in: query
+      required: false
+      description: La página, desde 0.
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    BandejaSize:
+      name: size
+      in: query
+      required: false
+      description: Cuántas por página.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
   schemas:
     PersonaReplicaDTO:
       type: object
@@ -420,6 +671,10 @@ components:
           format: uuid
         descripcion:
           type: string
+        referenciaId:
+          type: string
+          format: uuid
+          description: Donación a la que se refiere el evento (HB-09). Opcional; se guarda en la notificación como referenciaId.
     EventoDonacionRecibidaDTO:
       type: object
       required:
@@ -445,6 +700,10 @@ components:
           type: string
         patenteCamion:
           type: string
+        referenciaId:
+          type: string
+          format: uuid
+          description: Donación a la que se refiere el evento (HB-09). Opcional; se guarda en la notificación como referenciaId.
     EventoDonacionEnCaminoDTO:
       type: object
       required:
@@ -470,6 +729,10 @@ components:
           type: string
         urlMapa:
           type: string
+        referenciaId:
+          type: string
+          format: uuid
+          description: Donación a la que se refiere el evento (HB-09). Opcional; se guarda en la notificación como referenciaId.
     EventoEntregaFallidaDTO:
       type: object
       required:
@@ -503,6 +766,10 @@ components:
           type: string
         replanificable:
           type: boolean
+        referenciaId:
+          type: string
+          format: uuid
+          description: Donación a la que se refiere el evento (HB-09). Opcional; se guarda en la notificación como referenciaId.
     EventoDonacionVencidaDTO:
       type: object
       required:
@@ -529,6 +796,30 @@ components:
           type: string
         motivo:
           type: string
+        referenciaId:
+          type: string
+          format: uuid
+          description: Donación a la que se refiere el evento (HB-09). Opcional; se guarda en la notificación como referenciaId.
+    TipoEvento:
+      type: string
+      description: >-
+        Los tipos que acepta el filtro de la bandeja (tipo y excluirTipo); otro valor da 400. En la
+        respuesta, tipoEvento sigue siendo texto libre. IMPORTACION_TERMINADA, IMPORTACION_CORTADA y
+        MENSAJE_CONTACTO (1.4.0, R11-30) son los avisos de la Administración: nacen del evento
+        importacion.terminada.v1 y del aviso de contacto, no se aceptan en POST /api/notificaciones/eventos.
+      enum:
+        - DONANTE_REGISTRADO
+        - DONANTE_INACTIVO
+        - MISION_CUMPLIDA
+        - SUBIO_CATEGORIA
+        - DONACION_ASIGNADA
+        - DONACION_RECIBIDA
+        - DONACION_EN_CAMINO
+        - ENTREGA_FALLIDA
+        - DONACION_VENCIDA
+        - IMPORTACION_TERMINADA
+        - IMPORTACION_CORTADA
+        - MENSAJE_CONTACTO
     NotificacionDTO:
       type: object
       required:
@@ -554,3 +845,129 @@ components:
           type: string
           format: date-time
           nullable: true
+        tipoEvento:
+          type: string
+          nullable: true
+          description: >-
+            Tipo del evento que originó la notificación (HB-09). Hoy: los valores de TipoEvento
+            (DONANTE_REGISTRADO, DONANTE_INACTIVO, MISION_CUMPLIDA, SUBIO_CATEGORIA, DONACION_ASIGNADA,
+            DONACION_RECIBIDA, DONACION_EN_CAMINO, ENTREGA_FALLIDA, DONACION_VENCIDA y, desde 1.4.0,
+            IMPORTACION_TERMINADA, IMPORTACION_CORTADA y MENSAJE_CONTACTO). Texto libre a propósito, no un
+            enum: un tipo nuevo no rompe a los clientes. Nulo en las notificaciones anteriores a HB-09 y
+            en los avisos de contacto guardados antes de 1.4.0.
+        referenciaId:
+          type: string
+          format: uuid
+          nullable: true
+          description: >-
+            Id de la donación a la que se refiere el aviso (HB-09); en IMPORTACION_TERMINADA e
+            IMPORTACION_CORTADA, el id del archivo importado (R11-30). Nulo si el emisor del evento no la
+            informó, en las anteriores a HB-09 y en los avisos que no hablan de una donación ni de un
+            archivo.
+    MensajeContactoInputDTO:
+      type: object
+      required:
+        - tema
+        - texto
+        - correo
+        - claveEnvio
+      properties:
+        tema:
+          type: string
+          enum: [ENTREGA, DONACION, NECESIDAD, CUENTA, SITIO, OTRO]
+        texto:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        codigoError:
+          type: string
+          pattern: '^[0-9a-fA-F]{12,32}$'
+          description: El código de un aviso de error del sitio (hexadecimal).
+          nullable: true
+        correo:
+          type: string
+          format: email
+          maxLength: 254
+        claveEnvio:
+          type: string
+          format: uuid
+          description: La genera el formulario al abrirse; un reenvío con la misma clave no crea otro mensaje.
+    NumeroMensajeDTO:
+      type: object
+      required:
+        - numero
+      properties:
+        numero:
+          type: integer
+          format: int64
+    RespuestaContactoInputDTO:
+      type: object
+      required:
+        - texto
+      properties:
+        texto:
+          type: string
+          minLength: 1
+          maxLength: 5000
+    EstadoMensajeContacto:
+      type: string
+      enum: [RECIBIDO, RESPONDIDO, ENVIO_FALLIDO]
+    MensajeContactoDTO:
+      type: object
+      required:
+        - numero
+        - tema
+        - texto
+        - correo
+        - estado
+        - recibidoEn
+      properties:
+        numero:
+          type: integer
+          format: int64
+        tema:
+          type: string
+          enum: [ENTREGA, DONACION, NECESIDAD, CUENTA, SITIO, OTRO]
+        texto:
+          type: string
+        codigoError:
+          type: string
+          nullable: true
+        correo:
+          type: string
+        estado:
+          type: string
+          enum: [RECIBIDO, RESPONDIDO, ENVIO_FALLIDO]
+        recibidoEn:
+          type: string
+          description: Hora de Buenos Aires sin offset (yyyy-MM-ddTHH:mm:ss), como la serializa LocalDateTime.
+        respuesta:
+          type: string
+          nullable: true
+        respondidoEn:
+          type: string
+          description: Hora de Buenos Aires sin offset (yyyy-MM-ddTHH:mm:ss), como la serializa LocalDateTime.
+          nullable: true
+    ErrorResponse:
+      type: object
+      description: Formato de error común (common-lib).
+      required:
+        - code
+      properties:
+        code:
+          type: string
+        type:
+          type: string
+        details:
+          type: string
+          nullable: true
+        traceId:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+        errors:
+          type: array
+          nullable: true
+          items:
+            type: object

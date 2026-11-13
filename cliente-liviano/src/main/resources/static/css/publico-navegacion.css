@@ -1,0 +1,43 @@
+/* Raíces, sitio A: dónde va la navegación pública (navegacion-publica.html) dentro de la cabecera de
+   las públicas y de la portada. La barra es el bloque `navegacion` (componentes/navegacion.css, con
+   data-zona="publica"): en el celular, fija abajo, en la tierra, con la sección actual en paja; desde
+   la tableta, en la cabecera de tierra honda (usuario, 2026-11-03). Va después de la hoja de la
+   pantalla, que ya trae los tokens. */
+
+/* La barra no tapa el pie. */
+body {
+  padding-bottom: 5rem;
+}
+
+/* La marca a la izquierda y el menú a la derecha: en el celular, de él se ven Ingresar y Crear
+   cuenta (las secciones van en la barra de abajo). Con la sesión iniciada (ficha r11-p1-portada.md),
+   "Mi inicio" y, a la derecha, la foto de la cuenta, como en el área privada. */
+.raices-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+/* Desde que el menú entra en una línea (--medida-quiebre-menu), arriba, en la cabecera. */
+@media (min-width: 56em) {
+  /* "Ir a mi inicio" con su nombre largo, como los demás nombres largos desde este ancho: el corto
+     es solo del celular y la tableta. */
+  .raices-cabecera .navegacion-destacado [aria-hidden="true"] {
+    display: none;
+  }
+
+  body {
+    padding-bottom: 0;
+  }
+
+  .raices-cabecera {
+    justify-content: flex-start;
+    gap: 0.5rem 2rem;
+  }
+
+  .raices-cabecera .navegacion {
+    flex: 1;
+  }
+}

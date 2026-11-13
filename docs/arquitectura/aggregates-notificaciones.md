@@ -29,11 +29,19 @@ El *Servicio de Notificaciones* es un servicio mayoritariamente de soporte, enca
 
 ### 2.2. Agregado: Notificación
 *   **Aggregate Root**: `Notificacion` (Representa el intento y estado final de una notificación despachada a un usuario).
+*   **Datos del evento de origen (HB-09)**: `tipoEvento` (texto con los nombres de `TipoEvento`) y `referenciaId` (UUID de la donación), ambos opcionales: las notificaciones anteriores a la migración V5 y las de un evento sin id quedan sin ellos. Los eventos siguen sin persistirse (ADR 20260901).
 *   **Componentes Internos**: `EstadoNotificacion` (Enum con valores *PENDIENTE*, *ENVIADA*, *FALLIDA*) y `CambioEstadoNotificacion` (auditoría inmutable).
 *   **Eventos de Dominio**: `NotificacionCreada`, `NotificacionEnviada`, `NotificacionFallida` (en `grupo5.notificaciones.models.entities.notificaciones.events`).
 *   **Referencias Externas (por ID)**: `personaId` (UUID que apunta al agregado `Persona`).
 *   **Responsabilidad**: Registrar el mensaje, el destinatario, la fecha y el estado de la comunicación. Provee la lógica para ordenar los canales por prioridad (respetando la predeterminación) y ejecutar reintentos de envío (*fallback*) ante fallos de proveedores de mensajería (Double Dispatch con `NotificacionRouter` y adaptadores multicanal).
 *   **Paquete**: `grupo5.notificaciones.models.entities.notificaciones`
+
+### 2.3. Agregado: Mensaje de contacto (HB-21)
+*   **Aggregate Root**: `MensajeContacto` (un mensaje del formulario de contacto del sitio). Implementa el [ADR `proposed` de HB-21](../adr/notificaciones-service/20261110-recepcion-de-mensajes-de-contacto-en-notificaciones.md).
+*   **Componentes Internos**: `TemaContacto` (los seis temas del formulario) y `EstadoMensajeContacto` (*RECIBIDO*, *RESPONDIDO*, *ENVIO_FALLIDO*).
+*   **Identidad**: `numero`, de la identidad de la tabla `mensaje_contacto` (Flyway V4); `claveEnvio` es UNIQUE y hace idempotente el reenvío.
+*   **Responsabilidad**: guardar el mensaje y responderlo por correo con "Respuesta a tu mensaje Nº …" mediante `NotificacionSender`. Si el proveedor falla queda en *ENVIO_FALLIDO* con la respuesta guardada. `ContactoService` chequea primero la clave de envío y después el límite (5 por hora por correo y 20 por día por IP, contados en la tabla), y avisa a la persona Administración con una `Notificacion` común.
+*   **Paquete**: `grupo5.notificaciones.models.entities.contacto`
 
 ---
 
@@ -41,7 +49,7 @@ El *Servicio de Notificaciones* es un servicio mayoritariamente de soporte, enca
 
 La jerarquía de clases bajo el paquete `grupo5.notificaciones.models.entities.notificaciones.eventos` (tales como `EventoDeDonacion`, `DonanteRegistrado`, `DonanteInactivo`, `DonacionAsignada`, `DonacionRecibida`, `MisionCumplida`, `SubioCategoria`, `DonacionEnCamino`, `EntregaFallida`, `DonacionVencida`) representa **Políticas de Dominio (Domain Policies)** y no agregados persistentes:
 
-*   **Rol en el Diseño**: Actúan como factorías polimórficas de alertas (`generarNotificaciones()`).
+*   **Rol en el Diseño**: Actúan como factorías polimórficas de alertas. Desde HB-09, `EventoNotificable` declara `tipoEvento()` y `generarNotificaciones()` es final: las subclases implementan `crearNotificaciones()` y la base etiqueta cada notificación con el tipo y la referencia.
 *   **Canales de Ingesta**:
     1.  **AMQP (Primario)**: colas `notificaciones.donaciones` (`DonacionEventListener`) y `notificaciones.incentivos` (`IncentivoEventListener`), con listeners `@RabbitHandler` tipados y DLQ propia. Queda además la cola legada `cola.eventos.notificaciones` (`notificaciones.#`), consumida por `NotificacionRabbitListener`.
     2.  **HTTP REST (Dual / Retrocompatibilidad)**: Endpoints `POST /api/notificaciones/eventos` (canónico) y `POST /notificaciones` (deprecated). Responde `202 Accepted` de forma inmediata.

@@ -1,0 +1,58 @@
+/* Capa de utilidades (D33, B0-03): pocas, una por token de uso. Se cargan en la capa `utilidades`
+   desde app.css. Espacio entre hijos de una composición (data-espacio), tamaño del texto y tono del
+   texto. El movimiento (data-movimiento) está en movimiento.css, en la misma capa. */
+
+/* data-espacio="1" a "5": el espacio entre los hijos de una pila, un racimo, una barra lateral o
+   una grilla. */
+[data-espacio="1"] {
+  --espacio-entre: var(--espacio-1);
+}
+
+[data-espacio="2"] {
+  --espacio-entre: var(--espacio-2);
+}
+
+[data-espacio="3"] {
+  --espacio-entre: var(--espacio-3);
+}
+
+[data-espacio="4"] {
+  --espacio-entre: var(--espacio-4);
+}
+
+[data-espacio="5"] {
+  --espacio-entre: var(--espacio-5);
+}
+
+.texto-chico {
+  font-size: var(--tamano-chico);
+}
+
+.texto-base {
+  font-size: var(--tamano-base);
+}
+
+.texto-grande {
+  font-size: var(--tamano-grande);
+}
+
+/* data-tono: el color del texto según lo que dice. */
+[data-tono="suave"] {
+  color: var(--color-texto-suave);
+}
+
+[data-tono="acento"] {
+  color: var(--color-acento);
+}
+
+[data-tono="exito"] {
+  color: var(--color-exito-texto);
+}
+
+[data-tono="aviso"] {
+  color: var(--color-advertencia-texto);
+}
+
+[data-tono="error"] {
+  color: var(--color-error-texto);
+}

@@ -2,6 +2,7 @@ package grupo5.notificaciones.services.mappers;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.notificaciones.config.AdminConstantes;
 import grupo5.notificaciones.dto.input.DestinoEventoDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
@@ -16,6 +17,7 @@ import grupo5.notificaciones.dto.input.EventoDonanteInactivoDTO;
 import grupo5.notificaciones.dto.input.EventoDonanteRegistradoDTO;
 import grupo5.notificaciones.dto.input.EventoDonanteRegistradoV1;
 import grupo5.notificaciones.dto.input.EventoEntregaFallidaDTO;
+import grupo5.notificaciones.dto.input.EventoImportacionTerminadaV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoDonanteInactivoV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoMisionCumplidaV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoSubioCategoriaV1;
@@ -30,6 +32,7 @@ import grupo5.notificaciones.models.entities.notificaciones.eventos.DonanteInact
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonanteRegistrado;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EntregaFallida;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EventoNotificable;
+import grupo5.notificaciones.models.entities.notificaciones.eventos.ImportacionTerminada;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.MisionCumplida;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.SubioCategoria;
 import grupo5.notificaciones.models.entities.personas.Persona;
@@ -48,8 +51,10 @@ public class EventoMapper {
   public DonacionAsignada toEntity(EventoDonacionAsignadaV1 evento) {
     Persona donante = buscarPersona(evento.personaId());
     Persona beneficiario = buscarPersona(evento.personaBeneficiariaId());
-    return new DonacionAsignada(
-        donante, beneficiario, construirDetalleDonacion(evento), evento.fecha());
+    return conReferencia(
+        new DonacionAsignada(
+            donante, beneficiario, construirDetalleDonacion(evento), evento.fecha()),
+        evento.donacionIndependienteId());
   }
 
   public DonanteRegistrado toEntity(EventoDonanteRegistradoV1 evento) {
@@ -60,36 +65,67 @@ public class EventoMapper {
   public DonacionEnCamino toEntity(EventoDonacionEnCaminoV1 evento) {
     Persona donante = buscarPersona(evento.personaId());
     Persona beneficiario = buscarPersona(evento.personaBeneficiariaId());
-    return new DonacionEnCamino(
-        donante, beneficiario, evento.descripcion(), evento.urlMapa(), evento.fecha());
+    return conReferencia(
+        new DonacionEnCamino(
+            donante, beneficiario, evento.descripcion(), evento.urlMapa(), evento.fecha()),
+        evento.donacionIndependienteId());
   }
 
   public DonacionRecibida toEntity(EventoDonacionRecibidaV1 evento) {
     Persona donante = buscarPersona(evento.personaId());
     Persona beneficiario = buscarPersona(evento.personaBeneficiariaId());
-    return new DonacionRecibida(
-        donante, beneficiario, evento.descripcion(), evento.patenteCamion(), evento.fecha());
+    return conReferencia(
+        new DonacionRecibida(
+            donante, beneficiario, evento.descripcion(), evento.patenteCamion(), evento.fecha()),
+        evento.donacionIndependienteId());
   }
 
   public EntregaFallida toEntity(EventoDonacionEntregaFallidaV1 evento) {
     Persona donante = buscarPersona(evento.personaId());
     Persona beneficiario = buscarPersona(evento.personaBeneficiariaId());
     Persona admin = buscarPersona(evento.personaAdminId());
-    return new EntregaFallida(
-        donante,
-        beneficiario,
-        admin,
-        evento.descripcion(),
-        evento.justificacion(),
-        evento.replanificable(),
-        evento.fecha());
+    return conReferencia(
+        new EntregaFallida(
+            donante,
+            beneficiario,
+            admin,
+            evento.descripcion(),
+            evento.justificacion(),
+            evento.replanificable(),
+            evento.fecha()),
+        evento.donacionIndependienteId());
   }
 
   public DonacionVencida toEntity(EventoDonacionVencidaV1 evento) {
     Persona donante = buscarPersona(evento.personaId());
     Persona admin = buscarPersona(evento.personaAdminId());
-    return new DonacionVencida(
-        donante, admin, evento.descripcion(), evento.motivo(), evento.fecha());
+    return conReferencia(
+        new DonacionVencida(donante, admin, evento.descripcion(), evento.motivo(), evento.fecha()),
+        evento.donacionIndependienteId());
+  }
+
+  /**
+   * El aviso de importación va a la persona de la Administración (R11-30): el evento cuenta el
+   * hecho y Notificaciones decide a quién avisar. Un resultado desconocido da 400 (va a la DLQ).
+   */
+  public ImportacionTerminada toEntity(EventoImportacionTerminadaV1 evento) {
+    boolean cortada =
+        switch (evento.resultado()) {
+          case EventoImportacionTerminadaV1.CORTADA -> true;
+          case EventoImportacionTerminadaV1.TERMINADA,
+                  EventoImportacionTerminadaV1.TERMINADA_CON_ERRORES ->
+              false;
+          default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+        };
+    return conReferencia(
+        new ImportacionTerminada(
+            buscarPersona(AdminConstantes.ID_ADMIN),
+            cortada,
+            new ImportacionTerminada.Cifras(
+                evento.procesadas(), evento.creadas(), evento.actualizadas(), evento.conError()),
+            evento.subidoEn(),
+            evento.fecha()),
+        evento.archivoId());
   }
 
   public DonanteInactivo toEntity(EventoIncentivoDonanteInactivoV1 evento) {
@@ -141,6 +177,12 @@ public class EventoMapper {
 
   public EventoNotificable toEntity(EventoNotificableDTO dto) {
     Persona donante = buscarPersona(dto.personaId());
+    EventoNotificable evento = armar(dto, donante);
+    evento.asociarReferencia(dto.referenciaId());
+    return evento;
+  }
+
+  private EventoNotificable armar(EventoNotificableDTO dto, Persona donante) {
     return switch (dto) {
       case EventoDonacionAsignadaDTO don -> {
         Persona beneficiario = buscarPersona(don.personaBeneficiariaId());
@@ -181,6 +223,14 @@ public class EventoMapper {
         yield new DonacionVencida(donante, admin, dv.descripcion(), dv.motivo(), dv.fecha());
       }
     };
+  }
+
+  /**
+   * Deja en el evento la donación a la que se refiere (HB-09); si el emisor no la informó, null.
+   */
+  private static <T extends EventoNotificable> T conReferencia(T evento, UUID donacionId) {
+    evento.asociarReferencia(donacionId);
+    return evento;
   }
 
   private Persona buscarPersona(UUID id) {

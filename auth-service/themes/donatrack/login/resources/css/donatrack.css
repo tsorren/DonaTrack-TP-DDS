@@ -1,0 +1,292 @@
+/* Tema de Keycloak con la identidad Raíces, piel Huerta (SPEC-06 E2-09, D20).
+   Los valores salen de tokens.css, que es una copia idéntica de la del sitio: acá se usan solo los tokens de
+   uso (--color-*, --fuente-*, --radio-*, --sombra-papel), nunca los valores base (--p-*). Para cambiar la
+   identidad se cambia tokens.css en el sitio y se vuelve a copiar (scripts/sincronizar_tema.py).
+   PatternFly 5 (keycloak.v2) toma sus colores y tipografías de variables globales y, para los componentes que
+   no las usan, hay reglas directas más abajo. */
+:root {
+  color-scheme: light;
+
+  --pf-v5-global--FontFamily--text: var(--fuente-texto);
+  --pf-v5-global--FontFamily--heading: var(--fuente-titulo);
+  --pf-v5-global--FontFamily--sans-serif: var(--fuente-texto);
+  --pf-v5-global--Color--100: var(--color-texto);
+  --pf-v5-global--Color--200: var(--color-texto-suave);
+  --pf-v5-global--primary-color--100: var(--color-accion-primaria);
+  --pf-v5-global--primary-color--200: var(--color-accion-primaria-activa);
+  --pf-v5-global--active-color--100: var(--color-enlace);
+  --pf-v5-global--link--Color: var(--color-enlace);
+  --pf-v5-global--link--Color--hover: var(--color-acento-hondo);
+  --pf-v5-global--danger-color--100: var(--color-error-texto);
+  --pf-v5-global--BorderColor--100: var(--color-filete);
+}
+
+html,
+body {
+  background-color: var(--color-fondo-pagina);
+  color: var(--color-texto);
+  font-family: var(--fuente-texto);
+}
+
+/* Fondo liso, el papel del sitio, en lugar de la imagen de Keycloak */
+body#keycloak-bg,
+.pf-v5-c-login {
+  background-image: none;
+  background-color: var(--color-fondo-pagina);
+}
+
+/* La marca, como en el encabezado del sitio: el ícono y "Dona" + "Track" en verde, en la letra de los títulos.
+   El nombre del realm (displayNameHtml: Dona<em>Track</em>) sigue siendo texto, para los lectores de pantalla. */
+#kc-header-wrapper {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  margin: 0 auto 1rem;
+  padding: 0;
+  /* El tema base lo pone blanco con !important (pensado para su fondo oscuro) */
+  color: var(--color-tinta) !important;
+  font: 850 1.75rem/1 var(--fuente-titulo);
+  font-stretch: 118%;
+  letter-spacing: -0.02em;
+  text-align: center;
+  text-transform: none;
+}
+
+#kc-header-wrapper::before {
+  content: "";
+  display: inline-block;
+  width: 1.5rem;
+  height: 2rem;
+  margin-right: 0.6rem;
+  vertical-align: middle;
+  background: url("../img/logo.svg") no-repeat center / contain;
+}
+
+#kc-header-wrapper em {
+  color: var(--color-acento);
+  font-style: normal;
+}
+
+/* La tarjeta: papel más claro que la página, esquinas de 16 px y la elevación suave del sitio */
+.pf-v5-c-login__main {
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  border: 0;
+  border-radius: var(--radio-lamina);
+  box-shadow: var(--sombra-papel);
+}
+
+.pf-v5-c-login__main::before,
+.pf-v5-c-login__main::after {
+  content: none;
+}
+
+/* La franja de color de arriba que trae el tema base de Keycloak */
+.pf-v5-c-login__main-header {
+  border-top: 0;
+}
+
+/* "¿Quiere cerrar sesión?": el texto no puede quedar pegado al botón */
+#kc-logout-confirm .pf-v5-c-form__actions,
+#kc-logout-confirm #kc-form-buttons {
+  margin-top: 1rem;
+}
+
+/* En el celular la tarjeta ocupa el ancho: un margen chico para que sus esquinas no queden pegadas al borde */
+@media (max-width: 36rem) {
+  .pf-v5-c-login__container {
+    padding-inline: 0.75rem;
+  }
+}
+
+#kc-page-title,
+.pf-v5-c-title {
+  color: var(--color-titulo);
+  font-family: var(--fuente-titulo);
+  font-weight: 800;
+  font-stretch: 112%;
+  letter-spacing: -0.01em;
+}
+
+.pf-v5-c-form__label-text {
+  color: var(--color-texto);
+  font-weight: 700;
+}
+
+/* Los campos: se distinguen del papel (fondo más claro, borde suave, 10 px) y, enfocados, borde y anillo verdes */
+.pf-v5-c-form-control {
+  min-height: 3rem;
+  border: 1.5px solid var(--color-borde-control);
+  border-radius: var(--radio-boton);
+  background-color: var(--color-campo);
+  box-shadow: inset 0 1px 2px var(--color-filete);
+}
+
+.pf-v5-c-form-control::before,
+.pf-v5-c-form-control::after {
+  content: none;
+}
+
+.pf-v5-c-form-control input {
+  min-height: 2.625rem;
+  padding: 0.625rem 0.875rem;
+  background: transparent;
+  color: var(--color-texto);
+  font: inherit;
+}
+
+.pf-v5-c-form-control:focus-within {
+  border-color: var(--color-acento);
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.pf-v5-c-form-control:has(input[aria-invalid="true"]) {
+  border-color: var(--color-error-texto);
+}
+
+.pf-v5-c-form-control input:focus,
+.pf-v5-c-form-control input:focus-visible {
+  outline: 0;
+}
+
+.pf-v5-c-helper-text__item.pf-m-error,
+.pf-v5-c-helper-text__item.pf-m-error .pf-v5-c-helper-text__item-text {
+  color: var(--color-error-texto);
+  font-weight: 700;
+}
+
+/* El ojo de la contraseña, del mismo alto y con el mismo borde que el campo */
+.pf-v5-c-input-group .pf-v5-c-form-control {
+  flex: 1 1 auto;
+}
+
+.pf-v5-c-input-group .pf-v5-c-button.pf-m-control {
+  min-height: 3rem;
+  border: 1.5px solid var(--color-borde-control);
+  border-radius: var(--radio-boton);
+  background-color: var(--color-campo);
+  color: var(--color-tinta);
+}
+
+.pf-v5-c-input-group .pf-v5-c-button.pf-m-control::after {
+  content: none;
+}
+
+/* Botones: 48 px de alto, esquinas de 10 px, letra pesada. El principal, lleno de verde con la sombra plana de
+   hoja; los demás, en contorno de tinta. PatternFly dibuja el borde con ::after, que se apaga. */
+.pf-v5-c-button {
+  min-height: 3rem;
+  border-radius: var(--radio-boton);
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.pf-v5-c-button::after {
+  content: none;
+}
+
+.pf-v5-c-button.pf-m-primary {
+  border: 0;
+  background-color: var(--color-accion-primaria);
+  color: var(--color-texto-sobre-accion);
+  box-shadow: 0.25rem 0.25rem 0 var(--color-sombra);
+}
+
+.pf-v5-c-button.pf-m-primary:hover,
+.pf-v5-c-button.pf-m-primary:focus,
+.pf-v5-c-button.pf-m-primary:active {
+  background-color: var(--color-accion-primaria-activa);
+  color: var(--color-texto-sobre-accion);
+}
+
+.pf-v5-c-button.pf-m-secondary,
+.pf-v5-c-button.pf-m-tertiary {
+  border: 0;
+  background-color: var(--color-papel);
+  color: var(--color-tinta);
+  box-shadow: inset 0 0 0 2px var(--color-tinta);
+}
+
+.pf-v5-c-button.pf-m-secondary:hover,
+.pf-v5-c-button.pf-m-secondary:focus,
+.pf-v5-c-button.pf-m-tertiary:hover,
+.pf-v5-c-button.pf-m-tertiary:focus {
+  background-color: var(--color-acento-claro);
+  color: var(--color-tinta);
+}
+
+.pf-v5-c-button.pf-m-link {
+  color: var(--color-enlace);
+}
+
+a {
+  color: var(--color-enlace);
+}
+
+a:hover {
+  color: var(--color-acento-hondo);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 3px;
+}
+
+/* El "o" que separa el ingreso con clave del de Google */
+.kc-login-divider,
+.kc-login-divider * {
+  color: var(--color-texto-suave);
+}
+
+.kc-login-divider::before,
+.kc-login-divider::after {
+  border-color: var(--color-filete);
+  background-color: var(--color-filete);
+}
+
+/* "¿Usuario nuevo? Registrarse": sin la banda gris de PatternFly */
+.pf-v5-c-login__main-footer-band {
+  border-top: 1px solid var(--color-filete);
+  background-color: transparent;
+  color: var(--color-texto);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-acento);
+}
+
+/* Avisos: los colores de estado del sitio, siempre con texto además del color */
+.pf-v5-c-alert {
+  border: 1.5px solid currentcolor;
+  border-radius: var(--radio-boton);
+  box-shadow: none;
+}
+
+.pf-v5-c-alert.pf-m-danger {
+  background-color: var(--color-error-fondo);
+  color: var(--color-error-texto);
+}
+
+.pf-v5-c-alert.pf-m-success {
+  background-color: var(--color-exito-fondo);
+  color: var(--color-exito-texto);
+}
+
+.pf-v5-c-alert.pf-m-info {
+  background-color: var(--color-info-fondo);
+  color: var(--color-info-texto);
+}
+
+.pf-v5-c-alert.pf-m-warning {
+  background-color: var(--color-advertencia-fondo);
+  color: var(--color-advertencia-texto);
+}
+
+.pf-v5-c-alert .pf-v5-c-alert__title,
+.pf-v5-c-alert .pf-v5-c-alert__icon,
+.pf-v5-c-alert .pf-v5-c-alert__description {
+  color: inherit;
+}

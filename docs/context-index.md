@@ -32,6 +32,8 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | `incentivos-service` | [`arquitectura/aggregates-incentivos.md`](arquitectura/aggregates-incentivos.md) | Scheduler / cron → ADRs en `docs/adr/incentivos-service/`; AMQP / Pub-Sub → [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md), ADR transversal [`adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) |
 | `notificaciones-service` | [`arquitectura/aggregates-notificaciones.md`](arquitectura/aggregates-notificaciones.md) | REST / Persistencia JPA / AMQP RabbitMQ Pub-Sub → ADRs en `docs/adr/notificaciones-service/`, ADR transversal [`adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md), [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) y [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) (DTI-13) |
 | `common-lib` | [`arquitectura/shared-kernel.md`](arquitectura/shared-kernel.md) | Impacto cross-service → aggregates docs de los servicios afectados |
+| `api-gateway` | [`../api-gateway/README.md`](../api-gateway/README.md) | Rutas, allowlist y JWT → [ADR-E6-02](adr/20261107-api-gateway-validacion-jwt-en-doble-capa-y-rutas-publicas.md) y [SPEC-07](specs/active/SPEC-07-api-gateway-etapa-1.md); ruta nueva en un servicio → sumarla a `RutasGateway` (y a `rutas-publicas` si la usa una pantalla pública); trazabilidad → [`arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) |
+| `cliente-liviano` | [`../cliente-liviano/AGENTS.md`](../cliente-liviano/AGENTS.md) | Proceso de diseño, identidad y flujos → [`interfaz/README.md`](interfaz/README.md); stack (D17–D21, D31–D33), una sola identidad visual y verificación visual → ADRs en `docs/adr/cliente-liviano/`; catálogo y migración a componentes → [`interfaz/componentes.md`](interfaz/componentes.md) y [`interfaz/backlog-migracion-componentes.md`](interfaz/backlog-migracion-componentes.md); verificación fuera del CI y deuda de componentes → [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) (DTI-28, DTI-34) |
 
 ---
 
@@ -53,6 +55,7 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | Catálogo Vivo de Contratos | [`generated/README.md`](generated/README.md) + `docs/generated/` |
 | Mentoría conceptual / didáctica | [`IA/prompts/transversal-mentoria-conceptos.md`](IA/prompts/transversal-mentoria-conceptos.md) + skill `.agents/skills/explain-concept/` |
 | Compliance académico | `docs/entregas/<N>/Enunciado-<N>.pdf` — solo el enunciado de la entrega vigente |
+| Interfaz del cliente liviano (UX, identidad visual, vistas) | [`interfaz/README.md`](interfaz/README.md) + [`../cliente-liviano/AGENTS.md`](../cliente-liviano/AGENTS.md) + skills de interfaz (abajo); textos y mensajes → [`interfaz/tono-y-comunicacion.md`](interfaz/tono-y-comunicacion.md) |
 
 ### Skills de `.agents/skills/`
 
@@ -66,6 +69,15 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | [`implementation-review`](../.agents/skills/implementation-review/SKILL.md) | Revisión adversarial de código implementado (vectores V1–V9). |
 | [`review-pr`](../.agents/skills/review-pr/SKILL.md) | Review de Pull Requests con GrepAI. |
 | [`explain-concept`](../.agents/skills/explain-concept/SKILL.md) | Mentoría conceptual y explicaciones didácticas. |
+| [`identidad-visual`](../.agents/skills/identidad-visual/SKILL.md) | Definir o ajustar la identidad visual del cliente liviano con rondas de preguntas, A/B y `tokens.css`. |
+| [`iteracion-ab`](../.agents/skills/iteracion-ab/SKILL.md) | Comparar dos variantes de un solo tema de diseño y dejar que el usuario elija. |
+| [`ux-flujo`](../.agents/skills/ux-flujo/SKILL.md) | Diseñar un flujo de pantallas antes del código: recorrido, estados, textos y heurísticas. |
+| [`vista-ui`](../.agents/skills/vista-ui/SKILL.md) | Construir vistas y componentes Thymeleaf + HTMX con estados, accesibilidad y comprobación visual. |
+| [`revision-ui`](../.agents/skills/revision-ui/SKILL.md) | Revisión independiente de flujos y pantallas (vectores U1–U9) y panel de exploración para criticar conceptos. |
+| [`relevamiento-creativo`](../.agents/skills/relevamiento-creativo/SKILL.md) | Relevar con el usuario un encargo creativo (referencias, mensaje, libertades, alcance) antes de diseñar desde cero. |
+| [`corrida-creativa`](../.agents/skills/corrida-creativa/SKILL.md) | Diseñar desde cero sin el usuario a partir de un encargo aprobado; motor: workflow `.claude/workflows/corrida-creativa.js`. |
+
+> Las skills de interfaz tienen además un adaptador en `.claude/skills/<nombre>/SKILL.md` para que Claude Code las descubra; la versión canónica es la de `.agents/skills/`.
 
 ---
 
@@ -79,7 +91,7 @@ Revisar esta sección si la tarea involucra: persistencia, repositorios, diseño
 
 | Constraint | Scope | Regla vigente | Fuente de autoridad | Drift signal |
 | --- | --- | --- | --- | --- |
-| Persistencia en memoria | Reemplazada en los cuatro servicios | Ya no aplica: los cuatro servicios persisten y retienen la persistencia en memoria bajo `@Profile("!postgres")`. `notificaciones-service`: JPA con Flyway V1+V2; `logistica-service`: MongoDB con Spring Data MongoDB bajo `@Profile("mongo")` (perfil de docker compose y preprod; ADRs `20261025-*` `proposed`) y JPA con Flyway V1–V4 congelado bajo `@Profile("postgres")`; `incentivos-service`: JPA con Flyway V1–V3 bajo `@Profile("postgres")` y `@Version` en `DonanteIncentivosEntity`; `donaciones-service`: JPA con Flyway V1 a V13 bajo `@Profile("postgres")` (Entrega 5, ver [`entrega-4/donaciones/bitacora-persistencia.md`](entrega-4/donaciones/bitacora-persistencia.md)). Los ADR de mapeo ORM de Incentivos y Donaciones siguen `proposed` | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 a DTI-06 | `spring-boot-starter-data-jpa` o `spring-boot-starter-data-mongodb` en el `pom.xml` de un servicio nuevo que no esté en la lista |
+| Persistencia en memoria | Reemplazada en los cuatro servicios | Ya no aplica: los cuatro servicios persisten y retienen la persistencia en memoria bajo `@Profile("!postgres")`. `notificaciones-service`: JPA con Flyway V1 a V5 (V4, HB-21: mensajes de contacto; V5, HB-09: tipo de evento y referencia de la notificación); `logistica-service`: MongoDB con Spring Data MongoDB bajo `@Profile("mongo")` (perfil de docker compose y preprod; ADRs `20261025-*` `proposed`) y JPA con Flyway V1–V9 (V8, HB-19: `CANCELADA` y una entrega activa por donación; V9, HB-22: `EN_PUERTA` y el índice único parcial sin `CANCELADA`) congelado bajo `@Profile("postgres")`; `incentivos-service`: JPA con Flyway V1–V3 bajo `@Profile("postgres")` y `@Version` en `DonanteIncentivosEntity`; `donaciones-service`: JPA con Flyway V1 a V20 (V19, HB-20: nombre visible y constancia de los legales; V20, HB-22: `EN_PUERTA` en los `CHECK` de estado) bajo `@Profile("postgres")` (Entrega 5, ver [`entrega-4/donaciones/bitacora-persistencia.md`](entrega-4/donaciones/bitacora-persistencia.md)). Los ADR de mapeo ORM de Incentivos y Donaciones siguen `proposed` | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 a DTI-06 | `spring-boot-starter-data-jpa` o `spring-boot-starter-data-mongodb` en el `pom.xml` de un servicio nuevo que no esté en la lista |
 | Pureza de dominio | Todos los servicios (Fase 1) | Entidades de dominio sin anotaciones JPA ni acoplamiento a infraestructura de persistencia | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 + DTI-06 | `@Entity` / `@Column` en `models/entities/` — revisar si existe ADR que autorice la excepción para ese servicio |
 
 

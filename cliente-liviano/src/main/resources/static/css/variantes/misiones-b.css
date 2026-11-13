@@ -1,0 +1,253 @@
+/* Prueba A/B de Misiones, opción B: la huerta (templates/variantes/misiones-b.html, tercera ronda
+   del 2026-11-09, noche). El invernadero vacío de fondo y, encima, cada planta o maceta "?" en su
+   lugar: las capas salen del dibujo de la diseñadora (img/ilustraciones/huerta/, viewBox de la escena
+   141 26 1140 695) y se ubican con porcentajes de esa caja. Encima, un enlace por lugar. Con un lugar
+   elegido, el resto se atenúa (sin borde verde de selección) y la ficha va a la derecha (debajo en el
+   celular). Solo tokens de uso, sin clases nuevas. Se borra al decidir. */
+
+#huerta {
+  display: grid;
+  gap: var(--espacio-4);
+  align-items: start;
+}
+
+#huerta :is(h2, h3, p) {
+  margin: 0;
+}
+
+#huerta > header {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+#huerta > header p {
+  max-width: 46rem;
+}
+
+/* --- La escena -------------------------------------------------------------------------------- */
+#huerta-escena {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1140 / 695;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+}
+
+#huerta-dibujo img,
+#huerta-lugares a {
+  position: absolute;
+}
+
+#huerta-dibujo img {
+  max-width: none;
+  height: auto;
+}
+
+#huerta-dibujo > img:first-child,
+#huerta-dibujo [data-lugar="abejas"] {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Cada capa, en su caja del dibujo (x, y, ancho y alto en % de 1140 x 695). */
+#huerta-dibujo [data-lugar="piso-der"] { left: 78.86%; top: 39.568%; width: 11.491%; height: 47.05%; }
+#huerta-dibujo [data-lugar="mesada-der"] { left: 51.404%; top: 26.043%; width: 11.053%; height: 45.324%; }
+#huerta-dibujo [data-lugar="colgante"] { left: 36.053%; top: 6.043%; width: 17.544%; height: 25.755%; }
+#huerta-dibujo [data-lugar="estante-izq"] { left: 22.719%; top: 25.755%; width: 14.561%; height: 25.755%; }
+#huerta-dibujo [data-lugar="mesada-medio"] { left: 44.298%; top: 45.899%; width: 6.404%; height: 25.468%; }
+#huerta-dibujo [data-lugar="estante-der"] { left: 72.456%; top: 37.698%; width: 5.614%; height: 13.813%; }
+#huerta-dibujo [data-lugar="piso-izq"] { left: 2.632%; top: 23.453%; width: 27.982%; height: 62.014%; }
+#huerta-dibujo [data-lugar="mesada-izq"] { left: 38.596%; top: 56.978%; width: 5.614%; height: 14.532%; }
+
+/* Elegido un lugar: el resto del invernadero se atenúa y el elegido queda adelante. */
+#huerta[data-elegido] #huerta-dibujo img {
+  opacity: 0.28;
+}
+
+#huerta[data-elegido] #huerta-dibujo img[data-elegido] {
+  z-index: 1;
+  opacity: 1;
+}
+
+/* Los enlaces: cajas que no se superponen, sobre cada maceta. */
+#huerta-lugares {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#huerta-lugares a {
+  z-index: 2;
+  border-radius: var(--radio-lamina);
+}
+
+#huerta-lugares a:hover {
+  outline: 2px dashed var(--color-tinta-suave);
+  outline-offset: -2px;
+}
+
+#huerta-lugares a:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 0;
+}
+
+#huerta-lugares [data-lugar="piso-izq"] a { left: 7.807%; top: 39.424%; width: 14.912%; height: 46.043%; }
+#huerta-lugares [data-lugar="estante-izq"] a { left: 23.158%; top: 25.755%; width: 13.596%; height: 25.899%; }
+#huerta-lugares [data-lugar="colgante"] a { left: 36.053%; top: 6.043%; width: 17.544%; height: 25.755%; }
+#huerta-lugares [data-lugar="mesada-izq"] a { left: 37.456%; top: 53.813%; width: 6.842%; height: 17.986%; }
+#huerta-lugares [data-lugar="mesada-medio"] a { left: 44.298%; top: 45.899%; width: 6.667%; height: 25.899%; }
+#huerta-lugares [data-lugar="mesada-der"] a { left: 51.404%; top: 32.23%; width: 11.053%; height: 39.137%; }
+#huerta-lugares [data-lugar="estante-der"] a { left: 69.211%; top: 33.669%; width: 9.298%; height: 18.705%; }
+#huerta-lugares [data-lugar="piso-der"] a { left: 78.86%; top: 39.568%; width: 11.491%; height: 47.05%; }
+
+/* --- La ficha --------------------------------------------------------------------------------- */
+#huerta-ficha {
+  --espacio-relleno: var(--espacio-4);
+
+  display: grid;
+  gap: var(--espacio-3);
+  align-content: start;
+  box-sizing: border-box;
+  align-self: stretch;
+}
+
+#huerta-ficha > header {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+/* "Ver toda la huerta" (el que suelta la maceta, R11-37): un toque de 48 px. */
+#huerta-ficha > a[data-suelta] {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 3rem;
+}
+
+/* Los pictogramas de categoría (iconos :: categorias) y su cuadro salvia, como en sellos.css, que esta
+   pantalla no carga. */
+#misiones > .iconos {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+#huerta-ficha .categoria-icono {
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  fill: var(--color-tinta);
+}
+
+#huerta-ficha .estado-sello {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+/* Los 3 hitos: una línea punteada de tinta con un punto por hito; el que falta, hueco. */
+#huerta-hitos {
+  display: grid;
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#huerta-hitos li {
+  position: relative;
+  display: grid;
+  gap: 0.125rem;
+  margin: 0;
+  padding-left: var(--espacio-4);
+}
+
+#huerta-hitos li::before {
+  position: absolute;
+  top: 0.3rem;
+  left: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: 50%;
+  background: var(--color-tinta);
+  content: "";
+}
+
+#huerta-hitos li:not(:last-child)::after {
+  position: absolute;
+  top: 1.3rem;
+  bottom: calc(-1 * var(--espacio-3));
+  left: 0.375rem;
+  border-left: 2px dotted var(--color-tinta);
+  content: "";
+}
+
+#huerta-hitos [data-hito="falta"]::before {
+  background: var(--color-superficie);
+}
+
+#huerta-hitos span {
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+/* El mensaje de la entidad, en un globo de papel. */
+#huerta-mensaje summary {
+  list-style: none;
+}
+
+#huerta-mensaje summary::-webkit-details-marker,
+#huerta-mensaje summary::after {
+  display: none;
+}
+
+#huerta-mensaje blockquote {
+  position: relative;
+  display: grid;
+  gap: var(--espacio-1);
+  margin: var(--espacio-3) 0 0;
+  padding: var(--espacio-3);
+  border: 0;
+  border-radius: var(--radio-lamina);
+  background: var(--color-tinta);
+  color: var(--color-papel);
+}
+
+#huerta-mensaje blockquote::after {
+  position: absolute;
+  bottom: calc(-0.5 * var(--espacio-3));
+  left: var(--espacio-4);
+  width: var(--espacio-3);
+  height: var(--espacio-3);
+  background: var(--color-tinta);
+  rotate: 45deg;
+  content: "";
+}
+
+#huerta-mensaje footer {
+  color: var(--color-papel);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+/* En pantalla ancha, la huerta a la izquierda y la ficha al costado. */
+@media (min-width: 53.75em) {
+  #huerta {
+    grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
+  }
+
+  #huerta > header {
+    grid-column: 1 / -1;
+  }
+
+  /* La escena conserva su proporción; la ficha se estira dentro de la fila sin forzarla a crecer. */
+  #huerta-escena {
+    height: auto;
+  }
+}

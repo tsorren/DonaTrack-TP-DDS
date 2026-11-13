@@ -1,0 +1,218 @@
+/* Raíces, sitio A: lo común de las públicas que muestran datos (Entregas confirmadas, Mapa y
+   Entidades) y de los registros: la cabecera de la pantalla, los filtros como opciones impresas, la
+   cifra del período dentro de un fruto (los de "Lo que está confirmado" de la portada), las salidas,
+   el lugar de lo que carga, el botón chico y la foto grande de una entrega (los de la portada). */
+@import url("publico-paginas.css");
+
+.publica {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.publica-cabeza {
+  max-width: 46rem;
+}
+
+.publica-cabeza .lectura-bajada {
+  margin-bottom: 0;
+}
+
+.publica :is(.banner, .vacio, [role="status"]) {
+  margin: 0;
+}
+
+/* --- El filtro y la cifra ---------------------------------------------------------------------- */
+
+.publica-barra {
+  display: grid;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.filtro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.filtro-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.filtro-opciones legend {
+  margin-bottom: 0.5rem;
+  padding: 0;
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+/* Cada opción, un botón de papel; la elegida, impresa en verde oliva con la segunda tinta corrida,
+   como la sección actual del menú. El radio nativo, transparente, cubre la opción entera. */
+.filtro-opcion {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: var(--medida-toque-minimo);
+  padding: 0.5rem 0.875rem;
+  border: 1.5px solid var(--color-acento);
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+  color: var(--color-acento);
+  font-weight: 700;
+  font-stretch: 108%;
+}
+
+/* Cubre también el borde: el toque llega a 48 px. */
+.filtro-opcion input {
+  position: absolute;
+  inset: -1.5px;
+  width: calc(100% + 3px);
+  height: calc(100% + 3px);
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.filtro-opcion:hover {
+  background: var(--color-acento-claro);
+}
+
+.filtro-opcion:has(:checked) {
+  background: var(--color-acento);
+  box-shadow: 0.2rem 0.2rem 0 var(--color-sombra);
+  color: var(--color-papel);
+}
+
+.filtro-opcion:has(:focus-visible) {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 3px;
+}
+
+.filtro-icono {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: currentcolor;
+}
+
+/* La cifra, como las de K (estética de K, 2026-11-08; antes, un fruto mandarina con la cifra adentro):
+   un árbol plano y el número grande en tinta, con lo que cuenta al lado. */
+.cifra-fruto p {
+  margin: 0;
+}
+
+.cifra-fruto > p:first-child {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  max-width: 36rem;
+  color: var(--color-tinta);
+  font-size: 1.0625rem;
+  line-height: 1.4;
+}
+
+.cifra-fruto .nota {
+  margin-top: 0.5rem;
+}
+
+.fruto {
+  display: flex;
+  flex: none;
+  align-items: flex-end;
+  gap: 0.5rem;
+  color: var(--color-tinta);
+  font: 850 3rem / 0.9 var(--fuente-cifra);
+  font-stretch: 125%;
+  letter-spacing: -0.04em;
+}
+
+.fruto::before {
+  content: "";
+  /* El manzano con su proporción (viewBox 231,87 × 260,42), apoyado abajo, junto a la cifra. */
+  flex: none;
+  height: 4.375rem;
+  aspect-ratio: 231.87 / 260.42;
+  background: url("../img/ilustraciones/arbol-redondo.svg") bottom / contain no-repeat;
+}
+
+/* --- Las salidas, lo que carga, los botones y la foto ------------------------------------------ */
+
+.salidas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.25rem;
+}
+
+.salidas p {
+  margin: 0;
+}
+
+.salidas p a,
+.cuenta-salida a,
+.cuenta-salidas a,
+.casilla-enlace a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  font-weight: 700;
+}
+
+.aviso-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* El lugar de lo que todavía carga, en las páginas públicas: más alto que el esqueleto base. */
+.esqueleto {
+  min-height: 12rem;
+}
+
+@media (min-width: 53.75em) {
+  .publica {
+    gap: 2rem;
+  }
+
+  .publica-barra {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 30rem);
+    gap: 2rem 3rem;
+  }
+}
+
+/* El filtro queda fijo (R11-33, ficha r11-p2-armazon §4.2), salvo en el Mapa, que ya deja fijo el
+   mapa. El `position: sticky` del formulario (componentes/filtros.css) no alcanza acá: la barra
+   solo contiene el formulario y la cifra, y el formulario se iría con ella. En la tableta angosta
+   la barra se disuelve (`display: contents`) y el formulario queda fijo dentro de la página, junto
+   a la lista; desde 53,75 em, con el formulario y la cifra en la misma fila, queda fija la barra
+   entera, con su papel y su filete. */
+@media (min-width: 37.5em) and (min-height: 37.5em) {
+  .publica-barra:has(> form.filtro:not([action$="/publico-mapa"])) {
+    display: contents;
+  }
+}
+
+@media (min-width: 53.75em) and (min-height: 37.5em) {
+  .publica-barra:has(> form.filtro:not([action$="/publico-mapa"])) {
+    position: sticky;
+    top: var(--medida-cabecera-fija);
+    z-index: var(--capa-filtros-fijos);
+    display: grid;
+    padding-block: var(--espacio-2);
+    border-bottom: 1px solid var(--color-filete);
+    background: var(--color-papel);
+    box-shadow: 0 -0.375rem 0 var(--color-papel);
+  }
+
+  .publica-barra > form.filtro {
+    position: static;
+    box-shadow: none;
+  }
+}

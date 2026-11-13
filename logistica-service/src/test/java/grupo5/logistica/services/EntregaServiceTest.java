@@ -1,6 +1,7 @@
 package grupo5.logistica.services;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.BusinessStateException;
@@ -9,15 +10,24 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaRequestDTO;
+import grupo5.logistica.dto.entregas.ConsultaSeguimiento;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.EntregaMapaPublicoResponseDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
+import grupo5.logistica.dto.entregas.EntregasDelMapaPublico;
+import grupo5.logistica.dto.entregas.PosicionCamionDTO;
+import grupo5.logistica.dto.entregas.ReporteRecepcionDTO;
 import grupo5.logistica.dto.entregas.SeguimientoEntregaResponseDTO;
+import grupo5.logistica.dto.entregas.SeguimientosDeEntregas;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.camiones.Camion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.MotivoReporte;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaEnPuerta;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
@@ -26,19 +36,27 @@ import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
+import grupo5.logistica.models.repositories.CriterioSeguimiento;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
+import grupo5.logistica.models.repositories.TramoDeEntregas;
 import grupo5.logistica.services.impl.EntregasService;
 import grupo5.logistica.services.mappers.DireccionMapper;
 import grupo5.logistica.services.mappers.EntregaMapper;
 import grupo5.logistica.testutils.EntregaMother;
+import grupo5.logistica.testutils.RutaMother;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class EntregaServiceTest {
 
@@ -64,6 +82,53 @@ class EntregaServiceTest {
             camionRepository,
             entregaMapper,
             comunicadorEventos);
+  }
+
+  // ===================== dueño (pertenencia) =====================
+
+  @Test
+  void beneficiariaDe_cuandoExiste_deberiaDevolverLaBeneficiariaDeLaEntrega() {
+    Entrega entrega = EntregaMother.pendiente();
+    when(entregasRepository.findById(entrega.getId())).thenReturn(Optional.of(entrega));
+
+    assertEquals(
+        Optional.of(entrega.getIdBeneficiaria()), entregasService.beneficiariaDe(entrega.getId()));
+  }
+
+  @Test
+  void beneficiariaDe_cuandoNoExiste_deberiaDevolverVacio() {
+    UUID id = UUID.randomUUID();
+    when(entregasRepository.findById(id)).thenReturn(Optional.empty());
+
+    assertTrue(entregasService.beneficiariaDe(id).isEmpty());
+  }
+
+  @Test
+  void donanteDeDonacion_cuandoSeConoceElDonante_deberiaDevolverlo() {
+    UUID donante = UUID.randomUUID();
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.registrarDonante(donante);
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+
+    assertEquals(Optional.of(donante), entregasService.donanteDeDonacion(entrega.getIdDonacion()));
+  }
+
+  @Test
+  void donanteDeDonacion_cuandoLaEntregaNoTieneDonante_deberiaDevolverVacio() {
+    Entrega entrega = EntregaMother.pendiente();
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+
+    assertTrue(entregasService.donanteDeDonacion(entrega.getIdDonacion()).isEmpty());
+  }
+
+  @Test
+  void donanteDeDonacion_cuandoNoHayEntrega_deberiaDevolverVacio() {
+    UUID idDonacion = UUID.randomUUID();
+    when(entregasRepository.findByIdDonacion(idDonacion)).thenReturn(Optional.empty());
+
+    assertTrue(entregasService.donanteDeDonacion(idDonacion).isEmpty());
   }
 
   // ===================== crear() =====================
@@ -163,10 +228,26 @@ class EntregaServiceTest {
     assertTrue(resultado.isEmpty());
   }
 
-  // ===================== listarMapaPublico() (RF-02) =====================
+  // ===================== listarMapaPublico() (RF-02, R11-19) =====================
+
+  /** 12 de noviembre de 2026, 10:30 en Argentina. */
+  private static final Clock HOY_EN_ARGENTINA =
+      Clock.fixed(Instant.parse("2026-11-12T13:30:00Z"), ZoneOffset.UTC);
+
+  private EntregasService conReloj(Clock reloj) {
+    return new EntregasService(
+        entregasRepository,
+        rutasRepository,
+        camionRepository,
+        entregaMapper,
+        comunicadorEventos,
+        null,
+        null,
+        reloj);
+  }
 
   @Test
-  void listarMapaPublico_deberiaRetornarSoloEntregadasConCoordenadasValidasYSanitizadas() {
+  void listarMapaPublico_deberiaPedirElPeriodoYElTopeALaBaseYDevolverElTotalSinElTope() {
     Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
     Direccion dirConCoords =
         new Direccion(
@@ -177,28 +258,23 @@ class EntregaServiceTest {
             "C1179",
             caba,
             new CoordenadasGeograficas(-34.5986, -58.4201));
-    Direccion dirSinCoords = new Direccion("Av. Rivadavia", 1200, null, null, "C1033", caba);
-
-    Entrega entregadaConCoords =
+    Entrega entregada =
         new Entrega(UUID.randomUUID(), UUID.randomUUID(), dirConCoords, 15.0f, 1.5f);
-    entregadaConCoords.asignarRuta(UUID.randomUUID());
-    entregadaConCoords.iniciarRuta("Chofer");
-    entregadaConCoords.confirmarEntrega("Comedor", "https://storage.donatrack.org/foto1.jpg");
+    entregada.asignarRuta(UUID.randomUUID());
+    entregada.iniciarRuta("Chofer");
+    entregada.confirmarEntrega("Comedor", "https://storage.donatrack.org/foto1.jpg");
+    Instant desde = Instant.parse("2026-11-01T03:00:00Z");
+    Instant hasta = Instant.parse("2026-11-11T03:00:00Z");
+    when(entregasRepository.findEntregadasParaMapa(desde, hasta, 5)).thenReturn(List.of(entregada));
+    when(entregasRepository.contarEntregadasParaMapa(desde, hasta)).thenReturn(340L);
 
-    Entrega entregadaSinCoords =
-        new Entrega(UUID.randomUUID(), UUID.randomUUID(), dirSinCoords, 20.0f, 2.0f);
-    entregadaSinCoords.asignarRuta(UUID.randomUUID());
-    entregadaSinCoords.iniciarRuta("Chofer");
-    entregadaSinCoords.confirmarEntrega("Comedor", "https://storage.donatrack.org/foto2.jpg");
+    EntregasDelMapaPublico resultado =
+        entregasService.listarMapaPublico(LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 10), 5);
 
-    when(entregasRepository.findByEstado(EstadoEntrega.ENTREGADA))
-        .thenReturn(List.of(entregadaConCoords, entregadaSinCoords));
-
-    List<EntregaMapaPublicoResponseDTO> resultado = entregasService.listarMapaPublico();
-
-    assertEquals(1, resultado.size());
-    EntregaMapaPublicoResponseDTO item = resultado.getFirst();
-    assertEquals(entregadaConCoords.getId(), item.idEntrega());
+    assertEquals(340L, resultado.total());
+    assertEquals(1, resultado.entregas().size());
+    EntregaMapaPublicoResponseDTO item = resultado.entregas().getFirst();
+    assertEquals(entregada.getId(), item.idEntrega());
     assertEquals(-34.5986, item.latitud());
     assertEquals(-58.4201, item.longitud());
     assertEquals("CABA", item.localidad());
@@ -207,6 +283,64 @@ class EntregaServiceTest {
     assertNotNull(item.fechaEntrega());
     assertEquals(15.0f, item.pesoTotalKG());
     assertEquals(1.5f, item.volumenTotalM3());
+    verify(entregasRepository, never()).findByEstado(any());
+  }
+
+  @Test
+  void listarMapaPublico_sinParametros_deberiaPedirLosUltimos30DiasEnHoraDeArgentinaHasta200() {
+    EntregasService servicio = conReloj(HOY_EN_ARGENTINA);
+    Instant desde = Instant.parse("2026-10-13T03:00:00Z");
+    Instant hasta = Instant.parse("2026-11-13T03:00:00Z");
+    when(entregasRepository.findEntregadasParaMapa(desde, hasta, 200)).thenReturn(List.of());
+    when(entregasRepository.contarEntregadasParaMapa(desde, hasta)).thenReturn(0L);
+
+    EntregasDelMapaPublico resultado = servicio.listarMapaPublico(null, null, null);
+
+    assertTrue(resultado.entregas().isEmpty());
+    assertEquals(0L, resultado.total());
+    verify(entregasRepository).findEntregadasParaMapa(desde, hasta, 200);
+  }
+
+  @Test
+  void listarMapaPublico_soloConHasta_deberiaEmpezar30DiasAntes() {
+    Instant desde = Instant.parse("2026-09-01T03:00:00Z");
+    Instant hasta = Instant.parse("2026-10-02T03:00:00Z");
+    when(entregasRepository.findEntregadasParaMapa(desde, hasta, 200)).thenReturn(List.of());
+
+    entregasService.listarMapaPublico(null, LocalDate.of(2026, 10, 1), null);
+
+    verify(entregasRepository).findEntregadasParaMapa(desde, hasta, 200);
+    verify(entregasRepository).contarEntregadasParaMapa(desde, hasta);
+  }
+
+  @Test
+  void listarMapaPublico_conHastaAnteriorADesde_deberiaRechazarConArgumentoInvalido() {
+    LocalDate desde = LocalDate.of(2026, 11, 10);
+    LocalDate hasta = LocalDate.of(2026, 11, 1);
+
+    ValidationException error =
+        assertThrows(
+            ValidationException.class, () -> entregasService.listarMapaPublico(desde, hasta, 10));
+
+    assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), error.getErrorCode());
+    verifyNoInteractions(entregasRepository);
+  }
+
+  @Test
+  void listarMapaPublico_conLimiteFueraDe1A500_deberiaRechazarConArgumentoInvalido() {
+    assertThrows(ValidationException.class, () -> entregasService.listarMapaPublico(null, null, 0));
+    assertThrows(
+        ValidationException.class, () -> entregasService.listarMapaPublico(null, null, 501));
+    verifyNoInteractions(entregasRepository);
+  }
+
+  @Test
+  void listarMapaPublico_conLimite500_deberiaAceptarlo() {
+    when(entregasRepository.findEntregadasParaMapa(any(), any(), eq(500))).thenReturn(List.of());
+
+    entregasService.listarMapaPublico(null, null, 500);
+
+    verify(entregasRepository).findEntregadasParaMapa(any(), any(), eq(500));
   }
 
   // ===================== obtenerPorId() =====================
@@ -300,6 +434,8 @@ class EntregaServiceTest {
     assertEquals(1, dto.paradasEntregadas());
     assertEquals(2, dto.paradasProcesadas());
     assertNotNull(dto.ultimaActualizacion());
+    assertNull(
+        dto.posicionCamion(), "Sin posición registrada, el camión en traslado no la informa");
     assertEquals(3, dto.paradas().size());
     assertFalse(dto.paradas().get(0).esEntregaConsultada());
     assertFalse(dto.paradas().get(1).esEntregaConsultada());
@@ -317,16 +453,137 @@ class EntregaServiceTest {
   }
 
   @Test
-  void listarSeguimientoPorBeneficiaria_retornaSeguimientosDelBeneficiario() {
+  void listarSeguimientoPorBeneficiaria_sinParametros_pideLaPrimeraPaginaDe20YDaElTotal() {
     UUID idBeneficiaria = UUID.randomUUID();
     Entrega entrega = EntregaMother.pendiente();
-    when(entregasRepository.findByIdBeneficiaria(idBeneficiaria)).thenReturn(List.of(entrega));
+    when(entregasRepository.buscarSeguimiento(any()))
+        .thenReturn(new TramoDeEntregas(List.of(entrega), 45));
 
-    List<SeguimientoEntregaResponseDTO> resultado =
-        entregasService.listarSeguimientoPorBeneficiaria(idBeneficiaria);
+    SeguimientosDeEntregas resultado =
+        entregasService.listarSeguimientoPorBeneficiaria(
+            idBeneficiaria, ConsultaSeguimiento.primeraPagina());
 
-    assertEquals(1, resultado.size());
-    assertEquals(entrega.getId(), resultado.getFirst().idEntrega());
+    assertEquals(45, resultado.total());
+    assertEquals(entrega.getId(), resultado.seguimientos().getFirst().idEntrega());
+    ArgumentCaptor<CriterioSeguimiento> criterio =
+        ArgumentCaptor.forClass(CriterioSeguimiento.class);
+    verify(entregasRepository).buscarSeguimiento(criterio.capture());
+    assertEquals(
+        new CriterioSeguimiento(idBeneficiaria, null, Set.of(), Set.of(), 0, 20),
+        criterio.getValue());
+  }
+
+  @Test
+  void listarSeguimientoPorBeneficiaria_pasaEstadosYDonacionesAlRepositorio() {
+    UUID idBeneficiaria = UUID.randomUUID();
+    UUID donacion = UUID.randomUUID();
+    when(entregasRepository.buscarSeguimiento(any())).thenReturn(new TramoDeEntregas(List.of(), 0));
+
+    entregasService.listarSeguimientoPorBeneficiaria(
+        idBeneficiaria,
+        new ConsultaSeguimiento(List.of(EstadoEntrega.EN_PUERTA), List.of(donacion), 2, 5));
+
+    verify(entregasRepository)
+        .buscarSeguimiento(
+            new CriterioSeguimiento(
+                idBeneficiaria, null, Set.of(EstadoEntrega.EN_PUERTA), Set.of(donacion), 2, 5));
+  }
+
+  @Test
+  void listarSeguimiento_conPaginaFueraDeRango_lanzaValidacion() {
+    UUID id = UUID.randomUUID();
+    List<ConsultaSeguimiento> invalidas =
+        List.of(
+            new ConsultaSeguimiento(null, null, -1, null),
+            new ConsultaSeguimiento(null, null, null, 0),
+            new ConsultaSeguimiento(null, null, null, 101),
+            new ConsultaSeguimiento(
+                null,
+                java.util.stream.Stream.generate(UUID::randomUUID).limit(101).toList(),
+                null,
+                null));
+    for (ConsultaSeguimiento consulta : invalidas) {
+      assertThrows(
+          ValidationException.class,
+          () -> entregasService.listarSeguimientoPorBeneficiaria(id, consulta));
+      assertThrows(
+          ValidationException.class,
+          () -> entregasService.listarSeguimientoPorDonante(id, consulta));
+    }
+    verify(entregasRepository, never()).buscarSeguimiento(any());
+  }
+
+  @Test
+  void listarSeguimientoPorDonante_sinEstados_pideSoloLasActivas() {
+    UUID donanteId = UUID.randomUUID();
+    when(entregasRepository.buscarSeguimiento(any())).thenReturn(new TramoDeEntregas(List.of(), 0));
+
+    entregasService.listarSeguimientoPorDonante(donanteId, ConsultaSeguimiento.primeraPagina());
+
+    // HB-22: la que espera en la puerta sigue activa
+    verify(entregasRepository)
+        .buscarSeguimiento(
+            new CriterioSeguimiento(
+                null,
+                donanteId,
+                Set.of(EstadoEntrega.PENDIENTE, EstadoEntrega.EN_TRASLADO, EstadoEntrega.EN_PUERTA),
+                Set.of(),
+                0,
+                20));
+  }
+
+  @Test
+  void listarSeguimientoPorDonante_sinDonante_lanzaValidacion() {
+    ConsultaSeguimiento consulta = ConsultaSeguimiento.primeraPagina();
+    assertThrows(
+        ValidationException.class,
+        () -> entregasService.listarSeguimientoPorDonante(null, consulta));
+  }
+
+  /**
+   * C3 de R11-43: una página de entregas en dos rutas se arma con una lectura de rutas, una de
+   * camiones y una de las paradas que faltan, no una por entrega ni por parada.
+   */
+  @Test
+  void listarSeguimiento_armaLaPaginaConUnaLecturaDeRutasCamionesYParadas() {
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    Ruta rutaA = new Ruta(LocalDate.of(2026, 10, 22), UUID.randomUUID(), camion.getId());
+    Ruta rutaB = new Ruta(LocalDate.of(2026, 10, 23), UUID.randomUUID(), camion.getId());
+    List<Entrega> pagina = new java.util.ArrayList<>();
+    List<Entrega> otras = new java.util.ArrayList<>();
+    for (int i = 0; i < 20; i++) {
+      Ruta ruta = i % 2 == 0 ? rutaA : rutaB;
+      Entrega deLaPagina = EntregaMother.pendiente();
+      Entrega otra = EntregaMother.pendiente();
+      ruta.agregarEntrega(deLaPagina.getId());
+      ruta.agregarEntrega(otra.getId());
+      deLaPagina.asignarRuta(ruta.getId());
+      otra.asignarRuta(ruta.getId());
+      pagina.add(deLaPagina);
+      otras.add(otra);
+    }
+    when(entregasRepository.buscarSeguimiento(any())).thenReturn(new TramoDeEntregas(pagina, 45));
+    when(rutasRepository.findByIds(any())).thenReturn(List.of(rutaA, rutaB));
+    when(camionRepository.findByIds(any())).thenReturn(List.of(camion));
+    when(entregasRepository.findByIds(any())).thenReturn(otras);
+
+    SeguimientosDeEntregas resultado =
+        entregasService.listarSeguimientoPorBeneficiaria(
+            UUID.randomUUID(), ConsultaSeguimiento.primeraPagina());
+
+    assertEquals(20, resultado.seguimientos().size());
+    assertEquals(45, resultado.total());
+    SeguimientoEntregaResponseDTO primero = resultado.seguimientos().getFirst();
+    assertEquals("AB123CD", primero.patenteCamion());
+    assertEquals(20, primero.totalParadas());
+    assertEquals(1, primero.ordenVisita());
+    verify(rutasRepository, times(1)).findByIds(Set.of(rutaA.getId(), rutaB.getId()));
+    verify(camionRepository, times(1)).findByIds(Set.of(camion.getId()));
+    verify(entregasRepository, times(1))
+        .findByIds(otras.stream().map(Entrega::getId).collect(java.util.stream.Collectors.toSet()));
+    verify(rutasRepository, never()).findById(any());
+    verify(camionRepository, never()).findById(any());
+    verify(entregasRepository, never()).findById(any());
   }
 
   // ===================== adjuntarFotoRecepcion() =====================
@@ -388,6 +645,39 @@ class EntregaServiceTest {
         List.of("https://storage.donatrack.org/evidencia-1.jpg"), resultado.fotosRecepcion());
     verify(entregasRepository).save(entrega);
     verify(comunicadorEventos).comunicarEntregaExitosa(any(EntregaConfirmada.class), eq(camion));
+  }
+
+  @Test
+  void cambiarEstado_conRemitoYReporte_losGuardaYLosDevuelve() {
+    UUID rutaId = UUID.randomUUID();
+    UUID camionId = UUID.randomUUID();
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.asignarRuta(rutaId);
+    entrega.iniciarRuta("Chofer");
+    ReporteRecepcionDTO reporte =
+        new ReporteRecepcionDTO(MotivoReporte.DANADA, "Caja mojada", null);
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(
+            EstadoEntrega.ENTREGADA,
+            "actor",
+            null,
+            null,
+            List.of("https://storage.donatrack.org/evidencia-1.jpg"),
+            null,
+            "R-0001",
+            reporte);
+    Ruta ruta = mock(Ruta.class);
+    when(entregasRepository.findById(entrega.getId())).thenReturn(Optional.of(entrega));
+    when(rutasRepository.findById(rutaId)).thenReturn(Optional.of(ruta));
+    when(ruta.getCamionId()).thenReturn(camionId);
+    when(camionRepository.findById(camionId)).thenReturn(Optional.of(mock(Camion.class)));
+    when(entregasRepository.save(entrega)).thenReturn(entrega);
+
+    EntregaResponseDTO resultado = entregasService.cambiarEstado(entrega.getId(), request);
+
+    assertEquals("R-0001", resultado.numeroRemito());
+    assertEquals(reporte, resultado.reporte());
+    assertEquals(MotivoReporte.DANADA, entrega.getReporteRecepcion().motivo());
   }
 
   @Test
@@ -526,5 +816,214 @@ class EntregaServiceTest {
         assertThrows(ValidationException.class, () -> entregasService.cambiarEstado(id, request));
     assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
     verify(entregasRepository, never()).save(any());
+  }
+
+  // ===================== Posición del camión (HB-06) =====================
+
+  @Test
+  void obtenerSeguimientoPorDonacion_conRutaEnTraslado_incluyeLaPosicionDelCamion() {
+    Entrega entrega = EntregaMother.pendiente();
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    Ruta ruta = new Ruta(LocalDate.of(2026, 11, 8), UUID.randomUUID(), camion.getId());
+    ruta.agregarEntrega(entrega.getId());
+    entrega.asignarRuta(ruta.getId());
+    ruta.iniciarRuta();
+    PosicionCamion posicion =
+        new PosicionCamion(
+            -34.6, -58.4, ruta.getHoraInicioReal().toInstant(ZoneOffset.UTC).plusSeconds(30));
+    camion.registrarPosicion(posicion);
+    entrega.iniciarRuta("Chofer");
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+    when(rutasRepository.findById(ruta.getId())).thenReturn(Optional.of(ruta));
+    when(camionRepository.findById(camion.getId())).thenReturn(Optional.of(camion));
+
+    SeguimientoEntregaResponseDTO dto =
+        entregasService.obtenerSeguimientoPorDonacion(entrega.getIdDonacion());
+
+    assertEquals(
+        new PosicionCamionDTO(-34.6, -58.4, posicion.registradaEn()), dto.posicionCamion());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_conPosicionDeUnaRutaAnterior_noLaInforma() {
+    Entrega entrega = EntregaMother.pendiente();
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    camion.registrarPosicion(
+        new PosicionCamion(-34.6, -58.4, java.time.Instant.parse("2020-01-01T00:00:00Z")));
+    Ruta ruta = new Ruta(LocalDate.of(2026, 11, 8), UUID.randomUUID(), camion.getId());
+    ruta.agregarEntrega(entrega.getId());
+    entrega.asignarRuta(ruta.getId());
+    ruta.iniciarRuta();
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+    when(rutasRepository.findById(ruta.getId())).thenReturn(Optional.of(ruta));
+    when(camionRepository.findById(camion.getId())).thenReturn(Optional.of(camion));
+
+    SeguimientoEntregaResponseDTO dto =
+        entregasService.obtenerSeguimientoPorDonacion(entrega.getIdDonacion());
+
+    assertEquals(EstadoRuta.EN_TRASLADO, dto.estadoRuta());
+    assertNull(dto.posicionCamion());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_conRutaFueraDeTraslado_noIncluyePosicion() {
+    Entrega entrega = EntregaMother.pendiente();
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    camion.registrarPosicion(
+        new PosicionCamion(-34.6, -58.4, java.time.Instant.parse("2026-11-08T12:00:30Z")));
+    Ruta ruta = new Ruta(LocalDate.of(2026, 11, 8), UUID.randomUUID(), camion.getId());
+    ruta.agregarEntrega(entrega.getId());
+    entrega.asignarRuta(ruta.getId());
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+    when(rutasRepository.findById(ruta.getId())).thenReturn(Optional.of(ruta));
+    when(camionRepository.findById(camion.getId())).thenReturn(Optional.of(camion));
+
+    SeguimientoEntregaResponseDTO dto =
+        entregasService.obtenerSeguimientoPorDonacion(entrega.getIdDonacion());
+
+    assertEquals(EstadoRuta.PENDIENTE, dto.estadoRuta());
+    assertNull(dto.posicionCamion());
+  }
+
+  // ===================== cancelarPorDonacion() (HB-19) =====================
+
+  @Test
+  void cancelarPorDonacion_pendienteConRuta_laCancelaLaSacaDeLaRutaYPublica() {
+    Entrega entrega = EntregaMother.pendiente();
+    Ruta ruta = RutaMother.pendienteCon(entrega);
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+    when(rutasRepository.findById(ruta.getId())).thenReturn(Optional.of(ruta));
+
+    entregasService.cancelarPorDonacion(entrega.getIdDonacion(), "NECESIDAD_DADA_DE_BAJA");
+
+    assertEquals(EstadoEntrega.CANCELADA, entrega.getEstadoActual());
+    assertNull(entrega.getIdRuta());
+    assertFalse(ruta.getEntregaIds().contains(entrega.getId()));
+    verify(rutasRepository).save(ruta);
+    verify(entregasRepository).save(entrega);
+    verify(comunicadorEventos)
+        .comunicarEntregaCancelada(
+            argThat(
+                e ->
+                    e.getEntregaId().equals(entrega.getId())
+                        && e.getDonacionId().equals(entrega.getIdDonacion())
+                        && "NECESIDAD_DADA_DE_BAJA".equals(e.getMotivo())));
+    assertTrue(entrega.getDomainEvents().isEmpty());
+  }
+
+  @Test
+  void cancelarPorDonacion_pendienteSinRuta_noTocaRutas() {
+    Entrega entrega = EntregaMother.pendiente();
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+
+    entregasService.cancelarPorDonacion(entrega.getIdDonacion(), "NECESIDAD_DADA_DE_BAJA");
+
+    assertEquals(EstadoEntrega.CANCELADA, entrega.getEstadoActual());
+    verifyNoInteractions(rutasRepository);
+    verify(comunicadorEventos).comunicarEntregaCancelada(any(EntregaCancelada.class));
+  }
+
+  @Test
+  void cancelarPorDonacion_siYaSalio_noHaceNada() {
+    Entrega entrega = EntregaMother.pendiente();
+    RutaMother.pendienteCon(entrega);
+    entrega.iniciarRuta("Chofer Jose");
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+
+    entregasService.cancelarPorDonacion(entrega.getIdDonacion(), "NECESIDAD_DADA_DE_BAJA");
+
+    assertEquals(EstadoEntrega.EN_TRASLADO, entrega.getEstadoActual());
+    verify(entregasRepository, never()).save(any());
+    verifyNoInteractions(comunicadorEventos);
+  }
+
+  @Test
+  void cancelarPorDonacion_siYaEstabaCancelada_vuelveAConfirmarLaMasReciente() {
+    Entrega vieja = EntregaMother.pendiente();
+    vieja.cancelar("broker-donaciones", "NECESIDAD_DADA_DE_BAJA");
+    UUID idDonacion = vieja.getIdDonacion();
+    when(entregasRepository.findByIdDonacion(idDonacion)).thenReturn(Optional.empty());
+    when(entregasRepository.findCanceladasByIdDonacion(idDonacion)).thenReturn(List.of(vieja));
+
+    entregasService.cancelarPorDonacion(idDonacion, "NECESIDAD_DADA_DE_BAJA");
+
+    verify(comunicadorEventos)
+        .comunicarEntregaCancelada(argThat(e -> e.getEntregaId().equals(vieja.getId())));
+    verify(entregasRepository, never()).save(any());
+  }
+
+  @Test
+  void cancelarPorDonacion_sinEntregaEnEstaInstancia_noPublicaNada() {
+    UUID idDonacion = UUID.randomUUID();
+    when(entregasRepository.findByIdDonacion(idDonacion)).thenReturn(Optional.empty());
+    when(entregasRepository.findCanceladasByIdDonacion(idDonacion)).thenReturn(List.of());
+
+    entregasService.cancelarPorDonacion(idDonacion, "NECESIDAD_DADA_DE_BAJA");
+
+    verifyNoInteractions(comunicadorEventos);
+  }
+
+  @Test
+  void cambiarEstado_aCanceladaPorPatch_seRechaza() {
+    Entrega entrega = EntregaMother.pendiente();
+    UUID id = entrega.getId();
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.CANCELADA, "Admin", null, null);
+    when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
+
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> entregasService.cambiarEstado(id, request));
+    assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
+    assertEquals(EstadoEntrega.PENDIENTE, entrega.getEstadoActual());
+  }
+
+  @Test
+  void cambiarEstado_aEnPuerta_laMarcaYPublicaLaLlegadaSinSolicitud() {
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.iniciarRuta("Chofer");
+    UUID id = entrega.getId();
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.EN_PUERTA, "Chofer", null, null);
+    when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
+    when(entregasRepository.save(entrega)).thenReturn(entrega);
+
+    EntregaResponseDTO resultado = entregasService.cambiarEstado(id, request);
+
+    assertEquals(EstadoEntrega.EN_PUERTA, resultado.estadoActual());
+    verify(entregasRepository).save(entrega);
+    verify(comunicadorEventos).comunicarEntregaEnPuerta(any(EntregaEnPuerta.class));
+    assertTrue(entrega.getDomainEvents().isEmpty());
+  }
+
+  @Test
+  void marcarEnPuerta_siYaEstabaEnLaPuerta_noGuardaNiPublica() {
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.iniciarRuta("Chofer");
+    entrega.llegarAPuerta("Chofer");
+    entrega.clearDomainEvents();
+    when(entregasRepository.findById(entrega.getId())).thenReturn(Optional.of(entrega));
+
+    EntregaResponseDTO resultado = entregasService.marcarEnPuerta(entrega.getId(), "SIMULADOR");
+
+    assertEquals(EstadoEntrega.EN_PUERTA, resultado.estadoActual());
+    verify(entregasRepository, never()).save(any());
+    verifyNoInteractions(comunicadorEventos);
+  }
+
+  @Test
+  void marcarEnPuerta_deUnaPendiente_seRechaza() {
+    Entrega entrega = EntregaMother.pendiente();
+    when(entregasRepository.findById(entrega.getId())).thenReturn(Optional.of(entrega));
+
+    assertThrows(
+        ValidationException.class,
+        () -> entregasService.marcarEnPuerta(entrega.getId(), "SIMULADOR"));
+    verifyNoInteractions(comunicadorEventos);
   }
 }

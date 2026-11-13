@@ -1,46 +1,80 @@
-# cliente-liviano — Bounded Context Reservado
+# cliente-liviano — Interfaz web de DonaTrack
 
-> **Estado:** 🔒 `DEFERRED` — Reservado para entrega futura  
+> **Estado:** en construcción (Entrega 6). La maqueta navegable tiene el recorrido público, el del
+> donante, el de la entidad y el del admin, con datos de ejemplo y una sola identidad visual. Fuera
+> del perfil `maqueta`, las pantallas leen las APIs de Donaciones, Logística, Incentivos y
+> Notificaciones, y sus formularios guardan de verdad (corrida `conexion-pantallas`, 2026-11-10,
+> [SPEC-08](../docs/specs/active/SPEC-08-conexion-de-pantallas.md)). Quedan con datos de ejemplo
+> Entidades y necesidades y el Mapa de entregadas del público, y Misiones del donante; lo que cada
+> pantalla todavía no puede mostrar está en las
+> [brechas de datos por pantalla](../docs/requerimientos/brechas-de-datos-por-pantalla-e6.md).
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
 
 ---
 
-## Estado actual
+## Qué es
 
-`cliente-liviano` **no está implementado**. Existe únicamente como directorio placeholder registrado en [`.log4brains.yml`](../.log4brains.yml), con carpeta de ADRs reservada en `docs/adr/cliente-liviano/`.
+Es la interfaz web del sistema: un servidor Spring MVC que renderiza vistas Thymeleaf, mejoradas
+con HTMX y estilizadas con Pico.css y `tokens.css` (decisiones D17–D21 de
+[`requerimientos-e6.md`](../docs/requerimientos/requerimientos-e6.md)). No tiene lógica de negocio:
+consume las APIs REST de los servicios a través del gateway.
 
-**Hito canónico de construcción:** Entrega 6 — Interfaz de Usuario y Arquitectura MVC ([enunciado completo](../docs/entregas/Enunciado-TP-Anual-2026.pdf); requerimientos en [`requerimientos-e6.md`](../docs/requerimientos/requerimientos-e6.md)).
+## Antes de tocar este módulo
 
----
+- **Reglas del módulo:** [`AGENTS.md`](AGENTS.md). Las respetan las personas y los agentes.
+- **Proceso de diseño** (identidad visual, flujos, pantallas, A/B, revisión):
+  [`docs/interfaz/README.md`](../docs/interfaz/README.md).
+- **Decisiones de diseño tomadas:** [`docs/interfaz/bitacora.md`](../docs/interfaz/bitacora.md).
+- **Decisiones de arquitectura:** [`docs/adr/cliente-liviano/`](../docs/adr/cliente-liviano/).
 
-## Responsabilidades planificadas
+## Cómo levantarlo
 
-Este bounded context será responsable de:
+```bash
+mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090/
+mvn -pl cliente-liviano spring-boot:run                                       # con las APIs (INCENTIVOS_URL, DONACIONES_URL y LOGISTICA_URL)
+mvn clean test -pl cliente-liviano -am                                        # reglas de tokens, contraste y vistas
+mvn test -pl cliente-liviano -Pvisual                                         # capturas, accesibilidad, toque y desbordes
+```
 
-- **Interfaz de usuario:** Capa de presentación Web MVC o SPA consumidora de las APIs REST de los microservicios
-- **Consumo de APIs REST:** Integración con los contratos OpenAPI 3.0 publicados por `donaciones-service`, `incentivos-service`, `logistica-service` y `notificaciones-service`
-- **Autenticación de sesión:** Integración con `auth-service` para la gestión de tokens de acceso y sesión del donante
+- Puerto 8090. El perfil `maqueta` usa datos de ejemplo y admite `?escenario=<nombre>` (vacío,
+  lento, error, sin permiso) y `?variante=<tema>-a|b` para las comparaciones A/B. `/` es la
+  portada; cada pantalla se ve en `/<pantalla>` (por ejemplo, `/donante-inicio`).
+- Sin el perfil `maqueta`, cada puerto usa su adaptador REST (`cliente.datos.<puerto>=rest`, en
+  `application.properties`) con la URL de su API (`cliente.api.<api>.url`: `DONACIONES_URL`,
+  `LOGISTICA_URL`, `INCENTIVOS_URL` y `NOTIFICACIONES_URL`); las pantallas que todavía no pasaron a
+  datos reales se siguen sirviendo con los datos de las plantillas. Un puerto solo se elige con
+  `--cliente.datos.ranking=maqueta|rest`. Quién es la cuenta lo dice el puerto `CuentaActual`: con
+  ingreso por Keycloak sale del token; el `?donante=<id>` y el `?entidad=<id>` (la sesión los
+  recuerda) valen solo en el perfil `maqueta` con `cliente.datos.cuenta=parametro`. Cada envío real
+  (POST, redirección y aviso en `#avisos`, con indicador de carga) termina en `web/Envios`. Cada
+  pedido genera un `traceId` que viaja a las APIs en `X-Trace-Id` y es el código de soporte de las
+  páginas de error.
+- En Claude Code, `.claude/launch.json` lo levanta en el panel del navegador: `cliente-liviano`
+  (maqueta), `cliente-liviano-rest`, `incentivos` y `donaciones` (los dos en memoria, sin RabbitMQ).
+- La verificación visual baja Playwright y Chromium la primera vez (unos 200 MB) y deja el
+  resultado en `target/capturas/`. No corre en el CI
+  ([DTI-28](../docs/adr/DEUDA_TECNICA.md#dti-28)).
 
----
+## Con Keycloak y en el compose
 
-## ADRs relevantes
+El sitio corre como servicio `cliente-liviano` en `docker-compose.yml` y en el preprod, en el puerto 8090,
+ingresando por Keycloak y hablando con los servicios solo por el gateway. Dentro del contenedor,
+`docker-entrypoint.sh` reenvía `localhost:8180` a Keycloak para que el *issuer* sea el mismo que ve el
+navegador. La guía completa, con el recorrido por rol y cómo correr el recorrido automático contra Keycloak
+real (`IngresoConKeycloakRealTest`, perfil `visual`), está en
+[`docs/testing/demo-punta-a-punta.md`](../docs/testing/demo-punta-a-punta.md).
 
-No existen ADRs formalizados para este bounded context en `docs/adr/cliente-liviano/` aún.  
-Las decisiones de diseño de la interfaz de usuario deberán documentarse allí cuando comience la Entrega 6.
+## Responsabilidades
 
-> Ver: [`docs/adr/DEUDA_TECNICA.md — DTI-05`](../docs/adr/DEUDA_TECNICA.md) — refactor previo a la integración con la interfaz Web MVC (Entrega 6; fecha de la DTI a revisar).
-
----
+- **Interfaz de usuario:** las pantallas del [mapa del sitio](../docs/interfaz/mapa-del-sitio.md)
+  para el público, los donantes, las entidades y el admin.
+- **Consumo de APIs REST:** los contratos de `donaciones-service`, `incentivos-service`,
+  `logistica-service` y `notificaciones-service`, a través del gateway.
+- **Sesión del usuario:** integración con `auth-service`; los tokens viven del lado del servidor
+  (RF-CL-01).
 
 ## Contratos REST disponibles para consumo
 
-Los contratos REST que este cliente consumirá están documentados en:
-
-- [`docs/arquitectura/contratos-rest.md`](../docs/arquitectura/contratos-rest.md) — Catálogo consolidado de endpoints
-- [`docs/arquitectura/contratos/`](../docs/arquitectura/contratos/) — Especificaciones OpenAPI 3.0 (YAML)
-
----
-
-## No agregar código a este directorio
-
-Este directorio no debe contener código fuente hasta que el equipo decida iniciar la Entrega 6. Cualquier decisión de diseño previa debe documentarse como ADR en `docs/adr/cliente-liviano/`.
+- [`docs/arquitectura/contratos-rest.md`](../docs/arquitectura/contratos-rest.md): catálogo
+  consolidado de endpoints.
+- [`docs/arquitectura/contratos/`](../docs/arquitectura/contratos/): especificaciones OpenAPI 3.0.

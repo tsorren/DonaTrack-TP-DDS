@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: api-gateway
+  # Resource server (ADR-E6-02, etapa 2). El issuer y las claves de Keycloak llegan por
+  # SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI y _JWK_SET_URI: no definirlas acá, con valor
+  # vacío Spring igual intenta armar el decoder y falla.
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          audiences: ${GATEWAY_JWT_AUDIENCIA:donatrack-api}
+
+server:
+  port: ${PORT:8086}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+donatrack:
+  # Apagada por defecto: Postman, integration-tests y k6 llaman sin token (decisión M-07 de la matriz).
+  seguridad:
+    habilitada: ${GATEWAY_SEGURIDAD_HABILITADA:false}
+  gateway:
+    servicios:
+      donaciones: ${DONACIONES_SERVICE_URL:http://localhost:8080}
+      notificaciones: ${NOTIFICACIONES_SERVICE_URL:http://localhost:8081}
+      incentivos: ${INCENTIVOS_SERVICE_URL:http://localhost:8082}
+      logistica: ${LOGISTICA_SERVICE_URL:http://localhost:8083}
+    # Límites de espera hacia los servicios (R11-04). Pasados, el gateway contesta 504 y el cliente
+    # liviano muestra su página de falla con el código de soporte. Van por debajo de los del
+    # cliente (15 s de lectura, 120 s de subida) para que el gateway conteste primero.
+    # conexion: abrir la conexión; lectura: que el servicio empiece a responder; subida: lo mismo
+    # para subir un archivo (CSV de donantes, fotos del acta).
+    limites:
+      conexion: ${GATEWAY_TIMEOUT_CONEXION:3s}
+      lectura: ${GATEWAY_TIMEOUT_LECTURA:10s}
+      subida: ${GATEWAY_TIMEOUT_SUBIDA:100s}
+    # Allowlist pública (D26, RI-GW-03): con la seguridad encendida pasan sin token. Formato
+    # "MÉTODO /ruta". El gateway abre la RUTA, sin distinguir método, como las `ReglasDeAcceso*` de los
+    # servicios: el método lo decide el @PreAuthorize del servicio (segunda capa). Tiene que coincidir
+    # con esas reglas. Si una pantalla pública suma una llamada, su ruta entra acá y en el servicio en
+    # el mismo cambio.
+    rutas-publicas:
+      - GET /api/donaciones/contadores
+      - GET /api/donaciones/destacadas
+      - GET /api/entidades/publicas
+      - GET /api/necesidades/publicas
+      - GET /api/entregas/mapa
+      - POST /api/contacto

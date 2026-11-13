@@ -3,7 +3,9 @@ package grupo5.logistica.models.entities.entregas;
 import grupo5.common.events.AgregadoConEventos;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaCancelada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaEnPuerta;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
@@ -21,10 +23,20 @@ import lombok.Getter;
 @Getter
 public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
+  static final int MAX_REMITO = 40;
+
   private final UUID id;
   private UUID idRuta;
   private final UUID idDonacion;
   private final UUID idBeneficiaria;
+
+  /**
+   * Donante de la donación original: referencia opaca replicada desde Donaciones, sin datos
+   * personales. Es opcional: las entregas creadas antes del cambio o por un emisor que no lo manda
+   * no la tienen (ADR de réplicas por evento, HB-16).
+   */
+  private UUID donanteId;
+
   private final Direccion destino;
   private EstadoEntrega estadoActual;
 
@@ -36,6 +48,12 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
   @Getter(AccessLevel.NONE)
   private final List<String> fotosRecepcion;
+
+  /** Comprobante de la entrega: privado, fuera del mapa y de los eventos (DTI-29). */
+  private String numeroRemito;
+
+  /** Problema contado al confirmar; {@code null} si llegó bien. */
+  private ReporteRecepcion reporteRecepcion;
 
   private final float pesoTotalKG;
   private final float volumenTotalM3;
@@ -147,6 +165,17 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
         version);
   }
 
+  /** Hidrata remito y reporte desde la persistencia, sin validar. */
+  public void reconstituirRecepcion(String numeroRemito, ReporteRecepcion reporte) {
+    this.numeroRemito = numeroRemito;
+    this.reporteRecepcion = reporte;
+  }
+
+  /** Registra el donante al crear o reconstituir la entrega; {@code null} la deja sin donante. */
+  public void registrarDonante(UUID donanteId) {
+    this.donanteId = donanteId;
+  }
+
   public void asignarRuta(UUID idRuta) {
     validarIdentificador(idRuta);
 
@@ -177,18 +206,45 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
   }
 
   public void confirmarEntrega(String entidad, List<String> fotosRecepcion) {
+    confirmarEntrega(entidad, fotosRecepcion, null, null);
+  }
+
+  /**
+   * Confirma la recepción con el remito y, si algo estuvo mal, el reporte. Los dos son opcionales
+   * en el contrato mientras dura la migración (DTI-29).
+   */
+  public void confirmarEntrega(
+      String entidad, List<String> fotosRecepcion, String numeroRemito, ReporteRecepcion reporte) {
     validarActor(entidad);
     List<String> fotosNormalizadas = normalizarFotosObligatorias(fotosRecepcion);
+    String remitoNormalizado = normalizarRemito(numeroRemito);
+
+    validarEnViajeOEnPuerta();
+
+    this.fotosRecepcion.clear();
+    this.fotosRecepcion.addAll(fotosNormalizadas);
+    this.numeroRemito = remitoNormalizado;
+    this.reporteRecepcion = reporte;
+    actualizarEstado(EstadoEntrega.ENTREGADA, entidad);
+    this.horaArribo = LocalDateTime.now(ZoneId.of("UTC"));
+    registrarEvento(
+        new EntregaConfirmada(this.id, this.idDonacion, this.idRuta, reporte, fotosNormalizadas));
+  }
+
+  /**
+   * El camión llegó al destino (HB-22, ADR 20261111-estado-en-puerta-de-la-entrega): solo desde
+   * {@code EN_TRASLADO}. La pone quien mueve el camión. No toca {@code horaArribo}: la hora de
+   * llegada es la del cambio en el historial.
+   */
+  public void llegarAPuerta(String actor) {
+    validarActor(actor);
 
     if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
 
-    this.fotosRecepcion.clear();
-    this.fotosRecepcion.addAll(fotosNormalizadas);
-    actualizarEstado(EstadoEntrega.ENTREGADA, entidad);
-    this.horaArribo = LocalDateTime.now(ZoneId.of("UTC"));
-    registrarEvento(new EntregaConfirmada(this.id, this.idDonacion, this.idRuta));
+    actualizarEstado(EstadoEntrega.EN_PUERTA, actor);
+    registrarEvento(new EntregaEnPuerta(this.id, this.idDonacion));
   }
 
   public void adjuntarFotoRecepcion(String fotoURL) {
@@ -213,9 +269,7 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     validarActor(entidad);
     validarJustificacion(justificacion);
 
-    if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
-      throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
-    }
+    validarEnViajeOEnPuerta();
 
     actualizarEstado(EstadoEntrega.NO_RECIBIDA, entidad);
     registrarEvento(
@@ -245,6 +299,22 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     this.idRuta = null;
   }
 
+  /**
+   * Cancela una entrega que todavía no salió (HB-19): solo desde {@code PENDIENTE}, con o sin ruta
+   * sin iniciar. Deja la ruta: quien llama la saca de la {@code Ruta}. {@code CANCELADA} es final.
+   */
+  public void cancelar(String actor, String motivo) {
+    validarActor(actor);
+
+    if (this.estadoActual != EstadoEntrega.PENDIENTE) {
+      throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
+    }
+
+    actualizarEstado(EstadoEntrega.CANCELADA, actor);
+    this.idRuta = null;
+    registrarEvento(new EntregaCancelada(this.id, this.idDonacion, motivo));
+  }
+
   public List<CambioEstadoEntrega> getHistorialEstado() {
     return List.copyOf(this.historialEstado);
   }
@@ -269,6 +339,14 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     this.historialEstado.add(cambio);
   }
 
+  /** Confirmar o negar: desde el viaje o desde la puerta ({@code EN_PUERTA} es opcional). */
+  private void validarEnViajeOEnPuerta() {
+    if (this.estadoActual != EstadoEntrega.EN_TRASLADO
+        && this.estadoActual != EstadoEntrega.EN_PUERTA) {
+      throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
+    }
+  }
+
   private static void validarIdentificador(UUID id) {
     if (Objects.isNull(id)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
@@ -291,6 +369,17 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     if (Objects.isNull(actor) || actor.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
+  }
+
+  private static String normalizarRemito(String numeroRemito) {
+    if (numeroRemito == null) {
+      return null;
+    }
+    String remito = numeroRemito.trim();
+    if (remito.isEmpty() || remito.length() > MAX_REMITO) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    return remito;
   }
 
   private static void validarJustificacion(String justificacion) {

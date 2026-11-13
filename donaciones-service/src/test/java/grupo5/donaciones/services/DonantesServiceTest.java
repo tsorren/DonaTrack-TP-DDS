@@ -6,14 +6,21 @@ import static org.mockito.Mockito.*;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
-import grupo5.donaciones.fixtures.PersonaMother;
+import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.listados.CriterioDonantes;
+import grupo5.donaciones.models.repositories.listados.OrdenDonantes;
+import grupo5.donaciones.models.repositories.listados.Paginado;
+import grupo5.donaciones.models.repositories.listados.Tramo;
 import grupo5.donaciones.services.impl.DonantesService;
 import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.DonanteMapper;
@@ -25,6 +32,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -228,38 +236,99 @@ class DonantesServiceTest {
   }
 
   @Test
-  void listarPorCanal_excluyeDonantesDeBajaYPersonasAnonimizadas() {
-    Humana activa = personaConDonanteExistente();
-    activa.agregarMedioDeContacto(PersonaMother.correoValido());
-    Humana deBaja = personaConDonanteExistente();
-    deBaja.agregarMedioDeContacto(PersonaMother.correoValido());
-    Humana anonimizada = personaConDonanteExistente();
-    anonimizada.agregarMedioDeContacto(PersonaMother.correoValido());
-    anonimizada.anonimizar();
+  void buscar_pasaFiltrosOrdenYPaginaAlRepositorioYDevuelveElTotal_R1101() {
+    Humana persona = personaConDonanteExistente();
+    Donante donante = new Donante(persona.getId());
+    when(donantesRepository.buscar(any())).thenReturn(new Tramo<>(List.of(donante), 41));
+    when(personasRepository.findAllById(any())).thenReturn(List.of(persona));
+    UUID categoriaId = UUID.randomUUID();
 
-    Donante donanteDeBaja = new Donante(deBaja.getId());
-    donanteDeBaja.darDeBaja();
-    when(donantesRepository.findAll())
-        .thenReturn(
-            List.of(new Donante(activa.getId()), donanteDeBaja, new Donante(anonimizada.getId())));
+    Pagina<DonanteOutputDTO> resultado =
+        donantesService.buscar(
+            new FiltroDonantes("CORREO", TipoPersona.HUMANA, null, true, categoriaId),
+            new ParametrosListado(3, 10, " gomez ", "NOMBRE"));
 
-    List<DonanteOutputDTO> resultado = donantesService.listarDonantesPorContacto("CORREO");
-
+    assertEquals(41, resultado.total());
     assertEquals(
-        List.of(activa.getId()), resultado.stream().map(DonanteOutputDTO::idDonante).toList());
+        List.of(donante.getId()),
+        resultado.elementos().stream().map(DonanteOutputDTO::idDonante).toList());
+    ArgumentCaptor<CriterioDonantes> criterio = ArgumentCaptor.forClass(CriterioDonantes.class);
+    verify(donantesRepository).buscar(criterio.capture());
+    assertEquals(
+        new CriterioDonantes(
+            "gomez",
+            TipoPersona.HUMANA,
+            null,
+            true,
+            categoriaId,
+            "CORREO",
+            OrdenDonantes.NOMBRE,
+            new Paginado(3, 10)),
+        criterio.getValue());
+    // Por lote: las personas de la página se leen juntas, ninguna por fila
+    verify(personasRepository, never()).findById(persona.getId());
   }
 
   @Test
-  void listarSinCanal_devuelveTodosConSuEstado() {
-    Humana deBaja = personaConDonanteExistente();
-    Donante donanteDeBaja = new Donante(deBaja.getId());
-    donanteDeBaja.darDeBaja();
-    when(donantesRepository.findAll()).thenReturn(List.of(donanteDeBaja));
+  void buscar_sinParametros_pideLosMasNuevosDeA20_yUnCanalEnBlancoNoFiltra_R1101() {
+    when(donantesRepository.buscar(any())).thenReturn(new Tramo<>(List.of(), 0));
 
-    List<DonanteOutputDTO> resultado = donantesService.listarDonantesPorContacto(null);
+    donantesService.buscar(
+        new FiltroDonantes(" ", null, null, null, null), ParametrosListado.primeraPagina());
 
-    assertEquals(1, resultado.size());
-    assertFalse(resultado.get(0).activo());
+    ArgumentCaptor<CriterioDonantes> criterio = ArgumentCaptor.forClass(CriterioDonantes.class);
+    verify(donantesRepository).buscar(criterio.capture());
+    assertNull(criterio.getValue().canal());
+    assertEquals(OrdenDonantes.NUEVOS, criterio.getValue().orden());
+    assertEquals(new Paginado(0, 20), criterio.getValue().paginado());
+  }
+
+  @Test
+  void buscar_conPeriodoDeAlta_loPasaAlRepositorio_R1134() {
+    when(donantesRepository.buscar(any())).thenReturn(new Tramo<>(List.of(), 0));
+    java.time.LocalDate desde = java.time.LocalDate.of(2026, 11, 1);
+    java.time.LocalDate hasta = java.time.LocalDate.of(2026, 11, 12);
+
+    donantesService.buscar(
+        new FiltroDonantes(null, null, null, null, null, desde, hasta),
+        ParametrosListado.primeraPagina());
+
+    ArgumentCaptor<CriterioDonantes> criterio = ArgumentCaptor.forClass(CriterioDonantes.class);
+    verify(donantesRepository).buscar(criterio.capture());
+    assertEquals(desde, criterio.getValue().altaDesde());
+    assertEquals(hasta, criterio.getValue().altaHasta());
+  }
+
+  @Test
+  void buscar_conAltaDesdeDespuesDeAltaHasta_lanza400SinConsultar_R1134() {
+    FiltroDonantes filtro =
+        new FiltroDonantes(
+            null,
+            null,
+            null,
+            null,
+            null,
+            java.time.LocalDate.of(2026, 11, 12),
+            java.time.LocalDate.of(2026, 11, 1));
+    ParametrosListado listado = ParametrosListado.primeraPagina();
+
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> donantesService.buscar(filtro, listado));
+
+    assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, ex.getError());
+    verify(donantesRepository, never()).buscar(any());
+  }
+
+  @Test
+  void buscar_conOrdenDesconocido_lanza400() {
+    FiltroDonantes filtro = FiltroDonantes.ninguno();
+    ParametrosListado listado = new ParametrosListado(null, null, null, "PRECIO");
+
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> donantesService.buscar(filtro, listado));
+
+    assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, ex.getError());
+    verify(donantesRepository, never()).buscar(any());
   }
 
   private Humana personaConDonanteExistente() {
@@ -357,5 +426,26 @@ class DonantesServiceTest {
         () -> {
           donantesService.obtenerPorId(idInexistente);
         });
+  }
+
+  @Test
+  void actualizarPreferencias_guardaLaPreferenciaYLaDevuelve() {
+    when(donantesRepository.findById(donanteId)).thenReturn(Optional.of(donante));
+    when(donantesRepository.save(donante)).thenReturn(donante);
+
+    DonanteOutputDTO salida = donantesService.actualizarPreferencias(donanteId, false);
+
+    assertFalse(salida.mostrarNombre());
+    assertFalse(donante.muestraNombre());
+    verify(donantesRepository).save(donante);
+  }
+
+  @Test
+  void actualizarPreferencias_deUnDonanteQueNoExiste_responde404() {
+    when(donantesRepository.findById(donanteId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        RecursoNoEncontradoException.class,
+        () -> donantesService.actualizarPreferencias(donanteId, false));
   }
 }

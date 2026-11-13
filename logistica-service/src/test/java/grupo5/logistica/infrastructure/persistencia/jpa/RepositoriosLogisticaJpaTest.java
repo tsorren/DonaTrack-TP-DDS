@@ -1,6 +1,7 @@
 package grupo5.logistica.infrastructure.persistencia.jpa;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -35,18 +36,22 @@ import grupo5.logistica.infrastructure.persistencia.jpa.repositories.SpringDataP
 import grupo5.logistica.infrastructure.persistencia.jpa.repositories.SpringDataSolicitudTransicionEntregaRepository;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.MotivoReporte;
 import grupo5.logistica.models.entities.entregas.NoRecepcion;
 import grupo5.logistica.models.entities.entregas.RegresoDeposito;
+import grupo5.logistica.models.entities.entregas.ReporteRecepcion;
 import grupo5.logistica.models.entities.entregas.RevisionEntrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.GestorDeRutas;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
@@ -61,6 +66,8 @@ import grupo5.logistica.models.repositories.IEventosEntregaRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudPlanificacionRepository;
 import grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository;
+import grupo5.logistica.testutils.EntregaMother;
+import grupo5.logistica.testutils.SeguimientoDePrueba;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -221,6 +228,68 @@ class RepositoriosLogisticaJpaTest {
   }
 
   @Test
+  void entregadasParaMapa_deberiaResolverPeriodoOrdenTopeYConteoEnLaBase() {
+    CoordenadasGeograficas punto = new CoordenadasGeograficas(-34.6, -58.4);
+    Instant desde = Instant.parse("2026-10-13T03:00:00Z");
+    Instant hasta = Instant.parse("2026-11-13T03:00:00Z");
+    Entrega vieja = EntregaMother.entregadaEl(desde, punto);
+    Entrega media = EntregaMother.entregadaEl(Instant.parse("2026-11-01T15:00:00Z"), punto);
+    Entrega nueva = EntregaMother.entregadaEl(Instant.parse("2026-11-12T15:00:00Z"), punto);
+    entregasRepository.save(vieja);
+    entregasRepository.save(nueva);
+    entregasRepository.save(media);
+    entregasRepository.save(EntregaMother.entregadaEl(hasta, punto));
+    entregasRepository.save(EntregaMother.entregadaEl(desde.minusSeconds(1), punto));
+    entregasRepository.save(EntregaMother.entregadaEl(Instant.parse("2026-11-02T15:00:00Z"), null));
+    entregasRepository.save(
+        EntregaMother.enEstadoEl(
+            EstadoEntrega.NO_RECIBIDA, Instant.parse("2026-11-03T15:00:00Z"), punto));
+
+    assertEquals(
+        List.of(nueva.getId(), media.getId(), vieja.getId()),
+        entregasRepository.findEntregadasParaMapa(desde, hasta, 10).stream()
+            .map(Entrega::getId)
+            .toList());
+    assertEquals(
+        List.of(nueva.getId(), media.getId()),
+        entregasRepository.findEntregadasParaMapa(desde, hasta, 2).stream()
+            .map(Entrega::getId)
+            .toList());
+    assertEquals(3, entregasRepository.contarEntregadasParaMapa(desde, hasta));
+  }
+
+  @Test
+  void migracionV10_deberiaCrearElIndicePorEstadoYHoraDeArribo() {
+    Integer indices =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM pg_indexes WHERE tablename = 'entrega'"
+                + " AND indexname = 'idx_entrega_estado_hora_arribo'",
+            Integer.class);
+    assertEquals(1, indices);
+  }
+
+  @Test
+  void deberiaPersistirYRecuperarRemitoYReporteDeRecepcion() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    Entrega entrega =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new Direccion("Av. Belgrano", 900, null, null, "1092", caba),
+            15.0f,
+            1.5f);
+    entrega.iniciarRuta("Chofer Juan");
+    ReporteRecepcion reporte = new ReporteRecepcion(MotivoReporte.INCOMPLETA, "Faltó una", 12.5);
+    entrega.confirmarEntrega("Comedor", List.of("https://f/1.jpg"), "R-77", reporte);
+
+    entregasRepository.save(entrega);
+    Entrega recuperada = entregasRepository.findById(entrega.getId()).orElseThrow();
+
+    assertEquals("R-77", recuperada.getNumeroRemito());
+    assertEquals(reporte, recuperada.getReporteRecepcion());
+  }
+
+  @Test
   void deberiaPersistirEntregaReutilizandoPaisProvinciaLocalidadSinDuplicarDireccion() {
     Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
     Direccion dir1 = new Direccion("Av. Rivadavia", 1200, 1, "A", "1033", caba);
@@ -254,6 +323,34 @@ class RepositoriosLogisticaJpaTest {
     EntregaEntity entityActualizada =
         springDataEntregaRepo.findById(guardada1.getId()).orElseThrow();
     assertEquals(idDireccionOriginal, entityActualizada.getDireccion().getIdDireccion());
+  }
+
+  @Test
+  void deberiaListarLasEntregasDeUnDonanteYDejarSinDonanteLasQueNoLoTraen() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    UUID donanteId = UUID.randomUUID();
+    Entrega delDonante =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new Direccion("Av. Rivadavia", 1200, null, null, "1033", caba),
+            15.0f,
+            1.5f);
+    delDonante.registrarDonante(donanteId);
+    Entrega sinDonante =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new Direccion("Av. Corrientes", 3400, null, null, "1194", caba),
+            20.0f,
+            2.0f);
+    entregasRepository.save(delDonante);
+    entregasRepository.save(sinDonante);
+
+    List<Entrega> resultado = entregasRepository.findByDonanteId(donanteId);
+
+    assertEquals(List.of(delDonante.getId()), resultado.stream().map(Entrega::getId).toList());
+    assertNull(entregasRepository.findById(sinDonante.getId()).orElseThrow().getDonanteId());
   }
 
   @Test
@@ -342,6 +439,113 @@ class RepositoriosLogisticaJpaTest {
     Chofer choferDisponible = choferesRepository.findById(chofer.getId()).orElseThrow();
     assertNull(camionDisponible.getRutaId());
     assertNull(choferDisponible.getRutaId());
+  }
+
+  @Test
+  void cancelarEntregaConRutaLaSacaDeLaParadaYPermiteOtraEntregaActivaDeLaMismaDonacion() {
+    Camion camion = camionRepository.save(new Camion("HB19AA", 80.0f, 4000.0f, 3.5f));
+    Chofer chofer = choferesRepository.save(new Chofer("Ana", "Paz", "LIC-919", "1100000019"));
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    UUID idDonacion = UUID.randomUUID();
+    Entrega cancelable =
+        entregasRepository.save(
+            new Entrega(
+                idDonacion,
+                UUID.randomUUID(),
+                new Direccion("Medrano", 951, null, null, "1179", caba),
+                10.0f,
+                1.0f));
+    Entrega otra =
+        entregasRepository.save(
+            new Entrega(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                new Direccion("Mozart", 2300, null, null, "1407", caba),
+                10.0f,
+                1.0f));
+    Ruta ruta = new Ruta(LocalDate.of(2026, 11, 20), chofer.getId(), camion.getId());
+    GestorDeRutas.agregarEntrega(ruta, cancelable);
+    GestorDeRutas.agregarEntrega(ruta, otra);
+    rutasRepository.save(ruta);
+    entregasRepository.save(cancelable);
+    entregasRepository.save(otra);
+
+    Entrega leida = entregasRepository.findByIdDonacion(idDonacion).orElseThrow();
+    Ruta rutaLeida = rutasRepository.findById(ruta.getId()).orElseThrow();
+    leida.cancelar("broker-donaciones", "NECESIDAD_DADA_DE_BAJA");
+    rutaLeida.quitarEntrega(leida.getId());
+    rutasRepository.save(rutaLeida);
+    entregasRepository.save(leida);
+
+    assertEquals(
+        List.of(otra.getId()),
+        rutasRepository.findById(ruta.getId()).orElseThrow().getEntregaIds());
+    Entrega cancelada = entregasRepository.findById(leida.getId()).orElseThrow();
+    assertEquals(EstadoEntrega.CANCELADA, cancelada.getEstadoActual());
+    assertNull(cancelada.getIdRuta());
+    assertFalse(entregasRepository.existsByIdDonacion(idDonacion));
+    assertTrue(entregasRepository.findByIdDonacion(idDonacion).isEmpty());
+
+    Entrega nueva =
+        entregasRepository.save(
+            new Entrega(
+                idDonacion,
+                UUID.randomUUID(),
+                new Direccion("Av. Rivadavia", 1200, null, null, "1033", caba),
+                10.0f,
+                1.0f));
+    assertEquals(
+        nueva.getId(), entregasRepository.findByIdDonacion(idDonacion).orElseThrow().getId());
+    assertEquals(
+        List.of(leida.getId()),
+        entregasRepository.findCanceladasByIdDonacion(idDonacion).stream()
+            .map(Entrega::getId)
+            .toList());
+
+    // Dos entregas activas de la misma donación siguen prohibidas (D7, índice parcial de V8)
+    Entrega duplicada =
+        new Entrega(
+            idDonacion,
+            UUID.randomUUID(),
+            new Direccion("Av. Rivadavia", 1300, null, null, "1033", caba),
+            10.0f,
+            1.0f);
+    assertThrows(
+        org.springframework.dao.DataIntegrityViolationException.class,
+        () -> entregasRepository.save(duplicada));
+  }
+
+  @Test
+  void unaEntregaEnLaPuertaSePersisteYCuentaComoActivaDeSuDonacion() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    UUID idDonacion = UUID.randomUUID();
+    Entrega entrega =
+        new Entrega(
+            idDonacion,
+            UUID.randomUUID(),
+            new Direccion("Medrano", 951, null, null, "1179", caba),
+            10.0f,
+            1.0f);
+    entrega.iniciarRuta("Chofer");
+    entrega.llegarAPuerta("SIMULADOR");
+    entregasRepository.save(entrega);
+
+    Entrega leida = entregasRepository.findById(entrega.getId()).orElseThrow();
+    assertEquals(EstadoEntrega.EN_PUERTA, leida.getEstadoActual());
+    assertEquals(EstadoEntrega.EN_PUERTA, leida.getHistorialEstado().getLast().estadoNuevo());
+    assertTrue(entregasRepository.existsByIdDonacion(idDonacion));
+
+    // V9: EN_PUERTA es activa para el índice único parcial
+    Entrega duplicada =
+        new Entrega(
+            idDonacion,
+            UUID.randomUUID(),
+            new Direccion("Av. Rivadavia", 1300, null, null, "1033", caba),
+            10.0f,
+            1.0f);
+    assertThrows(
+        org.springframework.dao.DataIntegrityViolationException.class,
+        () -> entregasRepository.save(duplicada));
   }
 
   @Test
@@ -521,5 +725,21 @@ class RepositoriosLogisticaJpaTest {
             "https://minio/foto_adicional_1.jpg",
             "https://minio/foto_adicional_2.jpg"),
         fotosFinalesEnDb);
+  }
+
+  @Test
+  void deberiaPersistirYRecuperarLaPosicionDelCamion() {
+    Camion camion = camionRepository.save(new Camion("GH789IJ", 50.0f, 2000.0f, 3.2f));
+    PosicionCamion posicion =
+        new PosicionCamion(-34.6037, -58.3816, Instant.parse("2026-11-08T12:00:30Z"));
+    camion.registrarPosicion(posicion);
+    camionRepository.save(camion);
+
+    assertEquals(posicion, camionRepository.findById(camion.getId()).orElseThrow().getPosicion());
+  }
+
+  @Test
+  void buscarSeguimiento_deberiaFiltrarOrdenarCortarYContarEnLaBase() {
+    SeguimientoDePrueba.verificar(entregasRepository);
   }
 }

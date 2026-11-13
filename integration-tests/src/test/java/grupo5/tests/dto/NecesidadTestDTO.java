@@ -11,4 +11,6 @@ public record NecesidadTestDTO(
     Integer cantidadNecesitada,
     String descripcion,
     String fechaInicio,
-    String fechaFin) {}
+    String fechaFin,
+    String fechaLimite,
+    String periodicidad) {}

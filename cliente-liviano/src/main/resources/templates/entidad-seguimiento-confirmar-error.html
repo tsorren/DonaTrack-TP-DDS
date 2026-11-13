@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<!--/* Raíces: el acta de recepción con errores de datos (la foto pesa más de 5 MB y falta el número
+       de remito), como la devolvería el servidor; el resumen arriba recibe el foco y enlaza a cada
+       campo, y lo escrito vuelve a su lugar. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-seguimiento-confirmar', ~{::contenido})}">
+<head>
+  <title>Revisá el acta - Confirmar recepción - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{entidad-seguimiento-confirmar :: entrega(null,
+            ~{entidad-seguimiento-confirmar :: acta(true, false)})}"></th:block>
+</th:block>
+</body>
+</html>

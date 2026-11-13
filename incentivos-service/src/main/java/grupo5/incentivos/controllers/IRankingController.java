@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface IRankingController {
   ResponseEntity<RankingMensualDTO> obtenerUltimoRanking();
 
-  ResponseEntity<List<RankingMensualDTO>> obtenerHistorial();
+  ResponseEntity<List<RankingMensualDTO>> obtenerHistorial(
+      @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size);
 
   ResponseEntity<RankingMensualDTO> calcularRanking(
       @RequestParam(required = false)

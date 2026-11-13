@@ -1,0 +1,150 @@
+/* Bloque noticias (D33, B2-14): las noticias del donante. Una lista (`.noticias`) de noticias
+   (`.noticia`) por fecha, la más nueva arriba, una por renglón entre filetes finos (estética de K);
+   la sin leer (`.noticia--sin-leer`) con un punto verde y su marca. Se carga en la capa `bloques`
+   desde app.css. La disposición de cada pantalla (la franja de tierra de las sin leer, el libro de
+   las leídas, las dos columnas del detalle) queda en su hoja. Catálogo: docs/interfaz/componentes.md. */
+.noticias {
+  display: grid;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+/* Una noticia por renglón, entre filetes finos, como los avisos de K (estética de la variante K,
+   2026-11-08; antes, estaciones colgadas de una línea paja). La sin leer lleva un punto verde. */
+.noticia {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  padding: 0.625rem 0 0.625rem 1.125rem;
+  border-bottom: 1px solid var(--color-filete);
+}
+
+.noticia:last-child {
+  border-bottom: 0;
+}
+
+.noticia--sin-leer::before {
+  content: "";
+  position: absolute;
+  top: 1.125rem;
+  left: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-acento);
+}
+
+.noticia-marca {
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: var(--color-pendiente-fondo);
+  color: var(--color-pendiente-texto);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.noticia--sin-leer .noticia-marca {
+  background: var(--color-acento-claro);
+  color: var(--color-acento-hondo);
+}
+
+/* A la vista: la marca y la fecha, el texto, y el estado con la donación; para el lector, en el
+   orden del código. */
+.noticia-cuando {
+  order: 1;
+  font-size: 0.9375rem;
+}
+
+.noticia-texto {
+  order: 2;
+}
+
+.noticia-estado,
+.noticia-donacion {
+  order: 3;
+}
+
+.noticia-texto {
+  flex: 1 1 100%;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-tinta);
+  text-underline-offset: 0.25em;
+}
+
+/* Sin enlace (el texto de una noticia de solo lectura): no hace falta el alto de un toque. */
+span.noticia-texto {
+  min-height: 0;
+}
+
+.noticia--sin-leer .noticia-texto {
+  font-weight: 700;
+}
+
+.noticia-estado {
+  font-size: 0.9375rem;
+}
+
+.noticia-donacion {
+  font-size: 0.9375rem;
+}
+
+.noticia-donacion::before {
+  content: "· ";
+}
+
+/* Las leídas, desde la tableta: un libro de registro, una fila por aviso (cuándo, qué pasó, estado
+   y donación). La marca "Leída" queda solo para el lector: ya la dice el título del grupo. */
+@media (min-width: 53.75em) {
+  .noticias[data-forma="libro"] {
+    gap: 0;
+  }
+
+  .noticias[data-forma="libro"] .noticia {
+    display: grid;
+    grid-template-columns: minmax(0, 10.5rem) minmax(0, 1fr) minmax(0, 15rem);
+    grid-template-areas:
+      "cuando texto estado"
+      "cuando texto donacion";
+    align-items: center;
+    column-gap: 1.5rem;
+    padding: 0.625rem 0;
+  }
+
+  .noticias[data-forma="libro"] .noticia-marca {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .noticias[data-forma="libro"] .noticia-cuando {
+    grid-area: cuando;
+  }
+
+  .noticias[data-forma="libro"] .noticia-texto {
+    grid-area: texto;
+  }
+
+  .noticias[data-forma="libro"] .noticia-estado {
+    grid-area: estado;
+    align-self: end;
+  }
+
+  .noticias[data-forma="libro"] .noticia-donacion {
+    grid-area: donacion;
+    align-self: start;
+  }
+
+  .noticias[data-forma="libro"] .noticia-donacion::before {
+    content: none;
+  }
+}

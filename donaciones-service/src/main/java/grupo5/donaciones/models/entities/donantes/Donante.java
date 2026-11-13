@@ -5,12 +5,17 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.privacidad.Anonimizable;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 /** Rol de donante. Su identidad es la de la {@link Persona}: {@code id == personaId}. */
 public class Donante implements Anonimizable, AggregateRoot {
   private final UUID id;
   private boolean activo;
+  private boolean mostrarNombre = true;
+  // La del primer registro como donante: una reactivación no la cambia (R11-01)
+  private LocalDateTime fechaAlta;
 
   public Donante(UUID personaId) {
     if (personaId == null) {
@@ -18,6 +23,19 @@ public class Donante implements Anonimizable, AggregateRoot {
     }
     this.id = personaId;
     this.activo = true;
+    this.fechaAlta = LocalDateTime.now(ZoneId.systemDefault());
+  }
+
+  /** Reconstitución con la fecha de alta guardada (adaptador JPA). */
+  public Donante(UUID personaId, boolean activo, boolean mostrarNombre, LocalDateTime fechaAlta) {
+    this(personaId, activo, mostrarNombre);
+    if (fechaAlta != null) {
+      this.fechaAlta = fechaAlta;
+    }
+  }
+
+  public LocalDateTime getFechaAlta() {
+    return this.fechaAlta;
   }
 
   public Donante(Persona persona) {
@@ -26,8 +44,24 @@ public class Donante implements Anonimizable, AggregateRoot {
 
   /** Constructor de reconstitución para el adaptador JPA */
   public Donante(UUID personaId, boolean activo) {
+    this(personaId, activo, true);
+  }
+
+  public Donante(UUID personaId, boolean activo, boolean mostrarNombre) {
     this(personaId);
     this.activo = activo;
+    this.mostrarNombre = mostrarNombre;
+  }
+
+  /**
+   * Si la entidad que recibe sus donaciones ve su nombre (HB-20). Vale también para las pasadas.
+   */
+  public boolean muestraNombre() {
+    return this.mostrarNombre;
+  }
+
+  public void mostrarNombre(boolean mostrar) {
+    this.mostrarNombre = mostrar;
   }
 
   public UUID personaId() {

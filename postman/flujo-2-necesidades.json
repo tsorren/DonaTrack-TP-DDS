@@ -2,9 +2,58 @@
   "info": {
     "_postman_id": "donatrack-flujo-02-necesidades",
     "name": "Flujo 2 - Necesidades: Extraordinaria vs Recurrente (donaciones-service)",
-    "description": "Autocontenido (crea su propia Entidad Beneficiaria y Subcategoría). Cubre los dos tipos de Necesidad y el bug conocido: RECURRENTE sin fechaInicio/fechaFin tira 500 (NPE no controlada) en vez de 400.",
+    "description": "Autocontenido (crea su propia Entidad Beneficiaria y Subcategoría). Cubre los dos tipos de Necesidad: la EXTRAORDINARIA lleva fechaLimite y la RECURRENTE periodicidad (HB-18). Una RECURRENTE sin periodicidad responde 400 (antes tiraba 500 por una NPE).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Token de la cuenta de pruebas (SPEC-06 E2-07). Inactivo si pruebasClientSecret está vacío: con la",
+          "// seguridad apagada los pedidos salen como siempre. Para encenderlo: newman --env-var pruebasClientSecret=...",
+          "// o cargar la variable de colección. El token solo se manda a NUESTROS servicios, nunca al proveedor",
+          "// logístico externo (flujo 9): es un ADMIN. Se compara la URL entera, no un prefijo suelto.",
+          "const pruebasSecreto = pm.variables.get('pruebasClientSecret');",
+          "const propias = ['baseUrl', 'donacionesUrl', 'notificacionesUrl', 'incentivosUrl', 'logisticaUrl']",
+          "  .map((v) => pm.variables.get(v)).filter(Boolean);",
+          "const destino = pm.variables.replaceIn(pm.request.url.toString());",
+          "const esPropia = (base) => destino === base || destino.startsWith(base + '/') || destino.startsWith(base + '?');",
+          "if (pruebasSecreto && propias.some(esPropia)) {",
+          "  const poner = (token) => pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + token });",
+          "  const vence = Number(pm.collectionVariables.get('pruebasTokenVence') || 0);",
+          "  const guardado = pm.collectionVariables.get('pruebasToken');",
+          "  if (guardado && Date.now() < vence - 30000) {",
+          "    poner(guardado);",
+          "  } else {",
+          "    pm.sendRequest({",
+          "      url: pm.variables.get('keycloakTokenUrl') || 'http://localhost:8180/realms/donatrack/protocol/openid-connect/token',",
+          "      method: 'POST',",
+          "      header: { 'Content-Type': 'application/x-www-form-urlencoded' },",
+          "      body: {",
+          "        mode: 'urlencoded',",
+          "        urlencoded: [",
+          "          { key: 'grant_type', value: 'client_credentials' },",
+          "          { key: 'client_id', value: pm.variables.get('pruebasClientId') || 'donatrack-pruebas' },",
+          "          { key: 'client_secret', value: pruebasSecreto },",
+          "        ],",
+          "      },",
+          "    }, (error, res) => {",
+          "      if (error || res.code !== 200) {",
+          "        throw new Error('No se pudo obtener el token de pruebas: ' + (error || 'HTTP ' + res.code));",
+          "      }",
+          "      const cuerpo = res.json();",
+          "      pm.collectionVariables.set('pruebasToken', cuerpo.access_token);",
+          "      pm.collectionVariables.set('pruebasTokenVence', String(Date.now() + cuerpo.expires_in * 1000));",
+          "      poner(cuerpo.access_token);",
+          "    });",
+          "  }",
+          "}"
+        ]
+      }
+    }
+  ],
   "variable": [
     {
       "key": "baseUrl",
@@ -33,6 +82,18 @@
     {
       "key": "necesidadRecurrenteId",
       "value": ""
+    },
+    {
+      "key": "pruebasClientSecret",
+      "value": ""
+    },
+    {
+      "key": "pruebasClientId",
+      "value": "donatrack-pruebas"
+    },
+    {
+      "key": "keycloakTokenUrl",
+      "value": "http://localhost:8180/realms/donatrack/protocol/openid-connect/token"
     }
   ],
   "item": [
@@ -225,7 +286,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad extraordinaria QA\",\n  \"fechaInicio\": \"2026-06-18\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad extraordinaria QA\",\n  \"fechaInicio\": \"2026-06-18\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/necesidades",
@@ -298,7 +359,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 20,\n  \"descripcion\": \"Necesidad recurrente QA\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaFin\": \"2026-12-31\"\n}"
+              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 20,\n  \"descripcion\": \"Necesidad recurrente QA\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"periodicidad\": \"MENSUAL\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/necesidades",
@@ -335,7 +396,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 5,\n  \"descripcion\": \"Necesidad recurrente con fecha futura\",\n  \"fechaInicio\": \"2099-01-01\",\n  \"fechaFin\": \"2099-12-31\"\n}"
+              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 5,\n  \"descripcion\": \"Necesidad recurrente con fecha futura\",\n  \"fechaInicio\": \"2099-01-01\",\n  \"periodicidad\": \"MENSUAL\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/necesidades",
@@ -351,13 +412,13 @@
           }
         },
         {
-          "name": "3. [Bug conocido] Recurrente sin fechas → 500, no 400",
+          "name": "3. [Negativo] Recurrente sin periodicidad → 400",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('BUG: hoy responde 500 (debería ser 400)', function () { pm.response.to.have.status(500); });"
+                  "pm.test('Status 400 Bad Request', function () { pm.response.to.have.status(400); });"
                 ],
                 "type": "text/javascript"
               }
@@ -385,7 +446,7 @@
                 "necesidades"
               ]
             },
-            "description": "Hoy tira NullPointerException no controlada (Period.between con fechaInicio/fechaFin null) → 500. Este test documenta el bug: si algún día lo arreglan, este test empieza a fallar (esperando 500) y hay que actualizarlo a 400. Ver Mapa de Flujos DonaTrack, sección Hallazgos transversales."
+            "description": "Sin periodicidad (SEMANAL, QUINCENAL o MENSUAL) una recurrente responde 400 (ERR-VAL-512). Antes tiraba una NullPointerException → 500; lo corrigió HB-18 (ADR 20261102 del ciclo de vida de la necesidad)."
           }
         },
         {

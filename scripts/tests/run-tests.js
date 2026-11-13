@@ -66,6 +66,7 @@ console.log('\n[1] checkAgentsCanonicity');
 { const tmp = makeTemp(); try {
   write(tmp, 'AGENTS.md', '# AGENTS');
   write(tmp, 'common-lib/AGENTS.md', '# Shared Kernel nested');
+  write(tmp, 'cliente-liviano/AGENTS.md', '# Cliente liviano nested'); // E6: allowlisted nested required
   write(tmp, 'docs/IA/history/AGENTS-v3.5.md', '# historical');
   assert('1.1  root + common-lib nested + history allowed → no FAIL', noFail(checkAgentsCanonicity(tmp)));
 } finally { cleanup(tmp); } }
@@ -101,6 +102,7 @@ console.log('\n[1] checkAgentsCanonicity');
 { const tmp = makeTemp(); try {
   write(tmp, 'AGENTS.md', '# AGENTS');
   write(tmp, 'common-lib/AGENTS.md', '# Shared Kernel nested');
+  write(tmp, 'cliente-liviano/AGENTS.md', '# Cliente liviano nested');
   assert('1.7  allowlisted nested present → AGENTS_ALLOWLISTED_MISSING PASS', !hasFail(checkAgentsCanonicity(tmp), 'AGENTS_ALLOWLISTED_MISSING'));
 } finally { cleanup(tmp); } }
 
@@ -185,6 +187,7 @@ console.log('\n[4] runAllChecks — exit code aggregation');
 { const tmp = makeTemp(); try {
   write(tmp, 'AGENTS.md', 'evaluator.md ref');
   write(tmp, 'common-lib/AGENTS.md', '# Shared Kernel nested'); // Wave 8: allowlisted nested required
+  write(tmp, 'cliente-liviano/AGENTS.md', '# Cliente liviano nested'); // E6: allowlisted nested required
   write(tmp, 'docs/IA/review/evaluator.md', '# Evaluator');
   write(tmp, 'docs/clean.md', '# Clean');
   write(tmp, 'docs/context-index.md', '# No code spans');

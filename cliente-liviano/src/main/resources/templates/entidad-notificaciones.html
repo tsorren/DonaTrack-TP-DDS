@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!--/* Raíces, Notificaciones de la entidad (RF-13), según su ficha de flujo
+       (docs/interfaz/flujos/raices-entidad-navegable.md, sección 4.3), con la estructura de la bandeja
+       de GitHub (usuario, ronda 2026-11-10): arriba, la cuenta de sin leer con su fecha; debajo, la
+       bandeja del componente buzón (componentes/buzon): «Todas | Sin leer», la búsqueda, Categoría,
+       Ordenar y Agrupar (get con hx-boost), y la lista con «Seleccionar todas», «Marcar todas como
+       leídas» y una fila por novedad: qué pasó (y a dónde ir), a qué está asociada (Entregas en
+       camino, En tu puerta, Donaciones recibidas, Necesidades, Problemas) y hace cuánto. "Ahora" es
+       el 15 de octubre de 2026, 18:30; los ejemplos cubren minutos, horas, días, semanas y el mes
+       anterior. Marcar es un formulario real (POST) que lleva a entidad-notificaciones-leidas: la
+       misma bandeja, todas leídas, con el aviso arriba (en el sistema, Envios deja el aviso en
+       #avisos y vuelve a la misma página de la bandeja). Las novedades vienen del controller de a
+       una página de 20 (R11-14, ficha docs/interfaz/flujos/r11-p1-notificaciones.md: bandeja, de la
+       maqueta o de Notificaciones, que resuelve la página, "Sin leer", la búsqueda, la categoría y
+       el orden), con las sin leer de la cuenta y todas las categorías del rol; paginador. Leer no confirma nada: las que esperan en la
+       puerta conservan su botón «Confirmar recepción».
+       ?escenario=vacio, nada-sin-leer, lento y error. Enviando ("Marcando…") y el error al marcar se
+       describen en la ficha y no se dibujan.
+       Fragmento hoja(accion): la pantalla entera; accion es '' (la bandeja) o 'leidas'. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-notificaciones', ~{::contenido})}">
+<head>
+  <title>Notificaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{entidad-notificaciones :: hoja('')}"></th:block>
+</th:block>
+
+<!--/* tema: la categoría (temas); boton y que: la que espera en la puerta, con su botón aunque esté
+       leída; nota: lo que ya se confirmó. */-->
+<th:block th:fragment="hoja(accion)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             marcadas=${accion == 'leidas' or escenario == 'nada-sin-leer' ? 'todas' : ''},
+             conDatos=${escenario != 'vacio' and escenario != 'error' and escenario != 'lento'},
+             conFiltros=${param.ver != null or (param.buscar != null and !#strings.isEmpty(#strings.trim(param.buscar[0])))
+                 or (param.tema != null and param.tema[0] != '')},
+             cuentaVacia=${bandeja.pagina.total == 0 and !conFiltros},
+             sinLeer=${marcadas == 'todas' ? 0 : bandeja.sinLeer}">
+  <div class="pila" data-espacio="4">
+    <header class="cabecera-entidad">
+      <p class="rotulo">Notificaciones</p>
+      <h1>Tus <em>novedades</em></h1>
+      <p th:if="${conDatos and sinLeer > 0}"
+         th:text="|${sinLeer} sin leer. Al ${bandeja.actualizado}.|">3 sin leer. Al 15 de
+        octubre de 2026, 18:30.</p>
+      <p th:if="${conDatos and sinLeer == 0}"
+         th:text="|No tenés novedades sin leer. Al ${bandeja.actualizado}.|">No tenés novedades sin leer. Al 15 de octubre de 2026,
+        18:30.</p>
+    </header>
+
+    <!--/* El éxito, con el foco; en el sistema, en la región aria-live del layout. */-->
+    <section th:if="${accion == 'leidas'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
+             aria-labelledby="leidas-titulo">
+      <h2 id="leidas-titulo">Marcaste las novedades como leídas.</h2>
+      <p>Las entregas que esperan en tu puerta siguen esperando tu confirmación.</p>
+    </section>
+
+    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tus novedades…</p>
+    <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo" aria-busy="true"></div>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{piezas-entidad :: error('No pudimos cargar tus novedades.',
+               'Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,',
+               '/entidad-notificaciones')}"></section>
+    </th:block>
+
+    <section th:if="${escenario == 'vacio' or (conDatos and cuentaVacia)}" class="vacio"
+             aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no tenés novedades.</h2>
+      <p>Te avisamos acá cuando se asigne una donación a tu organización, cuando salga hacia vos, si tiene un
+        problema y cuando llegue a tu puerta.</p>
+    </section>
+
+    <th:block th:if="${conDatos and !cuentaVacia}">
+      <div th:replace="~{componentes/buzon :: pagina(${accion == 'leidas' ? '/entidad-notificaciones-leidas' : '/entidad-notificaciones'},
+           '/entidad-notificaciones-leidas', ${bandeja}, ${sinLeer}, ${paginador}, ${marcadas}, '')}"></div>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

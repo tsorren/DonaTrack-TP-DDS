@@ -10,11 +10,14 @@ import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument
 import grupo5.logistica.infrastructure.persistencia.mongo.mappers.RutaMongoMapper;
 import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataEntregaMongoRepository;
 import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataRutaMongoRepository;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import org.springframework.context.annotation.Profile;
@@ -75,6 +78,14 @@ public class RutasRepositoryMongoAdapter
   }
 
   @Override
+  public List<Ruta> findByEstado(EstadoRuta estado) {
+    if (estado == null) {
+      return List.of();
+    }
+    return aDominio(springDataRepo.findByEstado(estado));
+  }
+
+  @Override
   public List<Ruta> findByCamionId(UUID camionId) {
     if (camionId == null) {
       return List.of();
@@ -88,5 +99,13 @@ public class RutasRepositoryMongoAdapter
       return List.of();
     }
     return aDominio(springDataRepo.findByIdCamionAndFecha(camionId, fecha));
+  }
+
+  @Override
+  public List<Ruta> findByIds(Collection<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    return aDominio(springDataRepo.findAllById(Set.copyOf(ids)));
   }
 }

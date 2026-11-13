@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<!--/* Los datos de ejemplo de la persona que dona, Martina Ruiz (ficha raices-misiones.md, "Datos de
+       maqueta"), escritos una sola vez para sus pantallas de templates/persona/. No es una pantalla:
+       su nombre no empieza con un rol. Sintéticos y coherentes con Misiones e insignias y con la
+       ficha de la entidad: donaciones chicas de alimentos, ropa y útiles, una por mes desde junio
+       (Racha Inicial, completa el 3 de agosto), la tercera categoría el 2 de septiembre (Explorador y
+       el ascenso a Sostenedor), los 5 kg de arroz que recibió el Comedor Barrio Ejemplo el 9 de
+       octubre y las 12 prendas de ropa de abrigo, su donación más grande desde el 2 de septiembre
+       (Gran Aporte, 12 de 50 bienes). "Hoy" es el jueves 15 de octubre de 2026, 16:25.
+       Fragmentos:
+       - persona(vista): las donaciones (con la misma forma que las de viaje-datos, para usar las
+         piezas del donante: huerta :: planta, recorrido, el detalle), las misiones, los avisos y
+         escenario (?escenario=); adentro, la vista de la pantalla.
+       - aviso(a, sinLeer): una noticia; de una donación (a.d y su carta a.i) o de una misión (a.m). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="persona(vista)"
+    th:with="pendiente=${estados[0]}, enCamino=${estados[1]}, entregada=${estados[2]},
+             hecho=${pasos[0].avance}, actual=${pasos[3].avance}, falta=${pasos[4].avance},
+             escenario=${param.escenario != null ? param.escenario[0] : ''},
+             donaciones=${ {
+      {clave: 'fideos', numero: 8, titulo: 'Fideos secos', cantidad: '3 kg',
+       categoria: 'cat-alimentos', categoriaTexto: 'Alimentos', destino: null,
+       donada: '14 de octubre de 2026', llego: null, estado: pendiente,
+       nota: 'En el depósito, espera destino', foto: null, fotoAlt: null,
+       pasos: { {nombre: 'En depósito', detalle: '14 de octubre', avance: actual},
+                {nombre: 'Asignada', detalle: 'Pendiente', avance: falta},
+                {nombre: 'Lista para entregar', detalle: 'Pendiente', avance: falta},
+                {nombre: 'En camino', detalle: 'Pendiente', avance: falta},
+                {nombre: 'Entregada', detalle: 'Pendiente', avance: falta} },
+       cartas: { {texto: 'Recibimos tu donación en el depósito.', cuando: '14 de octubre, 18:10', fecha: '2026-10-14T18:10'} } },
+
+      {clave: 'leche', numero: 7, titulo: 'Leche en polvo', cantidad: '4 unidades',
+       categoria: 'cat-alimentos', categoriaTexto: 'Alimentos', destino: 'Comedor Barrio Ejemplo',
+       donada: '13 de octubre de 2026', llego: null, estado: pendiente,
+       nota: 'Asignada, espera el camión', foto: null, fotoAlt: null,
+       seguimiento: 'Sale del depósito el 16 de octubre.',
+       pasos: { {nombre: 'En depósito', detalle: '13 de octubre', avance: hecho},
+                {nombre: 'Asignada', detalle: '14 de octubre', avance: actual},
+                {nombre: 'Lista para entregar', detalle: 'Pendiente', avance: falta},
+                {nombre: 'En camino', detalle: 'Pendiente', avance: falta},
+                {nombre: 'Entregada', detalle: 'Pendiente', avance: falta} },
+       cartas: { {texto: 'Asignamos tu leche en polvo a una necesidad de Comedor Barrio Ejemplo.', cuando: '14 de octubre, 12:40', fecha: '2026-10-14T12:40'},
+                 {texto: 'Recibimos tu donación en el depósito.', cuando: '13 de octubre, 11:30', fecha: '2026-10-13T11:30'} } },
+
+      {clave: 'ropa', numero: 6, titulo: 'Ropa de abrigo', cantidad: '12 prendas',
+       categoria: 'cat-ropa', categoriaTexto: 'Ropa', destino: 'Merendero Ejemplo Sur',
+       donada: '7 de octubre de 2026', llego: null, estado: enCamino,
+       nota: 'Salió hoy a las 11:10', foto: null, fotoAlt: null,
+       seguimiento: 'El camión ya pasó la mitad del camino. Posición aproximada, actualizada hoy a las 16:25.',
+       pasos: { {nombre: 'En depósito', detalle: '7 de octubre', avance: hecho},
+                {nombre: 'Asignada', detalle: '9 de octubre', avance: hecho},
+                {nombre: 'Lista para entregar', detalle: '14 de octubre', avance: hecho},
+                {nombre: 'En camino', detalle: 'Hoy, 11:10', avance: actual},
+                {nombre: 'Entregada', detalle: 'Pendiente', avance: falta} },
+       cartas: { {texto: 'El camión salió a entregar tu ropa de abrigo a Merendero Ejemplo Sur.', cuando: 'Hoy, 11:10', fecha: '2026-10-15T11:10'},
+                 {texto: 'Tu ropa de abrigo quedó lista para entregar.', cuando: '14 de octubre, 15:00', fecha: '2026-10-14T15:00'},
+                 {texto: 'Asignamos tu ropa de abrigo a una necesidad de Merendero Ejemplo Sur.', cuando: '9 de octubre, 10:05', fecha: '2026-10-09T10:05'},
+                 {texto: 'Recibimos tu donación en el depósito.', cuando: '7 de octubre, 17:30', fecha: '2026-10-07T17:30'} } },
+
+      {clave: 'arroz', numero: 5, titulo: 'Arroz', cantidad: '5 kg',
+       categoria: 'cat-alimentos', categoriaTexto: 'Alimentos', destino: 'Comedor Barrio Ejemplo',
+       donada: '2 de octubre de 2026', llego: '9 de octubre de 2026', estado: entregada,
+       nota: 'Llegó el 9 de octubre', foto: '/img/ejemplo-entrega.svg',
+       fotoAlt: 'Los paquetes de arroz sobre la mesa de la cocina del comedor',
+       pasos: { {nombre: 'En depósito', detalle: '2 de octubre', avance: hecho},
+                {nombre: 'Asignada', detalle: '5 de octubre', avance: hecho},
+                {nombre: 'Lista para entregar', detalle: '8 de octubre', avance: hecho},
+                {nombre: 'En camino', detalle: '9 de octubre', avance: hecho},
+                {nombre: 'Entregada', detalle: '9 de octubre', avance: hecho} },
+       cartas: { {texto: 'Comedor Barrio Ejemplo confirmó que recibió tu arroz y sumó una foto.', cuando: '9 de octubre, 13:15', fecha: '2026-10-09T13:15'},
+                 {texto: 'El camión salió a entregar tu arroz.', cuando: '9 de octubre, 9:20', fecha: '2026-10-09T09:20'},
+                 {texto: 'Asignamos tu arroz a una necesidad de Comedor Barrio Ejemplo.', cuando: '5 de octubre, 10:00', fecha: '2026-10-05T10:00'} } },
+
+      {clave: 'utiles', numero: 4, titulo: 'Útiles escolares', cantidad: '1 caja',
+       categoria: 'cat-escolares', categoriaTexto: 'Útiles escolares', destino: 'Escuela Ejemplo N.º 12',
+       donada: '2 de septiembre de 2026', llego: '8 de septiembre de 2026', estado: entregada,
+       nota: 'Llegó el 8 de septiembre', foto: '/img/ejemplo-entrega.svg',
+       fotoAlt: 'La caja de útiles abierta sobre un pupitre de la escuela',
+       pasos: { {nombre: 'En depósito', detalle: '2 de septiembre', avance: hecho},
+                {nombre: 'Asignada', detalle: '3 de septiembre', avance: hecho},
+                {nombre: 'Lista para entregar', detalle: '7 de septiembre', avance: hecho},
+                {nombre: 'En camino', detalle: '8 de septiembre', avance: hecho},
+                {nombre: 'Entregada', detalle: '8 de septiembre', avance: hecho} },
+       cartas: { {texto: 'Escuela Ejemplo N.º 12 confirmó que recibió tus útiles escolares y sumó una foto.', cuando: '8 de septiembre, 12:30', fecha: '2026-09-08T12:30'},
+                 {texto: 'El camión salió a entregar tus útiles escolares.', cuando: '8 de septiembre, 9:00', fecha: '2026-09-08T09:00'},
+                 {texto: 'Asignamos tus útiles escolares a una necesidad de Escuela Ejemplo N.º 12.', cuando: '3 de septiembre, 11:15', fecha: '2026-09-03T11:15'} } },
+
+      {clave: 'galletitas', numero: 3, titulo: 'Galletitas', cantidad: '2 kg',
+       categoria: 'cat-alimentos', categoriaTexto: 'Alimentos', destino: 'Merendero Ejemplo Sur',
+       donada: '3 de agosto de 2026', llego: '7 de agosto de 2026', estado: entregada,
+       nota: 'Llegó el 7 de agosto', foto: '/img/ejemplo-entrega.svg',
+       fotoAlt: 'Los paquetes de galletitas en un estante del merendero',
+       pasos: { {nombre: 'En depósito', detalle: '3 de agosto', avance: hecho},
+                {nombre: 'Asignada', detalle: '4 de agosto', avance: hecho},
+                {nombre: 'Lista para entregar', detalle: '6 de agosto', avance: hecho},
+                {nombre: 'En camino', detalle: '7 de agosto', avance: hecho},
+                {nombre: 'Entregada', detalle: '7 de agosto', avance: hecho} },
+       cartas: { {texto: 'Merendero Ejemplo Sur confirmó que recibió tus galletitas y sumó una foto.', cuando: '7 de agosto, 17:40', fecha: '2026-08-07T17:40'},
+                 {texto: 'El camión salió a entregar tus galletitas.', cuando: '7 de agosto, 10:30', fecha: '2026-08-07T10:30'},
+                 {texto: 'Asignamos tus galletitas a una necesidad de Merendero Ejemplo Sur.', cuando: '4 de agosto, 9:50', fecha: '2026-08-04T09:50'} } },
+
+      {clave: 'frazadas', numero: 2, titulo: 'Frazadas', cantidad: '2 unidades',
+       categoria: 'cat-ropa', categoriaTexto: 'Ropa', destino: 'Hogar Casa Ejemplo',
+       donada: '6 de julio de 2026', llego: '10 de julio de 2026', estado: entregada,
+       nota: 'Llegó el 10 de julio', foto: '/img/ejemplo-entrega-ropa.svg',
+       fotoAlt: 'Las dos frazadas dobladas sobre un sillón del hogar',
+       pasos: { {nombre: 'En depósito', detalle: '6 de julio', avance: hecho},
+                {nombre: 'Asignada', detalle: '7 de julio', avance: hecho},
+                {nombre: 'Lista para entregar', detalle: '9 de julio', avance: hecho},
+                {nombre: 'En camino', detalle: '10 de julio', avance: hecho},
+                {nombre: 'Entregada', detalle: '10 de julio', avance: hecho} },
+       cartas: { {texto: 'Hogar Casa Ejemplo confirmó que recibió tus frazadas y sumó una foto.', cuando: '10 de julio, 16:05', fecha: '2026-07-10T16:05'},
+                 {texto: 'El camión salió a entregar tus frazadas.', cuando: '10 de julio, 9:45', fecha: '2026-07-10T09:45'},
+                 {texto: 'Asignamos tus frazadas a una necesidad de Hogar Casa Ejemplo.', cuando: '7 de julio, 12:00', fecha: '2026-07-07T12:00'} } },
+
+      {clave: 'lentejas', numero: 1, titulo: 'Lentejas secas', cantidad: '4 kg',
+       categoria: 'cat-alimentos', categoriaTexto: 'Alimentos', destino: 'Comedor Barrio Ejemplo',
+       donada: '5 de junio de 2026', llego: '9 de junio de 2026', estado: entregada,
+       nota: 'Llegó el 9 de junio', foto: '/img/ejemplo-entrega.svg',
+       fotoAlt: 'La bolsa de lentejas junto a la olla grande del comedor',
+       pasos: { {nombre: 'En depósito', detalle: '5 de junio', avance: hecho},
+                {nombre: 'Asignada', detalle: '6 de junio', avance: hecho},
+                {nombre: 'Lista para entregar', detalle: '8 de junio', avance: hecho},
+                {nombre: 'En camino', detalle: '9 de junio', avance: hecho},
+                {nombre: 'Entregada', detalle: '9 de junio', avance: hecho} },
+       cartas: { {texto: 'Comedor Barrio Ejemplo confirmó que recibió tus lentejas y sumó una foto.', cuando: '9 de junio, 15:20', fecha: '2026-06-09T15:20'},
+                 {texto: 'El camión salió a entregar tus lentejas.', cuando: '9 de junio, 9:10', fecha: '2026-06-09T09:10'},
+                 {texto: 'Asignamos tus lentejas a una necesidad de Comedor Barrio Ejemplo.', cuando: '6 de junio, 10:40', fecha: '2026-06-06T10:40'} } }
+    } }">
+  <th:block th:replace="~{persona/datos-persona :: conAvisos(${vista})}"></th:block>
+</th:block>
+
+<!--/* Los avisos de la persona, del más nuevo al más viejo: los de sus donaciones (d, con la carta i)
+       y los de sus misiones (m), que la bandeja de la empresa no tiene (RF-08; ficha de misiones,
+       preguntas abiertas). Los 3 primeros, sin leer. Las misiones, una lista por categoría con su
+       estado, para el inicio; la pantalla de Misiones escribe las suyas. */-->
+<th:block th:fragment="conAvisos(vista)"
+    th:with="avisos=${ {
+        {d: donaciones.^[clave == 'ropa'], i: 0},
+        {d: donaciones.^[clave == 'fideos'], i: 0},
+        {d: donaciones.^[clave == 'ropa'], i: 1},
+        {d: donaciones.^[clave == 'leche'], i: 0},
+        {d: donaciones.^[clave == 'leche'], i: 1},
+        {d: donaciones.^[clave == 'arroz'], i: 0},
+        {d: donaciones.^[clave == 'ropa'], i: 2},
+        {d: donaciones.^[clave == 'arroz'], i: 1},
+        {m: 'Gran Aporte', texto: 'Tu ropa de abrigo sumó 12 bienes a Gran Aporte: 12 de 50.', cuando: '7 de octubre, 17:35', fecha: '2026-10-07T17:35'},
+        {d: donaciones.^[clave == 'ropa'], i: 3},
+        {d: donaciones.^[clave == 'arroz'], i: 2},
+        {d: donaciones.^[clave == 'utiles'], i: 0},
+        {m: 'Explorador', texto: 'Completaste Explorador y pasaste a donante Sostenedor. Tu insignia ya está en Misiones.', cuando: '2 de septiembre, 18:00', fecha: '2026-09-02T18:00'},
+        {m: 'Racha Inicial', texto: 'Completaste Racha Inicial: 3 meses seguidos donando. Tu insignia ya está en Misiones.', cuando: '3 de agosto, 18:00', fecha: '2026-08-03T18:00'} } },
+             sinLeer=3,
+             proxima=${ {nombre: 'Gran Aporte', categoria: 'Sostenedor', pide: 'Una donación con al menos 50 bienes',
+                         progreso: 12, objetivo: 50, cuenta: '12 de 50 bienes',
+                         nota: 'Tu ropa de abrigo, la donación más grande desde el 2 de septiembre.'} }">
+  <th:block th:replace="${vista}"></th:block>
+</th:block>
+
+<!--/* Una noticia, con su marca de leída, el sello y el enlace: el de su donación o, si es de una
+       misión, el sello de hecho y el enlace a Misiones. Hoy es el 15 de octubre. */-->
+<li th:fragment="aviso(a, sinLeer)" class="noticia" th:classappend="${sinLeer} ? 'noticia--sin-leer'"
+    th:with="esMision=${a['m'] != null},
+             c=${esMision ? a : a.d.cartas[a.i]}, dia=${#strings.substring(c.fecha, 0, 10)},
+             hora=${#strings.substringAfter(c.cuando, ', ')}">
+  <span class="noticia-marca" th:text="${sinLeer} ? 'Sin leer' : 'Leída'">Sin leer</span>
+  <span th:if="${esMision}" class="estado noticia-estado" data-estado="entregada">
+    <th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block>
+    <span>Misiones</span>
+  </span>
+  <span th:unless="${esMision}" class="estado noticia-estado" th:data-estado="${a.d.estado.tono}">
+    <th:block th:replace="~{componentes/sello :: sello(${a.d.estado.tono})}"></th:block>
+    <span th:text="${a.d.estado.texto}">En camino</span>
+  </span>
+  <a class="noticia-texto" href="/donante-donaciones-detalle"
+     th:href="${esMision} ? @{/donante-misiones} : @{/donante-donaciones-detalle(donacion=${a.d.clave})}"
+     th:text="${c.texto}">El camión salió a entregar tu ropa de abrigo a Merendero Ejemplo Sur.</a>
+  <time class="noticia-cuando" th:datetime="${c.fecha}"
+        th:text="${dia == '2026-10-15' ? 'Hoy, ' + hora : (dia == '2026-10-14' ? 'Ayer, ' + hora : c.cuando)}">Hoy,
+    11:10</time>
+  <span class="noticia-donacion" th:text="${esMision} ? |Misión ${a.m}| : |${a.d.titulo}, ${a.d.cantidad}|">Ropa
+    de abrigo, 12 prendas</span>
+</li>
+</body>
+</html>

@@ -1,6 +1,7 @@
 package grupo5.notificaciones.controllers;
 
 import grupo5.notificaciones.dto.ConteoNoLeidasDTO;
+import grupo5.notificaciones.dto.FiltroBandeja;
 import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,12 +52,26 @@ public interface INotificacionController {
   ResponseEntity<NotificacionDTO> obtenerPorId(@PathVariable UUID id);
 
   @Operation(
-      summary = "Obtener historial de notificaciones de una persona con filtro opcional de lectura",
-      description = "Si leida=false devuelve solo pendientes de lectura (campana/inbox).")
-  @ApiResponse(responseCode = "200", description = "Historial de notificaciones devuelto")
-  @GetMapping({"/notificaciones/persona/{personaId}", "/api/notificaciones/persona/{personaId}"})
+      summary = "Una página de la bandeja de notificaciones de una persona",
+      description =
+          "Filtra por lectura (leida), texto (q, sin mayúsculas ni tildes), tipo y excluirTipo"
+              + " (repetibles; excluirTipo deja entrar las que no tienen tipo); orden recientes"
+              + " (por defecto) o antiguas, desempatado por id. Sin page ni size, la página 0 de"
+              + " 20; el total va en X-Total-Count.")
+  @ApiResponse(responseCode = "200", description = "Página de notificaciones")
+  @ApiResponse(responseCode = "400", description = "Parámetro fuera de rango (ERR-CSR-003)")
+  @GetMapping("/api/notificaciones/persona/{personaId}")
   ResponseEntity<List<NotificacionDTO>> obtenerPorPersona(
-      @PathVariable UUID personaId, @RequestParam(required = false) Boolean leida);
+      @PathVariable UUID personaId, @ParameterObject FiltroBandeja filtro);
+
+  @Operation(
+      summary = "Una página de la bandeja de una persona (alias legado, solo QA)",
+      deprecated = true)
+  @ApiResponse(responseCode = "200", description = "Página de notificaciones")
+  @ApiResponse(responseCode = "400", description = "Parámetro fuera de rango (ERR-CSR-003)")
+  @GetMapping("/notificaciones/persona/{personaId}")
+  ResponseEntity<List<NotificacionDTO>> obtenerPorPersonaLegacy(
+      @PathVariable UUID personaId, @ParameterObject FiltroBandeja filtro);
 
   @Operation(
       summary = "Obtener el conteo de notificaciones no leídas de una persona (para badge UI)")

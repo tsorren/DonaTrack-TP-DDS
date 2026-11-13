@@ -1,0 +1,3 @@
+/* Notificaciones del donante y de la persona que dona: desde la ronda del 2026-11-10, la bandeja es
+   el bloque buzón (componentes/buzon.css, capa bloques). Esta hoja solo trae lo común del donante. */
+@import url("donante-comun.css");

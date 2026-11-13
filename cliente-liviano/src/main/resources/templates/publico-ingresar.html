@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<!--/* Raíces, sitio A: Ingresar (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.4). El
+       formulario en su lámina de papel; al lado (abajo, en el celular), las cuentas de ejemplo de la
+       maqueta como etiquetas de herbario colgadas en la tierra, como las entidades de la portada, en
+       un marco punteado: lo que no es del sistema. Ingresar y "Continuar con Google" envían (POST) al
+       inicio del donante; cada cuenta de ejemplo lleva al inicio de su rol. "¿Olvidaste tu
+       contraseña?" lleva a publico-recuperar del sitio (arreglo de la pre-auditoría). Estados: ?escenario=lento, error,
+       sin-conexion, bloqueado, pendiente y sesion-vencida; el error de datos es
+       publico-ingresar-error.
+       Fragmentos:
+       - hoja(conError): la pantalla entera. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-ingresar', ~{::contenido})}">
+<head>
+  <title>Ingresar - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{publico-ingresar :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(conError)"
+    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
+             escrito=${conError or escenario == 'error' or escenario == 'sin-conexion' or escenario == 'bloqueado'},
+             ayudaCorreo=${conError ? 'ingreso-error-texto' : null}">
+  <div class="publica cuenta cuenta--ingresar">
+    <div class="cuenta-principal">
+      <header class="publica-cabeza">
+        <p class="rotulo">Ingresar</p>
+        <h1>Entrá a <em>tu cuenta</em></h1>
+        <p class="lectura-bajada">Para seguir tus donaciones o las entregas de tu organización.</p>
+      </header>
+
+      <section th:if="${conError}" id="ingreso-error" class="banner" data-estado="error" role="alert" tabindex="-1"
+               autofocus aria-labelledby="ingreso-error-titulo">
+        <h2 id="ingreso-error-titulo">No pudimos ingresar.</h2>
+        <p id="ingreso-error-texto">El correo o la contraseña no coinciden. Revisalos y probá de nuevo, o pedí
+          una contraseña nueva.</p>
+        <a class="boton" data-tono="secundario" href="/publico-recuperar"
+           th:href="@{/publico-recuperar}">Pedir una contraseña nueva</a>
+      </section>
+      <th:block th:if="${escenario == 'error'}">
+        <section th:replace="~{datos-publicos :: avisoError('No pudimos ingresar en este momento.',
+            'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-ingresar', false)}"></section>
+      </th:block>
+      <section th:if="${escenario == 'sin-conexion'}" class="banner" data-estado="error" role="alert"
+               aria-labelledby="red-titulo">
+        <h2 id="red-titulo">Se cortó la conexión.</h2>
+        <p>Revisá la señal y probá de nuevo.</p>
+      </section>
+      <section th:if="${escenario == 'bloqueado'}" class="banner" data-estado="error" role="alert"
+               aria-labelledby="pausa-titulo">
+        <h2 id="pausa-titulo">Pausamos los intentos de ingreso.</h2>
+        <p>Hubo varios intentos con datos que no coinciden. Por seguridad, probá de nuevo en unos minutos o
+          pedí una contraseña nueva.</p>
+        <a class="boton" data-tono="secundario" href="/publico-recuperar"
+           th:href="@{/publico-recuperar}">Pedir una contraseña nueva</a>
+      </section>
+      <section th:if="${escenario == 'pendiente'}" class="banner" role="status" aria-labelledby="revision-titulo">
+        <h2 id="revision-titulo">Tu organización todavía está en revisión.</h2>
+        <p>El equipo de DonaTrack revisa cada organización antes de sumarla. Te escribimos al correo de contacto
+          cuando esté aprobada; desde ese día podés ingresar.</p>
+        <div class="aviso-acciones">
+          <a class="boton" data-tono="secundario" href="/publico-contacto"
+             th:href="@{/publico-contacto(volver='/publico-ingresar')}">Escribinos</a>
+          <a class="boton" data-tono="secundario" href="/publico-portada"
+             th:href="@{/publico-portada}">Ir a la portada</a>
+        </div>
+      </section>
+      <section th:if="${escenario == 'sesion-vencida'}" class="banner" role="status" aria-labelledby="sesion-titulo">
+        <h2 id="sesion-titulo">Tu sesión se cerró.</h2>
+        <p>Pasó un tiempo sin actividad. Ingresá de nuevo y seguís donde estabas.</p>
+      </section>
+
+      <form class="formulario" action="/donante-inicio" th:action="@{/donante-inicio}"
+            method="post" data-enviando="Ingresando…" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+        <div class="campo" th:data-estado="${conError} ? 'error'">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" name="correo" type="email" required autocomplete="email"
+                 th:value="${escrito} ? 'contacto@distribuidora-ejemplo.test' : null"
+                 th:attr="aria-describedby=${ayudaCorreo},aria-invalid=${conError} ? 'true' : null" placeholder="nombre@ejemplo.com">
+        </div>
+        <div class="campo" th:data-estado="${conError} ? 'error'">
+          <label for="clave">Contraseña</label>
+          <div class="clave-fila">
+            <input id="clave" name="clave" type="password" required autocomplete="current-password"
+                   th:attr="aria-describedby=${ayudaCorreo},aria-invalid=${conError} ? 'true' : null" placeholder="Al menos 8 caracteres">
+            <button class="boton" data-tono="secundario" type="button" data-mostrar aria-controls="clave"
+                    aria-pressed="false" hidden>Mostrar</button>
+          </div>
+          <a class="enlace-campo" href="/publico-recuperar"
+             th:href="@{/publico-recuperar}">¿Olvidaste tu contraseña?</a>
+        </div>
+        <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
+                th:text="${escenario == 'lento'} ? 'Ingresando…' : 'Ingresar'">Ingresar</button>
+        <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Ingresando…</p>
+        <p class="separador" aria-hidden="true"><span>o</span></p>
+        <button class="boton boton--google" data-tono="secundario" type="submit" formnovalidate>Continuar con
+          Google</button>
+        <p class="cuenta-salida">¿Primera vez? <a href="/publico-registro"
+           th:href="@{/publico-registro}">Crear una cuenta</a></p>
+        <p class="cuenta-salida">¿Te crearon una cuenta? <a href="/publico-activar-pedir"
+           th:href="@{/publico-activar-pedir}">Activala</a></p>
+      </form>
+    </div>
+
+    <!--/* Solo en la maqueta: cuatro etiquetas colgadas en la tierra, una por rol y dos del donante
+         (la empresa y la persona, F5). */-->
+    <section class="ejemplos" aria-labelledby="ejemplos-titulo">
+      <h2 id="ejemplos-titulo">Cuentas de ejemplo</h2>
+      <p>Es un prototipo: no se guarda nada. Entrá con una cuenta de ejemplo.</p>
+      <ul class="ejemplos-lista" role="list">
+        <li><a href="/donante-inicio?cuenta=empresa" th:href="@{/donante-inicio(cuenta='empresa')}">
+          <span class="ejemplo-inicial" aria-hidden="true">D</span>Distribuidora Ejemplo SA, empresa donante</a></li>
+        <li><a href="/donante-misiones?cuenta=persona" th:href="@{/donante-misiones(cuenta='persona')}">
+          <span class="ejemplo-inicial" aria-hidden="true">M</span>Martina Ruiz, persona donante</a></li>
+        <li><a href="/entidad-inicio" th:href="@{/entidad-inicio}">
+          <span class="ejemplo-inicial" aria-hidden="true">C</span>Comedor Barrio Ejemplo, organización</a></li>
+        <li><a href="/admin-inicio" th:href="@{/admin-inicio}">
+          <span class="ejemplo-inicial" aria-hidden="true">A</span>Administración</a></li>
+      </ul>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

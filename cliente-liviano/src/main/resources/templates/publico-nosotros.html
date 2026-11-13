@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<!--/* Raíces, Nosotros (ficha docs/interfaz/flujos/raices-conocer-y-activar.md, 4.1; boceto de E1,
+       pág. 3): quiénes somos, las cifras con período y fecha (los árboles de la portada, estética de K), cómo
+       trabajamos, lo que nos importa y dos salidas, una por público. Se llega desde el pie. Los estados
+       de la maqueta (?escenario=vacio, lento o error) solo cambian las cifras: el resto es texto fijo.
+       Las cifras (cifrasDeNosotros) las da PublicoPuerto: de ejemplo o los contadores de Donaciones
+       (HB-02). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-conocer', ~{::contenido})}">
+<head>
+  <title>Nosotros - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido"
+    th:with="estado=${param.escenario != null ? param.escenario[0] : ''},
+             conDatos=${estado != 'vacio' and estado != 'error' and estado != 'lento'}">
+  <div class="pila" data-espacio="5">
+    <header class="lectura">
+      <p class="rotulo">Nosotros</p>
+      <h1>Lo que donás, <em>seguido hasta que llega</em></h1>
+      <p class="lectura-bajada">DonaTrack une a quienes donan con organizaciones de la comunidad y sigue cada
+        donación desde el depósito hasta que la organización confirma que llegó.</p>
+    </header>
+
+    <section th:replace="~{componentes/huerta :: cifras(${estado}, ${cifrasDeNosotros})}"></section>
+
+    <section class="grilla" data-espacio="4" aria-labelledby="somos-titulo">
+      <div class="lectura">
+        <h2 id="somos-titulo">Quiénes somos</h2>
+        <p>Somos un equipo que diseña herramientas para que donar sea simple y se pueda ver. Nacimos para
+          acortar la distancia entre quienes quieren ayudar y las organizaciones que necesitan recibir.</p>
+        <p>Ordenamos lo que llega al depósito, lo asignamos a lo que cada organización pidió y mostramos el
+          recorrido de cada entrega.</p>
+      </div>
+      <!--/* Una lámina con el árbol del último paso (ilustración de diseño, estética de K). Decorativa: el
+             texto de al lado dice lo mismo. */-->
+      <figure th:replace="~{componentes/huerta :: lamina('paso-4-arbol', 173, 252)}"></figure>
+    </section>
+
+    <section aria-labelledby="trabajo-titulo" class="pila" data-espacio="3">
+      <h2 id="trabajo-titulo">Cómo trabajamos</h2>
+      <ul class="grilla" data-espacio="3" role="list">
+        <li class="tarjeta pila" data-espacio="2">
+          <h3>Seguimos cada donación</h3>
+          <p>Se registra lo que es, cuánto hay y cuándo vence, y se ve por dónde va hasta que la organización la
+            recibe.</p>
+        </li>
+        <li class="tarjeta pila" data-espacio="2">
+          <h3>Cuidamos los datos</h3>
+          <p>Lo que se publica no muestra quién donó si esa persona lo prefiere, ni el contacto de las
+            organizaciones.</p>
+        </li>
+        <li class="tarjeta pila" data-espacio="2">
+          <h3>Mostramos dónde llega</h3>
+          <p>El <a href="/publico-mapa" th:href="@{/publico-mapa}">mapa</a> enseña qué barrios recibieron
+            donaciones, y el <a href="/publico-entidades" th:href="@{/publico-entidades}">catálogo</a>, lo
+            que pide cada organización.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="valores-titulo" class="lectura">
+      <h2 id="valores-titulo">Lo que nos importa</h2>
+      <ul class="lista" role="list">
+        <li><b>Transparencia:</b> cada donación tiene un destino que se puede ver.</li>
+        <li><b>Orden:</b> el depósito, las asignaciones y los camiones trabajan con los mismos datos.</li>
+        <li><b>Datos reales:</b> cada asignación sale de lo que hay y de lo que cada organización pidió.</li>
+        <li><b>Compromiso:</b> herramientas que facilitan el trabajo de quienes reciben.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="sumate-titulo" class="pila" data-espacio="2">
+      <h2 id="sumate-titulo">Sumate</h2>
+      <div class="racimo" data-espacio="2">
+        <a class="boton" data-tono="principal" href="/publico-para-donantes"
+           th:href="@{/publico-para-donantes}">Quiero donar</a>
+        <a class="boton" data-tono="secundario" href="/publico-para-entidades"
+           th:href="@{/publico-para-entidades}">Represento a una organización</a>
+      </div>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,44 @@
+# Demo pública (E6): se suma al compose base y al del seeder, detrás de los túneles HTTPS de
+# docker-compose.tunel.yml. Las URL públicas (PUBLICA_URL_*, KC_HOSTNAME y CLIENTE_LIVIANO_BASE_URL) y las
+# claves salen de .env.publica, que arma scripts/demo-publica.sh.
+# Guía: docs/testing/demo-publica-tunel.md
+x-reinicio: &reinicio
+  restart: unless-stopped
+
+services:
+  keycloak:
+    <<: *reinicio
+    environment:
+      # El túnel termina el TLS: Keycloak toma el esquema y el host de X-Forwarded-*.
+      - KC_PROXY_HEADERS=xforwarded
+  cliente-liviano:
+    <<: *reinicio
+    environment:
+      # El emisor es https://…trycloudflare.com: el reenvío local (socat) solo sirve con localhost.
+      - KEYCLOAK_LOCAL_FORWARD_TO=
+      # El redirect_uri de OAuth2 se arma con el https y el host que llegan del túnel.
+      - SERVER_FORWARD_HEADERS_STRATEGY=native
+  api-gateway:
+    <<: *reinicio
+  donaciones-service:
+    <<: *reinicio
+    environment:
+      - DONACIONES_MINIO_PUBLIC_ENDPOINT=${PUBLICA_URL_MINIO:?correr scripts/demo-publica.sh}
+  incentivos-service:
+    <<: *reinicio
+    environment:
+      - INCENTIVOS_MINIO_PUBLIC_BASE_URL=${PUBLICA_URL_MINIO:?correr scripts/demo-publica.sh}
+  logistica-service:
+    <<: *reinicio
+    environment:
+      - LOGISTICA_MINIO_PUBLIC_ENDPOINT=${PUBLICA_URL_MINIO:?correr scripts/demo-publica.sh}
+      - LOGISTICA_FOTOS_URL_PUBLICA_BASE=${PUBLICA_URL_GATEWAY:?correr scripts/demo-publica.sh}
+  notificaciones-service:
+    <<: *reinicio
+  rabbitmq:
+    # En Docker Desktop sobre Windows a veces sale con ".erlang.cookie: eacces" al arrancar (DIT-11).
+    <<: *reinicio
+  seeder:
+    env_file: !override .env.publica
+    environment:
+      - SEEDER_FOTOS_URL_BASE=${PUBLICA_URL_GATEWAY:?correr scripts/demo-publica.sh}

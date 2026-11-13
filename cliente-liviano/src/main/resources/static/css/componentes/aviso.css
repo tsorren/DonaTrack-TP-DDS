@@ -1,0 +1,207 @@
+/* Bloque aviso (D33, B2-04): el aviso breve (toast), el banner y el estado vacío comparten el mismo
+   papel (papel claro sin filete con la elevación suave de K, piel Huerta). Se carga en la capa `bloques` desde app.css.
+   Las variantes van por atributo, en este bloque y después de la base: `data-estado="hecho"` en el
+   aviso breve, `data-estado="error"` en el banner y `data-forma="filetes"` y `data-zona="suelo"` en
+   el estado vacío. La región `.avisos` y la cola de avisos
+   (`Alpine.data("avisos")`, static/js/interfaz.js) llevan los avisos breves que trae HTMX.
+   Catálogo: docs/interfaz/componentes.md. */
+
+/* --- El papel de un aviso ---------------------------------------------------------------------- */
+/* Largo de línea dentro de los 50 a 75 caracteres (criterios de la cátedra, sección 8). En el
+   celular, más apretado: el botón del próximo paso entra en la primera pantalla (360 × 640), encima
+   de la barra del menú. */
+:is(.banner, .vacio, .aviso-breve) {
+  max-width: 38rem;
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+  border: 0;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+}
+
+:is(.banner, .vacio, .aviso-breve) h2 {
+  margin: 0 0 0.5rem;
+}
+
+/* Lo vacío, con la abeja dormida arriba (ilustraciones de diseño, 2026-11-08): todavía no hay nada,
+   sin alarma. Decorativa. La variante de filetes, que ocupa el lugar de los datos de una parte, no
+   la lleva. */
+.vacio:not([data-forma="filetes"])::before {
+  content: "";
+  display: block;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 0.5rem;
+  background: url("../../img/ilustraciones/abeja-dormida.svg") left center / contain no-repeat;
+}
+
+:is(.banner, .vacio, .aviso-breve) p {
+  margin: 0 0 0.75rem;
+}
+
+/* Pista de onboarding contextual: acompaña la pantalla sin tapar el contenido ni impedir que se
+   siga usando. El botón queda abajo en celular y al lado del texto en pantallas más anchas. */
+.aviso-breve[data-pista] {
+  display: grid;
+  gap: var(--espacio-2);
+  border-inline-start: 0.375rem solid var(--color-acento);
+}
+
+.aviso-breve[data-pista] .rotulo {
+  margin-bottom: 0.25rem;
+  color: var(--color-acento);
+}
+
+.aviso-breve[data-pista] [data-pista-cerrar] {
+  justify-self: start;
+}
+
+@media (min-width: 37.5em) {
+  .aviso-breve[data-pista] {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+}
+
+@media (min-width: 37.5em) {
+  :is(.banner, .vacio, .aviso-breve) {
+    margin: 1.5rem 0;
+    padding: 1.25rem 1.5rem;
+  }
+
+  :is(.banner, .vacio, .aviso-breve) h2 {
+    margin-bottom: 1rem;
+  }
+
+  :is(.banner, .vacio, .aviso-breve) p {
+    margin-bottom: 1rem;
+  }
+}
+
+/* --- Estado vacío entre dos filetes ------------------------------------------------------------ */
+/* Sin papel ni sombra: un renglón entre dos filetes finos que ocupa el lugar de los datos de una parte
+   que no es una lámina (el cuaderno del mes y la tierra de la portada, B3-01). */
+.vacio[data-forma="filetes"] {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  max-width: 40rem;
+  margin: 0;
+  padding: 1.25rem 0;
+  border: 0;
+  border-block: 1px solid var(--color-tinta);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--color-tinta);
+}
+
+.vacio[data-forma="filetes"] p {
+  margin: 0;
+}
+
+/* Sobre la tierra (solo con los filetes: el papel claro no va sobre la tierra): los filetes de paja,
+   la letra clara y todo al centro. */
+.vacio[data-forma="filetes"][data-zona="suelo"] {
+  justify-items: center;
+  padding-inline: 1rem;
+  border-color: var(--color-raiz);
+  color: var(--color-texto-suelo);
+  text-align: center;
+}
+
+/* También el botón (el chico se alinea al principio). */
+.vacio[data-forma="filetes"][data-zona="suelo"] .boton {
+  justify-self: center;
+}
+
+/* --- Banner: algo que afecta a toda la pantalla ------------------------------------------------ */
+.banner[data-estado="error"] {
+  /* El tono, en una franja a la izquierda (piel Huerta). */
+  box-shadow: inset 0.375rem 0 0 var(--color-problema-sello), var(--sombra-papel);
+}
+
+/* La maceta de reintentar arriba (ilustraciones de diseño, 2026-11-08): algo no salió y se puede
+   volver a probar. Decorativa: el título y el texto dicen todo. */
+.banner[data-estado="error"]::before {
+  content: "";
+  display: block;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 0.5rem;
+  background: url("../../img/ilustraciones/reintentar.svg") left center / contain no-repeat;
+}
+
+.banner[data-estado="error"] h2 {
+  color: var(--color-problema-texto);
+}
+
+/* --- Aviso breve: una acción que salió bien ---------------------------------------------------- */
+.aviso-breve[data-estado="hecho"] {
+  box-shadow: inset 0.375rem 0 0 var(--color-acento), var(--sombra-papel);
+  font-weight: 700;
+}
+
+.aviso-breve[hidden] {
+  display: none;
+}
+
+/* Con su botón de cerrar (los que trae HTMX a la región): el botón va en la esquina. */
+.aviso-breve:has(> .aviso-cerrar) {
+  position: relative;
+  padding-inline-end: 3.5rem;
+}
+
+.aviso-cerrar {
+  position: absolute;
+  inset: 0.25rem 0.25rem auto auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--medida-toque-minimo);
+  min-height: var(--medida-toque-minimo);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-tinta);
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* --- La región de los avisos breves ------------------------------------------------------------ */
+/* Fija abajo y centrada; en el celular, encima de la barra del menú. Vacía no ocupa nada. */
+.avisos {
+  position: fixed;
+  inset: auto 0 5.5rem;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding-inline: 1rem;
+  pointer-events: none;
+}
+
+.avisos > * {
+  pointer-events: auto;
+}
+
+.avisos > .aviso-breve {
+  width: min(100%, 32rem);
+  margin: 0;
+  animation: var(--movimiento-animacion-aparece);
+}
+
+/* La cola saca el aviso con un fundido (data-saliendo) y después lo quita. */
+.avisos > .aviso-breve[data-saliendo] {
+  opacity: 0;
+  transition: var(--movimiento-transicion-atenua);
+}
+
+@media (min-width: 37.5em) {
+  .avisos {
+    bottom: 1.5rem;
+  }
+}

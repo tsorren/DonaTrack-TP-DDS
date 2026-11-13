@@ -4,4 +4,7 @@ package grupo5.donaciones.services.logistica;
 public interface ICatalogoProveedoresLogistica {
 
   boolean tieneAdapter(String proveedorId);
+
+  /** Si el adapter de ese proveedor sabe cancelar una entrega (HB-19). */
+  boolean admiteCancelacion(String proveedorId);
 }

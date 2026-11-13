@@ -1,0 +1,3 @@
+# El CSV de ensayo se genera, no se guarda
+*.csv
+__pycache__/

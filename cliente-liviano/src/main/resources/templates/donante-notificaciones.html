@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<!--/* Raíces A, Notificaciones del donante (RF-08), según la ficha
+       docs/interfaz/flujos/raices-donante-navegable.md, con la estructura de la bandeja de GitHub
+       (usuario, ronda 2026-11-10): arriba, la cuenta de sin leer; debajo, la bandeja del componente
+       buzón (componentes/buzon): «Todas | Sin leer», la búsqueda, Categoría, Ordenar y Agrupar (get
+       con hx-boost), y la lista con «Seleccionar todas», «Marcar todas como leídas» y una fila por
+       aviso: qué pasó (enlaza al detalle de la donación), a qué está asociado y hace cuánto.
+       Los avisos vienen del controller de a una página de 20 (R11-14, ficha
+       docs/interfaz/flujos/r11-p1-notificaciones.md: bandeja, de la maqueta o de Notificaciones, que
+       resuelve la página, "Sin leer", la búsqueda, la categoría y el orden), cada uno con su título y
+       su categoría: en la maqueta, la de su carta; con datos reales, la de su tipo de evento (HB-09),
+       "Otras novedades" si no tiene tipo o es de otro. El menú de Categoría muestra todas las del
+       rol. "N sin leer" es el número de la cuenta. "Ahora" lo da la bandeja (en la maqueta, el 15 de
+       octubre de 2026, 16:25); sin leer, los 4 más nuevos (la campana dice 4). Marcar es un
+       formulario post real que va a donante-notificaciones-leidas; fuera de la maqueta lo guarda
+       DonanteNotificacionesEnvioController y vuelve con el aviso.
+       ?escenario=vacio, error y lento.
+       Fragmento hoja(leidas): la pantalla entera; leidas es true en donante-notificaciones-leidas. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-notificaciones', ~{::contenido})}">
+<head>
+  <title>Notificaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{donante-notificaciones :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(leidas)">
+  <th:block th:replace="~{datos-donante :: donante(~{donante-notificaciones :: cuerpo})}"></th:block>
+</th:block>
+
+<!--/* La bandeja viene del controller (bandeja: una página de la maqueta o de Notificaciones, con su
+       total, las sin leer de la cuenta y las categorías del rol; paginador). marcadas y noLeidas son
+       los de la maqueta, que vuelve de marcar sin guardar. La cuenta no tiene avisos cuando la
+       página viene vacía sin ningún filtro puesto. */-->
+<th:block th:fragment="cuerpo">
+<th:block
+    th:with="marcadas=${param.marcadas != null ? param.marcadas[0] : (leidas ? 'todas' : '')},
+             noLeidas=${param.noLeidas != null ? param.noLeidas[0] : ''},
+             filas=${bandeja.pagina.filas},
+             conFiltros=${param.ver != null or (param.buscar != null and !#strings.isEmpty(#strings.trim(param.buscar[0])))
+                 or (param.tema != null and param.tema[0] != '')},
+             cuentaVacia=${bandeja.pagina.total == 0 and !conFiltros},
+             conDatos=${escenario == '' and !cuentaVacia},
+             sinLeerAhora=${marcadas == 'todas' ? 0 : bandeja.sinLeer
+                 - #lists.size(filas.?[!leida and #lists.contains(#strings.listSplit(#root.marcadas, ','), id)])
+                 + #lists.size(filas.?[leida and #lists.contains(#strings.listSplit(#root.noLeidas, ','), id)])}">
+  <div class="pila" data-espacio="4">
+    <header class="pila" data-espacio="2">
+      <p class="rotulo">Notificaciones</p>
+      <h1>Noticias de <em>tus donaciones</em></h1>
+      <p th:if="${leidas}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
+         th:text="${marcadas == 'todas'} ? 'Listo: marcaste todas como leídas.' : (${noLeidas != ''} ? 'Listo: marcaste la notificación como no leída.' : 'Listo: marcaste la notificación como leída.')">Listo: marcaste la notificación.</p>
+      <p th:if="${conDatos}" class="bajada"
+         th:text="${sinLeerAhora == 0} ? 'No tenés notificaciones sin leer.' : (${persona} ? |${sinLeerAhora} sin leer. Cada aviso cuenta qué pasó con una de tus donaciones o con una necesidad nueva.| : |${sinLeerAhora} sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa o con una necesidad nueva.|)">4
+        sin leer. Cada aviso cuenta qué pasó con una donación de tu empresa o con una necesidad nueva.</p>
+      <th:block th:if="${conDatos}">
+        <aside th:replace="~{componentes/pista :: pista('notificaciones', 'Organizá tus notificaciones', 'Podés buscar, filtrar y ordenar los avisos. También podés elegir si querés verlos agrupados o sin agrupar.')}"></aside>
+      </th:block>
+    </header>
+
+    <section th:if="${escenario == 'vacio' or (escenario == '' and cuentaVacia)}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no tenés notificaciones.</h2>
+      <p>Te avisamos cuando se asigne una donación a una organización, cuando salga el camión y cuando la
+        organización confirme la entrega.</p>
+      <a class="boton" data-tono="secundario" href="/donante-donaciones"
+         th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
+    </section>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{datos-donante :: error('No pudimos cargar tus notificaciones.', '/donante-notificaciones')}"></section>
+    </th:block>
+
+    <th:block th:if="${escenario == 'lento'}">
+      <p class="cargando" role="status">Cargando tus notificaciones…</p>
+      <div class="pila" data-espacio="3" aria-busy="true">
+        <div class="esqueleto" data-forma="punteado"></div>
+        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+      </div>
+    </th:block>
+
+    <th:block th:if="${conDatos}">
+      <div th:replace="~{componentes/buzon :: pagina(${leidas ? '/donante-notificaciones-leidas' : '/donante-notificaciones'},
+           '/donante-notificaciones-leidas', ${bandeja}, ${sinLeerAhora}, ${paginador}, ${marcadas}, ${noLeidas})}"></div>
+    </th:block>
+  </div>
+</th:block>
+</th:block>
+</body>
+</html>

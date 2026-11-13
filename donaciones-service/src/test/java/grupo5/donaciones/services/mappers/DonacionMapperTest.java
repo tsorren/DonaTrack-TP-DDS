@@ -82,6 +82,25 @@ class DonacionMapperTest {
   }
 
   @Test
+  void toEntity_mostrarNombreFalse_ocultaElNombreSoloEnEsaDonacion_yNullSigueAlPerfil() {
+    Humana persona = PersonaMother.humanaValida();
+    DireccionInputDTO dir =
+        new DireccionInputDTO(
+            "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
+    DonacionInputDTO sinNombre =
+        new DonacionInputDTO(
+            UUID.randomUUID(), "d", List.of(), "Deposito", dir, LocalDateTime.now(), false);
+    DonacionInputDTO comoElPerfil =
+        new DonacionInputDTO(UUID.randomUUID(), "d", List.of(), "Deposito", dir, null);
+    DonacionInputDTO mostrar =
+        new DonacionInputDTO(UUID.randomUUID(), "d", List.of(), "Deposito", dir, null, true);
+
+    assertTrue(mapper.toEntity(sinNombre, persona).isNombreOculto());
+    assertFalse(mapper.toEntity(comoElPerfil, persona).isNombreOculto());
+    assertFalse(mapper.toEntity(mostrar, persona).isNombreOculto());
+  }
+
+  @Test
   void toEntity_conDtoNulo_deberiaRetornarNulo() {
     assertNull(mapper.toEntity(null, PersonaMother.humanaValida()));
   }

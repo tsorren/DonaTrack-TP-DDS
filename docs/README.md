@@ -2,7 +2,7 @@
 
 > **Portal de Documentación y Arquitectura del Sistema**  
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> Última actualización: **2026-10-14**  
+> Última actualización: **2026-10-30**  
 > Punto de entrada del repositorio: [`Readme.md`](../Readme.md)
 
 ---
@@ -37,6 +37,7 @@ docs/
 │   ├── aggregates-notificaciones.md       # Réplica ligera y contratos REST sincrónicos
 │   ├── contratos-rest.md                  # Contratos REST consolidados, OpenAPI 3.0 y Swagger UI
 │   ├── eventos-amqp.md                    # Topología RabbitMQ y contratos de eventos asíncronos
+│   ├── seguridad/matriz-permisos.md       # Matriz de permisos E6: rol, permiso y pertenencia por endpoint (borrador)
 │   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML), Schemas JSON y guía de migración E4
 │   └── diseno/                            # Bitácoras de refactor por oleadas, diagramas PUML y anexos
 │       ├── README.md                      # 🟢 Portal de diseño y anexos técnicos
@@ -52,12 +53,15 @@ docs/
 │   ├── auditoria-arquitectura-testing.md  # 🏛️ Auditoría integral y Blueprint de Arquitectura de Testing y QA (Documento Maestro)
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
 │   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
+│   ├── demo-seeder.md                     # Seeder de demo: seis meses de historia y lo de hoy (SPEC-10)
+│   ├── ensayo-importacion-20000.md        # Ensayo de importación de 20.000 donantes: cómo se corre y qué alcanza (R11-03)
 │   ├── plan-auditoria-y-blueprint-qa.md   # Plan de auditoría y arquitectura target de testing y QA
 │   ├── decisiones-diseno-auditoria-qa.md  # Decisiones de diseño y justificación de alternativas descartadas
 │   ├── preprod-fiel.md                    # Criterio de preprod fiel, estado de CI/CD e integración y brechas
 │   ├── preprod-fiel-arquitectura-objetivo.md # Alternativas por brecha, entorno, pipeline y estratos objetivo
 │   ├── preprod-fiel-roadmap.md            # Roadmap por entrega (E5–E7), rediseño de la SPEC-05 y estado de implementación
 │   ├── diagnostico-integration-tests-e5.md # Diagnóstico de integration-tests en E5: línea base, hallazgos y propuestas
+│   ├── demo-publica-tunel.md              # Demo pública por túnel: stack en una PC + Quick Tunnels de Cloudflare (E6)
 │   ├── auditoria/                         # 🧪 Compendio de auditoría de testing y arquitectura target (6 docs + README)
 │   └── postman/                           # LEGADO: copia anterior; la fuente vigente es ../postman/ (raíz del repo)
 │
@@ -88,13 +92,13 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-27) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-41) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03, SPEC-04, SPEC-05)
-│   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-10, R11-p1-importador, R11-p2-actividad, R11-p2-listas-restantes)
+│   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02, R11-p0-api-listados y las cinco de R11-p1)
 │
 ├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
 │   ├── README.md                          # Visión general y reglas de regeneración
@@ -112,7 +116,24 @@ docs/
 │   └── evals-agentes-resumen.md
 │
 ├── requerimientos/                        # 📋 Requerimientos por entrega
-│   └── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D30 (insumo de ADRs)
+│   ├── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D33 (insumo de ADRs; D1 cerrada con Keycloak)
+│   ├── plan-e6-trabajo-sin-auth.md        # Trabajo de E6 que avanza sin auth ni estilos (priorizado)
+│   ├── plan-e6-cliente-datos-reales-y-gateway.md # Cliente con datos reales, gateway y base para auth (alternativas y fases)
+│   └── brechas-de-datos-por-pantalla-e6.md # Qué pantallas conectan hoy y qué le falta al backend (insumo de F2)
+│
+├── interfaz/                              # 🎨 Proceso de diseño de la interfaz del cliente liviano (E6)
+│   ├── README.md                          # Proceso en 6 pasos, quién decide, listo para entregar, cómo extender
+│   ├── bocetos-e1.md · mapa-del-sitio.md  # Insumos: inventario de bocetos de E1 y mapa con niveles
+│   ├── roadmap-vistas-enunciado.md        # Vistas del enunciado que faltan y las fases para terminarlas
+│   ├── direccion-de-arte.md               # Ambición gráfica con piso de accesibilidad, libertad creativa y oficio
+│   ├── patrones-y-microcopy.md            # Componentes, estados, avisos, textos y heurísticas
+│   ├── tono-y-comunicacion.md             # Voz, tono, estados, cifras y filtro de tono, comunes a todo el sitio
+│   ├── temas-ab.md · bitacora.md          # Catálogo de temas A/B y decisiones de diseño
+│   ├── identidad/                         # El brief de la identidad del sitio (Raíces) y sus referencias
+│   ├── flujos/ · evidencia/               # Fichas de flujo aprobadas y capturas de las decisiones
+│   ├── historico/                         # Identidades retiradas el 2026-11-03; no es guía para diseñar
+│   ├── encargos/                          # Encargos creativos aprobados (relevamiento-creativo → corrida-creativa)
+│   └── plantillas/                        # Ficha de flujo, iteración A/B, brief de identidad y encargos creativos
 │
 ├── entrega-4/                             # 🟢 Documentación de Entrega 4 (índice: README.md)
 │   ├── README.md                          # Índice de los .md de la entrega
@@ -167,17 +188,40 @@ docs/
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
 * 📋 **Requerimientos de Entrega 6 (cliente liviano, autenticación y gateway):** [requerimientos/requerimientos-e6.md](requerimientos/requerimientos-e6.md)
+* 🧭 **Plan de trabajo de E6 sin autenticación ni estilos:** [requerimientos/plan-e6-trabajo-sin-auth.md](requerimientos/plan-e6-trabajo-sin-auth.md)
+* 🔌 **Plan del cliente liviano con datos reales y gateway (alternativas y fases):** [requerimientos/plan-e6-cliente-datos-reales-y-gateway.md](requerimientos/plan-e6-cliente-datos-reales-y-gateway.md) · brechas por pantalla: [requerimientos/brechas-de-datos-por-pantalla-e6.md](requerimientos/brechas-de-datos-por-pantalla-e6.md)
+* 🎨 **Proceso de diseño de la interfaz (UX, identidad visual y vistas):** [interfaz/README.md](interfaz/README.md) · reglas del módulo: [../cliente-liviano/AGENTS.md](../cliente-liviano/AGENTS.md)
 * 📚 **Índice de documentación de Entrega 4:** [entrega-4/README.md](entrega-4/README.md)
 * 📜 **Principios Arquitectónicos de Entrega 4:** [entrega-4/arquitectura/principios.md](entrega-4/arquitectura/principios.md)
 * 🏗️ **Documento de Arquitectura del Sistema (Entrega 4, entregable 5):** [entrega-4/arquitectura/entregable-5/](entrega-4/arquitectura/entregable-5/README.md) · respaldo técnico: [arquitectura-sistema.md](entrega-4/arquitectura/arquitectura-sistema.md) · topología RabbitMQ: [diagramas/rabbit/](entrega-4/arquitectura/diagramas/rabbit/README.md)
 * 🏛️ **Auditoría Integral y Blueprint de Testing y QA (Documento Maestro):** [testing/auditoria-arquitectura-testing.md](testing/auditoria-arquitectura-testing.md)
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
 * ⚡ **Optimización de Compilación y Testing (TIA):** [testing/testing-performance.md](testing/testing-performance.md)
+* 🎬 **Seeder de demo (propuesta):** [SPEC-10](specs/active/SPEC-10-seeder-de-demo.md) · [testing/demo-seeder.md](testing/demo-seeder.md)
+* 📏 **Ensayo de importación de 20.000 donantes:** [testing/ensayo-importacion-20000.md](testing/ensayo-importacion-20000.md)
+* 📄 **Listados paginados y cifras de Donaciones (R11-01, implementada en la oleada P0):** [spec del lote p0-api-listados](specs/completed/R11-p0-api-listados-spec.md) · [backlog de la revisión del 2026-11-11](interfaz/backlog-revision-2026-11-11.md) · ADRs `proposed`: [listados siempre paginados](adr/donaciones-service/20261111-listados-paginados-de-donaciones-sin-lista-completa.md), [búsqueda sin tildes](adr/donaciones-service/20261111-busqueda-sin-tildes-con-unaccent-en-el-esquema-del-servicio.md), [SQL nativo y lectura por lote](adr/donaciones-service/20261111-consultas-de-listado-en-sql-nativo-y-lectura-por-lote.md), [cifras del admin como conteos](adr/donaciones-service/20261111-cifras-del-admin-como-conteos-en-un-resumen.md) y [`fecha_alta` y últimos importados](adr/donaciones-service/20261111-fecha-de-alta-del-donante-y-ultimos-importados-en-el-archivo.md) · deuda: [DTI-39](adr/DEUDA_TECNICA.md#dti-39) y [DTI-40](adr/DEUDA_TECNICA.md#dti-40)
+* 📥 **Pantalla de importaciones del admin (R11-20, construida 2026-11-12):** [spec del lote p1-importaciones](specs/completed/R11-p1-importaciones-spec.md) · [ficha de flujo](interfaz/flujos/r11-p1-importaciones.md)
+* 📄 **Entidades y Mis donaciones del donante con filtros en el servidor (R11-12, R11-13 y R11-18, implementada):** [spec del lote p1-donante-listas](specs/completed/R11-p1-donante-listas-spec.md)
+* 📄 **Asignaciones con el algoritmo y el puesto de cada propuesta (R11-24, propuesta, implementada):** [spec del lote p1-asignaciones](specs/completed/R11-p1-asignaciones-spec.md) · [ficha de flujo](interfaz/flujos/r11-p1-asignaciones.md)
+* 🗂️ **Donantes y Donaciones como bandeja, y la búsqueda de las asignaciones decididas (R11-34 y R11-35, construida en `p2-admin-bandeja`):** [ficha de flujo](interfaz/flujos/r11-p2-admin-bandeja.md) · contrato: búsqueda de las decididas, `motivoDescarte` y `decididasSinFecha` en [`openapi-donaciones.yaml`](arquitectura/contratos/openapi-donaciones.yaml) (1.12.0), migración `V26`
+* 🏠 **Portada y públicas con la sesión iniciada, y Bajo tierra sin rótulos pisados (R11-15 y R11-17, construida 2026-11-12):** [ficha de flujo](interfaz/flujos/r11-p1-portada.md) · deuda: [DTI-42](adr/DEUDA_TECNICA.md#dti-42), ítem 1
+* 🪟 **Ventanas que bloquean el fondo y publicar una necesidad en 3 pasos (R11-32 y R11-31, construida en `p2-ventanas`):** [ficha de flujo](interfaz/flujos/r11-p2-ventanas.md) · [ADR `proposed`](adr/cliente-liviano/20261112-ventanas-que-bloquean-el-fondo-con-showmodal-sobre-el-dialogo-con-popover.md)
+* 🔐 **Contraseña provisoria cifrada en la sesión (Spring Session JDBC):** [ADR `proposed`](adr/cliente-liviano/20261113-contrasena-provisoria-cifrada-en-la-sesion-con-aes-gcm.md)
+* 📝 **Ver y corregir la solicitud mientras se espera (R11-41, construida en `p2-pendiente-solicitud`):** [ficha de flujo](interfaz/flujos/r11-p2-pendiente-solicitud.md) · contrato: `GET` y `PUT /api/personas/{id}/solicitud-entidad` en [`openapi-donaciones.yaml`](arquitectura/contratos/openapi-donaciones.yaml) (1.11.0) y `ERR-EST-115` en el [catálogo de errores](arquitectura/catalogo-errores.md) · deuda que salda: [DTI-41](adr/DEUDA_TECNICA.md#dti-41), ítem 4, y el `aria-current` de [DTI-42](adr/DEUDA_TECNICA.md#dti-42), ítem 1
+* 📄 **ADRs de la oleada P1 de R11 (`proposed`, escritos después del código):** [cuentas de administración en el realm](adr/auth-service/20261112-cuentas-de-administracion-marcadas-en-el-realm-y-alta-desde-el-sitio.md) · [autor de la decisión desde el token](adr/donaciones-service/20261112-autor-de-la-decision-de-una-propuesta-desde-el-token.md) · [historial de importaciones](adr/donaciones-service/20261112-historial-de-importaciones-con-nombre-y-fecha-de-subida-en-el-archivo.md) · [entidades vistas por un donante](adr/donaciones-service/20261112-entidades-vistas-por-un-donante-en-un-recurso-propio-con-la-marca-ya-le-dono.md) · [bandeja paginada](adr/notificaciones-service/20261112-bandeja-por-persona-paginada-con-busqueda-sin-tildes-por-translate.md) · [mapa por período y con tope](adr/logistica-service/20261112-mapa-publico-por-periodo-y-con-tope.md) · [sugerencias de cada algoritmo](adr/donaciones-service/20261112-propuestas-con-la-sugerencia-de-cada-algoritmo-y-su-situacion-calculada-en-donaciones.md) · deuda: [DTI-42](adr/DEUDA_TECNICA.md#dti-42)
+* 📋 **Tablero del inicio de la empresa donante, tres columnas paginadas (R11-25, aprobado y construido en el lote `p2-tablero`):** [ficha de flujo](interfaz/flujos/r11-p2-tablero.md)
+* 📥 **Importador de donantes por partes (R11-B08, implementada; ensayo verificado en el cierre de P2):** [spec del lote p1-importador](specs/completed/R11-p1-importador-spec.md) · [ensayo de 20.000 filas](testing/ensayo-importacion-20000.md) · deuda: [DTI-40](adr/DEUDA_TECNICA.md#dti-40)
+* 🗂️ **Registro de actividad de administración (R11-26, construida 2026-11-12):** [spec del lote p2-actividad](specs/completed/R11-p2-actividad-spec.md) · [ficha de flujo](interfaz/flujos/r11-p2-actividad.md) · [ADR `proposed`](adr/donaciones-service/20261112-registro-de-actividad-de-administracion-en-donaciones.md) · deuda: [DTI-42](adr/DEUDA_TECNICA.md#dti-42), ítem 2, y [DTI-43](adr/DEUDA_TECNICA.md#dti-43), ítem 2
+* 📄 **Las listas que faltan (R11-43, implementada y verificada con el stack propio):** [spec del lote p2-listas-restantes](specs/completed/R11-p2-listas-restantes-spec.md): seguimientos de Logística e historial del ranking de a una página, conteos y filtros de organizaciones en Donaciones, y las pantallas de la organización sin leer 100 asignadas · ADRs `proposed`: [seguimientos e historial paginados](adr/20261112-seguimientos-de-logistica-e-historial-del-ranking-paginados-por-defecto.md) · [cifras de la organización](adr/donaciones-service/20261112-cifras-de-la-organizacion-como-conteos-y-orden-de-lo-que-hay-que-atender.md)
+* 🔔 **Campanita con desplegable y avisos de la administración (R11-29 y R11-30, construida, con la bandeja real del admin):** [spec del lote p2-campanita](specs/completed/R11-p2-campanita-spec.md) · [ficha de flujo](interfaz/flujos/r11-p2-campanita.md) · [ADR `proposed`](adr/20261112-aviso-de-importacion-terminada-por-evento-amqp-a-la-bandeja-compartida-de-la-administracion.md)
+* 📈 **Gráficos del inicio del admin (R11-42, construidos en `p2-admin-graficos`):** [sección de la ficha](interfaz/flujos/raices-entidad-navegable.md#r11-42--los-últimos-12-meses-en-gráficos) · [ADR `proposed`](adr/donaciones-service/20261112-evolucion-del-admin-en-un-recurso-aparte-contada-por-mes-con-limites-como-parametros.md)
+* 📄 **Oleada P2 de R11, lo que queda:** [estado al cierre](interfaz/backlog-revision-2026-11-11.md#estado-de-p2-al-cierre-de-la-oleada-2026-11-12) · deuda: [DTI-43](adr/DEUDA_TECNICA.md#dti-43)
 * 🎯 **Auditoría y Backlog Crítico de QA:** [testing/auditoria/README.md](testing/auditoria/README.md)
 * 🧭 **Preprod fiel — criterio, estado y brechas de CI/CD e integración:** [testing/preprod-fiel.md](testing/preprod-fiel.md)
 * 🏗️ **Preprod fiel — arquitectura objetivo de entorno, pipeline y suite:** [testing/preprod-fiel-arquitectura-objetivo.md](testing/preprod-fiel-arquitectura-objetivo.md)
 * 🗺️ **Preprod fiel — roadmap por entrega y decisiones:** [testing/preprod-fiel-roadmap.md](testing/preprod-fiel-roadmap.md)
 * 🩺 **Diagnóstico de integration-tests (E5):** [testing/diagnostico-integration-tests-e5.md](testing/diagnostico-integration-tests-e5.md)
+* 🌐 **Demo pública por túnel (E6):** [testing/demo-publica-tunel.md](testing/demo-publica-tunel.md)
 * 🚀 **Pipeline de CI/CD y Workflows:** [cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md)
 * 🤖 **Protocolo y Prompts de IA:** [IA/README.md](IA/README.md)
 * 🛡️ **Pre-Flight SonarCloud para IA:** [IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md)
@@ -189,8 +233,11 @@ docs/
 * 🗄️ **Arquitectura de Persistencia (PostgreSQL y MongoDB de logística):** [../persistencia/README.md](../persistencia/README.md)
 * ⚙️ **Workflows y Webhooks de n8n:** [../n8n/README.md](../n8n/README.md)
 * 📮 **Colecciones Postman y Newman CLI:** [../postman/README.md](../postman/README.md)
-* 🔒 **Auth Service (Bounded Context Reservado):** [../auth-service/README.md](../auth-service/README.md)
-* 💻 **Cliente Liviano (Bounded Context Reservado):** [../cliente-liviano/README.md](../cliente-liviano/README.md)
+* 🔒 **Auth Service (Keycloak configurado):** [../auth-service/README.md](../auth-service/README.md) · [ADR del proveedor de identidad](adr/auth-service/20261104-proveedor-de-identidad-keycloak.md) · [ADR del vínculo cuenta-persona (`personaId` en Keycloak)](adr/auth-service/20261110-vinculo-cuenta-persona-personaid-en-keycloak.md) · [SPEC-06, backlog del MVP](specs/active/SPEC-06-auth-mvp-keycloak.md)
+* 🔌 **Conexión de pantallas del cliente liviano a las APIs (E6, propuesta):** [SPEC-08](specs/active/SPEC-08-conexion-de-pantallas.md) · [brechas de datos por pantalla](requerimientos/brechas-de-datos-por-pantalla-e6.md)
+* 🏁 **Cierre de E6, demo punta a punta (propuesta):** [SPEC-09](specs/active/SPEC-09-cierre-e6-demo-punta-a-punta.md) · [ADR del estado `EN_PUERTA` de la entrega (`proposed`)](adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md) · [DTI-38](adr/DEUDA_TECNICA.md#dti-38)
+* 🚪 **API Gateway (etapa 1: rutas y `X-Trace-Id`, sin JWT):** [../api-gateway/README.md](../api-gateway/README.md) · [SPEC-07](specs/active/SPEC-07-api-gateway-etapa-1.md) · [ADR-E6-02](adr/20261107-api-gateway-validacion-jwt-en-doble-capa-y-rutas-publicas.md)
+* 💻 **Cliente Liviano (interfaz web de E6):** [../cliente-liviano/README.md](../cliente-liviano/README.md)
 * 🗄️ **Scripts de Inicialización de Base de Datos (PostgreSQL):** [../persistencia/init-db/01-init-schemas-roles.sql](../persistencia/init-db/01-init-schemas-roles.sql) y [../persistencia/init-db/02-set-role-passwords.sh](../persistencia/init-db/02-set-role-passwords.sh) (contraseñas desde `.env`, ver [../.env.example](../.env.example))
 * 🪣 **MinIO de Donaciones (padrones CSV y fotos de bienes):** [entrega-4/donaciones/bitacora-minio.md](entrega-4/donaciones/bitacora-minio.md) · plan: [entrega-4/donaciones/plan-minio-csv-y-fotos.md](entrega-4/donaciones/plan-minio-csv-y-fotos.md) · usuarios por servicio: [../persistencia/minio/init-usuarios.sh](../persistencia/minio/init-usuarios.sh)
 
