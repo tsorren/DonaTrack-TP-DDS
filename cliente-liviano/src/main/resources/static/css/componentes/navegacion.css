@@ -1,25 +1,39 @@
 /* Bloque de navegación (D33, B2-06): la barra de secciones de cada rol y la de las páginas públicas.
-   En el celular es una barra fija abajo, de papel, con la sección actual en una pastilla verde clara
-   (el patrón para 3 a 5 destinos de primer nivel, al alcance del pulgar; piel Huerta, 2026-11-08);
-   desde la tableta es horizontal y se acomoda en la cabecera de papel. Con más de 5 secciones (la administración), la barra muestra las 4
-   primeras y "Más", que abre todas en una hoja desde abajo (`.navegacion-hoja`, un popover: anda sin
-   JavaScript). Se carga en la capa `bloques` desde app.css. Dónde va dentro de la cabecera (el orden y
+   En el celular es una barra fija abajo, oscura (tinta; usuario, 2026-11-12), con la sección actual en
+   una pastilla verde clara (el patrón para 3 a 5 destinos de primer nivel, al alcance del pulgar; piel
+   Huerta, 2026-11-08). La pública (`data-zona="publica"`) lleva un ícono sobre cada nombre
+   (`.navegacion-barra`, `.navegacion-icono`) y deja Ingresar y Crear cuenta arriba, en la cabecera
+   (`.navegacion-acceso`); la de cada rol también lleva su ícono. Desde la tableta es horizontal, sin
+   íconos, y se acomoda en la cabecera de papel. Con más de 5 secciones (la administración,
+   `data-forma="panel"`), no hay barra: un botón de menú (`.navegacion-abrir`, la hamburguesa) abre
+   todas las secciones en un panel de pantalla completa (`.navegacion-hoja`, un popover: anda sin
+   JavaScript; usuario, 2026-11-12). Se carga en la capa `bloques` desde app.css. Dónde va dentro de la cabecera (el orden y
    el ancho de la fila) lo dice la hoja de la pantalla. Catálogo: docs/interfaz/componentes.md. */
 
-/* --- El celular: una barra fija abajo --------------------------------------------------------- */
-.navegacion {
+/* --- El celular: una barra fija abajo, oscura ------------------------------------------------- */
+/* La barra es el menú entero en las privadas y, en las públicas, solo la lista de las secciones. */
+.navegacion:not([data-zona="publica"], [data-forma="panel"]),
+.navegacion-barra {
   position: fixed;
   inset: auto 0 0;
-  z-index: 2;
-  background: var(--color-papel);
-  border-top: 1px solid var(--color-filete);
+  /* Encima de la barra de filtros y del botón fijos (R11-33) y de lo que se mueve o flota en la
+     página (la pausa y las abejas del hero, hasta 4): se ve siempre. */
+  z-index: var(--capa-menu-celular);
+  background: var(--color-tinta);
 }
 
-/* Las páginas públicas: una franja de papel sobre la línea de tinta separa la barra de un bloque del
-   mismo verde (las cuentas de ejemplo de Ingresar) cuando pasa por encima; la letra va más angosta.
-   Con :where, pesan lo mismo que las reglas de base y la tableta las pisa. */
-.navegacion:where([data-zona="publica"]) {
-  box-shadow: 0 -0.375rem 0 var(--color-papel);
+/* Los íconos de la barra (iconos :: navegacion) se definen una vez y no ocupan lugar. */
+.navegacion > .iconos {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* Las públicas: el menú queda en la cabecera; de él, solo la barra baja. */
+.navegacion[data-zona="publica"] {
+  display: flex;
+  align-items: center;
 }
 
 .navegacion ul {
@@ -37,12 +51,16 @@
   justify-content: center;
   min-height: 3.75rem;
   padding: 0.5rem 0.25rem;
-  color: var(--color-tinta-suave);
+  color: var(--color-papel);
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.15;
   text-align: center;
   text-decoration: none;
+  /* "Organizaciones" (R11-45) no entra entera en una celda de la barra del celular: se corta en
+     sílabas (el sitio está en es-AR) y, si el navegador no sabe cortar, en cualquier letra. */
+  hyphens: auto;
+  overflow-wrap: anywhere;
 }
 
 .navegacion:where([data-zona="publica"]) a {
@@ -62,8 +80,64 @@
 }
 
 .navegacion :focus-visible {
-  outline-color: var(--color-acento);
+  outline-color: var(--color-papel);
   outline-offset: -5px;
+}
+
+/* En la barra, el ícono sobre el nombre. */
+.navegacion-barra a,
+.navegacion:not([data-zona="publica"], [data-forma="panel"]) a {
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.navegacion-icono {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Ingresar y Crear cuenta, arriba, en la cabecera de papel. */
+.navegacion .navegacion-acceso {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.navegacion .navegacion-acceso a {
+  min-height: var(--medida-toque-minimo);
+  padding: 0.5rem 0.625rem;
+  color: var(--color-tinta);
+  font-stretch: 100%;
+}
+
+.navegacion .navegacion-acceso a[aria-current="page"] {
+  border-radius: 0.5rem;
+}
+
+.navegacion .navegacion-acceso :focus-visible {
+  outline-color: var(--color-acento);
+  outline-offset: 3px;
+}
+
+/* Crear cuenta, como el botón principal. */
+.navegacion .navegacion-destacado a,
+.navegacion .navegacion-destacado a[aria-current="page"] {
+  border-radius: var(--radio-boton);
+  box-shadow: 0.25rem 0.25rem 0 var(--color-sombra);
+  background: var(--color-acento);
+  color: var(--color-texto-sobre-accion);
+  font-weight: 700;
+}
+
+.navegacion .navegacion-destacado a:hover {
+  background: var(--color-acento-hondo);
+  color: var(--color-texto-sobre-accion);
 }
 
 /* En la barra, el nombre corto: el resto lo leen los lectores de pantalla. */
@@ -76,103 +150,99 @@
   white-space: nowrap;
 }
 
-/* --- Con más de 5 secciones: las 4 primeras y "Más" ------------------------------------------- */
-.navegacion ul:has(.navegacion-mas) > li:nth-child(n + 5):not(.navegacion-mas) {
-  display: none;
-}
-
-/* Con 5 celdas (las 4 y "Más" de la administración, o las 5 de la persona que dona), a 360 px cada
-   una mide 72 px y "Donaciones" o "Seguimiento" no entraban: en esa barra la letra va angosta, el
-   mismo tamaño. La letra de la piel Huerta no tiene ancho variable y seguía sin entrar (80 px en
-   75 a 375 px, PR 959): va además a 12 px. Con :where, pesa lo mismo que ".navegacion a" y la
-   tableta lo pisa. */
+/* Con 5 celdas (las 5 de la persona que dona), a 360 px cada una mide 72 px y "Donaciones" o
+   "Seguimiento" no entraban: en esa barra la letra va angosta, el mismo tamaño. La letra de la piel
+   Huerta no tiene ancho variable y seguía sin entrar (80 px en 75 a 375 px, PR 959): va además a
+   12 px. Con :where, pesa lo mismo que ".navegacion a" y la tableta lo pisa. */
 .navegacion :where(ul:has(> li:nth-child(5)) > li) > a {
-  padding-inline: 0.125rem;
+  padding-inline: 0;
   font-size: 0.75rem;
   font-stretch: 75%;
+  /* "Seguimiento" medía 73 px en una celda de 72: un poco más juntas, entra. */
+  letter-spacing: -0.02em;
 }
 
-.navegacion-mas > button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  width: 100%;
-  min-height: 3.75rem;
+/* --- Con más de 5 secciones: el botón de menú y el panel de pantalla completa ------------------ */
+.navegacion-abrir {
+  display: grid;
+  place-items: center;
+  width: var(--medida-toque-minimo);
+  height: var(--medida-toque-minimo);
   margin: 0;
-  padding: 0.5rem 0.25rem;
+  padding: 0;
   border: 0;
-  border-radius: 0;
+  border-radius: 50%;
   background: none;
-  color: var(--color-tinta-suave);
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
+  color: var(--color-tinta);
   cursor: pointer;
 }
 
-.navegacion-mas > button span {
-  font-size: 1.375rem;
-  line-height: 1;
-}
-
-/* "Más" va marcado cuando la sección actual es una de las que no entran en la barra. */
-.navegacion-mas:has(.navegacion-hoja li:nth-child(n + 5) a[aria-current="page"]) > button {
+.navegacion-abrir:hover {
   background: var(--color-acento-claro);
-  color: var(--color-acento-hondo);
 }
 
-/* Una hoja que sube desde abajo, al alcance del pulgar, con la página oscurecida detrás. */
+.navegacion-abrir svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.navegacion-abrir:focus-visible {
+  outline-color: var(--color-acento);
+  outline-offset: 2px;
+}
+
+/* El panel: la pantalla entera, lisa, de papel; arriba la marca y Cerrar, debajo las secciones. */
 .navegacion-hoja {
-  inset: auto 0 0;
+  inset: 0;
   width: 100%;
   max-width: none;
-  height: auto;
-  max-height: 85vh;
+  height: 100%;
+  max-height: none;
   margin: 0;
-  padding: 1.5rem 1rem 2rem;
+  padding: 1rem 1rem 2rem;
+  overflow-y: auto;
   border: 0;
-  border-top: 1px solid var(--color-filete);
-  border-radius: var(--radio-lamina) var(--radio-lamina) 0 0;
   background: var(--color-papel);
   color: var(--color-tinta);
 }
 
-.navegacion-hoja::backdrop {
-  background: var(--color-tinta);
-  opacity: 0.55;
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .navegacion-hoja:popover-open {
-    animation: var(--movimiento-animacion-hoja-sube);
+    animation: var(--movimiento-animacion-aparece);
   }
 }
 
 .navegacion-hoja:popover-open {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
-/* Cerrar arriba, a la vista. */
+/* La marca a la izquierda y Cerrar a la derecha, a la vista. */
 .navegacion-hoja-cabecera {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  width: 100%;
+  max-width: 40rem;
+  margin-inline: auto;
 }
 
-.navegacion-hoja-titulo {
+.navegacion-hoja-cabecera .marca {
   margin: 0;
-  font: 800 1.5rem / 1.2 var(--fuente-titulo);
-  font-stretch: 118%;
 }
 
 .navegacion .navegacion-hoja ul {
   display: grid;
   grid-auto-flow: row;
-  margin: 0;
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
   padding: 0;
   list-style: none;
   border-top: 1px solid var(--color-filete);
@@ -180,21 +250,34 @@
 
 .navegacion .navegacion-hoja a {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  min-height: 3.5rem;
+  gap: 1rem;
+  min-height: 4rem;
   padding: 0.5rem 1rem;
   border-bottom: 1px solid var(--color-filete);
+  border-radius: 0;
   color: var(--color-tinta);
-  font-size: 1.0625rem;
+  font-size: 1.25rem;
   font-stretch: 100%;
   font-weight: 700;
   text-align: left;
   text-decoration: none;
 }
 
+.navegacion .navegacion-hoja a:hover {
+  background: var(--color-acento-claro);
+}
+
 .navegacion .navegacion-hoja a[aria-current="page"] {
   background: var(--color-acento-claro);
+  color: var(--color-acento-hondo);
+}
+
+.navegacion-hoja .navegacion-icono {
+  width: 1.75rem;
+  height: 1.75rem;
 }
 
 .navegacion .navegacion-hoja :focus-visible {
@@ -202,62 +285,52 @@
   outline-offset: -4px;
 }
 
-/* Sin ventanas del navegador (popover, navegadores de antes de 2024), "Más" no abriría nada: la barra
-   muestra todas las secciones, en filas de a 3. */
+/* Sin ventanas del navegador (popover, navegadores de antes de 2024), el botón no abriría nada: no
+   se ve, y la lista queda a la vista en la cabecera. */
 @supports not selector(:popover-open) {
-  /* Desde la tableta la lista es flex: la grilla no la toca, y "Más" ya no se ve. */
-  .navegacion ul:has(.navegacion-mas) {
-    grid-auto-flow: row;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .navegacion ul:has(.navegacion-mas) > li:nth-child(n + 5):not(.navegacion-mas) {
-    display: list-item;
-  }
-
-  .navegacion-mas {
+  .navegacion-abrir,
+  .navegacion-hoja-cabecera {
     display: none;
+  }
+
+  .navegacion-hoja {
+    position: static;
+    padding: 0;
+    background: none;
   }
 }
 
-/* --- Desde la tableta: horizontal, dentro de la cabecera ------------------------------------- */
+/* --- En la cabecera, horizontal ---------------------------------------------------------------- */
+/* Las privadas, desde la tableta (la hoja de la pantalla las acomoda en una o dos filas). */
 @media (min-width: 37.5em) {
-  .navegacion {
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) {
     position: static;
     background: none;
-    border-top: 0;
-    box-shadow: none;
   }
 
-  /* En la cabecera, sin la textura de la barra. */
-  .navegacion::before {
-    content: none;
-  }
-
-  .navegacion ul {
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul {
     display: flex;
     flex-wrap: wrap;
     gap: 0.375rem;
   }
 
-  .navegacion[data-zona="publica"] ul {
-    align-items: center;
-  }
-
-  .navegacion a {
-    min-height: 3rem;
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) a {
+    min-height: var(--medida-toque-minimo);
     padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
+    color: var(--color-tinta-suave);
     font-size: 0.95rem;
+    hyphens: manual;
+    overflow-wrap: normal;
   }
 
-  .navegacion a:hover {
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) a:hover {
     background: var(--color-acento-claro);
     color: var(--color-tinta);
     text-decoration: none;
   }
 
-  .navegacion-largo {
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) .navegacion-largo {
     position: static;
     width: auto;
     height: auto;
@@ -266,36 +339,86 @@
     white-space: normal;
   }
 
-  .navegacion :focus-visible {
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) :focus-visible {
+    outline-color: var(--color-acento);
     outline-offset: 3px;
   }
 
-  /* Con más de 5 secciones, el menú entra entero en la cabecera: "Más" no se ve. */
-  .navegacion ul:has(.navegacion-mas) > li:nth-child(n + 5):not(.navegacion-mas) {
-    display: list-item;
+  /* En la cabecera, el nombre solo, sin el ícono. */
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) a {
+    flex-direction: row;
   }
 
-  .navegacion-mas {
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) .navegacion-icono {
+    display: none;
+  }
+}
+
+/* Las públicas, recién cuando la marca, las secciones, Ingresar y Crear una cuenta entran en una
+   sola línea (unos 880 px; usuario, 2026-11-12: "romper a mobile apenas dejan de caber"). Antes,
+   la barra de abajo y, arriba, Ingresar y Crear cuenta. */
+@media (min-width: 56em) {
+  .navegacion[data-zona="publica"] {
+    gap: 0.375rem;
+  }
+
+  .navegacion[data-zona="publica"] .navegacion-barra {
+    position: static;
+    background: none;
+  }
+
+  /* En la cabecera, sin íconos ni Inicio (la marca lleva a la portada). */
+  .navegacion[data-zona="publica"] .navegacion-icono,
+  .navegacion[data-zona="publica"] .navegacion-inicio {
     display: none;
   }
 
-  /* Ingresar y Crear una cuenta, aparte, a la derecha; el segundo, como el botón principal. */
-  .navegacion-aparte {
+  .navegacion[data-zona="publica"] ul {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .navegacion[data-zona="publica"] .navegacion-barra a {
+    flex-direction: row;
+    min-height: var(--medida-toque-minimo);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    color: var(--color-tinta-suave);
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+
+  .navegacion[data-zona="publica"] .navegacion-barra a:hover {
+    background: var(--color-acento-claro);
+    color: var(--color-tinta);
+    text-decoration: none;
+  }
+
+  .navegacion[data-zona="publica"] .navegacion-largo {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+
+  .navegacion[data-zona="publica"] :focus-visible {
+    outline-color: var(--color-acento);
+    outline-offset: 3px;
+  }
+
+  /* Ingresar y Crear una cuenta, aparte, a la derecha. */
+  .navegacion[data-zona="publica"] .navegacion-acceso {
     margin-left: auto;
   }
 
-  .navegacion-destacado a,
-  .navegacion-destacado a[aria-current="page"] {
-    border-radius: var(--radio-boton);
-    box-shadow: 0.25rem 0.25rem 0 var(--color-sombra);
-    background: var(--color-acento);
-    color: var(--color-texto-sobre-accion);
-    font-weight: 700;
-  }
-
-  .navegacion-destacado a:hover {
-    background: var(--color-acento-hondo);
-    color: var(--color-texto-sobre-accion);
+  .navegacion[data-zona="publica"] .navegacion-acceso a {
+    padding-inline: 0.75rem;
+    font-size: 0.95rem;
+    white-space: nowrap;
   }
 }
 
@@ -367,7 +490,7 @@
 .navegacion-cuenta-menu a {
   display: flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0 0.5rem;
   border-radius: 0.5rem;
   color: var(--color-tinta);

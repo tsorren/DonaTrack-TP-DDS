@@ -3,6 +3,9 @@ package grupo5.donaciones.services.impl;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.Pagina;
+import grupo5.donaciones.dto.donaciones.FiltroDonaciones;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.infrastructure.ProcesadorDeDonaciones;
@@ -10,10 +13,13 @@ import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.listados.CriterioDonaciones;
+import grupo5.donaciones.models.repositories.listados.OrdenPorFecha;
+import grupo5.donaciones.models.repositories.listados.Tramo;
 import grupo5.donaciones.services.IDonacionesService;
 import grupo5.donaciones.services.IFotosBienesService;
+import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.mappers.DonacionMapper;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -69,8 +75,22 @@ public class DonacionesService implements IDonacionesService {
   }
 
   @Override
-  public List<DonacionOutputDTO> listarDonaciones() {
-    return donacionesRepository.findAll().stream().map(mapper::toOutputDTO).toList();
+  public Pagina<DonacionOutputDTO> buscar(FiltroDonaciones filtro, ParametrosListado listado) {
+    if (filtro.desde() != null
+        && filtro.hasta() != null
+        && filtro.desde().isAfter(filtro.hasta())) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    Tramo<Donacion> tramo =
+        donacionesRepository.buscar(
+            new CriterioDonaciones(
+                filtro.donanteId(),
+                filtro.desde(),
+                filtro.hasta(),
+                listado.texto(),
+                listado.orden(OrdenPorFecha.class, OrdenPorFecha.RECIENTES),
+                listado.paginado()));
+    return new Pagina<>(mapper.toOutputDTOs(tramo.elementos()), (int) tramo.total());
   }
 
   @Override

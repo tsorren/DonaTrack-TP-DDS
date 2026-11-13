@@ -7,8 +7,11 @@ import grupo5.incentivos.infrastructure.persistencia.repositories.SpringDataRank
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.models.repositories.IRankingRepository;
 import java.time.YearMonth;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -29,5 +32,17 @@ public class RankingRepositoryJpaAdapter
   @Override
   public Optional<RankingMensual> findByPeriodo(YearMonth periodo) {
     return springDataRepo.findByPeriodo(periodo).map(mapper::toDomain);
+  }
+
+  /**
+   * El período se guarda como texto {@code AAAA-MM}, así que ordenarlo como texto es ordenarlo por
+   * fecha.
+   */
+  @Override
+  public List<RankingMensual> buscarHistorial(int pagina, int tamanio) {
+    return springDataRepo
+        .findAll(PageRequest.of(pagina, tamanio, Sort.by(Sort.Direction.DESC, "periodo")))
+        .map(mapper::toDomain)
+        .getContent();
   }
 }

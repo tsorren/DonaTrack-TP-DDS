@@ -9,8 +9,10 @@
        el 15 de octubre de 2026, 18:30; los ejemplos cubren minutos, horas, días, semanas y el mes
        anterior. Marcar es un formulario real (POST) que lleva a entidad-notificaciones-leidas: la
        misma bandeja, todas leídas, con el aviso arriba (en el sistema, Envios deja el aviso en
-       #avisos y vuelve a la bandeja). Las novedades y las categorías vienen del controller
-       (bandeja: de la maqueta o de Notificaciones). Leer no confirma nada: las que esperan en la
+       #avisos y vuelve a la misma página de la bandeja). Las novedades vienen del controller de a
+       una página de 20 (R11-14, ficha docs/interfaz/flujos/r11-p1-notificaciones.md: bandeja, de la
+       maqueta o de Notificaciones, que resuelve la página, "Sin leer", la búsqueda, la categoría y
+       el orden), con las sin leer de la cuenta y todas las categorías del rol; paginador. Leer no confirma nada: las que esperan en la
        puerta conservan su botón «Confirmar recepción».
        ?escenario=vacio, nada-sin-leer, lento y error. Enviando ("Marcando…") y el error al marcar se
        describen en la ficha y no se dibujan.
@@ -29,11 +31,12 @@
        leída; nota: lo que ya se confirmó. */-->
 <th:block th:fragment="hoja(accion)"
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
-             todasLeidas=${accion == 'leidas' or escenario == 'nada-sin-leer'},
+             marcadas=${accion == 'leidas' or escenario == 'nada-sin-leer' ? 'todas' : ''},
              conDatos=${escenario != 'vacio' and escenario != 'error' and escenario != 'lento'},
-             temas=${bandeja.temas},
-             novedades=${bandeja.novedades},
-             sinLeer=${todasLeidas ? 0 : #lists.size(novedades.?[!leida])}">
+             conFiltros=${param.ver != null or (param.buscar != null and !#strings.isEmpty(#strings.trim(param.buscar[0])))
+                 or (param.tema != null and param.tema[0] != '')},
+             cuentaVacia=${bandeja.pagina.total == 0 and !conFiltros},
+             sinLeer=${marcadas == 'todas' ? 0 : bandeja.sinLeer}">
   <div class="pila" data-espacio="4">
     <header class="cabecera-entidad">
       <p class="rotulo">Notificaciones</p>
@@ -47,7 +50,7 @@
     </header>
 
     <!--/* El éxito, con el foco; en el sistema, en la región aria-live del layout. */-->
-    <section th:if="${accion == 'leidas'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus
+    <section th:if="${accion == 'leidas'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
              aria-labelledby="leidas-titulo">
       <h2 id="leidas-titulo">Marcaste las novedades como leídas.</h2>
       <p>Las entregas que esperan en tu puerta siguen esperando tu confirmación.</p>
@@ -62,16 +65,16 @@
                '/entidad-notificaciones')}"></section>
     </th:block>
 
-    <section th:if="${escenario == 'vacio' or (conDatos and #lists.isEmpty(novedades))}" class="vacio"
+    <section th:if="${escenario == 'vacio' or (conDatos and cuentaVacia)}" class="vacio"
              aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no tenés novedades.</h2>
-      <p>Te avisamos acá cuando se asigne una donación a tu entidad, cuando salga hacia vos, si tiene un
+      <p>Te avisamos acá cuando se asigne una donación a tu organización, cuando salga hacia vos, si tiene un
         problema y cuando llegue a tu puerta.</p>
     </section>
 
-    <th:block th:if="${conDatos and !#lists.isEmpty(novedades)}">
-      <div th:replace="~{componentes/buzon :: buzon(${accion == 'leidas' ? '/entidad-notificaciones-leidas' : '/entidad-notificaciones'},
-           '/entidad-notificaciones-leidas', ${bandeja.ahora}, ${ {novedades} }, ${temas}, ${todasLeidas})}"></div>
+    <th:block th:if="${conDatos and !cuentaVacia}">
+      <div th:replace="~{componentes/buzon :: pagina(${accion == 'leidas' ? '/entidad-notificaciones-leidas' : '/entidad-notificaciones'},
+           '/entidad-notificaciones-leidas', ${bandeja}, ${sinLeer}, ${paginador}, ${marcadas}, '')}"></div>
     </th:block>
   </div>
 </th:block>

@@ -13,6 +13,7 @@ import grupo5.cliente.puertos.RecibidasPuerto;
 import grupo5.cliente.vistas.EntidadInicioVista;
 import grupo5.cliente.vistas.RecibidasVista;
 import grupo5.cliente.vistas.RecibidasVista.Recibida;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -91,7 +92,7 @@ class EntidadInicioEnPuertaControllerTest {
     EntidadSeguimientoPuerto seguimientos() {
       return new EntidadSeguimientoPuerto() {
         @Override
-        public Map<String, String> noticias(UUID entidad) {
+        public Map<String, String> noticias(UUID entidad, Collection<String> claves) {
           return Map.of();
         }
 

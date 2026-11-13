@@ -28,6 +28,10 @@
        Los camiones vienen del controller (flota: de la maqueta o de Logística, que no da nombre, chofer,
        viaje, motivo ni rendimiento: sin ellos esas partes no se muestran). Los formularios guardan de
        verdad fuera de la maqueta (pieza envio: hx-boost, indicador y aviso en #avisos).
+       Los dos diálogos son ventanas que bloquean el fondo (data-bloquea, R11-32, ficha
+       r11-p2-ventanas): sin JavaScript, el popover de siempre; con JavaScript, showModal() desde
+       static/js/interfaz.js, también en la ficha que llega con hx-get. Si se corta la conexión al
+       enviar, la ventana sigue abierta y muestra su aviso de corte ([data-corte]).
        ?escenario=vacio, lento y error. El error de datos del alta es admin-camiones-agregar-error: el
        formulario, abierto debajo del encabezado (no en el diálogo), con el resumen arriba.
        Fragmentos:
@@ -89,12 +93,12 @@
     </header>
 
     <th:block th:if="${conAviso}">
-      <p th:if="${accion == 'agregado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+      <p th:if="${accion == 'agregado'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
          autofocus>Agregaste el camión AF 345 KL. Queda disponible para las próximas rutas.</p>
-      <p th:if="${accion == 'deshabilitado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+      <p th:if="${accion == 'deshabilitado'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
          autofocus>Deshabilitaste el camión AC 456 EF. No se le van a asignar rutas hasta que lo vuelvas a
         habilitar.</p>
-      <p th:if="${accion == 'habilitado'}" class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+      <p th:if="${accion == 'habilitado'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
          autofocus>Volviste a habilitar el camión AA 999 ZZ. Queda disponible para las próximas rutas.</p>
     </th:block>
 
@@ -112,7 +116,7 @@
 
     <!--/* El alta: en un diálogo del navegador; con el error de datos, abierta debajo del encabezado. */-->
     <dialog th:if="${escenario != 'error' and escenario != 'lento' and !conError}" class="dialogo"
-            id="agregar-camion" popover aria-labelledby="agregar-titulo">
+            id="agregar-camion" popover data-bloquea aria-labelledby="agregar-titulo">
       <h2 class="dialogo-titulo" id="agregar-titulo">Agregar camión</h2>
       <th:block th:replace="~{:: formulario(false, true)}"></th:block>
     </dialog>
@@ -371,7 +375,7 @@
     <th:block th:case="'disponible'">
       <button type="button" class="boton" data-tono="quitar" th:popovertarget="|deshabilitar-${c.clave}|"
               th:aria-label="|Deshabilitar: camión ${c.patente}|">Deshabilitar</button>
-      <dialog class="dialogo" data-tono="quitar" th:id="|deshabilitar-${c.clave}|" popover
+      <dialog class="dialogo" data-tono="quitar" th:id="|deshabilitar-${c.clave}|" popover data-bloquea
               th:aria-labelledby="|deshabilitar-${c.clave}-titulo|">
         <h2 class="dialogo-titulo" th:id="|deshabilitar-${c.clave}-titulo|"
             th:text="|¿Deshabilitar el camión ${c.patente}?|">¿Deshabilitar el camión AC 456 EF?</h2>
@@ -384,6 +388,7 @@
             <label th:for="|motivo-${c.clave}|">Motivo (opcional)</label>
             <textarea th:id="|motivo-${c.clave}|" name="motivo" rows="3" placeholder="Contanos el motivo"></textarea>
           </div>
+          <section th:replace="~{:: corte}"></section>
           <div class="racimo">
             <button class="boton" data-tono="quitar" type="submit">Deshabilitar</button>
             <button type="button" class="boton" data-tono="secundario"
@@ -410,7 +415,8 @@
 <form th:fragment="formulario(conError, enDialogo)" class="pila" data-espacio="3"
       th:classappend="${enDialogo} ? '' : 'formulario tarjeta'"
       action="/admin-camiones-agregado" th:action="@{/admin-camiones-agregado}" method="post" hx-boost="true"
-      hx-indicator="#enviando-admin-camiones-agregar" hx-select-oob="#avisos">
+      hx-indicator="#enviando-admin-camiones-agregar" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob">
   <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
            autofocus aria-labelledby="resumen-titulo">
     <h2 id="resumen-titulo">Revisá 2 datos para seguir.</h2>
@@ -449,6 +455,7 @@
              th:attr="aria-describedby=${conError} ? 'altura-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: 2,8">
     </div>
   </div>
+  <th:block th:if="${enDialogo}"><section th:replace="~{:: corte}"></section></th:block>
   <div class="racimo">
     <button class="boton" data-tono="principal" type="submit">Agregar camión</button>
     <button th:if="${enDialogo}" type="button" class="boton" data-tono="secundario" popovertarget="agregar-camion"
@@ -458,5 +465,13 @@
   </div>
   <p th:replace="~{envio :: indicador('enviando-admin-camiones-agregar', 'Guardando…')}"></p>
 </form>
+
+<!--/* El aviso de corte de las ventanas (R11-32): oculto; static/js/interfaz.js lo muestra si el
+       envío no llega al servidor, con la ventana abierta y lo escrito. */-->
+<section th:fragment="corte" class="banner" data-estado="error" role="alert" data-corte hidden>
+  <h3>No sabemos si se guardó.</h3>
+  <p>Se cortó la conexión mientras se enviaba. Revisá la señal y, antes de probar de nuevo, recargá la
+    página para ver cómo quedó.</p>
+</section>
 </body>
 </html>

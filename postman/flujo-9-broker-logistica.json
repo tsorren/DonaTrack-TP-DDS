@@ -417,7 +417,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas?orden=reciente&size=100"
           },
           "event": [
             {
@@ -723,7 +723,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas?orden=reciente&size=100"
           },
           "event": [
             {
@@ -1029,7 +1029,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas?orden=reciente&size=100"
           },
           "event": [
             {
@@ -1913,7 +1913,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas?orden=reciente&size=100"
           },
           "event": [
             {
@@ -2198,7 +2198,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas?orden=reciente&size=100"
           },
           "event": [
             {

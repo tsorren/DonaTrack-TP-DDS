@@ -101,30 +101,6 @@
   margin-top: 0;
 }
 
-#inicio-misiones {
-  display: grid;
-  gap: var(--espacio-3);
-}
-
-#inicio-misiones-dibujo {
-  position: relative;
-  max-width: 42rem;
-}
-
-#inicio-misiones-dibujo img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-#inicio-misiones-dibujo .boton {
-  position: absolute;
-  top: 62%;
-  left: 52%;
-  translate: -50% -50%;
-  white-space: nowrap;
-}
-
 /* 2. El tablero: tres columnas, cada una con el color de su estado en la cabeza. */
 [data-v="tablero"] {
   display: grid;
@@ -137,15 +113,63 @@
   align-items: stretch;
 }
 
+/* Cada columna, de arriba abajo: la cabeza, la lista (hasta 3) y el pie, que apoya abajo y queda a
+   la misma altura en las tres (la fila se estira a la más alta). Ficha r11-p2-tablero, §4.1. */
 [data-v="columna"] {
   --espacio-relleno: 1.25rem;
-  display: grid;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 
+/* Con más de una página, la lista reserva el alto de 3 donaciones (3 marcos de 4,5 rem y los dos
+   filetes con su aire): en la última página, con 1 o 2, el paginador no sube bajo el dedo. */
+[data-v="columna"][data-paginas] > ul {
+  min-height: calc(3 * 4.5rem + 2 * (0.875rem + 0.875rem + 1px));
+}
+
+[data-v="columna"] .banner {
+  margin: 0;
+}
+
+/* Las que esperan destino: sobre el pie, separadas por el filete. */
+[data-v="esperan"] {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: auto;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--color-filete);
+}
+
+[data-v="esperan"] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 800;
+}
+
+[data-v="esperan"] span {
+  font-size: 0.875rem;
+}
+
+[data-v="pie-columna"] {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+[data-v="esperan"] + [data-v="pie-columna"] {
+  margin-top: 0;
+}
+
+[data-v="pie-columna"] p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
 [data-v="columna"] h3 {
-  justify-self: start;
+  align-self: flex-start;
   margin: 0;
   padding: 0.375rem 0.875rem;
   border-radius: 999px;
@@ -170,8 +194,9 @@
   color: var(--color-problema-texto);
 }
 
-[data-v="columna"] ul {
+[data-v="columna"] > ul {
   display: grid;
+  align-content: start;
   gap: 0.875rem;
   margin: 0;
   padding: 0;
@@ -179,7 +204,7 @@
 }
 
 /* Cada donación: su dibujo en un marco redondeado a la izquierda, el nombre y qué pasó. */
-[data-v="columna"] li {
+[data-v="columna"] > ul > li {
   display: grid;
   grid-template-columns: 3.75rem minmax(0, 1fr);
   grid-template-rows: auto auto;
@@ -187,7 +212,7 @@
   align-items: center;
 }
 
-[data-v="columna"] li + li {
+[data-v="columna"] > ul > li + li {
   padding-top: 0.875rem;
   border-top: 1px solid var(--color-filete);
 }
@@ -198,7 +223,7 @@
   --medida-escala: 0.26px;
 }
 
-[data-v="columna"] li img {
+[data-v="columna"] > ul > li img {
   grid-row: 1 / span 2;
   width: 3.75rem;
   height: 4.5rem;
@@ -209,16 +234,16 @@
   object-position: bottom;
 }
 
-[data-v="columna"] li a {
+[data-v="columna"] > ul > li a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   color: var(--color-tinta);
   font-weight: 800;
   text-underline-offset: 0.2em;
 }
 
-[data-v="columna"] li span {
+[data-v="columna"] > ul > li span {
   align-self: start;
   font-size: 0.9375rem;
 }
@@ -301,7 +326,8 @@
   display: -webkit-box;
   flex: 1 1 100%;
   order: 1;
-  min-height: 0;
+  /* 48 px de toque aunque la noticia entre en una línea (piso del gate visual). */
+  min-height: var(--medida-toque-minimo);
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
@@ -313,7 +339,7 @@
 
 /* Toda la noticia es el toque del enlace (al menos 3 rem de alto). */
 .noticias-inicio .noticia {
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
 }
 
 .noticias-inicio .noticia-texto::after {
@@ -373,6 +399,6 @@
   display: inline-flex;
   align-items: center;
   justify-self: start;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }

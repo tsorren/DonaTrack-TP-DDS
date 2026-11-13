@@ -2,10 +2,17 @@ package grupo5.cliente.maqueta;
 
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import grupo5.cliente.vistas.AdminDonacionesVista.Bien;
+import grupo5.cliente.vistas.AdminDonacionesVista.Criterio;
 import grupo5.cliente.vistas.AdminDonacionesVista.Donacion;
+import grupo5.cliente.vistas.AdminDonantesVista;
+import grupo5.cliente.vistas.ConsultaDonaciones;
+import grupo5.cliente.vistas.Tramo;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Las donaciones de ejemplo del admin (las que estaban en admin-donaciones.html), con su historial
@@ -98,7 +105,144 @@ final class AdminOperacionDonaciones {
 
   private AdminOperacionDonaciones() {}
 
-  static AdminDonacionesVista vista(String accion) {
+  /**
+   * De a 5 por página en la maqueta (en el sistema, de a 20): con sus 14 donaciones de ejemplo, el
+   * paginador provisorio se ve y se puede probar.
+   */
+  static final int POR_PAGINA = 5;
+
+  private static final List<Criterio> CRITERIOS =
+      List.of(
+          new Criterio("", "Vencen antes", "Primero, las del depósito que vencen antes."),
+          new Criterio(
+              "reciente",
+              "Registradas más recientes",
+              "Primero, las registradas más recientemente."),
+          new Criterio(
+              "antigua", "Registradas más antiguas", "Primero, las registradas hace más tiempo."),
+          new Criterio(
+              "nombre",
+              "Donación, de la A a la Z",
+              "Por el nombre de la donación, de la A a la Z."),
+          new Criterio(
+              "donante",
+              "Donante, de la A a la Z",
+              "Por el nombre de quien donó, de la A a la Z."));
+
+  /**
+   * La página pedida de las donaciones de ejemplo, filtradas y ordenadas como lo hará el sistema
+   * (sin la recién registrada, que es la de Registrar donación).
+   */
+  static AdminDonacionesVista vista(ConsultaDonaciones pedida, String accion) {
+    ConsultaDonaciones consulta =
+        new ConsultaDonaciones(
+            pedida.estado(),
+            pedida.pronto(),
+            AdminDonacionesVista.elegido(pedida.orden(), CRITERIOS),
+            pedida.pagina(),
+            pedida.buscar(),
+            pedida.categoria(),
+            pedida.registrada(),
+            pedida.donante(),
+            pedida.donacion());
+    String buscar = consulta.buscar().toLowerCase(Locale.ROOT);
+    String donante = DONANTES.get(consulta.donante());
+    List<Donacion> todas = todas(accion).stream().filter(d -> !d.nueva()).toList();
+    List<Donacion> ordenadas =
+        consulta.orden().isEmpty()
+            ? todas
+            : ORDENES.get(consulta.orden()).stream()
+                .map(clave -> todas.stream().filter(d -> d.clave().equals(clave)).findFirst())
+                .flatMap(Optional::stream)
+                .toList();
+    List<Donacion> filtradas =
+        ordenadas.stream()
+            .filter(d -> !consulta.pronto() || d.prontaAVencer())
+            .filter(d -> consulta.estado().isEmpty() || consulta.estado().equals(d.estado()))
+            .filter(d -> buscar.isEmpty() || d.que().toLowerCase(Locale.ROOT).contains(buscar))
+            .filter(
+                d ->
+                    consulta.categoria().isEmpty()
+                        || consulta.categoria().equals(CATEGORIA_DE.get(d.clave())))
+            // En la maqueta, todas se registraron hace más de 30 días: un período solo deja "hoy"
+            // vacío
+            .filter(d -> !"hoy".equals(consulta.registrada()))
+            .filter(d -> consulta.donante().isEmpty() || d.donante().equals(donante))
+            .toList();
+    return new AdminDonacionesVista(
+        Tramo.de(filtradas, consulta.pagina(), POR_PAGINA),
+        consulta,
+        CRITERIOS,
+        true,
+        null,
+        "7 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en octubre. Al 15"
+            + " de octubre de 2026, 18:30.",
+        CATEGORIAS,
+        consulta.donante().isEmpty()
+            ? null
+            : Objects.requireNonNullElse(donante, "el donante elegido"),
+        null,
+        false);
+  }
+
+  /** Las categorías del catálogo de ejemplo (R11-34). */
+  private static final List<AdminDonacionesVista.Opcion> CATEGORIAS =
+      List.of(
+          new AdminDonacionesVista.Opcion("alimentos", "Alimentos"),
+          new AdminDonacionesVista.Opcion("ropa", "Ropa"),
+          new AdminDonacionesVista.Opcion("higiene", "Higiene"),
+          new AdminDonacionesVista.Opcion("utiles", "Útiles escolares"));
+
+  /** La categoría de cada donación de ejemplo; las demás son de Alimentos. */
+  private static final Map<String, String> CATEGORIA_DE =
+      Map.ofEntries(
+          Map.entry("leche", "alimentos"),
+          Map.entry("yogur", "alimentos"),
+          Map.entry("pan", "alimentos"),
+          Map.entry("queso", "alimentos"),
+          Map.entry("arroz", "alimentos"),
+          Map.entry("fideos", "alimentos"),
+          Map.entry("aceite", "alimentos"),
+          Map.entry("azucar", "alimentos"),
+          Map.entry("lentejas", "alimentos"),
+          Map.entry("caja", "alimentos"),
+          Map.entry("frazadas", "ropa"),
+          Map.entry("abrigo", "ropa"),
+          Map.entry("panales", "higiene"),
+          Map.entry("utiles", "utiles"),
+          Map.entry("cuadernos", "utiles"));
+
+  /** Los donantes de ejemplo por su clave en Donantes (la ficha lleva a sus donaciones). */
+  private static final Map<String, String> DONANTES =
+      Map.of("ana", ANA, "juan", JUAN, "fundacion", FUNDACION, "distribuidora", DISTRIBUIDORA);
+
+  /**
+   * Las 3 donaciones de ejemplo más recientes del donante {@code clave} y cuántas son, para su
+   * ficha en Donantes (R11-34); 0 y ninguna si no tiene.
+   */
+  static AdminDonantesVista.SusDonaciones susDonaciones(String clave) {
+    String nombre = DONANTES.get(clave);
+    List<Donacion> suyas =
+        todas("").stream().filter(d -> !d.nueva() && d.donante().equals(nombre)).toList();
+    return new AdminDonantesVista.SusDonaciones(
+        suyas.size(),
+        suyas.stream()
+            .limit(3)
+            .map(
+                d ->
+                    new AdminDonantesVista.Reciente(
+                        d.clave(), d.que() + " · " + d.cantidad(), d.estado(), d.registrada()))
+            .toList(),
+        true);
+  }
+
+  /** La donación de ejemplo con esa clave; si no hay, la primera (la leche en polvo). */
+  static Donacion detalle(String clave, String accion) {
+    List<Donacion> todas = todas(accion);
+    return todas.stream().filter(d -> d.clave().equals(clave)).findFirst().orElse(todas.get(0));
+  }
+
+  private static List<Donacion> todas(String accion) {
     boolean vencida = "vencida".equals(accion);
     List<Donacion> todas = new ArrayList<>();
     todas.add(
@@ -191,11 +335,7 @@ final class AdminOperacionDonaciones {
                 new Bien("Fideos", DIEZ_KG, NUEVO, null),
                 new Bien("Aceite", "10 litros", NUEVO, null)),
             caja.historial()));
-    return new AdminDonacionesVista(
-        todas,
-        ORDENES,
-        "7 en el depósito · 4 asignadas · 1 en camino · 9 entregas confirmadas en octubre. Al 15"
-            + " de octubre de 2026, 18:30.");
+    return todas;
   }
 
   /** Arma una fila de ejemplo con su historial, como lo escribía la plantilla. */

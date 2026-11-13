@@ -64,7 +64,7 @@
           <th:block th:unless="${persona}">
             <div class="campo" th:data-estado="${conError} ? 'error'">
               <label for="empresa">Nombre de la empresa</label>
-              <small id="empresa-ayuda">Lo ven las entidades que reciben lo que donás.</small>
+              <small id="empresa-ayuda">Lo ven las organizaciones que reciben lo que donás.</small>
               <p th:if="${conError}" id="empresa-error" class="campo-error">Falta el nombre de la empresa.</p>
               <input id="empresa" name="empresa" type="text" required autocomplete="organization"
                      data-falta="Falta el nombre de la empresa."
@@ -133,8 +133,8 @@
 
         <section class="registro-seccion" id="confirmar" aria-labelledby="confirmar-titulo">
           <h2 id="confirmar-titulo">Confirmar</h2>
-          <p th:text="${persona} ? 'Las entidades que reciben lo que donás ven tu nombre. Podés ocultarlo cuando quieras en Mi perfil.' : 'Las entidades que reciben lo que donás ven el nombre de tu empresa. Podés ocultarlo cuando quieras en Mi perfil.'">Las
-            entidades que reciben lo que donás ven el nombre de tu empresa. Podés ocultarlo cuando quieras en Mi
+          <p th:text="${persona} ? 'Las organizaciones que reciben lo que donás ven tu nombre. Podés ocultarlo cuando quieras en Mi perfil.' : 'Las organizaciones que reciben lo que donás ven el nombre de tu empresa. Podés ocultarlo cuando quieras en Mi perfil.'">Las
+            organizaciones que reciben lo que donás ven el nombre de tu empresa. Podés ocultarlo cuando quieras en Mi
             perfil.</p>
           <div class="campo" th:data-estado="${conError} ? 'error'">
             <p th:if="${conError}" id="terminos-error" class="campo-error">Para crear tu cuenta, aceptá los términos

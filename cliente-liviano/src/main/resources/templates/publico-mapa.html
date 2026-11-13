@@ -1,15 +1,23 @@
 <!DOCTYPE html>
-<!--/* Raíces, sitio A: Mapa (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.2). Desde el
-       2026-11-09 (usuaria: "que sea literalmente un mapa"), un mapa real con MapLibre GL y el estilo
-       de OpenFreeMap (D21): un marcador numerado por entidad que confirmó entregas, con su globo
-       (nombre, entregas y lo que pide), y la atribución visible. Antes, el dibujo de la red de subte.
-       La lista "Entidad por entidad" dice todo, con el mismo número (RF-CL-06), y es lo que se ve sin
-       JavaScript. Al pasar o enfocar una entidad de la lista, o al llegar con #entidad-<clave> (desde
-       Entidades), su marcador se destaca y el mapa va hasta ella. Estados: ?categoria=alimentos, ropa,
-       muebles y escolares (sin resultados), ?escenario=vacio, lento y error. Datos: mapaPublico, de
-       PublicoMapaPuerto (de ejemplo o las entregas del mapa público de Logística: sin entidad,
-       categoría ni foto, el punto es un lugar y la pantalla oculta el filtro y las fotos); sin entregas,
-       el estado vacío. */-->
+<!--/* Raíces, sitio A: Mapa (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.2 y la
+       ampliación R11-19). Desde el 2026-11-09 (usuaria: "que sea literalmente un mapa"), un mapa real
+       con MapLibre GL y el estilo de OpenFreeMap (D21): un marcador numerado por lugar o entidad que
+       confirmó entregas, con su globo, y la atribución visible.
+       Desde R11-19 (lote p1-mapa, 2026-11-12):
+       - Los botones de salida van debajo del mapa (en la computadora, fijos con él).
+       - La lista "Entidad por entidad" / "Lugar por lugar" va plegada (una fila por lugar: número,
+         nombre y cantidad, .plegable dentro de cada .estacion-ficha), de a 10 por página, con el
+         paginador del sitio. Una fila abierta por vez (name compartido). Sigue siendo la alternativa
+         completa del mapa (RF-CL-06): todos los lugares están en alguna página, con lo del globo y
+         cada entrega. Es lo que se ve sin JavaScript.
+       - El mapa muestra todos los lugares del período, no solo los de la página: sus puntos salen de
+         la lista oculta [data-mapa-punto] (cada uno con su globo y el enlace a su página con
+         ?abierta=<clave>#entidad-<clave>). Cambiar de página reemplaza solo #lista-del-mapa (HTMX
+         con hx-select): el mapa no se recarga.
+       - Si Logística tiene más entregas del período que el tope, la cifra lo dice.
+       Estados: ?categoria=alimentos, ropa, muebles y escolares (sin resultados), ?escenario=muchas
+       (dos páginas), vacio, lento y error; ?pagina=N y ?abierta=<clave>. Datos: mapaPublico (de
+       PublicoMapaPuerto) y listaDelMapa, paginador y globos (de PublicoMapaController). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-mapa', ~{::contenido})}">
 <head>
@@ -22,24 +30,27 @@
 
 <th:block th:fragment="pantalla"
     th:with="v=${mapaPublico},
+             l=${listaDelMapa},
              categorias=${ {
       {clave: 'alimentos', texto: 'Alimentos', enFrase: 'alimentos'},
       {clave: 'ropa', texto: 'Ropa', enFrase: 'ropa'},
       {clave: 'muebles', texto: 'Muebles', enFrase: 'muebles'},
       {clave: 'escolares', texto: 'Útiles escolares', enFrase: 'útiles escolares'} } },
-             categoria=${mapaPublico.conCategorias and param.categoria != null and #lists.contains({'alimentos', 'ropa', 'muebles', 'escolares'}, param.categoria[0]) ? param.categoria[0] : ''},
-             escenario=${param.escenario != null ? param.escenario[0] : (mapaPublico.todas.isEmpty() ? 'vacio' : '')},
-             filtradas=${escenario == 'vacio' ? {} : (categoria == '' ? mapaPublico.todas : mapaPublico.todas.?[cat == #root.categoria])},
+             categoria=${categoriaElegida},
+             pedido=${param.escenario != null ? param.escenario[0] : ''},
+             escenario=${#lists.contains({'vacio', 'lento', 'error'}, pedido) ? pedido : (mapaPublico.todas.isEmpty() ? 'vacio' : '')},
              elegida=${categoria == '' ? null : categorias.^[clave == #root.categoria]},
-             conEntidades=${#sets.toSet(filtradas.![entidad]).size()},
-             cargado=${escenario == '' or escenario == 'vacio'},
-             hay=${escenario == '' and !filtradas.isEmpty()}">
+             lugares=${#lists.size(listaDelMapa.puntos)},
+             cuantas=${listaDelMapa.entregas()},
+             conTope=${categoria == '' and mapaPublico.conTope()},
+             hay=${escenario == '' and lugares > 0},
+             unidad=${v.conEntidades ? (lugares == 1 ? 'organización' : 'organizaciones') : (lugares == 1 ? 'lugar' : 'lugares')}">
   <svg th:replace="~{iconos :: categorias}"></svg>
   <div class="publica mapa">
     <header class="publica-cabeza">
       <p class="rotulo">Mapa</p>
       <h1>Adónde llegaron <em>las donaciones</em></h1>
-      <p th:if="${v.conEntidades}" class="lectura-bajada">Cada punto es una entidad que confirmó entregas en el último mes. La ubicación
+      <p th:if="${v.conEntidades}" class="lectura-bajada">Cada punto es una organización que confirmó entregas en el último mes. La ubicación
         es aproximada: mostramos el barrio, nunca la dirección.</p>
       <p th:unless="${v.conEntidades}" class="lectura-bajada">Cada punto es un lugar donde se confirmaron entregas en el
         último mes. Mostramos la localidad, nunca la dirección.</p>
@@ -52,14 +63,18 @@
         <button class="boton" data-tono="secundario" type="submit">Filtrar</button>
       </form>
       <div th:if="${hay}" class="cifra-fruto" aria-live="polite">
-        <p><b class="fruto" th:text="${#lists.size(filtradas)}">10</b>
-          <span th:text="|${#lists.size(filtradas) == 1 ? 'entrega' : 'entregas'}${elegida == null ? ' confirmadas' : ' de ' + elegida.enFrase} en ${conEntidades} ${v.conEntidades ? (conEntidades == 1 ? 'entidad' : 'entidades') : (conEntidades == 1 ? 'lugar' : 'lugares')}, ${v.rango}.|">entregas
-            confirmadas en 5 entidades, del 16 de septiembre al 15 de octubre de 2026.</span></p>
+        <p th:if="${conTope}"><b class="fruto" th:text="${#numbers.formatInteger(v.delPeriodo, 1, 'POINT')}">340</b>
+          <span th:text="|entregas confirmadas ${v.rango}. El mapa muestra las ${#numbers.formatInteger(cuantas, 1, 'POINT')} más recientes, en ${#numbers.formatInteger(lugares, 1, 'POINT')} ${unidad}.|">entregas
+            confirmadas del 13 de octubre al 12 de noviembre de 2026. El mapa muestra las 200 más recientes, en 37
+            lugares.</span></p>
+        <p th:unless="${conTope}"><b class="fruto" th:text="${#numbers.formatInteger(cuantas, 1, 'POINT')}">10</b>
+          <span th:text="|${cuantas == 1 ? 'entrega' : 'entregas'}${elegida == null ? (cuantas == 1 ? ' confirmada' : ' confirmadas') : ' de ' + elegida.enFrase} en ${#numbers.formatInteger(lugares, 1, 'POINT')} ${unidad}, ${v.rango}.|">entregas
+            confirmadas en 5 organizaciones, del 16 de septiembre al 15 de octubre de 2026.</span></p>
         <p class="nota" th:text="|Actualizado el ${v.actualizado}.|">Actualizado el 15 de octubre de 2026, 14:30.</p>
       </div>
     </div>
 
-    <p th:if="${hay and v.nota != null}" class="texto-chico" data-tono="suave" th:text="${v.nota}">Todavía no mostramos qué entidad recibió cada entrega.</p>
+    <p th:if="${hay and v.nota != null}" class="texto-chico" data-tono="suave" th:text="${v.nota}">Todavía no mostramos qué organización recibió cada entrega.</p>
 
     <th:block th:if="${escenario == 'error'}">
       <section th:replace="~{datos-publicos :: avisoError('No pudimos cargar el mapa de entregas.',
@@ -68,93 +83,118 @@
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando el mapa de entregas…</p>
 
     <div th:unless="${escenario == 'error'}" class="mapa-cuerpo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <!--/* El mapa real (usuaria, 2026-11-09: "que sea literalmente un mapa"; D21 del ADR del stack:
-             MapLibre GL con el estilo de OpenFreeMap, solo en las pantallas con mapa y con su
-             atribución). Es una mejora: static/js/mapa.js carga MapLibre (del WebJar; sin CDN) y pone un marcador por cada ficha de la lista, con su globo; sin JavaScript queda
-             el aviso y la lista de al lado, con los mismos datos (RF-CL-06). Los puntos son
-             sintéticos, uno por barrio: nunca una dirección. Antes, el dibujo de la red de subte. */-->
       <figure th:if="${escenario == 'lento'}" class="mapa-dibujo tierra-impresa esqueleto" aria-hidden="true"></figure>
-      <div th:if="${hay}" class="mapa-dibujo mapa-real" data-mapa role="region"
-           aria-label="Mapa de las entidades con entregas confirmadas. La lista de al lado tiene los mismos datos."
-           th:aria-label="${v.conEntidades} ? 'Mapa de las entidades con entregas confirmadas. La lista de al lado tiene los mismos datos.' : 'Mapa de los lugares con entregas confirmadas. La lista de al lado tiene los mismos datos.'"
-           data-maplibre="/webjars/maplibre-gl/dist/" th:data-maplibre="@{/webjars/maplibre-gl/dist/}">
-        <p class="mapa-real-aviso" th:text="|Para ver el mapa hace falta JavaScript. En la lista están ${v.conEntidades ? 'las mismas entidades' : 'los mismos lugares'}, con sus entregas.|">Para ver el mapa hace falta JavaScript. En la lista están las mismas
-          entidades, con sus entregas.</p>
-      </div>
 
-      <section th:if="${hay}" class="mapa-lista" aria-labelledby="lista-titulo">
-        <h2 id="lista-titulo" th:text="${v.conEntidades} ? 'Entidad por entidad' : 'Lugar por lugar'">Entidad por entidad</h2>
-        <ol class="estaciones" role="list">
-          <th:block th:each="e : ${v.estaciones}" th:with="suyas=${categoria == '' ? e.entregas : e.entregas.?[cat == '__${categoria}__']}">
-          <li th:unless="${suyas.isEmpty()}" class="estacion-ficha" th:classappend="${'estacion-ficha--' + e.numero}"
-              th:id="${'entidad-' + e.clave}" tabindex="-1"
-              th:attr="data-lat=${e.lat},data-lng=${e.lng},data-numero=${e.numero},data-nombre=${e.nombre}">
-            <!--/* El globo del marcador en el mapa: lo arma el servidor; mapa.js solo lo copia. */-->
+      <!--/* El mapa y, debajo, los botones de salida: en la computadora, la columna queda fija. */-->
+      <div th:if="${hay}" class="pila" data-espacio="4" data-parte="mapa">
+        <!--/* El mapa real (D21): static/js/mapa.js carga MapLibre (del WebJar; sin CDN) y pone un
+               marcador por cada punto de la lista oculta de abajo; sin JavaScript queda el aviso y la
+               lista, con los mismos datos (RF-CL-06). */-->
+        <div class="mapa-dibujo mapa-real" data-mapa data-mapa-puntos="[data-mapa-punto]" role="region"
+             aria-label="Mapa de las organizaciones con entregas confirmadas. La lista tiene los mismos datos."
+             th:aria-label="${v.conEntidades} ? 'Mapa de las organizaciones con entregas confirmadas. La lista tiene los mismos datos.' : 'Mapa de los lugares con entregas confirmadas. La lista tiene los mismos datos.'"
+             data-maplibre="/webjars/maplibre-gl/dist/" th:data-maplibre="@{/webjars/maplibre-gl/dist/}">
+          <p class="mapa-real-aviso" th:text="|Para ver el mapa hace falta JavaScript. En la lista están ${v.conEntidades ? 'las mismas organizaciones' : 'los mismos lugares'}, con sus entregas.|">Para ver el mapa hace falta JavaScript. En la lista están las mismas
+            organizaciones, con sus entregas.</p>
+        </div>
+        <!--/* Los puntos del mapa: todos los del período, con la página de la lista en que está cada
+               uno. Oculta para todos: la lista visible ya lo dice (no se lee dos veces). */-->
+        <ol hidden>
+          <li th:each="p : ${l.puntos}" th:with="e=${p.estacion}, n=${#lists.size(p.estacion.entregas)}" data-mapa-punto
+              th:attr="data-lat=${e.lat},data-lng=${e.lng},data-numero=${e.numero},data-nombre=${e.nombre},data-ficha=${'entidad-' + e.clave}">
+            <!--/* El globo del marcador: lo arma el servidor; mapa.js solo lo copia. */-->
             <template data-mapa-globo>
               <div class="mapa-globo-cuerpo">
                 <p class="mapa-globo-nombre" th:text="${e.nombre}">Comedor Barrio Ejemplo</p>
-                <p th:text="|${e.barrio.isEmpty() ? '' : e.barrio + ' · '}${#lists.size(suyas)} ${#lists.size(suyas) == 1 ? 'entrega confirmada' : 'entregas confirmadas'} en el último mes|">Barrio
+                <p th:text="|${e.barrio.isEmpty() ? '' : e.barrio + ' · '}${n} ${n == 1 ? 'entrega confirmada' : 'entregas confirmadas'} en el último mes|">Barrio
                   Ejemplo · 6 entregas confirmadas en el último mes</p>
                 <p th:unless="${e.pide.isEmpty()}" th:text="|Pide: ${#strings.listJoin(e.pide, ', ')}.|">Pide: lentejas secas, arroz.</p>
-                <a href="#entidad-comedor" th:href="${'#entidad-' + e.clave}">Ver sus entregas en la lista</a>
+                <a href="#entidad-comedor" th:href="${globos[e.clave]}" data-mapa-a-la-fila>Ver sus entregas en la lista</a>
               </div>
             </template>
-            <header class="estacion-cabeza">
-              <svg class="estacion-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle
-                  class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><text
-                  class="estacion-numero" x="21" y="28" th:text="${e.numero}">1</text></svg>
-              <div>
-                <h3 th:text="${e.nombre}">Comedor Barrio Ejemplo</h3>
-                <p th:text="|${e.barrio.isEmpty() ? '' : e.barrio + ' · '}${#lists.size(suyas)} ${#lists.size(suyas) == 1 ? 'entrega confirmada' : 'entregas confirmadas'}|">Barrio
-                  Ejemplo · 6 entregas confirmadas</p>
-              </div>
-            </header>
-            <ul class="estacion-entregas" role="list">
-              <li th:each="f : ${suyas}" th:with="id=${'foto-' + e.clave + '-' + fStat.count}">
-                <svg th:if="${f.cat != null}" class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use width="100" height="100"
-                    href="#cat-alimentos" th:href="${'#cat-' + f.cat}"/></svg>
-                <p th:id="${id + '-que'}" th:text="${f.categoria != null} ? |${f.que} · ${f.categoria} · ${f.dia}| : |${f.que} · ${f.dia}|">Lentejas
-                  secas, 10 kg · Alimentos · 10 de octubre</p>
-                <th:block th:if="${f.foto != null}">
-                <button type="button" class="boton" data-tamano="chico" th:attr="popovertarget=${id},aria-describedby=${id + '-que'}">Ver
-                  la foto de la entrega</button>
-                <div th:replace="~{datos-publicos :: fotoVentana(${id}, ${f})}"></div>
-                </th:block>
-              </li>
-            </ul>
           </li>
-          </th:block>
         </ol>
+        <div class="salidas" data-parte="salidas">
+          <a class="boton" data-tono="principal" href="/publico-registro-donante"
+             th:href="@{/publico-registro-donante}">Quiero donar</a>
+          <a class="boton" data-tono="secundario" href="/publico-donaciones"
+             th:href="@{/publico-donaciones}">Ver las fotos de cada entrega</a>
+          <a class="boton" data-tono="secundario" href="/publico-entidades"
+             th:href="@{/publico-entidades}">Ver las organizaciones y lo que piden</a>
+        </div>
+      </div>
+
+      <!--/* La lista, de a una página. El paginador (hx-boost) reemplaza solo esta sección: hx-target y
+             hx-select se heredan; el aviso para lectores viaja aparte (hx-select-oob). */-->
+      <section th:if="${hay}" id="lista-del-mapa" class="mapa-lista" aria-labelledby="lista-titulo"
+               hx-target="#lista-del-mapa" hx-select="#lista-del-mapa" hx-swap="outerHTML show:none"
+               hx-select-oob="#lista-del-mapa-aviso:innerHTML">
+        <h2 id="lista-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
+            th:text="${v.conEntidades} ? 'Organización por organización' : 'Lugar por lugar'">Organización por organización</h2>
+        <template data-mapa-error-pagina>
+          <div class="banner" data-estado="error" role="alert">
+            <p>No pudimos traer esta página de la lista.</p>
+            <p><a href="/publico-mapa" data-mapa-reintento>Probar de nuevo</a></p>
+          </div>
+        </template>
+        <ol class="estaciones" role="list">
+          <li th:each="e : ${l.pagina.filas}" th:with="n=${#lists.size(e.entregas)}" class="estacion-ficha"
+              th:id="${'entidad-' + e.clave}" tabindex="-1">
+            <details class="plegable" name="lugar-del-mapa" th:open="${abierta == e.clave}">
+              <summary>
+                <svg class="estacion-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle
+                    class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><text
+                    class="estacion-numero" x="21" y="28" th:text="${e.numero}">1</text></svg>
+                <span class="plegable-titulo">
+                  <b th:text="${e.nombre}">Comedor Barrio Ejemplo</b>
+                  <span th:text="|${n} ${n == 1 ? 'entrega confirmada' : 'entregas confirmadas'}|">6 entregas confirmadas</span>
+                </span>
+                <span class="solo-lectores" th:text="|Número ${e.numero} en el mapa.|">Número 1 en el mapa.</span>
+                <span class="plegable-ver" aria-hidden="true">Ver</span>
+              </summary>
+              <div class="plegable-cuerpo">
+                <p th:unless="${e.barrio.isEmpty()}" th:text="${e.barrio}">Barrio Ejemplo</p>
+                <ul class="estacion-entregas" role="list">
+                  <li th:each="f : ${e.entregas}" th:with="id=${'foto-' + e.clave + '-' + fStat.count}">
+                    <svg th:if="${f.cat != null}" class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use width="100" height="100"
+                        href="#cat-alimentos" th:href="${'#cat-' + f.cat}"/></svg>
+                    <p th:id="${id + '-que'}" th:text="${f.categoria != null} ? |${f.que} · ${f.categoria} · ${f.dia}| : |${f.que} · ${f.dia}|">Lentejas
+                      secas, 10 kg · Alimentos · 10 de octubre</p>
+                    <th:block th:if="${f.foto != null}">
+                    <button type="button" class="boton" data-tamano="chico" th:attr="popovertarget=${id},aria-describedby=${id + '-que'}">Ver
+                      la foto de la entrega</button>
+                    <div th:replace="~{datos-publicos :: fotoVentana(${id}, ${f})}"></div>
+                    </th:block>
+                  </li>
+                </ul>
+              </div>
+            </details>
+          </li>
+        </ol>
+        <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
       </section>
+      <p th:if="${hay}" id="lista-del-mapa-aviso" class="solo-lectores" aria-live="polite"
+         th:text="${paginador != null and paginador.cambio} ? |Página ${paginador.pagina} de ${paginador.paginas} de la lista.| : ''"></p>
 
       <div th:if="${escenario == 'lento'}" class="esqueleto mapa-lista"></div>
 
-      <section th:if="${escenario == '' and filtradas.isEmpty()}" class="vacio" aria-labelledby="vacio-titulo">
+      <section th:if="${escenario == '' and lugares == 0}" class="vacio" aria-labelledby="vacio-titulo">
         <h2 id="vacio-titulo" th:text="|Todavía no hay entregas de ${elegida.enFrase} en el último mes.|">Todavía no
           hay entregas de útiles escolares en el último mes.</h2>
-        <p>Cuando una entidad confirme una entrega de esta categoría, aparece en el mapa.</p>
+        <p>Cuando una organización confirme una entrega de esta categoría, aparece en el mapa.</p>
         <a class="boton" data-tono="secundario" href="/publico-mapa"
            th:href="@{/publico-mapa}">Ver todas las categorías</a>
       </section>
 
       <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
         <h2 id="vacio-titulo">Todavía no hay entregas confirmadas en el último mes.</h2>
-        <p>Se cuentan cuando cada entidad confirma lo que recibe.</p>
+        <p>Se cuentan cuando cada organización confirma lo que recibe.</p>
         <a class="boton" data-tono="secundario" href="/publico-entidades"
-           th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a>
+           th:href="@{/publico-entidades}">Ver las organizaciones y lo que piden</a>
       </section>
     </div>
 
     <script th:if="${hay}" src="/js/mapa.js" th:src="@{/js/mapa.js}" defer></script>
-
-    <div th:if="${hay}" class="salidas">
-      <a class="boton" data-tono="secundario" href="/publico-donaciones"
-         th:href="@{/publico-donaciones}">Ver las fotos de cada entrega</a>
-      <a class="boton" data-tono="secundario" href="/publico-entidades"
-         th:href="@{/publico-entidades}">Ver las entidades y lo que piden</a>
-      <a class="boton" data-tono="principal" href="/publico-registro-donante"
-         th:href="@{/publico-registro-donante}">Quiero donar</a>
-    </div>
   </div>
 </th:block>
 </body>

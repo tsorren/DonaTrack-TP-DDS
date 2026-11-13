@@ -421,12 +421,12 @@ class PerfilDeUsuarioTests(unittest.TestCase):
         self.assertTrue(self.perfil, "falta el perfil de usuario en components")
         nombres = {a["name"] for a in self.perfil["attributes"]}
         self.assertEqual(nombres, {"username", "email", "firstName", "lastName", "personaId",
-                                   "solicitudEntidad"})
+                                   "solicitudEntidad", "administracion", "altaPor"})
 
     def test_persona_y_solicitud_solo_las_ve_y_edita_el_admin(self):
         """Sin declararlos, Keycloak descarta los atributos. El usuario no cambia en nombre de quién
-        opera."""
-        for nombre in ["personaId", "solicitudEntidad"]:
+        opera, ni se marca como cuenta de administración, ni cambia quién lo dio de alta."""
+        for nombre in ["personaId", "solicitudEntidad", "administracion", "altaPor"]:
             self.assertEqual(atributo(self.perfil, nombre).get("permissions"),
                              {"view": ["admin"], "edit": ["admin"]}, nombre)
 

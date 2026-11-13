@@ -171,7 +171,8 @@
               action="/entidad-seguimiento-sellada-lentejas"
               th:action="@{/entidad-seguimiento-sellada-{clave}(clave=${e.clave})}"
               method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null"
-              hx-boost="true" hx-indicator="#enviando-entidad-seguimiento-confirmar" hx-select-oob="#avisos">
+              hx-boost="true" hx-indicator="#enviando-entidad-seguimiento-confirmar" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob">
           <p class="obligatorios" th:text="${problema} ? 'Son obligatorios las fotos, qué pasó y el remito; cuánto llegó, si llegó menos.' : 'Los dos datos son obligatorios: las fotos y el remito.'">Los
             dos datos son obligatorios: las fotos y el remito.</p>
           <fieldset class="grupo">
@@ -258,12 +259,16 @@
           </fieldset>
 
           <div class="firma">
-            <p class="firma-quien" th:text="|Recibe ${cuenta.nombre}, por ${cuenta.rol}, el ${hoyActa}|">Recibe Marta, por Comedor Barrio Ejemplo, el 15 de octubre de 2026</p>
-            <button class="boton" data-tono="principal" type="submit"
-                    th:disabled="${escenario == 'lento'}"
-                    th:text="${escenario == 'lento'} ? 'Confirmando…' : (${problema} ? 'Confirmar y contar el problema' : 'Confirmar recepción')">Confirmar
-              recepción</button>
-            <p th:replace="~{envio :: indicador('enviando-entidad-seguimiento-confirmar', 'Subiendo las fotos y confirmando la entrega…')}"></p>
+            <p class="firma-quien" th:text="|Recibe ${cuenta.nombre}, el ${hoyActa}|">Recibe Comedor Barrio Ejemplo, el 15 de octubre de 2026</p>
+            <!--/* En el celular, el botón y su indicador quedan pegados abajo, encima del menú, hasta
+                   llegar al final del acta (R11-33, data-fijo de app.css; ficha r11-p2-armazon). */-->
+            <div data-fijo="celular">
+              <button class="boton" data-tono="principal" type="submit"
+                      th:disabled="${escenario == 'lento'}"
+                      th:text="${escenario == 'lento'} ? 'Confirmando…' : (${problema} ? 'Confirmar y contar el problema' : 'Confirmar recepción')">Confirmar
+                recepción</button>
+              <p th:replace="~{envio :: indicador('enviando-entidad-seguimiento-confirmar', 'Subiendo las fotos y confirmando la entrega…')}"></p>
+            </div>
             <p th:if="${problema}" class="nota">Al confirmar, la entrega queda como entregada, con el
               problema anotado, y quien donó recibe el aviso.</p>
             <p th:unless="${problema}" class="nota">Al confirmar, la entrega queda como entregada y quien donó recibe el aviso.

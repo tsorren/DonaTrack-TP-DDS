@@ -22,14 +22,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 /**
  * El mapa de entregadas con las del mapa público de Logística ({@code /api/entregas/mapa}): las
  * confirmadas del último mes, con su punto exacto (D24, ADR-E6-07) y sin el texto de la dirección.
- * Cada punto es un lugar (las entregas al mismo punto van juntas): Logística no dice qué entidad
- * recibió ni qué se entregó, y Donaciones no da el lugar, así que no hay entidad, categoría, foto
- * ni "qué pide". La pantalla lo dice y oculta el filtro y las fotos.
+ * El período y el tope los resuelve Logística (R11-19): se piden las 200 más recientes del mes y
+ * cuántas hay en total ({@code X-Total-Count}); nunca la historia entera para filtrarla acá. Cada
+ * punto es un lugar (las entregas al mismo punto van juntas): Logística no dice qué entidad recibió
+ * ni qué se entregó, y Donaciones no da el lugar, así que no hay entidad, categoría, foto ni "qué
+ * pide". La pantalla lo dice y oculta el filtro y las fotos.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -38,8 +41,9 @@ import org.springframework.stereotype.Component;
 class PublicoMapaRest implements PublicoMapaPuerto {
 
   private static final String NOTA =
-      "Todavía no mostramos qué entidad recibió cada entrega, qué se entregó ni su foto: las fotos están en Entregas confirmadas.";
+      "Todavía no mostramos qué organización recibió cada entrega, qué se entregó ni su foto: las fotos están en Entregas confirmadas.";
   private static final int DIAS_DEL_MES = 30;
+  private static final int LIMITE = 200;
   private static final double MIL = 10_000.0;
   private static final DateTimeFormatter ACTUALIZADO =
       DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy, HH:mm", Comun.ES_AR);
@@ -54,15 +58,17 @@ class PublicoMapaRest implements PublicoMapaPuerto {
   }
 
   @Override
-  public PublicoMapaVista mapa() {
+  public PublicoMapaVista mapa(String escenario) {
     LocalDateTime ahora = LocalDateTime.now(reloj);
     LocalDate hoy = ahora.toLocalDate();
     LocalDate desde = hoy.minusDays(DIAS_DEL_MES);
+    ResponseEntity<List<EntregaEnElMapa>> respuesta =
+        logistica.mapa(desde.toString(), hoy.toString(), LIMITE);
+    List<EntregaEnElMapa> recibidas = respuesta.getBody() == null ? List.of() : respuesta.getBody();
     // Un punto por lugar: las de un mismo destino caen en las mismas coordenadas (a unos 10 m).
     Map<String, List<EntregaEnElMapa>> porLugar =
-        logistica.mapa().stream()
+        recibidas.stream()
             .filter(e -> e.fechaEntrega() != null && e.latitud() != null && e.longitud() != null)
-            .filter(e -> !fecha(e).isBefore(desde))
             .sorted(Comparator.comparing(EntregaEnElMapa::fechaEntrega).reversed())
             .collect(
                 Collectors.groupingBy(
@@ -73,8 +79,25 @@ class PublicoMapaRest implements PublicoMapaPuerto {
     for (List<EntregaEnElMapa> entregas : porLugar.values()) {
       estaciones.add(estacion(estaciones.size() + 1, entregas));
     }
+    int enElMapa = estaciones.stream().mapToInt(e -> e.entregas().size()).sum();
     return new PublicoMapaVista(
-        estaciones, rango(desde, hoy), ACTUALIZADO.format(ahora), false, false, NOTA);
+        estaciones,
+        rango(desde, hoy),
+        ACTUALIZADO.format(ahora),
+        false,
+        false,
+        NOTA,
+        total(respuesta, enElMapa));
+  }
+
+  /** El total de {@code X-Total-Count}; sin la cabecera (o mal escrita), las que llegaron. */
+  private static long total(ResponseEntity<?> respuesta, int llegaron) {
+    String total = respuesta.getHeaders().getFirst("X-Total-Count");
+    try {
+      return total == null ? llegaron : Math.max(llegaron, Long.parseLong(total.strip()));
+    } catch (NumberFormatException malEscrito) {
+      return llegaron;
+    }
   }
 
   private static LocalDate fecha(EntregaEnElMapa e) {

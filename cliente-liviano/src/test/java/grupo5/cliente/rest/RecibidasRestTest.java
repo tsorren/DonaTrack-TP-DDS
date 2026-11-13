@@ -11,6 +11,8 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -23,6 +25,10 @@ class RecibidasRestTest {
   private static final UUID ENTIDAD = UUID.fromString("6f1c2c1e-0000-4000-8000-0000000000e1");
   private static final String ALIMENTOS = "6f1c2c1e-0000-4000-8000-0000000000c1";
   private static final String SALIR = "salir";
+  private static final String BASE = "http://donaciones/donaciones-independientes";
+
+  /** Inicio lee una sola página de 100, de la más urgente a la recibida (R11-43). */
+  private static final String INICIO = BASE + "?entidadId=" + ENTIDAD + "&orden=ATENCION&size=100";
 
   /**
    * Ocho asignadas, desordenadas: una entregada este mes y otra el anterior (no se muestra), una en
@@ -75,9 +81,7 @@ class RecibidasRestTest {
   void agrupaEnElOrdenDeLoQueHayQueHacerConQuienDonoYSoloLasRecibidasDelMes() {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
-    donaciones
-        .expect(requestTo("http://donaciones/donaciones-independientes?entidadId=" + ENTIDAD))
-        .andRespond(withSuccess(OCHO, MediaType.APPLICATION_JSON));
+    donaciones.expect(requestTo(INICIO)).andRespond(withSuccess(OCHO, MediaType.APPLICATION_JSON));
     // "Hoy" es el 8 de noviembre de 2026, 18:30 en Buenos Aires.
     Clock hoy = Clock.fixed(Instant.parse("2026-11-08T21:30:00Z"), ZoneOffset.UTC);
     RecibidasRest adaptador =
@@ -139,7 +143,7 @@ class RecibidasRestTest {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
     donaciones
-        .expect(requestTo("http://donaciones/donaciones-independientes?entidadId=" + ENTIDAD))
+        .expect(requestTo(INICIO))
         .andRespond(
             withSuccess(
                 """
@@ -169,5 +173,64 @@ class RecibidasRestTest {
     assertEquals("Llegó el 8 de noviembre, 18:20.", lentejas.llego());
     assertEquals("llegó a tu puerta el 8 de noviembre", lentejas.breve());
     assertNull(lista.get(1).llego());
+  }
+
+  // ===================== R11-43: de a una página, con las cifras del servicio
+  // =====================
+
+  private static final String CONTEOS =
+      """
+      {"porEstado": [
+         {"estado": "EN_DEPOSITO", "cantidad": 1}, {"estado": "ASIGNACION_REALIZADA", "cantidad": 2},
+         {"estado": "EN_TRASLADO", "cantidad": 3}, {"estado": "EN_PUERTA", "cantidad": 4},
+         {"estado": "LISTA_PARA_ENTREGAR", "cantidad": 0}, {"estado": "ENTREGADA", "cantidad": 30},
+         {"estado": "ENTREGA_FALLIDA", "cantidad": 1}, {"estado": "VENCIDA", "cantidad": 1}],
+       "entregadasEnElMes": {"mes": "2026-11", "cantidad": 6},
+       "porNecesidad": []}
+      """;
+
+  @Test
+  void unaPaginaDeLosGruposPedidosConLasCifrasDeCadaGrupoYLasDelMes() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    donaciones
+        .expect(
+            requestTo(
+                BASE
+                    + "?entidadId="
+                    + ENTIDAD
+                    + "&estado=EN_TRASLADO&estado=ENTREGADA&orden=ATENCION&page=1&size=20"))
+        .andRespond(
+            withSuccess(
+                    """
+                    [{"id": "6f1c2c1e-0000-4000-8000-000000000002", "descripcion": "Arroz",
+                      "estadoActual": "ENTREGADA", "fechaRegistro": "2026-09-01T10:00:00",
+                      "historial": [{"estadoNuevo": "ENTREGADA", "timestamp": "2026-09-20T10:00:00"}],
+                      "cantidad": 5}]
+                    """,
+                    MediaType.APPLICATION_JSON)
+                .header("X-Total-Count", "33"));
+    donaciones
+        .expect(requestTo(BASE + "/conteos?entidadId=" + ENTIDAD))
+        .andRespond(withSuccess(CONTEOS, MediaType.APPLICATION_JSON));
+    Clock hoy = Clock.fixed(Instant.parse("2026-11-08T21:30:00Z"), ZoneOffset.UTC);
+    RecibidasRest adaptador =
+        new RecibidasRest(
+            ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class), hoy);
+
+    RecibidasVista vista = adaptador.recibidas(ENTIDAD, Set.of("camino", "recibida"), 2);
+
+    donaciones.verify();
+    // Una recibida de septiembre también se muestra: ya no son solo las del mes
+    Recibida arroz = vista.asignadas().getFirst();
+    assertEquals("recibida", arroz.grupo());
+    assertEquals("septiembre", vista.mesDe(arroz));
+    assertEquals(33, vista.total());
+    assertEquals(2, vista.pagina());
+    assertEquals(2, vista.paginas());
+    assertEquals(
+        Map.of("puerta", 4L, "problema", 2L, "camino", 3L, SALIR, 3L, "recibida", 30L),
+        vista.cuantas());
+    assertEquals(6L, vista.enElMes());
   }
 }

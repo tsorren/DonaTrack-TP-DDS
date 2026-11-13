@@ -10,7 +10,8 @@
        nombre (publico-donaciones, publico-mapa, publico-entidades, publico-ingresar y
        publico-registro, que usan también los dos registros). Contacto y Términos (publico-paginas)
        la llevan sin sección marcada desde el pulido del 2026-11-03 (usuario): antes, en el celular,
-       la marca era la única salida. */-->
+       la marca era la única salida. Con la sesión iniciada, la cabecera muestra la cuenta y "Ir a
+       mi inicio" (docs/interfaz/flujos/r11-p1-portada.md, R11-15). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, hoja, contenido)">
 <head>
   <meta charset="utf-8">
@@ -24,7 +25,8 @@
         th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
   <th:block th:replace="~{interaccion :: cargar}"></th:block>
 </head>
-<body class="raices-publico">
+<body class="raices-publico" hx-indicator="#indicador-carga">
+<p id="indicador-carga" class="cargando" role="status" aria-live="polite" aria-hidden="true">Cargando…</p>
 <a class="saltar" href="#contenido">Saltar al contenido</a>
 <header class="raices-cabecera">
   <a class="marca" href="/publico-portada" th:href="@{/publico-portada}"
@@ -33,6 +35,7 @@
     <span>Dona<em>Track</em></span>
   </a>
   <nav th:replace="~{navegacion-publica :: navegacion(${hoja})}"></nav>
+  <th:block th:replace="~{navegacion-publica :: cuenta}"></th:block>
 </header>
 <main id="contenido" tabindex="-1" hx-target="#contenido" hx-select="#contenido" hx-swap="outerHTML show:none" th:insert="${contenido}"></main>
 <footer th:replace="~{pie :: pie}"></footer>

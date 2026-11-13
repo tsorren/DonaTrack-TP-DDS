@@ -51,6 +51,7 @@ import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.GestorDeRutas;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
@@ -65,6 +66,8 @@ import grupo5.logistica.models.repositories.IEventosEntregaRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudPlanificacionRepository;
 import grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository;
+import grupo5.logistica.testutils.EntregaMother;
+import grupo5.logistica.testutils.SeguimientoDePrueba;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -222,6 +225,47 @@ class RepositoriosLogisticaJpaTest {
         entityActualizada.getHistorialEstados().stream()
             .anyMatch(c -> idCambioOriginal.equals(c.getIdCambioEstadoChofer())),
         "El cambio de estado inicial del chofer debe conservar su PK sin key churn");
+  }
+
+  @Test
+  void entregadasParaMapa_deberiaResolverPeriodoOrdenTopeYConteoEnLaBase() {
+    CoordenadasGeograficas punto = new CoordenadasGeograficas(-34.6, -58.4);
+    Instant desde = Instant.parse("2026-10-13T03:00:00Z");
+    Instant hasta = Instant.parse("2026-11-13T03:00:00Z");
+    Entrega vieja = EntregaMother.entregadaEl(desde, punto);
+    Entrega media = EntregaMother.entregadaEl(Instant.parse("2026-11-01T15:00:00Z"), punto);
+    Entrega nueva = EntregaMother.entregadaEl(Instant.parse("2026-11-12T15:00:00Z"), punto);
+    entregasRepository.save(vieja);
+    entregasRepository.save(nueva);
+    entregasRepository.save(media);
+    entregasRepository.save(EntregaMother.entregadaEl(hasta, punto));
+    entregasRepository.save(EntregaMother.entregadaEl(desde.minusSeconds(1), punto));
+    entregasRepository.save(EntregaMother.entregadaEl(Instant.parse("2026-11-02T15:00:00Z"), null));
+    entregasRepository.save(
+        EntregaMother.enEstadoEl(
+            EstadoEntrega.NO_RECIBIDA, Instant.parse("2026-11-03T15:00:00Z"), punto));
+
+    assertEquals(
+        List.of(nueva.getId(), media.getId(), vieja.getId()),
+        entregasRepository.findEntregadasParaMapa(desde, hasta, 10).stream()
+            .map(Entrega::getId)
+            .toList());
+    assertEquals(
+        List.of(nueva.getId(), media.getId()),
+        entregasRepository.findEntregadasParaMapa(desde, hasta, 2).stream()
+            .map(Entrega::getId)
+            .toList());
+    assertEquals(3, entregasRepository.contarEntregadasParaMapa(desde, hasta));
+  }
+
+  @Test
+  void migracionV10_deberiaCrearElIndicePorEstadoYHoraDeArribo() {
+    Integer indices =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM pg_indexes WHERE tablename = 'entrega'"
+                + " AND indexname = 'idx_entrega_estado_hora_arribo'",
+            Integer.class);
+    assertEquals(1, indices);
   }
 
   @Test
@@ -692,5 +736,10 @@ class RepositoriosLogisticaJpaTest {
     camionRepository.save(camion);
 
     assertEquals(posicion, camionRepository.findById(camion.getId()).orElseThrow().getPosicion());
+  }
+
+  @Test
+  void buscarSeguimiento_deberiaFiltrarOrdenarCortarYContarEnLaBase() {
+    SeguimientoDePrueba.verificar(entregasRepository);
   }
 }

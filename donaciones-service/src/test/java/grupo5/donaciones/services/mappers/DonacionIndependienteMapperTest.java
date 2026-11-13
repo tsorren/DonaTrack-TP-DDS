@@ -2,7 +2,10 @@ package grupo5.donaciones.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
@@ -36,6 +39,7 @@ import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -333,5 +337,50 @@ class DonacionIndependienteMapperTest {
     donacion.pedirCancelacion();
 
     assertTrue(mapper.toDTO(donacion).cancelacionPedida());
+  }
+
+  @Test
+  void toDTOs_leeLosDatosDeLaPaginaPorLoteYNoUnaVezPorFila_R1101() {
+    Humana juan = PersonaMother.juanPerez();
+    Donante donante = new Donante(juan.getId());
+    Donacion original = DonacionMother.simple(juan.getId());
+    Categoria categoria = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Alimento Seco");
+    Bien bien = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO, 1.0, 1.0);
+    List<ItemDonacionIndependiente> items =
+        List.of(
+            new ItemDonacionIndependiente(
+                UUID.randomUUID(),
+                new BienNormalizado(bien, subcategoria.getId(), 0.9, EstadoNormalizacion.ACEPTADO),
+                2));
+    DonacionIndependiente una = new DonacionIndependiente(original.getId(), items);
+    DonacionIndependiente otra = new DonacionIndependiente(original.getId(), items);
+    when(donacionesRepositoryMock.findAllById(Set.of(original.getId())))
+        .thenReturn(List.of(original));
+    when(donantesRepositoryMock.findAllById(Set.of(juan.getId()))).thenReturn(List.of(donante));
+    when(personasRepositoryMock.findAllById(Set.of(juan.getId()))).thenReturn(List.of(juan));
+    when(subcategoriasRepositoryMock.findAllById(Set.of(subcategoria.getId())))
+        .thenReturn(List.of(subcategoria));
+    when(categoriasRepositoryMock.findAllById(Set.of(categoria.getId())))
+        .thenReturn(List.of(categoria));
+
+    List<DonacionIndependienteResponseDTO> dtos = mapper.toDTOs(List.of(una, otra));
+
+    assertEquals(List.of(una.getId(), otra.getId()), dtos.stream().map(d -> d.id()).toList());
+    for (DonacionIndependienteResponseDTO dto : dtos) {
+      assertEquals(
+          new QuienDonoDTO("PERSONA", juan.getNombreCompleto(), juan.getId()), dto.quienDono());
+      assertEquals("Alimento Seco", dto.items().getFirst().bien().subcategoria().nombre());
+      assertEquals("Alimentos", dto.items().getFirst().bien().categoria().nombre());
+    }
+    verify(donacionesRepositoryMock, never()).findById(any());
+    verify(personasRepositoryMock, never()).findById(any());
+    verify(subcategoriasRepositoryMock, never()).findById(any());
+    verify(categoriasRepositoryMock, never()).findById(any());
+  }
+
+  @Test
+  void toDTOs_paginaVacia_devuelveUnaListaVacia() {
+    assertEquals(List.of(), mapper.toDTOs(List.of()));
   }
 }

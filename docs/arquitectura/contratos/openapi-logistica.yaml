@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Logística Service API
-  version: 1.9.0
+  version: 1.11.0
   description: API REST para planificación de rutas de transporte, seguimiento por paradas planificadas, asignación de choferes, mapa público de donaciones entregadas y trazabilidad de entregas.
 servers:
   - url: http://localhost:8083
@@ -43,17 +43,55 @@ paths:
   /api/entregas/mapa:
     get:
       summary: Listar donaciones entregadas con coordenadas válidas para el mapa público (RF-02)
-      description: Retorna únicamente entregas en estado ENTREGADA cuyo destino posee coordenadas geográficas válidas, mediante una proyección sanitizada sin datos personales, sin calle/altura/piso/departamento/código postal y sin fotos de recepción.
+      description: >-
+        Retorna únicamente entregas en estado ENTREGADA cuyo destino posee coordenadas geográficas
+        válidas, mediante una proyección sanitizada sin datos personales, sin
+        calle/altura/piso/departamento/código postal y sin fotos de recepción. Desde 1.10.0
+        (R11-19) devuelve solo las de un período (por la hora de arribo, en hora de Argentina), de
+        la más reciente a la más vieja (a igual hora, por `idEntrega`) y con tope; el total del
+        período, sin el tope, va en `X-Total-Count`. Sin parámetros, los últimos 30 días y hasta
+        200 (antes, toda la historia). El período, el orden y el tope se resuelven en la base.
       operationId: listarMapaPublico
+      parameters:
+        - name: desde
+          in: query
+          required: false
+          description: Primer día del período, inclusive. Si falta, `hasta` menos 30 días.
+          schema:
+            type: string
+            format: date
+        - name: hasta
+          in: query
+          required: false
+          description: Último día del período, inclusive. Si falta, hoy (en hora de Argentina).
+          schema:
+            type: string
+            format: date
+        - name: limite
+          in: query
+          required: false
+          description: Cuántas entregas como máximo. Si falta, 200.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 200
       responses:
         '200':
-          description: Listado sanitizado de entregas completadas geolocalizadas
+          description: Listado sanitizado de entregas completadas geolocalizadas del período, con el tope
+          headers:
+            X-Total-Count:
+              description: Cantidad de entregas del período con coordenadas, sin contar el tope.
+              schema:
+                type: integer
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/EntregaMapaPublicoResponseDTO'
+        '400':
+          description: '`hasta` anterior a `desde`, una fecha que no se entiende o `limite` fuera de 1..500 (ERR-CSR-003)'
   /api/entregas/seguimiento/donaciones/{idDonacion}:
     get:
       summary: Consultar seguimiento de traslado por ID de donación para el donante (RF-09)
@@ -80,7 +118,13 @@ paths:
   /api/entregas/seguimiento/beneficiarios/{idBeneficiaria}:
     get:
       summary: Listar seguimiento de entregas por ID de beneficiario (RF-14)
-      description: Retorna las entregas asociadas al beneficiario con el estado y progreso de sus rutas planificadas sin requerir GPS en tiempo real ni exponer datos privados de terceros.
+      description: >-
+        Retorna las entregas asociadas al beneficiario con el estado y progreso de sus rutas
+        planificadas sin requerir GPS en tiempo real ni exponer datos privados de terceros. Desde
+        1.11.0 (R11-43) de a una página, en cualquier estado salvo que se pida `estado`: primero
+        las que todavía no llegaron, después por hora de llegada y de salida, de la más reciente a
+        la más vieja (a igual hora, por `idEntrega`). El total va en `X-Total-Count`. Sin
+        parámetros, la página 0 de 20 (antes, todas).
       operationId: listarSeguimientoPorBeneficiaria
       parameters:
         - name: idBeneficiaria
@@ -89,19 +133,70 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: estado
+          in: query
+          required: false
+          description: Estados pedidos; se repite para pedir varios. Uno que no existe da 400.
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [PENDIENTE, EN_TRASLADO, EN_PUERTA, ENTREGADA, NO_RECIBIDA, REVISION, CANCELADA]
+          style: form
+          explode: true
+        - name: idDonacion
+          in: query
+          required: false
+          description: Solo las entregas de estas donaciones; se repite, hasta 100.
+          schema:
+            type: array
+            maxItems: 100
+            items:
+              type: string
+              format: uuid
+          style: form
+          explode: true
+        - name: page
+          in: query
+          required: false
+          description: Página pedida, desde 0.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          required: false
+          description: Cuántas por página.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
       responses:
         '200':
-          description: Listado de seguimientos de entregas del beneficiario
+          description: Una página de los seguimientos de entregas del beneficiario
+          headers:
+            X-Total-Count:
+              description: Cuántas entregas cumplen el filtro, sin contar la página.
+              schema:
+                type: integer
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/SeguimientoEntregaResponseDTO'
+        '400':
+          description: '`page` negativa, `size` fuera de 1..100, más de 100 `idDonacion` o un `estado` que no existe (ERR-CSR-003)'
   /api/entregas/seguimiento/donantes/{donanteId}:
     get:
       summary: Listar seguimiento de las entregas activas de un donante (RF-09, HB-16)
-      description: Retorna las entregas pendientes o en traslado del donante, con el mismo DTO que el seguimiento por beneficiario. Las entregas creadas sin donanteId no aparecen. Sin autenticación el donante llega por parámetro; con HB-13 se filtrará por la persona del token.
+      description: >-
+        Retorna las entregas pendientes, en traslado o en la puerta del donante, con el mismo DTO
+        que el seguimiento por beneficiario. Las entregas creadas sin donanteId no aparecen. Desde
+        1.11.0 (R11-43) de a una página, con el mismo orden y los mismos parámetros que el de la
+        organización; sin `estado`, las tres activas de antes. El total va en `X-Total-Count`.
       operationId: listarSeguimientoPorDonante
       parameters:
         - name: donanteId
@@ -110,15 +205,62 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: estado
+          in: query
+          required: false
+          description: Estados pedidos; se repite para pedir varios. Uno que no existe da 400.
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [PENDIENTE, EN_TRASLADO, EN_PUERTA, ENTREGADA, NO_RECIBIDA, REVISION, CANCELADA]
+          style: form
+          explode: true
+        - name: idDonacion
+          in: query
+          required: false
+          description: Solo las entregas de estas donaciones; se repite, hasta 100.
+          schema:
+            type: array
+            maxItems: 100
+            items:
+              type: string
+              format: uuid
+          style: form
+          explode: true
+        - name: page
+          in: query
+          required: false
+          description: Página pedida, desde 0.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          required: false
+          description: Cuántas por página.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
       responses:
         '200':
-          description: Listado de seguimientos de las entregas activas del donante (vacío si no tiene)
+          description: Una página de los seguimientos de las entregas del donante (vacía si no tiene)
+          headers:
+            X-Total-Count:
+              description: Cuántas entregas cumplen el filtro, sin contar la página.
+              schema:
+                type: integer
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/SeguimientoEntregaResponseDTO'
+        '400':
+          description: '`page` negativa, `size` fuera de 1..100, más de 100 `idDonacion` o un `estado` que no existe (ERR-CSR-003)'
   /api/entregas/{id}:
     get:
       summary: Consultar entrega por ID

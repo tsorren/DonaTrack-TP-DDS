@@ -48,7 +48,7 @@ class PublicoEntidadesRest implements PublicoEntidadesPuerto {
   private static final String OTRA = "Otra";
 
   private static final String NOTA =
-      "Todavía no mostramos cuánto de cada pedido ya llegó, ni la misión de cada entidad.";
+      "Todavía no mostramos cuánto de cada pedido ya llegó, ni la misión de cada organización.";
 
   /**
    * Palabras del rubro (texto libre) que ubican a la entidad en uno de los grupos de la pantalla.

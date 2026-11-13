@@ -23,6 +23,9 @@ class AvisosRestTest {
   private static final String CONTEO =
       "http://notificaciones/api/notificaciones/persona/" + PERSONA + "/no-leidas/conteo";
 
+  private static final UUID ADMINISTRACION =
+      UUID.fromString("00000000-0000-0000-0000-000000000001");
+
   private final HttpServletRequest pedido = new MockHttpServletRequest();
   private MockRestServiceServer notificaciones;
   private AvisosRest adaptador;
@@ -48,7 +51,8 @@ class AvisosRestTest {
     adaptador =
         new AvisosRest(
             ClientesHttp.cliente(builder, "http://notificaciones", NotificacionesApi.class),
-            new UnaPersona());
+            new UnaPersona(),
+            ADMINISTRACION);
   }
 
   @Test
@@ -65,9 +69,24 @@ class AvisosRestTest {
     notificaciones.verify();
   }
 
+  /** C8 (R11-30): la administración cuenta las de la bandeja compartida de la Administración. */
   @Test
-  void laAdministracionNoTienePersonaYNoSePide() {
-    assertThat(adaptador.sinLeer("admin", pedido)).isZero();
+  void laAdministracionVeLasDeLaBandejaDeLaAdministracion() {
+    notificaciones
+        .expect(
+            requestTo(
+                "http://notificaciones/api/notificaciones/persona/"
+                    + ADMINISTRACION
+                    + "/no-leidas/conteo"))
+        .andRespond(withSuccess("{\"noLeidas\": 2}", MediaType.APPLICATION_JSON));
+
+    assertThat(adaptador.sinLeer("admin", pedido)).isEqualTo(2);
+    notificaciones.verify();
+  }
+
+  @Test
+  void unAreaDesconocidaNoSePide() {
+    assertThat(adaptador.sinLeer("publico", pedido)).isZero();
     notificaciones.verify();
   }
 

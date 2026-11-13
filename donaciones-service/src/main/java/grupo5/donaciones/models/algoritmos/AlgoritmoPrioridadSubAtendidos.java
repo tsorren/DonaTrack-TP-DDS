@@ -4,6 +4,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.entities.propuestas.TipoAlgoritmo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -21,6 +22,11 @@ public class AlgoritmoPrioridadSubAtendidos extends AlgoritmoAsignacion {
     List<Necesidad> ordenadas = new ArrayList<>(necesidades);
     ordenadas.sort(Comparator.comparingInt(n -> datos.recibidasPor(n.getEntidadId())));
     return ordenadas;
+  }
+
+  @Override
+  public TipoAlgoritmo tipo() {
+    return TipoAlgoritmo.PRIORIDAD_SUBATENDIDOS;
   }
 
   @Override

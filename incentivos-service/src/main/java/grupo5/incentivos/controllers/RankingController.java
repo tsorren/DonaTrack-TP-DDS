@@ -7,6 +7,7 @@ import static grupo5.incentivos.seguridad.Acceso.VER_SUS_INCENTIVOS;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.incentivos.dto.HistorialDeRankings;
 import grupo5.incentivos.dto.RankingMensualDTO;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.services.IRankingService;
@@ -32,6 +33,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 public class RankingController implements IRankingController {
 
+  static final String HEADER_TOTAL = "X-Total-Count";
+
   private final IRankingService rankingService;
 
   public RankingController(IRankingService rankingService) {
@@ -51,8 +54,14 @@ public class RankingController implements IRankingController {
   @Override
   @PreAuthorize(VER_RANKING)
   @GetMapping("/historial")
-  public ResponseEntity<List<RankingMensualDTO>> obtenerHistorial() {
-    return ResponseEntity.ok(rankingService.obtenerHistorial());
+  public ResponseEntity<List<RankingMensualDTO>> obtenerHistorial(
+      @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size) {
+    HistorialDeRankings historial =
+        rankingService.obtenerHistorial(
+            page == null ? 0 : page, size == null ? HistorialDeRankings.TAMANIO_POR_DEFECTO : size);
+    return ResponseEntity.ok()
+        .header(HEADER_TOTAL, String.valueOf(historial.total()))
+        .body(historial.meses());
   }
 
   @Override

@@ -2,6 +2,7 @@ package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.CuentaActual;
 import grupo5.cliente.puertos.EntidadNotificacionesPuerto;
+import grupo5.cliente.vistas.EntidadNotificacionesVista;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,8 +11,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * Notificaciones de la entidad (RF-13) con los datos del puerto, también la bandeja después de
- * marcar ({@code -leidas}, que en la maqueta muestra el aviso). Sin entidad, manda a ingresar.
+ * Notificaciones de la entidad (RF-13) con los datos del puerto, de a una página con los filtros de
+ * la dirección (R11-14); también la bandeja después de marcar ({@code -leidas}, que en la maqueta
+ * muestra el aviso). Los atributos son {@code bandeja} y {@code paginador} (null con una sola
+ * página). Sin entidad, manda a ingresar.
  */
 @Controller
 public class EntidadNotificacionesController {
@@ -34,7 +37,11 @@ public class EntidadNotificacionesController {
     if (entidad.isEmpty()) {
       return Entidad.INGRESAR;
     }
-    model.addAttribute("bandeja", notificaciones.bandeja(entidad.get()));
+    EntidadNotificacionesVista bandeja =
+        notificaciones.bandeja(entidad.get(), BandejaDeNotificaciones.consulta(pedido));
+    model.addAttribute("bandeja", bandeja);
+    model.addAttribute(
+        "paginador", Paginadores.de(pedido, BandejaDeNotificaciones.PAGINAS, bandeja.pagina()));
     return vista;
   }
 }

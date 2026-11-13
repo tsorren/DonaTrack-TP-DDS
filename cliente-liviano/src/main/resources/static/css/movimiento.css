@@ -46,6 +46,9 @@
        ancho y el alto de la vuelta los pone el componente (--medida-vuelo-ancho y -alto). */
     --movimiento-animacion-ronda: mov-ronda calc(var(--movimiento-duracion-trazo) * 4) var(--movimiento-curva-ambiente) var(--movimiento-retraso-entrada) both;
     --movimiento-animacion-vuelo-carga: mov-vuelo var(--movimiento-duracion-larga) var(--movimiento-curva-ambiente) infinite alternate;
+    /* La ola del esqueleto (usuario, 2026-11-12): un brillo cruza el lugar de lo que carga, en
+       ciclo, mientras dura la carga, y se va con ella. */
+    --movimiento-animacion-ola: mov-ola calc(var(--movimiento-duracion-larga) * 2) var(--movimiento-curva-ambiente) infinite;
     --movimiento-transicion-atenua: opacity var(--movimiento-duracion-corta);
     --movimiento-transicion-dialogo: opacity var(--movimiento-duracion-media) var(--movimiento-curva-salida), overlay var(--movimiento-duracion-media) allow-discrete, display var(--movimiento-duracion-media) allow-discrete;
   }
@@ -192,6 +195,16 @@
   }
 
   /* La ráfaga ocupa el primer octavo del ciclo; el resto, quieto. */
+  @keyframes mov-ola {
+    from {
+      translate: -100% 0;
+    }
+
+    to {
+      translate: 100% 0;
+    }
+  }
+
   @keyframes mov-vuelo {
     from {
       translate: 0 0;

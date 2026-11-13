@@ -17,6 +17,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
+import grupo5.donaciones.dto.entidadBeneficiaria.FiltroOrganizaciones;
 import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.services.ResultadoRegistro;
@@ -100,7 +101,7 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
   void obtenerTodas_sinParametros_devuelveElArregloYElTotal() throws Exception {
     EntidadBeneficiariaOutputDTO entidad =
         new EntidadBeneficiariaOutputDTO(UUID.randomUUID(), null, true);
-    when(entidadBeneficiariaService.buscar(null, null, null))
+    when(entidadBeneficiariaService.buscar(null, FiltroOrganizaciones.NINGUNO, null, null))
         .thenReturn(new Pagina<>(List.of(entidad), 1));
 
     mockMvc
@@ -114,7 +115,7 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
 
   @Test
   void obtenerTodas_conBusquedaYPaginado_pasaLosParametrosAlService() throws Exception {
-    when(entidadBeneficiariaService.buscar("comedor", 2, 10))
+    when(entidadBeneficiariaService.buscar("comedor", FiltroOrganizaciones.NINGUNO, 2, 10))
         .thenReturn(new Pagina<>(List.of(), 25));
 
     mockMvc
@@ -125,8 +126,41 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
   }
 
   @Test
+  void obtenerTodas_conEstadoNecesidadesYRubro_pasaElFiltroAlService() throws Exception {
+    when(entidadBeneficiariaService.buscar(
+            null, new FiltroOrganizaciones(false, true, "Centro comunitario"), null, null))
+        .thenReturn(new Pagina<>(List.of(), 3));
+
+    mockMvc
+        .perform(
+            get(RUTA)
+                .param("estado", "BAJA")
+                .param("conNecesidades", "true")
+                .param("rubro", "Centro comunitario"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "3"));
+  }
+
+  @Test
+  void obtenerTodas_conEstadoActiva_pideLasActivas() throws Exception {
+    when(entidadBeneficiariaService.buscar(
+            null, new FiltroOrganizaciones(true, null, null), null, 1))
+        .thenReturn(new Pagina<>(List.of(), 46));
+
+    mockMvc
+        .perform(get(RUTA).param("estado", "ACTIVA").param("size", "1"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "46"));
+  }
+
+  @Test
+  void obtenerTodas_conEstadoDesconocido_retorna400() throws Exception {
+    mockMvc.perform(get(RUTA).param("estado", "PENDIENTE")).andExpect(status().isBadRequest());
+  }
+
+  @Test
   void obtenerTodas_conPaginacionInvalida_retorna400() throws Exception {
-    when(entidadBeneficiariaService.buscar(null, -1, null))
+    when(entidadBeneficiariaService.buscar(null, FiltroOrganizaciones.NINGUNO, -1, null))
         .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
 
     mockMvc
@@ -168,7 +202,7 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
   void obtenerPublicas_devuelveSoloLosCamposPublicosYElTotal() throws Exception {
     EntidadPublicaDTO entidad =
         new EntidadPublicaDTO(UUID.randomUUID(), "Comedor Sur", "Alimentos");
-    when(entidadBeneficiariaService.buscarPublicas("comedor", 0, 10))
+    when(entidadBeneficiariaService.buscarPublicas("comedor", null, 0, 10))
         .thenReturn(new Pagina<>(List.of(entidad), 3));
 
     mockMvc
@@ -190,12 +224,33 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
 
   @Test
   void obtenerPublicas_noSeConfundeConElPathDeUnaEntidad() throws Exception {
-    when(entidadBeneficiariaService.buscarPublicas(null, null, null))
+    when(entidadBeneficiariaService.buscarPublicas(null, null, null, null))
         .thenReturn(new Pagina<>(List.of(), 0));
 
     mockMvc
         .perform(get(RUTA + "/publicas"))
         .andExpect(status().isOk())
         .andExpect(jsonPath(CANTIDAD).value(0));
+  }
+
+  // R11-12: la categoría filtra en Donaciones; sin ella, todo sigue igual que en 1.9.0
+  @Test
+  void obtenerPublicas_conCategoria_laPasaAlServicio() throws Exception {
+    UUID categoria = UUID.randomUUID();
+    when(entidadBeneficiariaService.buscarPublicas(null, categoria, null, null))
+        .thenReturn(new Pagina<>(List.of(), 0));
+
+    mockMvc
+        .perform(get(RUTA + "/publicas").param("categoriaId", categoria.toString()))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "0"));
+  }
+
+  @Test
+  void obtenerPublicas_conCategoriaMalEscrita_responde400() throws Exception {
+    mockMvc
+        .perform(get(RUTA + "/publicas").param("categoriaId", "no-es-un-uuid"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
   }
 }

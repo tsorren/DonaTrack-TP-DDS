@@ -11,6 +11,8 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import grupo5.cliente.puertos.DonantePerfilPuerto.Tipo;
+import grupo5.cliente.vistas.CuentaVista;
 import grupo5.cliente.vistas.DonantePerfilVista;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,7 +89,8 @@ class DonantePerfilRestTest {
         .andRespond(
             withSuccess(
                 "{\"mostrarNombre\": true, \"persona\": {\"tipo\": \"HUMANA\","
-                    + " \"nombre\": \"Martina\", \"apellido\": \"Ruiz\"}}",
+                    + " \"nombre\": \"Martina\", \"apellido\": \"Ruiz\","
+                    + " \"tipoDocumento\": \"DNI\", \"documento\": \"12345678\"}}",
                 MediaType.APPLICATION_JSON));
     apis.expect(requestTo(INCENTIVOS)).andRespond(withServerError());
     apis.expect(requestTo(LEGALES))
@@ -100,8 +103,67 @@ class DonantePerfilRestTest {
     assertEquals("Donante", perfil.anonimo());
     assertFalse(perfil.oculto());
     assertNull(perfil.calle());
+    assertNull(perfil.cuit());
+    assertEquals("Martina", perfil.nombrePila());
+    assertEquals("Ruiz", perfil.apellido());
+    assertEquals("DNI 12.345.678", perfil.documento());
     assertEquals(
         "Todavía no aceptaste los términos y la política de privacidad.", perfil.legales());
+  }
+
+  @Test
+  void unaCuentaSinTipoNoSeTrataComoEmpresa() {
+    apis.expect(requestTo(DONACIONES))
+        .andRespond(
+            withSuccess(
+                "{\"persona\": {\"nombre\": \"Ana\", \"apellido\": \"Ejemplo\","
+                    + " \"documento\": \"30-00000000-0\", \"mediosDeContacto\": [{\"tipo\":"
+                    + " \"CORREO\", \"direccionCorreo\": \"ana@correo-ejemplo.test\"}]}}",
+                MediaType.APPLICATION_JSON));
+    apis.expect(requestTo(INCENTIVOS))
+        .andRespond(withSuccess("{\"categoria\": \"SOSTENEDOR\"}", MediaType.APPLICATION_JSON));
+    apis.expect(requestTo(LEGALES))
+        .andRespond(withSuccess("{\"versionVigente\": 1}", MediaType.APPLICATION_JSON));
+
+    DonantePerfilVista perfil = adaptador.perfil(DONANTE);
+
+    assertEquals("Ana Ejemplo", perfil.nombre());
+    assertEquals("Donante · ana@correo-ejemplo.test", perfil.cuenta());
+    assertEquals("Donante Sostenedor", perfil.anonimo());
+    assertNull(perfil.cuit());
+    assertNull(perfil.rubro());
+    assertEquals("30-00000000-0", perfil.documento());
+  }
+
+  @Test
+  void sinNombreNiApellidoElNombreEsTuCuenta() {
+    apis.expect(requestTo(DONACIONES))
+        .andRespond(withSuccess("{\"mostrarNombre\": true}", MediaType.APPLICATION_JSON));
+    apis.expect(requestTo(INCENTIVOS)).andRespond(withServerError());
+    apis.expect(requestTo(LEGALES))
+        .andRespond(withSuccess("{\"versionVigente\": 1}", MediaType.APPLICATION_JSON));
+
+    DonantePerfilVista perfil = adaptador.perfil(DONANTE);
+
+    assertEquals("Tu cuenta", perfil.nombre());
+    assertEquals("Donante", perfil.cuenta());
+  }
+
+  @Test
+  void elTipoSaleDeLaPersonaDeDonaciones() {
+    apis.expect(requestTo(DONACIONES))
+        .andRespond(
+            withSuccess("{\"persona\": {\"tipo\": \"HUMANA\"}}", MediaType.APPLICATION_JSON));
+    apis.expect(requestTo(DONACIONES)).andRespond(withSuccess(EMPRESA, MediaType.APPLICATION_JSON));
+    apis.expect(requestTo(DONACIONES))
+        .andRespond(withSuccess("{\"persona\": {}}", MediaType.APPLICATION_JSON));
+    apis.expect(requestTo(DONACIONES)).andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
+
+    assertEquals(Tipo.PERSONA, adaptador.tipo(DONANTE));
+    assertEquals(Tipo.EMPRESA, adaptador.tipo(DONANTE));
+    assertEquals(Tipo.SIN_TIPO, adaptador.tipo(DONANTE));
+    assertEquals(Tipo.SIN_TIPO, adaptador.tipo(DONANTE));
+    apis.verify();
   }
 
   @Test
@@ -114,5 +176,31 @@ class DonantePerfilRestTest {
     adaptador.mostrarNombre(DONANTE, true);
 
     assertDoesNotThrow(() -> apis.verify());
+  }
+
+  @Test
+  void laCuentaDelMenuEsElNombreYElTipoConUnSoloPedido() {
+    apis.expect(requestTo(DONACIONES)).andRespond(withSuccess(EMPRESA, MediaType.APPLICATION_JSON));
+
+    CuentaVista cuenta = adaptador.cuenta(DONANTE);
+
+    apis.verify();
+    assertEquals("Distribuidora Ejemplo SA", cuenta.nombre());
+    assertEquals("Empresa donante", cuenta.rol());
+  }
+
+  @Test
+  void elDonanteJuridicoQueNoEsEmpresaDiceSuTipoYNoOrganizacion() {
+    apis.expect(requestTo(DONACIONES))
+        .andRespond(
+            withSuccess(
+                "{\"persona\": {\"tipo\": \"JURIDICA\", \"razonSocial\": \"Fundación Ejemplo\","
+                    + " \"tipoJuridico\": \"ONG\"}}",
+                MediaType.APPLICATION_JSON));
+
+    CuentaVista cuenta = adaptador.cuenta(DONANTE);
+
+    assertEquals("Fundación Ejemplo", cuenta.nombre());
+    assertEquals("ONG donante", cuenta.rol());
   }
 }

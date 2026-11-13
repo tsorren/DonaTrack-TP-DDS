@@ -21,7 +21,7 @@ main h1 em {
 .resumen a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   color: var(--color-problema-texto);
   font-weight: 700;
 }
@@ -65,7 +65,7 @@ main h1 em {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 400;
 }
 

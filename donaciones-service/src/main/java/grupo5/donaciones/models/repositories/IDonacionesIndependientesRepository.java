@@ -3,12 +3,87 @@ package grupo5.donaciones.models.repositories;
 import grupo5.common.repositories.CrudRepository;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.models.repositories.listados.ConteoAsignadas;
+import grupo5.donaciones.models.repositories.listados.CriterioDonacionesIndependientes;
+import grupo5.donaciones.models.repositories.listados.LecturaPorLote;
+import grupo5.donaciones.models.repositories.listados.PorVencer;
+import grupo5.donaciones.models.repositories.listados.Tramo;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
-public interface IDonacionesIndependientesRepository extends CrudRepository<DonacionIndependiente> {
+public interface IDonacionesIndependientesRepository
+    extends CrudRepository<DonacionIndependiente>, LecturaPorLote<DonacionIndependiente> {
+
+  /** Una página con la búsqueda, los filtros y el orden resueltos (R11-01). */
+  Tramo<DonacionIndependiente> buscar(CriterioDonacionesIndependientes criterio);
+
+  /** Cuántas hay en cada estado; los estados sin donaciones no aparecen. */
+  Map<TipoEstadoDonacion, Long> contarPorEstado();
+
+  /**
+   * Cuántas donaciones pasaron a {@code estado} con un cambio en {@code [desde, hasta)} (entregadas
+   * en el mes del resumen del admin).
+   */
+  long contarQuePasaronA(TipoEstadoDonacion estado, LocalDateTime desde, LocalDateTime hasta);
+
+  /**
+   * Lo mismo que {@link #contarQuePasaronA(TipoEstadoDonacion, LocalDateTime, LocalDateTime)} sobre
+   * las asignadas a una organización y, si no es nula, a una necesidad (R11-43).
+   */
+  long contarQuePasaronA(
+      TipoEstadoDonacion estado,
+      LocalDateTime desde,
+      LocalDateTime hasta,
+      UUID entidadId,
+      UUID necesidadId);
+
+  /** La fecha de registro de la primera donación, o vacío si no hay ninguna (R11-42). */
+  Optional<LocalDateTime> primeraFechaRegistro();
+
+  /**
+   * Cuántas se registraron en cada mes de {@code desde} a {@code hasta}, los dos incluidos
+   * (R11-42), contado en la base. Un mes sin donaciones puede faltar o venir con 0.
+   */
+  Map<YearMonth, Long> contarRegistradasPorMes(YearMonth desde, YearMonth hasta);
+
+  /**
+   * Cuántas pasaron a {@code estado} en cada mes de {@code desde} a {@code hasta} (R11-42), con la
+   * misma cuenta que {@link #contarQuePasaronA(TipoEstadoDonacion, LocalDateTime, LocalDateTime)}.
+   * Un mes sin cambios puede faltar o venir con 0.
+   */
+  Map<YearMonth, Long> contarQuePasaronAPorMes(
+      TipoEstadoDonacion estado, YearMonth desde, YearMonth hasta);
+
+  /**
+   * Cuántas se registraron en {@code [desde, hasta)} por categoría de la subcategoría de sus bienes
+   * (R11-42). La clave es el id de la categoría; las categorías sin donaciones no aparecen.
+   */
+  Map<UUID, Long> contarRegistradasPorCategoria(LocalDateTime desde, LocalDateTime hasta);
+
+  /**
+   * Cuántas pasaron a {@code estado} en {@code [desde, hasta)} por categoría (R11-42), como {@link
+   * #contarRegistradasPorCategoria(LocalDateTime, LocalDateTime)}.
+   */
+  Map<UUID, Long> contarQuePasaronAPorCategoria(
+      TipoEstadoDonacion estado, LocalDateTime desde, LocalDateTime hasta);
+
+  /**
+   * Cuántas asignadas a la organización hay por necesidad y estado (R11-43), con una sola consulta.
+   * Con {@code necesidadId}, solo las de esa necesidad. Las combinaciones sin donaciones no
+   * aparecen.
+   */
+  List<ConteoAsignadas> contarAsignadas(UUID entidadId, UUID necesidadId);
+
+  /**
+   * Las que siguen en depósito con algún bien que vence entre {@code desde} y {@code hasta}
+   * (inclusivos): cuántas son y cuál vence primero.
+   */
+  PorVencer buscarPorVencer(LocalDate desde, LocalDate hasta);
 
   List<DonacionIndependiente> findEnDeposito();
 

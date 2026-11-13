@@ -1,5 +1,6 @@
 package grupo5.donaciones.seguridad;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
@@ -20,17 +21,24 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import grupo5.common.seguridad.SeguridadAutoConfiguration;
 import grupo5.donaciones.controllers.AbstractDonacionesWebMvcTest;
 import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.ConteosDeEntidadDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.donantes.PreferenciasDonanteDTO;
 import grupo5.donaciones.dto.personas.AceptarLegalesDTO;
+import grupo5.donaciones.dto.personas.SolicitudEntidadDTO;
+import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
+import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
@@ -53,9 +61,11 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
   private static final UUID DONANTE = UUID.randomUUID();
   private static final UUID ENTIDAD = UUID.randomUUID();
   private static final UUID AJENO = UUID.randomUUID();
+  private static final UUID PENDIENTE = UUID.randomUUID();
   private static final String NECESIDADES = "/api/necesidades";
   private static final String INDEPENDIENTES = "/donaciones-independientes";
   private static final String SUB_DEL_ADMIN = "7d5f0c3e-0000-4000-8000-00000000a001";
+  private static final String SUB_DE_ANA = "6f1c0d2e-sub-de-ana";
 
   private final ObjectMapper json = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -79,7 +89,18 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
             case "entidad-sin-permisos" -> token("ENTIDAD", ENTIDAD);
             case "admin" -> token("ADMIN", AJENO);
             case "admin-con-sub" -> tokenConSub("ADMIN", AJENO, SUB_DEL_ADMIN);
+            case "admin-ana" ->
+                Jwt.withTokenValue("t")
+                    .header("alg", "none")
+                    .subject(SUB_DE_ANA)
+                    .claim("roles", List.of("ADMIN"))
+                    .build();
             case "servicio" -> token("SERVICIO", AJENO);
+            case "pendiente" ->
+                Jwt.withTokenValue("t")
+                    .header("alg", "none")
+                    .claim("personaId", PENDIENTE.toString())
+                    .build();
             default -> throw new BadJwtException("token desconocido");
           };
     }
@@ -102,6 +123,15 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
           .claim("permisos", List.of(permisos))
           .build();
     }
+  }
+
+  // R11-01: los listados devuelven una página; sin datos, una vacía
+  @BeforeEach
+  void listadosVacios() {
+    when(donantesService.buscar(any(), any())).thenReturn(new Pagina<>(List.of(), 0));
+    when(donacionesIndependientesService.obtenerConFiltros(any(), any()))
+        .thenReturn(new Pagina<>(List.of(), 0));
+    when(donacionesService.buscar(any(), any())).thenReturn(new Pagina<>(List.of(), 0));
   }
 
   private ResultActions pedir(MockHttpServletRequestBuilder pedido, String token) throws Exception {
@@ -242,6 +272,29 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
         .andExpect(status().isForbidden());
   }
 
+  // R11-43: los conteos piden lo mismo que el listado de la organización
+  @Test
+  void laOrganizacionVeSusConteosYNoLosDeOtra() throws Exception {
+    when(donacionesIndependientesService.conteos(any(), any()))
+        .thenReturn(
+            new ConteosDeEntidadDTO(
+                List.of(), new ConteosDeEntidadDTO.EntregadasEnElMes("2026-11", 0), List.of()));
+
+    pedir(get(INDEPENDIENTES + "/conteos").param("entidadId", ENTIDAD.toString()), "entidad")
+        .andExpect(status().isOk());
+    pedir(get(INDEPENDIENTES + "/conteos").param("entidadId", AJENO.toString()), "entidad")
+        .andExpect(status().isForbidden());
+    pedir(
+            get(INDEPENDIENTES + "/conteos").param("entidadId", ENTIDAD.toString()),
+            "entidad-sin-permisos")
+        .andExpect(status().isForbidden());
+    pedir(get(INDEPENDIENTES + "/conteos").param("entidadId", DONANTE.toString()), "donante")
+        .andExpect(status().isForbidden());
+    pedir(get(INDEPENDIENTES + "/conteos").param("entidadId", ENTIDAD.toString()), "admin")
+        .andExpect(status().isOk());
+    pedir(get(INDEPENDIENTES + "/conteos"), "entidad").andExpect(status().isBadRequest());
+  }
+
   @Test
   void elDonanteVeElDetalleSoloSiLaDonacionOriginalEsSuya() throws Exception {
     UUID propia = detalleDeDonacionDe(DONANTE);
@@ -272,6 +325,38 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
 
     pedir(get("/api/donantes/" + DONANTE), "donante").andExpect(status().isOk());
     pedir(get("/api/donantes/" + AJENO), "donante").andExpect(status().isForbidden());
+  }
+
+  // R11-12 (A6): "Ya doné" solo existe bajo el donante dueño, o el admin
+  @Test
+  void lasEntidadesDelDonanteSonSoloSuyasODelAdmin() throws Exception {
+    when(entidadBeneficiariaService.buscarParaDonante(
+            any(), any(), any(), anyBoolean(), any(), any()))
+        .thenReturn(new Pagina<>(List.of(), 0));
+
+    pedir(get("/api/donantes/" + DONANTE + "/entidades"), "donante").andExpect(status().isOk());
+    pedir(get("/api/donantes/" + AJENO + "/entidades"), "donante")
+        .andExpect(status().isForbidden());
+    pedir(get("/api/donantes/" + DONANTE + "/entidades"), "entidad")
+        .andExpect(status().isForbidden());
+    pedir(get("/api/donantes/" + DONANTE + "/entidades"), null)
+        .andExpect(status().isUnauthorized());
+    pedir(get("/api/donantes/" + DONANTE + "/entidades"), "admin").andExpect(status().isOk());
+  }
+
+  @Test
+  void elResumenDelInicioEsSoloDelAdmin_R1101() throws Exception {
+    pedir(get("/api/donaciones/resumen"), "donante").andExpect(status().isForbidden());
+    pedir(get("/api/donaciones/resumen"), "entidad").andExpect(status().isForbidden());
+    pedir(get("/api/donaciones/resumen"), "admin").andExpect(status().isOk());
+  }
+
+  @Test
+  void laEvolucionDelInicioEsSoloDelAdmin_R1142() throws Exception {
+    pedir(get("/api/donaciones/resumen/evolucion"), "donante").andExpect(status().isForbidden());
+    pedir(get("/api/donaciones/resumen/evolucion"), "entidad").andExpect(status().isForbidden());
+    pedir(get("/api/donaciones/resumen/evolucion"), null).andExpect(status().isUnauthorized());
+    pedir(get("/api/donaciones/resumen/evolucion"), "admin").andExpect(status().isOk());
   }
 
   @Test
@@ -319,6 +404,29 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
     pedir(get("/api/personas/" + DONANTE + "/legales"), null).andExpect(status().isUnauthorized());
   }
 
+  // R11-41: la cuenta sin rol lee y corrige solo su solicitud; el admin, cualquiera
+  @Test
+  void laSolicitudDeEntidadLaLeeYLaCorrigeSoloLaPropiaCuentaOElAdmin() throws Exception {
+    SolicitudEntidadDTO solicitud =
+        new SolicitudEntidadDTO(
+            "Merendero Ejemplo",
+            "Merendero",
+            TipoJuridico.ONG,
+            new SolicitudEntidadDTO.Direccion(
+                "Calle Ejemplo", 1234, "1000", "Localidad", "Provincia"),
+            new SolicitudEntidadDTO.Representante("Rosa", "Ejemplo"),
+            null);
+    String propia = "/api/personas/" + PENDIENTE + "/solicitud-entidad";
+    String ajena = "/api/personas/" + AJENO + "/solicitud-entidad";
+
+    pedir(get(propia), "pendiente").andExpect(status().isOk());
+    pedir(conCuerpo(put(propia), solicitud), "pendiente").andExpect(status().isOk());
+    pedir(get(ajena), "admin").andExpect(status().isOk());
+    pedir(get(ajena), "pendiente").andExpect(status().isForbidden());
+    pedir(conCuerpo(put(ajena), solicitud), "pendiente").andExpect(status().isForbidden());
+    pedir(get(propia), null).andExpect(status().isUnauthorized());
+  }
+
   @Test
   void sinElCampoObligatorio_preferenciasYLegalesResponden400() throws Exception {
     pedir(
@@ -364,5 +472,48 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
     verify(donacionesIndependientesService).cambiarEstado(eq(id), any(), eq("legado"));
 
     pedir(conCuerpo(patch(estado), cambio), "admin").andExpect(status().isBadRequest());
+  }
+
+  // R11-10: aprobar o descartar queda a nombre de la cuenta del token, no de "SISTEMA"
+  @Test
+  void decidirUnaPropuesta_quedaANombreDelSubDelToken() throws Exception {
+    UUID propuesta = UUID.randomUUID();
+
+    pedir(
+            conCuerpo(
+                put("/api/asignaciones/propuestas/" + propuesta + "/estado"),
+                new ActualizarEstadoRequestDTO(EstadoPropuesta.APROBADA, null)),
+            "admin-ana")
+        .andExpect(status().isOk());
+
+    verify(propuestaDeAsignacionService)
+        .actualizarEstado(propuesta, EstadoPropuesta.APROBADA, SUB_DE_ANA, null);
+  }
+
+  // R11-26: el registro de actividad es solo del admin, para leerlo y para anotar
+  @Test
+  void elRegistroDeActividad_esSoloDelAdmin() throws Exception {
+    when(actividadService.listar(any(), any())).thenReturn(new Pagina<>(List.of(), 0));
+    String anotacion = "{\"accion\":\"CAMION_AGREGADO\",\"objetoId\":\"c-1\"}";
+
+    pedir(get("/api/actividad"), null).andExpect(status().isUnauthorized());
+    pedir(get("/api/actividad"), "servicio").andExpect(status().isForbidden());
+    pedir(get("/api/actividad"), "donante").andExpect(status().isForbidden());
+    pedir(get("/api/actividad"), "entidad").andExpect(status().isForbidden());
+    pedir(get("/api/actividad"), "admin-ana").andExpect(status().isOk());
+    pedir(post("/api/actividad").contentType(APPLICATION_JSON).content(anotacion), "servicio")
+        .andExpect(status().isForbidden());
+    pedir(post("/api/actividad").contentType(APPLICATION_JSON).content(anotacion), null)
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void decidirUnaPropuesta_esSoloDelAdmin() throws Exception {
+    pedir(
+            conCuerpo(
+                put("/api/asignaciones/propuestas/" + UUID.randomUUID() + "/estado"),
+                new ActualizarEstadoRequestDTO(EstadoPropuesta.APROBADA, null)),
+            "donante")
+        .andExpect(status().isForbidden());
   }
 }

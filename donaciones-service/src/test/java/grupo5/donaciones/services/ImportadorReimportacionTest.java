@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.fixtures.AlmacenamientoFixtures;
+import grupo5.donaciones.fixtures.PadronFixtures;
 import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.infrastructure.almacenamiento.StorageEnMemoria;
 import grupo5.donaciones.models.entities.donantes.Archivo;
@@ -34,7 +35,6 @@ import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -91,7 +91,8 @@ class ImportadorReimportacionTest {
             personasService,
             donantesService,
             storage,
-            AlmacenamientoFixtures.propiedades());
+            AlmacenamientoFixtures.propiedades(),
+            org.mockito.Mockito.mock(IDonacionesEventPublisher.class));
   }
 
   @Test
@@ -278,8 +279,7 @@ class ImportadorReimportacionTest {
     UUID archivoId = UUID.randomUUID();
     Archivo archivo = nuevoArchivoEnStorage();
     when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
-    when(lectorCSV.cargarDonantes(any(InputStream.class)))
-        .thenReturn(List.of(new FilaPadron(2, fila)));
+    PadronFixtures.entregar(lectorCSV, new FilaPadron(2, fila));
 
     importador.procesarImportacionAsincronica(archivoId);
     return archivo;

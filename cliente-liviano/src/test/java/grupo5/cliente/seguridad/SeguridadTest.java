@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.cliente.cuentas.PerfilService;
 import grupo5.cliente.puertos.PublicoPuerto;
+import grupo5.cliente.puertos.SolicitudEntidadPuerto;
 import grupo5.cliente.web.AccesoController;
 import grupo5.cliente.web.Pantallas;
 import grupo5.cliente.web.PantallasController;
@@ -85,6 +86,7 @@ class SeguridadTest {
 
   @MockitoBean private PerfilService perfiles;
   @MockitoBean private PublicoPuerto publico;
+  @MockitoBean private SolicitudEntidadPuerto solicitudes;
   @Autowired private MockMvc mvc;
   @Autowired private ClientRegistrationRepository clientes;
 

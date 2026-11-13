@@ -6,10 +6,15 @@ import static grupo5.donaciones.seguridad.Acceso.SU_DONACION_INDEPENDIENTE;
 
 import grupo5.donaciones.controllers.IDonacionesIndependientesController;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.ConteosDeEntidadDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.FiltroDonacionesIndependientes;
+import grupo5.donaciones.models.entities.actividad.AccionDeAdministracion;
+import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.seguridad.AuditoriaDelActor;
+import grupo5.donaciones.services.IActividadService;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
+import grupo5.donaciones.services.ParametrosListado;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -30,9 +36,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class DonacionesIndependientesController implements IDonacionesIndependientesController {
 
   private final IDonacionesIndependientesService service;
+  private final IActividadService actividad;
 
-  public DonacionesIndependientesController(IDonacionesIndependientesService service) {
+  public DonacionesIndependientesController(
+      IDonacionesIndependientesService service, IActividadService actividad) {
     this.service = service;
+    this.actividad = actividad;
   }
 
   @Override
@@ -43,8 +52,24 @@ public class DonacionesIndependientesController implements IDonacionesIndependie
           + "hasRole('ENTIDAD') and principal.puedeOperarSobre(#filtro.entidadId()))")
   @GetMapping
   public ResponseEntity<List<DonacionIndependienteResponseDTO>> obtenerTodas(
-      FiltroDonacionesIndependientes filtro) {
-    return ResponseEntity.ok(service.obtenerConFiltros(filtro));
+      FiltroDonacionesIndependientes filtro, ParametrosListado listado) {
+    return Paginas.conTotal(service.obtenerConFiltros(filtro, listado));
+  }
+
+  /**
+   * R11-43: las cifras de la organización. Los mismos permisos que el listado para una
+   * organización: el admin, o ella misma con {@code VER_DONACIONES}. La ruta literal gana sobre
+   * {@code /{id}}.
+   */
+  @Override
+  @PreAuthorize(
+      ADMIN
+          + " or hasAuthority('VER_DONACIONES') and hasRole('ENTIDAD')"
+          + " and principal.puedeOperarSobre(#entidadId)")
+  @GetMapping("/conteos")
+  public ResponseEntity<ConteosDeEntidadDTO> conteos(
+      @RequestParam UUID entidadId, @RequestParam(required = false) UUID necesidadId) {
+    return ResponseEntity.ok(service.conteos(entidadId, necesidadId));
   }
 
   @Override
@@ -61,7 +86,12 @@ public class DonacionesIndependientesController implements IDonacionesIndependie
       @Valid @RequestBody CambioEstadoDonacionIndependienteRequestDTO request,
       @RequestHeader(value = "X-Actor", required = false) String actorLegado,
       Authentication autenticacion) {
-    return ResponseEntity.ok(
-        service.cambiarEstado(id, request, AuditoriaDelActor.de(autenticacion, actorLegado)));
+    DonacionIndependienteResponseDTO cambiada =
+        service.cambiarEstado(id, request, AuditoriaDelActor.de(autenticacion, actorLegado));
+    // R11-26: el autor del registro es el sub del token, no X-Actor (RI-SVC-04).
+    if (request.estado() == TipoEstadoDonacion.VENCIDA) {
+      actividad.registrar(AccionDeAdministracion.DONACION_VENCIDA, id.toString(), null);
+    }
+    return ResponseEntity.ok(cambiada);
   }
 }

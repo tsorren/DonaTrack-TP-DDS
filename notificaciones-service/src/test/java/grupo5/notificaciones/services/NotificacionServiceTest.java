@@ -2,24 +2,33 @@ package grupo5.notificaciones.services;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.notificaciones.dto.FiltroBandeja;
 import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.DestinoEventoDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
 import grupo5.notificaciones.dto.input.EventoDonanteInactivoDTO;
 import grupo5.notificaciones.dto.input.EventoEntregaFallidaDTO;
+import grupo5.notificaciones.dto.input.EventoImportacionTerminadaV1;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
+import grupo5.notificaciones.models.entities.notificaciones.TipoEvento;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonacionAsignada;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonanteInactivo;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EntregaFallida;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EventoNotificable;
+import grupo5.notificaciones.models.entities.notificaciones.eventos.ImportacionTerminada;
 import grupo5.notificaciones.models.entities.notificaciones.events.NotificacionCreada;
 import grupo5.notificaciones.models.entities.personas.Correo;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
+import grupo5.notificaciones.models.repositories.ConsultaBandeja;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
+import grupo5.notificaciones.models.repositories.PaginaBandeja;
 import grupo5.notificaciones.mothers.NotificacionMother;
 import grupo5.notificaciones.services.impl.NotificacionService;
 import grupo5.notificaciones.services.mappers.EventoMapper;
@@ -28,6 +37,7 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -123,35 +133,91 @@ class NotificacionServiceTest {
   }
 
   @Test
-  void obtenerPorPersona_deberiaMeapearEntidadesADTO() {
-    Persona persona = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
-    Notificacion notificacion = NotificacionMother.pendiente(persona, "Hola, tenés novedades");
-
-    when(repository.findByPersonaId(persona.getId())).thenReturn(List.of(notificacion));
-
-    List<NotificacionDTO> resultado = service.obtenerPorPersona(persona.getId());
-
-    assertEquals(1, resultado.size());
-    assertEquals(notificacion.getId(), resultado.get(0).id());
-    assertEquals("Hola, tenés novedades", resultado.get(0).mensaje());
-    assertEquals(EstadoNotificacion.PENDIENTE.name(), resultado.get(0).estado());
-  }
-
-  @Test
-  void obtenerPorPersona_devuelveTipoEventoYReferenciaYNuloEnLasAnteriores() {
+  void bandeja_mapeaLaPaginaADTOConSuTotalYSinParametrosPideLaPrimeraDe20() {
     Persona persona = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
     UUID donacionId = UUID.randomUUID();
     Notificacion conTipo = NotificacionMother.pendiente(persona, "Salió");
     conTipo.etiquetar("DONACION_EN_CAMINO", donacionId);
     Notificacion anterior = NotificacionMother.pendiente(persona, "Vieja");
-    when(repository.findByPersonaId(persona.getId())).thenReturn(List.of(conTipo, anterior));
+    ArgumentCaptor<ConsultaBandeja> consulta = ArgumentCaptor.forClass(ConsultaBandeja.class);
+    when(repository.bandeja(eq(persona.getId()), consulta.capture()))
+        .thenReturn(new PaginaBandeja(List.of(conTipo, anterior), 45));
 
-    List<NotificacionDTO> resultado = service.obtenerPorPersona(persona.getId());
+    NotificacionService.PaginaNotificaciones pagina =
+        service.bandeja(persona.getId(), FiltroBandeja.deLectura(null));
 
-    assertEquals("DONACION_EN_CAMINO", resultado.get(0).tipoEvento());
-    assertEquals(donacionId, resultado.get(0).referenciaId());
-    assertNull(resultado.get(1).tipoEvento());
-    assertNull(resultado.get(1).referenciaId());
+    assertEquals(45, pagina.total());
+    assertEquals(conTipo.getId(), pagina.notificaciones().get(0).id());
+    assertEquals(EstadoNotificacion.PENDIENTE.name(), pagina.notificaciones().get(0).estado());
+    assertEquals("DONACION_EN_CAMINO", pagina.notificaciones().get(0).tipoEvento());
+    assertEquals(donacionId, pagina.notificaciones().get(0).referenciaId());
+    assertNull(pagina.notificaciones().get(1).tipoEvento());
+    assertEquals(
+        new ConsultaBandeja(null, null, Set.of(), Set.of(), false, 0, 20), consulta.getValue());
+  }
+
+  @Test
+  void bandeja_normalizaLaBusquedaYTraduceTiposOrdenYPagina() {
+    UUID personaId = UUID.randomUUID();
+    ArgumentCaptor<ConsultaBandeja> consulta = ArgumentCaptor.forClass(ConsultaBandeja.class);
+    when(repository.bandeja(eq(personaId), consulta.capture()))
+        .thenReturn(new PaginaBandeja(List.of(), 0));
+
+    service.bandeja(
+        personaId,
+        new FiltroBandeja(
+            false,
+            "  CAMIÓN ",
+            List.of("donacion_en_camino"),
+            List.of("DONACION_ASIGNADA", "ENTREGA_FALLIDA"),
+            "antiguas",
+            2,
+            50));
+
+    assertEquals(
+        new ConsultaBandeja(
+            false,
+            "camion",
+            Set.of("DONACION_EN_CAMINO"),
+            Set.of("DONACION_ASIGNADA", "ENTREGA_FALLIDA"),
+            true,
+            2,
+            50),
+        consulta.getValue());
+  }
+
+  @Test
+  void bandeja_conUnParametroFueraDeRango_daErrorDeArgumentoSinLlamarAlRepositorio() {
+    UUID personaId = UUID.randomUUID();
+    List<FiltroBandeja> invalidos =
+        List.of(
+            new FiltroBandeja(null, null, null, null, null, -1, null),
+            new FiltroBandeja(null, null, null, null, null, null, 0),
+            new FiltroBandeja(null, null, null, null, null, null, 101),
+            new FiltroBandeja(null, "x".repeat(101), null, null, null, null, null),
+            new FiltroBandeja(null, null, null, null, "otro", null, null),
+            new FiltroBandeja(null, null, List.of("NO_EXISTE"), null, null, null, null),
+            new FiltroBandeja(null, null, null, List.of("NO_EXISTE"), null, null, null));
+
+    for (FiltroBandeja filtro : invalidos) {
+      ValidationException error =
+          assertThrows(ValidationException.class, () -> service.bandeja(personaId, filtro));
+      assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), error.getErrorCode());
+    }
+    verify(repository, never()).bandeja(any(), any());
+  }
+
+  @Test
+  void bandeja_conBusquedaVaciaOSoloEspacios_noFiltraPorTexto() {
+    UUID personaId = UUID.randomUUID();
+    ArgumentCaptor<ConsultaBandeja> consulta = ArgumentCaptor.forClass(ConsultaBandeja.class);
+    when(repository.bandeja(eq(personaId), consulta.capture()))
+        .thenReturn(new PaginaBandeja(List.of(), 0));
+
+    service.bandeja(personaId, new FiltroBandeja(null, "   ", null, null, "RECIENTES", null, null));
+
+    assertNull(consulta.getValue().texto());
+    assertFalse(consulta.getValue().antiguas());
   }
 
   @Test
@@ -328,19 +394,6 @@ class NotificacionServiceTest {
     verify(repository, times(1)).countByPersonaIdAndLeidaFalse(personaId);
   }
 
-  @Test
-  void obtenerPorPersona_conFiltroLeida_deberiaFiltrarPorEstadoDeLectura() {
-    UUID personaId = UUID.randomUUID();
-    Persona personaDummy = personaConCorreoQueSiempreEnvia("Juan");
-    Notificacion notif = NotificacionMother.pendiente(personaDummy);
-    when(repository.findByPersonaIdAndLeida(personaId, false)).thenReturn(List.of(notif));
-
-    List<NotificacionDTO> resultado = service.obtenerPorPersona(personaId, false);
-
-    assertEquals(1, resultado.size());
-    verify(repository, times(1)).findByPersonaIdAndLeida(personaId, false);
-  }
-
   private static EventoDonacionAsignadaV1 donacionAsignada() {
     return new EventoDonacionAsignadaV1(
         UUID.randomUUID(),
@@ -413,5 +466,61 @@ class NotificacionServiceTest {
     assertEquals(adminId, guardada.getValue().getPersonaId());
     assertEquals(EstadoNotificacion.PENDIENTE, guardada.getValue().getEstadoNotificacion());
     verify(eventPublisher).publishEvent(any(NotificacionCreada.class));
+  }
+
+  /** C6 (R11-30): el aviso de contacto se guarda con su tipo, sin referencia. */
+  @Test
+  void notificarPersona_guardaElAvisoConTipoMensajeContacto() {
+    service.notificarPersona(UUID.randomUUID(), "Nuevo mensaje de contacto Nº 8, sobre otra cosa.");
+
+    ArgumentCaptor<Notificacion> guardada = ArgumentCaptor.forClass(Notificacion.class);
+    verify(repository).save(guardada.capture());
+    assertEquals(TipoEvento.MENSAJE_CONTACTO.name(), guardada.getValue().getTipoEvento());
+    assertNull(guardada.getValue().getReferenciaId());
+  }
+
+  private static EventoImportacionTerminadaV1 importacionTerminada(String resultado) {
+    return new EventoImportacionTerminadaV1(
+        UUID.randomUUID(), resultado, 70, 70, 10, 10, 50, TEST_DATE_TIME, TEST_DATE_TIME);
+  }
+
+  /** C4 (R11-30): el evento se convierte en un aviso para la Administración y se guarda. */
+  @Test
+  void procesar_importacionTerminada_guardaElAvisoDeLaAdministracion() {
+    Persona administracion = personaConCorreoQueSiempreEnvia("Administracion");
+    EventoImportacionTerminadaV1 evento =
+        importacionTerminada(EventoImportacionTerminadaV1.TERMINADA_CON_ERRORES);
+    ImportacionTerminada entidad =
+        new ImportacionTerminada(
+            administracion,
+            false,
+            new ImportacionTerminada.Cifras(70, 10, 10, 50),
+            TEST_DATE_TIME,
+            TEST_DATE_TIME);
+    entidad.asociarReferencia(evento.archivoId());
+    when(mapper.toEntity(evento)).thenReturn(entidad);
+
+    service.procesar(evento, UUID.randomUUID().toString());
+
+    List<Notificacion> guardadas = notificacionesGuardadas(1);
+    assertEquals(administracion.getId(), guardadas.get(0).getPersonaId());
+    assertEquals(TipoEvento.IMPORTACION_TERMINADA.name(), guardadas.get(0).getTipoEvento());
+    assertEquals(evento.archivoId(), guardadas.get(0).getReferenciaId());
+  }
+
+  /** C5 (R11-30): el mismo message_id otra vez no deja un segundo aviso. */
+  @Test
+  void procesar_importacionTerminadaDuplicadaEnInbox_noGuardaOtroAviso() {
+    JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+    NotificacionService serviceConDb =
+        new NotificacionService(repository, mapper, eventPublisher, jdbcTemplate);
+    EventoImportacionTerminadaV1 evento =
+        importacionTerminada(EventoImportacionTerminadaV1.TERMINADA);
+    when(jdbcTemplate.update(anyString(), any(UUID.class), any(LocalDateTime.class))).thenReturn(0);
+
+    serviceConDb.procesar(evento, UUID.randomUUID().toString());
+
+    verify(repository, never()).saveAll(any());
+    verify(mapper, never()).toEntity(evento);
   }
 }

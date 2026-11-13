@@ -1,6 +1,9 @@
 package grupo5.cliente.seguridad;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -96,7 +99,7 @@ class SolicitudesConIngresoTest {
             null,
             null,
             null);
-    when(personas.entidades())
+    when(personas.entidades(anyString(), any(), anyInt()))
         .thenReturn(new AdminEntidadesVista(0, "10 de noviembre de 2026, 18:30", List.of(rosa)));
     when(personas.aprobarEntidad("cuenta-1")).thenReturn("Merendero Oeste");
 

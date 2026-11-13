@@ -31,7 +31,7 @@ class PublicoContactoEnvioController {
       Map.of(
           "Una entrega", "ENTREGA",
           "Una donación", "DONACION",
-          "Una necesidad de mi entidad", "NECESIDAD",
+          "Una necesidad de mi organización", "NECESIDAD",
           "Mi cuenta", "CUENTA",
           "Algo del sitio no anduvo", "SITIO",
           "Otra cosa", OTRO);

@@ -39,6 +39,9 @@
       <p th:if="${persona and nueva}"
          th:text="|Gracias por sumarte${v.nombre != null ? ', ' + v.nombre : ''}. Sos donante ${v.categoria}. Todavía no completaste ninguna misión. Al ${v.actualizado}.|">Gracias por sumarte, Martina. Sos donante Colaborador. Todavía no
         completaste ninguna misión. Al 15 de octubre de 2026, 16:25.</p>
+      <th:block th:if="${persona}">
+        <aside th:replace="~{componentes/pista :: pista('misiones', 'Tu huerta crece con tus donaciones', 'Cada planta representa una misión. Revisá qué completaste, qué está en curso y cuál es el próximo paso.')}"></aside>
+      </th:block>
     </header>
 
     <p th:if="${persona and v.nota != null and (escenario == '' or nueva)}" class="texto-chico" data-tono="suave"
@@ -48,7 +51,7 @@
            dirección responde esto; en la maqueta, la empresa lo ve si escribe la dirección. */-->
     <section th:unless="${persona}" class="vacio" aria-labelledby="permiso-titulo">
       <h2 id="permiso-titulo">Misiones e insignias es para quienes donan como persona.</h2>
-      <p>Las organizaciones donan sin misiones: lo que donaron se ve en Mis donaciones.</p>
+      <p>Las empresas, ONG e instituciones donan sin misiones: lo que donaron se ve en Mis donaciones.</p>
       <a class="boton" data-tono="secundario" href="/donante-inicio" th:href="@{/donante-inicio}">Ir a tu inicio</a>
     </section>
 
@@ -146,7 +149,7 @@
     </section>
 
     <p>Las misiones cuentan tus donaciones: las que entregás en el depósito y, en Impacto Real, las que
-      la entidad confirmó. <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a></p>
+      la organización confirmó. <a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a></p>
 </th:block>
 
 <!--/* Una misión: su nombre, qué pide y cómo está (completa con su fecha, en curso con su barra y la

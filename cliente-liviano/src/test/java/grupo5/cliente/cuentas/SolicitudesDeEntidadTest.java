@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -32,11 +33,36 @@ class SolicitudesDeEntidadTest {
 
   @Test
   void lasPendientesLlevanLaRazonSocialDeSuJuridicaYElCorreoDeLaCuenta() {
-    when(donaciones.juridicas()).thenReturn(List.of(new Juridica(JURIDICA, "Merendero Oeste")));
+    when(donaciones.juridicas(List.of(JURIDICA)))
+        .thenReturn(List.of(new Juridica(JURIDICA, "Merendero Oeste")));
 
     assertThat(solicitudes.pendientes())
         .containsExactly(
             new Pendiente("cuenta-1", "Merendero Oeste", "rosa@ejemplo.test", JURIDICA));
+  }
+
+  @Test
+  void soloSePidenLasJuridicasDeLasSolicitudesUnaVezCadaUna() {
+    UUID otra = UUID.randomUUID();
+    when(cuentas.solicitudesDeEntidad())
+        .thenReturn(
+            List.of(
+                new SolicitudDeEntidad("cuenta-1", JURIDICA, "rosa@ejemplo.test"),
+                new SolicitudDeEntidad("cuenta-2", otra, "ana@ejemplo.test"),
+                new SolicitudDeEntidad("cuenta-3", JURIDICA, "rosa2@ejemplo.test"),
+                new SolicitudDeEntidad("cuenta-4", null, "sin@ejemplo.test")));
+
+    solicitudes.pendientes();
+
+    verify(donaciones).juridicas(List.of(JURIDICA, otra));
+  }
+
+  @Test
+  void sinSolicitudesNoSeLeenJuridicas() {
+    when(cuentas.solicitudesDeEntidad()).thenReturn(List.of());
+
+    assertThat(solicitudes.pendientes()).isEmpty();
+    verifyNoInteractions(donaciones);
   }
 
   @Test

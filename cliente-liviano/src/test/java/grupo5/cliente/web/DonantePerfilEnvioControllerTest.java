@@ -80,7 +80,10 @@ class DonantePerfilEnvioControllerTest {
           "martina@ejemplo.test",
           null,
           null,
-          "Aceptaste la versión 2 el 3 de noviembre de 2026.");
+          "Aceptaste la versión 2 el 3 de noviembre de 2026.",
+          "Martina",
+          "Ruiz",
+          null);
 
   @MockitoBean private DonantePerfilPuerto perfiles;
   @MockitoBean private CuentaActual cuentas;
@@ -101,12 +104,14 @@ class DonantePerfilEnvioControllerTest {
             flash()
                 .attribute(
                     Envios.AVISO,
-                    "Listo. Las entidades ya no ven tu nombre: ven «Donante Colaborador»."));
+                    "Listo. Las organizaciones ya no ven tu nombre: ven «Donante Colaborador»."));
     verify(perfiles).mostrarNombre(PERSONA, false);
 
     mvc.perform(guardar("mostrar", "si"))
         .andExpect(
-            flash().attribute(Envios.AVISO, "Listo. Las entidades ven tu nombre: «Martina Ruiz»."));
+            flash()
+                .attribute(
+                    Envios.AVISO, "Listo. Las organizaciones ven tu nombre: «Martina Ruiz»."));
     verify(perfiles).mostrarNombre(PERSONA, true);
   }
 

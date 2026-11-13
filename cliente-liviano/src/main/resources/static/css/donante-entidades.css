@@ -1,271 +1,275 @@
-/* Entidades del donante en Raíces A: la búsqueda en su lámina de doble filete y una etiqueta de
-   herbario por entidad, colgada de su sello con el ícono de lo que pide, como las de la tierra de
-   la portada; lo que ya donó la empresa, con el sello de su estado; lo que pide, con una barra
-   paja de lo recibido. En pantalla grande, las etiquetas en columnas. */
+/* Organizaciones del donante (R11-27 y R11-28, lote p2-entidades-donante; ficha
+   raices-donante-navegable.md, sección 10): la franja de ayuda arriba (fondo agua, filete verde, sin
+   sombra), la barra de filtros del componente filtros y una tarjeta por organización en la .lista,
+   del mismo alto desde dos columnas, con el aire entre lo que pide y el pie. La versión de persona de
+   la maqueta usa las mismas piezas. Lo propio de la pantalla va con data-v. */
 @import url("donante-comun.css");
 
 .entidades {
   max-width: 82rem;
 }
 
-.entidades .filtro {
-  max-width: 38rem;
-}
-
-/* --- Las etiquetas de herbario ------------------------------------------------------------------ */
-.ejemplares,
-.ejemplares-reserva {
-  gap: 2.5rem 1.75rem;
-  margin: 2rem 0 1.5rem;
-}
-
-.ejemplar {
-  position: relative;
-  padding: 1.75rem 1.25rem 1.25rem;
-}
-
-/* El sello cuelga del borde de arriba, como el ojal de la etiqueta. */
-.ejemplar-sello {
-  position: absolute;
-  top: -1.5rem;
-  left: 1rem;
-  width: 3rem;
-  height: 3rem;
-  fill: var(--color-tinta);
-}
-
-main .ejemplar h2 {
-  margin: 0;
-  font-size: 1.375rem;
-  line-height: 1.15;
-}
-
-.ejemplar-tipo {
-  margin: 0.25rem 0 0.75rem;
-  font-size: 0.9375rem;
-}
-
-.ejemplar h3 {
-  margin: 1rem 0 0.5rem;
-  color: var(--color-tinta);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  font-stretch: 112%;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.ejemplar p {
-  margin: 0;
-}
-
-/* Lo que ya donó la empresa: un renglón por donación, con su sello. */
-.ejemplar-ya {
-  padding: 0.25rem 0 0.75rem;
-  border-bottom: 1px dotted var(--color-tinta-suave);
-}
-
-.ejemplar-ya ul {
-  display: grid;
-  gap: 0.375rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.ejemplar-ya .estado {
-  align-items: flex-start;
-  font-weight: 400;
-}
-
-.ejemplar-ya .estado-sello {
-  flex: none;
-  margin-top: 0.15rem;
-}
-
-.ejemplar-ya .estado span {
-  color: var(--color-tinta);
-}
-
-/* Lo que pide: qué, lo que falta y hasta cuándo, y la barra de lo recibido. */
-.pedidos {
-  display: grid;
-  gap: 0.75rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.pedido {
-  display: grid;
-  gap: 0.125rem;
-}
-
-.pedido-que {
-  color: var(--color-tinta);
-  font-weight: 700;
-}
-
-.pedido-falta {
-  font-size: 0.9375rem;
-}
-
-/* "Ver los 5 pedidos" y "Ver menos": el texto cambia al abrir, sin JavaScript. */
-.pedidos-mas summary {
-  display: inline-flex;
-  align-items: center;
-  min-height: 3rem;
-  color: var(--color-acento);
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 0.25em;
-  cursor: pointer;
-}
-
-.pedidos-mas[open] .ver-mas,
-.pedidos-mas:not([open]) .ver-menos {
-  display: none;
-}
-
-.pedidos-mas .pedidos {
-  margin-top: 0.25rem;
-}
-
-/* --- Paginado y cómo llega tu donación ------------------------------------------------------- */
-.paginas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin: 0 0 2.5rem;
-}
-
-.como-donar {
-  max-width: 44rem;
-}
-
-.deposito {
-  display: grid;
-  padding: 0.75rem 0 0.75rem 1rem;
-  border-left: 0.4rem solid var(--color-raiz);
-}
-
-.deposito b {
-  color: var(--color-tinta);
-}
-
-@media (min-width: 53.75em) {
-  .ejemplares,
-  .ejemplares-reserva {
-    --medida-columna: 20rem;
-    align-items: start;
-  }
-}
-
-/* --- El avance de los pedidos, por categoría (era la prueba entidades-donante-c, elegida el
-   2026-11-09, tarde). La búsqueda y los filtros son la barra del componente filtros. -------------- */
 [data-v="entidades"] > .filtros-barra {
   margin: 0 0 1.25rem;
 }
 
-[data-v="grupo"] {
-  display: grid;
-  gap: 1rem;
-  margin: 2rem 0;
+/* Las tarjetas privadas conservan el formato de publico-entidades, pero señalan el vínculo previo
+   de la persona o empresa donante sin cambiar la composición de la tarjeta. */
+[data-privado="si"] .plegable[data-ya="si"] {
+  opacity: 0.68;
+  filter: grayscale(0.65);
 }
 
-main [data-v="grupo"] h2 {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 0;
+/* La persona ve las entidades con la misma composición vegetal de la landing. Las que ya recibieron
+   una donación se atenúan, pero conservan la misma tarjeta y sus acciones. */
+#persona-entidades .huerta-opcion[data-ya="si"] {
+  opacity: 0.62;
+  filter: grayscale(0.7);
+}
+
+#persona-entidades .huerta-opcion > .chip {
+  align-self: flex-start;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  background: var(--color-acento-claro);
   color: var(--color-tinta);
-  font: 850 1.5rem/1.1 var(--fuente-titulo);
-  font-stretch: 118%;
+  font-size: 0.8125rem;
+  font-weight: 800;
 }
 
-/* El ícono de la categoría, centrado en su caja redondeada. */
-[data-v="grupo"] h2 svg {
-  flex: none;
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 0.375rem;
+/* --- La franja de ayuda: "Cómo llega tu donación" (R11-28) ------------------------------------- */
+/* En el celular, el ícono va arriba del título para que el texto use todo el ancho; desde 37,5 em,
+   a la izquierda. */
+[data-v="ayuda"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 0.25rem 1rem;
+  margin: 0 0 1.75rem;
+  padding: 1.25rem 1.25rem 0.75rem;
+  border-left: 0.4rem solid var(--color-acento);
+  border-radius: 0 var(--radio-lamina) var(--radio-lamina) 0;
+  background: var(--color-agua);
+  color: var(--color-tinta);
+}
+
+/* El ícono de información, decorativo (no es un botón): el mismo dibujo del componente info. */
+[data-v="ayuda"] > svg {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+[data-v="ayuda-circulo"] {
+  fill: var(--color-tinta);
+}
+
+[data-v="ayuda-letra"] {
+  fill: var(--color-papel);
+}
+
+main [data-v="ayuda"] h2 {
+  margin: 0.375rem 0 0.5rem;
+  color: var(--color-tinta);
+  font-size: 1.25rem;
+}
+
+[data-v="ayuda"] p {
+  max-width: 44rem;
+  margin: 0 0 0.5rem;
+}
+
+[data-v="ayuda"] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-acento-hondo);
+  font-weight: 700;
+  text-underline-offset: 0.25em;
+}
+
+[data-v="deposito"] {
+  display: grid;
+  padding: 0.5rem 0 0.5rem 1rem;
+  border-left: 0.25rem solid var(--color-acento);
+}
+
+@media (min-width: 37.5em) {
+  [data-v="ayuda"] {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+
+/* --- Las tarjetas: una por organización (R11-27) ------------------------------------------------ */
+[data-v="organizaciones"] {
+  gap: 1.75rem;
+  margin: 1.5rem 0;
+}
+
+[data-v="organizacion"] {
+  --espacio-relleno: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+/* La cabeza: el nombre en su línea, cortando las palabras largas (R11-18), y la marca debajo. */
+main [data-v="organizacion"] h2 {
+  display: grid;
+  justify-items: start;
+  gap: 0.375rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-tinta);
+  font: 850 1.375rem/1.15 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+[data-v="nombre"] {
+  max-width: 100%;
+}
+
+[data-v="organizacion"] > p {
+  margin: 0;
+}
+
+/* Lo que pide: el ícono de la categoría a la izquierda; qué, lo que falta y la barra. */
+[data-v="pide"] {
+  display: grid;
+  gap: 0.875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-v="pide"] > li {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.125rem 0.75rem;
+}
+
+[data-v="pide"] > li > svg {
+  grid-row: 1 / span 3;
+  align-self: start;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0.25rem;
   border-radius: var(--radio-boton);
   background: var(--color-raiz);
   fill: var(--color-tinta);
 }
 
-[data-v="renglones"] {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* Un pedido: qué y de quién arriba; la barra gruesa con el porcentaje; lo que falta debajo. */
-[data-v="renglones"] li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 0.25rem 0.75rem;
-  padding: 1rem 1.125rem;
-  border-radius: var(--radio-lamina);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-papel);
-}
-
-[data-v="renglones"] b {
-  grid-column: 1 / -1;
+[data-v="pide"] b {
+  grid-column: 2 / -1;
+  overflow-wrap: anywhere;
   color: var(--color-tinta);
-  font: 800 1.125rem/1.2 var(--fuente-titulo);
+  font: 800 1.0625rem/1.2 var(--fuente-titulo);
   font-stretch: 112%;
 }
 
-[data-v="quien"] {
-  grid-column: 1 / -1;
-  font-size: 0.9375rem;
-}
-
-[data-v="renglones"] .progreso {
-  height: 1.375rem;
-  margin: 0.5rem 0 0.25rem;
-}
-
-[data-v="cuanto"] {
-  color: var(--color-tinta);
-  font: 850 1.25rem/1 var(--fuente-cifra);
-  font-stretch: 118%;
-}
-
 [data-v="falta"] {
-  grid-column: 1 / -1;
+  overflow-wrap: anywhere;
   font-size: 0.875rem;
 }
 
-/* A las que tu empresa ya les donó: atenuadas, sin borde. Papel de la página en vez de la lámina,
-   sin sombra, el texto en la tinta suave (AA sobre el papel) y la barra apagada. La marca va en
+[data-v="pide"] [data-v="falta"] {
+  grid-column: 2 / -1;
+}
+
+[data-v="pide"] .progreso {
+  grid-column: 2;
+  height: 1rem;
+  margin: 0.25rem 0 0;
+}
+
+[data-v="cuanto"] {
+  grid-column: 3;
+  color: var(--color-tinta);
+  font: 850 1rem/1 var(--fuente-cifra);
+  font-stretch: 118%;
+}
+
+/* El pie: el aire de la tarjeta queda arriba de él (margin-top: auto), así los pies de una fila
+   quedan alineados abajo. Las categorías en texto y el plegable con el resto. */
+[data-v="pie"] {
+  margin-top: auto;
+  padding-top: 0.625rem;
+  border-top: 1px solid var(--color-filete);
+  font-size: 0.875rem;
+}
+
+[data-v="pie"] > p {
+  margin: 0;
+}
+
+/* "Ver 2 necesidades más" y "Ver menos": el texto cambia al abrir, sin JavaScript. Nada se anima. */
+[data-v="mas"] summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--color-acento-hondo);
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  list-style: none;
+  cursor: pointer;
+}
+
+[data-v="mas"] summary::-webkit-details-marker {
+  display: none;
+}
+
+[data-v="mas"][open] [data-v="ver-mas"],
+[data-v="mas"]:not([open]) [data-v="ver-menos"] {
+  display: none;
+}
+
+[data-v="mas"] [data-v="pide"] {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 1rem;
+}
+
+/* A las que la cuenta ya les donó: atenuadas, sin borde. Papel de la página en vez del papel claro,
+   un filete en lugar de la sombra, el texto en la tinta suave y la barra apagada. La marca va en
    palabras. */
-[data-v="renglones"] li[data-ya="si"] {
+[data-v="organizacion"][data-ya="si"] {
   background: var(--color-papel);
   box-shadow: inset 0 0 0 1px var(--color-filete);
 }
 
-[data-v="renglones"] li[data-ya="si"] :is(b, [data-v="cuanto"]) {
+[data-v="organizacion"][data-ya="si"]::before {
+  display: none;
+}
+
+[data-v="organizacion"][data-ya="si"] :is(b, [data-v="cuanto"]) {
   color: var(--color-tinta-suave);
 }
 
-[data-v="renglones"] li[data-ya="si"] .progreso {
+[data-v="organizacion"][data-ya="si"] .progreso {
   opacity: 0.55;
 }
 
 [data-v="ya-donaste"] {
   display: inline-block;
-  margin-left: 0.5rem;
   padding: 0 0.5rem;
   border-radius: 999px;
   background: var(--color-pendiente-fondo);
   color: var(--color-tinta);
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font: 700 0.8125rem/1.6 var(--fuente-texto);
+  font-stretch: 100%;
+}
+
+/* Desde dos columnas, todas las tarjetas de la página miden lo mismo (filas de alto igual). Con una
+   desplegada, las filas vuelven a medir cada una lo suyo; sin :has, crecen todas, sin romper nada. */
+@media (min-width: 53.75em) {
+  [data-v="organizaciones"] {
+    --medida-columna: 20rem;
+    grid-auto-rows: 1fr;
+  }
+
+  [data-v="organizaciones"]:has(details[open]) {
+    grid-auto-rows: auto;
+  }
 }

@@ -15,8 +15,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 /**
  * Marcar las notificaciones del donante, fuera de la maqueta (en la maqueta lo atiende
  * SitioController). El formulario del buzón manda el tilde de una fila ({@code marcar}), el de
- * dejarla sin leer ({@code no-leer}) o las elegidas; sin ninguna, marca todas. Vuelve a la bandeja
- * con el aviso de la ficha.
+ * dejarla sin leer ({@code no-leer}) o las elegidas; sin ninguna, marca todas. Vuelve a la misma
+ * página de la bandeja, con sus filtros, y el aviso de la ficha.
  */
 @Controller
 @Profile("!maqueta")
@@ -55,11 +55,17 @@ class DonanteNotificacionesEnvioController {
       aviso = UNA;
     } else if (elegidas != null && !elegidas.isEmpty()) {
       notificaciones.marcar(donante.get(), elegidas, true);
-      aviso = UNA;
+      aviso = elegidas.size() == 1 ? UNA : elegidas(elegidas.size());
     } else {
       notificaciones.marcarTodas(donante.get());
       aviso = TODAS;
     }
-    return Envios.listo("donante-notificaciones", aviso, atributos);
+    return Envios.listo(
+        BandejaDeNotificaciones.volver("donante-notificaciones", pedido), aviso, atributos);
+  }
+
+  /** El aviso de varias elegidas (ficha, sección 5). */
+  static String elegidas(int cuantas) {
+    return "Listo: marcaste " + cuantas + " notificaciones como leídas.";
   }
 }

@@ -30,6 +30,52 @@
   src: url("../fuentes/dm-sans-latin.woff2") format("woff2");
 }
 
+/* Las letras de respaldo ajustadas (R11-40, lote p2-armazon): mientras llegan Archivo y DM Sans, el
+   texto se dibuja con Arial (o Liberation Sans, de las mismas medidas) agrandada o achicada para que
+   ocupe lo mismo, con los altos de renglón de la letra definitiva. Si la letra llega tarde, el texto
+   cambia de forma pero los renglones casi no se mueven. Medidas tomadas en el navegador el
+   2026-11-12: Archivo a 850 y 120 % de ancho mide 1,26 veces Arial Bold, con 0,88 de alto arriba y
+   0,21 abajo; DM Sans mide 0,935 veces Arial (0,92 veces Arial Bold en negrita), con 0,99 y 0,31. */
+@font-face {
+  font-family: "Archivo respaldo";
+  font-weight: 100 599;
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans");
+  size-adjust: 126%;
+  ascent-override: 70%;
+  descent-override: 17%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Archivo respaldo";
+  font-weight: 600 900;
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold");
+  size-adjust: 126%;
+  ascent-override: 70%;
+  descent-override: 17%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "DM Sans respaldo";
+  font-weight: 100 599;
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans");
+  size-adjust: 93.5%;
+  ascent-override: 106%;
+  descent-override: 33%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "DM Sans respaldo";
+  font-weight: 600 900;
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold");
+  size-adjust: 92%;
+  ascent-override: 108%;
+  descent-override: 34%;
+  line-gap-override: 0%;
+}
+
 :root {
   /* Paleta Huerta de noche (A/B de paleta y acabado, 2026-11-05; antes, Oliva): valores por
      función, no por tono. Un afiche verde sobre papel de cera: la tierra humus en sus dos primeros
@@ -41,8 +87,8 @@
      bien ancho y pesado, sin cursiva; el texto en DM Sans. La tinta, un verde oliva casi negro; la
      tierra, un humus más gris; las tarjetas, en un papel más claro (--p-claro) y los filetes, la
      tinta al 16 % (--p-filete). */
-  --p-letra-titulo: Archivo, "Arial Narrow", system-ui, sans-serif;
-  --p-letra-texto: "DM Sans", system-ui, sans-serif;
+  --p-letra-titulo: Archivo, "Archivo respaldo", "Arial Narrow", system-ui, sans-serif;
+  --p-letra-texto: "DM Sans", "DM Sans respaldo", system-ui, sans-serif;
   --p-papel: #fbf2d3;
   --p-claro: #fffaea;
   /* El fondo de un campo para escribir: más claro que el papel y que las tarjetas (usuario, 2026-11-08). */
@@ -227,6 +273,8 @@
   --espacio-3: var(--p-espacio-3);
   --espacio-4: var(--p-espacio-4);
   --espacio-5: var(--p-espacio-5);
+  /* Piso común para controles que se usan con el dedo (48 px). */
+  --medida-toque-minimo: 3rem;
   --tamano-chico: var(--p-texto-1);
   --tamano-base: var(--p-texto-2);
   --tamano-grande: var(--p-texto-3);
@@ -236,10 +284,31 @@
   --medida-quiebre-chico: 37.5em;
   --medida-quiebre-medio: 53.75em;
   --medida-quiebre-ancho: 68.75em;
+  /* Desde acá, el menú público entra en una línea de la cabecera; antes, la barra de abajo. */
+  --medida-quiebre-menu: 56em;
   /* El estrato de las barras (de la corrida Raíces cálida, lo único que el usuario conservó,
      2026-11-06): donde la cabecera, el pie y la barra del menú tocan la página, la línea de paja de
      las raíces y una franja de humus, como el corte de suelo. */
   --color-estrato: var(--p-suelo);
   --color-horizonte: var(--p-raiz);
   --medida-estrato: 0.6875rem;
+  /* Lo que queda fijo al desplazarse (R11-33, regla general 5; ficha r11-p2-armazon). Cuánto ocupa
+     cada pieza fija: el menú de abajo del celular (3,75 rem de celda y su filete), el botón principal
+     fijo (data-fijo="celular": 3 rem de botón y su aire), y lo fijo de arriba. La cabecera y la
+     barra de filtros empiezan en 0 (en el celular y en ventanas bajas no queda nada fijo arriba);
+     app.css les pone el alto medido según el ancho y el rol. */
+  --medida-menu-celular: 3.8125rem;
+  --medida-boton-fijo: 4.5rem;
+  --medida-cabecera-fija: 0rem;
+  --medida-filtros-fijos: 0rem;
+  /* Las capas de lo que queda encima (R11-33): de abajo arriba, una pieza fija de una pantalla, la
+     barra de filtros, el menú del celular, la cabecera, "Saltar al contenido" y la pantalla de carga.
+     Los desplegables nativos (popover y dialog) van en la capa superior del navegador, encima de
+     todo. */
+  --capa-fijo-pantalla: 1;
+  --capa-filtros-fijos: 6;
+  --capa-menu-celular: 7;
+  --capa-encabezado-fijo: 8;
+  --capa-saltar: 9;
+  --capa-carga: 20;
 }

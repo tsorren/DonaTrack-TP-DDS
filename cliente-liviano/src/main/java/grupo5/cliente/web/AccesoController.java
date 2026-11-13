@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import static grupo5.cliente.seguridad.EstadoDeCuenta.SIN_PERFIL;
+import static grupo5.cliente.seguridad.EstadoDeCuenta.SOLICITUD_RECIBIDA;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -9,9 +10,14 @@ import grupo5.cliente.cuentas.Perfil.DonanteEmpresa;
 import grupo5.cliente.cuentas.Perfil.DonantePersona;
 import grupo5.cliente.cuentas.Perfil.Entidad;
 import grupo5.cliente.cuentas.PerfilService;
+import grupo5.cliente.puertos.SolicitudEntidadPuerto;
+import grupo5.cliente.puertos.SolicitudEntidadPuerto.DatosRechazados;
+import grupo5.cliente.puertos.SolicitudEntidadPuerto.YaAprobada;
 import grupo5.cliente.seguridad.Area;
 import grupo5.cliente.seguridad.UsuarioActual;
+import grupo5.cliente.vistas.SolicitudEntidadVista;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -25,6 +31,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Las pantallas de ingreso y registro las muestra Keycloak: quien no tiene sesión va a él. Quien
@@ -40,13 +47,17 @@ public class AccesoController {
   private static final String INGRESAR = "redirect:/oauth2/authorization/keycloak";
   private static final String DONANTE = "publico-registro-donante";
   private static final String ENTIDAD = "publico-registro-entidad";
+  private static final String SOLICITUD = "redirect:/" + SolicitudEntidadController.ENVIADA;
 
   private final Pantallas pantallas;
   private final PerfilService perfiles;
+  private final SolicitudEntidadPuerto solicitudes;
 
-  AccesoController(Pantallas pantallas, PerfilService perfiles) {
+  AccesoController(
+      Pantallas pantallas, PerfilService perfiles, SolicitudEntidadPuerto solicitudes) {
     this.pantallas = pantallas;
     this.perfiles = perfiles;
+    this.solicitudes = solicitudes;
   }
 
   @GetMapping("/publico-ingresar")
@@ -108,13 +119,59 @@ public class AccesoController {
     return guardar(usuario, perfil, terminos, sesion, model, ENTIDAD);
   }
 
-  /** Quien llegó con sesión (su solicitud espera) puede cerrarla desde esta pantalla. */
-  @GetMapping("/publico-registro-entidad-enviada")
-  String solicitudRecibida(@AuthenticationPrincipal OidcUser usuario, Model model) {
-    if (usuario != null) {
-      model.addAttribute("sesionPendiente", true);
+  /**
+   * Guarda lo corregido de la solicitud que espera la aprobación (R11-41) y vuelve a "Recibimos la
+   * solicitud" con el aviso. Si Donaciones no acepta los datos o no contesta, el mismo formulario
+   * con lo escrito; si el equipo ya la aprobó, la solicitud lo explica. El correo es el de la
+   * cuenta: no viaja.
+   */
+  @PostMapping("/" + SolicitudEntidadController.CORREGIR)
+  String corregirSolicitud(
+      @AuthenticationPrincipal OidcUser usuario,
+      @ModelAttribute Entidad cambios,
+      RedirectAttributes despues,
+      Model model) {
+    UsuarioActual cuenta = UsuarioActual.desde(usuario.getClaims());
+    if (cuenta.estado() != SOLICITUD_RECIBIDA) {
+      return "redirect:/inicio";
     }
-    return pantallas.mostrar("publico-registro-entidad-enviada", model);
+    SolicitudEntidadVista escrito =
+        new SolicitudEntidadVista(
+            cambios.entidad(),
+            cambios.queEs(),
+            cambios.tipo(),
+            cambios.calle(),
+            cambios.altura(),
+            cambios.codigoPostal(),
+            cambios.localidad(),
+            cambios.provincia(),
+            cambios.representante(),
+            usuario.getEmail());
+    try {
+      solicitudes.corregir(cuenta.personaId(), escrito);
+    } catch (YaAprobada aprobada) {
+      return SOLICITUD;
+    } catch (DatosRechazados rechazo) {
+      // Sin un campo que marcar (un rechazo que el formulario no conoce), se avisa como falla.
+      return SolicitudEntidadController.formulario(
+          pantallas, model, escrito, rechazo.campos(), rechazo.campos().isEmpty());
+    } catch (RuntimeException falla) {
+      LOG.error("No se pudo corregir la solicitud de la cuenta {}", usuario.getSubject(), falla);
+      return SolicitudEntidadController.formulario(pantallas, model, escrito, List.of(), true);
+    }
+    despues.addFlashAttribute("guardado", true);
+    return SOLICITUD;
+  }
+
+  /**
+   * "Ingresar de nuevo", cuando el equipo ya aprobó la solicitud: cierra la sesión del sitio y
+   * vuelve a ingresar sin pedir la contraseña (la de Keycloak sigue abierta), para que el token
+   * traiga el rol nuevo.
+   */
+  @PostMapping("/" + SolicitudEntidadController.ENVIADA)
+  String ingresarDeNuevo(HttpSession sesion) {
+    sesion.invalidate();
+    return INGRESAR;
   }
 
   @GetMapping("/inicio")

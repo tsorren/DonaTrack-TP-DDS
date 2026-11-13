@@ -11,6 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import grupo5.cliente.puertos.AdminActividadPuerto;
+import grupo5.cliente.puertos.AdminActividadPuerto.AccionDelSitio;
 import grupo5.cliente.puertos.AdminOperacionPuerto;
 import grupo5.cliente.puertos.CuentasDelMenu;
 import grupo5.cliente.vistas.AdminCamionesVista;
@@ -67,6 +69,7 @@ class AdminCamionesEnviosTest {
   }
 
   @MockitoBean private AdminOperacionPuerto operacion;
+  @MockitoBean private AdminActividadPuerto actividad;
   @Autowired private MockMvc mvc;
 
   @Test
@@ -121,6 +124,8 @@ class AdminCamionesEnviosTest {
                 .attribute(
                     Envios.AVISO,
                     "Agregaste el camión AF 345 KL. Queda disponible para las próximas rutas."));
+    // R11-26, C13: el camión agregado queda anotado con su patente
+    verify(actividad).anotar(AccionDelSitio.CAMION_AGREGADO, ID, "AF 345 KL");
   }
 
   @Test
@@ -145,6 +150,8 @@ class AdminCamionesEnviosTest {
                     "Volviste a habilitar el camión AB 123 CD. Queda disponible para las próximas"
                         + " rutas."));
     verify(operacion).cambiarCamion(ID, true, null);
+    verify(actividad).anotar(AccionDelSitio.CAMION_DESHABILITADO, ID, "AB 123 CD");
+    verify(actividad).anotar(AccionDelSitio.CAMION_HABILITADO, ID, "AB 123 CD");
   }
 
   @Test

@@ -74,7 +74,7 @@ class EntidadConfirmarMaqueta implements EntidadConfirmarPuerto {
               "Faltaba una caja."));
 
   @Override
-  public List<EntidadEntregaVista> entregas(UUID entidad) {
+  public List<EntidadEntregaVista> entregas(UUID entidad, String pedida) {
     return ENTREGAS;
   }
 

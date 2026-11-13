@@ -20,7 +20,8 @@
         href="/css/variantes/misiones-b.css">
   <th:block th:replace="~{interaccion :: cargar}"></th:block>
 </head>
-<body class="raices-privado">
+<body class="raices-privado" hx-indicator="#indicador-carga">
+<p id="indicador-carga" class="cargando" role="status" aria-live="polite" aria-hidden="true">Cargando…</p>
 <a class="saltar" href="#contenido">Saltar al contenido</a>
 <header class="armazon">
   <a class="marca" href="/publico-portada" th:href="@{/publico-portada}"
@@ -28,94 +29,65 @@
     <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
     <span>Dona<em>Track</em></span>
   </a>
-  <nav id="menu" class="navegacion" aria-label="Secciones">
+  <!--/* El menú del rol. Con hasta 5 secciones (donante y entidad), en el celular una barra oscura
+         abajo con un ícono sobre cada nombre (usuario, 2026-11-12); desde la tableta, en la cabecera,
+         sin íconos. La administración, con 7, va directo a un botón de menú (hamburguesa) que abre
+         todas las secciones, con su ícono, en un panel de pantalla completa con la marca
+         (data-forma="panel"; usuario, 2026-11-12). El panel es una ventana del navegador (popover): anda
+         sin JavaScript, y sin popover se ve la lista entera. */-->
+  <nav th:unless="${#lists.size(navegacion) > 5}" id="menu" class="navegacion" aria-label="Secciones">
+    <svg th:replace="~{iconos :: navegacion}"></svg>
     <ul role="list">
       <li th:each="opcion : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
-          th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
-      <!--/* Con más de 5 secciones (la administración), en el celular la barra muestra las 4 primeras y
-             "Más", que abre todas en una hoja desde abajo, una fila por sección (pulido, 2026-11-03,
-             alternativa del usuario; A/B del panel, F). Es una ventana del navegador (popover): anda sin
-             JavaScript. Desde la tableta, "Más" no se ve: el menú entra entero en la cabecera. */-->
-      <li th:if="${#lists.size(navegacion) > 5}" class="navegacion-mas">
-        <button type="button" popovertarget="menu-completo"><span aria-hidden="true">+</span>
-          Más</button>
-        <div id="menu-completo" class="navegacion-hoja" popover role="dialog"
-             aria-labelledby="menu-completo-titulo">
-          <div class="navegacion-hoja-cabecera">
-            <!--/* "Todas las secciones": el menú ya se llama "Secciones" (pulido de Nico, 2026-11-04). */-->
-            <p id="menu-completo-titulo" class="navegacion-hoja-titulo">Todas las secciones</p>
-            <button class="boton" data-tono="secundario" type="button" popovertarget="menu-completo"
-                    popovertargetaction="hide">Cerrar</button>
-          </div>
-          <!--/* Al abrirse, el foco entra a la hoja, en la primera sección (autofocus de la ventana). */-->
-          <ul role="list">
-            <li th:each="opcion, vuelta : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
-                th:autofocus="${vuelta.first}"
-                th:aria-current="${opcion.actual} ? 'page' : null" th:text="${opcion.texto}">Sección</a></li>
-          </ul>
-        </div>
-      </li>
+          th:aria-current="${opcion.actual} ? 'page' : null"><svg class="navegacion-icono" aria-hidden="true"
+          focusable="false"><use href="#nav-inicio" th:href="|#nav-${opcion.icono}|"></use></svg><span
+          th:text="${opcion.texto}">Sección</span></a></li>
     </ul>
   </nav>
-  <!--/* El acceso fijo a Notificaciones del donante y de la entidad (fichas raices-donante-navegable.md
-         y raices-entidad-navegable.md, sección 2): no es una sección del menú; va en todas las
-         pantallas del rol, con la cantidad sin leer. En la maqueta son 4 del donante y 3 de la
-         entidad, y ninguna en la pantalla de después de marcarlas como leídas (al volver a otra
-         pantalla, la cuenta vuelve a la de ejemplo: límite de la maqueta). Un agregado: no mueve nada.
-         Desde la conexión de pantallas (SPEC-08) la cantidad la trae el modelo (sinLeer, de
-         Pantallas y el puerto AvisosSinLeer): en la maqueta, las de ejemplo; fuera, Notificaciones.
-         Desde el pulido del 2026-11-03 va también en Mi perfil, Seguimiento, Necesidades y Confirmar
-         recepción, que la corrida A/B había dejado sin tocar. Con la cuenta de la persona que dona
-         (F5), las 3 sin leer de su bandeja (templates/persona/donante-notificaciones.html). */-->
-  <a th:if="${perfil != null and (#strings.endsWith(perfil, '/donante-perfil') or #strings.endsWith(perfil, '/entidad-perfil'))}"
-     th:with="pantalla=${#execInfo.processedTemplateName},
-              avisos=${#strings.replace(perfil, '-perfil', '-notificaciones')},
-              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : sinLeer}"
-     class="armazon-avisos" href="/donante-notificaciones"
-     th:href="${avisos}"
-     th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
-     th:aria-current="${#strings.contains(pantalla, #strings.substringAfter(avisos, '/'))} ? 'page' : null">
-    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-      <path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>
-    </svg>
-    <span class="armazon-avisos-texto">Notificaciones</span>
-    <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">4</b>
-  </a>
-  <!--/* La campana de la administración (usuario, ronda 2026-11-09: "agregá la bell de notificaciones"):
-         la misma pieza, hacia admin-notificaciones, con 3 sin leer en la maqueta y ninguna después de
-         marcarlas como leídas. La administración no tiene Mi perfil, así que se reconoce por su cuenta.
-         Un agregado: no cambia la de los otros roles ni el controlador. */-->
-  <a th:if="${perfil == null and cuenta != null and cuenta.rol == 'Administración'}"
-     th:with="pantalla=${#execInfo.processedTemplateName},
-              sinLeer=${#strings.endsWith(pantalla, '-leidas') ? 0 : sinLeer}"
-     class="armazon-avisos" href="/admin-notificaciones" th:href="@{/admin-notificaciones}"
-     th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
-     th:aria-current="${#strings.contains(pantalla, 'admin-notificaciones')} ? 'page' : null">
-    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-      <path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>
-    </svg>
-    <span class="armazon-avisos-texto">Notificaciones</span>
-    <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">3</b>
-  </a>
-  <!--/* La cuenta, como en K (usuario, 2026-11-08): un menú que se despliega al tocar la foto de perfil,
-         con el nombre y el rol, Mi perfil, Cambiar contraseña y Cerrar sesión. La foto por defecto es una planta. Es un <details>:
-         anda sin JavaScript. */-->
-  <details class="navegacion-cuenta">
-    <summary class="navegacion-cuenta-foto" th:aria-label="|Cuenta de ${cuenta.nombre}|"
-             aria-label="Cuenta de Nombre">
-      <img src="/img/ilustraciones/planta-orejas.svg" th:src="@{/img/ilustraciones/planta-orejas.svg}"
-           alt="" width="48" height="48">
-    </summary>
-    <div class="navegacion-cuenta-menu">
-      <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
-      <a th:if="${perfil}" href="/donante-perfil" th:href="${perfil}"
-         th:aria-current="${seccion == 'Mi perfil'} ? 'page' : null">Mi perfil</a>
-      <!--/* El cambio de contraseña (la consola de cuenta del IdP, solo con ingreso real) y Cerrar
-             sesión (POST con CSRF), de #955. */-->
-      <a th:if="${cuenta.cambiarClave}" href="#" th:href="${cuenta.cambiarClave}">Cambiar contraseña</a>
-      <form th:replace="~{cerrar-sesion :: boton}"></form>
+  <nav th:if="${#lists.size(navegacion) > 5}" id="menu" class="navegacion" data-forma="panel"
+       aria-label="Secciones">
+    <svg th:replace="~{iconos :: navegacion}"></svg>
+    <button class="navegacion-abrir" type="button" popovertarget="menu-completo"><svg viewBox="0 0 24 24"
+        aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span
+        class="solo-lectores">Menú</span></button>
+    <div id="menu-completo" class="navegacion-hoja" popover role="dialog"
+         aria-labelledby="menu-completo-titulo">
+      <div class="navegacion-hoja-cabecera">
+        <p class="marca"><img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18"
+           height="24"><span>Dona<em>Track</em></span></p>
+        <p id="menu-completo-titulo" class="solo-lectores">Secciones</p>
+        <button class="boton" data-tono="secundario" type="button" popovertarget="menu-completo"
+                popovertargetaction="hide">Cerrar</button>
+      </div>
+      <!--/* Al abrirse, el foco entra al panel, en la primera sección (autofocus de la ventana). */-->
+      <ul role="list">
+        <li th:each="opcion, vuelta : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
+            th:autofocus="${vuelta.first}"
+            th:aria-current="${opcion.actual} ? 'page' : null"><svg class="navegacion-icono" aria-hidden="true"
+            focusable="false"><use href="#nav-inicio" th:href="|#nav-${opcion.icono}|"></use></svg><span
+            th:text="${opcion.texto}">Sección</span></a></li>
+      </ul>
     </div>
-  </details>
+  </nav>
+  <!--/* La campanita de los tres roles (fichas raices-donante-navegable.md y raices-entidad-navegable.md,
+         sección 2; la del admin, ronda 2026-11-09; desplegable, R11-29 y R11-30, ficha
+         r11-p2-campanita.md): no es una sección del menú; va en todas las pantallas del rol, con la
+         cantidad sin leer, y abre un desplegable con las 5 sin leer más nuevas y «Ver todas» hacia la
+         bandeja del rol (pieza componentes/campanita.html). Se reconoce el área por su Mi perfil. La cantidad la
+         trae el modelo (sinLeer, de Pantallas y el puerto AvisosSinLeer): en la maqueta, 4 del
+         donante, 3 de la entidad y 3 de la administración, y ninguna en la pantalla de después de
+         marcarlas como leídas; fuera, Notificaciones (el admin, la bandeja de la Administración). */-->
+  <th:block th:if="${perfil != null and (#strings.endsWith(perfil, '/donante-perfil')
+                     or #strings.endsWith(perfil, '/entidad-perfil') or #strings.endsWith(perfil, '/admin-perfil'))}"
+            th:with="pantalla=${#execInfo.processedTemplateName},
+                     areaAvisos=${#strings.endsWith(perfil, '/donante-perfil') ? 'donante'
+                         : (#strings.endsWith(perfil, '/entidad-perfil') ? 'entidad' : 'admin')},
+                     sinLeerAvisos=${#strings.endsWith(pantalla, '-leidas') ? 0 : sinLeer}">
+    <details th:replace="~{componentes/campanita :: campana(${areaAvisos}, ${sinLeerAvisos})}"></details>
+  </th:block>
+  <!--/* La cuenta: la foto de perfil y su menú (cuenta-menu.html), el mismo que lo público muestra
+         con la sesión iniciada (docs/interfaz/flujos/r11-p1-portada.md). */-->
+  <details th:replace="~{cuenta-menu :: menu}"></details>
 </header>
 <main id="contenido" tabindex="-1" hx-target="#contenido" hx-select="#contenido" hx-swap="outerHTML show:none" th:insert="${contenido}"></main>
 <footer th:replace="~{pie :: pie}"></footer>

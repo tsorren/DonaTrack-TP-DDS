@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,16 +20,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import grupo5.cliente.puertos.AdminOperacionPuerto;
 import grupo5.cliente.puertos.AdminOperacionPuerto.BienNuevo;
 import grupo5.cliente.puertos.AdminOperacionPuerto.DonacionNueva;
+import grupo5.cliente.puertos.AdministradorActual;
 import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import grupo5.cliente.vistas.AdminDonacionesVista.Donacion;
+import grupo5.cliente.vistas.ConsultaDonaciones;
+import grupo5.cliente.vistas.Tramo;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -43,6 +47,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 /**
  * Donaciones fuera de la maqueta: el detalle de una donación que está (y el 404 de una que no),
@@ -58,6 +63,8 @@ import org.springframework.web.client.HttpClientErrorException;
 class AdminDonacionesEnviosTest {
 
   private static final String ID = "6f1c2c1e-0000-4000-8000-0000000000d1";
+  // R11-10: el historial guarda la cuenta (el sub de la sesión), no el nombre del menú
+  private static final String CUENTA_DE_LEO = "6f1c2c1e-0000-4000-8000-00000000001e";
 
   @TestConfiguration
   static class Reloj {
@@ -69,32 +76,116 @@ class AdminDonacionesEnviosTest {
   }
 
   @MockitoBean private AdminOperacionPuerto operacion;
+  @MockitoBean private AdministradorActual administrador;
   @Autowired private MockMvc mvc;
+
+  private static final Donacion LECHE =
+      new Donacion(
+          ID,
+          "Leche en polvo",
+          "10 unidades",
+          "10 u",
+          "Ana Ejemplo",
+          "8 de noviembre",
+          "deposito",
+          "12 de noviembre, en 2 días",
+          true,
+          "Nuevo",
+          null,
+          null,
+          false,
+          null,
+          List.of("8 de noviembre: llegó al depósito."));
 
   @BeforeEach
   void unaDonacion() {
-    when(operacion.donaciones(""))
+    when(operacion.donacion(ID, "")).thenReturn(LECHE);
+    when(administrador.cuenta(any())).thenReturn(Optional.of(CUENTA_DE_LEO));
+  }
+
+  @Test
+  void laListaPideSuPaginaConElFiltroYMuestraElPaginador() throws Exception {
+    ConsultaDonaciones consulta = new ConsultaDonaciones("deposito", false, "antigua", 2);
+    when(operacion.donaciones(consulta, ""))
         .thenReturn(
             new AdminDonacionesVista(
+                new Tramo<>(List.of(LECHE), 21, 2, 2),
+                consulta,
                 List.of(
-                    new Donacion(
-                        ID,
-                        "Leche en polvo",
-                        "10 unidades",
-                        "10 u",
-                        "Ana Ejemplo",
-                        "8 de noviembre",
-                        "deposito",
-                        "12 de noviembre, en 2 días",
-                        true,
-                        "Nuevo",
-                        null,
-                        null,
-                        false,
-                        null,
-                        List.of("8 de noviembre: llegó al depósito."))),
-                Map.of(),
+                    new AdminDonacionesVista.Criterio(
+                        "", "Registradas más recientes", "Recientes."),
+                    new AdminDonacionesVista.Criterio(
+                        "antigua", "Registradas más antiguas", "Antiguas.")),
+                false,
+                null,
                 "1 en el depósito."));
+
+    mvc.perform(get("/admin-donaciones?estado=deposito&orden=antigua&pagina=2"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Leche en polvo")))
+        .andExpect(content().string(containsString("Página 2 de 2")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/admin-donaciones?estado=deposito&amp;orden=antigua&amp;pagina=1\"")))
+        .andExpect(content().string(not(containsString("En los próximos 7 días"))));
+  }
+
+  private static AdminDonacionesVista pagina2(ConsultaDonaciones consulta) {
+    return new AdminDonacionesVista(
+        new Tramo<>(List.of(LECHE), 41, 2, 3),
+        consulta,
+        List.of(new AdminDonacionesVista.Criterio("", "Registradas más recientes", "Recientes.")),
+        false,
+        null,
+        "1 en el depósito.");
+  }
+
+  // R11-34 (ficha r11-p2-admin-bandeja §4): elegir un renglón de la página 2 la conserva
+  @Test
+  void elegirUnRenglonDeLaPagina2NoVuelveALaPrimera() throws Exception {
+    when(operacion.donaciones(any(), any())).thenAnswer(i -> pagina2(i.getArgument(0)));
+    mvc.perform(get("/admin-donaciones?estado=deposito&pagina=2&donacion=" + ID))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/admin-donaciones?estado=deposito&amp;pagina=2&amp;donacion="
+                            + ID
+                            + "#donacion-"
+                            + ID
+                            + "\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/admin-donaciones?estado=deposito&amp;pagina=2&amp;#donacion-"
+                            + ID
+                            + "\"")))
+        .andExpect(content().string(containsString("aria-current=\"true\"")));
+  }
+
+  // R11-34 (§5): la pedida que no existe o no se pudo leer se avisa en el lugar de la ficha
+  @Test
+  void unaDonacionQueNoExisteONoCargaSeAvisaEnElLugarDeLaFicha() throws Exception {
+    when(operacion.donaciones(any(), any())).thenAnswer(i -> pagina2(i.getArgument(0)));
+    mvc.perform(get("/admin-donaciones?donacion=otra"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No encontramos esa donación.")))
+        .andExpect(
+            content()
+                .string(containsString("Puede que el enlace esté mal; elegí una de la lista.")))
+        .andExpect(content().string(containsString("Leche en polvo")))
+        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
+    when(operacion.donacion("caida", "")).thenThrow(new ResourceAccessException("caída"));
+    mvc.perform(get("/admin-donaciones?donacion=caida"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No pudimos cargar la ficha de esta donación.")))
+        .andExpect(
+            content().string(containsString("La lista sigue a mano; probá elegirla de nuevo.")))
+        .andExpect(content().string(containsString("Leche en polvo")));
   }
 
   @Test
@@ -109,7 +200,7 @@ class AdminDonacionesEnviosTest {
   }
 
   @Test
-  void marcarVencidaGuardaConElNombreDelAdminYVuelveAlDetalle() throws Exception {
+  void marcarVencidaGuardaConLaCuentaDelAdminYVuelveAlDetalle() throws Exception {
     mvc.perform(
             post("/admin-donaciones-detalle-vencida")
                 .param("donacion", ID)
@@ -119,14 +210,14 @@ class AdminDonacionesEnviosTest {
             flash()
                 .attribute(
                     Envios.AVISO, "La marcaste como vencida el 10 de noviembre de 2026, 18:30."));
-    verify(operacion).marcarVencida(ID, "Leo Ejemplo", "Se rompió el envase");
+    verify(operacion).marcarVencida(ID, CUENTA_DE_LEO, "Se rompió el envase");
   }
 
   @Test
   void siCambioALaVezNoLaMarca() throws Exception {
     doThrow(HttpClientErrorException.create(HttpStatus.CONFLICT, "Conflict", null, null, null))
         .when(operacion)
-        .marcarVencida(ID, "Leo Ejemplo", null);
+        .marcarVencida(ID, CUENTA_DE_LEO, null);
 
     mvc.perform(post("/admin-donaciones-detalle-vencida").param("donacion", ID))
         .andExpect(redirectedUrl("/admin-donaciones-detalle?donacion=" + ID))
@@ -144,13 +235,22 @@ class AdminDonacionesEnviosTest {
   void registrarBuscaDonantesYLasPantallasDeResultadoNoExisten() throws Exception {
     AdminDonacionesRegistroVista.Donante ana =
         new AdminDonacionesRegistroVista.Donante(ANA, "Ana Ejemplo", "DNI 20.000.001");
-    when(operacion.registro("ana"))
-        .thenReturn(new AdminDonacionesRegistroVista(List.of(ana), List.of(ana)));
+    when(operacion.registro("ana", null))
+        .thenReturn(new AdminDonacionesRegistroVista(List.of(ana), List.of(ana), 1));
+    when(operacion.registro("a", null))
+        .thenReturn(new AdminDonacionesRegistroVista(List.of(), List.of(ana), 137));
 
     mvc.perform(get("/admin-donaciones-registrar?buscar=ana"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("1 donante coincide con la búsqueda.")))
         .andExpect(content().string(containsString("donante=" + ANA)));
+    mvc.perform(get("/admin-donaciones-registrar?buscar=a"))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Hay 137 donantes que coinciden. Escribí más del nombre o el documento"
+                            + " para encontrarlo.")));
     mvc.perform(get("/admin-donaciones-registrada")).andExpect(status().isNotFound());
     mvc.perform(get("/admin-donaciones-registrar-error")).andExpect(status().isNotFound());
   }

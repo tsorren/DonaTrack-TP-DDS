@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <!--/* Raíces, las páginas de error propias (RF-CL-08), según su ficha de flujo
        (docs/interfaz/flujos/raices-paginas-de-error.md). Pieza compartida: no se sirve como pantalla.
-       La usan error/404, error/403 y error/5xx, que Spring Boot elige por el código de estado; las
-       tres van con el marco de las públicas (usuario, 2026-11-07). Spring pone en el modelo status
-       (el código) y path (la dirección pedida).
+       La usan error/404, error/403 y error/5xx, que Spring Boot elige por el código de estado. Van con
+       el marco de las públicas (usuario, 2026-11-07) y, con la sesión iniciada, con el privado del
+       rol (usuario, 2026-11-11, R11-05): marco y inicio los pone MarcoDeLasPaginasDeError en el
+       modelo (inicio es la dirección de "Volver a mi inicio"; sin sesión no está y la salida es "Ir
+       al inicio", la portada). Spring pone en el modelo status (el código) y path (la dirección
+       pedida).
        El código para soporte es el traceId del pedido (TraceIdFiltro, ADR-E6-02), el mismo que viaja
        a las APIs en X-Trace-Id; con ?escenario=sin-codigo, ninguno.
        Fragmento pagina(tituloAntes, tituloResaltado, texto, accion, accionHref, conInicio, contacto,
-       contactoSin): el título con su parte en cursiva, la frase, la acción principal, si suma "Ir al
-       inicio" y el texto del enlace a Contacto con código y sin él. */-->
+       contactoSin): el título con su parte en cursiva, la frase, la acción principal (nula: la de
+       volver al inicio), si suma la de volver al inicio como secundaria y el texto del enlace a
+       Contacto con código y sin él. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="pagina(tituloAntes, tituloResaltado, texto, accion, accionHref, conInicio, contacto, contactoSin)"
-    th:with="codigo=${param.escenario != null and param.escenario[0] == 'sin-codigo' ? null : traceId}">
+    th:with="codigo=${param.escenario != null and param.escenario[0] == 'sin-codigo' ? null : traceId},
+             volver=${inicio != null ? 'Volver a mi inicio' : 'Ir al inicio'},
+             volverHref=${inicio != null ? inicio : '/'}">
   <div class="grilla" data-espacio="5">
     <div class="lectura">
       <p class="rotulo" th:text="|Error ${status}|">Error 404</p>
@@ -21,10 +27,11 @@
       <p class="lectura-bajada" th:text="${texto}">Puede que la dirección esté mal escrita o que la
         página ya no exista.</p>
       <div class="racimo">
-        <a class="boton" data-tono="principal" href="/" th:href="${accionHref}"
-           th:text="${accion}">Ir al inicio</a>
-        <a th:if="${conInicio}" class="boton" data-tono="secundario" href="/" th:href="@{/}">Ir al
-          inicio</a>
+        <a class="boton" data-tono="principal" href="/"
+           th:href="${accion != null ? accionHref : volverHref}"
+           th:text="${accion != null ? accion : volver}">Ir al inicio</a>
+        <a th:if="${conInicio}" class="boton" data-tono="secundario" href="/" th:href="${volverHref}"
+           th:text="${volver}">Ir al inicio</a>
       </div>
       <p th:if="${codigo}" class="aviso-codigo">Código para soporte: <code th:text="${codigo}">a1b2c3d4e5f6</code></p>
       <p th:if="${codigo}"><a href="/publico-contacto?codigo=a1b2c3d4e5f6"

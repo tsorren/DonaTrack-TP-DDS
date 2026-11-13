@@ -32,6 +32,15 @@ donatrack:
       notificaciones: ${NOTIFICACIONES_SERVICE_URL:http://localhost:8081}
       incentivos: ${INCENTIVOS_SERVICE_URL:http://localhost:8082}
       logistica: ${LOGISTICA_SERVICE_URL:http://localhost:8083}
+    # Límites de espera hacia los servicios (R11-04). Pasados, el gateway contesta 504 y el cliente
+    # liviano muestra su página de falla con el código de soporte. Van por debajo de los del
+    # cliente (15 s de lectura, 120 s de subida) para que el gateway conteste primero.
+    # conexion: abrir la conexión; lectura: que el servicio empiece a responder; subida: lo mismo
+    # para subir un archivo (CSV de donantes, fotos del acta).
+    limites:
+      conexion: ${GATEWAY_TIMEOUT_CONEXION:3s}
+      lectura: ${GATEWAY_TIMEOUT_LECTURA:10s}
+      subida: ${GATEWAY_TIMEOUT_SUBIDA:100s}
     # Allowlist pública (D26, RI-GW-03): con la seguridad encendida pasan sin token. Formato
     # "MÉTODO /ruta". El gateway abre la RUTA, sin distinguir método, como las `ReglasDeAcceso*` de los
     # servicios: el método lo decide el @PreAuthorize del servicio (segunda capa). Tiene que coincidir

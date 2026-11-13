@@ -40,7 +40,7 @@
   display: inline-flex;
   align-items: center;
   justify-self: start;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   font-weight: 700;
 }
 
@@ -62,7 +62,7 @@
 .eleccion a {
   display: inline-flex;
   align-items: center;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding: 0.5rem 0.875rem;
   border: 1.5px solid var(--color-acento);
   border-radius: var(--radio-boton);
@@ -117,7 +117,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  min-height: 3rem;
+  min-height: var(--medida-toque-minimo);
   padding-top: 0.625rem;
   font-weight: 400;
 }
@@ -366,6 +366,84 @@
   margin: 0;
 }
 
+/* R11-41: cada bloque toma el ritmo de la pantalla (el gap de .publica), sin márgenes propios; así
+   "Mientras tanto…" queda con las salidas que anuncia y no suelto debajo de la bajada. */
+.cuenta--enviada > :is(p, section) {
+  margin: 0;
+}
+
+.cuenta--enviada .salidas > p {
+  flex-basis: 100%;
+}
+
+/* "Lo que nos enviaste": tres grupos de datos; en el celular, cada dato en dos renglones. */
+.cuenta--enviada [data-parte="enviado"] {
+  --espacio-relleno: var(--espacio-4);
+
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.cuenta--enviada [data-parte="enviado"] :is(h2, h3, p, dl) {
+  margin: 0;
+}
+
+.cuenta--enviada [data-parte="enviado"] h3 {
+  margin-top: var(--espacio-3);
+}
+
+.cuenta--enviada [data-parte="enviado"] dl {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.cuenta--enviada [data-parte="enviado"] dl > div {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.cuenta--enviada [data-parte="enviado"] :is(dt, dd) {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.cuenta--enviada [data-parte="enviado"] dt {
+  font-weight: 700;
+}
+
+.cuenta--enviada [data-parte="enviado"] dd small {
+  display: block;
+}
+
+.cuenta--enviada [data-parte="enviado"] dd a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+.cuenta--enviada [data-parte="enviado"] > .boton {
+  justify-self: start;
+  margin-top: var(--espacio-3);
+}
+
+/* Corregir (R11-41): "Volver a la solicitud sin guardar", debajo del botón, con su área de toque. */
+.registro-seccion .registro-salida {
+  text-align: start;
+}
+
+.registro-seccion .registro-salida a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+@media (min-width: 37.5em) {
+  .cuenta--enviada [data-parte="enviado"] dl > div {
+    grid-template-columns: 11rem minmax(0, 1fr);
+    gap: var(--espacio-3);
+  }
+}
+
 @media (min-width: 37.5em) {
   .campos-par {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -422,7 +500,7 @@
     grid-column: 2;
     grid-row: 2;
     position: sticky;
-    top: 1.5rem;
+    top: calc(var(--medida-cabecera-fija) + 1.5rem);
   }
 
   .cuenta--entidad > .formulario {

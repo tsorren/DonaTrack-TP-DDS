@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -18,20 +19,30 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDIResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.ConteosDeEntidadDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.ConteosDeEntidadDTO.EntregadasEnElMes;
+import grupo5.donaciones.dto.donacionesIndependientes.ConteosDeEntidadDTO.PorEstado;
+import grupo5.donaciones.dto.donacionesIndependientes.ConteosDeEntidadDTO.PorNecesidad;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.FiltroDonacionesIndependientes;
+import grupo5.donaciones.fixtures.BienMother;
 import grupo5.donaciones.fixtures.DonacionIndependienteMother;
 import grupo5.donaciones.fixtures.DonacionMother;
 import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
+import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.AsignacionRealizada;
+import grupo5.donaciones.models.entities.donacionesIndependientes.CambioEstado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DatosDonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.EnDeposito;
+import grupo5.donaciones.models.entities.donacionesIndependientes.EnPuerta;
 import grupo5.donaciones.models.entities.donacionesIndependientes.EnTraslado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.EntregaFallida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.Entregada;
+import grupo5.donaciones.models.entities.donacionesIndependientes.EstadoDonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ListaParaEntregar;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.Vencida;
@@ -43,11 +54,18 @@ import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
+import grupo5.donaciones.models.repositories.impl.DonacionesIndependientesRepositoryEnMemoria;
 import grupo5.donaciones.services.impl.DonacionesIndependientesService;
 import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,6 +80,8 @@ class DonacionesIndependientesServiceTest {
   private DonacionIndependienteMapper mapperMock;
   private ApplicationEventPublisher eventPublisherMock;
   private DonacionesIndependientesService service;
+  private DonacionesIndependientesRepositoryEnMemoria enMemoria;
+  private DonacionesIndependientesService servicioConFiltros;
 
   private static final String ACTOR = "SISTEMA";
 
@@ -101,14 +121,24 @@ class DonacionesIndependientesServiceTest {
                   don.getEntidadBeneficiariaId());
             });
 
+    when(mapperMock.toDTOs(anyList()))
+        .thenAnswer(
+            invocation ->
+                invocation.<List<DonacionIndependiente>>getArgument(0).stream()
+                    .map(mapperMock::toDTO)
+                    .toList());
+
     service =
         new DonacionesIndependientesService(
-            repositoryMock,
-            donacionesRepositoryMock,
-            necesidadRepositoryMock,
-            subcategoriasRepositoryMock,
-            mapperMock,
-            eventPublisherMock);
+            repositoryMock, necesidadRepositoryMock, mapperMock, eventPublisherMock);
+    // R11-01: los filtros se resuelven en el repositorio; acá, el de memoria con las mismas
+    // donaciones y subcategorías simuladas.
+    enMemoria =
+        new DonacionesIndependientesRepositoryEnMemoria(
+            donacionesRepositoryMock, subcategoriasRepositoryMock);
+    servicioConFiltros =
+        new DonacionesIndependientesService(
+            enMemoria, necesidadRepositoryMock, mapperMock, eventPublisherMock);
   }
 
   @Test
@@ -363,17 +393,6 @@ class DonacionesIndependientesServiceTest {
   }
 
   @Test
-  void obtenerTodas_DeberiaRetornarListaDeDTOs() {
-    DonacionIndependiente donacion = DonacionIndependienteMother.enDeposito(5);
-    when(repositoryMock.findAll()).thenReturn(List.of(donacion));
-
-    List<DonacionIndependienteResponseDTO> resultado = service.obtenerTodas();
-
-    assertEquals(1, resultado.size());
-    assertEquals(donacion.getId(), resultado.get(0).id());
-  }
-
-  @Test
   void obtener_DeberiaRetornarDTO_CuandoExiste() {
     DonacionIndependiente donacion = DonacionIndependienteMother.enDeposito(5);
     UUID id = donacion.getId();
@@ -443,8 +462,17 @@ class DonacionesIndependientesServiceTest {
         List.of());
   }
 
+  private static final ParametrosListado DE_LA_MAS_ANTIGUA =
+      new ParametrosListado(null, null, null, "ANTIGUAS");
+
+  private void guardar(DonacionIndependiente... donaciones) {
+    for (DonacionIndependiente d : donaciones) {
+      enMemoria.save(d);
+    }
+  }
+
   private List<UUID> idsFiltrados(FiltroDonacionesIndependientes filtro) {
-    return service.obtenerConFiltros(filtro).stream()
+    return servicioConFiltros.obtenerConFiltros(filtro, DE_LA_MAS_ANTIGUA).elementos().stream()
         .map(DonacionIndependienteResponseDTO::id)
         .toList();
   }
@@ -459,7 +487,7 @@ class DonacionesIndependientesServiceTest {
     DonacionIndependiente otra =
         DonacionIndependienteMother.crearParaSubcategoria(deOtra.getId(), 1);
     when(subcategoriasRepositoryMock.findAll()).thenReturn(List.of(deLaCategoria, deOtra));
-    when(repositoryMock.findAll()).thenReturn(List.of(esperada, otra));
+    guardar(esperada, otra);
 
     assertEquals(List.of(esperada.getId()), idsFiltrados(filtro(categoriaId, null, null, null)));
   }
@@ -472,7 +500,7 @@ class DonacionesIndependientesServiceTest {
     DonacionIndependiente deOtraEntidad = DonacionIndependienteMother.enDeposito(1);
     deOtraEntidad.asignarDestino(new DestinoAsignacion(UUID.randomUUID(), null, UUID.randomUUID()));
     DonacionIndependiente sinAsignar = DonacionIndependienteMother.enDeposito(1);
-    when(repositoryMock.findAll()).thenReturn(List.of(asignada, deOtraEntidad, sinAsignar));
+    guardar(asignada, deOtraEntidad, sinAsignar);
 
     assertEquals(List.of(asignada.getId()), idsFiltrados(filtro(null, entidadId, null, null)));
   }
@@ -485,7 +513,7 @@ class DonacionesIndependientesServiceTest {
     DonacionIndependiente enDesde = registradaEl(desde);
     DonacionIndependiente enHasta = registradaEl(hasta);
     DonacionIndependiente despues = registradaEl(hasta.plusDays(1));
-    when(repositoryMock.findAll()).thenReturn(List.of(antes, enDesde, enHasta, despues));
+    guardar(antes, enDesde, enHasta, despues);
 
     assertEquals(
         List.of(enDesde.getId(), enHasta.getId()), idsFiltrados(filtro(null, null, desde, hasta)));
@@ -496,7 +524,7 @@ class DonacionesIndependientesServiceTest {
     LocalDate desde = LocalDate.of(2026, 11, 1);
     DonacionIndependiente antes = registradaEl(desde.minusDays(1));
     DonacionIndependiente despues = registradaEl(desde.plusDays(30));
-    when(repositoryMock.findAll()).thenReturn(List.of(antes, despues));
+    guardar(antes, despues);
 
     assertEquals(List.of(despues.getId()), idsFiltrados(filtro(null, null, desde, null)));
   }
@@ -507,9 +535,11 @@ class DonacionesIndependientesServiceTest {
         filtro(null, null, LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 1));
 
     ValidationException ex =
-        assertThrows(ValidationException.class, () -> service.obtenerConFiltros(invertido));
+        assertThrows(
+            ValidationException.class,
+            () -> service.obtenerConFiltros(invertido, DE_LA_MAS_ANTIGUA));
     assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, ex.getError());
-    verify(repositoryMock, never()).findAll();
+    verify(repositoryMock, never()).buscar(any());
   }
 
   @Test
@@ -524,14 +554,13 @@ class DonacionesIndependientesServiceTest {
     DonacionIndependiente otroEstado = deLaDonacion(delDonante, subcategoriaId);
     otroEstado.asignar(ACTOR, new DestinoAsignacion(UUID.randomUUID(), null, UUID.randomUUID()));
     when(donacionesRepositoryMock.findAll()).thenReturn(List.of(delDonante, deOtro));
-    when(repositoryMock.findAll())
-        .thenReturn(List.of(esperada, deOtroDonante, otraSubcategoria, otroEstado));
+    guardar(esperada, deOtroDonante, otraSubcategoria, otroEstado);
 
     assertEquals(
         List.of(esperada.getId()),
         idsFiltrados(
             new FiltroDonacionesIndependientes(
-                TipoEstadoDonacion.EN_DEPOSITO,
+                List.of(TipoEstadoDonacion.EN_DEPOSITO),
                 subcategoriaId,
                 null,
                 donanteId,
@@ -553,13 +582,91 @@ class DonacionesIndependientesServiceTest {
     otra.asignar(ACTOR, new DestinoAsignacion(UUID.randomUUID(), null, UUID.randomUUID()));
     DonacionIndependiente sinAsignar =
         DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 1);
-    when(repositoryMock.findAll()).thenReturn(List.of(cubre, otra, sinAsignar));
+    guardar(cubre, otra, sinAsignar);
 
     assertEquals(
         List.of(cubre.getId()),
         idsFiltrados(
             new FiltroDonacionesIndependientes(
                 null, null, null, null, null, null, null, necesidadId)));
+  }
+
+  @Test
+  void obtenerConFiltros_porIdYEntidad_devuelveSoloEsaSiEsDeLaEntidad_R1143() {
+    UUID entidadId = UUID.randomUUID();
+    DonacionIndependiente pedida = DonacionIndependienteMother.enDeposito(1);
+    pedida.asignarDestino(new DestinoAsignacion(UUID.randomUUID(), null, entidadId));
+    DonacionIndependiente otraDeLaEntidad = DonacionIndependienteMother.enDeposito(1);
+    otraDeLaEntidad.asignarDestino(new DestinoAsignacion(UUID.randomUUID(), null, entidadId));
+    DonacionIndependiente deOtraEntidad = DonacionIndependienteMother.enDeposito(1);
+    deOtraEntidad.asignarDestino(new DestinoAsignacion(UUID.randomUUID(), null, UUID.randomUUID()));
+    guardar(pedida, otraDeLaEntidad, deOtraEntidad);
+
+    assertEquals(
+        List.of(pedida.getId()),
+        idsFiltrados(
+            new FiltroDonacionesIndependientes(
+                null, null, null, null, entidadId, null, null, null, pedida.getId())));
+    // La de otra entidad, pedida con la entidad propia, no aparece
+    assertEquals(
+        List.of(),
+        idsFiltrados(
+            new FiltroDonacionesIndependientes(
+                null, null, null, null, entidadId, null, null, null, deOtraEntidad.getId())));
+  }
+
+  /** Una en el depósito con un bien por cada fecha (null: el bien no vence). */
+  private static DonacionIndependiente queVence(LocalDate... fechas) {
+    List<ItemDonacionIndependiente> items =
+        Arrays.stream(fechas)
+            .map(
+                f ->
+                    new ItemDonacionIndependiente(
+                        UUID.randomUUID(),
+                        BienMother.aceptado(
+                            new Bien("Leche en polvo", null, f, null, 1.0, 0.01),
+                            UUID.randomUUID()),
+                        1))
+            .toList();
+    return new DonacionIndependiente(UUID.randomUUID(), items);
+  }
+
+  private static FiltroDonacionesIndependientes queVenceHasta(LocalDate dia) {
+    return new FiltroDonacionesIndependientes(
+        null, null, null, null, null, null, null, null, null, dia);
+  }
+
+  @Test
+  void obtenerConFiltros_venceHasta_dejaLasQueTienenAlgunBienQueVenceEseDiaOAntes_R1134() {
+    LocalDate dia = LocalDate.of(2027, 3, 10);
+    DonacionIndependiente justo = queVence(dia.plusDays(20), dia);
+    DonacionIndependiente antes = queVence(dia.minusDays(2));
+    DonacionIndependiente despues = queVence(dia.plusDays(1));
+    DonacionIndependiente sinVencimiento = queVence((LocalDate) null);
+    guardar(justo, antes, despues, sinVencimiento);
+
+    assertEquals(
+        Set.of(justo.getId(), antes.getId()), Set.copyOf(idsFiltrados(queVenceHasta(dia))));
+  }
+
+  @Test
+  void obtenerConFiltros_ordenVence_laMasProximaPrimeroYLasQueNoVencenAlFinal_R1134() {
+    LocalDate dia = LocalDate.of(2027, 3, 10);
+    DonacionIndependiente sinVencimiento = queVence((LocalDate) null);
+    DonacionIndependiente tarde = queVence(dia.plusDays(30));
+    DonacionIndependiente pronto = queVence(dia.plusDays(40), dia);
+    guardar(sinVencimiento, tarde, pronto);
+
+    List<UUID> ids =
+        servicioConFiltros
+            .obtenerConFiltros(
+                queVenceHasta(null), new ParametrosListado(null, null, null, "vence"))
+            .elementos()
+            .stream()
+            .map(DonacionIndependienteResponseDTO::id)
+            .toList();
+
+    assertEquals(List.of(pronto.getId(), tarde.getId(), sinVencimiento.getId()), ids);
   }
 
   private static DonacionIndependiente deLaDonacion(Donacion original, UUID subcategoriaId) {
@@ -572,13 +679,61 @@ class DonacionesIndependientesServiceTest {
   void obtenerConFiltros_sinFiltros_devuelveTodas() {
     DonacionIndependiente una = DonacionIndependienteMother.enDeposito(1);
     DonacionIndependiente otra = DonacionIndependienteMother.enDeposito(2);
-    when(repositoryMock.findAll()).thenReturn(List.of(una, otra));
+    guardar(una, otra);
+
+    // Las dos pueden tener la misma fecha de registro: el desempate por id no sigue la carga
+    assertEquals(
+        Set.of(una.getId(), otra.getId()),
+        Set.copyOf(
+            idsFiltrados(
+                new FiltroDonacionesIndependientes(
+                    null, null, null, null, null, null, null, null))));
+    verify(subcategoriasRepositoryMock, never()).findAll();
+  }
+
+  @Test
+  void obtenerConFiltros_devuelveUnaPaginaConElTotalDeLasQueCumplen_R1101() {
+    DonacionIndependiente primera = registradaEl(LocalDate.of(2026, 11, 1));
+    DonacionIndependiente segunda = registradaEl(LocalDate.of(2026, 11, 2));
+    DonacionIndependiente tercera = registradaEl(LocalDate.of(2026, 11, 3));
+    guardar(primera, segunda, tercera);
+
+    var pagina =
+        servicioConFiltros.obtenerConFiltros(
+            new FiltroDonacionesIndependientes(null, null, null, null, null, null, null, null),
+            new ParametrosListado(1, 2, null, null));
+
+    // Por defecto, la más reciente primero: la segunda página de 2 trae solo la más antigua
+    assertEquals(3, pagina.total());
+    assertEquals(
+        List.of(primera.getId()),
+        pagina.elementos().stream().map(DonacionIndependienteResponseDTO::id).toList());
+  }
+
+  @Test
+  void obtenerConFiltros_conVariosEstados_devuelveLasDeCualquieraDeEllos_R1101() {
+    DonacionIndependiente enDeposito = DonacionIndependienteMother.enDeposito(1);
+    DonacionIndependiente asignada = DonacionIndependienteMother.enDeposito(1);
+    asignada.asignar(ACTOR, new DestinoAsignacion(UUID.randomUUID(), null, UUID.randomUUID()));
+    DonacionIndependiente conRuta = DonacionIndependienteMother.enDeposito(1);
+    conRuta.asignar(ACTOR, new DestinoAsignacion(UUID.randomUUID(), null, UUID.randomUUID()));
+    conRuta.planificarRuta(ACTOR);
+    guardar(enDeposito, asignada, conRuta);
 
     assertEquals(
-        List.of(una.getId(), otra.getId()),
-        idsFiltrados(
-            new FiltroDonacionesIndependientes(null, null, null, null, null, null, null, null)));
-    verify(subcategoriasRepositoryMock, never()).findAll();
+        Set.of(enDeposito.getId(), asignada.getId()),
+        Set.copyOf(
+            idsFiltrados(
+                new FiltroDonacionesIndependientes(
+                    List.of(
+                        TipoEstadoDonacion.EN_DEPOSITO, TipoEstadoDonacion.ASIGNACION_REALIZADA),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null))));
   }
 
   @Test
@@ -599,5 +754,142 @@ class DonacionesIndependientesServiceTest {
     assertEquals(ErrorCatalog.NECESIDAD_INACTIVA, e.getError());
     assertEquals(TipoEstadoDonacion.EN_DEPOSITO, donacion.getEstadoActual().getTipo());
     verify(repositoryMock, never()).save(any());
+  }
+
+  // ===================== R11-43: orden ATENCION y conteos =====================
+
+  private static final UUID COMEDOR = UUID.randomUUID();
+  private static final LocalDateTime BASE = LocalDateTime.of(2026, 11, 1, 10, 0);
+
+  /** Una asignada al comedor en {@code estado}, con un cambio a ese estado en {@code cambio}. */
+  private static DonacionIndependiente asignadaAlComedor(
+      EstadoDonacionIndependiente estado,
+      UUID necesidadId,
+      LocalDateTime registro,
+      LocalDateTime cambio) {
+    DonacionIndependiente base = DonacionIndependienteMother.enDeposito(1);
+    return new DonacionIndependiente(
+        new DatosDonacionIndependiente(
+            UUID.randomUUID(),
+            base.getDonacionOriginalId(),
+            estado,
+            registro,
+            new DestinoAsignacion(necesidadId, null, COMEDOR),
+            null),
+        base.getItems(),
+        List.of(new CambioEstado(null, estado, cambio, null, "SISTEMA")));
+  }
+
+  @Test
+  void obtenerConFiltros_ordenAtencion_primeroLaPuertaDespuesProblemasCaminoPorSalirYRecibidas() {
+    DonacionIndependiente recibida =
+        asignadaAlComedor(new Entregada(null), null, BASE.plusDays(9), BASE);
+    DonacionIndependiente porSalir =
+        asignadaAlComedor(new ListaParaEntregar(), null, BASE.plusDays(4), BASE);
+    DonacionIndependiente enCamino = asignadaAlComedor(new EnTraslado(), null, BASE, BASE);
+    DonacionIndependiente fallida =
+        asignadaAlComedor(new EntregaFallida(), null, BASE.plusDays(1), BASE);
+    DonacionIndependiente vencida = asignadaAlComedor(new Vencida(), null, BASE, BASE);
+    DonacionIndependiente enPuerta = asignadaAlComedor(new EnPuerta(), null, BASE, BASE);
+    guardar(recibida, porSalir, enCamino, fallida, vencida, enPuerta);
+
+    List<UUID> ids =
+        servicioConFiltros
+            .obtenerConFiltros(
+                filtro(null, COMEDOR, null, null),
+                new ParametrosListado(null, null, null, "atencion"))
+            .elementos()
+            .stream()
+            .map(DonacionIndependienteResponseDTO::id)
+            .toList();
+
+    assertEquals(
+        List.of(
+            enPuerta.getId(),
+            fallida.getId(),
+            vencida.getId(),
+            enCamino.getId(),
+            porSalir.getId(),
+            recibida.getId()),
+        ids);
+  }
+
+  @Test
+  void obtenerConFiltros_conUnOrdenDesconocido_rechaza() {
+    assertThrows(
+        ValidationException.class,
+        () ->
+            servicioConFiltros.obtenerConFiltros(
+                filtro(null, COMEDOR, null, null),
+                new ParametrosListado(null, null, null, "AL_AZAR")));
+  }
+
+  @Test
+  void conteos_traeLosOchoEstadosLasDelMesYCadaNecesidadConSusEstados() {
+    UUID arroz = UUID.randomUUID();
+    UUID leche = UUID.randomUUID();
+    LocalDateTime esteMes = LocalDateTime.of(2026, 11, 5, 9, 0);
+    LocalDateTime mesPasado = LocalDateTime.of(2026, 10, 20, 9, 0);
+    guardar(
+        asignadaAlComedor(new EnPuerta(), arroz, BASE, esteMes),
+        asignadaAlComedor(new EnPuerta(), arroz, BASE, esteMes),
+        asignadaAlComedor(new Entregada(null), arroz, BASE, esteMes),
+        asignadaAlComedor(new Entregada(null), null, BASE, mesPasado),
+        asignadaAlComedor(new EnTraslado(), leche, BASE, esteMes),
+        asignadaAlComedor(new AsignacionRealizada(), null, BASE, esteMes));
+    DonacionesIndependientesService conReloj =
+        new DonacionesIndependientesService(
+            enMemoria,
+            necesidadRepositoryMock,
+            mapperMock,
+            eventPublisherMock,
+            Clock.fixed(
+                Instant.parse("2026-11-12T15:00:00Z"),
+                ZoneId.of("America/Argentina/Buenos_Aires")));
+
+    ConteosDeEntidadDTO conteos = conReloj.conteos(COMEDOR, null);
+    ConteosDeEntidadDTO deArroz = conReloj.conteos(COMEDOR, arroz);
+
+    assertEquals(
+        List.of(
+            new PorEstado("EN_DEPOSITO", 0),
+            new PorEstado("ASIGNACION_REALIZADA", 1),
+            new PorEstado("EN_TRASLADO", 1),
+            new PorEstado("EN_PUERTA", 2),
+            new PorEstado("LISTA_PARA_ENTREGAR", 0),
+            new PorEstado("ENTREGADA", 2),
+            new PorEstado("ENTREGA_FALLIDA", 0),
+            new PorEstado("VENCIDA", 0)),
+        conteos.porEstado());
+    // La entregada el mes pasado no cuenta en el mes
+    assertEquals(new EntregadasEnElMes("2026-11", 1), conteos.entregadasEnElMes());
+    assertEquals(2, conteos.porNecesidad().size());
+    PorNecesidad deLaNecesidadArroz =
+        conteos.porNecesidad().stream()
+            .filter(n -> n.necesidadId().equals(arroz))
+            .findFirst()
+            .orElseThrow();
+    assertEquals(
+        List.of(new PorEstado("EN_PUERTA", 2), new PorEstado("ENTREGADA", 1)),
+        deLaNecesidadArroz.porEstado());
+    assertEquals(
+        List.of(new PorNecesidad(arroz, deLaNecesidadArroz.porEstado())), deArroz.porNecesidad());
+    assertEquals(3, deArroz.porEstado().stream().mapToLong(PorEstado::cantidad).sum());
+    assertEquals(new EntregadasEnElMes("2026-11", 1), deArroz.entregadasEnElMes());
+  }
+
+  @Test
+  void conteos_deUnaOrganizacionSinAsignadas_todoEnCero() {
+    ConteosDeEntidadDTO conteos = servicioConFiltros.conteos(UUID.randomUUID(), null);
+
+    assertEquals(8, conteos.porEstado().size());
+    assertEquals(0, conteos.porEstado().stream().mapToLong(PorEstado::cantidad).sum());
+    assertEquals(0, conteos.entregadasEnElMes().cantidad());
+    assertEquals(List.of(), conteos.porNecesidad());
+  }
+
+  @Test
+  void conteos_sinOrganizacion_rechaza() {
+    assertThrows(ValidationException.class, () -> servicioConFiltros.conteos(null, null));
   }
 }

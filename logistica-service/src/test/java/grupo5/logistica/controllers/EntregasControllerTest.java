@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -188,12 +189,14 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
             Instant.parse("2026-10-22T14:30:00Z"),
             12.5f,
             1.2f);
-    when(entregasService.listarMapaPublico()).thenReturn(List.of(punto));
+    when(entregasService.listarMapaPublico(null, null, null))
+        .thenReturn(new EntregasDelMapaPublico(List.of(punto), 340));
 
     MvcResult result =
         mockMvc
             .perform(get("/api/entregas/mapa"))
             .andExpect(status().isOk())
+            .andExpect(header().string("X-Total-Count", "340"))
             .andExpect(jsonPath("$[0].idEntrega").value(ID.toString()))
             .andExpect(jsonPath("$[0].latitud").value(-34.5986))
             .andExpect(jsonPath("$[0].longitud").value(-58.4201))
@@ -212,6 +215,44 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
         Request.Method.GET,
         200,
         result.getResponse().getContentAsString());
+  }
+
+  @Test
+  void listarMapaPublico_conPeriodoYTope_deberiaPasarlosAlServicio() throws Exception {
+    when(entregasService.listarMapaPublico(
+            LocalDate.of(2026, 10, 13), LocalDate.of(2026, 11, 12), 200))
+        .thenReturn(new EntregasDelMapaPublico(List.of(), 0));
+
+    mockMvc
+        .perform(
+            get("/api/entregas/mapa")
+                .param("desde", "2026-10-13")
+                .param("hasta", "2026-11-12")
+                .param("limite", "200"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "0"))
+        .andExpect(jsonPath("$").isEmpty());
+  }
+
+  @Test
+  void listarMapaPublico_conUnaFechaQueNoSeEntiende_deberiaRetornar400() throws Exception {
+    mockMvc
+        .perform(get("/api/entregas/mapa").param("desde", "13/10/2026"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
+
+    verify(entregasService, never()).listarMapaPublico(any(), any(), any());
+  }
+
+  @Test
+  void listarMapaPublico_conPeriodoOTopeInvalidos_deberiaRetornar400() throws Exception {
+    when(entregasService.listarMapaPublico(any(), any(), eq(501)))
+        .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
+
+    mockMvc
+        .perform(get("/api/entregas/mapa").param("limite", "501"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
   }
 
   // ===================== GET /api/entregas/seguimiento/* (RF-09 y RF-14) =====================
@@ -294,13 +335,15 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
             null,
             List.of());
 
-    when(entregasService.listarSeguimientoPorBeneficiaria(BENEFICIARIA_ID))
-        .thenReturn(List.of(seguimiento));
+    when(entregasService.listarSeguimientoPorBeneficiaria(
+            BENEFICIARIA_ID, new ConsultaSeguimiento(null, null, null, null)))
+        .thenReturn(new SeguimientosDeEntregas(List.of(seguimiento), 45));
 
     MvcResult result =
         mockMvc
             .perform(get("/api/entregas/seguimiento/beneficiarios/" + BENEFICIARIA_ID))
             .andExpect(status().isOk())
+            .andExpect(header().string("X-Total-Count", "45"))
             .andExpect(jsonPath("$[0].idEntrega").value(ID.toString()))
             .andExpect(jsonPath("$[0].rutaAsignada").value(false))
             .andReturn();
@@ -335,12 +378,15 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
             null,
             List.of());
 
-    when(entregasService.listarSeguimientoPorDonante(DONANTE_ID)).thenReturn(List.of(seguimiento));
+    when(entregasService.listarSeguimientoPorDonante(
+            DONANTE_ID, new ConsultaSeguimiento(null, null, null, null)))
+        .thenReturn(new SeguimientosDeEntregas(List.of(seguimiento), 1));
 
     MvcResult result =
         mockMvc
             .perform(get("/api/entregas/seguimiento/donantes/" + DONANTE_ID))
             .andExpect(status().isOk())
+            .andExpect(header().string("X-Total-Count", "1"))
             .andExpect(jsonPath("$[0].idEntrega").value(ID.toString()))
             .andExpect(jsonPath("$[0].rutaAsignada").value(false))
             .andReturn();
@@ -352,6 +398,52 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
         Request.Method.GET,
         200,
         result.getResponse().getContentAsString());
+  }
+
+  @Test
+  void listarSeguimientoPorBeneficiaria_pasaPaginaEstadosYDonacionesRepetidos() throws Exception {
+    UUID otra = UUID.randomUUID();
+    when(entregasService.listarSeguimientoPorBeneficiaria(eq(BENEFICIARIA_ID), any()))
+        .thenReturn(new SeguimientosDeEntregas(List.of(), 0));
+
+    mockMvc
+        .perform(
+            get("/api/entregas/seguimiento/beneficiarios/" + BENEFICIARIA_ID)
+                .param("estado", "EN_PUERTA", "EN_TRASLADO")
+                .param("idDonacion", DONACION_ID.toString(), otra.toString())
+                .param("page", "1")
+                .param("size", "5"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Total-Count", "0"));
+
+    verify(entregasService)
+        .listarSeguimientoPorBeneficiaria(
+            BENEFICIARIA_ID,
+            new ConsultaSeguimiento(
+                List.of(EstadoEntrega.EN_PUERTA, EstadoEntrega.EN_TRASLADO),
+                List.of(DONACION_ID, otra),
+                1,
+                5));
+  }
+
+  @Test
+  void listarSeguimiento_conEstadoDesconocido_deberiaRetornar400() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/entregas/seguimiento/beneficiarios/" + BENEFICIARIA_ID)
+                .param("estado", "VOLANDO"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void listarSeguimiento_conPaginaFueraDeRango_deberiaRetornar400() throws Exception {
+    when(entregasService.listarSeguimientoPorDonante(eq(DONANTE_ID), any()))
+        .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
+
+    mockMvc
+        .perform(get("/api/entregas/seguimiento/donantes/" + DONANTE_ID).param("size", "101"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
   }
 
   // ===================== GET /api/entregas/{id} =====================

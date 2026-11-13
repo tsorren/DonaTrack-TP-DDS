@@ -90,15 +90,38 @@ class SitioControllerTest {
     mvc.perform(get("/perfil")).andExpect(status().isNotFound());
   }
 
+  // R11-10: cada administrador tiene su Mi perfil y la lista de Administradores, en el menú de la
+  // cuenta (antes la administración no tenía Mi perfil).
   @Test
-  void laAdministracionNoTieneMiPerfil() throws Exception {
+  void laAdministracionTieneMiPerfilYAdministradores() throws Exception {
     mvc.perform(get("/admin-inicio"))
         .andExpect(status().isOk())
-        .andExpect(content().string(not(containsString("/admin-perfil"))));
+        .andExpect(content().string(containsString("href=\"/admin-perfil\"")))
+        .andExpect(content().string(containsString("href=\"/admin-administradores\"")));
     mvc.perform(get("/admin-perfil"))
         .andExpect(status().isOk())
-        .andExpect(view().name("sin-dibujar"))
+        .andExpect(view().name("admin-perfil"))
         .andExpect(model().attribute("seccion", "Mi perfil"));
+    mvc.perform(get("/admin-administradores"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin-administradores"))
+        .andExpect(model().attribute("seccion", "Administradores"));
+  }
+
+  @Test
+  void lasPantallasDeAdministracionMuestranSusEstadosEnLaMaqueta() throws Exception {
+    mvc.perform(get("/admin-perfil").param("escenario", "vacio"))
+        .andExpect(content().string(containsString("Todavía no cargaste tu nombre.")));
+    mvc.perform(get("/admin-perfil").param("escenario", "error"))
+        .andExpect(content().string(containsString("No pudimos traer tus datos ahora.")));
+    mvc.perform(get("/admin-administradores").param("escenario", "error"))
+        .andExpect(
+            content()
+                .string(containsString("No pudimos traer las cuentas de administración ahora.")));
+    mvc.perform(get("/admin-administradores-nuevo")).andExpect(status().isOk());
+    mvc.perform(get("/admin-administradores-alta"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("K7pQ-m4Rt-x9Wa-2Lse")));
   }
 
   @Test
@@ -159,7 +182,7 @@ class SitioControllerTest {
     mvc.perform(get("/donante-entidades-detalle?entidad=comedor"))
         .andExpect(status().isOk())
         .andExpect(view().name("sin-dibujar"))
-        .andExpect(model().attribute("seccion", "Entidades"))
+        .andExpect(model().attribute("seccion", "Organizaciones"))
         .andExpect(content().string(containsString("Empresa donante")))
         .andExpect(content().string(not(containsString("entidad=comedor\""))));
     mvc.perform(get("/donante-incentivos")).andExpect(status().isNotFound());
@@ -210,7 +233,22 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones-detalle?donacion=pan"))
         .andExpect(content().string(containsString("No encontramos esa donación.")));
     mvc.perform(get("/donante-entidades?nombre=zzz"))
-        .andExpect(content().string(containsString("Ninguna entidad activa se llama así.")));
+        .andExpect(content().string(containsString("Ninguna organización activa se llama así.")));
+    // Sin tildes ni mayúsculas, como la búsqueda de Donaciones (R11-13).
+    mvc.perform(get("/donante-entidades?nombre=CLÚB"))
+        .andExpect(content().string(containsString("Club Ejemplo Norte")))
+        .andExpect(
+            content().string(containsString("1 organización activa tiene «CLÚB» en el nombre.")));
+    // R11-18: la segunda página de la maqueta trae los nombres largos y una entidad sin pedidos.
+    mvc.perform(get("/donante-entidades?pagina=2"))
+        .andExpect(
+            content()
+                .string(
+                    containsString("CooperativaDeTrabajoYAyudaMutuaDelBarrioEjemploNorteYAledaño")))
+        .andExpect(content().string(containsString("Hoy no pide nada.")));
+    mvc.perform(get("/donante-entidades?pagina=2&cuenta=persona"))
+        .andExpect(content().string(containsString("y el Deporte Sur")))
+        .andExpect(content().string(containsString("Página 2 de 8.")));
     mvc.perform(get("/donante-entidades?escenario=error"))
         .andExpect(content().string(containsString("role=\"alert\"")))
         .andExpect(content().string(containsString("Cómo llega tu donación")));
@@ -286,13 +324,63 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("No encontramos esa necesidad.")));
     mvc.perform(get("/entidad-necesidades?escenario=conflicto"))
         .andExpect(
-            content().string(containsString("Otra persona de tu entidad cambió esta necesidad")));
+            content()
+                .string(containsString("Otra persona de tu organización cambió esta necesidad")));
     mvc.perform(get("/entidad-necesidades?escenario=entidad-inactiva"))
-        .andExpect(content().string(containsString("Tu entidad no está activa")))
+        .andExpect(content().string(containsString("Tu organización no está activa")))
         .andExpect(content().string(not(containsString("Publicar necesidad"))));
     mvc.perform(get("/entidad-necesidades-publicar-error"))
         .andExpect(content().string(containsString("Revisá dos cosas antes de publicar")))
         .andExpect(content().string(containsString("aria-invalid=\"true\"")));
+  }
+
+  /**
+   * R11-32 y R11-31 (ficha r11-p2-ventanas): las ventanas de la regla 4 llevan data-bloquea sobre
+   * el popover de hoy (sin JavaScript siguen andando igual); Publicar otra necesidad es un botón
+   * que abre la ventana en pasos, con los tres grupos y sin el formulario plegado.
+   */
+  @Test
+  void lasVentanasDeLaRegla4BloqueanYPublicarVaEnPasos() throws Exception {
+    mvc.perform(get("/entidad-necesidades"))
+        .andExpect(
+            content()
+                .string(matchesPattern("(?s).*id=\"baja-lentejas\" popover[^>]*data-bloquea.*")))
+        .andExpect(content().string(containsString("popovertarget=\"publicar-ventana\"")))
+        .andExpect(
+            content().string(matchesPattern("(?s).*id=\"publicar-ventana\"[^>]*data-bloquea.*")))
+        .andExpect(content().string(containsString("data-forma=\"pasos\"")))
+        .andExpect(content().string(containsString("Paso 2 de 3: </span>Cuándo")))
+        .andExpect(content().string(containsString("Vas a publicar")))
+        .andExpect(content().string(containsString("Elegí qué hace falta.")))
+        .andExpect(content().string(containsString("No sabemos si se publicó.")))
+        .andExpect(content().string(not(containsString("id=\"publicar\""))));
+    // Sin vigentes o de vuelta con un error: el formulario en la página, sin ventana.
+    mvc.perform(get("/entidad-necesidades?escenario=vacio"))
+        .andExpect(content().string(containsString("Publicar una necesidad")))
+        .andExpect(content().string(not(containsString("id=\"publicar-ventana\""))));
+    mvc.perform(get("/entidad-necesidades-publicar-error"))
+        .andExpect(content().string(not(containsString("id=\"publicar-ventana\""))))
+        .andExpect(content().string(containsString("Revisá dos cosas antes de publicar")));
+    mvc.perform(get("/admin-camiones"))
+        .andExpect(
+            content()
+                .string(matchesPattern("(?s).*id=\"agregar-camion\" popover[^>]*data-bloquea.*")))
+        .andExpect(content().string(containsString("No sabemos si se guardó.")));
+    mvc.perform(get("/admin-camiones?camion=ac456ef"))
+        .andExpect(
+            content()
+                .string(matchesPattern("(?s).*id=\"deshabilitar-ac456ef\"[^>]*data-bloquea.*")));
+    mvc.perform(get("/admin-entidades?ver=pendientes&entidad=merendero-este"))
+        .andExpect(
+            content()
+                .string(matchesPattern("(?s).*id=\"corregir-[a-z-]+\" popover[^>]*data-bloquea.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern("(?s).*id=\"rechazar-[a-z-]+\" popover[^>]*data-bloquea.*")));
+    mvc.perform(get("/admin-donaciones-detalle"))
+        .andExpect(
+            content().string(matchesPattern("(?s).*id=\"vencida\" popover[^>]*data-bloquea.*")));
   }
 
   @Test
@@ -407,18 +495,19 @@ class SitioControllerTest {
     mvc.perform(post("/donante-perfil-guardado").param("mostrar", "no"))
         .andExpect(redirectedUrl("/donante-perfil-guardado"));
     mvc.perform(get("/donante-perfil-guardado"))
-        .andExpect(content().string(containsString("Las entidades ya no ven tu nombre")))
+        .andExpect(content().string(containsString("Las organizaciones ya no ven tu nombre")))
         .andExpect(content().string(containsString("ven «Empresa donante · Sostenedor»")))
-        .andExpect(content().string(containsString("la entidad ve tu categoría como donante")));
+        .andExpect(
+            content().string(containsString("la organización ve tu categoría como donante")));
     mvc.perform(get("/donante-perfil-guardado?mostrar=si"))
-        .andExpect(content().string(containsString("Las entidades ven tu nombre")));
+        .andExpect(content().string(containsString("Las organizaciones ven tu nombre")));
     mvc.perform(post("/donante-perfil-guardado").param("seccion", "datos"))
         .andExpect(redirectedUrl("/donante-perfil-guardado?seccion=datos"));
     mvc.perform(post("/donante-perfil-guardado").param("seccion", "otra"))
         .andExpect(redirectedUrl("/donante-perfil-guardado"));
     mvc.perform(get("/donante-perfil-guardado?seccion=datos"))
         .andExpect(content().string(containsString("Guardamos los datos de tu cuenta")))
-        .andExpect(content().string(not(containsString("Las entidades ya no ven tu nombre"))));
+        .andExpect(content().string(not(containsString("Las organizaciones ya no ven tu nombre"))));
     mvc.perform(get("/donante-perfil-guardado?seccion=avisos"))
         .andExpect(content().string(containsString("Guardamos cómo te avisamos")));
     mvc.perform(get("/publico-legales"))
@@ -520,13 +609,82 @@ class SitioControllerTest {
     html = error(403, "/entidad-inicio", "");
     assertTrue(html.contains("Esta página no es para tu"));
     assertTrue(html.contains("<title>Sin permiso - DonaTrack</title>"));
-    html = error(500, "/donante-inicio", "");
+    html = error(500, "/publico-mapa", "");
     assertTrue(html.contains("Error 500"));
-    assertTrue(html.contains("href=\"/donante-inicio\">Volver a intentar"), html);
-    assertTrue(html.contains("Ir al\n          inicio"));
-    html = error(500, "/donante-inicio", "sin-codigo");
+    assertTrue(html.contains("href=\"/publico-mapa\">Volver a intentar"), html);
+    assertTrue(html.contains("href=\"/\">Ir al inicio</a>"), html);
+    html = error(500, "/publico-mapa", "sin-codigo");
     assertTrue(!html.contains("Código para soporte"));
     assertTrue(html.contains("Si sigue, escribinos y contanos qué estabas haciendo."));
+  }
+
+  @Test
+  void conSesionLasPaginasDeErrorUsanElMarcoPrivadoYOfrecenVolverAMiInicio() throws Exception {
+    // El área de la maqueta sale de la dirección pedida; la de la cuenta real, del token.
+    String html = error(403, "/admin-donantes", "");
+    assertTrue(html.contains("class=\"raices-privado\""), html);
+    assertTrue(html.contains("Esta página no es para tu"), html);
+    assertTrue(html.contains("Cerrar sesión"), html);
+    assertTrue(!html.contains("Crear una cuenta"), html);
+    assertTrue(html.contains("href=\"/admin-inicio\">Volver a mi inicio</a>"), html);
+    assertTrue(!html.contains("aria-current"), html);
+    assertTrue(html.contains("href=\"/publico-contacto?codigo=" + CODIGO + "\""), html);
+
+    html = error(404, "/entidad-tesoro", "");
+    assertTrue(html.contains("href=\"/entidad-inicio\">Volver a mi inicio</a>"), html);
+    assertTrue(html.contains("Necesidades"), html);
+
+    html = error(500, "/donante-inicio", "");
+    assertTrue(html.contains("href=\"/donante-inicio\">Volver a intentar"), html);
+    assertTrue(html.contains("href=\"/donante-inicio\">Volver a mi inicio</a>"), html);
+    assertTrue(!html.contains("Ir al inicio"), html);
+    assertTrue(html.indexOf("Volver a intentar") < html.indexOf("Volver a mi inicio"), html);
+    assertTrue(html.contains("aria-label=\"Notificaciones\""), html);
+    assertTrue(!html.contains("armazon-avisos-cuenta"), html);
+  }
+
+  @Test
+  void unaDireccionPublicaOQueNoExisteDaLaPaginaDeErrorPublica() throws Exception {
+    for (String direccion : List.of("/publico-mapa", "/no-existe", "/")) {
+      String html = error(404, direccion, "");
+      assertTrue(html.contains("class=\"raices-publico\""), html);
+      assertTrue(html.contains("href=\"/\">Ir al inicio</a>"), html);
+      assertTrue(!html.contains("Volver a mi inicio"), html);
+    }
+  }
+
+  @Test
+  void conSesionContactoUsaElMarcoPrivadoDelRol() throws Exception {
+    mvc.perform(get("/publico-contacto?escenario=con-sesion"))
+        .andExpect(content().string(containsString("class=\"raices-privado\"")))
+        .andExpect(content().string(containsString("Cerrar sesión")))
+        .andExpect(content().string(not(containsString("Crear una cuenta"))))
+        .andExpect(content().string(not(containsString("aria-current"))))
+        .andExpect(content().string(containsString("href=\"/donante-donaciones\"")));
+    mvc.perform(get("/publico-contacto?escenario=con-sesion&area=entidad"))
+        .andExpect(content().string(containsString("href=\"/entidad-necesidades\"")));
+    mvc.perform(get("/publico-contacto?escenario=con-sesion&area=admin"))
+        .andExpect(content().string(containsString("href=\"/admin-ranking\"")));
+    mvc.perform(get("/publico-contacto"))
+        .andExpect(content().string(containsString("class=\"raices-publico\"")))
+        .andExpect(content().string(not(containsString("Cerrar sesión"))));
+  }
+
+  @Test
+  void elEnviadoConSesionVuelveAMiInicioYSinSesionALaPortada() throws Exception {
+    mvc.perform(get("/publico-contacto-enviado?escenario=con-sesion&area=entidad"))
+        .andExpect(content().string(containsString("class=\"raices-privado\"")))
+        .andExpect(content().string(containsString("href=\"/entidad-inicio\"")))
+        .andExpect(content().string(containsString("Volver a mi inicio")))
+        .andExpect(content().string(not(containsString("Ir a la portada"))));
+    mvc.perform(
+            get("/publico-contacto-enviado?escenario=con-sesion")
+                .param("volver", "/donante-seguimiento"))
+        .andExpect(content().string(containsString("Volver a Seguimiento")))
+        .andExpect(content().string(not(containsString("Volver a mi inicio"))));
+    mvc.perform(get("/publico-contacto-enviado"))
+        .andExpect(content().string(containsString("Ir a la portada")))
+        .andExpect(content().string(not(containsString("Volver a mi inicio"))));
   }
 
   /** El traceId de ejemplo que TraceIdFiltro habría dejado en el pedido. */
@@ -581,7 +739,7 @@ class SitioControllerTest {
     mvc.perform(get("/publico-portada"))
         // El enlace a la landing de donantes, en la tarjeta de quien dona (usuario, 2026-11-08).
         .andExpect(content().string(containsString("Qué podés donar")))
-        .andExpect(content().string(containsString("Cómo se suma una entidad")));
+        .andExpect(content().string(containsString("Cómo se suma una organización")));
     mvc.perform(get("/publico-nosotros"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Entregas confirmadas desde marzo de 2026")))
@@ -747,17 +905,29 @@ class SitioControllerTest {
         .andExpect(model().attribute("seccion", "Donantes"))
         .andExpect(
             content().string(containsString("86 donantes activos, al 15 de octubre de 2026")))
-        .andExpect(
-            content().string(containsString("<caption class=\"solo-lectores\">Donantes</caption>")))
-        .andExpect(content().string(containsString("scope=\"row\"")))
-        .andExpect(content().string(containsString("data-rotulo=\"Documento\"")))
+        // R11-34: una bandeja; la ficha del primero es la de partida y lleva a sus donaciones
+        .andExpect(content().string(containsString("class=\"maestro\"")))
+        .andExpect(content().string(containsString("data-elegido=\"partida\"")))
+        // El primero no tiene donaciones: la ficha lo dice y no ofrece verlas (ficha §4.1)
+        .andExpect(content().string(containsString("Todavía no tiene donaciones registradas.")))
+        .andExpect(content().string(not(containsString("Sus donaciones · 0"))))
+        .andExpect(content().string(containsString("Cerrar la ficha")))
         .andExpect(
             content().string(containsString("href=\"/admin-donantes?importar=abrir#importar\"")));
     // Importar queda plegado; "Importar CSV" lo abre sin dejar la lista (RF-20).
+    // Ana tiene donaciones de ejemplo: el total, las más recientes y el enlace con el número
+    mvc.perform(get("/admin-donantes?donante=ana"))
+        .andExpect(content().string(containsString("Sus donaciones · ")))
+        .andExpect(content().string(containsString("Ver sus ")))
+        .andExpect(content().string(containsString("Correo:")));
+    mvc.perform(get("/admin-donantes?donante=juan"))
+        .andExpect(content().string(containsString("aria-current=\"true\"")))
+        .andExpect(content().string(containsString("href=\"/admin-donaciones?donante=juan\"")))
+        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
     mvc.perform(get("/admin-donantes?importar=abrir"))
         .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
         .andExpect(content().string(containsString("action=\"/admin-donantes-importando\"")))
-        .andExpect(content().string(containsString("scope=\"row\"")));
+        .andExpect(content().string(containsString("class=\"maestro\"")));
     mvc.perform(get("/admin-donantes?escenario=vacio"))
         .andExpect(content().string(containsString("Todavía no hay donantes registrados.")));
     mvc.perform(get("/admin-donantes?escenario=lento"))
@@ -765,12 +935,36 @@ class SitioControllerTest {
     mvc.perform(get("/admin-donantes?escenario=error"))
         .andExpect(content().string(containsString("No pudimos cargar los donantes.")))
         .andExpect(content().string(containsString("role=\"alert\"")));
+    // R11-01: la lista llega de a una página (en la maqueta, de a 5), con su paginador.
+    mvc.perform(get("/admin-donantes"))
+        .andExpect(content().string(containsString("Página 1 de 2")))
+        .andExpect(content().string(containsString("href=\"/admin-donantes?pagina=2\"")));
+    mvc.perform(get("/admin-donantes?pagina=2"))
+        .andExpect(content().string(containsString("Página 2 de 2")));
+    // R11-02: el avance no carga la lista, se actualiza solo y dice los últimos importados.
     mvc.perform(get("/admin-donantes-importando"))
-        .andExpect(content().string(containsString("Procesando: 8.400 de 20.000 filas.")))
-        .andExpect(content().string(containsString("Todos los donantes")));
+        .andExpect(content().string(containsString("8.400 de 20.000 filas")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Donantes nuevos: 7.950 · Actualizados: 410 · Filas con error: 40")))
+        .andExpect(content().string(containsString("Últimos importados")))
+        .andExpect(content().string(containsString("every 3s")))
+        .andExpect(content().string(not(containsString("Todos los donantes"))));
+    mvc.perform(get("/admin-donantes-importando?escenario=esperando"))
+        .andExpect(content().string(containsString("Todavía no empezó a importarse")));
+    mvc.perform(get("/admin-donantes-importando?escenario=leyendo"))
+        .andExpect(content().string(containsString("filas por ahora.")));
+    mvc.perform(get("/admin-donantes-importado?escenario=cortada"))
+        .andExpect(content().string(containsString("La importación se cortó en la fila 8.400.")));
     mvc.perform(get("/admin-donantes-importado"))
-        .andExpect(content().string(containsString("19.100 donantes nuevos, 754 actualizados")))
-        .andExpect(content().string(containsString("Falta el apellido.")));
+        .andExpect(content().string(containsString("19.100 donantes nuevos, 774 actualizados")))
+        .andExpect(content().string(containsString("Falta el apellido.")))
+        .andExpect(content().string(containsString("Página 1 de 7")))
+        .andExpect(content().string(not(containsString("every 3s"))));
+    mvc.perform(get("/admin-donantes-importado?escenario=sin-errores"))
+        .andExpect(content().string(containsString("Todas las filas se importaron sin errores.")));
     mvc.perform(get("/admin-donantes-importar-error"))
         .andExpect(content().string(containsString("No se importó ninguna fila.")));
     mvc.perform(post("/admin-donantes-importando"))
@@ -806,7 +1000,7 @@ class SitioControllerTest {
   void lasEntidadesDelAdminSeApruebanCorrigenORechazan() throws Exception {
     // Una sola lista, de la A a la Z; el estado es un filtro al lado de la búsqueda.
     mvc.perform(get("/admin-entidades?entidad=comedor"))
-        .andExpect(model().attribute("seccion", "Entidades"))
+        .andExpect(model().attribute("seccion", "Organizaciones"))
         .andExpect(content().string(containsString("Activas · 46")))
         .andExpect(content().string(containsString("Pendientes · 3")))
         .andExpect(content().string(containsString("Inactivas · 3")))
@@ -820,9 +1014,10 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Inactiva desde el 20 de agosto")));
     mvc.perform(get("/admin-entidades?escenario=vacio&ver=pendientes"))
         .andExpect(content().string(containsString("Pendientes · 0")))
-        .andExpect(content().string(containsString("Ninguna entidad pide sumarse por ahora.")));
+        .andExpect(
+            content().string(containsString("Ninguna organización pide sumarse por ahora.")));
     mvc.perform(get("/admin-entidades?escenario=error"))
-        .andExpect(content().string(containsString("No pudimos cargar las entidades.")));
+        .andExpect(content().string(containsString("No pudimos cargar las organizaciones.")));
     mvc.perform(get("/admin-entidades-aprobada"))
         .andExpect(content().string(containsString("Aprobaste a Hogar Ejemplo Norte.")))
         .andExpect(content().string(containsString("Pendientes · 2")))
@@ -832,7 +1027,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Esperando")))
         .andExpect(content().string(containsString("Le pedimos a Merendero Ejemplo Este")))
         .andExpect(
-            content().string(containsString("acciones vuelven cuando la entidad la reenvíe.")))
+            content().string(containsString("acciones vuelven cuando la organización la reenvíe.")))
         .andExpect(content().string(not(containsString("Aprobar: Merendero Ejemplo Este"))));
     mvc.perform(get("/admin-entidades-rechazada"))
         .andExpect(
@@ -853,9 +1048,32 @@ class SitioControllerTest {
         .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(content().string(containsString("7 en el depósito · 4 asignadas · 1 en camino")))
         .andExpect(content().string(containsString("Al 15 de octubre de 2026, 18:30.")))
-        .andExpect(content().string(containsString("data-rotulo=\"Vence\"")))
+        // R11-34: una bandeja; la ficha de partida es la de la primera y en el celular no se abre
+        // sola
+        .andExpect(content().string(containsString("data-elegido=\"partida\"")))
         .andExpect(
-            content().string(containsString("href=\"/admin-donaciones-detalle?donacion=leche\"")));
+            content()
+                .string(containsString("href=\"/admin-donaciones?donacion=leche#donacion-leche\"")))
+        .andExpect(content().string(containsString("Buscar por lo que se donó")))
+        .andExpect(content().string(containsString("Mostrando 1 a 5 de 14 donaciones.")))
+        .andExpect(content().string(containsString("Ver las propuestas que la piden")));
+    mvc.perform(get("/admin-donaciones?donacion=arroz"))
+        .andExpect(content().string(containsString("aria-current=\"true\"")))
+        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
+    // La pedida que no está en la página (los fideos están en la segunda) igual muestra su ficha
+    mvc.perform(get("/admin-donaciones?donacion=fideos"))
+        .andExpect(content().string(containsString("Cerrar la ficha")))
+        .andExpect(content().string(containsString("Solo se puede marcar como vencida")));
+    mvc.perform(get("/admin-donaciones?buscar=leche&categoria=alimentos"))
+        .andExpect(content().string(containsString("Coincide 1 donación.")))
+        .andExpect(content().string(containsString("Sacar los filtros")));
+    mvc.perform(get("/admin-donaciones?donante=ana"))
+        .andExpect(content().string(containsString("De Ana Ejemplo")))
+        .andExpect(content().string(containsString("Quitar el filtro: De Ana Ejemplo")))
+        .andExpect(content().string(not(containsString("Leche en polvo · 10 u"))));
+    mvc.perform(get("/admin-donaciones?registrada=hoy"))
+        .andExpect(
+            content().string(containsString("Ninguna donación coincide con lo que buscaste.")));
     mvc.perform(get("/admin-donaciones?vence=pronto"))
         .andExpect(content().string(containsString("Vencen en los próximos 7 días")))
         .andExpect(content().string(containsString("Queso · 6 kg")))
@@ -924,22 +1142,61 @@ class SitioControllerTest {
   void lasPropuestasSeApruebanODescartan() throws Exception {
     mvc.perform(get("/admin-asignaciones"))
         .andExpect(model().attribute("seccion", "Asignar donaciones"))
-        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 2")))
-        .andExpect(content().string(containsString("Cubre 10 de las 12 unidades")))
+        .andExpect(content().string(containsString("Propuestas sin problemas · 4")))
+        .andExpect(content().string(containsString("Cubre 10 de 12 unidades")))
         .andExpect(
             content()
                 .string(
                     containsString(
                         "aria-label=\"Aprobar: propuesta para Comedor Barrio Ejemplo\"")))
-        .andExpect(content().string(containsString("Decididas · 7")));
+        .andExpect(content().string(containsString("Hay 4 propuestas en conflicto.")))
+        .andExpect(content().string(containsString("Ver todas las decididas")));
     mvc.perform(get("/admin-asignaciones?escenario=vacio"))
         .andExpect(content().string(containsString("No hay propuestas que esperen tu decisión.")));
     mvc.perform(get("/admin-asignaciones?escenario=corriendo"))
         .andExpect(content().string(containsString("Corriendo la asignación…")));
+    mvc.perform(get("/admin-asignaciones?algoritmo=las-dos"))
+        .andExpect(content().string(containsString("Propuestas sin problemas · 1")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("Las donaciones son las que eligió Quienes menos recibieron.")));
+    mvc.perform(get("/admin-asignaciones?pestana=conflictos"))
+        .andExpect(content().string(containsString("con 1 propuesta más: alcanza para una.")))
+        .andExpect(
+            content().string(not(containsString("Aprobar: propuesta para Hogar Ejemplo Centro"))));
+    mvc.perform(get("/admin-asignaciones?pestana=destino"))
+        .andExpect(content().string(containsString("¿Adónde va")))
+        .andExpect(content().string(containsString("2 propuestas · no alcanza")));
+    mvc.perform(get("/admin-asignaciones?pestana=destino&donacion=otra"))
+        .andExpect(
+            content()
+                .string(containsString("Esa donación ya no está en ninguna propuesta pendiente.")));
+    mvc.perform(get("/admin-asignaciones?vista=decididas"))
+        .andExpect(content().string(containsString("Decididas · 7")))
+        .andExpect(content().string(containsString("Buscar por organización o donación")))
+        .andExpect(content().string(containsString("Aprobó Leo Gómez el 9 de noviembre de 2026")))
+        .andExpect(content().string(containsString("Sin motivo anotado.")))
+        .andExpect(content().string(containsString("Mostrando 1 a 7 de 7 propuestas decididas.")));
+    // R11-35: la búsqueda y los filtros de Todas las decididas
+    mvc.perform(get("/admin-asignaciones?vista=decididas&estado=descartadas"))
+        .andExpect(content().string(containsString("Coinciden 2 propuestas decididas.")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Motivo: «El comedor ya consiguió galletitas de otra donación.»")))
+        .andExpect(content().string(containsString("Sacar los filtros")));
+    mvc.perform(get("/admin-asignaciones?vista=decididas&decidida=7-dias"))
+        .andExpect(content().string(containsString("Hay 2 decididas de antes de que guardáramos")));
+    mvc.perform(get("/admin-asignaciones?vista=decididas&buscar=nada-parecido"))
+        .andExpect(
+            content()
+                .string(
+                    containsString("Ninguna propuesta decidida coincide con lo que buscaste.")));
     mvc.perform(get("/admin-asignaciones-aprobada"))
         .andExpect(content().string(containsString("Aprobaste la propuesta para Comedor Barrio")))
-        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 1")))
-        .andExpect(content().string(containsString("Decididas · 8")));
+        .andExpect(content().string(containsString("Propuestas sin problemas · 3")));
     mvc.perform(get("/admin-asignaciones-descartada"))
         .andExpect(content().string(containsString("Descartaste la propuesta para Merendero")));
     mvc.perform(get("/admin-asignaciones-error"))
@@ -947,14 +1204,14 @@ class SitioControllerTest {
         .andExpect(
             content().string(not(containsString("Aprobar: propuesta para Merendero Ejemplo Sur"))));
     mvc.perform(get("/admin-asignaciones-error?escenario=propia"))
-        .andExpect(content().string(containsString("de la misma entidad que la")));
+        .andExpect(content().string(containsString("de la misma organización que la")));
     mvc.perform(get("/admin-asignaciones-error?escenario=cambio"))
         .andExpect(content().string(containsString("Volvimos a cargar la lista.")));
     mvc.perform(post("/admin-asignaciones-corrida"))
         .andExpect(redirectedUrl("/admin-asignaciones-corrida"));
     mvc.perform(get("/admin-asignaciones-corrida?escenario=nuevas"))
         .andExpect(content().string(containsString("generó 2 propuestas nuevas.")))
-        .andExpect(content().string(containsString("Propuestas que esperan tu decisión · 4")));
+        .andExpect(content().string(containsString("Propuestas sin problemas · 6")));
   }
 
   @Test
@@ -1002,15 +1259,21 @@ class SitioControllerTest {
     mvc.perform(get("/admin-ranking"))
         .andExpect(model().attribute("seccion", "Ranking"))
         .andExpect(content().string(containsString("Septiembre de 2026")))
+        .andExpect(content().string(containsString("Ranking de donantes de septiembre de 2026")))
+        .andExpect(content().string(not(containsString("Volver al último mes"))))
         .andExpect(content().string(containsString("misiones que cada donante completó en el mes")))
         .andExpect(
             content().string(containsString("Calculado el 30 de septiembre de 2026, 23:59.")))
         .andExpect(content().string(containsString("hx-boost=\"true\"")))
         .andExpect(content().string(containsString("<caption>")));
     mvc.perform(get("/admin-ranking?mes=2026-08"))
-        .andExpect(content().string(containsString("El ranking de agosto de 2026")))
+        .andExpect(content().string(containsString("Ranking de donantes de agosto de 2026")))
         .andExpect(content().string(containsString("value=\"2026-08\" checked")))
-        .andExpect(content().string(containsString("Sacar los filtros")));
+        .andExpect(content().string(containsString("Volver al último mes")))
+        .andExpect(content().string(not(containsString("Sacar los filtros"))));
+    mvc.perform(get("/admin-ranking?mes=2026-09"))
+        .andExpect(content().string(containsString("Ranking de donantes de septiembre de 2026")))
+        .andExpect(content().string(not(containsString("Volver al último mes"))));
     mvc.perform(get("/admin-ranking?escenario=vacio"))
         .andExpect(content().string(containsString("Todavía no hay ningún ranking")));
     mvc.perform(get("/admin-ranking?escenario=error"))
@@ -1162,7 +1425,7 @@ class SitioControllerTest {
         .andExpect(status().isOk())
         .andExpect(model().attribute("seccion", "Mi perfil"))
         .andExpect(content().string(containsString("aria-label=\"Secciones de tu perfil\"")))
-        .andExpect(content().string(containsString("Datos de la entidad")))
+        .andExpect(content().string(containsString("Datos de la organización")))
         .andExpect(content().string(containsString("Calle Ejemplo 450, Localidad Ejemplo")))
         .andExpect(content().string(containsString("No se cambia desde acá")))
         .andExpect(content().string(not(containsString("Cómo te ven"))))
@@ -1170,7 +1433,7 @@ class SitioControllerTest {
     mvc.perform(post("/entidad-perfil-guardado").param("seccion", "avisos"))
         .andExpect(redirectedUrl("/entidad-perfil-guardado?seccion=avisos"));
     mvc.perform(get("/entidad-perfil-guardado?seccion=datos"))
-        .andExpect(content().string(containsString("Guardamos los datos de tu entidad.")));
+        .andExpect(content().string(containsString("Guardamos los datos de tu organización.")));
     mvc.perform(get("/entidad-perfil-guardado?seccion=avisos"))
         .andExpect(content().string(containsString("Guardamos cómo te avisamos.")));
     mvc.perform(get("/entidad-perfil?escenario=lento"))

@@ -36,6 +36,7 @@ public class RutasGateway {
     return ruta(
         "donaciones",
         props.servicios().donaciones(),
+        "/api/actividad",
         "/api/categorias/**",
         "/api/donaciones/**",
         "/api/donantes/**",
