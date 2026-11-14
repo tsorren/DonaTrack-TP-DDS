@@ -87,4 +87,50 @@ class ListadoEnLaMaquetaTest {
         .andExpect(content().string(containsString("Aceite de girasol")))
         .andExpect(content().string(not(containsString("Arroz, 10 kg"))));
   }
+
+  @Test
+  void misDonacionesFiltraPorFechaOrganizacionYOrden() throws Exception {
+    mvc.perform(get("/donante-donaciones?desde=2026-10-10"))
+        .andExpect(content().string(containsString("3 donaciones con esos filtros.")))
+        .andExpect(content().string(containsString("Lentejas secas")))
+        .andExpect(content().string(not(containsString("Zapatillas"))));
+
+    mvc.perform(get("/donante-donaciones?quien=merendero"))
+        .andExpect(content().string(containsString("2 donaciones con esos filtros.")))
+        .andExpect(content().string(containsString("Leche en polvo")))
+        .andExpect(content().string(not(containsString("Lentejas secas"))));
+
+    String antiguas = pagina("/donante-donaciones?orden=antiguas");
+    assertThat(antiguas).contains("de la primera a la más reciente");
+    assertThat(antiguas.indexOf("donacion=fideos")).isLessThan(antiguas.indexOf("donacion=ropa"));
+  }
+
+  @Test
+  void misDonacionesDeLaPersonaFiltraConLaMismaBarra() throws Exception {
+    mvc.perform(get("/donante-donaciones?cuenta=persona&desde=2026-10-01&hasta=2026-10-31"))
+        .andExpect(content().string(containsString("4 donaciones con esos filtros.")))
+        .andExpect(content().string(containsString("class=\"listado\"")));
+
+    mvc.perform(get("/donante-donaciones?cuenta=persona&quien=comedor"))
+        .andExpect(content().string(containsString("3 donaciones con esos filtros.")));
+
+    String antiguas = pagina("/donante-donaciones?cuenta=persona&orden=antiguas");
+    assertThat(antiguas).contains("de la primera a la más reciente");
+    assertThat(antiguas.indexOf("Lentejas")).isLessThan(antiguas.indexOf("Fideos secos"));
+  }
+
+  @Test
+  void organizacionesBuscaConElParametroDeSiempreYFiltraPorCategoriaYYaDone() throws Exception {
+    mvc.perform(get("/donante-entidades?buscar=comedor"))
+        .andExpect(content().string(containsString("«comedor» en el nombre")))
+        .andExpect(content().string(containsString("name=\"buscar\"")))
+        .andExpect(content().string(containsString("Sacar los filtros")));
+
+    mvc.perform(get("/donante-entidades?nombre=comedor"))
+        .andExpect(content().string(containsString("«comedor» en el nombre")));
+
+    mvc.perform(get("/donante-entidades?ya=si"))
+        .andExpect(content().string(containsString("con lo que elegiste")))
+        .andExpect(content().string(containsString("checked=\"checked\"")));
+  }
 }

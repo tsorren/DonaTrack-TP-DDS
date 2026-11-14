@@ -35,13 +35,12 @@
   width: 100%;
 }
 
-/* La fecha: el rótulo como los demás y, debajo, desde y hasta. En el celular, a todo el ancho,
-   cada día con su rótulo arriba. */
+/* La fecha: el rótulo como los demás y, debajo, desde y hasta (cada uno un `.campo`). En el
+   celular, a todo el ancho, cada día con su rótulo arriba. */
 .listado-fecha {
+  display: grid;
   grid-column: 1 / -1;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: auto auto;
-  grid-auto-flow: column;
   column-gap: var(--espacio-2);
   min-width: 0;
   margin: 0;
@@ -177,14 +176,17 @@
     display: none;
   }
 
-  /* Desde y hasta en una fila, cada uno con su rótulo al lado. */
+  /* Desde y hasta en una fila, cada uno con su rótulo al lado: la fecha mide lo mismo que los
+     demás campos (el rótulo arriba y el control). */
   .listado-fecha {
-    display: grid;
-    grid-template-columns: repeat(4, auto);
-    grid-template-rows: auto;
-    grid-auto-flow: row;
+    display: flex;
+    gap: var(--espacio-2);
+  }
+
+  .listado-fecha .campo {
+    display: flex;
     align-items: center;
-    column-gap: var(--espacio-1);
+    gap: var(--espacio-1);
   }
 
   .listado-fecha input {

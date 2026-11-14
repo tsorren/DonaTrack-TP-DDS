@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <!--/* Organizaciones de la persona que dona (Martina Ruiz, RF-06): la misma pantalla que la de la empresa
        (ficha docs/interfaz/flujos/raices-donante-navegable.md, sección 10, R11-27 y R11-28): la misma
-       franja de ayuda, la misma barra de filtros (nombre, Categoría y "Ya doné") y la misma tarjeta
+       franja de ayuda, la misma barra (componentes/listado, R11-B04: nombre, Categoría y "Ya doné";
+       la arma DonanteEntidadesController) y la misma tarjeta
        por organización (donante-entidades :: organizacion), con sus datos de ejemplo. Los filtros
        se resuelven acá, sobre los datos de ejemplo de la primera página (no llama a ningún servicio);
        ?pagina=2 trae los nombres largos y una organización sin pedidos (R11-18); el paginador común
@@ -107,11 +108,10 @@
       {nombre: 'Comedor Ejemplo Este', ya: false, pide: {} }
     } },
              categorias=${misEntidades.categorias},
-             busca=${param.nombre != null ? #strings.trim(param.nombre[0]) : ''},
-             pedidaCategoria=${param.categoria != null ? param.categoria[0] : ''},
-             categoria=${categorias.?[valor == #root.pedidaCategoria].isEmpty() ? '' : pedidaCategoria},
+             busca=${listado.buscar.valor},
+             categoria=${listado.categoria.elegido},
              pagina=${misEntidades.pagina},
-             soloYa=${param.ya != null and param.ya[0] == 'si'},
+             soloYa=${listado.casillas[0].prendida},
              filtrado=${categoria != '' or soloYa},
              deLaPagina=${pagina == 2 and busca == '' and !filtrado ? segunda : entidades},
              porNombre=${busca == '' ? deLaPagina : entidades.?[#strings.containsIgnoreCase(nombre, #root.busca)]},
@@ -139,23 +139,8 @@
       <p>Cuando una organización se sume y la aprueben, aparece acá con lo que pide.</p>
     </section>
 
-    <form hx-boost="true" th:if="${escenario == '' or escenario == 'lento'}" class="filtros-barra" role="search"
-          action="/donante-entidades" th:action="@{/donante-entidades}"
-          method="get" aria-label="Buscar organizaciones">
-      <div class="campo filtro-buscar">
-        <label for="nombre">Buscar por nombre</label>
-        <div class="filtro-buscar-fila">
-          <input id="nombre" name="nombre" type="search" autocomplete="off" th:value="${busca}" placeholder="Por ejemplo: Comedor">
-          <button class="boton" data-tono="secundario" type="submit">Buscar</button>
-        </div>
-      </div>
-      <div class="filtros" role="group" aria-label="Filtrar las organizaciones">
-        <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${categoria}, ${misEntidades.opcionesDeCategoria()})}"></details>
-        <label th:replace="~{componentes/filtros :: interruptor('ya', 'si', 'Ya doné', ${soloYa})}"></label>
-        <a th:if="${busca != '' or filtrado}" class="filtros-sacar" href="/donante-entidades"
-           th:href="@{/donante-entidades}">Ver todas</a>
-      </div>
-    </form>
+    <th:block th:if="${escenario == '' or escenario == 'lento'}"><form
+        th:replace="~{componentes/listado :: listado(${listado})}"></form></th:block>
 
     <th:block th:if="${escenario == 'lento'}">
       <p class="cargando" role="status">Cargando las organizaciones…</p>
