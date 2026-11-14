@@ -31,6 +31,43 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-14 · componente:listado · La barra de filtros nueva, con los campos abiertos (R11-B04)
+
+- **Decisión:** `componentes/listado` reemplaza a la fila de pastillas en Mis donaciones (empresa y
+  persona), Organizaciones del donante, Donaciones recibidas, Donaciones del admin, Todas las
+  decididas y las Notificaciones de los tres roles. Un formulario get con los campos a la vista, en
+  este orden y con estos parámetros en todas: Buscar (`buscar`), fecha Desde y Hasta (`desde`,
+  `hasta`), Estado, Categoría, quién (`quien`), los propios de cada pantalla y Ordenar (`orden`,
+  `antiguas`). En el celular, con JavaScript, se pliegan debajo de «Filtros y orden (n)».
+- **Alternativas:** seguir con pastillas que abren menús (lo que el usuario descartó el
+  2026-11-11); un `<details>` siempre plegado; un panel lateral. El A/B que pide R11-B04 no se hizo:
+  el encargo pidió trabajar sin consultar.
+- **Por qué:** con los campos a la vista se ve qué filtra cada lista sin abrir nada, el rango de
+  fechas entra como dos campos y anda igual sin JavaScript. En el celular, plegados, no tapan la
+  lista.
+- **Costo:** Asignaciones (Propuestas y Destino), Donantes, Entidades, Camiones, Importaciones,
+  Actividad y Ranking del admin y lo público siguen con las pastillas; quedan en
+  [DTI-44](../adr/DEUDA_TECNICA.md#dti-44).
+- **Quién decidió:** usuario (rediseñar y los campos, 2026-11-11); el diseño, agente sin consultar.
+
+### 2026-11-14 · componente:listado · Lo que el agente decidió sin consultar en R11-B04
+
+- **Decisión:** (1) Nada se envía solo al cambiar un campo: «Filtrar» o Enter (WCAG 3.2.2; antes,
+  tocar una pastilla ya filtraba). (2) Las fechas al revés se dan vuelta. (3) Quién es un texto
+  que busca sin mayúsculas ni tildes, no un desplegable: puede haber miles de donantes. (4) Un
+  campo que la API no resuelve no se ofrece con datos reales (quién en todas; la fecha en
+  Notificaciones). (5) El período fijo «Registrada» y «Decidida» pasa a Desde y Hasta. (6) Estado
+  es uno solo en Recibidas (antes, varias pastillas prendidas): los varios que llegan desde
+  Necesidades se juntan en una opción más. (7) En Notificaciones, Estado (Todas, Sin leer, Leídas)
+  reemplaza a «Todas | Sin leer», y Agrupar queda sin agrupar por defecto (como estaba). (8)
+  Organizaciones no tiene fecha, estado, quién ni orden: la organización no los tiene. (9) Los
+  parámetros viejos (`nombre`, `ver`, `tema`, `orden=viejas`) siguen valiendo. (10) «Sacar los
+  filtros» se ve igual en todas las listas (la bandeja lo tenía como vínculo subrayado).
+- **Alternativas:** las que cada punto descarta.
+- **Por qué:** una sola barra que se use igual en todas las listas, accesible y sin JavaScript.
+- **Costo:** lo que la API no resuelve, en [DTI-44](../adr/DEUDA_TECNICA.md#dti-44).
+- **Quién decidió:** agente, sin consultar (encargo R11-B04 del 2026-11-14).
+
 ### 2026-11-12 · proceso · Cierre de P2: las decisiones de ocho lotes, escritas al cierre
 
 - **Decisión:** las doce entradas que siguen (hasta la de "armazón", sin incluirla) son las decisiones de diseño de los lotes
