@@ -5,10 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import grupo5.cliente.puertos.RecibidasPuerto;
+import grupo5.cliente.vistas.Listado;
 import grupo5.cliente.vistas.RecibidasVista;
 import grupo5.cliente.vistas.RecibidasVista.Recibida;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
@@ -232,5 +235,48 @@ class RecibidasRestTest {
         Map.of("puerta", 4L, "problema", 2L, "camino", 3L, SALIR, 3L, "recibida", 30L),
         vista.cuantas());
     assertEquals(6L, vista.enElMes());
+  }
+
+  /**
+   * R11-B04: la fecha de registro, la categoría (por su id) y el orden por fecha los resuelve
+   * Donaciones; quien donó no (solo filtra por su id), así que no se ofrece.
+   */
+  @Test
+  void laFechaLaCategoriaYElOrdenLosResuelveDonacionesYQuienDonoNoSeOfrece() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    donaciones
+        .expect(
+            requestTo(
+                BASE
+                    + "?entidadId="
+                    + ENTIDAD
+                    + "&orden=ANTIGUAS&desde=2026-10-01&hasta=2026-10-31&categoriaId="
+                    + ALIMENTOS
+                    + "&page=0&size=20"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header("X-Total-Count", "0"));
+    donaciones
+        .expect(requestTo(BASE + "/conteos?entidadId=" + ENTIDAD))
+        .andRespond(withSuccess(CONTEOS, MediaType.APPLICATION_JSON));
+    RecibidasRest adaptador =
+        new RecibidasRest(
+            ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),
+            Clock.systemUTC());
+
+    RecibidasVista vista =
+        adaptador.recibidas(
+            ENTIDAD,
+            new RecibidasPuerto.Consulta(
+                Set.of(),
+                1,
+                LocalDate.of(2026, 10, 1),
+                LocalDate.of(2026, 10, 31),
+                ALIMENTOS,
+                "Martina",
+                Listado.ANTIGUAS));
+
+    donaciones.verify();
+    assertEquals(0, vista.total());
+    assertEquals(false, adaptador.filtraPorDonante());
   }
 }
