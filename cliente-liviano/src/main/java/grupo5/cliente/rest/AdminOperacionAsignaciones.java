@@ -88,7 +88,7 @@ final class AdminOperacionAsignaciones {
                   n -> donaciones.propuestas(decididas(n, DECIDIDAS_POR_PAGINA, busqueda))),
               p -> decidida(p, true));
       long sinFecha =
-          busqueda.decidida().isEmpty()
+          !busqueda.conFecha()
               ? 0
               : Optional.ofNullable(donaciones.resumenPropuestas())
                   .map(r -> numero(r.decididasSinFecha()))
@@ -578,10 +578,11 @@ final class AdminOperacionAsignaciones {
     if (b.autor() != null) {
       filtros.add("decididaPor", b.autor());
     }
-    LocalDate[] periodo = b.periodo(hoy());
-    if (periodo[0] != null) {
-      filtros.add("decididaDesde", periodo[0].toString());
-      filtros.add("decididaHasta", periodo[1].toString());
+    if (b.desde() != null) {
+      filtros.add("decididaDesde", b.desde().toString());
+    }
+    if (b.hasta() != null) {
+      filtros.add("decididaHasta", b.hasta().toString());
     }
     return filtros;
   }

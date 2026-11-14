@@ -1188,7 +1188,8 @@ class SitioControllerTest {
                     containsString(
                         "Motivo: «El comedor ya consiguió galletitas de otra donación.»")))
         .andExpect(content().string(containsString("Sacar los filtros")));
-    mvc.perform(get("/admin-asignaciones?vista=decididas&decidida=7-dias"))
+    // R11-B04: el rango de fechas reemplaza al período fijo "Decidida"
+    mvc.perform(get("/admin-asignaciones?vista=decididas&desde=2026-11-06&hasta=2026-11-12"))
         .andExpect(content().string(containsString("Hay 2 decididas de antes de que guardáramos")));
     mvc.perform(get("/admin-asignaciones?vista=decididas&buscar=nada-parecido"))
         .andExpect(

@@ -5,6 +5,7 @@ import grupo5.cliente.vistas.AdminCamionesVista;
 import grupo5.cliente.vistas.AdminDonacionesRegistroVista;
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import grupo5.cliente.vistas.ConsultaAsignaciones;
+import grupo5.cliente.vistas.ConsultaDecididas;
 import grupo5.cliente.vistas.ConsultaDonaciones;
 import java.time.LocalDate;
 import java.util.List;
@@ -58,6 +59,15 @@ public interface AdminOperacionPuerto {
    * el campo no se ofrece.
    */
   default boolean donacionesPorQuien() {
+    return true;
+  }
+
+  /**
+   * Si la fuente filtra las decididas por el nombre de la organización ({@link
+   * ConsultaDecididas#quien()}, R11-B04). Donaciones solo lo busca dentro de la búsqueda general:
+   * con ella, el campo no se ofrece.
+   */
+  default boolean decididasPorQuien() {
     return true;
   }
 

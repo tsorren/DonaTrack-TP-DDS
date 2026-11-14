@@ -469,7 +469,15 @@ class AdminOperacionRestTest {
             ConsultaAsignaciones.de(null, "decididas", null, null, null, 1)
                 .conDecididas(
                     new ConsultaDecididas(
-                        "arroz", "descartadas", categoria, "7-dias", "antes", "antiguas", "")),
+                        "arroz",
+                        "descartadas",
+                        categoria,
+                        LocalDate.of(2026, 11, 4),
+                        LocalDate.of(2026, 11, 10),
+                        "",
+                        "antes",
+                        "antiguas",
+                        "")),
             "");
 
     assertEquals(4, vista.sinFecha());

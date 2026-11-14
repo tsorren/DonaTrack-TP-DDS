@@ -153,4 +153,23 @@ class ListadoEnLaMaquetaTest {
     mvc.perform(get("/admin-donaciones?vence=pronto"))
         .andExpect(content().string(matchesPattern(elegida("pronto", "En los próximos 7 días"))));
   }
+
+  @Test
+  void decididasFiltraPorFechaYOrganizacionYConservaDecidio() throws Exception {
+    mvc.perform(get("/admin-asignaciones?vista=decididas&desde=2026-11-08&hasta=2026-11-11"))
+        .andExpect(content().string(containsString("Coinciden 3 propuestas decididas.")))
+        .andExpect(content().string(containsString("Fideos, 20 kg")))
+        .andExpect(content().string(not(containsString("Azúcar, 15 kg"))))
+        .andExpect(content().string(containsString("name=\"vista\" value=\"decididas\"")));
+
+    mvc.perform(get("/admin-asignaciones?vista=decididas&quien=MERENDERO"))
+        .andExpect(content().string(containsString("Coinciden 2 propuestas decididas.")))
+        .andExpect(content().string(containsString("Azúcar, 15 kg")))
+        .andExpect(content().string(not(containsString("Fideos, 20 kg"))));
+
+    mvc.perform(get("/admin-asignaciones?vista=decididas&decidio=vos"))
+        .andExpect(content().string(matchesPattern(elegida("vos", "Vos"))))
+        .andExpect(
+            content().string(containsString("href=\"/admin-asignaciones?vista=decididas\"")));
+  }
 }

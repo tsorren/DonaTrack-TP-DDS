@@ -72,11 +72,6 @@ public record AdminAsignacionesVista(
         new Opcion(ConsultaDecididas.DESCARTADAS, "Descartadas"));
   }
 
-  /** Las opciones de "Decidida": los períodos fijos. */
-  public List<Opcion> periodosDecididas() {
-    return ConsultaDecididas.PERIODOS_OPCIONES;
-  }
-
   /** Las opciones del orden de Todas las decididas. */
   public List<Opcion> ordenesDecididas() {
     return List.of(

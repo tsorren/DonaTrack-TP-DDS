@@ -123,6 +123,11 @@ class AdminOperacionRest implements AdminOperacionPuerto {
   }
 
   @Override
+  public boolean decididasPorQuien() {
+    return false;
+  }
+
+  @Override
   public AdminDonacionesVista donaciones(ConsultaDonaciones consulta, String accion) {
     return new AdminOperacionDonaciones(
             donaciones, LocalDateTime.now(reloj.withZone(Comun.ARGENTINA)))
