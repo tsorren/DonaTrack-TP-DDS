@@ -492,4 +492,22 @@ document.addEventListener("alpine:init", () => {
       return this.elegidas === 1 ? "Marcar 1 como leída" : `Marcar ${this.elegidas} como leídas`;
     },
   }));
+
+  // listado (R11-B04): la barra de búsqueda y filtros de las listas (componentes/listado). En el
+  // celular pliega los campos debajo de «Filtros y orden» (la hoja solo los oculta por debajo de
+  // 53,75 em). Sin JavaScript los campos quedan abiertos y el botón, oculto. Lo esencial es el
+  // formulario get: acá no se envía nada.
+  Alpine.data("listado", () => ({
+    sinBoton: false,
+    abierto: false,
+    alternar() {
+      this.abierto = !this.abierto;
+    },
+    get plegado() {
+      return this.abierto ? "no" : "si";
+    },
+    get expandido() {
+      return this.abierto ? "true" : "false";
+    },
+  }));
 });

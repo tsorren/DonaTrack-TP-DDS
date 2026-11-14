@@ -14,6 +14,7 @@ import grupo5.cliente.vistas.MisDonacionesVista.Categoria;
 import grupo5.cliente.vistas.MisDonacionesVista.Donacion;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -171,6 +172,53 @@ class DonacionesRestTest {
     // El número sigue la posición entre las 25: la página 2 empieza en la 13.ª más reciente.
     assertEquals(
         List.of(13L, 12L, 11L), vista.donaciones().stream().map(Donacion::numero).toList());
+  }
+
+  /**
+   * R11-B04: el rango de fechas (cruzado con el mes) y "Más antiguas primero" los resuelve
+   * Donaciones; la organización por nombre no (solo filtra por su id), así que no se ofrece. El
+   * número de la primera de la página 1 es la 1.
+   */
+  @Test
+  void elRangoDeFechasYElOrdenLosResuelveDonacionesYLaOrganizacionNoSeOfrece() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
+    donaciones
+        .expect(requestTo("http://donaciones/api/categorias"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    donaciones
+        .expect(
+            requestTo(
+                "http://donaciones/donaciones-independientes?donanteId="
+                    + DONANTE
+                    + "&desde=2026-10-05&hasta=2026-10-31&orden=antiguas&page=0&size=12"))
+        .andRespond(withSuccess(TRES, MediaType.APPLICATION_JSON).header("X-Total-Count", "3"));
+    donaciones
+        .expect(requestTo("http://donaciones/api/entidades/publicas?page=0&size=100"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    DonacionesRest adaptador =
+        new DonacionesRest(
+            ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),
+            ClientesHttp.cliente(builder, "http://logistica", LogisticaApi.class),
+            Clock.systemUTC());
+
+    MisDonacionesVista vista =
+        adaptador.misDonaciones(
+            DONANTE,
+            new Consulta(
+                YearMonth.of(2026, 10),
+                null,
+                null,
+                null,
+                1,
+                LocalDate.of(2026, 10, 5),
+                LocalDate.of(2026, 11, 20),
+                null,
+                true));
+
+    donaciones.verify();
+    assertEquals(false, adaptador.filtraPorDestino());
+    assertEquals(List.of(1L, 2L, 3L), vista.donaciones().stream().map(Donacion::numero).toList());
   }
 
   @Test

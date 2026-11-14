@@ -154,7 +154,9 @@ class MisDonacionesControllerTest {
         .andExpect(
             content().string(containsString("Estás viendo las registradas en octubre de 2026.")))
         .andExpect(content().string(containsString("Ver todas tus donaciones")))
-        .andExpect(content().string(containsString("name=\"mes\" value=\"2026-10\"")))
+        // R11-B04: el mes llega a la barra como sus días, desde y hasta
+        .andExpect(content().string(containsString("value=\"2026-10-01\" max=\"2026-10-31\"")))
+        .andExpect(content().string(containsString("value=\"2026-10-31\" min=\"2026-10-01\"")))
         .andExpect(content().string(containsString("Silla plegable")));
 
     mvc.perform(get("/donante-donaciones?mes=2026-09").session(sesion))
@@ -217,6 +219,37 @@ class MisDonacionesControllerTest {
         .andExpect(content().string(not(containsString("todavía no tiene donaciones"))));
   }
 
+  /**
+   * R11-B04: con la maqueta, cada campo de la barra filtra los datos de ejemplo: el rango de fechas
+   * (al revés se da vuelta), la organización a la que fue (sin mayúsculas ni tildes) y el orden.
+   * "Sacar los filtros" aparece con algo elegido.
+   */
+  @Test
+  void laBarraFiltraPorFechasOrganizacionYOrden() throws Exception {
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(get("/donante-donaciones?donante=" + DONANTE).session(sesion))
+        .andExpect(content().string(not(containsString("Sacar los filtros"))));
+
+    mvc.perform(get("/donante-donaciones?desde=2026-10-20&hasta=2026-10-10").session(sesion))
+        .andExpect(content().string(containsString("1 donación con esos filtros.")))
+        .andExpect(content().string(containsString("Silla plegable")))
+        .andExpect(content().string(not(containsString("Fideos secos"))))
+        .andExpect(content().string(containsString("value=\"2026-10-10\" max=\"2026-10-20\"")))
+        .andExpect(content().string(containsString("Sacar los filtros")));
+
+    mvc.perform(get("/donante-donaciones?quien=COMEDOR barrio").session(sesion))
+        .andExpect(content().string(containsString("1 donación con esos filtros.")))
+        .andExpect(content().string(containsString("Fideos secos")))
+        .andExpect(content().string(not(containsString("Silla plegable"))));
+
+    mvc.perform(get("/donante-donaciones?orden=antiguas").session(sesion))
+        .andExpect(
+            content().string(containsString("2 donaciones, de la primera a la más reciente.")))
+        .andExpect(content().string(containsString("Fideos secos")))
+        .andExpect(content().string(not(containsString("Silla plegable"))))
+        .andExpect(content().string(matchesPattern(elegida("antiguas", "Más antiguas primero"))));
+  }
+
   /** La opción {@code valor} del select, marcada como elegida. */
   private static Pattern elegida(String valor, String texto) {
     return Pattern.compile(
@@ -235,7 +268,9 @@ class MisDonacionesControllerTest {
                 .session(sesion))
         .andExpect(status().isOk())
         .andExpect(
-            content().string(containsString("<label for=\"subcategoria\">Subcategoría</label>")))
+            content()
+                .string(
+                    containsString("<label for=\"donaciones-subcategoria\">Subcategoría</label>")))
         .andExpect(content().string(matchesPattern(elegida("arroz", "Arroz"))))
         .andExpect(content().string(matchesPattern(elegida(ALIMENTOS, "Alimentos"))))
         .andExpect(content().string(containsString("Fideos secos")))

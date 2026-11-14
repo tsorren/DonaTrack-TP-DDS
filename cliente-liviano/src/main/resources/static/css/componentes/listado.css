@@ -1,0 +1,223 @@
+/* Bloque listado (R11-B04, usuario 2026-11-11: rediseñar los filtros, no convencen las pastillas):
+   la barra de búsqueda y filtros de toda lista, un formulario get. Los campos se ven abiertos, cada
+   uno con su rótulo arriba, como cualquier campo del sitio (`.campo`): la búsqueda
+   (`.listado-buscar`), la fecha (`fieldset.listado-fecha`: desde y hasta), los desplegables, las
+   casillas de sí o no (`.listado-casilla`) y, al final, "Filtrar" y "Sacar los filtros"
+   (`.listado-acciones`, `.listado-sacar`). El fragmento está en templates/componentes/listado.html.
+   Se carga en la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md.
+   En el celular, la búsqueda arriba y los campos en dos columnas (la fecha a todo el ancho). Con
+   JavaScript, los campos se pliegan debajo de "Filtros y orden" (`.listado-alternar`,
+   `data-plegado`). Desde 53,75 em, todo en una fila que baja de renglón, alineado abajo. */
+
+.listado {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+}
+
+.listado-buscar input {
+  width: 100%;
+}
+
+.listado-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--medida-toque-minimo) * 3)), 1fr));
+  align-items: end;
+  gap: var(--espacio-2);
+}
+
+.listado-campos > .campo {
+  min-width: 0;
+}
+
+.listado-campos select,
+.listado-campos input:not([type="checkbox"]) {
+  width: 100%;
+}
+
+/* La fecha: el rótulo como los demás y, debajo, desde y hasta. En el celular, a todo el ancho,
+   cada día con su rótulo arriba. */
+.listado-fecha {
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto auto;
+  grid-auto-flow: column;
+  column-gap: var(--espacio-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.listado-fecha legend {
+  margin-bottom: var(--espacio-1);
+  padding: 0;
+  font-weight: 700;
+}
+
+.listado-fecha label {
+  font-weight: 400;
+}
+
+/* Un filtro de sí o no: la casilla cubre toda la etiqueta (invisible) y se dibuja al lado del
+   texto, así el toque mide lo que la etiqueta. */
+.listado-casilla {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  min-height: var(--medida-toque-minimo);
+  padding-inline: var(--espacio-1);
+  border-radius: var(--radio-boton);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.listado-casilla input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.listado-casilla span::before {
+  content: "";
+  display: inline-block;
+  width: var(--espacio-4);
+  height: var(--espacio-4);
+  margin-right: var(--espacio-1);
+  vertical-align: middle;
+  border-radius: var(--espacio-1);
+  background: var(--color-campo);
+  box-shadow: inset 0 0 0 1.5px var(--color-borde-control);
+}
+
+.listado-casilla:has(:checked) span::before {
+  background: var(--color-acento);
+  box-shadow: inset 0 0 0 2px var(--color-acento), inset 0 0 0 5px var(--color-campo);
+}
+
+.listado-casilla:hover span::before {
+  box-shadow: inset 0 0 0 2px var(--color-tinta);
+}
+
+.listado-casilla:has(:checked):hover span::before {
+  box-shadow: inset 0 0 0 2px var(--color-tinta), inset 0 0 0 5px var(--color-campo);
+}
+
+.listado-casilla:has(:focus-visible) {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.listado-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-3);
+}
+
+.listado-sacar {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  font-weight: 700;
+}
+
+.listado-alternar[hidden] {
+  display: none;
+}
+
+/* En el celular, con JavaScript: los campos se pliegan debajo de "Filtros y orden". */
+@media (width < 53.75em) {
+  .listado-alternar {
+    justify-self: start;
+  }
+
+  .listado[data-plegado="si"] .listado-campos {
+    display: none;
+  }
+}
+
+/* Desde 53,75 em, la búsqueda y los campos en una sola fila que baja de renglón, alineados abajo:
+   el botón que pliega no hace falta. */
+@media (min-width: 53.75em) {
+  .listado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--espacio-2) var(--espacio-3);
+  }
+
+  .listado-campos {
+    display: contents;
+  }
+
+  .listado-buscar {
+    flex: 1 1 calc(var(--medida-toque-minimo) * 5);
+    max-width: calc(var(--medida-toque-minimo) * 9);
+  }
+
+  .listado-campos > .campo {
+    flex: 0 1 auto;
+  }
+
+  .listado-campos select {
+    width: auto;
+  }
+
+  .listado-campos input[type="search"] {
+    width: calc(var(--medida-toque-minimo) * 4);
+  }
+
+  .listado-alternar {
+    display: none;
+  }
+
+  /* Desde y hasta en una fila, cada uno con su rótulo al lado. */
+  .listado-fecha {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    grid-template-rows: auto;
+    grid-auto-flow: row;
+    align-items: center;
+    column-gap: var(--espacio-1);
+  }
+
+  .listado-fecha input {
+    width: auto;
+  }
+}
+
+/* La barra queda fija mientras se recorre su listado (regla general 5, como la anterior), sobre
+   papel y con el filete abajo; el papel sube un poco para que entre la cabecera y la barra no se vea
+   la lista. Plegada (con JavaScript, por debajo de 53,75 em) cabe en un cuarto del alto: queda fija
+   si la ventana mide al menos 45 em de alto. Abierta, solo desde 53,75 em y con al menos 37,5 em
+   de alto: en el celular, abierta, taparía casi toda la pantalla. */
+@media (min-height: 45em) {
+  .listado[data-plegado="si"] {
+    position: sticky;
+    top: var(--medida-cabecera-fija);
+    z-index: var(--capa-filtros-fijos);
+    padding-block: var(--espacio-1);
+    border-bottom: 1px solid var(--color-filete);
+    background: var(--color-papel);
+    box-shadow: 0 calc(var(--espacio-1) * -0.75) 0 var(--color-papel);
+  }
+}
+
+@media (min-width: 53.75em) and (min-height: 37.5em) {
+  .listado,
+  .listado[data-plegado="si"] {
+    position: sticky;
+    top: var(--medida-cabecera-fija);
+    z-index: var(--capa-filtros-fijos);
+    padding-block: var(--espacio-2);
+    border-bottom: 1px solid var(--color-filete);
+    background: var(--color-papel);
+    box-shadow: 0 calc(var(--espacio-1) * -0.75) 0 var(--color-papel);
+  }
+}

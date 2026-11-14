@@ -109,6 +109,12 @@ class DonacionesRest implements DonacionesPuerto {
     return misDonaciones(donante, Consulta.primera());
   }
 
+  /** Donaciones filtra por el id de la organización, no por su nombre (R11-B04). */
+  @Override
+  public boolean filtraPorDestino() {
+    return false;
+  }
+
   /**
    * Una página, con los filtros resueltos por Donaciones (R11-01): el mes por la fecha de registro
    * (desde y hasta inclusivos), el estado como los estados de Donaciones que lo forman y la
@@ -123,9 +129,15 @@ class DonacionesRest implements DonacionesPuerto {
     String categoria = subcategoria == null ? consulta.categoriaEn(categorias) : null;
     MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
     filtros.add("donanteId", donante.toString());
-    if (consulta.mes() != null) {
-      filtros.add("desde", consulta.mes().atDay(1).toString());
-      filtros.add("hasta", consulta.mes().atEndOfMonth().toString());
+    // El mes y el rango de fechas (R11-B04) se cruzan: entra lo que cumple los dos
+    if (consulta.primerDia() != null) {
+      filtros.add("desde", consulta.primerDia().toString());
+    }
+    if (consulta.ultimoDia() != null) {
+      filtros.add("hasta", consulta.ultimoDia().toString());
+    }
+    if (consulta.antiguas()) {
+      filtros.add("orden", "antiguas");
     }
     if (consulta.estado() != null) {
       ESTADOS.get(consulta.estado()).forEach(e -> filtros.add("estado", e));
@@ -145,19 +157,23 @@ class DonacionesRest implements DonacionesPuerto {
       respuesta = pedirPagina(filtros, pagina);
       total = total(respuesta);
     }
-    // Donaciones ya las ordena de la más reciente a la primera; se reordena la página por las
-    // dudas.
+    // Donaciones ya las ordena; se reordena la página por las dudas. El número es el de la
+    // donación entre todas las del filtro: la primera registrada es la 1.
+    Comparator<DonacionesApi.Donacion> porFecha =
+        Comparator.comparing(DonacionesApi.Donacion::fechaRegistro);
     List<DonacionesApi.Donacion> lista =
         respuesta.getBody() == null
             ? List.of()
             : respuesta.getBody().stream()
-                .sorted(Comparator.comparing(DonacionesApi.Donacion::fechaRegistro).reversed())
+                .sorted(consulta.antiguas() ? porFecha : porFecha.reversed())
                 .toList();
     Map<UUID, String> entidades = entidades(lista);
-    long primero = total - (long) (pagina - 1) * Consulta.POR_PAGINA;
+    long saltadas = (long) (pagina - 1) * Consulta.POR_PAGINA;
+    long primero = consulta.antiguas() ? saltadas + 1 : total - saltadas;
+    int paso = consulta.antiguas() ? 1 : -1;
     List<Donacion> donaciones =
         IntStream.range(0, lista.size())
-            .mapToObj(i -> donacion(lista.get(i), primero - i, entidades))
+            .mapToObj(i -> donacion(lista.get(i), primero + (long) paso * i, entidades))
             .toList();
     return new MisDonacionesVista(
         donaciones,
