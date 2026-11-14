@@ -45,6 +45,9 @@ final class Bandejas {
     if (consulta.sinLeer()) {
       filtros.add("leida", "false");
     }
+    if (consulta.leidas()) {
+      filtros.add("leida", "true");
+    }
     if (!consulta.buscar().isEmpty()) {
       filtros.add("q", consulta.buscar());
     }

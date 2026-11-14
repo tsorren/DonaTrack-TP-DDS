@@ -2,7 +2,9 @@ package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.CuentaActual;
 import grupo5.cliente.puertos.DonanteNotificacionesPuerto;
+import grupo5.cliente.vistas.ConsultaBandeja;
 import grupo5.cliente.vistas.DonanteNotificacionesVista;
+import grupo5.cliente.vistas.Listado;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,9 +44,18 @@ public class DonanteNotificacionesController {
       return "redirect:/publico-ingresar";
     }
     String vista = pantallas.mostrarDonante(pantalla, donante.get(), model, pedido);
-    DonanteNotificacionesVista bandeja =
-        notificaciones.bandeja(donante.get(), BandejaDeNotificaciones.consulta(pedido));
+    boolean conFecha = notificaciones.filtraPorFecha();
+    ConsultaBandeja consulta = BandejaDeNotificaciones.consulta(pedido, conFecha);
+    DonanteNotificacionesVista bandeja = notificaciones.bandeja(donante.get(), consulta);
     model.addAttribute("bandeja", bandeja);
+    model.addAttribute(
+        "listado",
+        BandejaDeNotificaciones.listado(
+            pedido.getRequestURI(),
+            consulta,
+            bandeja.temas().stream().map(t -> new Listado.Opcion(t.valor(), t.texto())).toList(),
+            conFecha,
+            pedido.getParameter("agrupar")));
     model.addAttribute(
         "paginador", Paginadores.de(pedido, BandejaDeNotificaciones.PAGINAS, bandeja.pagina()));
     return vista;

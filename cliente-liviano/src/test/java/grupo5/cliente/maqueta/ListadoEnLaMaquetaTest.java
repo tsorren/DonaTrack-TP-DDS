@@ -172,4 +172,32 @@ class ListadoEnLaMaquetaTest {
         .andExpect(
             content().string(containsString("href=\"/admin-asignaciones?vista=decididas\"")));
   }
+
+  @Test
+  void lasNotificacionesFiltranPorFechaYEstadoConLosNombresDeTodasLasListas() throws Exception {
+    mvc.perform(get("/donante-notificaciones?desde=2026-10-14&hasta=2026-10-14"))
+        .andExpect(content().string(containsString("Coinciden 3 notificaciones.")))
+        .andExpect(content().string(containsString("class=\"listado\"")));
+
+    mvc.perform(get("/donante-notificaciones?estado=leidas"))
+        .andExpect(content().string(containsString(">Leída: <")))
+        .andExpect(content().string(not(containsString(">Sin leer: <"))))
+        .andExpect(content().string(matchesPattern(elegida("leidas", "Leídas"))));
+
+    // Los nombres de antes siguen valiendo
+    mvc.perform(get("/admin-notificaciones?ver=sin-leer&orden=viejas"))
+        .andExpect(content().string(matchesPattern(elegida("sin-leer", "Sin leer"))))
+        .andExpect(content().string(matchesPattern(elegida("antiguas", "Más antiguas primero"))));
+
+    mvc.perform(get("/entidad-notificaciones?agrupar=fecha"))
+        .andExpect(content().string(matchesPattern(elegida("fecha", "Por fecha"))))
+        .andExpect(content().string(containsString("class=\"listado\"")));
+  }
+
+  @Test
+  void laBandejaDeLaPersonaUsaSusCategorias() throws Exception {
+    mvc.perform(get("/donante-notificaciones?cuenta=persona&categoria=misiones"))
+        .andExpect(content().string(matchesPattern(elegida("misiones", "Misiones"))))
+        .andExpect(content().string(containsString("class=\"listado\"")));
+  }
 }

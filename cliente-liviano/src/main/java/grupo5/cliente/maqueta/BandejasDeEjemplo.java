@@ -1,8 +1,10 @@
 package grupo5.cliente.maqueta;
 
 import grupo5.cliente.vistas.ConsultaBandeja;
+import grupo5.cliente.vistas.Listado;
 import grupo5.cliente.vistas.Tramo;
 import java.text.Normalizer;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -34,11 +36,18 @@ final class BandejasDeEjemplo {
     List<T> cumplen =
         todas.stream()
             .filter(n -> !consulta.sinLeer() || !leida.test(n))
+            .filter(n -> !consulta.leidas() || leida.test(n))
+            .filter(n -> Listado.entre(dia(fecha.apply(n)), consulta.desde(), consulta.hasta()))
             .filter(n -> consulta.tema().isEmpty() || consulta.tema().equals(tema.apply(n)))
             .filter(n -> buscado.isEmpty() || sinTildes(texto.apply(n)).contains(buscado))
             .sorted(consulta.viejas() ? orden : orden.reversed())
             .toList();
     return Tramo.de(cumplen, consulta.pagina(), ConsultaBandeja.TAMANIO);
+  }
+
+  /** El día de una fecha ISO ("2026-10-15T18:20"); null si no se entiende. */
+  private static LocalDate dia(String fecha) {
+    return fecha == null || fecha.length() < 10 ? null : Listado.dia(fecha.substring(0, 10));
   }
 
   static String sinTildes(String valor) {

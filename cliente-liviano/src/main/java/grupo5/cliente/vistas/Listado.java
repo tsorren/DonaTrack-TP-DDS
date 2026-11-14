@@ -6,7 +6,9 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * La barra de búsqueda y filtros de una lista (R11-B04, componente {@code componentes/listado}): lo
@@ -67,6 +69,36 @@ public record Listado(
     n += quien != null && !quien.valor().isEmpty() ? 1 : 0;
     n += (int) casillas.stream().filter(Casilla::prendida).count();
     return n;
+  }
+
+  /**
+   * La misma barra con otras categorías, escritas en la plantilla como {@code {valor, texto}} (la
+   * bandeja de la persona de la maqueta, que tiene las suyas). Una categoría elegida que no está
+   * entre ellas queda en la primera.
+   */
+  public Listado conCategorias(List<? extends Map<String, ?>> opciones) {
+    List<Opcion> otras =
+        opciones.stream()
+            .map(o -> new Opcion(String.valueOf(o.get("valor")), String.valueOf(o.get("texto"))))
+            .toList();
+    String elegido =
+        categoria != null && otras.stream().anyMatch(o -> o.valor().equals(categoria.elegido()))
+            ? categoria.elegido()
+            : "";
+    return new Listado(
+        id,
+        ruta,
+        rotulo,
+        buscar,
+        fecha,
+        estado,
+        new Eleccion("categoria", "Categoría", elegido, otras),
+        quien,
+        this.otras,
+        casillas,
+        orden,
+        ocultos,
+        sacar);
   }
 
   /** Si va "Sacar los filtros": hay a dónde llevar y algo buscado o elegido. */
@@ -187,9 +219,11 @@ public record Listado(
       this(nombre, rotulo, elegido, opciones, List.of());
     }
 
-    /** Si hay algo elegido distinto del primero. */
+    /** Si hay algo elegido distinto del primero y es una de las opciones. */
     public boolean elegida() {
-      return !elegido.isEmpty();
+      return !elegido.isEmpty()
+          && Stream.concat(opciones.stream(), grupos.stream().flatMap(g -> g.opciones().stream()))
+              .anyMatch(o -> o.valor().equals(elegido));
     }
   }
 

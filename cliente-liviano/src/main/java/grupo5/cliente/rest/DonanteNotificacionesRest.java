@@ -82,6 +82,12 @@ class DonanteNotificacionesRest implements DonanteNotificacionesPuerto {
     return Collections.unmodifiableMap(tipos);
   }
 
+  /** Notificaciones no filtra por la fecha del aviso (R11-B04). */
+  @Override
+  public boolean filtraPorFecha() {
+    return false;
+  }
+
   @Override
   public DonanteNotificacionesVista bandeja(UUID persona, ConsultaBandeja consulta) {
     Tramo<NotificacionesApi.Notificacion> pagina =

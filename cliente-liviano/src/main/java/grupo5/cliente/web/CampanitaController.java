@@ -38,7 +38,7 @@ class CampanitaController {
   ModelAndView recientes(HttpServletRequest pedido) {
     String area = area(pedido);
     if (pedido.getHeader("HX-Request") == null) {
-      return new ModelAndView(redirigir("/" + area + "-notificaciones?ver=sin-leer"));
+      return new ModelAndView(redirigir("/" + area + "-notificaciones?estado=sin-leer"));
     }
     ModelAndView fragmento = new ModelAndView(FRAGMENTO);
     fragmento.addObject("area", area);

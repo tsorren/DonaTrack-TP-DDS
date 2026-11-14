@@ -2,6 +2,8 @@ package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.AdminNotificacionesPuerto;
 import grupo5.cliente.vistas.AdminNotificacionesVista;
+import grupo5.cliente.vistas.ConsultaBandeja;
+import grupo5.cliente.vistas.Listado;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,9 +32,18 @@ public class AdminNotificacionesController {
   @GetMapping({"/" + PANTALLA, "/" + PANTALLA + "-leidas"})
   String bandeja(Model model, HttpServletRequest pedido) {
     String vista = pantallas.mostrar(pedido.getRequestURI().substring(1), model);
-    AdminNotificacionesVista bandeja =
-        notificaciones.bandeja(BandejaDeNotificaciones.consulta(pedido));
+    boolean conFecha = notificaciones.filtraPorFecha();
+    ConsultaBandeja consulta = BandejaDeNotificaciones.consulta(pedido, conFecha);
+    AdminNotificacionesVista bandeja = notificaciones.bandeja(consulta);
     model.addAttribute("bandeja", bandeja);
+    model.addAttribute(
+        "listado",
+        BandejaDeNotificaciones.listado(
+            pedido.getRequestURI(),
+            consulta,
+            bandeja.temas().stream().map(t -> new Listado.Opcion(t.valor(), t.texto())).toList(),
+            conFecha,
+            pedido.getParameter("agrupar")));
     model.addAttribute(
         "paginador", Paginadores.de(pedido, BandejaDeNotificaciones.PAGINAS, bandeja.pagina()));
     return vista;

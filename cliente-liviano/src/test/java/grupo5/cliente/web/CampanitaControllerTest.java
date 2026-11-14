@@ -99,7 +99,7 @@ class CampanitaControllerTest {
   void sinHtmxVaALaBandejaSinLeer() throws Exception {
     mvc.perform(get("/donante-notificaciones-recientes"))
         .andExpect(status().isSeeOther())
-        .andExpect(redirectedUrl("/donante-notificaciones?ver=sin-leer"));
+        .andExpect(redirectedUrl("/donante-notificaciones?estado=sin-leer"));
   }
 
   /** C12: el destino lo da el puerto; un destino que mande el navegador no se usa. */
