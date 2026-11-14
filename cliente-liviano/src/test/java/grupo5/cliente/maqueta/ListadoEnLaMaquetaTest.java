@@ -133,4 +133,24 @@ class ListadoEnLaMaquetaTest {
         .andExpect(content().string(containsString("con lo que elegiste")))
         .andExpect(content().string(containsString("checked=\"checked\"")));
   }
+
+  @Test
+  void donacionesDelAdminFiltraPorFechaYDonanteYConservaElDonanteDeSuFicha() throws Exception {
+    mvc.perform(get("/admin-donaciones?desde=2026-10-11&hasta=2026-10-09"))
+        .andExpect(content().string(containsString("Coinciden 3 donaciones.")))
+        .andExpect(content().string(containsString("Arroz · 25 kg")))
+        .andExpect(content().string(not(containsString("Aceite · 12 l"))));
+
+    mvc.perform(get("/admin-donaciones?quien=fundacion"))
+        .andExpect(content().string(containsString("Coinciden 4 donaciones.")))
+        .andExpect(content().string(not(containsString("Arroz · 25 kg"))));
+
+    mvc.perform(get("/admin-donaciones?donante=ana&estado=deposito"))
+        .andExpect(content().string(containsString("name=\"donante\" value=\"ana\"")))
+        .andExpect(content().string(containsString("href=\"/admin-donaciones?donante=ana\"")))
+        .andExpect(content().string(matchesPattern(elegida("deposito", "En el depósito"))));
+
+    mvc.perform(get("/admin-donaciones?vence=pronto"))
+        .andExpect(content().string(matchesPattern(elegida("pronto", "En los próximos 7 días"))));
+  }
 }

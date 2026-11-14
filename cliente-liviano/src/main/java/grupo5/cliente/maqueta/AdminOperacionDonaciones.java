@@ -6,7 +6,12 @@ import grupo5.cliente.vistas.AdminDonacionesVista.Criterio;
 import grupo5.cliente.vistas.AdminDonacionesVista.Donacion;
 import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.ConsultaDonaciones;
+import grupo5.cliente.vistas.Listado;
 import grupo5.cliente.vistas.Tramo;
+import java.time.LocalDate;
+import java.time.MonthDay;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -142,7 +147,9 @@ final class AdminOperacionDonaciones {
             pedida.pagina(),
             pedida.buscar(),
             pedida.categoria(),
-            pedida.registrada(),
+            pedida.desde(),
+            pedida.hasta(),
+            pedida.quien(),
             pedida.donante(),
             pedida.donacion());
     String buscar = consulta.buscar().toLowerCase(Locale.ROOT);
@@ -164,9 +171,8 @@ final class AdminOperacionDonaciones {
                 d ->
                     consulta.categoria().isEmpty()
                         || consulta.categoria().equals(CATEGORIA_DE.get(d.clave())))
-            // En la maqueta, todas se registraron hace más de 30 días: un período solo deja "hoy"
-            // vacío
-            .filter(d -> !"hoy".equals(consulta.registrada()))
+            .filter(d -> Listado.entre(registrada(d), consulta.desde(), consulta.hasta()))
+            .filter(d -> Listado.contiene(d.donante(), consulta.quien()))
             .filter(d -> consulta.donante().isEmpty() || d.donante().equals(donante))
             .toList();
     return new AdminDonacionesVista(
@@ -183,6 +189,19 @@ final class AdminOperacionDonaciones {
             : Objects.requireNonNullElse(donante, "el donante elegido"),
         null,
         false);
+  }
+
+  private static final int ANIO = 2026;
+  private static final DateTimeFormatter DIA_Y_MES =
+      DateTimeFormatter.ofPattern("d 'de' MMMM", Locale.forLanguageTag("es-AR"));
+
+  /** El día de registro de una de ejemplo ("10 de octubre", de 2026); null si no se entiende. */
+  private static LocalDate registrada(Donacion d) {
+    try {
+      return MonthDay.parse(d.registrada(), DIA_Y_MES).atYear(ANIO);
+    } catch (DateTimeParseException otroFormato) {
+      return null;
+    }
   }
 
   /** Las categorías del catálogo de ejemplo (R11-34). */

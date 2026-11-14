@@ -30,10 +30,6 @@ public record AdminDonacionesVista(
     Donacion elegida,
     boolean partida) {
 
-  /** Las opciones de la pastilla "Registrada": la primera es "Cualquier fecha". */
-  public static final List<Opcion> PERIODOS =
-      PeriodoFijo.OPCIONES.stream().map(p -> new Opcion(p.clave(), p.texto())).toList();
-
   public AdminDonacionesVista {
     criterios = List.copyOf(criterios);
     categorias = categorias == null ? List.of() : List.copyOf(categorias);
@@ -102,11 +98,6 @@ public record AdminDonacionesVista(
     opciones.add(new Opcion("", "Todas las categorías"));
     opciones.addAll(categorias);
     return List.copyOf(opciones);
-  }
-
-  /** Las opciones de la pastilla Registrada. */
-  public List<Opcion> periodos() {
-    return PERIODOS;
   }
 
   /** Las opciones de la pastilla Vence. */

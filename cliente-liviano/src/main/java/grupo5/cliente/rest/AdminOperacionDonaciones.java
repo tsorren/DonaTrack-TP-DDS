@@ -109,7 +109,10 @@ final class AdminOperacionDonaciones {
             pedida.pagina(),
             pedida.buscar(),
             pedida.categoria(),
-            pedida.registrada(),
+            pedida.desde(),
+            pedida.hasta(),
+            // R11-B04: Donaciones filtra por el id del donante, no por su nombre
+            "",
             pedida.donante(),
             pedida.donacion());
     // R11-34: "vencen pronto" son las del depósito con algún bien que vence en los próximos 7 días,
@@ -227,10 +230,11 @@ final class AdminOperacionDonaciones {
     if (donante != null) {
       filtros.add("donanteId", donante.toString());
     }
-    LocalDate[] periodo = consulta.periodo(ahora.toLocalDate());
-    if (periodo[0] != null) {
-      filtros.add("desde", periodo[0].toString());
-      filtros.add("hasta", periodo[1].toString());
+    if (consulta.desde() != null) {
+      filtros.add("desde", consulta.desde().toString());
+    }
+    if (consulta.hasta() != null) {
+      filtros.add("hasta", consulta.hasta().toString());
     }
     filtros.add("page", String.valueOf(pagina));
     filtros.add("size", String.valueOf(POR_PAGINA));

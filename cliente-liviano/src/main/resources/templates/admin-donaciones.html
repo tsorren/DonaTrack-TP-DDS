@@ -25,10 +25,11 @@
        elige su donación (?donacion=<clave>, en la misma página, con los filtros) y su ficha va dentro
        del renglón; desde 53,75 em, a la derecha y fija al desplazarse. Sin pedir ninguna, la ficha es
        la de la primera de la página (data-elegido="partida"): en el celular no se abre sola. Arriba
-       de la lista, un solo formulario GET con la búsqueda ("Buscar por lo que se donó") y las
-       pastillas (componentes/filtros): Estado, Categoría, Registrada, Vence (si la fuente lo
-       resuelve) y Ordenar. El donante (?donante=, desde su ficha en Donantes) se ve como "De <nombre>
-       · Quitar".
+       de la lista, el componente listado (R11-B04, componentes/listado; lo arma
+       AdminDonacionesController): la búsqueda ("Buscar por lo que se donó"), la fecha de registro
+       (?desde= y ?hasta=, en lugar del período fijo), Estado, Categoría, Donante (?quien=, solo si
+       la fuente lo filtra por nombre: con Donaciones no), Vence (si la fuente lo resuelve) y
+       Ordenar. El donante (?donante=, desde su ficha en Donantes) se ve como "De <nombre> · Quitar".
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'detalle' o 'vencida'.
        - ficha(d, dePartida): la ficha de una donación en la bandeja.
@@ -101,29 +102,7 @@
         las donaciones</h2>
       <p th:if="${conDatos and pronto and datos.porVencer != null}" th:text="${datos.porVencer}">5 donaciones
         del depósito vencen en los próximos 7 días; la primera, Leche en polvo, el 13 de noviembre.</p>
-      <form hx-boost="true" class="filtros-barra" action="/admin-donaciones" th:action="@{/admin-donaciones}"
-            method="get" role="search" data-al-cambiar>
-        <input th:if="${c.donante != ''}" type="hidden" name="donante" th:value="${c.donante}" value="ana">
-        <div class="campo filtro-buscar">
-          <label for="buscar">Buscar por lo que se donó</label>
-          <div class="filtro-buscar-fila">
-            <input id="buscar" name="buscar" type="search" autocomplete="off" maxlength="100"
-                   th:value="${c.buscar}" placeholder="Por ejemplo: leche">
-            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
-          </div>
-        </div>
-        <div class="filtros" role="group" aria-label="Filtrar las donaciones">
-          <details th:replace="~{componentes/filtros :: menu('estado', 'Estado', ${filtro}, ${datos.estados()})}"></details>
-          <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${c.categoria}, ${datos.categoriasDelFiltro()})}"></details>
-          <details th:replace="~{componentes/filtros :: menu('registrada', 'Registrada', ${c.registrada}, ${datos.periodos()})}"></details>
-          <th:block th:if="${datos.conVence}"><details
-              th:replace="~{componentes/filtros :: menu('vence', 'Vence', ${pronto ? 'pronto' : ''}, ${datos.vencimientos()})}"></details></th:block>
-          <details th:replace="~{componentes/filtros :: menu('orden', 'Ordenar', ${orden}, ${datos.ordenes()})}"></details>
-          <a th:if="${c.filtrada()}" class="filtros-sacar" href="/admin-donaciones"
-             th:href="${c.donante != ''} ? @{/admin-donaciones(donante=${c.donante})} : @{/admin-donaciones}"
-             >Sacar los filtros</a>
-        </div>
-      </form>
+      <form th:replace="~{componentes/listado :: listado(${listado})}"></form>
       <p th:if="${conDatos and datos.donante != null}" class="racimo" data-espacio="2">
         <span class="chip" th:text="|De ${datos.donante}|">De Ana Ejemplo</span>
         <a th:href="@{${c.sinDonante().direccion()}}" href="/admin-donaciones"
@@ -148,7 +127,7 @@
       </section>
       <section th:if="${conDatos and #lists.isEmpty(donaciones) and c.filtrada()}" class="vacio"
                aria-labelledby="filtro-vacio">
-        <h3 id="filtro-vacio" th:text="${pronto and datos.conVence and c.buscar == '' and c.categoria == '' and c.registrada == ''} ? 'Ninguna donación del depósito vence en los próximos 7 días.' : 'Ninguna donación coincide con lo que buscaste.'">Ninguna
+        <h3 id="filtro-vacio" th:text="${pronto and datos.conVence and c.buscar == '' and c.categoria == '' and c.desde == null and c.hasta == null and c.quien == ''} ? 'Ninguna donación del depósito vence en los próximos 7 días.' : 'Ninguna donación coincide con lo que buscaste.'">Ninguna
           donación coincide con lo que buscaste.</h3>
         <a class="boton" data-tono="secundario" href="/admin-donaciones" th:href="@{/admin-donaciones}">Ver
           todas</a>

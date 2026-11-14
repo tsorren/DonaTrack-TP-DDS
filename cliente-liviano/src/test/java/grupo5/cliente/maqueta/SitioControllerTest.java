@@ -1071,7 +1071,8 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("De Ana Ejemplo")))
         .andExpect(content().string(containsString("Quitar el filtro: De Ana Ejemplo")))
         .andExpect(content().string(not(containsString("Leche en polvo · 10 u"))));
-    mvc.perform(get("/admin-donaciones?registrada=hoy"))
+    // R11-B04: el rango de fechas reemplaza al período fijo; en esos días no se registró ninguna
+    mvc.perform(get("/admin-donaciones?desde=2026-10-16&hasta=2026-10-20"))
         .andExpect(
             content().string(containsString("Ninguna donación coincide con lo que buscaste.")));
     mvc.perform(get("/admin-donaciones?vence=pronto"))

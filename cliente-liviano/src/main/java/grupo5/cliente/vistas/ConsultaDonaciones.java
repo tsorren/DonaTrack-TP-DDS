@@ -13,11 +13,13 @@ import java.util.List;
  * toma como ''.
  *
  * <p>Desde la bandeja (R11-34, ficha r11-p2-admin-bandeja §4.2): {@code buscar} (lo que se donó,
- * hasta 100 caracteres), {@code categoria} (la clave de la categoría o ''), {@code registrada} (un
- * período fijo: {@code hoy}, {@code 7-dias}, {@code 30-dias}, {@code este-mes}, {@code
- * mes-anterior} o ''), {@code donante} (la clave del donante, cuando se llega desde su ficha, o '')
- * y {@code donacion} (la clave de la elegida, cuya ficha se abre; '' si ninguna). Un valor que no
- * se entiende es el de siempre.
+ * hasta 100 caracteres), {@code categoria} (la clave de la categoría o ''), {@code donante} (la
+ * clave del donante, cuando se llega desde su ficha, o '') y {@code donacion} (la clave de la
+ * elegida, cuya ficha se abre; '' si ninguna). Un valor que no se entiende es el de siempre.
+ *
+ * <p>Desde el componente listado (R11-B04): {@code desde} y {@code hasta}, días inclusivos sobre la
+ * fecha de registro (null no acota; reemplazan al período fijo "Registrada"), y {@code quien},
+ * parte del nombre de quien donó (sin mayúsculas ni tildes; '' no filtra).
  */
 public record ConsultaDonaciones(
     String estado,
@@ -26,7 +28,9 @@ public record ConsultaDonaciones(
     int pagina,
     String buscar,
     String categoria,
-    String registrada,
+    LocalDate desde,
+    LocalDate hasta,
+    String quien,
     String donante,
     String donacion) {
 
@@ -44,26 +48,32 @@ public record ConsultaDonaciones(
     buscar = buscar == null ? "" : buscar.strip();
     buscar = buscar.length() > LARGO ? buscar.substring(0, LARGO) : buscar;
     categoria = clave(categoria);
-    registrada = PeriodoFijo.valida(registrada);
+    quien = quien == null ? "" : quien.strip();
+    quien = quien.length() > LARGO ? quien.substring(0, LARGO) : quien;
+    if (desde != null && hasta != null && desde.isAfter(hasta)) {
+      LocalDate antes = hasta;
+      hasta = desde;
+      desde = antes;
+    }
     donante = clave(donante);
     donacion = clave(donacion);
   }
 
-  /** Sin búsqueda, categoría, período, donante ni elegida: la consulta de antes de R11-34. */
+  /** Sin búsqueda, categoría, fechas, quién, donante ni elegida: la consulta de antes de R11-34. */
   public ConsultaDonaciones(String estado, boolean pronto, String orden, int pagina) {
-    this(estado, pronto, orden, pagina, "", "", "", "", "");
+    this(estado, pronto, orden, pagina, "", "", null, null, "", "", "");
   }
 
   /** La misma consulta con otro orden (el que la fuente ofrece). */
   public ConsultaDonaciones conOrden(String otro) {
     return new ConsultaDonaciones(
-        estado, pronto, otro, pagina, buscar, categoria, registrada, donante, donacion);
+        estado, pronto, otro, pagina, buscar, categoria, desde, hasta, quien, donante, donacion);
   }
 
   /** La misma consulta sin el donante ni la elegida ("Quitar" el filtro del donante). */
   public ConsultaDonaciones sinDonante() {
     return new ConsultaDonaciones(
-        estado, pronto, orden, pagina, buscar, categoria, registrada, "", "");
+        estado, pronto, orden, pagina, buscar, categoria, desde, hasta, quien, "", "");
   }
 
   /** Si hay búsqueda o algún filtro de la barra (el orden y el donante no cuentan). */
@@ -72,7 +82,9 @@ public record ConsultaDonaciones(
         || pronto
         || !buscar.isEmpty()
         || !categoria.isEmpty()
-        || !registrada.isEmpty();
+        || desde != null
+        || hasta != null
+        || !quien.isEmpty();
   }
 
   /**
@@ -86,7 +98,9 @@ public record ConsultaDonaciones(
     sumar(d, "orden", orden);
     sumar(d, "buscar", buscar);
     sumar(d, "categoria", categoria);
-    sumar(d, "registrada", registrada);
+    sumar(d, "desde", desde == null ? "" : desde.toString());
+    sumar(d, "hasta", hasta == null ? "" : hasta.toString());
+    sumar(d, "quien", quien);
     sumar(d, "donante", donante);
     return d.toString();
   }
@@ -99,11 +113,6 @@ public record ConsultaDonaciones(
   public String renglon(int pagina) {
     String d = direccion();
     return pagina > 1 ? d + "pagina=" + pagina + "&" : d;
-  }
-
-  /** Desde y hasta del período de registro elegido (días inclusivos); null si no hay período. */
-  public LocalDate[] periodo(LocalDate hoy) {
-    return PeriodoFijo.de(registrada, hoy);
   }
 
   private static String clave(String valor) {

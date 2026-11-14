@@ -53,6 +53,15 @@ public interface AdminOperacionPuerto {
   AdminDonacionesVista donaciones(ConsultaDonaciones consulta, String accion);
 
   /**
+   * Si la fuente filtra las donaciones por el nombre de quien donó ({@link
+   * ConsultaDonaciones#quien()}, R11-B04). Donaciones solo filtra por el id del donante: con ella,
+   * el campo no se ofrece.
+   */
+  default boolean donacionesPorQuien() {
+    return true;
+  }
+
+  /**
    * Una donación con su historial, pedida por su clave; null si no existe (la maqueta da la primera
    * de ejemplo).
    */
