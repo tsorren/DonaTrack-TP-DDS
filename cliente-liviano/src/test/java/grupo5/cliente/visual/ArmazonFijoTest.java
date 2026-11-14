@@ -39,17 +39,28 @@ class ArmazonFijoTest {
 
   /**
    * La cabecera, la barra y la distancia entre las dos, medidas en la ventana. La barra es la que
-   * queda fija: `.filtros-barra`, la barra de una pública (`.publica-barra`) o su `form.filtro`.
+   * queda fija: `.filtros-barra`, la barra del componente listado (`.listado`, R11-B04), la barra
+   * de una pública (`.publica-barra`) o su `form.filtro`.
    */
   private static final String CABECERA_Y_BARRA =
       """
       () => {
         const c = document.querySelector('body > header').getBoundingClientRect();
-        const b = [...document.querySelectorAll('.filtros-barra, .publica-barra, form.filtro')]
+        const b = [...document.querySelectorAll('.filtros-barra, .listado, .publica-barra, form.filtro')]
           .find(e => getComputedStyle(e).position === 'sticky').getBoundingClientRect();
         return [Math.round(c.top), Math.round(c.bottom), Math.round(b.top)];
       }
       """;
+
+  /**
+   * La barra de búsqueda y filtros: la del componente listado (R11-B04) o la anterior, en las
+   * listas que todavía la usan.
+   */
+  private static final String BARRA = ".filtros-barra, .listado";
+
+  /** Desde dónde se recorre con Tab: el botón de la búsqueda o, en el listado, su campo. */
+  private static final String BUSCAR =
+      "form.filtros-barra .filtro-buscar-fila button, form.listado .listado-buscar input";
 
   @LocalServerPort private int puerto;
 
@@ -144,7 +155,7 @@ class ArmazonFijoTest {
         pagina -> {
           pagina.navigate(url("/donante-entidades"));
           assertThat(posicion(pagina, "body > header")).isNotEqualTo("sticky");
-          assertThat(posicion(pagina, ".filtros-barra")).isNotEqualTo("sticky");
+          assertThat(posicion(pagina, BARRA)).isNotEqualTo("sticky");
         });
     conPagina(
         390,
@@ -152,11 +163,13 @@ class ArmazonFijoTest {
         false,
         pagina -> {
           pagina.navigate(url("/donante-entidades"));
-          assertThat(posicion(pagina, ".filtros-barra")).isEqualTo("sticky");
+          assertThat(posicion(pagina, BARRA)).isEqualTo("sticky");
           double alto =
               ((Number)
                       pagina.evaluate(
-                          "() => document.querySelector('.filtros-barra')"
+                          "() => document.querySelector('"
+                              + BARRA
+                              + "')"
                               + ".getBoundingClientRect().height"))
                   .doubleValue();
           assertThat(alto).as("La barra fija ocupa hasta un cuarto del alto").isLessThan(844 / 4.0);
@@ -184,7 +197,7 @@ class ArmazonFijoTest {
                     pagina.evaluate(
                         """
                         () => {
-                          const b = document.querySelector('.filtros-barra');
+                          const b = document.querySelector('.filtros-barra, .listado');
                           const prueba = document.createElement('div');
                           prueba.style.height = 'var(--medida-filtros-fijos)';
                           document.body.append(prueba);
@@ -209,7 +222,7 @@ class ArmazonFijoTest {
         false,
         pagina -> {
           pagina.navigate(url("/admin-donantes"));
-          assertThat(posicion(pagina, ".filtros-barra")).isNotEqualTo("sticky");
+          assertThat(posicion(pagina, BARRA)).isNotEqualTo("sticky");
         });
   }
 
@@ -223,7 +236,7 @@ class ArmazonFijoTest {
           false,
           pagina -> {
             pagina.navigate(url(ruta));
-            pagina.locator("form.filtros-barra .filtro-buscar-fila button").focus();
+            pagina.locator(BUSCAR).focus();
             for (int i = 0; i < 30; i++) {
               pagina.keyboard().press("Tab");
               anotarSiEstaTapado(pagina, ruta + " (Tab)", tapados);
@@ -243,9 +256,9 @@ class ArmazonFijoTest {
             """
             () => {
               const f = document.activeElement;
-              if (!f || !f.closest('main') || f.closest('.filtros-barra')) return null;
+              if (!f || !f.closest('main') || f.closest('.filtros-barra, .listado')) return null;
               const r = f.getBoundingClientRect();
-              const b = document.querySelector('.filtros-barra');
+              const b = document.querySelector('.filtros-barra, .listado');
               const fija = getComputedStyle(b).position === 'sticky';
               const despues = b.compareDocumentPosition(f) & Node.DOCUMENT_POSITION_FOLLOWING;
               const tope = fija && despues ? b.getBoundingClientRect().bottom : 0;
@@ -307,7 +320,7 @@ class ArmazonFijoTest {
         false,
         pagina -> {
           pagina.navigate(url("/admin-donantes"));
-          pagina.locator("form.filtros-barra .filtro-buscar-fila button").focus();
+          pagina.locator(BUSCAR).focus();
           List<String> tapados = new ArrayList<>();
           for (int i = 0; i < 40; i++) {
             pagina.keyboard().press("Tab");
@@ -316,9 +329,9 @@ class ArmazonFijoTest {
                     """
                     () => {
                       const f = document.activeElement;
-                      if (!f || !f.closest('main') || f.closest('.filtros-barra')) return null;
+                      if (!f || !f.closest('main') || f.closest('.filtros-barra, .listado')) return null;
                       const r = f.getBoundingClientRect();
-                      const b = document.querySelector('.filtros-barra');
+                      const b = document.querySelector('.filtros-barra, .listado');
                       const menu = document.querySelector('body > header').getBoundingClientRect();
                       // La barra solo tapa lo que viene después de ella.
                       const despues = b.compareDocumentPosition(f) & Node.DOCUMENT_POSITION_FOLLOWING;

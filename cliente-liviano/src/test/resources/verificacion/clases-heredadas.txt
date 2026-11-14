@@ -104,7 +104,6 @@ filtro
 filtro-icono
 filtro-opcion
 filtro-opciones
-filtro-sacar
 firma
 firma-quien
 formulario

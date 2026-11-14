@@ -9,15 +9,6 @@
   max-width: 82rem;
 }
 
-/* --- El filtro: la fila de pastillas del componente, con "Filtrar" centrado en la fila ---------- */
-.filtro {
-  margin: 0 0 2rem;
-}
-
-.filtro .filtros {
-  gap: 0.625rem;
-}
-
 .mostrando {
   display: flex;
   flex-wrap: wrap;

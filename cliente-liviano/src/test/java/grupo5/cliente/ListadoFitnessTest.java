@@ -36,7 +36,7 @@ class ListadoFitnessTest {
           "<form\\b(?:[^>\"]|\"[^\"]*\")*?(role=\"search\"|class=\"[^\"]*\\bfiltros?(-barra)?\\b)");
 
   /** Tope de declaraciones de medida con valor literal en las hojas: solo baja. */
-  private static final int TOPE_DE_MEDIDAS_LITERALES = 1312;
+  private static final int TOPE_DE_MEDIDAS_LITERALES = 1304;
 
   private static final Pattern MEDIDA_LITERAL =
       Pattern.compile(

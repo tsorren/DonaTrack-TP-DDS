@@ -135,7 +135,7 @@
        con una sola página). marcadas y noLeidas, lo que la maqueta marcó sin guardar ('todas' o los
        ids separados por coma; '' en el sistema). Cada aviso tiene id, fecha, titulo, texto, tema,
        destino, vinculo, leida, boton, que y nota. 20 por página (vistas.ConsultaBandeja). */-->
-<div th:fragment="pagina(ruta, rutaLeidas, b, sinLeer, paginador, marcadas, noLeidas)" class="pila buzon-bandeja"
+<div th:fragment="pagina(ruta, rutaLeidas, b, sinLeer, paginador, marcadas, noLeidas)" class="pila"
      data-espacio="4"
      th:with="temas=${b.temas}, tramo=${b.pagina},
               fVer=${listado.estado.elegido},
