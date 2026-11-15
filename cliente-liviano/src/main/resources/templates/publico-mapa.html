@@ -15,6 +15,8 @@
          ?abierta=<clave>#entidad-<clave>). Cambiar de página reemplaza solo #lista-del-mapa (HTMX
          con hx-select): el mapa no se recarga.
        - Si Logística tiene más entregas del período que el tope, la cifra lo dice.
+       - La categoría va en la barra del componente listado (R11-B04, la arma PublicoMapaController),
+         solo si la API la trae; conserva ?abierta= y ?escenario= sin mostrarlos.
        Estados: ?categoria=alimentos, ropa, muebles y escolares (sin resultados), ?escenario=muchas
        (dos páginas), vacio, lento y error; ?pagina=N y ?abierta=<clave>. Datos: mapaPublico (de
        PublicoMapaPuerto) y listaDelMapa, paginador y globos (de PublicoMapaController). */-->
@@ -57,11 +59,7 @@
     </header>
 
     <div th:if="${escenario == ''}" class="publica-barra">
-      <form th:if="${v.conCategorias}" hx-boost="true" class="filtro" action="/publico-mapa" th:action="@{/publico-mapa}"
-            method="get" data-al-cambiar>
-        <fieldset th:replace="~{datos-publicos :: filtroCategorias('Qué se donó', 'Todas')}"></fieldset>
-        <button class="boton" data-tono="secundario" type="submit">Filtrar</button>
-      </form>
+      <th:block th:if="${v.conCategorias}"><form th:replace="~{componentes/listado :: listado(${listado})}"></form></th:block>
       <div th:if="${hay}" class="cifra-fruto" aria-live="polite">
         <p th:if="${conTope}"><b class="fruto" th:text="${#numbers.formatInteger(v.delPeriodo, 1, 'POINT')}">340</b>
           <span th:text="|entregas confirmadas ${v.rango}. El mapa muestra las ${#numbers.formatInteger(cuantas, 1, 'POINT')} más recientes, en ${#numbers.formatInteger(lugares, 1, 'POINT')} ${unidad}.|">entregas
