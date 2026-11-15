@@ -1,0 +1,89 @@
+package grupo5.cliente.maqueta;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.regex.Pattern;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+/**
+ * R11-B04: con el perfil maqueta, la barra del componente listado de Actividad, Importaciones y
+ * Donantes del admin filtra de verdad los datos de ejemplo, y los parámetros de antes (el período
+ * fijo) se siguen entendiendo. Con el contexto entero, como lo ve la persona.
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("maqueta")
+class ListadoEnAdminRegistrosTest {
+
+  private static final ZoneId ARGENTINA = ZoneId.of("America/Argentina/Buenos_Aires");
+
+  @Autowired private MockMvc mvc;
+
+  /** La opción {@code valor} del desplegable, elegida. */
+  private static Pattern elegida(String valor, String texto) {
+    return Pattern.compile(
+        "(?s).*value=\""
+            + Pattern.quote(valor)
+            + "\"\\s+selected=\"selected\">"
+            + Pattern.quote(texto)
+            + "</option>.*");
+  }
+
+  /** El día {@code dia} escrito en el campo {@code nombre} (desde o hasta) de la barra. */
+  private static String dia(String nombre, LocalDate dia) {
+    return "name=\"" + nombre + "\" type=\"date\" value=\"" + dia + "\"";
+  }
+
+  @Test
+  void actividadFiltraPorBusquedaFechaQuienYAccion() throws Exception {
+    mvc.perform(get("/admin-actividad?buscar=bruno"))
+        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(containsString("Marcó una donación como vencida.")))
+        .andExpect(content().string(not(containsString("Deshabilitó el camión"))))
+        .andExpect(content().string(containsString("Sacar los filtros")));
+
+    mvc.perform(get("/admin-actividad?desde=2026-11-11&hasta=2026-11-11"))
+        .andExpect(content().string(containsString("Corrió la asignación")))
+        .andExpect(content().string(not(containsString("Deshabilitó el camión"))))
+        .andExpect(content().string(not(containsString("Marcó una donación como vencida."))))
+        .andExpect(content().string(containsString(dia("desde", LocalDate.of(2026, 11, 11)))))
+        .andExpect(content().string(containsString("Sacar los filtros")));
+
+    mvc.perform(get("/admin-actividad?autor=cuenta-carla"))
+        .andExpect(content().string(containsString("Deshabilitó el camión")))
+        .andExpect(content().string(not(containsString("Marcó una donación como vencida."))))
+        .andExpect(content().string(matchesPattern(elegida("cuenta-carla", "De: Carla Gómez"))));
+
+    mvc.perform(get("/admin-actividad?accion=camiones"))
+        .andExpect(content().string(containsString("Deshabilitó el camión")))
+        .andExpect(content().string(not(containsString("Aprobó la solicitud"))))
+        .andExpect(content().string(matchesPattern(elegida("camiones", "Camiones"))))
+        .andExpect(content().string(containsString("Sacar los filtros")));
+
+    mvc.perform(get("/admin-actividad"))
+        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(not(containsString("Sacar los filtros"))));
+  }
+
+  @Test
+  void actividadEntiendeElPeriodoDeAntesComoSusDosDias() throws Exception {
+    LocalDate hoy = LocalDate.now(ARGENTINA);
+    mvc.perform(get("/admin-actividad?fecha=7-dias"))
+        .andExpect(content().string(not(containsString("No entendimos la fecha pedida"))))
+        .andExpect(content().string(containsString(dia("desde", hoy.minusDays(6)))))
+        .andExpect(content().string(containsString(dia("hasta", hoy))))
+        .andExpect(content().string(containsString("Sacar los filtros")))
+        .andExpect(content().string(not(containsString("name=\"fecha\""))));
+  }
+}

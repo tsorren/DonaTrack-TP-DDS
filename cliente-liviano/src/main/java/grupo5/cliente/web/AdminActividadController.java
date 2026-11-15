@@ -3,11 +3,14 @@ package grupo5.cliente.web;
 import grupo5.cliente.puertos.AdminActividadPuerto;
 import grupo5.cliente.puertos.AdministradorActual;
 import grupo5.cliente.vistas.AdminActividadVista;
+import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.ConsultaActividad;
+import grupo5.cliente.vistas.Listado;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
  * cuándo, de a una página, con la búsqueda por administrador y los filtros en la dirección y
  * resueltos en la fuente. Es la pestaña Actividad de Administradores. Una cuenta, una acción o una
  * fecha que no se entiende se descarta y se avisa arriba de la lista. Con HTMX ({@code hx-boost})
- * se pide la misma página: el layout toma el {@code main}.
+ * se pide la misma página: el layout toma el {@code main}. La fecha es un rango ({@code ?desde=} y
+ * {@code ?hasta=}, R11-B04); el período de antes ({@code ?fecha=7-dias}) se sigue entendiendo y se
+ * ve como sus dos días.
  */
 @Controller
 public class AdminActividadController {
@@ -68,6 +73,7 @@ public class AdminActividadController {
     String propia = actual.cuenta(pedido).orElse(null);
     AdminActividadVista datos = actividad.actividad(consulta, propia, escenario);
     model.addAttribute("adminActividad", datos);
+    model.addAttribute("listado", listado(datos));
     model.addAttribute(
         "actualizar",
         pedido.getQueryString() == null
@@ -76,5 +82,21 @@ public class AdminActividadController {
     model.addAttribute(
         "paginador", Paginadores.de(pedido, "Páginas de actividad", datos.acciones()));
     return vista;
+  }
+
+  /** La barra (R11-B04): la búsqueda por administrador, la fecha, Quién y Acción. */
+  private static Listado listado(AdminActividadVista datos) {
+    ConsultaActividad c = datos.consulta();
+    return Listado.en("actividad", "/" + PANTALLA, "Filtrar la actividad")
+        .buscar("Buscar por administrador", c.buscar(), "Nombre, apellido o correo")
+        .fecha("Fecha", c.desde(), c.hasta())
+        .otra(new Listado.Eleccion("autor", "Quién", c.autor(), opciones(datos.quienes())))
+        .otra(new Listado.Eleccion("accion", "Acción", c.accion(), opciones(datos.grupos())))
+        .sacar("/" + PANTALLA)
+        .listo();
+  }
+
+  private static List<Listado.Opcion> opciones(List<AdminDonantesVista.Opcion> opciones) {
+    return opciones.stream().map(o -> new Listado.Opcion(o.valor(), o.texto())).toList();
   }
 }
