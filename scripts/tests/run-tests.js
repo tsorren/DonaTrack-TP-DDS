@@ -852,7 +852,7 @@ const correrWorkflow = async (manifiesto, responder = async () => null) => {
 // Agentes falsos que completan su esquema: todo responde bien, salvo la revisión de pantallas si
 // pantallasPasan es false, los agentes cuya etiqueta está en mudos, y las revisiones que rinden una
 // decisión como NO CUMPLE sin listarla como bloqueante o que omiten una.
-const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '', omite = '' } = {}) => async (opts) => {
+const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '', omite = '', extra = [] } = {}) => async (opts) => {
   if (mudos.includes(opts.label)) return null;
   const props = opts.schema.properties;
   const r = {};
@@ -863,7 +863,7 @@ const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '', omite = '' } =
     const falla = !pantallasPasan && opts.label.startsWith('pantallas');
     r.veredicto = falla ? 'CHANGES_REQUIRED' : 'PASS';
     if (falla) r.bloqueantes = ['inconsistencia entre pantallas'];
-    r.decisiones = ['D1', 'D2'].filter((id) => id !== omite).map((id) => `${id}: ${id === noCumple ? 'NO CUMPLE' : 'CUMPLE'} — captura`);
+    r.decisiones = [...['D1', 'D2'].filter((id) => id !== omite).map((id) => `${id}: ${id === noCumple ? 'NO CUMPLE' : 'CUMPLE'} — captura`), ...extra];
   }
   if ('url' in props) r.url = 'https://pr';
   return r;
@@ -923,6 +923,12 @@ const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '', omite = '' } =
     ['revisión p0-mis-donaciones r1', 'pantallas r1'].every((l) => porEtiqueta(l).effort === 'high'));
   assert('19.21 PR as draft with the unchecked contact-sheet box',
     pr.prompt.includes('gh pr create --draft') && pr.prompt.includes('- [ ] Hoja de contacto aprobada por el usuario'));
+
+  const contradice = await correrWorkflow(PLANTILLA, agenteFalso(true, { extra: ['D2: NO CUMPLE — captura'] }));
+  const parcial = await correrWorkflow(PLANTILLA, agenteFalso(true, { omite: 'D2', extra: ['D2: CUMPLE parcialmente'] }));
+  assert('19.22 contradictory lines (NO CUMPLE wins) or "CUMPLE parcialmente" → no PR',
+    contradice.resultado.pr === '' && parcial.resultado.pr === '' &&
+    !parcial.resultado.decisionesDelUsuario.some((d) => d.startsWith('D2') && d.includes(': cumplida')));
 
   resumen();
 })().catch((e) => { console.error(e); failed++; resumen(); });

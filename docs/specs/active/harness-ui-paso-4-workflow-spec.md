@@ -123,13 +123,13 @@ Diferencias con `backlog-r11.js`, además de lo de §2:
   ensayo por `M.ensayo`, en lugar de los ítems R11-03 y R11-B08.
 - El PR se abre como borrador (`gh pr create --draft`).
 
-Plan TDD: los tests 19.1 a 19.21 de `run-tests.js` cubren la regla, que las dos copias coincidan,
+Plan TDD: los tests 19.1 a 19.22 de `run-tests.js` cubren la regla, que las dos copias coincidan,
 el arranque del workflow (`AsyncFunction` sin el `export`) y corridas con agentes falsos: todo
 PASS, pantallas sin PASS, NO CUMPLE, decisión omitida, constructor mudo, modelos de las vistas,
-"Lo más simple", PR en borrador y la casilla de la hoja.
+"Lo más simple", PR en borrador, la casilla de la hoja y líneas contradictorias por ID.
 
 ## 8. Validación
 
 - `node scripts/agent-check.js` sin fallas, con `UI_WAVE_MANIFEST` en PASS sobre la plantilla.
-- `node scripts/tests/run-tests.js` en verde (128 casos).
+- `node scripts/tests/run-tests.js` en verde (129 casos).
 - Sin Java tocado: no corre Maven. El workflow no se corrió con agentes reales.

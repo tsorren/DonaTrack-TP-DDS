@@ -330,10 +330,11 @@ const frenaElPr = (l) => esVisual(l) || decisionesDe(l).length > 0
 // Solo un CUMPLE con su ID la da por cumplida. Un NO CUMPLE es bloqueante aunque el revisor no lo
 // liste; una decisión sin rendir deja la revisión sin PASS y se vuelve a revisar.
 const escaparRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+// Con líneas contradictorias para un mismo ID gana NO CUMPLE; "CUMPLE parcialmente" no es CUMPLE.
 const rendida = (r, d) => {
-  const patron = new RegExp('^\\s*' + escaparRegex(d.id) + '\\s*:\\s*(NO CUMPLE|CUMPLE)\\b', 'i')
-  const m = r.decisiones.map((x) => x.match(patron)).find(Boolean)
-  return m ? m[1].toUpperCase() : ''
+  const patron = new RegExp('^\\s*' + escaparRegex(d.id) + '\\s*:\\s*(NO CUMPLE|CUMPLE)\\s*(?:—|–|-|$)', 'i')
+  const estados = r.decisiones.map((x) => x.match(patron)).filter(Boolean).map((m) => m[1].toUpperCase())
+  return estados.includes('NO CUMPLE') ? 'NO CUMPLE' : estados.length ? 'CUMPLE' : ''
 }
 const FORMATO_DECISIONES = 'en "decisiones", una línea por ID con este formato exacto: "<ID>: CUMPLE — <evidencia>" o "<ID>: NO CUMPLE — <evidencia>" (archivo:línea o captura); una decisión sin su línea cuenta como no comprobada'
 const conDecisionesRendidas = (r, ds) => {
