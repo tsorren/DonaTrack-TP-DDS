@@ -24,7 +24,8 @@ Esto es producción: se usa el sistema que hay. Para buscar un aspecto nuevo, `e
    orden). Parámetros comunes: `buscar`, `desde`, `hasta`, `estado`, `categoria`, `quien` y `orden`.
    Un parámetro propio se registra en `PARAMETROS_PROPIOS` de `InterfazFitnessTest`; un nombre
    viejo solo sigue como alias en su controller. Debajo, el paginador `componentes/paginas`.
-4. **Si falta una pieza, primero el componente:** fragmento con parámetros con nombre en
+4. **Si falta una pieza, primero el componente:** fragmento con parámetros con nombre y slots
+   (`~{::#cuerpo}`) en
    `templates/componentes/<nombre>.html`, hoja en `static/css/componentes/<nombre>.css` solo con
    tokens de uso, variantes por atributo (`data-estado`, `data-tono`), su fila en el catálogo y su
    muestra en `/estilos` con todos sus estados.
@@ -37,7 +38,8 @@ Esto es producción: se usa el sistema que hay. Para buscar un aspecto nuevo, `e
 7. **Estados.** Vacío, sin resultados, cargando (más de 300 ms, `hx-indicator`), error y sin
    permiso, cada uno con su texto según [el tono](../../../docs/interfaz/tono-y-comunicacion.md).
 8. **Sin JavaScript primero.** Formularios GET reales con `action`; `hx-boost="true"` como mejora.
-   Alpine solo para estado que no sale del navegador.
+   Alpine solo para estado que no sale del navegador; `x-cloak` solo en lo que no es esencial. View
+   Transitions, `@starting-style`, `@container` y `popover`, como mejora progresiva.
 9. **Comprobá en el navegador** a 360, 1280 y 1920 px: nada se corta ni desborda, controles de
    48 px o más y foco visible. Sumá la ruta a `src/test/resources/verificacion/paginas.txt`.
 10. **Validá:**

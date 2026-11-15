@@ -770,6 +770,9 @@ console.log('\n[18] checkSkillAdapters & checkInterfazHarness');
   assert('18.2  adapter with a different frontmatter → SKILL_ADAPTER_SYNC FAIL', hasFail(checkSkillAdapters(tmp), 'SKILL_ADAPTER_SYNC'));
   write(tmp, '.claude/skills/sin-canonica/SKILL.md', skill);
   assert('18.3  adapter without canonical skill → SKILL_ADAPTER_SYNC FAIL', hasFail(checkSkillAdapters(tmp), 'SKILL_ADAPTER_SYNC'));
+  write(tmp, '.agents/skills/sin-canonica/SKILL.md', 'Sin frontmatter.\n');
+  write(tmp, '.claude/skills/sin-canonica/SKILL.md', 'Sin frontmatter.\n');
+  assert('18.7  adapter and canonical without frontmatter → SKILL_ADAPTER_SYNC FAIL', hasFail(checkSkillAdapters(tmp), 'SKILL_ADAPTER_SYNC'));
 } finally { cleanup(tmp); } }
 
 { const tmp = makeTemp(); try {

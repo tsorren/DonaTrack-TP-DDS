@@ -34,8 +34,9 @@ function checkSkillAdapters(repoRoot) {
       if (!fs.existsSync(adapter) || !fs.existsSync(canonical)) {
         return failed('SKILL_ADAPTER_SYNC', `${rel} needs its canonical .agents/skills/${name}/SKILL.md`, rel);
       }
-      if (frontmatter(adapter) !== frontmatter(canonical)) {
-        return failed('SKILL_ADAPTER_SYNC', `${rel} frontmatter differs from .agents/skills/${name}/SKILL.md`, rel);
+      const own = frontmatter(adapter);
+      if (!own || own !== frontmatter(canonical)) {
+        return failed('SKILL_ADAPTER_SYNC', `${rel} frontmatter missing or different from .agents/skills/${name}/SKILL.md`, rel);
       }
       return passed('SKILL_ADAPTER_SYNC', `${name} adapter matches its canonical skill`);
     });

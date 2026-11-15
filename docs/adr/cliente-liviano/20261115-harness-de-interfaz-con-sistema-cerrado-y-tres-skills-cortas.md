@@ -74,7 +74,9 @@ Matriz, con puntaje de 1 a 5. Pesos del perfil "Equilibrado", elegido por el usu
 | K7 Humano decide | 15 | 5 | 3 | 4 |
 | **Total** | 100 | **390** | 365 | 350 |
 
-Línea base sobre R11-B04 (`.claude/linea-base-r11-b04/informe.md`, n = 1 por condición):
+Línea base sobre R11-B04 (n = 1 por condición; el informe y sus mediciones quedaron fuera del repo,
+en la carpeta local de la línea base, y el resumen está en la
+[bitácora](../../interfaz/bitacora.md), entrada del kit del 2026-11-15):
 - Las tres condiciones migraron las 6 pantallas a un solo fragmento.
 - A sumó 3 medidas literales nuevas; el harness actual, 35; B, 32.
 - A fue la única corrida completa y revisada.

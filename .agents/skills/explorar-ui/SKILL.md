@@ -28,7 +28,9 @@ después, con `construir-ui`, donde rigen todas las reglas de
 5. **Construí de 3 a 4 opciones**, cada una en su prototipo o en su variante de la maqueta
    (`?variante=<tema>-a|b|c`), con la misma pantalla y los mismos datos de ejemplo. Capturas a 360 y
    1280 px con `-Pvisual -Dverificacion.variantes=<tema>-a,<tema>-b,<tema>-c`; para las vueltas de
-   boceto alcanza con `-Dverificacion.boceto=true` (solo 1280 px, sin el piso).
+   boceto alcanza con
+   `-Dtest=VerificacionVisualTest#paginasCumplenElPisoEnTodosLosAnchos -Dverificacion.boceto=true`
+   (solo 1280 px, sin el piso).
 6. **Presentá sin ranking:** las opciones en el orden en que se hicieron, cada una con su captura,
    su posición en los ejes y 2 o 3 líneas de qué propone. Sin "Recomendada", sin matriz y sin
    ganadora. Elige el humano mirándolas.

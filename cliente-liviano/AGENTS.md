@@ -52,7 +52,7 @@
   pantalla. Los scripts dentro del main se registran una sola vez. Avisos, a la región `aria-live`.
 - JavaScript propio solo como mejora, en `static/js/`, con "reducir movimiento". Alpine (D31):
   estado que no sale del navegador, lógica en `Alpine.data()`; nada de `fetch`, `XMLHttpRequest`,
-  listas del negocio, `x-html` ni datos personales en `localStorage`; `x-data` fuera del bloque que
+  listas del negocio, `x-html` ni tokens o datos personales en `localStorage`; `x-data` fuera del bloque que
   HTMX reemplaza.
 - Diálogos: `<dialog popover>` nativo; si confirman algo sin vuelta, `data-bloquea` (`showModal()`).
 

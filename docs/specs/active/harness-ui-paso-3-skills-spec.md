@@ -14,7 +14,8 @@
 
 Que un agente que toca la interfaz lea poco, use el sistema visual cerrado y el kit de listas, y no
 vuelva a armar barras propias. Que la exploración visual tenga su propio camino, sin ranking y fuera
-de producción. Todo con topes de tamaño que verifica una máquina.
+de producción. Los topes de líneas de las skills, la regla y el `AGENTS.md` del módulo los verifica
+una máquina; la suma de 30 KB de lectura se mide a mano con `wc -c`.
 
 ## 2. Alcance Delimitado (Scope Boundaries)
 
@@ -30,7 +31,7 @@ de producción. Todo con topes de tamaño que verifica una máquina.
 - Las referencias vivas:
   - `docs/interfaz/README.md`, `componentes.md`, `criterios-catedra-ux-ui.md`,
     `direccion-de-arte.md`, `tono-y-comunicacion.md` y `plantillas/flujo.md`;
-  - las notas de historia de `temas-ab.md` y `encargos/README.md`;
+  - las notas de historia de `temas-ab.md`, `encargos/README.md` y `plantillas/brief-identidad.md`;
   - `context-index`, `docs/IA/README.md`, `scripts/visual/README.md`, el Javadoc de
     `VariantesInterceptor` y DTI-28;
   - las tres líneas de `backlog-r11.js` que citaban skills archivadas.
@@ -86,8 +87,8 @@ Destino de lo que sale de `cliente-liviano/AGENTS.md` (de 185 a 80 líneas):
 | Pertenencia, `common-lib` y `traceId` | Igual, resumida |
 | Plantillas, estados y textos de la ficha | "Plantillas, HTMX y Alpine" y `construir-ui`, pasos 6 y 7 |
 | `HX-Request`, `hx-indicator`, `hx-boost` y el `main#contenido` | Igual, resumida |
-| Alpine (D31), diálogos y `data-bloquea` | Igual, resumida; la cola de avisos (3 a la vez, 6 s) queda en el catálogo |
-| Reglas de estilos, capas, movimiento y migración del backlog | "Estilos", resumida |
+| Alpine (D31), diálogos y `data-bloquea` | Igual, resumida; la cola de avisos (3 a la vez, 6 s) queda en el catálogo, y `x-cloak` solo en lo no esencial, en `construir-ui`, paso 8 |
+| Reglas de estilos, capas, movimiento y migración del backlog | "Estilos", resumida; los slots (`~{::#cuerpo}`), en `construir-ui`, paso 4; View Transitions, `@starting-style`, `@container` y `popover` como mejora, en el paso 8 |
 | Accesibilidad, anchos, datos y secretos | "Piso y datos" |
 | Comandos de validación | Los 4 principales; variantes y boceto, en `explorar-ui` |
 | Contraste que axe no mide | `revisar-ui`, U5 |
@@ -95,8 +96,8 @@ Destino de lo que sale de `cliente-liviano/AGENTS.md` (de 185 a 80 líneas):
 | "Una pantalla está lista" | `docs/interfaz/README.md` y `revisar-ui` |
 | Las preguntas al usuario | El módulo, en una línea; las reglas, en `docs/interfaz/README.md` |
 
-Lectura obligatoria medida (bytes, `wc -c`): la regla, 500; el `AGENTS.md` del módulo, 5.858; la
-skill más larga (`construir-ui`), 3.689; y el tono, 14.377. En total, 24.424 bytes, unos 24 KB. Sin
+Lectura obligatoria medida (bytes, `wc -c`): la regla, 500; el `AGENTS.md` del módulo, 5.867; la
+skill más larga (`construir-ui`), 3.848; y el tono, 14.377. En total, 24.592 bytes, unos 24 KB. Sin
 contar el `AGENTS.md` raíz (25.459 bytes), que rige para toda tarea del repo.
 
 ## 8. Validación
