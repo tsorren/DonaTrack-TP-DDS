@@ -279,7 +279,7 @@
 /admin-asignaciones?algoritmo=las-dos
 /admin-asignaciones?vista=decididas
 /admin-asignaciones?vista=decididas&estado=descartadas
-/admin-asignaciones?vista=decididas&decidida=7-dias
+/admin-asignaciones?vista=decididas&desde=2026-10-09&hasta=2026-10-15
 /admin-asignaciones?vista=decididas&buscar=nada-parecido
 /admin-asignaciones-aprobada
 /admin-asignaciones-descartada

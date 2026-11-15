@@ -55,8 +55,10 @@ R11-B04 que se había perdido en la corrida R11 (síntoma 3 del diagnóstico del
 
 - Todo lo esencial anda sin JavaScript. El fragmento es un `form` GET con `action` real.
 - Nada se envía solo al cambiar un campo (WCAG 3.2.2).
-- Ningún test pierde aserciones. Las dos que la línea base aflojó vuelven a atar el valor a su campo:
-  el mes de Mis donaciones y el total de Organizaciones.
+- Ningún test pierde aserciones. La que la línea base (iii) aflojó (el mes de Mis donaciones, que pasó
+  a desde y hasta sin el nombre del campo) vuelve a atar cada valor a su campo; la otra que (iii)
+  aflojó (el cerco de las skills, que pasaba a pedir "catálogo") no se trae. La que aflojó la
+  migración de Organizaciones del admin (el total «· 55») vuelve a exigirse.
 - Sin colores ni medidas literales nuevas fuera de `tokens.css`.
 
 ## 5. Criterios de Aceptación

@@ -78,4 +78,32 @@ class ListadoTest {
     assertThat(Listado.entre(null, LocalDate.of(2026, 10, 1), null)).isFalse();
     assertThat(Listado.contiene("Fundación Ejemplo Sur", "FUNDACION")).isTrue();
   }
+
+  /** El botón que pliega los campos dice lo que hay adentro y solo aparece con dos o más campos. */
+  @Test
+  void elPliegueDependeDeLosCamposQueTieneLaBarra() {
+    Listado soloBuscar = barra().listo();
+    assertThat(soloBuscar.soloBusqueda()).isTrue();
+    assertThat(soloBuscar.conPliegue()).isFalse();
+
+    Listado unCampo = barra().otra(new Listado.Eleccion("periodo", "Período", "", ESTADOS)).listo();
+    assertThat(unCampo.soloBusqueda()).isFalse();
+    assertThat(unCampo.conPliegue()).isFalse();
+
+    Listado filtros = barra().estado("", ESTADOS).categoria("", ESTADOS).listo();
+    assertThat(filtros.conPliegue()).isTrue();
+    assertThat(filtros.rotuloDelPliegue()).isEqualTo("Filtros");
+
+    Listado conOrden = barra().estado("", ESTADOS).orden("", Listado.POR_FECHA).listo();
+    assertThat(conOrden.rotuloDelPliegue()).isEqualTo("Filtros y orden");
+
+    Listado soloOrden =
+        barra()
+            .otra(Listado.Eleccion.deVista("agrupar", "Agrupar", "", ESTADOS))
+            .orden("", Listado.POR_FECHA)
+            .listo();
+    assertThat(soloOrden.rotuloDelPliegue()).isEqualTo("Orden");
+    assertThat(soloOrden.otra("agrupar").rotulo()).isEqualTo("Agrupar");
+    assertThat(soloOrden.otra("no-esta")).isNull();
+  }
 }

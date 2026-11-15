@@ -21,8 +21,8 @@ import org.springframework.web.util.UriComponentsBuilder;
  * la página de la lista ({@code ?pagina=}, la última que hay si se pasa) con las entregas de la
  * categoría ({@code ?categoria=}, solo si la API las trae); {@code paginador}, el del sitio; {@code
  * globos}, el enlace de cada globo a la página de su fila, abierta ({@code ?abierta=}); {@code
- * listado}, la barra del componente listado (R11-B04: la categoría, y la fila abierta y el
- * escenario, ocultos).
+ * listado}, la barra del componente listado (R11-B04: la categoría y el escenario, oculto; la fila
+ * abierta no se conserva al filtrar, como antes).
  */
 @Controller
 public class PublicoMapaController {
@@ -78,7 +78,6 @@ public class PublicoMapaController {
         "listado",
         Listado.en("mapa", "/publico-mapa", "Qué se donó")
             .categoria(elegida, CATEGORIAS)
-            .oculto(ABIERTA, abierta)
             .oculto("escenario", escenario)
             .sacar("/publico-mapa")
             .listo());

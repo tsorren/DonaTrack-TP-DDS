@@ -64,8 +64,8 @@
 <th:block th:fragment="hoja(accion)"
     th:with="fVer=${listado.estado.elegido},
              fEstado=${fVer == 'activas' ? 'activa' : (fVer == 'pendientes' ? 'pendiente' : (fVer == 'inactivas' ? 'inactiva' : ''))},
-             fPedidos=${listado.otras[0].elegido},
-             fTipo=${listado.otras[1].elegido}">
+             fPedidos=${listado.otra('pedido').elegido},
+             fTipo=${listado.otra('tipo').elegido}">
 <th:block
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              conDatos=${escenario != 'error' and escenario != 'lento'},

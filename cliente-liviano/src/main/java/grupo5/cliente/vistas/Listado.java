@@ -144,6 +144,49 @@ public record Listado(
         .toList();
   }
 
+  /** Cuántos campos tiene la barra además de la búsqueda. */
+  private int campos() {
+    return (fecha != null ? 1 : 0)
+        + (quien != null ? 1 : 0)
+        + elecciones().size()
+        + casillas.size();
+  }
+
+  /**
+   * Si en el celular los campos se pliegan debajo de un botón: solo con dos o más campos además de
+   * la búsqueda. Con uno solo (Período, Categoría) o ninguno, quedan a la vista.
+   */
+  public boolean conPliegue() {
+    return campos() >= 2;
+  }
+
+  /**
+   * El texto del botón que pliega los campos: «Filtros», «Orden» o «Filtros y orden», según lo que
+   * la barra tenga (Agrupar cuenta como orden: cambia cómo se ve la lista, no qué entra).
+   */
+  public String rotuloDelPliegue() {
+    boolean filtros =
+        fecha != null
+            || quien != null
+            || !casillas.isEmpty()
+            || elecciones().stream().anyMatch(e -> e != orden && e.filtra());
+    boolean ordena = orden != null || otras.stream().anyMatch(e -> !e.filtra());
+    if (filtros && ordena) {
+      return "Filtros y orden";
+    }
+    return ordena ? "Orden" : "Filtros";
+  }
+
+  /** Si la barra es solo una búsqueda: el botón dice «Buscar» y el enlace, «Borrar la búsqueda». */
+  public boolean soloBusqueda() {
+    return buscar != null && campos() == 0;
+  }
+
+  /** La elección propia de la pantalla con ese parámetro, o null si la barra no la tiene. */
+  public Eleccion otra(String nombre) {
+    return otras.stream().filter(e -> e.nombre().equals(nombre)).findFirst().orElse(null);
+  }
+
   /** Si va "Sacar los filtros": hay a dónde llevar y algo buscado o elegido. */
   public boolean conSacar() {
     return sacar != null && (elegidos() > 0 || buscar != null && !buscar.valor().isEmpty());

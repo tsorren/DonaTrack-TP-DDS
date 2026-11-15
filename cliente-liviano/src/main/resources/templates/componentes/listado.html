@@ -26,7 +26,7 @@
       th:aria-label="${l.rotulo}" x-data="listado" x-bind:data-plegado="plegado"
       th:hx-indicator="${l.indicador != null} ? |#${l.indicador.id}| : null"
       hx-disinherit="hx-indicator hx-select-oob"
-      th:with="n=${l.elegidos()}">
+      th:with="n=${l.elegidos()}" th:data-pliegue="${l.conPliegue()} ? null : 'no'">
   <input th:each="o : ${l.ocultos}" type="hidden" th:name="${o.nombre}" th:value="${o.valor}">
 
   <div th:if="${l.buscar != null}" class="campo listado-buscar">
@@ -37,10 +37,12 @@
            th:placeholder="${l.buscar.ejemplo}" placeholder="Por ejemplo: leche">
   </div>
 
-  <!--/* Solo con JavaScript y en el celular: abre y cierra los campos. */-->
-  <button class="boton listado-alternar" data-tono="secundario" type="button" hidden
+  <!--/* Solo con JavaScript y en el celular, y solo con dos campos o más además de la búsqueda:
+         abre y cierra los campos. Su texto dice lo que hay adentro (Listado.rotuloDelPliegue). */-->
+  <button th:if="${l.conPliegue()}" class="boton listado-alternar" data-tono="secundario" type="button" hidden
           x-bind:hidden="sinBoton" x-on:click="alternar" x-bind:aria-expanded="expandido"
-          th:aria-controls="|${l.id}-campos|" aria-controls="donaciones-campos">Filtros y orden<th:block
+          th:aria-controls="|${l.id}-campos|" aria-controls="donaciones-campos"><th:block
+      th:text="${l.rotuloDelPliegue()}">Filtros y orden</th:block><th:block
       th:if="${n > 0}" th:text="| (${n})|"> (2)</th:block></button>
 
   <div class="listado-campos" th:id="|${l.id}-campos|" id="donaciones-campos">
@@ -79,9 +81,11 @@
     <th:block th:if="${l.orden != null}"><div th:replace="~{componentes/listado :: eleccion(${l.id}, ${l.orden})}"></div></th:block>
 
     <div class="listado-acciones">
-      <button class="boton" data-tono="principal" type="submit">Filtrar</button>
+      <button class="boton" data-tono="principal" type="submit"
+              th:text="${l.soloBusqueda()} ? 'Buscar' : 'Filtrar'">Filtrar</button>
       <a th:if="${l.conSacar()}" class="listado-sacar" href="/donante-donaciones"
-         th:href="${l.sacar}">Sacar los filtros</a>
+         th:href="${l.sacar}" th:text="${l.soloBusqueda()} ? 'Borrar la búsqueda' : 'Sacar los filtros'">Sacar
+        los filtros</a>
     </div>
   </div>
   <th:block th:if="${l.indicador != null}"><p

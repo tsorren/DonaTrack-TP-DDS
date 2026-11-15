@@ -502,8 +502,8 @@ class InterfazFitnessTest {
       Set.of("buscar", "desde", "hasta", "estado", "categoria", "quien", "orden");
 
   /**
-   * Los nombres viejos de un campo común (siguen valiendo como alias en su controller, pero ninguna
-   * barra los dibuja).
+   * Los nombres viejos de un campo común: ninguna barra los dibuja. La mayoría sigue valiendo como
+   * alias en su controller; registrada y decidida ya no se entienden (DTI-44, ítem 8).
    */
   private static final Set<String> NOMBRES_VIEJOS =
       Set.of("q", "nombre", "ver", "pedidos", "tema", "registrada", "decidida", "mes");
@@ -520,7 +520,7 @@ class InterfazFitnessTest {
           "pestana", // Asignaciones, Propuestas y Destino (oculto)
           "vista", // Notificaciones (agrupar)
           "agrupar", // Notificaciones
-          "autor", // Actividad del admin (Quién)
+          "autor", // Actividad del admin (Quién: un desplegable de cuentas, no el texto de quien)
           "accion", // Actividad del admin
           "tipo", // Organizaciones y Donantes del admin
           "dona", // Donantes del admin
@@ -531,7 +531,6 @@ class InterfazFitnessTest {
           "camion", // Camiones del admin, el elegido (oculto)
           "emergencia", // Entidades públicas
           "periodo", // Entregas confirmadas públicas (la fuente no resuelve un rango)
-          "abierta", // Mapa público, la ficha abierta (oculto)
           "escenario"); // Estados de la maqueta (oculto)
 
   private static final Pattern PARAMETRO_DE_BARRA =
@@ -540,7 +539,7 @@ class InterfazFitnessTest {
               + "\\(\\s*\"([\\w-]+)\"");
 
   /** Tope de declaraciones de medida con valor literal en las hojas: solo baja. */
-  private static final int TOPE_DE_MEDIDAS_LITERALES = 1294;
+  private static final int TOPE_DE_MEDIDAS_LITERALES = 1293;
 
   private static final Pattern MEDIDA_LITERAL =
       Pattern.compile(

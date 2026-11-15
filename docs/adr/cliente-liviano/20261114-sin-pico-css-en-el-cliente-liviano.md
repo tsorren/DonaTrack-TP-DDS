@@ -43,8 +43,9 @@ no se reabre.
    (`proposed`), solo en D19 y en el WebJar de Pico. D17, D18, D20 y D21 siguen como están.
 2. **Se apoya en:** [una sola identidad](./20261103-una-sola-identidad-en-el-cliente-liviano.md)
    (`proposed`), que es la que dejó de cargar Pico.
-3. **Convive con:** [interacción, movimiento y componentes](./20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)
-   (`proposed`, D32 y D33). Las capas CUBE siguen; la primera pasa a llamarse `base`.
+3. **Reemplaza en parte a:** [interacción, movimiento y componentes](./20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)
+   (`proposed`, D32 y D33), solo en el nombre de la primera capa: el orden que fija
+   (`@layer pico, tokens, …`) pasa a `@layer base, tokens, …`. Las capas CUBE siguen igual.
 
 ## Alternativas Consideradas
 

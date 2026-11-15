@@ -136,7 +136,9 @@ class ListadoEnLasPublicasTest {
 
     mvc.perform(get("/publico-mapa?categoria=ropa&abierta=hogar&escenario=muchas&pagina=1"))
         .andExpect(content().string(containsString(FRAZADAS)))
-        .andExpect(content().string(containsString("name=\"abierta\" value=\"hogar\"")))
+        // Cambiar de categoría no conserva la fila abierta, como el filtro anterior: podría
+        // quedar afuera del filtro nuevo
+        .andExpect(content().string(not(containsString("name=\"abierta\""))))
         .andExpect(content().string(containsString("name=\"escenario\" value=\"muchas\"")))
         .andExpect(content().string(not(containsString("name=\"pagina\""))));
   }

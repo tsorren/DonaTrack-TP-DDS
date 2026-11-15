@@ -200,6 +200,38 @@ class ListadoEnLaMaquetaTest {
             content().string(containsString("href=\"/admin-asignaciones?vista=decididas\"")));
   }
 
+  /** Revisión de interfaz del kit: el pliegue y los textos dependen de lo que tiene cada barra. */
+  @Test
+  void elBotonDePliegueSoloApareceConVariosCamposYDiceLoQueHay() throws Exception {
+    String registrar = pagina("/admin-donaciones-registrar?buscar=ana");
+    assertThat(registrar)
+        .doesNotContain("listado-alternar")
+        .contains("data-pliegue=\"no\"")
+        .contains(">Buscar</button>")
+        .contains(">Borrar la búsqueda</a>");
+
+    assertThat(pagina("/publico-donaciones"))
+        .doesNotContain("listado-alternar")
+        .contains("data-pliegue=\"no\"");
+
+    assertThat(pagina("/admin-donaciones")).contains(">Filtros y orden</");
+    assertThat(pagina("/publico-entidades"))
+        .contains("listado-alternar")
+        .doesNotContain(">Filtros y orden</");
+  }
+
+  @Test
+  void unFiltroSinResultadosEnLaBandejaDiceQueNadaCoincideYConservaLaBarra() throws Exception {
+    // Con la barra nueva (estado, desde y hasta) la bandeja vacía por filtrar no es la cuenta
+    // sin avisos: se ve "ninguna coincide" y la barra con "Sacar los filtros"
+    String sinNada = pagina("/donante-notificaciones?desde=2000-01-01&hasta=2000-01-02");
+    assertThat(sinNada)
+        .contains("Ninguna notificación coincide con lo que buscaste.")
+        .contains("class=\"listado\"")
+        .contains("Sacar los filtros")
+        .doesNotContain("Todavía no tenés notificaciones.");
+  }
+
   @Test
   void lasNotificacionesFiltranPorFechaYEstadoConLosNombresDeTodasLasListas() throws Exception {
     mvc.perform(get("/donante-notificaciones?desde=2026-10-14&hasta=2026-10-14"))

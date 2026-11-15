@@ -497,15 +497,20 @@ document.addEventListener("alpine:init", () => {
   // celular y la tableta pliega los campos debajo de «Filtros y orden» (la hoja solo los oculta por
   // debajo de 68,75 em). Sin JavaScript los campos quedan abiertos y el botón, oculto: sinBoton es
   // lo que lee x-bind:hidden (el build CSP solo nombra propiedades). Lo esencial es el formulario
-  // get: acá no se envía nada.
+  // get: acá no se envía nada. Una barra sin pliegue (data-pliegue="no": solo la búsqueda o un
+  // campo) no tiene botón y nunca se pliega.
   Alpine.data("listado", () => ({
     sinBoton: false,
     abierto: false,
+    sinPliegue: false,
+    init() {
+      this.sinPliegue = this.$el.dataset.pliegue === "no";
+    },
     alternar() {
       this.abierto = !this.abierto;
     },
     get plegado() {
-      return this.abierto ? "no" : "si";
+      return this.abierto || this.sinPliegue ? "no" : "si";
     },
     get expandido() {
       return this.abierto ? "true" : "false";
