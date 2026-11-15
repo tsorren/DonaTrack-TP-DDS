@@ -849,8 +849,10 @@ const correrWorkflow = async (manifiesto, responder = async () => null) => {
   return { resultado, llamadas };
 };
 // Agentes falsos que completan su esquema: todo responde bien, salvo la revisión de pantallas si
-// pantallasPasan es false.
-const agenteFalso = (pantallasPasan) => async (opts) => {
+// pantallasPasan es false, los agentes cuya etiqueta está en mudos y la revisión de lote que rinde
+// una decisión como NO CUMPLE sin listarla como bloqueante.
+const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '' } = {}) => async (opts) => {
+  if (mudos.includes(opts.label)) return null;
   const props = opts.schema.properties;
   const r = {};
   for (const k of opts.schema.required) r[k] = props[k].type === 'array' ? [] : props[k].type === 'boolean' ? true : 'x';
@@ -860,6 +862,7 @@ const agenteFalso = (pantallasPasan) => async (opts) => {
     const falla = !pantallasPasan && opts.label.startsWith('pantallas');
     r.veredicto = falla ? 'CHANGES_REQUIRED' : 'PASS';
     if (falla) r.bloqueantes = ['inconsistencia entre pantallas'];
+    if (noCumple && opts.label.startsWith('revisión ')) r.decisiones = [`${noCumple}: NO CUMPLE — captura`];
   }
   if ('url' in props) r.url = 'https://pr';
   return r;
@@ -893,6 +896,16 @@ const agenteFalso = (pantallasPasan) => async (opts) => {
     sinPass.resultado.pr === '' && /No se abre el PR/.test(sinPass.resultado.detenida) &&
     !sinPass.llamadas.includes('hoja P0') && !sinPass.llamadas.includes('PR P0') &&
     sinPass.resultado.decisionesDelUsuario.filter((d) => d.includes('no cumplida')).length === 2);
+
+  const noCumple = await correrWorkflow(PLANTILLA, agenteFalso(true, { noCumple: 'D1' }));
+  assert('19.17 lote review with PASS but a decision NO CUMPLE → blocking, no PR',
+    noCumple.resultado.pr === '' && /p0-mis-donaciones/.test(noCumple.resultado.detenida) &&
+    noCumple.llamadas.includes('arreglos p0-mis-donaciones r1'));
+
+  const sinConstruir = await correrWorkflow(PLANTILLA, agenteFalso(true, { mudos: ['p0-mis-donaciones'] }));
+  assert('19.18 visual lote with decisions never built → no PR, decisions not met',
+    sinConstruir.resultado.pr === '' && /p0-mis-donaciones/.test(sinConstruir.resultado.detenida) &&
+    sinConstruir.resultado.decisionesDelUsuario.filter((d) => d.includes('no cumplida: el constructor no respondió')).length === 2);
 
   resumen();
 })().catch((e) => { console.error(e); failed++; resumen(); });

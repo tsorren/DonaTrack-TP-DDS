@@ -2,8 +2,8 @@
 
 > **Estado:** implementada, sin correr de punta a punta (2026-11-15, rama `E6_harness_frontend_workflow`).
 > Sale del plan del paso 4 que aprobó el usuario el 2026-11-15, con tres decisiones: un sucesor
-> genérico de `backlog-r11.js` con su plantilla de manifiesto, `backlog-r11.js` y su prompt al
-> archivo, y el manifiesto de R11 como registro. Ningún ADR se promueve.
+> genérico de `backlog-r11.js` con su plantilla de manifiesto, `backlog-r11.js` al archivo (su prompt
+> queda en `docs/IA/prompts/` con una nota de historia), y el manifiesto de R11 como registro. Ningún ADR se promueve.
 > **Nivel:** ARCHITECTURAL. Cambia cómo los agentes producen la interfaz en corridas desatendidas
 > (paso 4 del plan de migración del harness de frontend).
 > **ADR:** ninguno nuevo. Implementa el paso 4 que ya describe el [ADR del harness de interfaz](../../adr/cliente-liviano/20261115-harness-de-interfaz-con-sistema-cerrado-y-tres-skills-cortas.md)
@@ -25,10 +25,11 @@ que el usuario vea las pantallas de la oleada juntas antes de mergear.
   - arranca solo con un manifiesto `oleada-ui/1` válido (`throw` con la lista de problemas);
   - las decisiones de cada lote entran en su ficha, y el revisor las rinde por ID con CUMPLE o NO
     CUMPLE; un NO CUMPLE es bloqueante;
-  - los lotes con `rutasVisuales` van con Opus high en diseño, construcción y arreglos, y sin "Lo más
-    simple que funcione";
+  - los lotes con `rutasVisuales` van con Opus high en diseño, construcción, revisión y arreglos, y
+    sin "Lo más simple que funcione";
   - en los lotes visuales, todo lo que falla en U1–U7 de `revisar-ui` es bloqueante; solo un PASS
-    aprueba, y un revisor que no responde se vuelve a revisar;
+    aprueba, un revisor que no responde se vuelve a revisar, y una decisión rendida como NO CUMPLE
+    cuenta como bloqueante aunque el revisor no la liste;
   - "Revisar pantallas": un `revisar-ui` independiente (Opus high) sobre todas las pantallas, con
     las capturas de 360 y 1280 px lado a lado, hasta `RONDAS` rondas de arreglo; sin PASS no se abre
     el PR, y el resultado dice por qué;
@@ -59,7 +60,7 @@ que el usuario vea las pantallas de la oleada juntas antes de mergear.
 | Sucesor genérico con plantilla (usuario) | Un workflow por backlog | Cada oleada nueva sería una copia de 400 líneas |
 | La regla copiada en el workflow y en el check, con un test que compara las dos | Un módulo compartido | El sandbox del workflow no hace `require`; el test evita que se separen |
 | "Criterio comprobable" se exige como texto presente | Validar su forma | Que sea comprobable lo juzga el revisor; una máquina solo ve si está |
-| Sin PASS de pantallas, o con un lote visual o con decisiones sin PASS, no hay PR | Abrir el PR con pendientes, como R11 | La revisión de interfaz es bloqueante (ADR, paso 4) |
+| Sin PASS de pantallas, o con un lote visual o con decisiones sin PASS (por bloqueantes, o porque no se construyó o no se integró), no hay PR | Abrir el PR con pendientes, como R11 | La revisión de interfaz es bloqueante (ADR, paso 4) |
 | Hoja con `jpg` + `resumen` y una tabla en el PR | `lado` de `scripts/visual` | `lado` usa el ancho menor para los dos lados y deforma la de 1280 (probado el 2026-11-15) |
 | Opus high fijo en el código para las vistas | Configurable en el manifiesto | Es decisión del ADR; un manifiesto no la cambia |
 | Las diferidas se informan en cada PR de la oleada | Atarlas a una ola | Una diferida no tiene lote; el usuario la ve donde decide |
@@ -70,6 +71,8 @@ que el usuario vea las pantallas de la oleada juntas antes de mergear.
 - Cada decisión de los lotes de la ola vuelve en el resultado y en el PR por ID: cumplida, no
   cumplida con el motivo, o pendiente; las diferidas, con quién y dónde consta el OK.
 - Solo un PASS aprueba una revisión; un revisor mudo no cuenta como PASS.
+- Un lote visual o con decisiones que termina sin PASS de su revisión, por la razón que sea, frena
+  el PR.
 - Ningún registro histórico ni ADR se edita.
 
 ## 5. Criterios de Aceptación
@@ -86,6 +89,8 @@ que el usuario vea las pantallas de la oleada juntas antes de mergear.
   y D3 como diferida.
 - **Dado** que la revisión de pantallas no llega a PASS, **cuando** termina, **entonces** no arma la
   hoja ni abre el PR, y las decisiones de los lotes visuales quedan como no cumplidas.
+- **Dado** una revisión de lote con PASS que rinde una decisión como NO CUMPLE, o un lote con
+  decisiones cuyo constructor no responde, **cuando** termina la oleada, **entonces** no se abre el PR.
 
 ## 7. Especificación Técnica de Diseño (Technical Design)
 
@@ -103,11 +108,11 @@ Diferencias con `backlog-r11.js`, además de lo de §2:
   ensayo por `M.ensayo`, en lugar de los ítems R11-03 y R11-B08.
 - El PR se abre como borrador (`gh pr create --draft`).
 
-Plan TDD: los tests 19.1 a 19.16 de `run-tests.js` cubren la regla, que las dos copias coincidan,
-el arranque del workflow (`AsyncFunction` sin el `export`) y dos corridas con agentes falsos.
+Plan TDD: los tests 19.1 a 19.18 de `run-tests.js` cubren la regla, que las dos copias coincidan,
+el arranque del workflow (`AsyncFunction` sin el `export`) y cuatro corridas con agentes falsos.
 
 ## 8. Validación
 
 - `node scripts/agent-check.js` sin fallas, con `UI_WAVE_MANIFEST` en PASS sobre la plantilla.
-- `node scripts/tests/run-tests.js` en verde (123 casos).
+- `node scripts/tests/run-tests.js` en verde (125 casos).
 - Sin Java tocado: no corre Maven. El workflow no se corrió con agentes reales.

@@ -321,9 +321,16 @@ Comiteá "${PREFIJO}diseño ${l.id}". Devolvé sha, documentos (rutas), resumen 
 // ── Fase "construir" ─────────────────────────────────────────────────────────────────────────
 const sinAprobar = new Set(prep.faltanDisenios)
 const BASELINE = prep.baseline === 'RED' ? ` El baseline ya fallaba antes de empezar: leé ${DIR}/baseline.md y no lo cuentes como tuyo.` : ''
-// Lotes que terminan sin PASS de su revisión y bloquean el PR: los visuales (revisar-ui es
-// bloqueante) y los que cumplen decisiones del usuario.
-const sinPass = []
+// Lotes con PASS de su revisión. Un lote visual (revisar-ui es bloqueante) o con decisiones del
+// usuario que termina sin PASS, por la razón que sea (sin diseño, sin construir, sin integrar o con
+// bloqueantes), frena el PR.
+const conPass = new Set()
+const frenaElPr = (l) => esVisual(l) || decisionesDe(l).length > 0
+// Una decisión rendida como NO CUMPLE es bloqueante aunque el revisor no la haya listado como tal.
+const conDecisionesComoBloqueantes = (r) => {
+  const noCumple = r.decisiones.filter((x) => /NO CUMPLE/i.test(x) && !r.bloqueantes.includes(x))
+  return noCumple.length ? { ...r, veredicto: 'CHANGES_REQUIRED', bloqueantes: [...r.bloqueantes, ...noCumple] } : r
+}
 
 for (const t of tandas) {
   const etiqueta = `${OLA} tanda ${t}`
@@ -385,10 +392,11 @@ ${ficha(l)}
 ${l.disenio !== 'ninguno' ? `Su diseño aprobado está en docs/interfaz/flujos/ o docs/specs/active/ (buscá ${l.id}): revisá contra eso.` : ''}
 Cómo revisar: ${l.ruta === 'QUICK' ? 'LIGHTWEIGHT_CLOSING_CHECK de docs/IA/review/evaluator.md.' : 'skill implementation-review (.agents/skills/implementation-review/SKILL.md), vectores V1–V9.'}${esVisual(l) ? ' Además, skill revisar-ui (.agents/skills/revisar-ui/SKILL.md), vectores U1–U7, mirando las capturas de cliente-liviano/target/capturas a 360 y 1280 px con la herramienta de lectura de imágenes, junto a las de otra pantalla que use las mismas piezas.' : ''}
 Cada decisión del usuario de la ficha es un criterio de aceptación: en "decisiones", una línea por ID con CUMPLE o NO CUMPLE y su evidencia (archivo:línea o captura).${M.reglas.length ? ` Comprobá también las reglas propias de la oleada: ${M.reglas.join(' | ')}.` : ''}${gatesRotos ? ` Al integrar fallaron gates: ${gatesRotos}. Decí si la causa es de este lote.` : ''}
-Bloqueante es lo que rompe un criterio de aceptación (incluida toda decisión del usuario que NO CUMPLE), un gate, un requerimiento del enunciado o una regla del repo${esVisual(l) ? ', y todo lo que falla en U1–U7 de revisar-ui: cualquier inconsistencia con el sistema visual o con otra pantalla es BLOQUEANTE, no menor' : ''}. Lo demás va en menores. Con un bloqueante, el veredicto es CHANGES_REQUIRED. Cada hallazgo con archivo:línea y qué habría que cambiar.`, { label: `revisión ${l.id} r${ronda}`, phase: 'Revisar', schema: REVISION, ...JUICIO }).then((r) => r && { ...r, lote: l })))).filter(Boolean)
+Bloqueante es lo que rompe un criterio de aceptación (incluida toda decisión del usuario que NO CUMPLE), un gate, un requerimiento del enunciado o una regla del repo${esVisual(l) ? ', y todo lo que falla en U1–U7 de revisar-ui: cualquier inconsistencia con el sistema visual o con otra pantalla es BLOQUEANTE, no menor' : ''}. Lo demás va en menores. Con un bloqueante, el veredicto es CHANGES_REQUIRED. Cada hallazgo con archivo:línea y qué habría que cambiar.`, { label: `revisión ${l.id} r${ronda}`, phase: 'Revisar', schema: REVISION, ...(esVisual(l) ? VISTAS : JUICIO) }).then((r) => r && { ...conDecisionesComoBloqueantes(r), lote: l })))).filter(Boolean)
 
     const aprobados = revisiones.filter((r) => r.veredicto === 'PASS' && !r.bloqueantes.length)
     for (const r of aprobados) {
+      conPass.add(r.lote.id)
       for (const m of r.menores) resultado.pendientes.push(`${r.lote.id}, menor: ${m}`)
       for (const d of decisionesDe(r.lote)) estadoDecision[d.id] = `cumplida (PASS de la revisión del lote, ronda ${ronda})`
     }
@@ -398,10 +406,7 @@ Bloqueante es lo que rompe un criterio de aceptación (incluida toda decisión d
       for (const r of conCambios) resultado.pendientes.push(`${r.lote.id}: quedó con bloqueantes tras ${RONDAS} rondas: ${r.bloqueantes.join(' | ')}`)
       for (const l of sinVeredicto) resultado.pendientes.push(`${l.id}: sin PASS tras ${RONDAS} rondas (el revisor no respondió o no dio bloqueantes)`)
       const quedan = [...conCambios.map((r) => r.lote), ...sinVeredicto]
-      for (const l of quedan) {
-        noCumplida(l, `el lote quedó sin PASS de su revisión tras ${RONDAS} rondas`)
-        if (esVisual(l) || decisionesDe(l).length) sinPass.push(l.id)
-      }
+      for (const l of quedan) noCumplida(l, `el lote quedó sin PASS de su revisión tras ${RONDAS} rondas`)
       if (quedan.length) log(`${etiqueta}: ${quedan.map((l) => l.id).join(', ')} quedaron sin PASS tras ${RONDAS} rondas.`)
       break
     }
@@ -510,7 +515,7 @@ if (visuales.length) {
 1. Capturas: ${gV.visual}. Por cada pantalla, mirá su captura de 360 y la de 1280 una al lado de la otra (herramienta de lectura de imágenes), y comparalas con las de las demás pantallas de la oleada y con al menos una pantalla del sitio que use las mismas piezas.
 2. U1–U7 de revisar-ui: todo lo que falla es BLOQUEANTE, en especial cualquier inconsistencia entre pantallas o con el sistema visual (componentes.md, componentes/listado, tokens).
 3. Decisiones del usuario que estas pantallas cumplen (criterios de aceptación): ${DECISIONES_OLA.filter((d) => visuales.some((l) => l.id === d.lote)).map((d) => `${d.id}: ${d.texto}; se comprueba así: ${d.criterio}`).join(' | ') || '(ninguna)'}. En "decisiones", una línea por ID con CUMPLE o NO CUMPLE y su evidencia; un NO CUMPLE es bloqueante.${M.reglas.length ? `\n4. Reglas propias de la oleada: ${M.reglas.join(' | ')}.` : ''}
-No modificás nada. Cada hallazgo con archivo:línea o captura, qué falla y cómo se arregla. Con un bloqueante, CHANGES_REQUIRED.`, { label: `pantallas r${ronda}`, phase: 'Revisar pantallas', schema: REVISION, ...VISTAS })
+No modificás nada. Cada hallazgo con archivo:línea o captura, qué falla y cómo se arregla. Con un bloqueante, CHANGES_REQUIRED.`, { label: `pantallas r${ronda}`, phase: 'Revisar pantallas', schema: REVISION, ...VISTAS }).then((r) => r && conDecisionesComoBloqueantes(r))
     if (rev && rev.veredicto === 'PASS' && !rev.bloqueantes.length) {
       revisionOk = true
       resultado.revisionDePantallas = `PASS en la ronda ${ronda}`
@@ -531,8 +536,10 @@ Comiteá "${PREFIJO}arreglos de pantallas ronda ${ronda}". Devolvé los campos d
   resultado.sha = base
 }
 
-// Sin PASS de las pantallas, o con lotes visuales o con decisiones sin PASS, no se abre el PR.
+// Sin PASS de las pantallas, o con un lote visual o con decisiones que terminó sin PASS de su
+// revisión (por la razón que sea), no se abre el PR.
 const motivosSinPr = []
+const sinPass = lotes.filter((l) => frenaElPr(l) && !conPass.has(l.id)).map((l) => l.id)
 if (!revisionOk) {
   motivosSinPr.push(`la revisión de pantallas no llegó a PASS en ${RONDAS} rondas (${resultado.revisionDePantallas})`)
   for (const l of visuales) noCumplida(l, 'la revisión de pantallas no llegó a PASS')

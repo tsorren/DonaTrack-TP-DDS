@@ -45,9 +45,10 @@ Por cada ola: `disenar`, el usuario aprueba los diseños de una vez y después `
 ## Qué hace `construir`
 
 1. Por tanda: constructores en paralelo (cada uno en su worktree), integración y revisión de cada
-   lote. Los lotes con pantallas van con Opus high y pasan `revisar-ui` (U1–U7): toda
-   inconsistencia con el sistema visual es bloqueante. Cada decisión del lote se rinde por ID. Solo
-   un PASS aprueba; hasta `topes.rondasDeReparacion` rondas de arreglo.
+   lote. Los lotes con pantallas van con Opus high en todo su trabajo, revisión incluida, y pasan
+   `revisar-ui` (U1–U7): toda inconsistencia con el sistema visual es bloqueante. Cada decisión del
+   lote se rinde por ID, y un NO CUMPLE bloquea. Solo un PASS aprueba; hasta
+   `topes.rondasDeReparacion` rondas de arreglo.
 2. Cierre: gates completos, stack propio `donatrack-<nombre>` con seed y recorrido con login real,
    ensayo si `M.ensayo` lo pide y documentación.
 3. **Revisar pantallas:** un `revisar-ui` independiente sobre todas las pantallas de la oleada, con
@@ -57,7 +58,8 @@ Por cada ola: `disenar`, el usuario aprueba los diseños de una vez y después `
    usuario", sin marcar.
 
 **Sin PR** si la revisión de pantallas no llega a PASS, o si queda sin PASS un lote con pantallas o
-con decisiones. `detenida` dice por qué y la rama queda local.
+con decisiones, también cuando no se construyó o no se integró. `detenida` dice por qué y la rama
+queda local.
 
 ## Después
 
