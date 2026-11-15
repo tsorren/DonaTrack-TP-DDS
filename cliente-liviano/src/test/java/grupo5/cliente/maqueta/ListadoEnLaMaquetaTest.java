@@ -165,6 +165,22 @@ class ListadoEnLaMaquetaTest {
         .andExpect(content().string(matchesPattern(elegida("pronto", "En los próximos 7 días"))));
   }
 
+  /** Los filtros de Propuestas y de Destino pasaron de las pastillas a la misma barra. */
+  @Test
+  void propuestasYDestinoFiltranConLaBarraYConservanSuPestana() throws Exception {
+    String propuestas = pagina("/admin-asignaciones?pestana=propuestas&algoritmo=parecido");
+    assertThat(propuestas)
+        .matches(elegida("parecido", "Parecido con lo pedido"))
+        .contains("name=\"pestana\" value=\"propuestas\"")
+        .doesNotContain("filtros-pildora");
+
+    String destino = pagina("/admin-asignaciones?pestana=destino");
+    assertThat(destino)
+        .contains("name=\"pestana\" value=\"destino\"")
+        .contains(">Todas las categorías</option>")
+        .doesNotContain("filtros-pildora");
+  }
+
   @Test
   void decididasFiltraPorFechaYOrganizacionYConservaDecidio() throws Exception {
     mvc.perform(get("/admin-asignaciones?vista=decididas&desde=2026-11-08&hasta=2026-11-11"))

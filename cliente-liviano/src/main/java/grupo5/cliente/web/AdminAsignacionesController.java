@@ -117,6 +117,8 @@ public class AdminAsignacionesController {
     if (datos.decididas() != null) {
       model.addAttribute("listado", decididas(consulta.decididas(), datos, conQuien));
     }
+    model.addAttribute("listadoPropuestas", propuestas(consulta, datos));
+    model.addAttribute("listadoDestino", destino(consulta, datos));
     model.addAttribute("paginador", paginador(pedido, datos));
     return plantilla;
   }
@@ -143,6 +145,22 @@ public class AdminAsignacionesController {
         .otra(new Listado.Eleccion("decidio", "Decidió", b.decidio(), opciones(datos.autores())))
         .orden(b.orden(), opciones(datos.ordenesDecididas()))
         .sacar("/" + LISTA + "?vista=decididas")
+        .listo();
+  }
+
+  /** El filtro de Propuestas (R11-B04): qué algoritmo ver, en la barra del componente listado. */
+  private static Listado propuestas(ConsultaAsignaciones c, AdminAsignacionesVista datos) {
+    return Listado.en("propuestas", "/" + LISTA, "Qué algoritmo ver")
+        .oculto("pestana", ConsultaAsignaciones.PROPUESTAS)
+        .otra(new Listado.Eleccion("algoritmo", "Ver", c.algoritmo(), opciones(datos.algoritmos())))
+        .listo();
+  }
+
+  /** El filtro de Destino (R11-B04): la categoría, en la barra del componente listado. */
+  private static Listado destino(ConsultaAsignaciones c, AdminAsignacionesVista datos) {
+    return Listado.en("destino", "/" + LISTA, "Filtrar las donaciones")
+        .oculto("pestana", ConsultaAsignaciones.DESTINO)
+        .categoria(c.categoria(), opciones(datos.categoriasDelFiltro()))
         .listo();
   }
 

@@ -153,13 +153,8 @@
             <h2 id="propuestas-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
                 th:text="|Propuestas sin problemas · ${#numbers.formatInteger(n, 1, 'POINT')}|">Propuestas sin
               problemas · 8</h2>
-            <form th:if="${pendientes > 0}" action="/admin-asignaciones" th:action="@{/admin-asignaciones}"
-                  method="get" hx-boost="true" data-al-cambiar>
-              <input type="hidden" name="pestana" value="propuestas">
-              <div class="filtros" role="group" aria-label="Qué algoritmo ver">
-                <details th:replace="~{componentes/filtros :: menu('algoritmo', 'Ver: todas', ${c.algoritmo}, ${a.algoritmos()})}"></details>
-              </div>
-            </form>
+            <th:block th:if="${pendientes > 0}"><form
+                th:replace="~{componentes/listado :: listado(${listadoPropuestas})}"></form></th:block>
             <p th:if="${enConflicto > 0 and libres > 0}" class="aviso-breve" role="status">
               <th:block th:text="${enConflicto == 1} ? 'Hay 1 propuesta en conflicto. Revisala en' : |Hay ${enConflicto} propuestas en conflicto. Revisalas en|">Hay
                 3 propuestas en conflicto. Revisalas en</th:block>
@@ -233,13 +228,7 @@
             <h2 id="destino-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}">¿Adónde va
               cada donación?</h2>
             <p>Elegí una para ver todas las propuestas que la piden.</p>
-            <form action="/admin-asignaciones" th:action="@{/admin-asignaciones}" method="get" hx-boost="true"
-                  data-al-cambiar>
-              <input type="hidden" name="pestana" value="destino">
-              <div class="filtros" role="group" aria-label="Filtrar las donaciones">
-                <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${c.categoria}, ${a.categoriasDelFiltro()})}"></details>
-              </div>
-            </form>
+            <form th:replace="~{componentes/listado :: listado(${listadoDestino})}"></form>
             <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-donaciones">
               <h3 id="sin-donaciones"
                   th:text="${c.categoria == ''} ? 'Ninguna donación del depósito está en una propuesta pendiente.' : 'Ninguna donación de esa categoría está en una propuesta pendiente.'">Ninguna
