@@ -98,4 +98,35 @@ class ListadoEnAdminOperacionTest {
         .andExpect(content().string(matchesPattern(oculto("entidad", "comedor"))))
         .andExpect(content().string(not(containsString(SACAR))));
   }
+
+  @Test
+  void camionesFiltraPorBusquedaYCapacidadYConservaLaPestanaYElCamion() throws Exception {
+    mvc.perform(get("/admin-camiones?buscar=sur"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString(BARRA)))
+        .andExpect(content().string(containsString("Camión Sur")))
+        .andExpect(content().string(not(containsString("Furgón Centro"))))
+        .andExpect(content().string(containsString(SACAR)));
+
+    mvc.perform(get("/admin-camiones?capacidad=chico"))
+        .andExpect(content().string(containsString("Furgón Centro")))
+        .andExpect(content().string(not(containsString("Camión Sur"))))
+        .andExpect(content().string(matchesPattern(elegida("chico", "Hasta 1.500 kg"))))
+        .andExpect(
+            content().string(containsString("class=\"listado-sacar\" href=\"/admin-camiones\"")));
+
+    mvc.perform(get("/admin-camiones?estado=disponible&camion=ad789gh"))
+        .andExpect(content().string(matchesPattern(oculto("estado", "disponible"))))
+        .andExpect(content().string(matchesPattern(oculto("camion", "ad789gh"))))
+        .andExpect(content().string(not(containsString("Camión Norte"))))
+        .andExpect(content().string(not(containsString(SACAR))));
+
+    // En la pantalla de un resultado, la barra filtra sobre esa pantalla
+    mvc.perform(get("/admin-camiones-deshabilitado?capacidad=grande"))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "class=\"listado-sacar\" href=\"/admin-camiones-deshabilitado\"")));
+  }
 }

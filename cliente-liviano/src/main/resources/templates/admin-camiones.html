@@ -5,8 +5,8 @@
        - Arriba, el título, las cifras con su fecha y "Agregar camión", que abre un diálogo del navegador
          (popover) con el formulario (POST real a admin-camiones-agregado). Debajo, las cifras de la
          flota (capacidad total, disponible ahora y entregas de los últimos 30 días; .flota-resumen).
-       - La búsqueda (patente o nombre) y el filtro de capacidad, en un formulario GET con hx-boost; el
-         estado, en pestañas con su cuenta (.segmentos data-forma="desliza": Todos · En ruta ·
+       - La búsqueda (patente o nombre) y el filtro de capacidad, en el componente listado (R11-B04,
+         componentes/listado; lo arma AdminCamionesController); el estado, en pestañas con su cuenta (.segmentos data-forma="desliza": Todos · En ruta ·
          Disponibles · Deshabilitados), enlaces con hx-boost. Las cuentas son de lo que deja la búsqueda
          y la capacidad.
        - La flota, una grilla de tarjetas (.flota, componentes/flota): la patente grande, el estado en su
@@ -150,28 +150,10 @@
         <p>Agregá el primero para poder armar rutas.</p>
       </section>
 
-      <!--/* La búsqueda y la capacidad, un solo formulario GET (componentes/filtros). Con HTMX (hx-boost),
-             filtrar cambia el panel sin recargar; tocar una opción ya filtra (data-al-cambiar). */-->
-      <form th:if="${conDatos}" hx-boost="true" class="filtros-barra" action="/admin-camiones"
-            th:action="@{${base}}" method="get" role="search" data-al-cambiar>
-        <input th:if="${fEstado != ''}" type="hidden" name="estado" th:value="${fEstado}">
-        <input th:if="${elegido != ''}" type="hidden" name="camion" th:value="${elegido}">
-        <div class="campo filtro-buscar">
-          <label for="buscar">Buscar por patente o nombre</label>
-          <div class="filtro-buscar-fila">
-            <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${q}"
-                   placeholder="Por ejemplo: AB 123 CD o Norte">
-            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
-          </div>
-        </div>
-        <div class="filtros" role="group" aria-label="Filtrar los camiones">
-          <details th:replace="~{componentes/filtros :: menu('capacidad', 'Capacidad', ${fCapacidad}, ${ {
-              {valor: '', texto: 'Todas las capacidades'}, {valor: 'chico', texto: 'Hasta 1.500 kg'},
-              {valor: 'mediano', texto: 'De 1.500 a 3.000 kg'}, {valor: 'grande', texto: 'Más de 3.000 kg'} } })}"></details>
-          <a th:if="${filtrado}" class="filtros-sacar" href="/admin-camiones" th:href="@{${base}}">Sacar
-            los filtros</a>
-        </div>
-      </form>
+      <!--/* La búsqueda y la capacidad: el componente listado (lo arma AdminCamionesController, con la
+             pestaña de estado y el camión pedido ocultos). Nada se envía al cambiar un campo. */-->
+      <th:block th:if="${conDatos}"><form
+          th:replace="~{componentes/listado :: listado(${listado})}"></form></th:block>
 
       <!--/* El estado, en pestañas con su cuenta: enlaces reales con hx-boost (la página no se mueve). */-->
       <nav th:if="${conDatos}" class="segmentos" data-forma="desliza" aria-label="Camiones por estado"
