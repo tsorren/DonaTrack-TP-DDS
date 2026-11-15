@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class RecibidasController {
 
-  private static final String RECIBIDAS = "recibidas";
+  private static final String NOMBRE_RECIBIDAS = "recibidas";
 
   /** Cada valor de {@code ?estado=} y su grupo; uno desconocido no filtra. */
   static final Map<String, String> GRUPOS =
@@ -44,7 +44,7 @@ public class RecibidasController {
           RecibidasVista.SALIR,
           "con-problema",
           RecibidasVista.PROBLEMA,
-          RECIBIDAS,
+          NOMBRE_RECIBIDAS,
           RecibidasVista.RECIBIDA);
 
   /** Los valores de {@code ?estado=} en el orden del desplegable. */
@@ -54,7 +54,7 @@ public class RecibidasController {
           Map.entry("en-camino", RecibidasVista.CAMINO),
           Map.entry("por-salir", RecibidasVista.SALIR),
           Map.entry("con-problema", RecibidasVista.PROBLEMA),
-          Map.entry(RECIBIDAS, RecibidasVista.RECIBIDA));
+          Map.entry(NOMBRE_RECIBIDAS, RecibidasVista.RECIBIDA));
 
   /** El nombre de cada grupo en el desplegable. */
   private static final Map<String, String> NOMBRES =
@@ -107,7 +107,7 @@ public class RecibidasController {
             conDonante ? pedido.getParameter("quien") : null,
             pedido.getParameter("orden"));
     RecibidasVista datos = recibidas.recibidas(entidad.get(), consulta);
-    model.addAttribute(RECIBIDAS, datos);
+    model.addAttribute(NOMBRE_RECIBIDAS, datos);
     model.addAttribute("listado", listado(consulta, datos, categorias, conDonante, sinResultados));
     model.addAttribute("paginador", Paginadores.de(pedido, "Páginas de donaciones", datos.tramo()));
     return vista;
@@ -152,7 +152,7 @@ public class RecibidasController {
       estados.add(new Listado.Opcion(elegido, String.join(" y ", nombres)));
     }
     Listado.Armado barra =
-        Listado.en(RECIBIDAS, "/entidad-recibidas", "Filtrar las donaciones recibidas")
+        Listado.en(NOMBRE_RECIBIDAS, "/entidad-recibidas", "Filtrar las donaciones recibidas")
             .oculto("escenario", sinResultados ? SIN_RESULTADOS : null)
             .fecha("Registrada", consulta.desde(), consulta.hasta())
             .estado(elegido, estados)
