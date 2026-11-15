@@ -1,11 +1,11 @@
 /* Piezas comunes de las pantallas de Raíces: marca, botones, papel y tierra impresos, y cifras. */
 
 /* Las capas CUBE (D32 y D33), declaradas una sola vez y en este orden: la que viene después gana.
-   `pico` es de Pico.css, que hoy no se carga (cliente-liviano/AGENTS.md; queda lugar abajo de todo
-   para cuando se cargue, con @import url(...) layer(pico)). `bloques`, `excepciones` y `pantallas`
+   `base` lleva las reglas propias de los elementos sueltos (antes se llamaba `pico`; Pico.css salió
+   del stack: docs/adr/cliente-liviano/20261114-sin-pico-css-en-el-cliente-liviano.md). `bloques`, `excepciones` y `pantallas`
    se llenan con el backlog de migración: lo que está sin capa (las hojas de hoy) gana a todas, así
    que migrar una hoja a una capa nunca cambia lo que ya se ve en las demás. */
-@layer pico, tokens, composicion, utilidades, bloques, excepciones, pantallas;
+@layer base, tokens, composicion, utilidades, bloques, excepciones, pantallas;
 
 @import url("tokens.css") layer(tokens);
 @import url("composicion.css") layer(composicion);
@@ -33,6 +33,7 @@
 @import url("componentes/almanaque.css") layer(bloques);
 @import url("componentes/huerta.css") layer(bloques);
 @import url("componentes/filtros.css") layer(bloques);
+@import url("componentes/listado.css") layer(bloques);
 @import url("componentes/registro.css") layer(bloques);
 @import url("componentes/plegable.css") layer(bloques);
 @import url("componentes/chip.css") layer(bloques);
@@ -59,10 +60,10 @@ body {
   font: 400 1.0625rem/1.6 var(--fuente-texto);
 }
 
-/* El color de los enlaces y el anillo de foco son la base: van en la capa `pico` para que los
+/* El color de los enlaces y el anillo de foco son la base: van en la capa `base` para que los
    componentes (el botón con forma de enlace, la barra de navegación) le ganen sin pelear por
    especificidad. */
-@layer pico {
+@layer base {
   a {
     color: var(--color-acento);
   }
@@ -187,6 +188,13 @@ body {
   :root:where(:has(.filtros-barra):not(:has(.filtros-pildora ~ .filtros-pildora ~ .filtros-pildora))) {
     --medida-filtros-fijos: 9.875rem;
   }
+
+  /* La barra del componente listado plegada (R11-B04): la búsqueda y "Filtros y orden", 162,6 px
+     medidos el 2026-11-14 a 390 px con las letras cargadas, redondeado hacia arriba a 1/8 rem. */
+  :root:where(:has(.listado[data-plegado="si"])) {
+    --medida-filtros-fijos: 10.25rem;
+  }
+
 }
 
 @media (min-width: 53.75em) and (min-height: 37.5em) {
@@ -206,6 +214,12 @@ body {
 @media (min-width: 68.75em) and (min-height: 37.5em) {
   :root:is(:has(body > .armazon), :has(body > .raices-cabecera)) {
     --medida-filtros-fijos: 11rem;
+  }
+
+  /* La barra del componente listado abierta (R11-B04): dos renglones de campos, 205,75 px medidos
+     el 2026-11-14 de 1280 a 1920 px, redondeado hacia arriba a 1/8 rem. */
+  :root:is(:has(body > .armazon), :has(body > .raices-cabecera)):has(.listado) {
+    --medida-filtros-fijos: 13rem;
   }
 
   :root:has(body > .armazon) {
@@ -229,7 +243,7 @@ html {
   scroll-padding-bottom: var(--medida-menu-celular);
 }
 
-html:has(.filtros-barra, form.filtro) {
+html:has(.filtros-barra, .listado) {
   scroll-padding-top: calc(var(--medida-cabecera-fija) + var(--medida-filtros-fijos));
 }
 
@@ -315,7 +329,7 @@ body::before {
 
   body > header:is(.raices-cabecera, .armazon),
   .filtros-barra,
-  form.filtro,
+  .listado,
   [data-fijo="celular"] {
     position: static;
   }

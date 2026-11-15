@@ -6,7 +6,7 @@
    leer, la casilla (`.buzon-casilla`), el mensaje (`.buzon-mensaje`), la categoría y hace cuánto
    (`.buzon-meta`, con el `.buzon-icono`, un `.chip` y un `time`) y el tilde de «Marcar como leída»
    o el sobre cerrado de «Marcar como no leída» (`.buzon-accion`). En la bandeja paginada
-   (`.buzon-bandeja`, R11-14), la fila lleva su título (`.buzon-titulo`), el mensaje y el vínculo
+   (`buzon :: pagina`, R11-14), la fila lleva su título (`.buzon-titulo`), el mensaje y el vínculo
    aparte, y debajo de la lista van la nota del alcance de «Marcar todas» (`.buzon-nota`) y el
    total (`.buzon-total`). En el celular cada fila se apila (el mensaje y, debajo, categoría · hace
    cuánto); desde 53,75 em es una grilla de columnas. El tilde aparece al pasar o enfocar la fila
@@ -191,8 +191,7 @@
 }
 
 /* Los vínculos, leídos o no, en peso normal, subrayados y en el color de vínculo. */
-.buzon-vinculo,
-.buzon-bandeja .filtros-sacar {
+.buzon-vinculo {
   color: var(--color-enlace);
   font-weight: 400;
   text-decoration: underline;

@@ -5,7 +5,10 @@ import grupo5.cliente.puertos.AdministradorActual;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.ConsultaAsignaciones;
 import grupo5.cliente.vistas.ConsultaDecididas;
+import grupo5.cliente.vistas.Listado;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
+import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
@@ -26,8 +29,10 @@ import org.springframework.web.server.ResponseStatusException;
  * fuera de ella el envío vuelve a la lista con el aviso ({@link AdminAsignacionesEnvios}) y esas
  * direcciones no existen. En la maqueta, {@code -corrida?escenario=nuevas} pide la acción {@code
  * nuevas} (las propuestas de hoy). Todas las decididas (R11-35) lleva en la dirección la búsqueda
- * ({@code ?buscar=}) y los filtros ({@code ?estado=}, {@code ?categoria=}, {@code ?decidida=},
- * {@code ?decidio=} y {@code ?orden=}); "Vos" es la cuenta de la sesión.
+ * ({@code ?buscar=}) y los filtros ({@code ?estado=}, {@code ?categoria=}, desde R11-B04 {@code
+ * ?desde=} y {@code ?hasta=} en lugar del período fijo y {@code ?quien=}, {@code ?decidio=} y
+ * {@code ?orden=}), con la barra del componente listado ({@code listado}); "Vos" es la cuenta de la
+ * sesión.
  */
 @Controller
 public class AdminAsignacionesController {
@@ -75,7 +80,9 @@ public class AdminAsignacionesController {
       @RequestParam(required = false) String escenario,
       @RequestParam(required = false) String buscar,
       @RequestParam(required = false) String estado,
-      @RequestParam(required = false) String decidida,
+      @RequestParam(required = false) String desde,
+      @RequestParam(required = false) String hasta,
+      @RequestParam(required = false) String quien,
       @RequestParam(required = false) String decidio,
       @RequestParam(required = false) String orden,
       Model model,
@@ -89,16 +96,76 @@ public class AdminAsignacionesController {
     if ("corrida".equals(accion) && "nuevas".equals(escenario)) {
       accion = "nuevas";
     }
+    LocalDate[] rango = Listado.rango(desde, hasta);
+    boolean conQuien = operacion.decididasPorQuien();
     ConsultaAsignaciones consulta =
         ConsultaAsignaciones.de(
                 pestana, vista, algoritmo, categoria, donacion, Paginadores.pedida(pedido))
             .conDecididas(
                 new ConsultaDecididas(
-                    buscar, estado, categoria, decidida, decidio, orden, vos(pedido)));
+                    buscar,
+                    estado,
+                    categoria,
+                    rango[0],
+                    rango[1],
+                    conQuien ? quien : "",
+                    decidio,
+                    orden,
+                    vos(pedido)));
     AdminAsignacionesVista datos = operacion.asignaciones(consulta, accion);
     model.addAttribute("asignaciones", datos);
+    if (datos.decididas() != null) {
+      model.addAttribute("listado", decididas(consulta.decididas(), datos, conQuien));
+    }
+    model.addAttribute("listadoPropuestas", propuestas(consulta, datos));
+    model.addAttribute("listadoDestino", destino(consulta, datos));
     model.addAttribute("paginador", paginador(pedido, datos));
     return plantilla;
+  }
+
+  /**
+   * La barra de Todas las decididas (R11-B04): la búsqueda por organización o donación, la fecha de
+   * la decisión, estado, categoría, la organización (si la fuente la filtra aparte), "Decidió" y el
+   * orden.
+   */
+  private static Listado decididas(
+      ConsultaDecididas b, AdminAsignacionesVista datos, boolean conQuien) {
+    Listado.Armado barra =
+        Listado.en("decididas", "/" + LISTA, "Buscar y filtrar las decididas")
+            .oculto("vista", "decididas")
+            .buscar(
+                "Buscar por organización o donación", b.buscar(), "Por ejemplo: Comedor o arroz")
+            .fecha("Decidida", b.desde(), b.hasta())
+            .estado(b.estado(), opciones(datos.estadosDecididas()))
+            .categoria(b.categoria(), opciones(datos.categoriasDelFiltro()));
+    if (conQuien) {
+      barra.quien("Organización", b.quien(), "Por ejemplo: Comedor");
+    }
+    return barra
+        .otra(new Listado.Eleccion("decidio", "Decidió", b.decidio(), opciones(datos.autores())))
+        .orden(b.orden(), opciones(datos.ordenesDecididas()))
+        .sacar("/" + LISTA + "?vista=decididas")
+        .listo();
+  }
+
+  /** El filtro de Propuestas (R11-B04): qué algoritmo ver, en la barra del componente listado. */
+  private static Listado propuestas(ConsultaAsignaciones c, AdminAsignacionesVista datos) {
+    return Listado.en("propuestas", "/" + LISTA, "Qué algoritmo ver")
+        .oculto("pestana", ConsultaAsignaciones.PROPUESTAS)
+        .otra(new Listado.Eleccion("algoritmo", "Ver", c.algoritmo(), opciones(datos.algoritmos())))
+        .listo();
+  }
+
+  /** El filtro de Destino (R11-B04): la categoría, en la barra del componente listado. */
+  private static Listado destino(ConsultaAsignaciones c, AdminAsignacionesVista datos) {
+    return Listado.en("destino", "/" + LISTA, "Filtrar las donaciones")
+        .oculto("pestana", ConsultaAsignaciones.DESTINO)
+        .categoria(c.categoria(), opciones(datos.categoriasDelFiltro()))
+        .listo();
+  }
+
+  private static List<Listado.Opcion> opciones(List<AdminAsignacionesVista.Opcion> opciones) {
+    return opciones.stream().map(o -> new Listado.Opcion(o.valor(), o.texto())).toList();
   }
 
   private static Object paginador(HttpServletRequest pedido, AdminAsignacionesVista datos) {

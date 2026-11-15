@@ -15,8 +15,9 @@
 ## Qué es
 
 Es la interfaz web del sistema: un servidor Spring MVC que renderiza vistas Thymeleaf, mejoradas
-con HTMX y estilizadas con Pico.css y `tokens.css` (decisiones D17–D21 de
-[`requerimientos-e6.md`](../docs/requerimientos/requerimientos-e6.md)). No tiene lógica de negocio:
+con HTMX y estilizadas con CSS propio y `tokens.css` (decisiones D17–D21 de
+[`requerimientos-e6.md`](../docs/requerimientos/requerimientos-e6.md); Pico.css salió del stack con el
+[ADR del 2026-11-14](../docs/adr/cliente-liviano/20261114-sin-pico-css-en-el-cliente-liviano.md)). No tiene lógica de negocio:
 consume las APIs REST de los servicios a través del gateway.
 
 ## Antes de tocar este módulo

@@ -39,8 +39,7 @@
     th:with="marcadas=${param.marcadas != null ? param.marcadas[0] : (leidas ? 'todas' : '')},
              noLeidas=${param.noLeidas != null ? param.noLeidas[0] : ''},
              filas=${bandeja.pagina.filas},
-             conFiltros=${param.ver != null or (param.buscar != null and !#strings.isEmpty(#strings.trim(param.buscar[0])))
-                 or (param.tema != null and param.tema[0] != '')},
+             conFiltros=${listado != null and listado.filtrada()},
              cuentaVacia=${bandeja.pagina.total == 0 and !conFiltros},
              conDatos=${escenario == '' and !cuentaVacia},
              sinLeerAhora=${marcadas == 'todas' ? 0 : bandeja.sinLeer

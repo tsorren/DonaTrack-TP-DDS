@@ -13,7 +13,9 @@ import grupo5.cliente.vistas.AdminAsignacionesVista.Propuesta;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Sugerencia;
 import grupo5.cliente.vistas.ConsultaAsignaciones;
 import grupo5.cliente.vistas.ConsultaDecididas;
+import grupo5.cliente.vistas.Listado;
 import grupo5.cliente.vistas.Tramo;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +39,10 @@ final class AdminAsignacionesDeEjemplo {
   private static final String APROBADA = "Aprobada";
   private static final String COMPLETA = "Cubre la necesidad completa.";
   private static final String DEL_15 = "15 de octubre";
+
+  /** "Hoy" en las decididas de ejemplo: la más reciente es de ayer, el 11 de noviembre. */
+  private static final LocalDate DIA_DE_HOY = LocalDate.of(2026, 11, 12);
+
   private static final String HOY = "hoy, 0:00";
   private static final String LIBRE = "libre";
   private static final String CONFLICTO = "conflicto";
@@ -308,17 +314,14 @@ final class AdminAsignacionesDeEjemplo {
 
   private AdminAsignacionesDeEjemplo() {}
 
+  /** El día en que se decidió; null en las de antes de que se guardara la fecha. */
+  private static LocalDate decidida(Ejemplo e) {
+    return e.dias() < 0 ? null : DIA_DE_HOY.minusDays(e.dias());
+  }
+
   /** Todas las decididas, filtradas en memoria como lo haría Donaciones (R11-35). */
   private static List<Decidida> buscadas(ConsultaDecididas b) {
     String buscar = b.buscar().toLowerCase(Locale.ROOT);
-    int dias =
-        switch (b.decidida()) {
-          case "hoy" -> 0;
-          case "7-dias" -> 6;
-          case "30-dias", "este-mes" -> 29;
-          case "mes-anterior" -> -2;
-          default -> Integer.MAX_VALUE;
-        };
     List<Ejemplo> todas = new ArrayList<>(DECIDIDAS);
     if (ConsultaDecididas.ANTIGUAS.equals(b.orden())) {
       todas = todas.reversed();
@@ -337,7 +340,8 @@ final class AdminAsignacionesDeEjemplo {
                         == e.decidida().descartada()))
         .filter(e -> b.categoria().isEmpty() || b.categoria().equals(e.categoria()))
         .filter(e -> b.decidio().isEmpty() || b.decidio().equals(e.autor()))
-        .filter(e -> dias == Integer.MAX_VALUE || (e.dias() >= 0 && e.dias() <= dias))
+        .filter(e -> Listado.contiene(e.decidida().entidad(), b.quien()))
+        .filter(e -> Listado.entre(decidida(e), b.desde(), b.hasta()))
         .map(Ejemplo::decidida)
         .toList();
   }
@@ -390,7 +394,7 @@ final class AdminAsignacionesDeEjemplo {
               null,
               null,
               AUTORES,
-              consulta.decididas().decidida().isEmpty() ? 0 : 2);
+              consulta.decididas().conFecha() ? 2 : 0);
       case ConsultaAsignaciones.CONFLICTOS ->
           new AdminAsignacionesVista(
               consulta,

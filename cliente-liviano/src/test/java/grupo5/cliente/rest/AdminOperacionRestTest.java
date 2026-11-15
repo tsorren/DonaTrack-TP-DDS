@@ -469,7 +469,15 @@ class AdminOperacionRestTest {
             ConsultaAsignaciones.de(null, "decididas", null, null, null, 1)
                 .conDecididas(
                     new ConsultaDecididas(
-                        "arroz", "descartadas", categoria, "7-dias", "antes", "antiguas", "")),
+                        "arroz",
+                        "descartadas",
+                        categoria,
+                        LocalDate.of(2026, 11, 4),
+                        LocalDate.of(2026, 11, 10),
+                        "",
+                        "antes",
+                        "antiguas",
+                        "")),
             "");
 
     assertEquals(4, vista.sinFecha());
@@ -783,7 +791,19 @@ class AdminOperacionRestTest {
 
     AdminDonacionesVista vista =
         adaptador.donaciones(
-            new ConsultaDonaciones("", false, "", 1, "leche", categoria, "7-dias", H1, ""), "");
+            new ConsultaDonaciones(
+                "",
+                false,
+                "",
+                1,
+                "leche",
+                categoria,
+                LocalDate.of(2026, 11, 4),
+                LocalDate.of(2026, 11, 10),
+                "",
+                H1,
+                ""),
+            "");
 
     assertEquals("Ana Ejemplo", vista.donante());
     assertEquals(

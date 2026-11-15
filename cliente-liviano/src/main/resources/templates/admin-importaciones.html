@@ -3,8 +3,9 @@
        (docs/interfaz/flujos/r11-p1-importaciones.md, sección 4.1). Es una pestaña de la sección
        Donantes (Pantallas la marca así): arriba, las pestañas Donantes · Importaciones; después, el
        título con "Importar CSV", cuántas siguen en curso (un número de la fuente) y cuándo se leyeron
-       las cifras, con "Actualizar"; la búsqueda por nombre del archivo y los filtros (Estado, Subida y
-       Ordenar) en un formulario GET; y la lista, de a 20, con el paginador provisorio.
+       las cifras, con "Actualizar"; la búsqueda por nombre del archivo y los filtros (Subida, de
+       ?desde= a ?hasta=, Estado y Ordenar) en el componente listado; y la lista, de a 20, con el
+       paginador provisorio.
        La lista llega ya buscada, filtrada y ordenada (adminImportaciones.importaciones, un
        vistas.Tramo): la plantilla no filtra ni cuenta. Cada renglón lleva a su avance o a su
        resultado; el que no leyó ninguna fila dice por qué y no lleva a ningún lado. Las importaciones
@@ -72,30 +73,9 @@
       <h2 id="lista-titulo" tabindex="-1" class="solo-lectores"
           th:autofocus="${paginador != null and paginador.cambio}">Todas las importaciones</h2>
 
-      <!--/* La búsqueda y los filtros, un solo formulario GET (componentes/filtros, la barra). Enviarlo
-             no lleva ?pagina=: vuelve a la primera. Con fechas escritas en la dirección, van ocultas. */-->
-      <form hx-boost="true" class="filtros-barra" action="/admin-importaciones"
-            th:action="@{/admin-importaciones}" method="get" role="search"
-            hx-indicator="#buscando-importaciones">
-        <div class="campo filtro-buscar">
-          <label for="buscar">Buscar por nombre del archivo</label>
-          <div class="filtro-buscar-fila">
-            <input id="buscar" name="buscar" type="search" autocomplete="off" maxlength="100"
-                   th:value="${c.buscar}" placeholder="Por ejemplo: donantes-octubre">
-            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
-          </div>
-        </div>
-        <th:block th:if="${c.conRango()}">
-          <input type="hidden" name="desde" th:if="${c.desde != null}" th:value="${c.desde}">
-          <input type="hidden" name="hasta" th:if="${c.hasta != null}" th:value="${c.hasta}">
-        </th:block>
-        <div class="filtros" role="group" aria-label="Filtrar las importaciones">
-          <details th:replace="~{componentes/filtros :: menu('estado', 'Estado', ${c.estado}, ${datos.estados})}"></details>
-          <details th:replace="~{componentes/filtros :: menu('subida', 'Subida', ${c.subida}, ${datos.subidas})}"></details>
-          <details th:replace="~{componentes/filtros :: menu('orden', 'Más recientes primero', ${c.orden}, ${datos.ordenes})}"></details>
-        </div>
-        <p th:replace="~{envio :: indicador('buscando-importaciones', 'Buscando importaciones…')}"></p>
-      </form>
+      <!--/* La búsqueda y los filtros: el componente listado (R11-B04; lo arma
+             AdminImportacionesController). Enviarlo no lleva ?pagina=: vuelve a la primera. */-->
+      <form th:replace="~{componentes/listado :: listado(${listado})}"></form>
 
       <p th:each="aviso : ${c.avisos}" class="aviso-breve" role="status" th:text="${aviso}">No
         entendimos la fecha pedida: te mostramos todas las fechas.</p>
@@ -103,8 +83,6 @@
       <div class="racimo" aria-live="polite">
         <p th:if="${n > 0}" th:text="${n == 1} ? 'Coincide 1 importación.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} importaciones.|">Coinciden
           23 importaciones.</p>
-        <a th:if="${filtrado or c.orden != ''}" class="filtros-sacar" href="/admin-importaciones"
-           th:href="@{/admin-importaciones}">Sacar los filtros</a>
       </div>
 
       <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-titulo">

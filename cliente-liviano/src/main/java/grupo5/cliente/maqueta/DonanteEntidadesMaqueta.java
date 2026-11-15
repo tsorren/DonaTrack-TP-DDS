@@ -6,6 +6,7 @@ import grupo5.cliente.vistas.DonanteEntidadesVista.Categoria;
 import grupo5.cliente.vistas.DonanteEntidadesVista.Entidad;
 import grupo5.cliente.vistas.DonanteEntidadesVista.Pedido;
 import java.text.Normalizer;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -201,7 +202,10 @@ class DonanteEntidadesMaqueta implements DonanteEntidadesPuerto {
         ENTIDADES.categorias().stream().anyMatch(c -> c.valor().equals(consulta.categoria()))
             ? consulta.categoria()
             : null;
-    if (consulta.nombre().isEmpty() && categoria == null && !consulta.soloDonadas()) {
+    if (consulta.nombre().isEmpty()
+        && categoria == null
+        && !consulta.soloDonadas()
+        && !consulta.alReves()) {
       int pagina = Math.min(consulta.pagina(), ENTIDADES.paginas());
       return new DonanteEntidadesVista(
           pagina == 2 ? SEGUNDA : ENTIDADES.entidades(),
@@ -222,6 +226,12 @@ class DonanteEntidadesMaqueta implements DonanteEntidadesPuerto {
                     categoria == null
                         || e.pide().stream().anyMatch(p -> categoria.equals(p.categoria())))
             .toList();
+    if (consulta.alReves()) {
+      coinciden =
+          coinciden.stream()
+              .sorted(Comparator.comparing((Entidad e) -> sinTildes(e.nombre())).reversed())
+              .toList();
+    }
     return new DonanteEntidadesVista(
         coinciden, coinciden.size(), 1, 1, 1, ENTIDADES.categorias(), ENTIDADES.actualizado());
   }

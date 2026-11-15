@@ -4,6 +4,7 @@ import grupo5.cliente.puertos.AdminActividadPuerto;
 import grupo5.cliente.vistas.AdminActividadVista;
 import grupo5.cliente.vistas.AdminActividadVista.Fila;
 import grupo5.cliente.vistas.ConsultaActividad;
+import grupo5.cliente.vistas.Listado;
 import grupo5.cliente.vistas.Tramo;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,10 +16,10 @@ import org.springframework.stereotype.Component;
 
 /**
  * El registro de actividad de ejemplo (R11-26, ficha r11-p2-actividad §5): siete acciones de las
- * tres cuentas de ejemplo (Ana Pérez es la propia), con Quién y Acción aplicados sobre ellas y la
- * búsqueda por esos tres nombres. Escenarios: {@code vacia} (nunca se registró nada), {@code
- * sin-resultados} (los filtros no encuentran nada), {@code sin-nombres} (el proveedor de ingreso no
- * responde) y {@code muchas} (57 acciones, de a 20). Anotar no hace nada.
+ * tres cuentas de ejemplo (Ana Pérez es la propia), con Quién, Acción y la fecha aplicados sobre
+ * ellas y la búsqueda por esos tres nombres. Escenarios: {@code vacia} (nunca se registró nada),
+ * {@code sin-resultados} (los filtros no encuentran nada), {@code sin-nombres} (el proveedor de
+ * ingreso no responde) y {@code muchas} (57 acciones, de a 20). Anotar no hace nada.
  */
 @Component
 @ConditionalOnProperty(
@@ -141,6 +142,11 @@ class AdminActividadDeEjemplo implements AdminActividadPuerto {
     if (!consulta.accion().isEmpty()) {
       todas = todas.stream().filter(e -> consulta.accion().equals(e.grupo())).toList();
     }
+    todas =
+        todas.stream()
+            .filter(
+                e -> Listado.entre(e.cuando().toLocalDate(), consulta.desde(), consulta.hasta()))
+            .toList();
     if ("sin-resultados".equals(cual)) {
       todas = List.of();
     }

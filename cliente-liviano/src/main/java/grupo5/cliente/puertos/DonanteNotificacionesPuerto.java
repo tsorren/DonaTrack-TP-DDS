@@ -16,6 +16,15 @@ public interface DonanteNotificacionesPuerto {
   DonanteNotificacionesVista bandeja(UUID persona, ConsultaBandeja consulta);
 
   /**
+   * Si la fuente filtra la bandeja por la fecha del aviso ({@link ConsultaBandeja#desde()} y {@link
+   * ConsultaBandeja#hasta()}, R11-B04). Notificaciones no la filtra: con ella, el campo no se
+   * ofrece.
+   */
+  default boolean filtraPorFecha() {
+    return true;
+  }
+
+  /**
    * Marca como leídas (o, con {@code leida} false, como no leídas) las de esos ids. Quién es dueño
    * de cada una lo controla Notificaciones: un id ajeno o que no existe se saltea.
    */

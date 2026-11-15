@@ -96,6 +96,12 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
     return Collections.unmodifiableMap(tipos);
   }
 
+  /** Notificaciones no filtra por la fecha del aviso (R11-B04). */
+  @Override
+  public boolean filtraPorFecha() {
+    return false;
+  }
+
   @Override
   public EntidadNotificacionesVista bandeja(UUID entidad, ConsultaBandeja consulta) {
     LocalDateTime ahora =

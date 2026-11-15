@@ -69,8 +69,10 @@
     </section>
 
     <!--/* Todas las decididas (?vista=decididas): sin pestañas ni panel. La búsqueda, los filtros y el
-           orden (R11-35, ficha r11-p2-admin-bandeja §4.3) se resuelven en Donaciones; un solo
-           formulario GET, con pastillas (componentes/filtros). */-->
+           orden (R11-35, ficha r11-p2-admin-bandeja §4.3) se resuelven en Donaciones; la barra
+           es el componente listado (R11-B04; la arma AdminAsignacionesController): la fecha de la
+           decisión (desde y hasta), estado, categoría, la organización (solo si la fuente la
+           filtra aparte: con Donaciones, la búsqueda ya la cubre), "Decidió" y el orden. */-->
     <section th:if="${pestana == 'decididas'}" class="pila" data-espacio="3" aria-labelledby="decididas-titulo"
              th:with="b=${c.decididas}, n=${vacioDeEjemplo ? 0 : a.decididas.total},
                       nTexto=${#numbers.formatInteger(n, 1, 'POINT')}">
@@ -79,27 +81,8 @@
       <h2 id="decididas-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
           th:text="${a.decididas.total > 0} ? |Decididas · ${#numbers.formatInteger(a.decididas.total, 1, 'POINT')}| : 'Decididas'">Decididas
         · 7</h2>
-      <form th:if="${n > 0 or b.filtrada()}" hx-boost="true" class="filtros-barra" action="/admin-asignaciones"
-            th:action="@{/admin-asignaciones}" method="get" role="search" data-al-cambiar>
-        <input type="hidden" name="vista" value="decididas">
-        <div class="campo filtro-buscar">
-          <label for="buscar-decididas">Buscar por organización o donación</label>
-          <div class="filtro-buscar-fila">
-            <input id="buscar-decididas" name="buscar" type="search" autocomplete="off" maxlength="100"
-                   th:value="${b.buscar}" placeholder="Por ejemplo: Comedor o arroz">
-            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
-          </div>
-        </div>
-        <div class="filtros" role="group" aria-label="Filtrar las decididas">
-          <details th:replace="~{componentes/filtros :: menu('estado', 'Estado', ${b.estado}, ${a.estadosDecididas()})}"></details>
-          <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${b.categoria}, ${a.categoriasDelFiltro()})}"></details>
-          <details th:replace="~{componentes/filtros :: menu('decidida', 'Decidida', ${b.decidida}, ${a.periodosDecididas()})}"></details>
-          <details th:replace="~{componentes/filtros :: menu('decidio', 'Decidió', ${b.decidio}, ${a.autores})}"></details>
-          <details th:replace="~{componentes/filtros :: menu('orden', 'Más recientes primero', ${b.orden}, ${a.ordenesDecididas()})}"></details>
-          <a th:if="${b.filtrada()}" class="filtros-sacar" href="/admin-asignaciones?vista=decididas"
-             th:href="@{/admin-asignaciones(vista='decididas')}">Sacar los filtros</a>
-        </div>
-      </form>
+      <th:block th:if="${n > 0 or b.filtrada()}"><form
+          th:replace="~{componentes/listado :: listado(${listado})}"></form></th:block>
       <p th:if="${n > 0 and b.filtrada()}" role="status"
          th:text="${n == 1} ? 'Coincide 1 propuesta decidida.' : |Coinciden ${nTexto} propuestas decididas.|">Coinciden 4
         propuestas decididas.</p>
@@ -170,13 +153,8 @@
             <h2 id="propuestas-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
                 th:text="|Propuestas sin problemas · ${#numbers.formatInteger(n, 1, 'POINT')}|">Propuestas sin
               problemas · 8</h2>
-            <form th:if="${pendientes > 0}" action="/admin-asignaciones" th:action="@{/admin-asignaciones}"
-                  method="get" hx-boost="true" data-al-cambiar>
-              <input type="hidden" name="pestana" value="propuestas">
-              <div class="filtros" role="group" aria-label="Qué algoritmo ver">
-                <details th:replace="~{componentes/filtros :: menu('algoritmo', 'Ver: todas', ${c.algoritmo}, ${a.algoritmos()})}"></details>
-              </div>
-            </form>
+            <th:block th:if="${pendientes > 0}"><form
+                th:replace="~{componentes/listado :: listado(${listadoPropuestas})}"></form></th:block>
             <p th:if="${enConflicto > 0 and libres > 0}" class="aviso-breve" role="status">
               <th:block th:text="${enConflicto == 1} ? 'Hay 1 propuesta en conflicto. Revisala en' : |Hay ${enConflicto} propuestas en conflicto. Revisalas en|">Hay
                 3 propuestas en conflicto. Revisalas en</th:block>
@@ -250,13 +228,7 @@
             <h2 id="destino-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}">¿Adónde va
               cada donación?</h2>
             <p>Elegí una para ver todas las propuestas que la piden.</p>
-            <form action="/admin-asignaciones" th:action="@{/admin-asignaciones}" method="get" hx-boost="true"
-                  data-al-cambiar>
-              <input type="hidden" name="pestana" value="destino">
-              <div class="filtros" role="group" aria-label="Filtrar las donaciones">
-                <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${c.categoria}, ${a.categoriasDelFiltro()})}"></details>
-              </div>
-            </form>
+            <form th:replace="~{componentes/listado :: listado(${listadoDestino})}"></form>
             <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-donaciones">
               <h3 id="sin-donaciones"
                   th:text="${c.categoria == ''} ? 'Ninguna donación del depósito está en una propuesta pendiente.' : 'Ninguna donación de esa categoría está en una propuesta pendiente.'">Ninguna

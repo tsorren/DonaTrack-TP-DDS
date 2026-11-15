@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <!--/* Raíces, Donaciones recibidas de la entidad (RF-11), según su ficha de flujo
        (docs/interfaz/flujos/raices-entidad-navegable.md, sección 4.2): todo lo asignado a la entidad,
-       agrupado por estado, de la que espera en la puerta a la que ya se recibió. El filtro es el
-       componente de filtros (componentes/filtros.html, como en Entidades): una pastilla por estado,
-       con su cantidad, que se prende; se pueden prender varias (ronda del 2026-11-09: los estados son
-       filtros, no una progresión). Funciona sin JavaScript, con un formulario GET
-       (?estado=en-tu-puerta, en-camino, por-salir, con-problema o recibidas, repetido si son varios;
-       todas o un valor desconocido no filtran). Lo que espera, en actas de papel con su botón; lo recibido,
-       en el cuaderno de la portada, una fila por fecha. Las donaciones vienen del controller
-       (recibidas: de la maqueta o de Donaciones); de piezas-entidad.html (datos) salen los grupos.
+       agrupado por estado, de la que espera en la puerta a la que ya se recibió. La búsqueda y los
+       filtros son el componente listado (R11-B04, componentes/listado; lo arma
+       RecibidasController): la fecha de registro (desde y hasta), el estado (con la cantidad de
+       cada uno; ?estado=en-tu-puerta, en-camino, por-salir, con-problema o recibidas, repetido o
+       separado por coma si son varios, como llega desde Necesidades: entonces una opción más los
+       junta), la categoría, quien donó (?quien=, solo si la fuente lo filtra por nombre: con
+       Donaciones no) y el orden (lo que hay que atender primero, más recientes o más antiguas, por
+       la fecha de registro). Funciona sin JavaScript, con un formulario GET; todas o un valor
+       desconocido no filtran. Lo que espera, en actas de papel con su botón; lo recibido, en el
+       cuaderno de la portada, una fila por fecha. Las donaciones vienen del controller (recibidas:
+       de la maqueta o de Donaciones); de piezas-entidad.html (datos) salen los grupos.
        ?escenario=vacio, lento, error y sin-resultados (el aceite ya no está y el filtro
        queda en Con problema: el filtro sin resultados).
        R11-43: con los datos reales llega una página de 20 (ya filtrada por Donaciones) y las cifras
@@ -39,10 +42,12 @@
              elegidos=${filtros.?[#root.pedidos.contains(',' + valor + ',')]},
              claves=${elegidos.![grupo]},
              filtrada=${!#lists.isEmpty(elegidos)},
+             conFiltros=${listado.filtrada() or filtrada},
+             soloEstado=${filtrada and listado.elegidos() == 1 + (listado.orden.elegida() ? 1 : 0)},
              conLista=${escenario != 'vacio' and escenario != 'error'},
              conDatos=${conLista and escenario != 'lento'},
              mostrados=${filtrada ? grupos.?[#root.claves.contains(clave)] : grupos},
-             encontradas=${asignadas.?[#root.claves.contains(grupo)]}">
+             encontradas=${filtrada ? asignadas.?[#root.claves.contains(grupo)] : asignadas}">
   <div class="recibidas">
     <header class="cabecera-entidad">
       <p class="rotulo" th:text="${seccion}">Donaciones recibidas</p>
@@ -67,37 +72,23 @@
          th:href="@{/entidad-necesidades}">Ver tus necesidades</a>
     </section>
 
-    <!--/* El filtro: una pastilla por estado, con su cantidad (el componente de filtros). Sin
-           JavaScript, se prenden las que hagan falta y se envía con "Filtrar". */-->
-    <form hx-boost="true" th:if="${conLista}" class="filtro" action="/entidad-recibidas"
-          th:action="@{/entidad-recibidas}" method="get" aria-label="Filtrar por estado">
-      <input th:if="${escenario == 'sin-resultados'}" type="hidden" name="escenario" value="sin-resultados">
-      <div class="filtros" role="group" aria-label="Estado">
-        <th:block th:each="f : ${filtros}"
-                  th:with="rotulo=|${f.nombre} (${paginada ? recibidas.cuantas[f.grupo] : #lists.size(asignadas.?[grupo == #root.f.grupo])})|,
-                           prendido=${claves.contains(f.grupo)}">
-          <label th:replace="~{componentes/filtros :: interruptor('estado', ${f.valor}, ${rotulo}, ${prendido})}"></label>
-        </th:block>
-        <button class="boton" data-tono="secundario" type="submit">Filtrar</button>
-        <a th:if="${filtrada}" class="filtros-sacar" href="/entidad-recibidas"
-           th:href="@{/entidad-recibidas}">Sacar los filtros</a>
-      </div>
-    </form>
+    <!--/* La búsqueda y los filtros: el componente listado. */-->
+    <th:block th:if="${conLista}"><form th:replace="~{componentes/listado :: listado(${listado})}"></form></th:block>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tus donaciones…</p>
     <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo" aria-busy="true"></div>
 
     <th:block th:if="${conDatos}">
       <!--/* Con un filtro puesto: cuál es y "Ver todas". */-->
-      <p th:if="${filtrada and !#lists.isEmpty(encontradas)}" class="mostrando">
-        <span th:text="|Mostrando: ${#strings.listJoin(elegidos.![nombre], ', ')} (${paginada ? recibidas.total : #lists.size(encontradas)}).|">Mostrando:
+      <p th:if="${conFiltros and !#lists.isEmpty(encontradas)}" class="mostrando">
+        <span th:text="${soloEstado} ? |Mostrando: ${#strings.listJoin(elegidos.![nombre], ', ')} (${paginada ? recibidas.total : #lists.size(encontradas)}).| : |Mostrando ${paginada ? recibidas.total : #lists.size(encontradas)} con esos filtros.|">Mostrando:
           En camino (1).</span>
         <a href="/entidad-recibidas" th:href="@{/entidad-recibidas}">Ver todas</a>
       </p>
-      <section th:if="${filtrada and #lists.isEmpty(encontradas)}" class="vacio"
+      <section th:if="${conFiltros and #lists.isEmpty(encontradas)}" class="vacio"
                aria-labelledby="sinres-titulo" tabindex="-1" autofocus>
-        <h2 id="sinres-titulo" th:text="${#lists.size(elegidos) == 1} ? 'No hay donaciones en ese estado.' : 'No hay donaciones en esos estados.'">No hay donaciones en ese estado.</h2>
-        <p>Probá con otro estado o mirá todas.</p>
+        <h2 id="sinres-titulo" th:text="${soloEstado and #lists.size(elegidos) == 1} ? 'No hay donaciones en ese estado.' : (${soloEstado} ? 'No hay donaciones en esos estados.' : 'No hay donaciones con esos filtros.')">No hay donaciones en ese estado.</h2>
+        <p>Probá con otras fechas, otro estado o categoría, o mirá todas.</p>
         <a class="boton" data-tono="secundario" href="/entidad-recibidas"
            th:href="@{/entidad-recibidas}">Ver todas</a>
       </section>

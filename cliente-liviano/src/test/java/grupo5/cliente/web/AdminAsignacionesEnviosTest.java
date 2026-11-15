@@ -21,6 +21,7 @@ import grupo5.cliente.vistas.ConsultaAsignaciones;
 import grupo5.cliente.vistas.ConsultaDecididas;
 import grupo5.cliente.vistas.Tramo;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -168,7 +169,9 @@ class AdminAsignacionesEnviosTest {
                     "arroz",
                     "descartadas",
                     "alimentos",
-                    "7-dias",
+                    LocalDate.of(2026, 11, 5),
+                    LocalDate.of(2026, 11, 11),
+                    "",
                     "vos",
                     "antiguas",
                     "sub-de-ana"));
@@ -206,7 +209,8 @@ class AdminAsignacionesEnviosTest {
     mvc.perform(
             get(
                 "/admin-asignaciones?vista=decididas&buscar=arroz&estado=descartadas"
-                    + "&categoria=alimentos&decidida=7-dias&decidio=vos&orden=antiguas"))
+                    + "&categoria=alimentos&desde=2026-11-05&hasta=2026-11-11&decidio=vos"
+                    + "&orden=antiguas"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Coincide 1 propuesta decidida.")))
         .andExpect(content().string(containsString("Descartó Leo Gómez el 11 de noviembre")))

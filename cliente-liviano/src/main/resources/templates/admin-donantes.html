@@ -6,9 +6,10 @@
        en la tabla adaptable.
        R11-01: la lista llega de a una página (adminDonantes.donantes, un vistas.Tramo), con la
        búsqueda, los filtros y el orden ya resueltos por la fuente: la plantilla no filtra ni cuenta.
-       El formulario GET lleva ?buscar=, ?tipo=, ?dona=, ?estado= y ?orden= (las opciones las da
-       adminDonantes.opciones: solo las que la fuente resuelve); debajo de la tabla, el paginador
-       provisorio (pieza paginador, ?pagina=N). Cambiar la búsqueda o un filtro vuelve a la página 1.
+       La barra es el componente listado (R11-B04): ?buscar=, ?estado=, ?tipo=, ?dona=, ?alta= y
+       ?orden= (las opciones las da adminDonantes.opciones: solo las que la fuente resuelve); debajo
+       de la tabla, el paginador provisorio (pieza paginador, ?pagina=N). Cambiar la búsqueda o un
+       filtro vuelve a la página 1.
        Si el admin subió un archivo en esta sesión y sigue importándose (o terminó y no abrió el
        resultado), una franja arriba lleva a su avance.
        R11-02: la importación tiene su página aparte (admin-donantes-importando y
@@ -28,7 +29,7 @@
        es la del primero (data-elegido="partida"): en el celular no se abre sola. La ficha lleva a
        sus donaciones (admin-donaciones?donante=<clave>): muestra el contacto del renglón
        (d.contacto) y sus 3 donaciones más recientes con el total (susDonaciones, una página de 3
-       pedida aparte; si no cargó, lo dice). La pastilla Alta (?alta=, un período fijo) se dibuja
+       pedida aparte; si no cargó, lo dice). El desplegable Alta (?alta=, un período fijo) se dibuja
        solo si la fuente filtra por fecha de alta (opciones.altas).
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'importando', 'importado' o
@@ -58,7 +59,6 @@
 <th:block th:fragment="lista(accion)"
     th:with="datos=${adminDonantes},
              c=${datos.consulta},
-             opciones=${datos.opciones},
              escenario=${param.escenario != null ? param.escenario[0] : ''},
              conDatos=${escenario != 'error' and escenario != 'lento' and escenario != 'vacio'},
              filtrado=${c.filtrada()},
@@ -161,33 +161,9 @@
       <!--/* Al cambiar de página, el foco vuelve al título de la lista. */-->
       <h2 id="lista-titulo" tabindex="-1"
           th:autofocus="${paginador != null and paginador.cambio}">Todos los donantes</h2>
-      <!--/* La búsqueda y los filtros, un solo formulario GET: el campo y "Buscar" en la misma línea, y
-             las pastillas al lado (debajo en el celular; componentes/filtros, la barra). Enviarlo no
-             lleva ?pagina=: vuelve a la primera. */-->
-      <form hx-boost="true" class="filtros-barra" action="/admin-donantes"
-            th:action="@{/admin-donantes}" method="get" role="search">
-        <div class="campo filtro-buscar">
-          <label for="buscar">Buscar por nombre o documento</label>
-          <div class="filtro-buscar-fila">
-            <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${c.buscar}"
-                   placeholder="Por ejemplo: Ana o 20.000.001">
-            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
-          </div>
-        </div>
-        <div class="filtros" role="group" aria-label="Filtrar los donantes">
-          <details th:replace="~{componentes/filtros :: menu('tipo', 'Tipo de donante', ${c.tipo}, ${opciones.tipos})}"></details>
-          <th:block th:if="${#lists.size(opciones.categorias) > 1}">
-            <details th:replace="~{componentes/filtros :: menu('dona', 'Qué dona', ${c.dona}, ${opciones.categorias})}"></details>
-          </th:block>
-          <details th:replace="~{componentes/filtros :: menu('estado', 'Estado de la cuenta', ${c.estado}, ${opciones.estados})}"></details>
-          <th:block th:if="${#lists.size(opciones.altas) > 1}">
-            <details th:replace="~{componentes/filtros :: menu('alta', 'Alta', ${c.alta}, ${opciones.altas})}"></details>
-          </th:block>
-          <details th:replace="~{componentes/filtros :: menu('orden', 'Más nuevos primero', ${c.orden}, ${opciones.ordenes})}"></details>
-          <a th:if="${filtrado or c.orden != ''}" class="filtros-sacar" href="/admin-donantes"
-             th:href="@{/admin-donantes}">Sacar los filtros</a>
-        </div>
-      </form>
+      <!--/* La búsqueda y los filtros: el componente listado (R11-B04; lo arma
+             AdminDonantesController). Enviarlo no lleva ?pagina=: vuelve a la primera. */-->
+      <form th:replace="~{componentes/listado :: listado(${listado})}"></form>
       <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco"></div>
       <p th:if="${conDatos and filtrado and n > 0}" role="status"
          th:text="${n == 1} ? 'Coincide 1 donante.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} donantes.|">Coinciden

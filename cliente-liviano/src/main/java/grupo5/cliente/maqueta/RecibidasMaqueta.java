@@ -1,10 +1,14 @@
 package grupo5.cliente.maqueta;
 
 import grupo5.cliente.puertos.RecibidasPuerto;
+import grupo5.cliente.vistas.Listado;
 import grupo5.cliente.vistas.RecibidasVista;
 import grupo5.cliente.vistas.RecibidasVista.Recibida;
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -100,9 +104,64 @@ class RecibidasMaqueta implements RecibidasPuerto {
           "15 de octubre de 2026, 18:30",
           3);
 
+  /**
+   * Cuándo se registró cada una en el depósito (R11-B04: la fecha de la barra). La recibida del 2
+   * de octubre se registró a fines de septiembre.
+   */
+  private static final Map<String, LocalDate> REGISTRADAS =
+      Map.ofEntries(
+          Map.entry(LENTEJAS, LocalDate.of(2026, 10, 12)),
+          Map.entry(ROPA, LocalDate.of(2026, 10, 11)),
+          Map.entry("aceite", LocalDate.of(2026, 10, 9)),
+          Map.entry(ARROZ, LocalDate.of(2026, 10, 13)),
+          Map.entry(LECHE, LocalDate.of(2026, 10, 10)),
+          Map.entry("r10", LocalDate.of(2026, 10, 7)),
+          Map.entry("r9", LocalDate.of(2026, 10, 6)),
+          Map.entry("r8", LocalDate.of(2026, 10, 4)),
+          Map.entry("r6", LocalDate.of(2026, 10, 3)),
+          Map.entry("r5", LocalDate.of(2026, 10, 2)),
+          Map.entry("r2", LocalDate.of(2026, 9, 28)));
+
   @Override
   public RecibidasVista recibidas(UUID entidad) {
     return RECIBIDAS;
+  }
+
+  /**
+   * Todas las de ejemplo con la fecha de registro, la categoría y quien donó de la barra (R11-B04),
+   * en el orden pedido dentro de cada grupo. El estado lo sigue filtrando la plantilla, así las
+   * cifras de cada grupo salen de la lista.
+   */
+  @Override
+  public RecibidasVista recibidas(UUID entidad, Consulta consulta) {
+    Comparator<Recibida> porFecha = Comparator.comparing(r -> REGISTRADAS.get(r.clave()));
+    Comparator<Recibida> orden =
+        switch (consulta.orden()) {
+          case Consulta.RECIENTES -> porFecha.reversed();
+          case Listado.ANTIGUAS -> porFecha;
+          default -> (a, b) -> 0;
+        };
+    List<Recibida> filtradas =
+        RECIBIDAS.asignadas().stream()
+            .filter(
+                r -> Listado.entre(REGISTRADAS.get(r.clave()), consulta.desde(), consulta.hasta()))
+            .filter(r -> consulta.categoria() == null || consulta.categoria().equals(valor(r)))
+            .filter(r -> Listado.contiene(r.dono(), consulta.donante()))
+            .sorted(orden)
+            .toList();
+    return new RecibidasVista(
+        filtradas, RECIBIDAS.mes(), RECIBIDAS.actualizado(), RECIBIDAS.novedades());
+  }
+
+  @Override
+  public List<Listado.Opcion> categorias() {
+    return List.of(
+        new Listado.Opcion("alimentos", TEXTO_ALIMENTOS), new Listado.Opcion(ROPA, "Ropa"));
+  }
+
+  /** El valor del filtro de su categoría ("alimentos"). */
+  private static String valor(Recibida r) {
+    return r.categoriaNombre() == null ? null : r.categoriaNombre().toLowerCase(Locale.ROOT);
   }
 
   /** Una de alimentos que todavía no se recibió; su pedido se llama como ella. */

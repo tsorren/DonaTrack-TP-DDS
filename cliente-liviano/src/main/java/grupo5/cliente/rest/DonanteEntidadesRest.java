@@ -55,6 +55,11 @@ class DonanteEntidadesRest implements DonanteEntidadesPuerto {
   }
 
   @Override
+  public boolean ordenaAlReves() {
+    return false;
+  }
+
+  @Override
   public DonanteEntidadesVista entidades(UUID donante, Consulta consulta) {
     Map<UUID, Subcategoria> subcategorias = subcategorias();
     List<DonanteEntidadesVista.Categoria> categorias = categorias(subcategorias);

@@ -3,7 +3,10 @@ package grupo5.cliente.web;
 import grupo5.cliente.puertos.AdminOperacionPuerto;
 import grupo5.cliente.vistas.AdminDonacionesVista;
 import grupo5.cliente.vistas.ConsultaDonaciones;
+import grupo5.cliente.vistas.Listado;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
@@ -51,12 +54,15 @@ public class AdminDonacionesController {
       @RequestParam(required = false) String orden,
       @RequestParam(required = false) String buscar,
       @RequestParam(required = false) String categoria,
-      @RequestParam(required = false) String registrada,
+      @RequestParam(required = false) String desde,
+      @RequestParam(required = false) String hasta,
+      @RequestParam(required = false) String quien,
       @RequestParam(required = false) String donante,
       @RequestParam(required = false) String donacion,
       Model model,
       HttpServletRequest pedido) {
     String vista = pantallas.mostrar("admin-donaciones", model);
+    LocalDate[] rango = Listado.rango(desde, hasta);
     ConsultaDonaciones consulta =
         new ConsultaDonaciones(
             estado,
@@ -65,14 +71,53 @@ public class AdminDonacionesController {
             Paginadores.pedida(pedido),
             buscar,
             categoria,
-            registrada,
+            rango[0],
+            rango[1],
+            operacion.donacionesPorQuien() ? quien : "",
             donante,
             donacion);
     AdminDonacionesVista datos = elegida(operacion.donaciones(consulta, ""), model);
     model.addAttribute("adminDonaciones", datos);
+    model.addAttribute("listado", listado(datos, operacion.donacionesPorQuien()));
     model.addAttribute(
         "paginador", Paginadores.de(pedido, "Páginas de donaciones", datos.donaciones()));
     return vista;
+  }
+
+  /**
+   * La barra (R11-B04): la búsqueda por lo que se donó, la fecha de registro, estado, categoría,
+   * quien donó (si la fuente lo filtra por nombre), "Vence" (si la fuente lo resuelve) y el orden
+   * que da la fuente. El donante que llega desde su ficha se conserva oculto, también al sacar los
+   * filtros.
+   */
+  private static Listado listado(AdminDonacionesVista datos, boolean conQuien) {
+    ConsultaDonaciones c = datos.consulta();
+    Listado.Armado barra =
+        Listado.en("donaciones", "/admin-donaciones", "Buscar y filtrar las donaciones")
+            .oculto("donante", c.donante())
+            .buscar("Buscar por lo que se donó", c.buscar(), "Por ejemplo: leche")
+            .fecha("Registrada", c.desde(), c.hasta())
+            .estado(c.estado(), opciones(datos.estados()))
+            .categoria(c.categoria(), opciones(datos.categoriasDelFiltro()));
+    if (conQuien) {
+      barra.quien("Donante", c.quien(), "Por ejemplo: Ana");
+    }
+    if (datos.conVence()) {
+      barra.otra(
+          new Listado.Eleccion(
+              "vence", "Vence", c.pronto() ? "pronto" : "", opciones(datos.vencimientos())));
+    }
+    return barra
+        .orden(c.orden(), opciones(datos.ordenes()))
+        .sacar(
+            c.donante().isEmpty()
+                ? "/admin-donaciones"
+                : "/admin-donaciones?donante=" + c.donante())
+        .listo();
+  }
+
+  private static List<Listado.Opcion> opciones(List<AdminDonacionesVista.Opcion> opciones) {
+    return opciones.stream().map(o -> new Listado.Opcion(o.valor(), o.texto())).toList();
   }
 
   /**
@@ -148,6 +193,13 @@ public class AdminDonacionesController {
     }
     String vista = pantallas.mostrar(pantalla, model);
     model.addAttribute("registro", operacion.registro(buscar, donante));
+    // R11-B04: la búsqueda del donante es la barra de las listas, solo con Buscar
+    model.addAttribute(
+        "listado",
+        Listado.en("donantes", "/admin-donaciones-registrar", "Quién dona")
+            .buscar("Buscar por nombre o documento", buscar, "Por ejemplo: comedor")
+            .sacar("/admin-donaciones-registrar")
+            .listo());
     return vista;
   }
 }

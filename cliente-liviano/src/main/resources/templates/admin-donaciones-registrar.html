@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--/* Raíces, Registrar donación del admin (RF-15), según su ficha de flujo
        (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.6). Tres pasos: quién dona, qué
-       llegó y dónde quedó. "Quién dona" es un formulario aparte (GET): ?buscar=<texto> muestra los
-       donantes que coinciden y ?donante=<clave> deja uno elegido (así llega desde
+       llegó y dónde quedó. "Quién dona" es un formulario aparte (GET, el componente listado de
+       R11-B04, solo con Buscar): ?buscar=<texto> muestra los donantes que coinciden y ?donante=<clave> deja uno elegido (así llega desde
        admin-donantes-registrado, "en un mismo flujo" de RF-15). "Sumar otro bien" manda el formulario
        por GET con ?bienes=<n> (sin validar) y vuelve con un bien más; sumarlo en el lugar con Alpine
        queda para después: sin él, todo funciona. El registro es un formulario real (POST, multipart
@@ -75,14 +75,8 @@
           donante</a></p>
       </th:block>
       <th:block th:if="${donante == null}">
-        <form hx-boost="true" class="racimo" action="/admin-donaciones-registrar" th:action="@{/admin-donaciones-registrar}"
-              method="get" role="search">
-          <div class="campo">
-            <label for="buscar">Buscar por nombre o documento</label>
-            <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${buscado}" placeholder="Por ejemplo: comedor">
-          </div>
-          <button class="boton" data-tono="secundario" type="submit">Buscar</button>
-        </form>
+        <!--/* La búsqueda: el componente listado, solo con Buscar (lo arma AdminDonacionesController). */-->
+        <form th:replace="~{componentes/listado :: listado(${listado})}"></form>
         <th:block th:if="${buscado != null}">
           <!--/* R11-01: Donaciones busca y da hasta 10, con cuántos coinciden; con más de 10, se pide escribir
                  más (es un buscador para elegir uno, no un listado: no se pagina). */-->

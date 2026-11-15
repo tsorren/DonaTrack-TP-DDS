@@ -75,6 +75,12 @@ class AdminNotificacionesRest implements AdminNotificacionesPuerto {
     return Collections.unmodifiableMap(tipos);
   }
 
+  /** Notificaciones no filtra por la fecha del aviso (R11-B04). */
+  @Override
+  public boolean filtraPorFecha() {
+    return false;
+  }
+
   @Override
   public AdminNotificacionesVista bandeja(ConsultaBandeja consulta) {
     LocalDateTime ahora =

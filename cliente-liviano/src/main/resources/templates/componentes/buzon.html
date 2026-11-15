@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <!--/* Componente buzón (usuario, 2026-11-10, con la bandeja de notificaciones de GitHub de referencia):
-       la bandeja de notificaciones de los tres roles. Arriba, la barra (un formulario get con
-       hx-boost): «Todas | Sin leer» (.segmentos), la búsqueda y las pastillas Categoría, Ordenar y
-       Agrupar (componentes/filtros). Debajo, la lista en una lámina de papel: la cabecera con
+       la bandeja de notificaciones de los tres roles. Arriba, la barra: el componente listado
+       (R11-B04, componentes/listado; la arma BandejaDeNotificaciones y llega en el modelo como
+       listado): la búsqueda, la fecha del aviso (solo si la fuente la filtra: Notificaciones no),
+       Estado (Todas, Sin leer o Leídas; reemplaza a «Todas | Sin leer»), Categoría, Agrupar y
+       Ordenar. Debajo, la lista en una lámina de papel: la cabecera con
        «Seleccionar todas» (solo con JavaScript) y «Marcar todas como leídas», los títulos de las
        columnas (en la computadora) y una fila por notificación: el punto si no se leyó, la casilla, el
        ícono de su categoría, el mensaje (el enlace a dónde ir), a qué está asociada (.chip) y hace
@@ -16,8 +18,10 @@
        En la maqueta las dos llevan a la pantalla -leidas (todas leídas); en el sistema, hx-post con
        hx-indicator que cambia solo esas filas.
 
-       Los filtros llegan por la dirección y se validan acá: ?ver=sin-leer, ?buscar=, ?tema=<valor de
-       temas>, ?orden=viejas (sin él, más nuevas primero) y ?agrupar=no (sin él, por fecha).
+       Los filtros llegan por la dirección con los nombres de todas las listas (R11-B04):
+       ?estado=sin-leer o leidas, ?buscar=, ?desde= y ?hasta=, ?categoria=<valor de temas>,
+       ?orden=antiguas (sin él, más recientes primero) y ?agrupar=fecha (sin él, sin agrupar). Los
+       de antes (?ver=sin-leer, ?tema= y ?orden=viejas) siguen valiendo.
 
        Fragmentos:
        - pagina(ruta, rutaLeidas, b, sinLeer, paginador, marcadas, noLeidas): la bandeja paginada
@@ -47,18 +51,25 @@
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
 <div th:fragment="buzon(ruta, rutaLeidas, ahora, fuentes, temas, todasLeidas)" class="pila" data-espacio="4"
-     th:with="fVer=${param.ver != null and param.ver[0] == 'sin-leer' ? 'sin-leer' : ''},
-              fTema=${param.tema != null and param.tema[0] != '' and #lists.contains(temas.![valor], param.tema[0]) ? param.tema[0] : ''},
-              fOrden=${param.orden != null and param.orden[0] == 'viejas' ? 'viejas' : ''},
-              fAgrupar=${param.agrupar == null ? 'no' : (param.agrupar[0] == 'no' ? 'no' : '')},
-              q=${param.buscar != null ? #strings.trim(param.buscar[0]) : ''},
+     th:with="barra=${listado.conCategorias(temas)},
+              fVer=${barra.estado.elegido == 'sin-leer' ? 'sin-leer' : ''},
+              fLeidas=${barra.estado.elegido == 'leidas'},
+              fTema=${barra.categoria.elegido},
+              fOrden=${barra.orden.elegida() ? 'viejas' : ''},
+              fAgrupar=${barra.otra('agrupar').elegido == 'fecha' ? '' : 'no'},
+              fDesde=${barra.fecha == null or barra.fecha.desde == null ? '' : barra.fecha.desde.toString()},
+              fHasta=${barra.fecha == null or barra.fecha.hasta == null ? '' : barra.fecha.hasta.toString()},
+              q=${barra.buscar.valor},
               reloj=${#temporals.createDateTime(ahora)},
               dHoy=${reloj.toLocalDate().toString()},
               dAyer=${reloj.toLocalDate().minusDays(1).toString()},
               dLunes=${reloj.toLocalDate().minusDays(reloj.getDayOfWeek().getValue() - 1).toString()},
               claves=${#lists.sort(#strings.listSplit(#strings.listJoin(fuentes.![#strings.listJoin(#this.?[
                   (#root.fVer == '' or (!#root.todasLeidas and !leida))
+                  and (!#root.fLeidas or #root.todasLeidas or leida)
                   and (#root.fTema == '' or tema == #root.fTema)
+                  and (#root.fDesde == '' or fecha.substring(0, 10) >= #root.fDesde)
+                  and (#root.fHasta == '' or fecha.substring(0, 10) <= #root.fHasta)
                   and (#root.q == '' or #strings.containsIgnoreCase(texto, #root.q))].![fecha + '|' + id], ',')], ','), ','))},
               sinLeerVistas=${todasLeidas ? 0 : #aggregates.sum(fuentes.![#this.?[!leida and #lists.contains(#root.claves, fecha + '|' + id)].size()])},
               grupos=${fAgrupar == 'no' ? { {texto: '', desde: '0', hasta: '9'} } : {
@@ -66,39 +77,10 @@
                   {texto: 'Esta semana', desde: dLunes, hasta: dAyer},
                   {texto: 'Antes', desde: '0', hasta: (dLunes < dAyer ? dLunes : dAyer)} } },
               orden=${fAgrupar == 'no' ? {0} : (fOrden == 'viejas' ? {3, 2, 1, 0} : {0, 1, 2, 3})},
-              filtrado=${q != '' or fTema != ''}">
+              filtrado=${q != '' or fTema != '' or fLeidas or fDesde != '' or fHasta != ''}">
 
-  <!--/* La barra: un solo formulario get. Con hx-boost cambia la lista sin recargar ni volver arriba;
-         tocar una opción ya filtra (data-al-cambiar, static/js/paneles.js). */-->
-  <form hx-boost="true" class="filtros-barra" action="#" th:action="${ruta}" method="get" role="search"
-        data-al-cambiar>
-    <nav class="segmentos" aria-label="Qué notificaciones ver"
-         th:with="resto=${(q != '' ? '&buscar=' + #uris.escapeQueryParam(q) : '') + (fTema != '' ? '&tema=' + fTema : '')
-                  + (fOrden != '' ? '&orden=' + fOrden : '') + (fAgrupar != '' ? '&agrupar=' + fAgrupar : '')}">
-      <a href="#" th:href="${resto == '' ? ruta : ruta + '?' + #strings.substring(resto, 1)}"
-         th:attr="aria-current=${fVer == ''} ? 'page' : null">Todas</a>
-      <a href="#" th:href="${ruta + '?ver=sin-leer' + resto}"
-         th:attr="aria-current=${fVer != ''} ? 'page' : null">Sin leer</a>
-    </nav>
-    <input th:if="${fVer != ''}" type="hidden" name="ver" value="sin-leer">
-    <div class="campo filtro-buscar">
-      <label for="buscar-notificaciones">Buscar en las notificaciones</label>
-      <div class="filtro-buscar-fila">
-        <input id="buscar-notificaciones" name="buscar" type="search" autocomplete="off" th:value="${q}"
-               placeholder="Por ejemplo: camión">
-        <button class="boton" data-tono="secundario" type="submit">Buscar</button>
-      </div>
-    </div>
-    <div class="filtros" role="group" aria-label="Filtrar y ordenar las notificaciones">
-      <details th:replace="~{componentes/filtros :: menu('tema', 'Categoría', ${fTema}, ${temas})}"></details>
-      <details th:replace="~{componentes/filtros :: menu('orden', 'Ordenar: más nuevas primero', ${fOrden}, ${ {
-          {valor: '', texto: 'Más nuevas primero'}, {valor: 'viejas', texto: 'Más viejas primero'} } })}"></details>
-      <details th:replace="~{componentes/filtros :: menu('agrupar', 'Agrupar: por fecha', ${fAgrupar}, ${ {
-          {valor: '', texto: 'Por fecha'}, {valor: 'no', texto: 'Sin agrupar'} } })}"></details>
-      <a th:if="${filtrado or fOrden != '' or fVer != '' or param.agrupar != null}" class="filtros-sacar" href="#"
-         th:href="${ruta}">Sacar los filtros</a>
-    </div>
-  </form>
+  <!--/* La barra: el componente listado (R11-B04), con las categorías de esta bandeja. */-->
+  <form th:replace="~{componentes/listado :: listado(${barra})}"></form>
 
   <p th:if="${filtrado and !#lists.isEmpty(claves)}" role="status"
      th:text="${#lists.size(claves) == 1} ? 'Coincide 1 notificación.' : |Coinciden ${#lists.size(claves)} notificaciones.|">Coinciden
@@ -153,14 +135,15 @@
        con una sola página). marcadas y noLeidas, lo que la maqueta marcó sin guardar ('todas' o los
        ids separados por coma; '' en el sistema). Cada aviso tiene id, fecha, titulo, texto, tema,
        destino, vinculo, leida, boton, que y nota. 20 por página (vistas.ConsultaBandeja). */-->
-<div th:fragment="pagina(ruta, rutaLeidas, b, sinLeer, paginador, marcadas, noLeidas)" class="pila buzon-bandeja"
+<div th:fragment="pagina(ruta, rutaLeidas, b, sinLeer, paginador, marcadas, noLeidas)" class="pila"
      data-espacio="4"
      th:with="temas=${b.temas}, tramo=${b.pagina},
-              fVer=${param.ver != null and param.ver[0] == 'sin-leer' ? 'sin-leer' : ''},
-              fTema=${param.tema != null and param.tema[0] != '' and #lists.contains(temas.![valor], param.tema[0]) ? param.tema[0] : ''},
-              fOrden=${param.orden != null and param.orden[0] == 'viejas' ? 'viejas' : ''},
-              fAgrupar=${param.agrupar == null ? 'no' : (param.agrupar[0] == 'no' ? 'no' : '')},
-              q=${param.buscar != null ? #strings.trim(param.buscar[0]) : ''},
+              fVer=${listado.estado.elegido},
+              fTema=${listado.categoria.elegida() ? listado.categoria.elegido : ''},
+              fOrden=${listado.orden.elegida() ? 'viejas' : ''},
+              fAgrupar=${listado.otras[0].elegido == 'fecha' ? '' : 'no'},
+              conFecha=${listado.fecha != null and listado.fecha.elegida()},
+              q=${listado.buscar.valor},
               reloj=${#temporals.createDateTime(b.ahora)},
               dHoy=${reloj.toLocalDate().toString()},
               dAyer=${reloj.toLocalDate().minusDays(1).toString()},
@@ -174,55 +157,30 @@
                   {texto: 'Esta semana', desde: dLunes, hasta: dAyer},
                   {texto: 'Antes', desde: '0', hasta: (dLunes < dAyer ? dLunes : dAyer)} } },
               orden=${fAgrupar == 'no' ? {0} : (fOrden == 'viejas' ? {3, 2, 1, 0} : {0, 1, 2, 3})},
-              filtrado=${q != '' or fTema != ''},
-              vuelta=${(fVer != '' ? '&ver=sin-leer' : '') + (q != '' ? '&buscar=' + #uris.escapeQueryParam(q) : '')
-                  + (fTema != '' ? '&tema=' + fTema : '') + (fOrden != '' ? '&orden=' + fOrden : '')
-                  + (param.agrupar != null ? '&agrupar=' + fAgrupar : '') + (tramo.pagina > 1 ? '&pagina=' + tramo.pagina : '')},
+              filtrado=${q != '' or fTema != '' or conFecha},
+              vuelta=${(fVer != '' ? '&estado=' + fVer : '') + (q != '' ? '&buscar=' + #uris.escapeQueryParam(q) : '')
+                  + (fTema != '' ? '&categoria=' + fTema : '') + (fOrden != '' ? '&orden=antiguas' : '')
+                  + (fAgrupar == '' ? '&agrupar=fecha' : '')
+                  + (listado.fecha != null and listado.fecha.desde != null ? '&desde=' + listado.fecha.desde : '')
+                  + (listado.fecha != null and listado.fecha.hasta != null ? '&hasta=' + listado.fecha.hasta : '')
+                  + (tramo.pagina > 1 ? '&pagina=' + tramo.pagina : '')},
               desde=${(tramo.pagina - 1) * 20 + 1},
               hasta=${(tramo.pagina - 1) * 20 + #lists.size(tramo.filas)}">
 
-  <!--/* La barra: un solo formulario get, como la del buzón de siempre. Cambiar un filtro vuelve a
-         la página 1. */-->
-  <form hx-boost="true" class="filtros-barra" action="#" th:action="${ruta}" method="get" role="search"
-        data-al-cambiar>
-    <nav class="segmentos" aria-label="Qué notificaciones ver"
-         th:with="resto=${(q != '' ? '&buscar=' + #uris.escapeQueryParam(q) : '') + (fTema != '' ? '&tema=' + fTema : '')
-                  + (fOrden != '' ? '&orden=' + fOrden : '') + (fAgrupar != '' ? '&agrupar=' + fAgrupar : '')}">
-      <a href="#" th:href="${resto == '' ? ruta : ruta + '?' + #strings.substring(resto, 1)}"
-         th:attr="aria-current=${fVer == ''} ? 'page' : null">Todas</a>
-      <a href="#" th:href="${ruta + '?ver=sin-leer' + resto}"
-         th:attr="aria-current=${fVer != ''} ? 'page' : null">Sin leer</a>
-    </nav>
-    <input th:if="${fVer != ''}" type="hidden" name="ver" value="sin-leer">
-    <div class="campo filtro-buscar">
-      <label for="buscar-notificaciones">Buscar en las notificaciones</label>
-      <div class="filtro-buscar-fila">
-        <input id="buscar-notificaciones" name="buscar" type="search" autocomplete="off" maxlength="100"
-               th:value="${q}" placeholder="Por ejemplo: camión">
-        <button class="boton" data-tono="secundario" type="submit">Buscar</button>
-      </div>
-    </div>
-    <div class="filtros" role="group" aria-label="Filtrar y ordenar las notificaciones">
-      <details th:replace="~{componentes/filtros :: menu('tema', 'Categoría', ${fTema}, ${temas})}"></details>
-      <details th:replace="~{componentes/filtros :: menu('orden', 'Ordenar: más nuevas primero', ${fOrden}, ${ {
-          {valor: '', texto: 'Más nuevas primero'}, {valor: 'viejas', texto: 'Más viejas primero'} } })}"></details>
-      <details th:replace="~{componentes/filtros :: menu('agrupar', 'Agrupar: por fecha', ${fAgrupar}, ${ {
-          {valor: '', texto: 'Por fecha'}, {valor: 'no', texto: 'Sin agrupar'} } })}"></details>
-      <a th:if="${filtrado or fOrden != '' or fVer != '' or param.agrupar != null}" class="filtros-sacar" href="#"
-         th:href="${ruta}">Sacar los filtros</a>
-    </div>
-  </form>
+  <!--/* La barra: el componente listado (R11-B04; la arma BandejaDeNotificaciones). Cambiar un
+         filtro vuelve a la página 1. */-->
+  <form th:replace="~{componentes/listado :: listado(${listado})}"></form>
 
   <p th:if="${filtrado and tramo.total > 0}" role="status"
      th:text="${tramo.total == 1} ? 'Coincide 1 notificación.' : |Coinciden ${#numbers.formatInteger(tramo.total, 1, 'POINT')} notificaciones.|">Coinciden
     12 notificaciones.</p>
 
-  <section th:if="${tramo.total == 0 and fVer != '' and !filtrado}" class="vacio" aria-labelledby="buzon-vacio">
+  <section th:if="${tramo.total == 0 and fVer == 'sin-leer' and !filtrado}" class="vacio" aria-labelledby="buzon-vacio">
     <h2 id="buzon-vacio">No tenés notificaciones sin leer.</h2>
     <p>Las que ya leíste siguen en Todas.</p>
     <a class="boton" data-tono="secundario" href="#" th:href="${ruta}">Ver todas</a>
   </section>
-  <section th:if="${tramo.total == 0 and (fVer == '' or filtrado)}" class="vacio" aria-labelledby="buzon-vacio">
+  <section th:if="${tramo.total == 0 and (fVer != 'sin-leer' or filtrado)}" class="vacio" aria-labelledby="buzon-vacio">
     <h2 id="buzon-vacio">Ninguna notificación coincide con lo que buscaste.</h2>
     <p>Probá con otras palabras o sacá los filtros.</p>
     <a class="boton" data-tono="secundario" href="#" th:href="${ruta}">Ver todas</a>

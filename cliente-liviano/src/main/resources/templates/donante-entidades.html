@@ -8,9 +8,11 @@
        palabras.
        "Cómo llega tu donación" es una franja de ayuda (aside, fondo agua, ícono de información) arriba
        de la búsqueda, en todos los estados: es texto fijo.
-       Búsqueda y filtros en una barra (componentes/filtros, .filtros-barra): por nombre (?nombre=),
-       categoría (?categoria=, una de las de la vista: con Donaciones, su id; en la maqueta,
-       alimentos|ropa|muebles|escolares) y "Ya doné" (?ya=si). Los tres los resuelve el puerto sobre
+       Búsqueda y filtros en el componente listado (R11-B04, componentes/listado; lo arma
+       DonanteEntidadesController): por nombre (?buscar=; ?nombre= sigue valiendo), categoría
+       (?categoria=, una de las de la vista: con Donaciones, su id; en la maqueta,
+       alimentos|ropa|muebles|escolares) y "Ya doné" (?ya=si). La organización no tiene fecha,
+       estado, quién ni orden propios: esos campos no van. Los tres los resuelve el puerto sobre
        todas las organizaciones activas (R11-12): la plantilla no vuelve a filtrar y el total y las
        páginas son los del filtro. Con una categoría elegida, sus pedidos van primero en cada tarjeta.
        Paginado de seis con el componente paginas (?pagina=2 a 8: la maqueta dibuja las dos primeras;
@@ -36,10 +38,9 @@
 <th:block th:fragment="cuerpo"
     th:with="entidades=${misEntidades.entidades},
              categorias=${misEntidades.categorias},
-             busca=${param.nombre != null ? #strings.trim(param.nombre[0]) : ''},
-             pedidaCategoria=${param.categoria != null ? param.categoria[0] : ''},
-             categoria=${categorias.?[valor == #root.pedidaCategoria].isEmpty() ? '' : pedidaCategoria},
-             soloYa=${param.ya != null and param.ya[0] == 'si'},
+             busca=${listado.buscar.valor},
+             categoria=${listado.categoria.elegido},
+             soloYa=${listado.casillas[0].prendida},
              filtrado=${categoria != '' or soloYa},
              total=${misEntidades.total},
              sinEntidades=${total == 0 and busca == '' and !filtrado},
@@ -69,26 +70,10 @@
       <p>Cuando una organización se sume y la aprueben, aparece acá con lo que pide.</p>
     </section>
 
-    <!--/* La búsqueda y los filtros, un solo formulario GET (componentes/filtros, la barra): al lado
-           de la búsqueda en pantalla ancha, debajo en el celular. Las categorías son las de la vista
+    <!--/* La búsqueda y los filtros: el componente listado. Las categorías son las de la vista
            (las reales con Donaciones), no una lista fija. */-->
-    <form hx-boost="true" th:if="${(escenario == '' and !sinEntidades) or escenario == 'lento'}" class="filtros-barra" role="search"
-          action="/donante-entidades" th:action="@{/donante-entidades}"
-          method="get" aria-label="Buscar organizaciones">
-      <div class="campo filtro-buscar">
-        <label for="nombre">Buscar por nombre</label>
-        <div class="filtro-buscar-fila">
-          <input id="nombre" name="nombre" type="search" autocomplete="off" th:value="${busca}" placeholder="Por ejemplo: Comedor">
-          <button class="boton" data-tono="secundario" type="submit">Buscar</button>
-        </div>
-      </div>
-      <div class="filtros" role="group" aria-label="Filtrar las organizaciones">
-        <details th:replace="~{componentes/filtros :: menu('categoria', 'Categoría', ${categoria}, ${misEntidades.opcionesDeCategoria()})}"></details>
-        <label th:replace="~{componentes/filtros :: interruptor('ya', 'si', 'Ya doné', ${soloYa})}"></label>
-        <a th:if="${busca != '' or filtrado}" class="filtros-sacar" href="/donante-entidades"
-           th:href="@{/donante-entidades}">Ver todas</a>
-      </div>
-    </form>
+    <th:block th:if="${(escenario == '' and !sinEntidades) or escenario == 'lento'}"><form
+        th:replace="~{componentes/listado :: listado(${listado})}"></form></th:block>
 
     <th:block th:if="${escenario == 'lento'}">
       <p class="cargando" role="status">Cargando las organizaciones…</p>

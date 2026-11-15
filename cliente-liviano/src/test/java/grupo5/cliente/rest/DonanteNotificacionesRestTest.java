@@ -123,6 +123,24 @@ class DonanteNotificacionesRestTest {
     assertDoesNotThrow(() -> apis.verify());
   }
 
+  /**
+   * R11-B04: "Leídas" va como {@code leida=true}; la fecha del aviso no la filtra Notificaciones,
+   * así que el campo no se ofrece y las fechas no viajan.
+   */
+  @Test
+  void lasLeidasVanAlServicioYLaFechaNoSeOfrece() {
+    apis.expect(requestTo(BANDEJA + "?leida=true&page=0&size=20"))
+        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).headers(total(0)));
+    apis.expect(requestTo(CONTEO))
+        .andRespond(withSuccess("{\"noLeidas\": 0}", MediaType.APPLICATION_JSON));
+
+    adaptador.bandeja(
+        PERSONA, ConsultaBandeja.de("leidas", "", "", "", "2026-10-01", "2026-10-31", 1));
+
+    assertDoesNotThrow(() -> apis.verify());
+    assertEquals(false, adaptador.filtraPorFecha());
+  }
+
   @Test
   void otrasNovedadesExcluyeLosTiposDeLasDemasCategorias() {
     apis.expect(

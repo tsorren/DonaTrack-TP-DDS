@@ -81,11 +81,6 @@
   padding-block: 0;
 }
 
-/* La búsqueda: el campo y "Buscar" en la misma fila, con el mismo alto (componentes/filtros.css). */
-.filtro-buscar {
-  max-width: 40rem;
-}
-
 /* --- Entidades (ronda del 2026-11-09, tarde: la prueba admin-entidades-c pasó a ser la pantalla;
    ronda del 2026-11-10: una sola lista y la ficha de la maqueta 15, en componentes/maestro.css) -- */
 

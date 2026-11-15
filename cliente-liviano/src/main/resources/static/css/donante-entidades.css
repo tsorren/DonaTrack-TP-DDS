@@ -9,8 +9,8 @@
   max-width: 82rem;
 }
 
-[data-v="entidades"] > .filtros-barra {
-  margin: 0 0 1.25rem;
+[data-v="entidades"] > .listado {
+  margin-bottom: var(--espacio-4);
 }
 
 /* Las tarjetas privadas conservan el formato de publico-entidades, pero señalan el vínculo previo

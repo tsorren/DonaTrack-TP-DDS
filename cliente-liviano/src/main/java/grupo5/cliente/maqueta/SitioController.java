@@ -1,10 +1,12 @@
 package grupo5.cliente.maqueta;
 
+import grupo5.cliente.vistas.Listado;
 import grupo5.cliente.vistas.Paginador;
 import grupo5.cliente.vistas.Tramo;
 import grupo5.cliente.web.Pantallas;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.context.annotation.Profile;
@@ -60,7 +62,40 @@ class SitioController {
     modelo.addAttribute("paginasMedio", muestraDePaginas("en el medio", medio));
     modelo.addAttribute("paginasUltima", muestraDePaginas("en la última", MUESTRA_PAGINAS));
     modelo.addAttribute("paginasCorta", muestraDePaginas("en la forma corta", 3));
+    modelo.addAttribute("listadoLibre", muestraDeListado(false));
+    modelo.addAttribute("listadoElegido", muestraDeListado(true));
     return "estilos";
+  }
+
+  /**
+   * Una muestra del componente listado (R11-B04) con todos sus campos: sin nada elegido o con cada
+   * campo elegido (entonces dice cuántos y ofrece "Sacar los filtros"). Vuelve a /estilos.
+   */
+  private static Listado muestraDeListado(boolean elegido) {
+    String id = elegido ? "muestra-elegido" : "muestra-libre";
+    return Listado.en(id, "/estilos", "Buscar y filtrar la muestra")
+        .buscar("Buscar por lo que se donó", elegido ? "leche" : "", "Por ejemplo: leche")
+        .fecha(
+            "Registrada",
+            elegido ? LocalDate.of(2026, 10, 1) : null,
+            elegido ? LocalDate.of(2026, 10, 15) : null)
+        .estado(
+            elegido ? "entregada" : "",
+            List.of(
+                new Listado.Opcion("", "Todos"),
+                new Listado.Opcion("pendiente", "Pendiente"),
+                new Listado.Opcion("entregada", "Entregada")))
+        .categoria(
+            elegido ? "alimentos" : "",
+            List.of(
+                new Listado.Opcion("", "Todas"),
+                new Listado.Opcion("alimentos", "Alimentos"),
+                new Listado.Opcion("ropa", "Ropa")))
+        .quien("Donante", elegido ? "Ana" : "", "Por ejemplo: Ana")
+        .casilla("ya", "si", "Ya doné", elegido)
+        .orden(elegido ? Listado.ANTIGUAS : "", Listado.POR_FECHA)
+        .sacar("/estilos")
+        .listo();
   }
 
   /**

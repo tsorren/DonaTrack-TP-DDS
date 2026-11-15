@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -456,6 +457,174 @@ class InterfazFitnessTest {
         .contains("globalViewTransitions");
   }
 
+  // --- Kit de listas (R11-B04, opción A del harness de frontend) ---
+
+  private static final String LISTADO = "componentes/listado.html";
+
+  /** Las listas con búsqueda o filtros: tienen que seguir usando el fragmento. */
+  private static final List<String> LISTAS =
+      List.of(
+          "donante-donaciones.html",
+          "persona/donante-donaciones.html",
+          "entidad-recibidas.html",
+          "donante-entidades.html",
+          "persona/donante-entidades.html",
+          "admin-donaciones.html",
+          "admin-asignaciones.html",
+          "componentes/buzon.html",
+          "admin-actividad.html",
+          "admin-camiones.html",
+          "admin-donaciones-registrar.html",
+          "admin-donantes.html",
+          "admin-entidades.html",
+          "admin-importaciones.html",
+          "publico-entidades.html",
+          "publico-donaciones.html",
+          "publico-mapa.html");
+
+  /**
+   * Formularios de filtro que quedan fuera del fragmento, con su motivo. Ranking: el mes es un
+   * selector de período con "Volver al último mes" (R11-23), no una búsqueda; /estilos, la muestra
+   * de esa barra en el catálogo. DTI-44.
+   */
+  private static final Set<String> BARRAS_EXCEPTUADAS =
+      Set.of("admin-ranking.html", "estilos.html");
+
+  private static final Pattern USA_LISTADO = Pattern.compile("~\\{\\s*componentes/listado\\s*::");
+
+  /** Un formulario de búsqueda o de filtros armado a mano (la barra vieja o una nueva). */
+  private static final Pattern FORMULARIO_DE_FILTRO =
+      Pattern.compile(
+          "<form\\b(?:[^>\"]|\"[^\"]*\")*?(role=\"search\"|class=\"[^\"]*\\bfiltros?(-barra)?\\b)");
+
+  /** Los campos comunes de la barra: un solo nombre de parámetro por campo en el sitio entero. */
+  private static final Set<String> PARAMETROS_COMUNES =
+      Set.of("buscar", "desde", "hasta", "estado", "categoria", "quien", "orden");
+
+  /**
+   * Los nombres viejos de un campo común: ninguna barra los dibuja. La mayoría sigue valiendo como
+   * alias en su controller; registrada y decidida ya no se entienden (DTI-44, ítem 8).
+   */
+  private static final Set<String> NOMBRES_VIEJOS =
+      Set.of("q", "nombre", "ver", "pedidos", "tema", "registrada", "decidida", "mes");
+
+  /** Los parámetros propios de una pantalla, con la pantalla que los usa. */
+  private static final Set<String> PARAMETROS_PROPIOS =
+      Set.of(
+          "subcategoria", // Mis donaciones
+          "ya", // Organizaciones del donante
+          "vence", // Donaciones del admin
+          "donante", // Donaciones del admin, desde la ficha del donante (oculto)
+          "decidio", // Asignaciones decididas
+          "algoritmo", // Asignaciones, Propuestas
+          "pestana", // Asignaciones, Propuestas y Destino (oculto)
+          "vista", // Notificaciones (agrupar)
+          "agrupar", // Notificaciones
+          "autor", // Actividad del admin (Quién: un desplegable de cuentas, no el texto de quien)
+          "accion", // Actividad del admin
+          "tipo", // Organizaciones y Donantes del admin
+          "dona", // Donantes del admin
+          "alta", // Donantes del admin (período; la fuente no resuelve un rango)
+          "pedido", // Organizaciones del admin y Entidades públicas (Necesidades)
+          "entidad", // Organizaciones del admin, la elegida (oculto)
+          "capacidad", // Camiones del admin
+          "camion", // Camiones del admin, el elegido (oculto)
+          "emergencia", // Entidades públicas
+          "periodo", // Entregas confirmadas públicas (la fuente no resuelve un rango)
+          "escenario"); // Estados de la maqueta (oculto)
+
+  private static final Pattern PARAMETRO_DE_BARRA =
+      Pattern.compile(
+          "(?:\\bnew\\s+(?:Listado\\.)?Eleccion|\\bEleccion\\.deVista|\\.casilla|\\.oculto)"
+              + "\\(\\s*\"([\\w-]+)\"");
+
+  /** Tope de declaraciones de medida con valor literal en las hojas: solo baja. */
+  private static final int TOPE_DE_MEDIDAS_LITERALES = 1192;
+
+  private static final Pattern MEDIDA_LITERAL =
+      Pattern.compile(
+          "\\b(margin|padding|gap|font-size|inset|top|left|right|bottom|width|height|max-width"
+              + "|min-width|max-height|min-height)[\\w-]*\\s*:[^;{}]*?\\b\\d++(?:rem|px|em)\\b");
+
+  @Test
+  void ningunaPlantillaArmaSuPropiaBarraDeBusquedaOFiltros() {
+    List<String> fallas = new ArrayList<>();
+    for (Path plantilla : archivos(PLANTILLAS, HTML)) {
+      String relativa = PLANTILLAS.relativize(plantilla).toString().replace('\\', '/');
+      if (!relativa.equals(LISTADO)
+          && !BARRAS_EXCEPTUADAS.contains(relativa)
+          && !barrasPropias(leer(plantilla)).isEmpty()) {
+        fallas.add(relativa + ": arma su propio formulario de búsqueda o filtros");
+      }
+    }
+    for (String lista : LISTAS) {
+      if (!USA_LISTADO.matcher(leer(PLANTILLAS.resolve(lista))).find()) {
+        fallas.add(lista + ": no usa componentes/listado");
+      }
+    }
+    assertThat(fallas).as("toda búsqueda o filtro usa componentes/listado").isEmpty();
+  }
+
+  @Test
+  void lasBarrasUsanUnSoloNombrePorCampo() {
+    List<String> fallas = new ArrayList<>();
+    for (Path java : archivos(Path.of("src/main/java"), ".java")) {
+      if (!java.getFileName().toString().equals("Listado.java")) {
+        parametrosFueraDeLista(leer(java)).forEach(n -> fallas.add(java + ": parámetro " + n));
+      }
+    }
+    assertThat(fallas)
+        .as("parámetros de barra que no son comunes ni propios registrados (%s)", NOMBRES_VIEJOS)
+        .isEmpty();
+  }
+
+  @Test
+  void hojasNoSumanMedidasLiterales() {
+    long literales =
+        archivos(CSS, ".css").stream()
+            .filter(hoja -> !esTokens(hoja))
+            .mapToLong(hoja -> medidasLiterales(leer(hoja)))
+            .sum();
+    assertThat(literales)
+        .as("medidas literales en las hojas (tope %d, solo baja)", TOPE_DE_MEDIDAS_LITERALES)
+        .isLessThanOrEqualTo(TOPE_DE_MEDIDAS_LITERALES);
+  }
+
+  /** Pico.css salió del stack (ADR 20261114): la primera capa es la base propia. */
+  @Test
+  void laPrimeraCapaEsLaBasePropiaYPicoNoVuelve() {
+    assertThat(leer(CSS.resolve("app.css")))
+        .contains("@layer base, tokens, composicion, utilidades, bloques, excepciones, pantallas;")
+        .doesNotContain("@layer pico");
+    assertThat(leer(Path.of("pom.xml"))).doesNotContain("picocss");
+  }
+
+  /** Los formularios de búsqueda o filtros armados a mano en {@code html}. */
+  static List<String> barrasPropias(String html) {
+    return FORMULARIO_DE_FILTRO.matcher(html).results().map(MatchResult::group).toList();
+  }
+
+  /** Los parámetros de barra de {@code java} que no son comunes ni propios registrados. */
+  static List<String> parametrosFueraDeLista(String java) {
+    return PARAMETRO_DE_BARRA
+        .matcher(java)
+        .results()
+        .map(m -> m.group(1))
+        .filter(n -> !PARAMETROS_COMUNES.contains(n) && !PARAMETROS_PROPIOS.contains(n))
+        .toList();
+  }
+
+  /** Las líneas de {@code css} con una medida literal (sin tokens). */
+  static long medidasLiterales(String css) {
+    return css.lines()
+        // La cabecera de una media query no cuenta (no puede usar var()): sus anchos los controla
+        // mediaQueriesUsanSoloLosQuiebresDeTokens; sus altos, nadie todavía (DTI-44). Una regla
+        // escrita en la misma línea que su @media sí cuenta.
+        .filter(linea -> !(linea.strip().startsWith("@media") && linea.strip().endsWith("{")))
+        .filter(linea -> MEDIDA_LITERAL.matcher(linea).find() && !linea.contains("var("))
+        .count();
+  }
+
   /** Los casos inventados: cada regla del cerco tiene que fallar cuando se la rompe. */
   @Test
   void elCercoFallaConUnCasoInventadoYPasaConUnoSano() {
@@ -493,6 +662,25 @@ class InterfazFitnessTest {
             clasesFueraDelCatalogo(
                 Set.of("pila", "nueva", "vieja"), Set.of("pila"), Set.of("vieja")))
         .containsExactly("nueva");
+
+    assertThat(barrasPropias("<form method=\"get\" role=\"search\">")).hasSize(1);
+    assertThat(barrasPropias("<form class=\"filtros-barra\" action=\"/x\">")).hasSize(1);
+    assertThat(barrasPropias("<form class=\"filtro\">")).hasSize(1);
+    assertThat(barrasPropias("<form th:replace=\"~{componentes/listado :: listado(${l})}\">"))
+        .isEmpty();
+    assertThat(barrasPropias("<form method=\"post\" class=\"campo\">")).isEmpty();
+
+    assertThat(parametrosFueraDeLista("barra.otra(new Listado.Eleccion(\"ver\", \"Estado\", e,"))
+        .containsExactly("ver");
+    assertThat(parametrosFueraDeLista(".casilla(\n  \"inventada\", \"si\", \"x\", true)"))
+        .containsExactly("inventada");
+    assertThat(parametrosFueraDeLista(".oculto(\"donante\", d).casilla(\"ya\", \"si\", r, p)"))
+        .isEmpty();
+
+    assertThat(medidasLiterales("a { margin: 0.5rem; }\nb { gap: var(--espacio-1); }"))
+        .isEqualTo(1);
+    assertThat(medidasLiterales("@media (min-width: 37.5em) {\n  a { padding: 1rem; }\n}"))
+        .isEqualTo(1);
   }
 
   /** Las declaraciones que una hoja de pantalla nueva no puede tener (D33). */
@@ -520,7 +708,7 @@ class InterfazFitnessTest {
     return SOLO_DE_MOVIMIENTO_CSS
         .matcher(sinComentariosCss(css))
         .results()
-        .map(java.util.regex.MatchResult::group)
+        .map(MatchResult::group)
         .toList();
   }
 

@@ -35,7 +35,7 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
   en JSON. El `traceId` lo genera el cliente en cada pedido (`TraceIdFiltro`, con el formato de
   common-lib) y lo manda a las APIs en `X-Trace-Id` (ADR-E6-02, `proposed`, en el PR 938).
 - Stack fijo (D17–D21, ADR-E6-06; D31–D33, [ADR de interacción, movimiento y componentes](../docs/adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)):
-  Spring MVC + Thymeleaf, HTMX, Alpine.js (build CSP), Pico.css + `tokens.css` en capas CUBE y
+  Spring MVC + Thymeleaf, HTMX, Alpine.js (build CSP), CSS propio con `tokens.css` en capas CUBE y
   MapLibre solo en pantallas con mapa. Sin build de frontend, sin Node y sin frameworks SPA.
 
 ## Estructura
@@ -117,8 +117,9 @@ Una identidad o un rediseño nuevo se propone en una rama propia, sobre el sitio
 
 - Pantallas y componentes usan **solo tokens de uso** (`--color-*`, `--fuente-*`, `--tamano-*`,
   `--espacio-*`, `--radio-*`, `--borde-*`, `--sombra-*`, `--movimiento-*`, `--capa-*` y `--medida-*`).
-- Los valores base (`--p-*`) y las variables de Pico (`--pico-*`) se usan solo dentro de
-  `tokens.css`.
+- Los valores base (`--p-*`) se usan solo dentro de `tokens.css`. Pico.css salió del stack
+  ([ADR](../docs/adr/cliente-liviano/20261114-sin-pico-css-en-el-cliente-liviano.md)): no se
+  declaran variables `--pico-*`.
 - Fuera de `tokens.css` no hay colores literales (`#…`, `rgb()`, `hsl()`) ni atributos `style`.
 - Las media queries usan solo los puntos de quiebre de `tokens.css` (`--medida-quiebre-*`), con
   mobile first.
@@ -131,7 +132,7 @@ Una identidad o un rediseño nuevo se propone en una rama propia, sobre el sitio
   como está. Si falta, se agrega al catálogo y a `/estilos` (`templates/estilos.html`) antes de usarlo. No se crean clases
   parecidas a una existente.
 - Orden de capas, declarado una vez en `app.css`:
-  `@layer pico, tokens, composicion, utilidades, bloques, excepciones, pantallas;`.
+  `@layer base, tokens, composicion, utilidades, bloques, excepciones, pantallas;`.
 - Un componente es un fragmento con parámetros con nombre y slots (`~{::#cuerpo}`) más su hoja en
   `static/css/componentes/`. Sus variantes van por atributo (`data-estado`, `data-tono`).
 - Las hojas de pantalla tienen solo disposición propia: sin colores, fuentes, `@keyframes` ni

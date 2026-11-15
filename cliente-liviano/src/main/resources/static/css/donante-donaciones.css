@@ -43,3 +43,8 @@
     column-gap: 1.5rem;
   }
 }
+
+/* El aire entre la barra de búsqueda y filtros (componentes/listado) y lo que sigue. */
+.donaciones > .listado {
+  margin-bottom: var(--espacio-4);
+}

@@ -6,10 +6,13 @@
          enlace real con su ícono, el nombre, una línea según su estado y el estado como bolita (círculo
          con anillo y punto, y la palabra; .estado data-forma="punto"). La elegida (?entidad=<clave>, de
          partida la primera) se marca con fondo, sombra y un indicador a la izquierda, sin borde verde.
-       - Arriba, la búsqueda (nombre o localidad) y los filtros en un solo formulario GET
-         (form.filtros-barra, data-al-cambiar): Estado (?ver=activas|pendientes|inactivas; sin él,
-         todas; cada opción con su cuenta), Necesidades (?pedidos=con|sin) y Tipo (?tipo=). Todo rige
-         sobre la lista entera. Reemplaza al selector de tres segmentos de la ronda anterior.
+       - Arriba, la búsqueda (?buscar=, nombre o localidad) y los filtros en el componente listado
+         (R11-B04, componentes/listado; lo arma AdminEntidadesController): Estado
+         (?estado=activas|pendientes|inactivas; sin él, todas; cada opción con su cuenta, que pone
+         esta plantilla con listado.conEstados), Necesidades (?pedido=con|sin) y Tipo (?tipo=).
+         ?ver= y ?pedidos=, los nombres de antes, siguen valiendo. La elegida va oculta (?entidad=).
+         Nada se envía al cambiar un campo: se filtra con "Filtrar". Todo rige sobre la lista
+         entera. Reemplaza al selector de tres segmentos de la ronda anterior.
        - La ficha de la elegida (.maestro-ficha, maqueta 15 de la ronda) va dentro de su renglón: en el
          celular, justo debajo del ítem y en una columna; en pantalla ancha, a la derecha de la lista.
          Arriba a la izquierda, el pictograma en su caja, el nombre, "Tipo · Localidad" y la misión;
@@ -55,13 +58,14 @@
 <!--/* Los datos llegan en adminEntidades (maqueta.AdminPersonasEntidadesDeEjemplo o la API): 3 piden
        sumarse, 46 activas (se ven 8; 6 con necesidades vigentes) y 3 inactivas,
        coherentes con la ficha y con las páginas públicas, ya en orden alfabético. Hogar Ejemplo Norte
-       está dos veces: pendiente y, después de aprobarla, activa. Los filtros se leen en el bloque de
-       afuera porque las selecciones los usan con preprocesamiento (__${…}__). */-->
+       está dos veces: pendiente y, después de aprobarla, activa. Los filtros se leen del listado (ya
+       validados por AdminEntidadesVista.Filtro) en el bloque de afuera porque las selecciones los
+       usan con preprocesamiento (__${…}__). */-->
 <th:block th:fragment="hoja(accion)"
-    th:with="fVer=${param.ver != null and #lists.contains({'activas', 'pendientes', 'inactivas'}, param.ver[0]) ? param.ver[0] : ''},
+    th:with="fVer=${listado.estado.elegido},
              fEstado=${fVer == 'activas' ? 'activa' : (fVer == 'pendientes' ? 'pendiente' : (fVer == 'inactivas' ? 'inactiva' : ''))},
-             fPedidos=${param.pedidos != null and #lists.contains({'con', 'sin'}, param.pedidos[0]) ? param.pedidos[0] : ''},
-             fTipo=${param.tipo != null and #lists.contains({'Comedor', 'Merendero', 'Escuela', 'Hogar', 'Club', 'Biblioteca', 'Centro comunitario'}, param.tipo[0]) ? param.tipo[0] : ''}">
+             fPedidos=${listado.otra('pedido').elegido},
+             fTipo=${listado.otra('tipo').elegido}">
 <th:block
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              conDatos=${escenario != 'error' and escenario != 'lento'},
@@ -84,7 +88,7 @@
              filtrado=${fVer != '' or otrosFiltros},
              pedida=${param.entidad != null ? param.entidad[0] : (accion == 'correccion' ? 'merendero-este' : (accion == 'aprobada' ? 'hogar' : ''))},
              elegida=${lista.^[clave == #root.pedida] != null ? pedida : (#lists.isEmpty(lista) ? '' : lista[0].clave)},
-             consulta=${(fVer != '' ? '&ver=' + fVer : '') + (fPedidos != '' ? '&pedidos=' + fPedidos : '')
+             consulta=${(fVer != '' ? '&estado=' + fVer : '') + (fPedidos != '' ? '&pedido=' + fPedidos : '')
                  + (fTipo != '' ? '&tipo=' + #uris.escapeQueryParam(fTipo) : '')
                  + (q != '' ? '&buscar=' + #uris.escapeQueryParam(q) : '')
                  + (paginada and adminEntidades.enPaginas.registradas.pagina > 1 ? '&pagina=' + adminEntidades.enPaginas.registradas.pagina : '')}">
@@ -134,38 +138,13 @@
         <div class="esqueleto" data-forma="hueco"></div>
       </th:block>
 
-      <!--/* La búsqueda y los filtros, en un solo formulario GET sobre la lista entera. Con HTMX
-             (hx-boost), filtrar cambia la lista sin recargar; tocar una opción ya filtra
-             (data-al-cambiar, static/js/paneles.js). */-->
-      <form th:if="${conDatos}" hx-boost="true" class="filtros-barra" action="/admin-entidades"
-            th:action="@{/admin-entidades}" method="get" role="search" data-al-cambiar>
-        <input th:if="${elegida != ''}" type="hidden" name="entidad" th:value="${elegida}" value="comedor">
-        <div class="campo filtro-buscar">
-          <label for="buscar" th:text="${paginada} ? 'Buscar por nombre' : 'Buscar por nombre o localidad'">Buscar
-            por nombre o localidad</label>
-          <div class="filtro-buscar-fila">
-            <input id="buscar" name="buscar" type="search" autocomplete="off" th:value="${q}"
-                   placeholder="Por ejemplo: comedor">
-            <button class="boton" data-tono="secundario" type="submit">Buscar</button>
-          </div>
-        </div>
-        <div class="filtros" role="group" aria-label="Filtrar las organizaciones">
-          <details th:replace="~{componentes/filtros :: menu('ver', 'Estado', ${fVer}, ${ {
-              {valor: '', texto: 'Todas · ' + cuantasTodas}, {valor: 'activas', texto: 'Activas · ' + cuantasActivas},
+      <!--/* La búsqueda y los filtros: el componente listado (lo arma AdminEntidadesController).
+             Las cifras de Estado las cuenta esta plantilla y las pone con listado.conEstados. */-->
+      <th:block th:if="${conDatos}"
+          th:with="estados=${ { {valor: 'activas', texto: 'Activas · ' + cuantasActivas},
               {valor: 'pendientes', texto: 'Pendientes · ' + cuantasPendientes},
-              {valor: 'inactivas', texto: 'Inactivas · ' + cuantasInactivas} } })}"></details>
-          <details th:replace="~{componentes/filtros :: menu('pedidos', 'Necesidades', ${fPedidos}, ${ {
-              {valor: '', texto: 'Con y sin necesidades'}, {valor: 'con', texto: 'Con necesidades vigentes'},
-              {valor: 'sin', texto: 'Sin necesidades vigentes'} } })}"></details>
-          <details th:replace="~{componentes/filtros :: menu('tipo', 'Tipo', ${fTipo}, ${ {
-              {valor: '', texto: 'Todos los tipos'}, {valor: 'Comedor', texto: 'Comedores'},
-              {valor: 'Merendero', texto: 'Merenderos'}, {valor: 'Escuela', texto: 'Escuelas'},
-              {valor: 'Hogar', texto: 'Hogares'}, {valor: 'Club', texto: 'Clubes'},
-              {valor: 'Biblioteca', texto: 'Bibliotecas'}, {valor: 'Centro comunitario', texto: 'Centros comunitarios'} } })}"></details>
-          <a th:if="${filtrado}" class="filtros-sacar" href="/admin-entidades" th:href="@{/admin-entidades}">Sacar
-            los filtros</a>
-        </div>
-      </form>
+              {valor: 'inactivas', texto: 'Inactivas · ' + cuantasInactivas} } }"><form
+          th:replace="~{componentes/listado :: listado(${listado.conEstados(estados, '' + cuantasTodas)})}"></form></th:block>
 
       <p th:if="${conDatos and paginada and !#lists.isEmpty(lista)}" role="status"
          th:with="n=${adminEntidades.enPaginas.total}, activasTexto=${#numbers.formatInteger(adminEntidades.activas, 1, 'POINT')}"

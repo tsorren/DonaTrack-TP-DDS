@@ -33,8 +33,7 @@
     th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
              marcadas=${accion == 'leidas' or escenario == 'nada-sin-leer' ? 'todas' : ''},
              conDatos=${escenario != 'vacio' and escenario != 'error' and escenario != 'lento'},
-             conFiltros=${param.ver != null or (param.buscar != null and !#strings.isEmpty(#strings.trim(param.buscar[0])))
-                 or (param.tema != null and param.tema[0] != '')},
+             conFiltros=${listado != null and listado.filtrada()},
              cuentaVacia=${bandeja.pagina.total == 0 and !conFiltros},
              sinLeer=${marcadas == 'todas' ? 0 : bandeja.sinLeer}">
   <div class="pila" data-espacio="4">

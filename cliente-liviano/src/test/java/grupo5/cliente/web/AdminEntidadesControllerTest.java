@@ -132,7 +132,9 @@ class AdminEntidadesControllerTest {
         .andExpect(content().string(containsString("Activas · 46")))
         .andExpect(content().string(containsString("Inactivas · 7")))
         .andExpect(content().string(containsString("Pendientes · 2")))
-        .andExpect(content().string(containsString("Todas · 55")))
+        // R11-B04: la primera opción es la común de todas las listas, con su cuenta (antes, «Todas
+        // · 55»)
+        .andExpect(content().string(containsString(">Todos los estados · 55</option>")))
         .andExpect(content().string(containsString("Sacar")));
     verify(personas).entidades("jose", filtro, 2);
   }

@@ -15,6 +15,7 @@ import static grupo5.cliente.rest.Comun.normalizado;
 
 import grupo5.cliente.puertos.RecibidasPuerto;
 import grupo5.cliente.rest.DonacionesApi.Categoria;
+import grupo5.cliente.vistas.Listado;
 import grupo5.cliente.vistas.RecibidasVista;
 import grupo5.cliente.vistas.RecibidasVista.Recibida;
 import grupo5.cliente.vistas.Tramo;
@@ -28,7 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
@@ -128,17 +128,34 @@ class RecibidasRest implements RecibidasPuerto {
    * cifras de cada grupo y del mes contadas por Donaciones.
    */
   @Override
-  public RecibidasVista recibidas(UUID entidad, Set<String> grupos, int pagina) {
+  public RecibidasVista recibidas(UUID entidad, Consulta consulta) {
     LocalDateTime ahora = LocalDateTime.now(reloj.withZone(ARGENTINA));
     MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
     filtros.add("entidadId", entidad.toString());
     ORDEN.stream()
-        .filter(grupos::contains)
+        .filter(consulta.grupos()::contains)
         .forEach(g -> ESTADOS.get(g).forEach(e -> filtros.add("estado", e)));
-    filtros.add("orden", "ATENCION");
+    filtros.add(
+        "orden",
+        switch (consulta.orden()) {
+          case Consulta.RECIENTES -> "RECIENTES";
+          case Listado.ANTIGUAS -> "ANTIGUAS";
+          default -> "ATENCION";
+        });
+    // R11-B04: la fecha de registro y la categoría las resuelve Donaciones
+    if (consulta.desde() != null) {
+      filtros.add("desde", consulta.desde().toString());
+    }
+    if (consulta.hasta() != null) {
+      filtros.add("hasta", consulta.hasta().toString());
+    }
+    UUID categoria = uuid(consulta.categoria());
+    if (categoria != null) {
+      filtros.add("categoriaId", categoria.toString());
+    }
     Tramo<DonacionesApi.Donacion> tramo =
         Paginas.pedir(
-            pagina,
+            consulta.pagina(),
             POR_PAGINA,
             p -> {
               MultiValueMap<String, String> conPagina = new LinkedMultiValueMap<>(filtros);
@@ -159,6 +176,29 @@ class RecibidasRest implements RecibidasPuerto {
         tramo.total(),
         tramo.pagina(),
         tramo.paginas());
+  }
+
+  /** Las categorías de Donaciones, por su id. */
+  @Override
+  public List<Listado.Opcion> categorias() {
+    return api.categorias().stream()
+        .filter(c -> c.id() != null)
+        .map(c -> new Listado.Opcion(c.id().toString(), c.nombre()))
+        .toList();
+  }
+
+  /** Donaciones filtra por el id del donante, no por su nombre (R11-B04). */
+  @Override
+  public boolean filtraPorDonante() {
+    return false;
+  }
+
+  private static UUID uuid(String valor) {
+    try {
+      return valor == null ? null : UUID.fromString(valor);
+    } catch (IllegalArgumentException noEsUnId) {
+      return null;
+    }
   }
 
   /** Cuántas hay en cada grupo, sumando sus estados; un estado que no llega cuenta 0. */
