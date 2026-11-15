@@ -69,7 +69,7 @@ R11-B04 que se había perdido en la corrida R11 (síntoma 3 del diagnóstico del
 - **Dado** un controller que arma una barra con un parámetro que no es común ni propio registrado,
   **cuando** corre el cerco, **entonces** falla.
 - **Dado** el perfil maqueta, **cuando** se elige cada campo de la barra en cada lista, **entonces** la
-  lista se filtra y aparece «Sacar los filtros». Lo prueban `ListadoEnLaMaquetaTest`,
+  lista se filtra y aparece «Sacar los filtros» («Borrar la búsqueda» en una barra de solo búsqueda). Lo prueban `ListadoEnLaMaquetaTest`,
   `ListadoEnAdminOperacionTest`, `ListadoEnAdminRegistrosTest` y `ListadoEnLasPublicasTest`.
 - **Dado** un enlace con un nombre viejo (`?q=`, `?ver=`, `?pedidos=` o `?fecha=`), **cuando** se abre,
   **entonces** filtra igual que con el nombre nuevo.

@@ -56,7 +56,7 @@
               fLeidas=${barra.estado.elegido == 'leidas'},
               fTema=${barra.categoria.elegido},
               fOrden=${barra.orden.elegida() ? 'viejas' : ''},
-              fAgrupar=${barra.otras[0].elegido == 'fecha' ? '' : 'no'},
+              fAgrupar=${barra.otra('agrupar').elegido == 'fecha' ? '' : 'no'},
               fDesde=${barra.fecha == null or barra.fecha.desde == null ? '' : barra.fecha.desde.toString()},
               fHasta=${barra.fecha == null or barra.fecha.hasta == null ? '' : barra.fecha.hasta.toString()},
               q=${barra.buscar.valor},
