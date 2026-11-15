@@ -14,13 +14,14 @@ import java.util.UUID;
 
 /**
  * El mismo caso del seguimiento paginado (R11-43, C2) para los tres repositorios de entregas: en
- * memoria, JPA y Mongo resuelven igual el filtro, el orden, el tramo y el total.
+ * memoria, JPA y Mongo resuelven igual el filtro, el orden, el tramo y el total. Devuelve el tramo
+ * sin filtros para que cada test afirme sobre él.
  */
 public final class SeguimientoDePrueba {
 
   private SeguimientoDePrueba() {}
 
-  public static void verificar(IEntregasRepository repositorio) {
+  public static TramoDeEntregas verificar(IEntregasRepository repositorio) {
     UUID organizacion = UUID.randomUUID();
     Instant base = Instant.parse("2026-11-10T12:00:00Z");
     Entrega pendiente =
@@ -81,6 +82,7 @@ public final class SeguimientoDePrueba {
     assertEquals(
         Set.copyOf(ids(pendiente, enPuerta)),
         Set.copyOf(ids(repositorio.findByIds(Set.of(pendiente.getId(), enPuerta.getId())))));
+    return todas;
   }
 
   private static List<UUID> ids(Entrega... entregas) {

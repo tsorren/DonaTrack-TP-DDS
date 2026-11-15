@@ -71,6 +71,6 @@ class EntregasRepositoryEnMemoriaTest {
 
   @Test
   void buscarSeguimiento_filtraOrdenaCortaYCuentaComoLaBase() {
-    SeguimientoDePrueba.verificar(new EntregasRepository());
+    assertEquals(5, SeguimientoDePrueba.verificar(new EntregasRepository()).total());
   }
 }

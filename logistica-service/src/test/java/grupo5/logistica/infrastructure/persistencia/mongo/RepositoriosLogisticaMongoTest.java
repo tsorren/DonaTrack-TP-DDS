@@ -390,6 +390,6 @@ class RepositoriosLogisticaMongoTest {
 
   @Test
   void elSeguimiento_seFiltraOrdenaCortaYCuentaEnLaBase() {
-    SeguimientoDePrueba.verificar(entregas);
+    assertEquals(5, SeguimientoDePrueba.verificar(entregas).total());
   }
 }

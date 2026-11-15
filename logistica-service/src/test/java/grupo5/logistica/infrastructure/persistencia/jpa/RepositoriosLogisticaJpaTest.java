@@ -740,6 +740,6 @@ class RepositoriosLogisticaJpaTest {
 
   @Test
   void buscarSeguimiento_deberiaFiltrarOrdenarCortarYContarEnLaBase() {
-    SeguimientoDePrueba.verificar(entregasRepository);
+    assertEquals(5, SeguimientoDePrueba.verificar(entregasRepository).total());
   }
 }

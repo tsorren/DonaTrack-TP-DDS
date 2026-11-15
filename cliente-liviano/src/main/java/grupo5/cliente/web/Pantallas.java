@@ -46,8 +46,9 @@ public class Pantallas {
 
   /**
    * Los nombres de pantalla que sirve el sitio; el resto (hojas, imágenes, scripts) es estático.
+   * Sin grupo repetido (Sonar S5998); acepta guiones dobles, y esa pantalla da 404.
    */
-  public static final String NOMBRE = "(?:publico|donante|entidad|admin)(?:-[a-z]+)+";
+  public static final String NOMBRE = "(?:publico|donante|entidad|admin)-[a-z-]*[a-z]";
 
   private static final String NO_EXISTE = "No existe esa pantalla";
 
