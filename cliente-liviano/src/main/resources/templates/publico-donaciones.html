@@ -4,6 +4,8 @@
        confirmado" de la portada (el usuario pidió reusar los frutos con cifras adentro); cada entrega,
        una lámina de papel con su foto, el sello impreso de entrega confirmada y el pictograma de su
        categoría en el cuadro salvia del cuaderno del mes. La foto grande, en el popover de la portada.
+       El período va en la barra del componente listado (R11-B04, la arma PublicoDonacionesController),
+       como desplegable propio: el puerto trae el mes y la semana, no un rango de fechas.
        Estados: ?periodo=semana, ?escenario=vacio, lento, error y sin-foto (la primera foto no carga:
        se ve su texto alternativo). Datos: entregasConfirmadas, de PublicoPuerto (de ejemplo o las
        destacadas de Donaciones, HB-01); sin entregas, el estado vacío. */-->
@@ -33,17 +35,7 @@
     </header>
 
     <div th:if="${conDatos}" class="publica-barra">
-      <form hx-boost="true" class="filtro" action="/publico-donaciones"
-            th:action="@{/publico-donaciones}" method="get" data-al-cambiar>
-        <fieldset class="filtro-opciones">
-          <legend>Período</legend>
-          <label class="filtro-opcion"><input type="radio" name="periodo" value="semana"
-                 th:checked="${semana}"><span>Última semana</span></label>
-          <label class="filtro-opcion"><input type="radio" name="periodo" value="mes"
-                 th:checked="${!semana}"><span>Último mes</span></label>
-        </fieldset>
-        <button class="boton" data-tono="secundario" type="submit">Ver</button>
-      </form>
+      <form th:replace="~{componentes/listado :: listado(${listado})}"></form>
       <!--/* La cifra del período, en un fruto. */-->
       <div class="cifra-fruto" aria-live="polite">
         <p><b class="fruto" th:text="${#lists.size(lista)}">10</b>

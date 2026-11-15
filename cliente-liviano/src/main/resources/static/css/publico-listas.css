@@ -1,5 +1,5 @@
 /* Raíces, sitio A: lo común de las públicas que muestran datos (Entregas confirmadas, Mapa y
-   Entidades) y de los registros: la cabecera de la pantalla, los filtros como opciones impresas, la
+   Entidades) y de los registros: la cabecera de la pantalla, la barra de filtros junto a la cifra, la
    cifra del período dentro de un fruto (los de "Lo que está confirmado" de la portada), las salidas,
    el lugar de lo que carga, el botón chico y la foto grande de una entrega (los de la portada). */
 @import url("publico-paginas.css");
@@ -29,77 +29,12 @@
   align-items: center;
 }
 
-.filtro {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 1rem;
-}
-
-.filtro-opciones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  min-width: 0;
-}
-
-.filtro-opciones legend {
-  margin-bottom: 0.5rem;
-  padding: 0;
-  color: var(--color-tinta);
-  font-weight: 700;
-}
-
-/* Cada opción, un botón de papel; la elegida, impresa en verde oliva con la segunda tinta corrida,
-   como la sección actual del menú. El radio nativo, transparente, cubre la opción entera. */
-.filtro-opcion {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  min-height: var(--medida-toque-minimo);
-  padding: 0.5rem 0.875rem;
-  border: 1.5px solid var(--color-acento);
-  border-radius: var(--radio-boton);
-  background: var(--color-papel);
-  color: var(--color-acento);
-  font-weight: 700;
-  font-stretch: 108%;
-}
-
-/* Cubre también el borde: el toque llega a 48 px. */
-.filtro-opcion input {
-  position: absolute;
-  inset: -1.5px;
-  width: calc(100% + 3px);
-  height: calc(100% + 3px);
-  margin: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.filtro-opcion:hover {
-  background: var(--color-acento-claro);
-}
-
-.filtro-opcion:has(:checked) {
-  background: var(--color-acento);
-  box-shadow: 0.2rem 0.2rem 0 var(--color-sombra);
-  color: var(--color-papel);
-}
-
-.filtro-opcion:has(:focus-visible) {
-  outline: 3px solid var(--color-foco);
-  outline-offset: 3px;
-}
-
-.filtro-icono {
-  width: 1.5rem;
-  height: 1.5rem;
-  fill: currentcolor;
+/* La barra del Mapa no queda fija: el Mapa ya deja fijo el mapa (decisión 6 de la ficha). */
+.publica-barra > .listado[action$="/publico-mapa"] {
+  position: static;
+  padding-block: 0;
+  border-bottom: 0;
+  box-shadow: none;
 }
 
 /* La cifra, como las de K (estética de K, 2026-11-08; antes, un fruto mandarina con la cifra adentro):
@@ -188,19 +123,19 @@
 }
 
 /* El filtro queda fijo (R11-33, ficha r11-p2-armazon §4.2), salvo en el Mapa, que ya deja fijo el
-   mapa. El `position: sticky` del formulario (componentes/filtros.css) no alcanza acá: la barra
-   solo contiene el formulario y la cifra, y el formulario se iría con ella. En la tableta angosta
-   la barra se disuelve (`display: contents`) y el formulario queda fijo dentro de la página, junto
-   a la lista; desde 53,75 em, con el formulario y la cifra en la misma fila, queda fija la barra
-   entera, con su papel y su filete. */
+   mapa. El `position: sticky` de la barra del listado (componentes/listado.css) no alcanza acá: la
+   barra de la pública solo contiene el listado y la cifra, y el listado se iría con ella. En la
+   tableta angosta la barra se disuelve (`display: contents`) y el listado queda fijo dentro de la
+   página, junto a la lista; desde 53,75 em, con el listado y la cifra en la misma fila, queda fija
+   la barra entera, con su papel y su filete. */
 @media (min-width: 37.5em) and (min-height: 37.5em) {
-  .publica-barra:has(> form.filtro:not([action$="/publico-mapa"])) {
+  .publica-barra:has(> .listado:not([action$="/publico-mapa"])) {
     display: contents;
   }
 }
 
 @media (min-width: 53.75em) and (min-height: 37.5em) {
-  .publica-barra:has(> form.filtro:not([action$="/publico-mapa"])) {
+  .publica-barra:has(> .listado:not([action$="/publico-mapa"])) {
     position: sticky;
     top: var(--medida-cabecera-fija);
     z-index: var(--capa-filtros-fijos);
@@ -211,8 +146,10 @@
     box-shadow: 0 -0.375rem 0 var(--color-papel);
   }
 
-  .publica-barra > form.filtro {
+  .publica-barra > .listado {
     position: static;
+    padding-block: 0;
+    border-bottom: 0;
     box-shadow: none;
   }
 }
