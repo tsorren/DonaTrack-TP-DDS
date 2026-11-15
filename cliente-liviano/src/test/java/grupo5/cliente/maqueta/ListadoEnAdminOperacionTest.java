@@ -129,4 +129,31 @@ class ListadoEnAdminOperacionTest {
                     containsString(
                         "class=\"listado-sacar\" href=\"/admin-camiones-deshabilitado\"")));
   }
+
+  @Test
+  void registrarDonacionBuscaAlDonanteConLaBarra() throws Exception {
+    mvc.perform(get("/admin-donaciones-registrar?buscar=ana"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString(BARRA)))
+        .andExpect(content().string(containsString("value=\"ana\"")))
+        .andExpect(content().string(containsString("2 donantes coinciden con la búsqueda.")))
+        .andExpect(
+            content()
+                .string(containsString("href=\"/admin-donaciones-registrar?donante=ana-ejemplo\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "class=\"listado-sacar\" href=\"/admin-donaciones-registrar\"")));
+
+    mvc.perform(get("/admin-donaciones-registrar"))
+        .andExpect(content().string(containsString(BARRA)))
+        .andExpect(content().string(not(containsString("donantes coinciden"))))
+        .andExpect(content().string(not(containsString(SACAR))));
+
+    // Con el donante elegido no hay búsqueda
+    mvc.perform(get("/admin-donaciones-registrar?donante=ana-ejemplo"))
+        .andExpect(content().string(containsString("<b>Ana Ejemplo</b>")))
+        .andExpect(content().string(not(containsString(BARRA))));
+  }
 }

@@ -193,6 +193,13 @@ public class AdminDonacionesController {
     }
     String vista = pantallas.mostrar(pantalla, model);
     model.addAttribute("registro", operacion.registro(buscar, donante));
+    // R11-B04: la búsqueda del donante es la barra de las listas, solo con Buscar
+    model.addAttribute(
+        "listado",
+        Listado.en("donantes", "/admin-donaciones-registrar", "Quién dona")
+            .buscar("Buscar por nombre o documento", buscar, "Por ejemplo: comedor")
+            .sacar("/admin-donaciones-registrar")
+            .listo());
     return vista;
   }
 }
