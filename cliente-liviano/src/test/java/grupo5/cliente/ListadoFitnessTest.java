@@ -28,7 +28,10 @@ class ListadoFitnessTest {
           "donante-entidades.html",
           "admin-donaciones.html",
           "admin-asignaciones.html",
-          "componentes/buzon.html");
+          "componentes/buzon.html",
+          // Las versiones de persona de la maqueta: la misma pantalla, la misma barra (R11-B04)
+          "persona/donante-donaciones.html",
+          "persona/donante-entidades.html");
 
   private static final Pattern USA_LISTADO = Pattern.compile("~\\{\\s*componentes/listado\\s*::");
   private static final Pattern FORMULARIO_DE_FILTRO =

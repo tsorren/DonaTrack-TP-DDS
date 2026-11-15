@@ -29,6 +29,13 @@ final class AdminOperacionDonaciones {
   private static final String SUR = "Depósito Sur";
   private static final String NUEVO = "Nuevo";
   private static final String USADO = "Usado";
+
+  /** El año de las fechas de ejemplo ("10 de octubre" es de 2026). */
+  private static final int ANIO = 2026;
+
+  private static final DateTimeFormatter DIA_Y_MES =
+      DateTimeFormatter.ofPattern("d 'de' MMMM", Locale.forLanguageTag("es-AR"));
+
   private static final String DISTRIBUIDORA = "Distribuidora Ejemplo SA";
   private static final String FUNDACION = "Fundación Ejemplo Sur";
   private static final String JUAN = "Juan Ejemplo";
@@ -190,10 +197,6 @@ final class AdminOperacionDonaciones {
         null,
         false);
   }
-
-  private static final int ANIO = 2026;
-  private static final DateTimeFormatter DIA_Y_MES =
-      DateTimeFormatter.ofPattern("d 'de' MMMM", Locale.forLanguageTag("es-AR"));
 
   /** El día de registro de una de ejemplo ("10 de octubre", de 2026); null si no se entiende. */
   private static LocalDate registrada(Donacion d) {

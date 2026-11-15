@@ -84,7 +84,7 @@ final class BandejaDeNotificaciones {
                 new Listado.Opcion(ConsultaBandeja.LEIDAS, "Leídas")))
         .categoria(c.tema(), temas)
         .otra(
-            new Listado.Eleccion(
+            Listado.Eleccion.deVista(
                 "agrupar",
                 "Agrupar",
                 POR_FECHA.equals(agrupar) ? POR_FECHA : "",

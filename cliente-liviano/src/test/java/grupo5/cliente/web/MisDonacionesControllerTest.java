@@ -155,8 +155,8 @@ class MisDonacionesControllerTest {
             content().string(containsString("Estás viendo las registradas en octubre de 2026.")))
         .andExpect(content().string(containsString("Ver todas tus donaciones")))
         // R11-B04: el mes llega a la barra como sus días, desde y hasta
-        .andExpect(content().string(containsString("value=\"2026-10-01\" max=\"2026-10-31\"")))
-        .andExpect(content().string(containsString("value=\"2026-10-31\" min=\"2026-10-01\"")))
+        .andExpect(content().string(containsString("value=\"2026-10-01\">")))
+        .andExpect(content().string(containsString("value=\"2026-10-31\">")))
         .andExpect(content().string(containsString("Silla plegable")));
 
     mvc.perform(get("/donante-donaciones?mes=2026-09").session(sesion))
@@ -234,7 +234,10 @@ class MisDonacionesControllerTest {
         .andExpect(content().string(containsString("1 donación con esos filtros.")))
         .andExpect(content().string(containsString("Silla plegable")))
         .andExpect(content().string(not(containsString("Fideos secos"))))
-        .andExpect(content().string(containsString("value=\"2026-10-10\" max=\"2026-10-20\"")))
+        .andExpect(content().string(containsString("value=\"2026-10-10\">")))
+        .andExpect(content().string(containsString("value=\"2026-10-20\">")))
+        // Sin max ni min: la persona puede correr el rango entero (revisión de R11-B04)
+        .andExpect(content().string(not(containsString("max=\"2026-10-20\""))))
         .andExpect(content().string(containsString("Sacar los filtros")));
 
     mvc.perform(get("/donante-donaciones?quien=COMEDOR barrio").session(sesion))

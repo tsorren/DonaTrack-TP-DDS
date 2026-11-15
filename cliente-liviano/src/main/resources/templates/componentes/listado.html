@@ -47,12 +47,12 @@
       <div class="campo">
         <label th:for="|${l.id}-desde|" for="donaciones-desde">Desde</label>
         <input th:id="|${l.id}-desde|" id="donaciones-desde" name="desde" type="date"
-               th:value="${l.fecha.desde}" th:max="${l.fecha.hasta}">
+               th:value="${l.fecha.desde}">
       </div>
       <div class="campo">
         <label th:for="|${l.id}-hasta|" for="donaciones-hasta">Hasta</label>
         <input th:id="|${l.id}-hasta|" id="donaciones-hasta" name="hasta" type="date"
-               th:value="${l.fecha.hasta}" th:min="${l.fecha.desde}">
+               th:value="${l.fecha.hasta}">
       </div>
     </fieldset>
 

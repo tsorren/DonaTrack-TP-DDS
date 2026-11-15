@@ -48,8 +48,10 @@
   border: 0;
 }
 
+/* El mismo aire que deja `.campo` entre su rótulo y el control: la leyenda queda en la línea de
+   los demás rótulos. */
 .listado-fecha legend {
-  margin-bottom: var(--espacio-1);
+  margin-bottom: calc(var(--espacio-1) * 0.75);
   padding: 0;
   font-weight: 700;
 }
@@ -89,7 +91,7 @@
   height: var(--espacio-4);
   margin-right: var(--espacio-1);
   vertical-align: middle;
-  border-radius: var(--espacio-1);
+  border-radius: calc(var(--radio-boton) / 2);
   background: var(--color-campo);
   box-shadow: inset 0 0 0 1.5px var(--color-borde-control);
 }
@@ -168,8 +170,9 @@
     width: auto;
   }
 
+  /* Quién: entra el texto de ejemplo entero ("Por ejemplo: Almacén"). */
   .listado-campos input[type="search"] {
-    width: calc(var(--medida-toque-minimo) * 4);
+    width: calc(var(--medida-toque-minimo) * 5);
   }
 
   .listado-alternar {

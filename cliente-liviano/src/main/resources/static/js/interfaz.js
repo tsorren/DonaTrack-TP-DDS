@@ -494,9 +494,10 @@ document.addEventListener("alpine:init", () => {
   }));
 
   // listado (R11-B04): la barra de búsqueda y filtros de las listas (componentes/listado). En el
-  // celular pliega los campos debajo de «Filtros y orden» (la hoja solo los oculta por debajo de
-  // 53,75 em). Sin JavaScript los campos quedan abiertos y el botón, oculto. Lo esencial es el
-  // formulario get: acá no se envía nada.
+  // celular y la tableta pliega los campos debajo de «Filtros y orden» (la hoja solo los oculta por
+  // debajo de 68,75 em). Sin JavaScript los campos quedan abiertos y el botón, oculto: sinBoton es
+  // lo que lee x-bind:hidden (el build CSP solo nombra propiedades). Lo esencial es el formulario
+  // get: acá no se envía nada.
   Alpine.data("listado", () => ({
     sinBoton: false,
     abierto: false,

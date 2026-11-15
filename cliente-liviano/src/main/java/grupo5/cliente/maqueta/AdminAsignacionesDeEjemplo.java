@@ -39,6 +39,10 @@ final class AdminAsignacionesDeEjemplo {
   private static final String APROBADA = "Aprobada";
   private static final String COMPLETA = "Cubre la necesidad completa.";
   private static final String DEL_15 = "15 de octubre";
+
+  /** "Hoy" en las decididas de ejemplo: la más reciente es de ayer, el 11 de noviembre. */
+  private static final LocalDate DIA_DE_HOY = LocalDate.of(2026, 11, 12);
+
   private static final String HOY = "hoy, 0:00";
   private static final String LIBRE = "libre";
   private static final String CONFLICTO = "conflicto";
@@ -309,9 +313,6 @@ final class AdminAsignacionesDeEjemplo {
           new Opcion("utiles", "Útiles escolares"));
 
   private AdminAsignacionesDeEjemplo() {}
-
-  /** "Hoy" en las decididas de ejemplo: la más reciente es de ayer, el 11 de noviembre. */
-  private static final LocalDate DIA_DE_HOY = LocalDate.of(2026, 11, 12);
 
   /** El día en que se decidió; null en las de antes de que se guardara la fecha. */
   private static LocalDate decidida(Ejemplo e) {

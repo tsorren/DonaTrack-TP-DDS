@@ -40,6 +40,12 @@ public record Listado(
   /** El valor de {@code orden} para "Más antiguas primero"; '' es "Más recientes primero". */
   public static final String ANTIGUAS = "antiguas";
 
+  /** La primera opción de Estado, la misma en todas las listas. */
+  public static final String TODOS_LOS_ESTADOS = "Todos los estados";
+
+  /** La primera opción de Categoría, la misma en todas las listas. */
+  public static final String TODAS_LAS_CATEGORIAS = "Todas las categorías";
+
   /** El orden por fecha, el mismo en todas las listas que lo tienen. */
   public static final List<Opcion> POR_FECHA =
       List.of(
@@ -64,7 +70,7 @@ public record Listado(
   public int elegidos() {
     int n = fecha != null && fecha.elegida() ? 1 : 0;
     for (Eleccion e : elecciones()) {
-      n += e.elegida() ? 1 : 0;
+      n += e.elegida() && e.filtra() ? 1 : 0;
     }
     n += quien != null && !quien.valor().isEmpty() ? 1 : 0;
     n += (int) casillas.stream().filter(Casilla::prendida).count();
@@ -77,12 +83,12 @@ public record Listado(
    * entre ellas queda en la primera.
    */
   public Listado conCategorias(List<? extends Map<String, ?>> opciones) {
-    List<Opcion> otras =
+    List<Opcion> nuevas =
         opciones.stream()
             .map(o -> new Opcion(String.valueOf(o.get("valor")), String.valueOf(o.get("texto"))))
             .toList();
     String elegido =
-        categoria != null && otras.stream().anyMatch(o -> o.valor().equals(categoria.elegido()))
+        categoria != null && nuevas.stream().anyMatch(o -> o.valor().equals(categoria.elegido()))
             ? categoria.elegido()
             : "";
     return new Listado(
@@ -92,9 +98,9 @@ public record Listado(
         buscar,
         fecha,
         estado,
-        new Eleccion("categoria", "Categoría", elegido, otras),
+        new Eleccion("categoria", "Categoría", elegido, conTodas(nuevas, TODAS_LAS_CATEGORIAS)),
         quien,
-        this.otras,
+        otras,
         casillas,
         orden,
         ocultos,
@@ -108,8 +114,19 @@ public record Listado(
 
   /** Si hay algo buscado o algún filtro elegido (el orden no cuenta): la lista está filtrada. */
   public boolean filtrada() {
-    int orden = this.orden != null && this.orden.elegida() ? 1 : 0;
-    return elegidos() > orden || buscar != null && !buscar.valor().isEmpty();
+    int porOrden = orden != null && orden.elegida() ? 1 : 0;
+    return elegidos() > porOrden || buscar != null && !buscar.valor().isEmpty();
+  }
+
+  /**
+   * {@code opciones} con la de "todos" primero y con el texto común ({@code todos}): la que tiene
+   * valor '' cambia su texto; si no hay, se agrega.
+   */
+  private static List<Opcion> conTodas(List<Opcion> opciones, String todos) {
+    List<Opcion> lista = new ArrayList<>();
+    lista.add(new Opcion("", todos));
+    opciones.stream().filter(o -> !o.valor().isEmpty()).forEach(lista::add);
+    return List.copyOf(lista);
   }
 
   /** Las elecciones en el orden en que se dibujan: estado, categoría, las propias y el orden. */
@@ -205,9 +222,16 @@ public record Listado(
   /**
    * Un desplegable: su parámetro, su rótulo, el valor elegido ('' es el primero, "todos" o el orden
    * de partida), sus opciones y, si tiene, grupos de opciones ({@code optgroup}) después de ellas.
+   * {@code filtra} es false en lo que solo cambia cómo se ve la lista (Agrupar): no cuenta como
+   * filtro elegido.
    */
   public record Eleccion(
-      String nombre, String rotulo, String elegido, List<Opcion> opciones, List<Grupo> grupos) {
+      String nombre,
+      String rotulo,
+      String elegido,
+      List<Opcion> opciones,
+      List<Grupo> grupos,
+      boolean filtra) {
 
     public Eleccion {
       elegido = elegido == null ? "" : elegido;
@@ -215,8 +239,19 @@ public record Listado(
       grupos = grupos == null ? List.of() : List.copyOf(grupos);
     }
 
+    public Eleccion(
+        String nombre, String rotulo, String elegido, List<Opcion> opciones, List<Grupo> grupos) {
+      this(nombre, rotulo, elegido, opciones, grupos, true);
+    }
+
     public Eleccion(String nombre, String rotulo, String elegido, List<Opcion> opciones) {
-      this(nombre, rotulo, elegido, opciones, List.of());
+      this(nombre, rotulo, elegido, opciones, List.of(), true);
+    }
+
+    /** Un desplegable que no filtra: solo cambia cómo se ve la lista (Agrupar). */
+    public static Eleccion deVista(
+        String nombre, String rotulo, String elegido, List<Opcion> opciones) {
+      return new Eleccion(nombre, rotulo, elegido, opciones, List.of(), false);
     }
 
     /** Si hay algo elegido distinto del primero y es una de las opciones. */
@@ -276,12 +311,14 @@ public record Listado(
     }
 
     public Armado estado(String elegido, List<Opcion> opciones) {
-      this.estado = new Eleccion("estado", "Estado", elegido, opciones);
+      this.estado =
+          new Eleccion("estado", "Estado", elegido, conTodas(opciones, TODOS_LOS_ESTADOS));
       return this;
     }
 
     public Armado categoria(String elegido, List<Opcion> opciones) {
-      this.categoria = new Eleccion("categoria", "Categoría", elegido, opciones);
+      this.categoria =
+          new Eleccion("categoria", "Categoría", elegido, conTodas(opciones, TODAS_LAS_CATEGORIAS));
       return this;
     }
 

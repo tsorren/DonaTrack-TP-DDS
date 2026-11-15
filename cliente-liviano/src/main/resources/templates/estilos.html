@@ -499,8 +499,9 @@
         <div th:replace="~{componentes/muestra :: muestra('.listado', 'La barra de búsqueda y filtros de toda lista (componentes/listado :: listado, R11-B04; la arma el controller con vistas.Listado). Los campos abiertos, siempre en el mismo orden y con los mismos parámetros: Buscar (.listado-buscar), la fecha con Desde y Hasta (fieldset.listado-fecha), Estado, Categoría, quién (el donante o la organización), los propios de la pantalla, las casillas de sí o no (.listado-casilla) y Ordenar; al final Filtrar y, con algo elegido, Sacar los filtros (.listado-acciones, .listado-sacar). En el celular, con JavaScript, los campos se pliegan debajo de Filtros y orden (.listado-alternar, data-plegado, en .listado-campos). Arriba, sin nada elegido; abajo, con todo elegido.', ~{::demo-listado})}">
           <th:block th:fragment="demo-listado">
             <div class="pila" data-espacio="4">
-              <form th:replace="~{componentes/listado :: listado(${listadoLibre})}"></form>
-              <form th:replace="~{componentes/listado :: listado(${listadoElegido})}"></form>
+              <!--/* Cada muestra en su caja: fijas, no se montan una sobre la otra. */-->
+              <div><form th:replace="~{componentes/listado :: listado(${listadoLibre})}"></form></div>
+              <div><form th:replace="~{componentes/listado :: listado(${listadoElegido})}"></form></div>
             </div>
           </th:block>
         </div>
