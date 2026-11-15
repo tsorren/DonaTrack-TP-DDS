@@ -30,7 +30,7 @@ public record ConsultaBandeja(
   /** Los valores de {@code ?estado=}. */
   public static final String SIN_LEER = "sin-leer";
 
-  public static final String LEIDAS = "leidas";
+  public static final String ESTADO_LEIDAS = "leidas";
 
   public ConsultaBandeja {
     leidas = leidas && !sinLeer;
@@ -78,7 +78,7 @@ public record ConsultaBandeja(
     LocalDate[] rango = Listado.rango(desde, hasta);
     return new ConsultaBandeja(
         SIN_LEER.equals(estado),
-        LEIDAS.equals(estado),
+        ESTADO_LEIDAS.equals(estado),
         buscar,
         categoria,
         Listado.ANTIGUAS.equals(orden) || "viejas".equals(orden),
@@ -87,12 +87,12 @@ public record ConsultaBandeja(
         pagina);
   }
 
-  /** El valor de {@code ?estado=}: '' (todas), {@link #SIN_LEER} o {@link #LEIDAS}. */
+  /** El valor de {@code ?estado=}: '' (todas), {@link #SIN_LEER} o {@link #ESTADO_LEIDAS}. */
   public String estado() {
     if (sinLeer) {
       return SIN_LEER;
     }
-    return leidas ? LEIDAS : "";
+    return leidas ? ESTADO_LEIDAS : "";
   }
 
   /** Si hay búsqueda o algún filtro (el orden no cuenta). */

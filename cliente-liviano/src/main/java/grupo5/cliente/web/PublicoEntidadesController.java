@@ -4,6 +4,7 @@ import grupo5.cliente.puertos.PublicoEntidadesPuerto;
 import grupo5.cliente.vistas.Listado;
 import grupo5.cliente.vistas.PublicoEntidadesVista;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,7 +46,7 @@ public class PublicoEntidadesController {
     PublicoEntidadesVista datos = entidades.entidades();
     model.addAttribute("entidadesPublicas", datos);
     // R11-B04: la búsqueda se llama buscar en todas las listas; q sigue valiendo
-    String texto = buscar != null ? buscar : (q != null ? q : "");
+    String texto = Objects.requireNonNullElse(buscar != null ? buscar : q, "");
     Listado.Armado barra =
         Listado.en("entidades", "/publico-entidades", "Buscar organizaciones")
             .buscar("Buscar por nombre", texto.strip(), "Por ejemplo: comedor.");

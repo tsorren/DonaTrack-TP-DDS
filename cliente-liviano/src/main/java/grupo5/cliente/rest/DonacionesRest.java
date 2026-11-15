@@ -161,12 +161,11 @@ class DonacionesRest implements DonacionesPuerto {
     // donación entre todas las del filtro: la primera registrada es la 1.
     Comparator<DonacionesApi.Donacion> porFecha =
         Comparator.comparing(DonacionesApi.Donacion::fechaRegistro);
+    Comparator<DonacionesApi.Donacion> orden = consulta.antiguas() ? porFecha : porFecha.reversed();
     List<DonacionesApi.Donacion> lista =
         respuesta.getBody() == null
             ? List.of()
-            : respuesta.getBody().stream()
-                .sorted(consulta.antiguas() ? porFecha : porFecha.reversed())
-                .toList();
+            : respuesta.getBody().stream().sorted(orden).toList();
     Map<UUID, String> entidades = entidades(lista);
     long saltadas = (long) (pagina - 1) * Consulta.POR_PAGINA;
     long primero = consulta.antiguas() ? saltadas + 1 : total - saltadas;

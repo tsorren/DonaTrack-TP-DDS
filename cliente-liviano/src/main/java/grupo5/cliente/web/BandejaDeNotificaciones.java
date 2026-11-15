@@ -81,7 +81,7 @@ final class BandejaDeNotificaciones {
             List.of(
                 new Listado.Opcion("", "Todas"),
                 new Listado.Opcion(ConsultaBandeja.SIN_LEER, "Sin leer"),
-                new Listado.Opcion(ConsultaBandeja.LEIDAS, "Leídas")))
+                new Listado.Opcion(ConsultaBandeja.ESTADO_LEIDAS, "Leídas")))
         .categoria(c.tema(), temas)
         .otra(
             Listado.Eleccion.deVista(

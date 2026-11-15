@@ -497,7 +497,7 @@ class InterfazFitnessTest {
       Pattern.compile(
           "<form\\b(?:[^>\"]|\"[^\"]*\")*?(role=\"search\"|class=\"[^\"]*\\bfiltros?(-barra)?\\b)");
 
-  /** Los campos comunes de la barra: un solo nombre de parámetro por campo en todo el sitio. */
+  /** Los campos comunes de la barra: un solo nombre de parámetro por campo en el sitio entero. */
   private static final Set<String> PARAMETROS_COMUNES =
       Set.of("buscar", "desde", "hasta", "estado", "categoria", "quien", "orden");
 
@@ -544,7 +544,7 @@ class InterfazFitnessTest {
   private static final Pattern MEDIDA_LITERAL =
       Pattern.compile(
           "\\b(margin|padding|gap|font-size|inset|top|left|right|bottom|width|height|max-width"
-              + "|min-width|max-height|min-height)[\\w-]*\\s*:[^;{}]*?\\b\\d*\\.?\\d+(rem|px|em)\\b");
+              + "|min-width|max-height|min-height)[\\w-]*\\s*:[^;{}]*?\\b\\d++(?:rem|px|em)\\b");
 
   @Test
   void ningunaPlantillaArmaSuPropiaBarraDeBusquedaOFiltros() {

@@ -24,21 +24,28 @@ import org.springframework.web.bind.annotation.GetMapping;
  * Donaciones recibidas de la entidad (RF-11), con los datos del puerto. Sin entidad todavía, manda
  * a ingresar, como un 401 de la API. Desde R11-43 los datos reales llegan de a una página: el
  * filtro por estado ({@code ?estado=}, repetible) lo resuelve Donaciones y la plantilla dibuja el
- * paginador; la maqueta manda todo y filtra la plantilla. Desde R11-B04, la barra del componente
- * listado ({@code listado}) suma la fecha de registro ({@code ?desde=}, {@code ?hasta=}), la
- * categoría, quien donó ({@code ?quien=}, solo si la fuente lo filtra) y el orden.
+ * paginador; la maqueta manda la lista entera y filtra la plantilla. Desde R11-B04, la barra del
+ * componente listado ({@code listado}) suma la fecha de registro ({@code ?desde=}, {@code
+ * ?hasta=}), la categoría, quien donó ({@code ?quien=}, solo si la fuente lo filtra) y el orden.
  */
 @Controller
 public class RecibidasController {
 
+  private static final String RECIBIDAS = "recibidas";
+
   /** Cada valor de {@code ?estado=} y su grupo; uno desconocido no filtra. */
   static final Map<String, String> GRUPOS =
       Map.of(
-          "en-tu-puerta", RecibidasVista.PUERTA,
-          "en-camino", RecibidasVista.CAMINO,
-          "por-salir", RecibidasVista.SALIR,
-          "con-problema", RecibidasVista.PROBLEMA,
-          "recibidas", RecibidasVista.RECIBIDA);
+          "en-tu-puerta",
+          RecibidasVista.PUERTA,
+          "en-camino",
+          RecibidasVista.CAMINO,
+          "por-salir",
+          RecibidasVista.SALIR,
+          "con-problema",
+          RecibidasVista.PROBLEMA,
+          RECIBIDAS,
+          RecibidasVista.RECIBIDA);
 
   /** Los valores de {@code ?estado=} en el orden del desplegable. */
   private static final List<Map.Entry<String, String>> VALORES =
@@ -47,7 +54,7 @@ public class RecibidasController {
           Map.entry("en-camino", RecibidasVista.CAMINO),
           Map.entry("por-salir", RecibidasVista.SALIR),
           Map.entry("con-problema", RecibidasVista.PROBLEMA),
-          Map.entry("recibidas", RecibidasVista.RECIBIDA));
+          Map.entry(RECIBIDAS, RecibidasVista.RECIBIDA));
 
   /** El nombre de cada grupo en el desplegable. */
   private static final Map<String, String> NOMBRES =
@@ -100,7 +107,7 @@ public class RecibidasController {
             conDonante ? pedido.getParameter("quien") : null,
             pedido.getParameter("orden"));
     RecibidasVista datos = recibidas.recibidas(entidad.get(), consulta);
-    model.addAttribute("recibidas", datos);
+    model.addAttribute(RECIBIDAS, datos);
     model.addAttribute("listado", listado(consulta, datos, categorias, conDonante, sinResultados));
     model.addAttribute("paginador", Paginadores.de(pedido, "Páginas de donaciones", datos.tramo()));
     return vista;
@@ -145,7 +152,7 @@ public class RecibidasController {
       estados.add(new Listado.Opcion(elegido, String.join(" y ", nombres)));
     }
     Listado.Armado barra =
-        Listado.en("recibidas", "/entidad-recibidas", "Filtrar las donaciones recibidas")
+        Listado.en(RECIBIDAS, "/entidad-recibidas", "Filtrar las donaciones recibidas")
             .oculto("escenario", sinResultados ? SIN_RESULTADOS : null)
             .fecha("Registrada", consulta.desde(), consulta.hasta())
             .estado(elegido, estados)

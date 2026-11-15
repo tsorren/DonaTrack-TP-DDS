@@ -135,18 +135,19 @@ class RecibidasMaqueta implements RecibidasPuerto {
   @Override
   public RecibidasVista recibidas(UUID entidad, Consulta consulta) {
     Comparator<Recibida> porFecha = Comparator.comparing(r -> REGISTRADAS.get(r.clave()));
+    Comparator<Recibida> orden =
+        switch (consulta.orden()) {
+          case Consulta.RECIENTES -> porFecha.reversed();
+          case Listado.ANTIGUAS -> porFecha;
+          default -> (a, b) -> 0;
+        };
     List<Recibida> filtradas =
         RECIBIDAS.asignadas().stream()
             .filter(
                 r -> Listado.entre(REGISTRADAS.get(r.clave()), consulta.desde(), consulta.hasta()))
             .filter(r -> consulta.categoria() == null || consulta.categoria().equals(valor(r)))
             .filter(r -> Listado.contiene(r.dono(), consulta.donante()))
-            .sorted(
-                switch (consulta.orden()) {
-                  case Consulta.RECIENTES -> porFecha.reversed();
-                  case Listado.ANTIGUAS -> porFecha;
-                  default -> (a, b) -> 0;
-                })
+            .sorted(orden)
             .toList();
     return new RecibidasVista(
         filtradas, RECIBIDAS.mes(), RECIBIDAS.actualizado(), RECIBIDAS.novedades());

@@ -58,7 +58,7 @@ public interface RecibidasPuerto {
   }
 
   /**
-   * Una página con los filtros de {@code consulta}. Por defecto, todo lo de {@link
+   * Una página con los filtros de {@code consulta}. Por defecto, lo mismo que {@link
    * #recibidas(UUID)}: la plantilla agrupa y filtra por estado.
    */
   default RecibidasVista recibidas(UUID entidad, Consulta consulta) {

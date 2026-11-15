@@ -88,11 +88,11 @@ final class AdminOperacionAsignaciones {
                   n -> donaciones.propuestas(decididas(n, DECIDIDAS_POR_PAGINA, busqueda))),
               p -> decidida(p, true));
       long sinFecha =
-          !busqueda.conFecha()
-              ? 0
-              : Optional.ofNullable(donaciones.resumenPropuestas())
+          busqueda.conFecha()
+              ? Optional.ofNullable(donaciones.resumenPropuestas())
                   .map(r -> numero(r.decididasSinFecha()))
-                  .orElse(0L);
+                  .orElse(0L)
+              : 0;
       return new AdminAsignacionesVista(
           consulta,
           null,
