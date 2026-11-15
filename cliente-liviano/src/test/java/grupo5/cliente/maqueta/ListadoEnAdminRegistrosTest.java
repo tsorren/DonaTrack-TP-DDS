@@ -138,4 +138,46 @@ class ListadoEnAdminRegistrosTest {
         .andExpect(content().string(containsString("Sacar los filtros")))
         .andExpect(content().string(not(containsString("name=\"subida\""))));
   }
+
+  @Test
+  void donantesFiltraPorBusquedaEstadoTipoDonaAltaYOrden() throws Exception {
+    mvc.perform(get("/admin-donantes?buscar=juan"))
+        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(containsString("Coincide 1 donante.")))
+        .andExpect(content().string(containsString("Juan Ejemplo")))
+        .andExpect(content().string(containsString("Sacar los filtros")));
+
+    mvc.perform(get("/admin-donantes?estado=baja"))
+        .andExpect(content().string(containsString("Pedro Ejemplo")))
+        .andExpect(content().string(not(containsString("Ana Ejemplo"))))
+        .andExpect(content().string(matchesPattern(elegida("baja", "Dados de baja"))));
+
+    mvc.perform(get("/admin-donantes?tipo=empresa"))
+        .andExpect(content().string(containsString("Supermercado Ejemplo SRL")))
+        .andExpect(content().string(not(containsString("Ana Ejemplo"))))
+        .andExpect(content().string(matchesPattern(elegida("empresa", "Empresas"))));
+
+    mvc.perform(get("/admin-donantes?dona=ropa"))
+        .andExpect(content().string(containsString("Fundación Ejemplo Sur")))
+        .andExpect(content().string(not(containsString("Ana Ejemplo"))))
+        .andExpect(content().string(matchesPattern(elegida("ropa", "Ropa"))));
+
+    // El alta sigue siendo un período fijo: la consulta no lleva un rango de días
+    mvc.perform(get("/admin-donantes?alta=7-dias"))
+        .andExpect(content().string(containsString("Coinciden 3 donantes.")))
+        .andExpect(content().string(not(containsString("Juan Ejemplo"))))
+        .andExpect(content().string(matchesPattern(elegida("7-dias", "Últimos 7 días"))))
+        .andExpect(content().string(containsString("Sacar los filtros")));
+
+    String porNombre = pagina("/admin-donantes?orden=nombre");
+    assertThat(porNombre).matches(elegida("nombre", "Por nombre, de la A a la Z"));
+    assertThat(porNombre.indexOf("Ana Ejemplo"))
+        .isPositive()
+        .isLessThan(porNombre.indexOf("Asociación Vecinal Ejemplo"));
+    assertThat(porNombre).contains("Sacar los filtros");
+
+    mvc.perform(get("/admin-donantes"))
+        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(not(containsString("Sacar los filtros"))));
+  }
 }

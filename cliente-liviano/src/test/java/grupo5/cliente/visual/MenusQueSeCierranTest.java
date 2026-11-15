@@ -13,9 +13,10 @@ import org.springframework.test.context.ActiveProfiles;
 
 /**
  * R11-16: el menú de la cuenta y las pastillas de filtros se cierran al tocar afuera, con Esc y al
- * perder el foco; sin JavaScript siguen abriendo y cerrando como un {@code <details>}. Perfil Maven
- * {@code visual} (necesita Playwright): {@code mvn test -pl cliente-liviano -Pvisual
- * -Dtest=MenusQueSeCierranTest}.
+ * perder el foco; sin JavaScript siguen abriendo y cerrando como un {@code <details>}. Las
+ * pastillas se prueban en el catálogo ({@code /estilos}): las listas pasan al componente listado
+ * (R11-B04). Perfil Maven {@code visual} (necesita Playwright): {@code mvn test -pl cliente-liviano
+ * -Pvisual -Dtest=MenusQueSeCierranTest}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("maqueta")
@@ -84,7 +85,7 @@ class MenusQueSeCierranTest {
   @Test
   void lasPastillasDeFiltroSeCierranTocandoAfueraYConEsc() {
     conPagina(
-        "/admin-donantes",
+        "/estilos",
         true,
         pagina -> {
           abrir(pagina, FILTRO);
@@ -102,7 +103,7 @@ class MenusQueSeCierranTest {
   @Test
   void abrirUnaPastillaCierraLaQueEstabaAbierta() {
     conPagina(
-        "/admin-donantes",
+        "/estilos",
         true,
         pagina -> {
           pagina.locator(FILTRO + " > summary").nth(0).click();
@@ -115,16 +116,16 @@ class MenusQueSeCierranTest {
   @Test
   void sinJavaScriptSigueAbriendoYCerrandoComoAntes() {
     conPagina(
-        "/admin-donantes",
+        "/estilos",
         false,
         pagina -> {
           pagina.locator(FILTRO + " > summary").first().click();
           assertThat(estaAbierto(pagina, FILTRO)).isTrue();
           pagina.locator(FILTRO + " > summary").first().click();
           assertThat(estaAbierto(pagina, FILTRO)).isFalse();
-          pagina.locator(CUENTA + " > summary").click();
+          pagina.locator(CUENTA + " > summary").first().click();
           assertThat(estaAbierto(pagina, CUENTA)).isTrue();
-          pagina.locator(CUENTA + " > summary").click();
+          pagina.locator(CUENTA + " > summary").first().click();
           assertThat(estaAbierto(pagina, CUENTA)).isFalse();
         });
   }

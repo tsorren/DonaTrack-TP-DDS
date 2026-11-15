@@ -7,6 +7,7 @@ import grupo5.cliente.vistas.AdminDonantesVista.Donante;
 import grupo5.cliente.vistas.AdminDonantesVista.Importacion;
 import grupo5.cliente.vistas.AdminDonantesVista.SusDonaciones;
 import grupo5.cliente.vistas.ConsultaDonantes;
+import grupo5.cliente.vistas.Listado;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -247,8 +248,36 @@ public class AdminDonantesController {
 
   private void lista(AdminDonantesVista datos, HttpServletRequest pedido, Model model) {
     model.addAttribute(MODELO, datos);
+    model.addAttribute("listado", listado(datos));
     model.addAttribute(
         "paginador", Paginadores.de(pedido, "Páginas de donantes", datos.donantes()));
+  }
+
+  /**
+   * La barra (R11-B04): la búsqueda por nombre o documento, el estado de la cuenta, el tipo, qué
+   * dona y el alta (si la fuente los filtra) y el orden. El alta sigue siendo un período fijo
+   * ({@code ?alta=}): la consulta no lleva un rango de días. El donante elegido no se conserva:
+   * filtrar abre la ficha del primero, como antes.
+   */
+  private static Listado listado(AdminDonantesVista datos) {
+    ConsultaDonantes c = datos.consulta();
+    AdminDonantesVista.Opciones o = datos.opciones();
+    Listado.Armado barra =
+        Listado.en("donantes", "/" + DONANTES, "Filtrar los donantes")
+            .buscar("Buscar por nombre o documento", c.buscar(), "Por ejemplo: Ana o 20.000.001")
+            .estado(c.estado(), opciones(o.estados()))
+            .otra(new Listado.Eleccion("tipo", "Tipo de donante", c.tipo(), opciones(o.tipos())));
+    if (o.categorias().size() > 1) {
+      barra.otra(new Listado.Eleccion("dona", "Qué dona", c.dona(), opciones(o.categorias())));
+    }
+    if (o.altas().size() > 1) {
+      barra.otra(new Listado.Eleccion("alta", "Alta", c.alta(), opciones(o.altas())));
+    }
+    return barra.orden(c.orden(), opciones(o.ordenes())).sacar("/" + DONANTES).listo();
+  }
+
+  private static List<Listado.Opcion> opciones(List<AdminDonantesVista.Opcion> opciones) {
+    return opciones.stream().map(o -> new Listado.Opcion(o.valor(), o.texto())).toList();
   }
 
   /**
