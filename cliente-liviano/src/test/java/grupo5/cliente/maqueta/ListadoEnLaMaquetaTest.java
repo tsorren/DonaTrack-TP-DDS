@@ -132,6 +132,17 @@ class ListadoEnLaMaquetaTest {
     mvc.perform(get("/donante-entidades?ya=si"))
         .andExpect(content().string(containsString("con lo que elegiste")))
         .andExpect(content().string(containsString("checked=\"checked\"")));
+
+    // El orden por nombre que trajo la condición (ii) de la línea base
+    String alReves = pagina("/donante-entidades?orden=z-a");
+    assertThat(alReves).matches(elegida("z-a", "De la Z a la A"));
+    assertThat(alReves.indexOf("Comedor Ejemplo Este"))
+        .isPositive()
+        .isLessThan(alReves.indexOf("Comedor Barrio Ejemplo"));
+    String deLaA = pagina("/donante-entidades?buscar=comedor");
+    assertThat(deLaA.indexOf("Comedor Barrio Ejemplo"))
+        .isPositive()
+        .isLessThan(deLaA.indexOf("Comedor Ejemplo Este"));
   }
 
   @Test

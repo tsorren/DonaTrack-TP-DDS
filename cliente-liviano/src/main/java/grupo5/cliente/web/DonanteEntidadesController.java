@@ -29,6 +29,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class DonanteEntidadesController {
 
+  /** El valor de {@code orden} para "De la Z a la A"; '' es de la A a la Z. */
+  static final String Z_A = "z-a";
+
+  private static final List<Listado.Opcion> POR_NOMBRE =
+      List.of(new Listado.Opcion("", "De la A a la Z"), new Listado.Opcion(Z_A, "De la Z a la A"));
+
   private final DonanteEntidadesPuerto entidades;
   private final CuentaActual cuentas;
   private final Pantallas pantallas;
@@ -51,6 +57,7 @@ public class DonanteEntidadesController {
       @RequestParam(required = false) String nombre,
       @RequestParam(required = false) String categoria,
       @RequestParam(required = false) String ya,
+      @RequestParam(required = false) String orden,
       @RequestParam(required = false) String pagina,
       Model model,
       HttpServletRequest pedido) {
@@ -62,22 +69,29 @@ public class DonanteEntidadesController {
     int numero = pagina != null && pagina.matches("[1-9]\\d{0,3}") ? Integer.parseInt(pagina) : 1;
     model.addAttribute("depositoDeEjemplo", maqueta);
     // R11-B04: la búsqueda se llama buscar en todas las listas; nombre sigue valiendo
+    boolean conOrden = entidades.ordenaAlReves();
     Consulta consulta =
-        new Consulta(buscar != null ? buscar : nombre, categoria, "si".equals(ya), numero);
+        new Consulta(
+            buscar != null ? buscar : nombre,
+            categoria,
+            "si".equals(ya),
+            numero,
+            conOrden && Z_A.equals(orden));
     DonanteEntidadesVista misEntidades = entidades.entidades(donante.get(), consulta);
     model.addAttribute("misEntidades", misEntidades);
-    model.addAttribute("listado", listado(consulta, misEntidades));
+    model.addAttribute("listado", listado(consulta, misEntidades, conOrden));
     model.addAttribute(
         "paginador", Paginadores.de(pedido, "Páginas de organizaciones", misEntidades.tramo()));
     return vista;
   }
 
   /**
-   * La barra (R11-B04): la búsqueda por nombre, la categoría y "Ya doné". La organización no tiene
-   * fecha, estado, quién ni orden propios: esos campos no van. Una categoría que no está queda en
-   * "Todas las categorías".
+   * La barra (R11-B04): la búsqueda por nombre, la categoría, "Ya doné" y, si la fuente lo
+   * resuelve, el orden por nombre (?orden=z-a; Donaciones solo ordena de la A a la Z). La
+   * organización no tiene fecha, estado ni quién propios: esos campos no van. Una categoría que no
+   * está queda en "Todas las categorías".
    */
-  private static Listado listado(Consulta consulta, DonanteEntidadesVista vista) {
+  private static Listado listado(Consulta consulta, DonanteEntidadesVista vista, boolean conOrden) {
     List<Listado.Opcion> categorias =
         vista.opcionesDeCategoria().stream()
             .map(c -> new Listado.Opcion(c.valor(), c.texto()))
@@ -86,11 +100,14 @@ public class DonanteEntidadesController {
         categorias.stream().anyMatch(c -> c.valor().equals(consulta.categoria()))
             ? consulta.categoria()
             : "";
-    return Listado.en("entidades", "/donante-entidades", "Buscar organizaciones")
-        .buscar("Buscar por nombre", consulta.nombre(), "Por ejemplo: Comedor")
-        .categoria(categoria, categorias)
-        .casilla("ya", "si", "Ya doné", consulta.soloDonadas())
-        .sacar("/donante-entidades")
-        .listo();
+    Listado.Armado barra =
+        Listado.en("entidades", "/donante-entidades", "Buscar organizaciones")
+            .buscar("Buscar por nombre", consulta.nombre(), "Por ejemplo: Comedor")
+            .categoria(categoria, categorias)
+            .casilla("ya", "si", "Ya doné", consulta.soloDonadas());
+    if (conOrden) {
+      barra.orden(consulta.alReves() ? Z_A : "", POR_NOMBRE);
+    }
+    return barra.sacar("/donante-entidades").listo();
   }
 }
