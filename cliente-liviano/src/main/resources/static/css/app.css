@@ -195,9 +195,15 @@ body {
     --medida-filtros-fijos: 10.25rem;
   }
 
-  /* La barra sin pliegue (solo la búsqueda o un campo): la más alta es la de Camiones del admin, la
-     búsqueda y Capacidad, 193,75 px medidos el 2026-11-15 a 390 px, redondeado a 1/8 rem. */
-  :root:where(:has(.listado[data-pliegue="no"])) {
+}
+
+/* La barra sin pliegue (solo la búsqueda o un campo) queda fija desde la tableta: la más alta, la
+   de Camiones del admin con un filtro elegido, mide 193,75 px a 600 y 768 px (2026-11-15), con
+   «Filtrar» y «Sacar los filtros» en un renglón; lo de la tableta (18 rem) ya la cubre, y esta es la
+   reserva mínima si una ventana alta no entra en esas medidas. Fuera de una tarjeta, que no la deja
+   fija. */
+@media (min-width: 37.5em) and (min-height: 45em) {
+  :root:where(:has(.listado[data-pliegue="no"]:not(.tarjeta .listado))) {
     --medida-filtros-fijos: 12.125rem;
   }
 }

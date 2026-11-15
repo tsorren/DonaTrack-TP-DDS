@@ -539,7 +539,7 @@ class InterfazFitnessTest {
               + "\\(\\s*\"([\\w-]+)\"");
 
   /** Tope de declaraciones de medida con valor literal en las hojas: solo baja. */
-  private static final int TOPE_DE_MEDIDAS_LITERALES = 1293;
+  private static final int TOPE_DE_MEDIDAS_LITERALES = 1192;
 
   private static final Pattern MEDIDA_LITERAL =
       Pattern.compile(
@@ -617,6 +617,9 @@ class InterfazFitnessTest {
   /** Las líneas de {@code css} con una medida literal (sin tokens). */
   static long medidasLiterales(String css) {
     return css.lines()
+        // Las media queries no cuentan: sus quiebres los controla
+        // mediaQueriesUsanSoloLosQuiebresDeTokens
+        .filter(linea -> !linea.strip().startsWith("@media"))
         .filter(linea -> MEDIDA_LITERAL.matcher(linea).find() && !linea.contains("var("))
         .count();
   }
@@ -674,6 +677,8 @@ class InterfazFitnessTest {
         .isEmpty();
 
     assertThat(medidasLiterales("a { margin: 0.5rem; }\nb { gap: var(--espacio-1); }"))
+        .isEqualTo(1);
+    assertThat(medidasLiterales("@media (min-width: 37.5em) {\n  a { padding: 1rem; }\n}"))
         .isEqualTo(1);
   }
 

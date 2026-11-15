@@ -6,8 +6,8 @@
    (`.listado-acciones`, `.listado-sacar`). El fragmento está en templates/componentes/listado.html.
    Se carga en la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md.
    En el celular, la búsqueda arriba y los campos en dos columnas (la fecha a todo el ancho). Con
-   JavaScript, los campos se pliegan debajo de "Filtros y orden" (`.listado-alternar`,
-   `data-plegado`). Desde 68,75 em, todo en una fila que baja de renglón, alineado abajo. */
+   JavaScript y dos campos o más, se pliegan debajo de su botón (`.listado-alternar`,
+   `data-plegado`; sin pliegue, `data-pliegue="no"`). Desde 68,75 em, todo en una fila que baja de renglón, alineado abajo. */
 
 .listado {
   display: grid;
@@ -132,7 +132,7 @@
   display: none;
 }
 
-/* En el celular, con JavaScript: los campos se pliegan debajo de "Filtros y orden". */
+/* En el celular, con JavaScript: los campos se pliegan debajo de su botón. */
 @media (width < 68.75em) {
   .listado-alternar {
     justify-self: start;
@@ -204,11 +204,24 @@
 /* La barra queda fija mientras se recorre su listado (regla general 5, como la anterior), sobre
    papel y con el filete abajo; el papel sube un poco para que entre la cabecera y la barra no se vea
    la lista. Plegada (con JavaScript, por debajo de 68,75 em) cabe en un cuarto del alto: queda fija
-   si la ventana mide al menos 45 em de alto. Abierta, solo desde 68,75 em y con al menos 37,5 em
-   de alto: en el celular, abierta, taparía casi toda la pantalla. */
+   si la ventana mide al menos 45 em de alto. La que no tiene pliegue (solo la búsqueda o un campo),
+   desde la tableta: en el celular, con un filtro elegido, «Sacar los filtros» baja de renglón y
+   pasaría el cuarto del alto. Abierta, solo desde 68,75 em y con al menos 37,5 em de alto: en el
+   celular, abierta, taparía casi toda la pantalla. Dentro de una tarjeta (Registrar donación) no
+   queda fija: lo fijo terminaría con la tarjeta. */
 @media (min-height: 45em) {
-  /* La plegada y la que no tiene pliegue (solo la búsqueda o un campo): las dos son chicas. */
-  .listado[data-plegado="si"],
+  .listado[data-plegado="si"] {
+    position: sticky;
+    top: var(--medida-cabecera-fija);
+    z-index: var(--capa-filtros-fijos);
+    padding-block: var(--espacio-1);
+    border-bottom: 1px solid var(--color-filete);
+    background: var(--color-papel);
+    box-shadow: 0 calc(var(--espacio-1) * -0.75) 0 var(--color-papel);
+  }
+}
+
+@media (min-width: 37.5em) and (min-height: 45em) {
   .listado[data-pliegue="no"] {
     position: sticky;
     top: var(--medida-cabecera-fija);
@@ -231,4 +244,8 @@
     background: var(--color-papel);
     box-shadow: 0 calc(var(--espacio-1) * -0.75) 0 var(--color-papel);
   }
+}
+
+.tarjeta .listado {
+  position: static;
 }

@@ -246,7 +246,9 @@ class ArmazonFijoTest {
               "/donante-entidades",
               "/admin-donaciones",
               "/admin-asignaciones?vista=decididas",
-              "/donante-notificaciones")) {
+              "/donante-notificaciones",
+              // Sin pliegue y con un filtro elegido: la más alta de las barras de un campo
+              "/admin-camiones?buscar=Norte&capacidad=grande")) {
         conPagina(
             ancho,
             900,

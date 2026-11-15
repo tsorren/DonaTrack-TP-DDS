@@ -38,7 +38,10 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
   Entidades, Entregas confirmadas y el Mapa públicos. También pasan Propuestas y Destino de
   Asignaciones. Un nombre por campo: `q` pasa a `buscar`, `ver` a `estado` y `pedidos` a `pedido`,
   y los nombres viejos siguen valiendo como alias. «Quién» de Actividad queda como `autor`: es un
-  desplegable de cuentas, no el texto de la contraparte (DTI-44, ítem 13). Los menús de período de Actividad e
+  desplegable de cuentas, no el texto de la contraparte (DTI-44, ítem 13). En el celular el botón
+  que pliega los campos aparece solo con dos o más y dice «Filtros», «Orden» o «Filtros y orden»;
+  una barra de solo búsqueda dice «Buscar» y «Borrar la búsqueda», y una sin pliegue queda fija
+  desde la tableta (revisión de interfaz del kit). Los menús de período de Actividad e
   Importaciones pasan a rango. Organizaciones del donante suma el orden por nombre de la condición
   (ii) de la línea base. Pico.css sale del stack.
 - **Alternativas:** las opciones B (skills de stock y brief corto) y C (librería tematizada) del
