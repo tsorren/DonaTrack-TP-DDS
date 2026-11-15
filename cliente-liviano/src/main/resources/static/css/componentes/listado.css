@@ -180,9 +180,13 @@
   }
 
   /* Desde y hasta en una fila, cada uno con su rótulo al lado: la fecha mide lo mismo que los
-     demás campos (el rótulo arriba y el control). */
+     demás campos (el rótulo arriba y el control). En un contenedor más angosto que la ventana (la
+     muestra de /estilos) bajan a dos renglones: un fieldset no se achica por debajo de su
+     contenido si no se lo permite. */
   .listado-fecha {
     display: flex;
+    flex-wrap: wrap;
+    min-inline-size: 0;
     gap: var(--espacio-2);
   }
 

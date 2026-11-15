@@ -221,7 +221,11 @@ class ArmazonFijoTest {
         844,
         false,
         pagina -> {
+          // Plegada, la barra del listado entra y queda fija; abierta con «Filtros y orden» no
+          // entra en un cuarto del alto y se desplaza con la página (R11-B04)
           pagina.navigate(url("/admin-donantes"));
+          assertThat(posicion(pagina, BARRA)).isEqualTo("sticky");
+          pagina.locator(".listado-alternar").click();
           assertThat(posicion(pagina, BARRA)).isNotEqualTo("sticky");
         });
   }

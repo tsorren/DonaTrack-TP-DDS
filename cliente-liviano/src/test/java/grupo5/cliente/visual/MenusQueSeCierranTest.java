@@ -106,10 +106,12 @@ class MenusQueSeCierranTest {
         "/estilos",
         true,
         pagina -> {
-          pagina.locator(FILTRO + " > summary").nth(0).click();
+          // En la muestra de /estilos la segunda pastilla queda debajo de la primera y su menú
+          // abierto la taparía: se abre primero la de abajo y después la de arriba
           pagina.locator(FILTRO + " > summary").nth(1).click();
+          pagina.locator(FILTRO + " > summary").nth(0).click();
           assertThat(pagina.locator(FILTRO + "[open]").count()).isEqualTo(1);
-          assertThat(pagina.locator(FILTRO).nth(1).getAttribute("open")).isNotNull();
+          assertThat(pagina.locator(FILTRO).nth(0).getAttribute("open")).isNotNull();
         });
   }
 
