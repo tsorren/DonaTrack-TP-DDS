@@ -34,6 +34,7 @@ const {
 } = require('../agent-check/index');
 const { checkSkillAdapters } = require('../agent-check/checks/skills');
 const { checkInterfazHarness, TOPES } = require('../agent-check/checks/interfaz');
+const { checkManifiestosUi } = require('../agent-check/checks/manifiestos-ui');
 
 // ─── Harness ──────────────────────────────────────────────────────────────────
 
@@ -784,11 +785,161 @@ console.log('\n[18] checkSkillAdapters & checkInterfazHarness');
   assert('18.6  missing UI skill → UI_HARNESS_SIZE FAIL', hasFail(checkInterfazHarness(tmp), 'UI_HARNESS_SIZE'));
 } finally { cleanup(tmp); } }
 
+// ─── [19] checkManifiestosUi & workflow oleada-ui ────────────────────────────
+
+console.log('\n[19] checkManifiestosUi & workflow oleada-ui');
+
+const REPO = path.resolve(__dirname, '../..');
+const PLANTILLA = JSON.parse(fs.readFileSync(path.join(REPO, 'docs/interfaz/plantillas/manifiesto-oleada.ejemplo.json'), 'utf8'));
+const WORKFLOW = fs.readFileSync(path.join(REPO, '.claude/workflows/oleada-ui.js'), 'utf8');
+const conManifiesto = (mutar) => {
+  const m = JSON.parse(JSON.stringify(PLANTILLA));
+  mutar(m);
+  return m;
+};
+const chequear = (m, rel = 'docs/interfaz/m.json') => {
+  const tmp = makeTemp();
+  try {
+    write(tmp, rel, typeof m === 'string' ? m : JSON.stringify(m));
+    return checkManifiestosUi(tmp);
+  } finally { cleanup(tmp); }
+};
+const manifiestoFalla = (m) => hasFail(chequear(m), 'UI_WAVE_MANIFEST');
+
+assert('19.1  template manifest → UI_WAVE_MANIFEST PASS', noFail(chequear(PLANTILLA)));
+assert('19.2  decision without lote or diferida → UI_WAVE_MANIFEST FAIL',
+  manifiestoFalla(conManifiesto((m) => { delete m.decisiones[0].lote; delete m.decisiones[0].criterio; })));
+assert('19.3  decision assigned to a missing lote → UI_WAVE_MANIFEST FAIL',
+  manifiestoFalla(conManifiesto((m) => { m.decisiones[0].lote = 'no-existe'; })));
+assert('19.4  decision in a lote without criterio → UI_WAVE_MANIFEST FAIL',
+  manifiestoFalla(conManifiesto((m) => { delete m.decisiones[0].criterio; })));
+assert('19.5  diferida without ok → UI_WAVE_MANIFEST FAIL',
+  manifiestoFalla(conManifiesto((m) => { delete m.decisiones[2].diferida.ok; })));
+assert('19.6  duplicated decision id → UI_WAVE_MANIFEST FAIL',
+  manifiestoFalla(conManifiesto((m) => { m.decisiones[1].id = m.decisiones[0].id; })));
+assert('19.7  decision with lote and diferida → UI_WAVE_MANIFEST FAIL',
+  manifiestoFalla(conManifiesto((m) => { m.decisiones[0].diferida = { quien: 'usuario', ok: 'ronda' }; })));
+assert('19.8  JSON without formato (R11 manifest) → ignored',
+  noFail(chequear({ version: '1.0.0', lotes: [], decisiones: [{ id: 'D1' }] })));
+assert('19.9  invalid JSON that names oleada-ui/1 → UI_WAVE_MANIFEST FAIL',
+  manifiestoFalla('{ "formato": "oleada-ui/1", '));
+assert('19.10 manifest under docs/IA/history → ignored',
+  noFail(chequear(conManifiesto((m) => { delete m.decisiones[0].lote; }), 'docs/IA/history/x/m.json')));
+
+const bloqueDeRegla = (codigo) => {
+  const m = codigo.match(/\/\/ ── Regla oleada-ui\/1[\s\S]*?\/\/ ── fin de la regla oleada-ui\/1 ──/);
+  return m ? m[0].replace(/\r\n/g, '\n') : null;
+};
+const reglaDelWorkflow = bloqueDeRegla(WORKFLOW);
+assert('19.11 the rule is identical in the workflow and in the check',
+  reglaDelWorkflow !== null &&
+  reglaDelWorkflow === bloqueDeRegla(fs.readFileSync(path.join(REPO, 'scripts/agent-check/checks/manifiestos-ui.js'), 'utf8')));
+
+// El workflow, cargado como en el sandbox (sin el export) y con agentes que no responden: prueba la
+// sintaxis y el arranque sin lanzar agentes. No reemplaza una corrida real.
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+const correrWorkflow = async (manifiesto, responder = async () => null) => {
+  const llamadas = [];
+  const agentes = [];
+  const fn = new AsyncFunction('args', 'agent', 'parallel', 'phase', 'log', WORKFLOW.replace(/^export const meta/m, 'const meta'));
+  const resultado = await fn(
+    { manifiesto, ola: 'P0', fase: 'construir', carpeta: '/tmp/oleada' },
+    async (prompt, opts) => { llamadas.push(opts.label); agentes.push({ prompt, ...opts }); return responder(opts); },
+    async (thunks) => Promise.all(thunks.map((t) => t())),
+    () => {}, () => {});
+  return { resultado, llamadas, agentes };
+};
+// Agentes falsos que completan su esquema: todo responde bien, salvo la revisión de pantallas si
+// pantallasPasan es false, los agentes cuya etiqueta está en mudos, y las revisiones que rinden una
+// decisión como NO CUMPLE sin listarla como bloqueante o que omiten una.
+const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '', omite = '', extra = [] } = {}) => async (opts) => {
+  if (mudos.includes(opts.label)) return null;
+  const props = opts.schema.properties;
+  const r = {};
+  for (const k of opts.schema.required) r[k] = props[k].type === 'array' ? [] : props[k].type === 'boolean' ? true : 'x';
+  if ('base' in props) r.base = 'sha0';
+  if ('integrados' in props) r.integrados = PLANTILLA.lotes.map((l) => l.id);
+  if ('veredicto' in props) {
+    const falla = !pantallasPasan && opts.label.startsWith('pantallas');
+    r.veredicto = falla ? 'CHANGES_REQUIRED' : 'PASS';
+    if (falla) r.bloqueantes = ['inconsistencia entre pantallas'];
+    r.decisiones = [...['D1', 'D2'].filter((id) => id !== omite).map((id) => `${id}: ${id === noCumple ? 'NO CUMPLE' : 'CUMPLE'} — captura`), ...extra];
+  }
+  if ('url' in props) r.url = 'https://pr';
+  return r;
+};
+
+(async () => {
+  let rechazo = null;
+  let llamadasAlRechazar = -1;
+  try {
+    const r = await correrWorkflow(conManifiesto((m) => { delete m.decisiones[0].lote; delete m.decisiones[0].criterio; }));
+    llamadasAlRechazar = r.llamadas.length;
+  } catch (e) { rechazo = e; llamadasAlRechazar = 0; }
+  assert('19.12 workflow with an unassigned decision → throws before any agent',
+    rechazo !== null && /sin asignar/.test(rechazo.message) && llamadasAlRechazar === 0);
+
+  const { resultado, llamadas } = await correrWorkflow(PLANTILLA);
+  assert('19.13 workflow with the template → one agent, stops at Preparar',
+    llamadas.length === 1 && /Detenida en Preparar/.test(resultado.detenida));
+  assert('19.14 workflow reports every decision by ID (assigned and diferida)',
+    resultado.decisionesDelUsuario.length === 3 &&
+    resultado.decisionesDelUsuario.some((d) => d.startsWith('D3: diferida')));
+
+  const completa = await correrWorkflow(PLANTILLA, agenteFalso(true));
+  assert('19.15 full run with passing reviews → screen review, contact sheet and PR, decisions met',
+    completa.resultado.pr === 'https://pr' &&
+    ['pantallas r1', 'hoja P0', 'PR P0'].every((l) => completa.llamadas.includes(l)) &&
+    completa.resultado.decisionesDelUsuario.filter((d) => d.includes('cumplida (PASS')).length === 2);
+
+  const sinPass = await correrWorkflow(PLANTILLA, agenteFalso(false));
+  assert('19.16 screen review without PASS → no contact sheet, no PR, decisions not met',
+    sinPass.resultado.pr === '' && /No se abre el PR/.test(sinPass.resultado.detenida) &&
+    !sinPass.llamadas.includes('hoja P0') && !sinPass.llamadas.includes('PR P0') &&
+    sinPass.resultado.decisionesDelUsuario.filter((d) => d.includes('no cumplida')).length === 2);
+
+  const noCumple = await correrWorkflow(PLANTILLA, agenteFalso(true, { noCumple: 'D1' }));
+  assert('19.17 lote review with PASS but a decision NO CUMPLE → blocking, no PR',
+    noCumple.resultado.pr === '' && /p0-mis-donaciones/.test(noCumple.resultado.detenida) &&
+    noCumple.llamadas.includes('arreglos p0-mis-donaciones r1'));
+
+  const sinConstruir = await correrWorkflow(PLANTILLA, agenteFalso(true, { mudos: ['p0-mis-donaciones'] }));
+  assert('19.18 visual lote with decisions never built → no PR, decisions not met',
+    sinConstruir.resultado.pr === '' && /p0-mis-donaciones/.test(sinConstruir.resultado.detenida) &&
+    sinConstruir.resultado.decisionesDelUsuario.filter((d) => d.includes('no cumplida: el constructor no respondió')).length === 2);
+
+  const omitida = await correrWorkflow(PLANTILLA, agenteFalso(true, { omite: 'D2' }));
+  assert('19.19 review with PASS that omits a decision → not met, no PR',
+    omitida.resultado.pr === '' && /p0-mis-donaciones/.test(omitida.resultado.detenida) &&
+    !omitida.resultado.decisionesDelUsuario.some((d) => d.startsWith('D2') && d.includes(': cumplida')));
+
+  const porEtiqueta = (l) => completa.agentes.find((a) => a.label === l);
+  const vista = porEtiqueta('p0-mis-donaciones');
+  const servicio = porEtiqueta('p0-api-donaciones');
+  const pr = porEtiqueta('PR P0');
+  assert('19.20 views: Opus high in builder, review and screen review; no "Lo más simple" in views only',
+    vista.model === 'opus' && vista.effort === 'high' && !vista.prompt.includes('Lo más simple que funcione') &&
+    servicio.effort !== 'high' && servicio.prompt.includes('Lo más simple que funcione') &&
+    ['revisión p0-mis-donaciones r1', 'pantallas r1'].every((l) => porEtiqueta(l).effort === 'high'));
+  assert('19.21 PR as draft with the unchecked contact-sheet box',
+    pr.prompt.includes('gh pr create --draft') && pr.prompt.includes('- [ ] Hoja de contacto aprobada por el usuario'));
+
+  const contradice = await correrWorkflow(PLANTILLA, agenteFalso(true, { extra: ['D2: NO CUMPLE — captura'] }));
+  const parcial = await correrWorkflow(PLANTILLA, agenteFalso(true, { omite: 'D2', extra: ['D2: CUMPLE parcialmente'] }));
+  assert('19.22 contradictory lines (NO CUMPLE wins) or "CUMPLE parcialmente" → no PR',
+    contradice.resultado.pr === '' && parcial.resultado.pr === '' &&
+    !parcial.resultado.decisionesDelUsuario.some((d) => d.startsWith('D2') && d.includes(': cumplida')));
+
+  resumen();
+})().catch((e) => { console.error(e); failed++; resumen(); });
+
 // ─── Summary ──────────────────────────────────────────────────────────────────
 
-console.log('\n' + '═'.repeat(56));
-console.log(`PASS: ${passed}  │  FAIL: ${failed}`);
-console.log('═'.repeat(56));
-if (failed > 0) { console.error('\nTest suite FAILED'); process.exit(1); }
-else { console.log('\nTest suite PASSED'); process.exit(0); }
+function resumen() {
+  console.log('\n' + '═'.repeat(56));
+  console.log(`PASS: ${passed}  │  FAIL: ${failed}`);
+  console.log('═'.repeat(56));
+  if (failed > 0) { console.error('\nTest suite FAILED'); process.exit(1); }
+  else { console.log('\nTest suite PASSED'); process.exit(0); }
+}
 

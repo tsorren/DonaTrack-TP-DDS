@@ -15,6 +15,7 @@ const { checkTemporalDrift } = require('./checks/temporal-drift');
 const { checkSkillsIntegrity } = require('./checks/skills');
 const { checkSpecsIntegrity, parseSpecFile } = require('./checks/specs');
 const { checkInterfazHarness } = require('./checks/interfaz');
+const { checkManifiestosUi } = require('./checks/manifiestos-ui');
 
 // lib helpers re-exported for unit testing
 const { extractMarkdownLinks, extractCodespanPaths } = require('./lib/markdown');
@@ -38,6 +39,7 @@ function runAllChecks(repoRoot) {
     ...checkTemporalDrift(repoRoot),
     ...checkSpecsIntegrity(repoRoot),
     ...checkInterfazHarness(repoRoot),
+    ...checkManifiestosUi(repoRoot),
   ];
 }
 
@@ -76,6 +78,7 @@ module.exports = {
   checkSkillsIntegrity,
   checkSpecsIntegrity,
   checkInterfazHarness,
+  checkManifiestosUi,
   // Aggregator + renderer
   runAllChecks,
   renderFindings,

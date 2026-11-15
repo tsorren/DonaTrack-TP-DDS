@@ -15,6 +15,7 @@ componente único de listas y un cerco en el build
 | `skills/revision-ui` (vectores U1–U10 y panel de exploración) | ídem | `revisar-ui` (U1–U7); el panel, sin reemplazo: elige el humano |
 | `skills/identidad-visual`, `skills/iteracion-ab`, `skills/relevamiento-creativo` y `skills/corrida-creativa` | ídem | `explorar-ui` |
 | `workflows/corrida-creativa.js` | `.claude/workflows/` | `explorar-ui` (sin workflow desatendido) |
+| `workflows/backlog-r11.js` (archivado el 2026-11-15, paso 4) | `.claude/workflows/` | `oleada-ui.js`, genérico, con su [guía](../../prompts/orquestacion-oleada-ui.md); la guía de R11 sigue en `docs/IA/prompts/`, con su nota de historia |
 | `plantillas/encargo-constructor.md`, `encargo-creativo.md`, `encargo-critico.md` e `iteracion-ab.md` | `docs/interfaz/plantillas/` | `explorar-ui` |
 
 Los adaptadores de `.claude/skills/` solo apuntaban a la versión canónica y no se conservan. Los
