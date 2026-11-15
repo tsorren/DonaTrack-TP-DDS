@@ -158,7 +158,7 @@
   }
 
   .listado-buscar {
-    flex: 1 1 calc(var(--medida-toque-minimo) * 5);
+    flex: 1 1 calc(var(--medida-toque-minimo) * 6);
     max-width: calc(var(--medida-toque-minimo) * 9);
   }
 
