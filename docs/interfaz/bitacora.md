@@ -62,7 +62,10 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
   reemplaza a «Todas | Sin leer», y Agrupar queda sin agrupar por defecto (como estaba). (8)
   Organizaciones no tiene fecha, estado, quién ni orden: la organización no los tiene. (9) Los
   parámetros viejos (`nombre`, `ver`, `tema`, `orden=viejas`) siguen valiendo. (10) «Sacar los
-  filtros» se ve igual en todas las listas (la bandeja lo tenía como vínculo subrayado).
+  filtros» se ve igual en todas las listas (la bandeja lo tenía como vínculo subrayado). (11) La
+  primera opción dice «Todos los estados» y «Todas las categorías» en todas las listas. (12) La
+  barra se pliega hasta 68,75 em: abierta, en la tableta llegaba a tres renglones fijos. (13) Agrupar
+  no cuenta como filtro: solo cambia cómo se ve la lista.
 - **Alternativas:** las que cada punto descarta.
 - **Por qué:** una sola barra que se use igual en todas las listas, accesible y sin JavaScript.
 - **Costo:** lo que la API no resuelve, en [DTI-44](../adr/DEUDA_TECNICA.md#dti-44).
