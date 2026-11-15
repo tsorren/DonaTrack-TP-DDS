@@ -3,6 +3,10 @@
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
 > **Versión 2 · 2026-11-06 (la paleta cambia también qué color domina; tema `color-y-acabado`) ·
 > usado por la skill `iteracion-ab`**
+>
+> **Histórico desde el 2026-11-15.** `iteracion-ab` se archivó
+> ([archivo](../IA/history/harness-ui-2026-11/README.md)); hoy las alternativas las arma
+> `explorar-ui`, que diverge en ejes de producto y no en un solo tema.
 
 Una comparación A/B cambia **un solo tema**. Todo lo demás queda igual, para que la elección sea
 clara. Para sumar un tema, se agrega una fila.

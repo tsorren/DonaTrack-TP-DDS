@@ -14,6 +14,7 @@ const { checkModuleRouting, parseContextIndexServices } = require('./checks/modu
 const { checkTemporalDrift } = require('./checks/temporal-drift');
 const { checkSkillsIntegrity } = require('./checks/skills');
 const { checkSpecsIntegrity, parseSpecFile } = require('./checks/specs');
+const { checkInterfazHarness } = require('./checks/interfaz');
 
 // lib helpers re-exported for unit testing
 const { extractMarkdownLinks, extractCodespanPaths } = require('./lib/markdown');
@@ -36,6 +37,7 @@ function runAllChecks(repoRoot) {
     ...checkModuleRouting(repoRoot),
     ...checkTemporalDrift(repoRoot),
     ...checkSpecsIntegrity(repoRoot),
+    ...checkInterfazHarness(repoRoot),
   ];
 }
 
@@ -73,6 +75,7 @@ module.exports = {
   checkTemporalDrift,
   checkSkillsIntegrity,
   checkSpecsIntegrity,
+  checkInterfazHarness,
   // Aggregator + renderer
   runAllChecks,
   renderFindings,

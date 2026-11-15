@@ -3,7 +3,8 @@
 Un solo archivo de Java 21, sin dependencias: `Imagenes.java`. Trabaja sobre las capturas que deja
 la verificación visual del cliente liviano (`cliente-liviano/target/capturas/`, ver
 [`docs/interfaz/README.md`](../../docs/interfaz/README.md)). Lo usan las skills de interfaz, en
-especial [`corrida-creativa`](../../.agents/skills/corrida-creativa/SKILL.md).
+especial [`explorar-ui`](../../.agents/skills/explorar-ui/SKILL.md) y
+[`revisar-ui`](../../.agents/skills/revisar-ui/SKILL.md).
 
 ```bash
 java scripts/visual/Imagenes.java <orden> <argumentos>

@@ -32,6 +32,8 @@ const {
   parseContextIndexServices,
   parseSpecFile,
 } = require('../agent-check/index');
+const { checkSkillAdapters } = require('../agent-check/checks/skills');
+const { checkInterfazHarness, TOPES } = require('../agent-check/checks/interfaz');
 
 // ─── Harness ──────────────────────────────────────────────────────────────────
 
@@ -202,6 +204,10 @@ console.log('\n[4] runAllChecks — exit code aggregation');
     if (s === 'review-pr') extra += 'Arquitectura Contratos Concurrencia Tests Seguridad Rendimiento Scope Simplicidad\ngrepai_search grepai_trace_callers grepai_trace_callees\nREVISIÓN CRÍTICA DE PR Veredicto Matriz de Evaluación Rápida Hallazgos Bloqueantes\n';
     write(tmp, `.agents/skills/${s}/SKILL.md`, `---\nname: ${s}\ndescription: desc\n---\n${extra}`);
   }
+  for (const s of ['construir-ui', 'revisar-ui', 'explorar-ui']) {
+    write(tmp, `.agents/skills/${s}/SKILL.md`, `---\nname: ${s}\ndescription: desc\n---\nAGENTS.md\n`);
+  }
+  write(tmp, '.claude/rules/interfaz.md', '# Interfaz\n');
   write(tmp, 'docs/specs/active/.gitkeep', '');
   write(tmp, 'docs/specs/completed/.gitkeep', '');
   const r = runAllChecks(tmp);
@@ -749,6 +755,33 @@ Missing vectors and protocol.
   const findings = checkSkillsIntegrity(tmp);
   assert('17.4  review-pr missing vectors → REVIEW_PR_VECTORS FAIL', hasFail(findings, 'REVIEW_PR_VECTORS'));
   assert('17.5  review-pr missing grepai tools → REVIEW_PR_GREPAI_PROTOCOL FAIL', hasFail(findings, 'REVIEW_PR_GREPAI_PROTOCOL'));
+} finally { cleanup(tmp); } }
+
+// ─── [18] checkSkillAdapters & checkInterfazHarness ──────────────────────────
+
+console.log('\n[18] checkSkillAdapters & checkInterfazHarness');
+
+{ const tmp = makeTemp(); try {
+  const skill = '---\nname: construir-ui\ndescription: desc\n---\n';
+  write(tmp, '.agents/skills/construir-ui/SKILL.md', skill + 'Canónica.\n');
+  write(tmp, '.claude/skills/construir-ui/SKILL.md', skill + 'Leé la canónica.\n');
+  assert('18.1  adapter with the same frontmatter → SKILL_ADAPTER_SYNC PASS', noFail(checkSkillAdapters(tmp)));
+  write(tmp, '.claude/skills/construir-ui/SKILL.md', '---\nname: construir-ui\ndescription: otra\n---\n');
+  assert('18.2  adapter with a different frontmatter → SKILL_ADAPTER_SYNC FAIL', hasFail(checkSkillAdapters(tmp), 'SKILL_ADAPTER_SYNC'));
+  write(tmp, '.claude/skills/sin-canonica/SKILL.md', skill);
+  assert('18.3  adapter without canonical skill → SKILL_ADAPTER_SYNC FAIL', hasFail(checkSkillAdapters(tmp), 'SKILL_ADAPTER_SYNC'));
+  write(tmp, '.agents/skills/sin-canonica/SKILL.md', 'Sin frontmatter.\n');
+  write(tmp, '.claude/skills/sin-canonica/SKILL.md', 'Sin frontmatter.\n');
+  assert('18.7  adapter and canonical without frontmatter → SKILL_ADAPTER_SYNC FAIL', hasFail(checkSkillAdapters(tmp), 'SKILL_ADAPTER_SYNC'));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  for (const [rel] of TOPES) write(tmp, rel, 'una línea\n');
+  assert('18.4  UI harness files within their caps → UI_HARNESS_SIZE PASS', noFail(checkInterfazHarness(tmp)));
+  write(tmp, '.claude/rules/interfaz.md', 'x\n'.repeat(11));
+  assert('18.5  rule over 10 lines → UI_HARNESS_SIZE FAIL', hasFail(checkInterfazHarness(tmp), 'UI_HARNESS_SIZE'));
+  fs.rmSync(path.join(tmp, '.agents/skills/revisar-ui/SKILL.md'));
+  assert('18.6  missing UI skill → UI_HARNESS_SIZE FAIL', hasFail(checkInterfazHarness(tmp), 'UI_HARNESS_SIZE'));
 } finally { cleanup(tmp); } }
 
 // ─── Summary ──────────────────────────────────────────────────────────────────

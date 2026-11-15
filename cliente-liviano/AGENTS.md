@@ -1,185 +1,80 @@
 # AGENTS.md — cliente-liviano (interfaz web)
 
-> Este archivo especializa `/AGENTS.md` para trabajo dentro de `cliente-liviano/`.
-> Todas las políticas del AGENTS.md raíz siguen vigentes sin excepción.
-> Este archivo solo agrega reglas locales; nunca relaja guardrails globales.
-> Origen: RNF-CL-06 de [`requerimientos-e6.md`](../docs/requerimientos/requerimientos-e6.md).
+> Especializa `/AGENTS.md` sin relajarlo. Origen: RNF-CL-06 ([E6](../docs/requerimientos/requerimientos-e6.md)).
 
----
+## Lectura obligatoria y skills
+- Este archivo, la skill de la tarea y, para todo texto de pantalla, el
+  [tono](../docs/interfaz/tono-y-comunicacion.md). El catálogo se consulta por búsqueda. El resto de
+  [`docs/interfaz/`](../docs/interfaz/README.md) (bitácora, evidencia, fichas cerradas) es historia.
+- `construir-ui` para producir, `revisar-ui` antes de cerrar (sin bloqueantes = lista) y
+  `explorar-ui` para buscar alternativas, que no se mergean. Canónicas en `.agents/skills/`.
+- Con el usuario o la diseñadora: una decisión por pregunta, 3 o menos por ronda, palabras simples.
 
-## Proceso obligatorio
+## Sistema visual cerrado
+- Una sola identidad ([ADR](../docs/adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
+  Valores: `static/css/tokens.css`. Verdad visual: `/estilos` (`templates/estilos.html`). Intención:
+  el [brief](../docs/interfaz/identidad/brief.md).
+- Piezas: el [catálogo](../docs/interfaz/componentes.md). Lo que existe se usa como está; lo que
+  falta se crea como componente (fragmento con parámetros con nombre en `templates/componentes/`, hoja
+  en `static/css/componentes/`, fila en el catálogo y muestra en `/estilos`) antes de usarlo.
+- **Listas:** toda búsqueda, filtro u orden usa `componentes/listado` con un `vistas.Listado`, y
+  debajo el paginador `componentes/paginas`. Un nombre por parámetro en todo el sitio. Excepción
+  registrada: Ranking ([DTI-44](../docs/adr/DEUDA_TECNICA.md#dti-44), ítem 4).
+- `InterfazFitnessTest` cerca todo esto: barras propias, nombres de parámetro, clases fuera del
+  catálogo o de `clases-heredadas.txt`, tope de clases de un solo uso y de medidas literales (solo
+  bajan), colores y `style` sueltos, contraste y Pico (que salió del stack,
+  [ADR](../docs/adr/cliente-liviano/20261114-sin-pico-css-en-el-cliente-liviano.md)).
 
-Ninguna pantalla se construye sin su flujo diseñado y aprobado. El proceso completo, quién decide
-qué y cuándo algo está listo están en [`docs/interfaz/README.md`](../docs/interfaz/README.md).
+## Stack y pertenencia
+- Spring MVC + Thymeleaf, HTMX y Alpine.js (build CSP), CSS propio en capas CUBE y MapLibre solo
+  en mapas (D17–D21, [D31–D33](../docs/adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)).
+  Sin build de frontend, sin Node y sin SPA.
+- Solo presentación (RNF-CL-01): sin entidades de dominio ni bases. Datos por las APIs REST, por
+  el gateway, como DTOs propios. No depende de `common-lib`: su `@RestControllerAdvice` volvería
+  JSON los errores de las vistas. `TraceIdFiltro` genera el `traceId` y lo manda en `X-Trace-Id`.
+- `web`: controllers (piden al puerto y eligen la vista, sin lógica); `Pantallas.mostrar` arma el
+  modelo; `ErroresHttp` lleva errores de las APIs a páginas (401 a Ingresar, 403, 404, 502);
+  `Envios.listo` redirige con el aviso a `#avisos`. `seguridad`: Keycloak; `UsuarioActual` es lo
+  único que lee claims. `vistas`: records para la plantilla. `puertos`: un adaptador de `maqueta`
+  y uno `rest` por puerto (`cliente.datos.<puerto>`). `rest`: `@HttpExchange` sobre `RestClient`,
+  URL en `cliente.api.<api>.url`, con `X-Trace-Id` y el token si hay ingreso.
+- Plantillas: `templates/<rol>-<pantalla>.html` (`publico-`, `donante-`, `entidad-`, `admin-`; en el
+  nivel 3, con su sección). Piezas compartidas sin rol en el nombre o en `templates/componentes/`.
 
-| Paso | Skill (`.agents/skills/`) |
-|---|---|
-| Identidad visual (paleta, tipografía, forma, voz) | `identidad-visual` |
-| Comparar dos variantes de un tema | `iteracion-ab` |
-| Diseñar un flujo (recorrido, estados, textos, usabilidad) | `ux-flujo` |
-| Construir vistas y componentes | `vista-ui` |
-| Revisión independiente (y panel de exploración para criticar conceptos) | `revision-ui` |
-| Relevar con el usuario un diseño nuevo y creativo (referencias, mensaje, libertades, alcance) | `relevamiento-creativo` |
-| Diseñar desde cero sin el usuario, a partir de un encargo aprobado (workflow `.claude/workflows/corrida-creativa.js`) | `corrida-creativa` |
+## Plantillas, HTMX y Alpine
+- HTML semántico (`th scope` en tablas). Texto con `th:text`; `th:utext` nunca con datos de afuera.
+  Cada estado (vacío, cargando, éxito, error, sin permiso) tiene su representación; en `maqueta`,
+  con `?escenario=<nombre>`. Los textos salen de la ficha del flujo y siguen el tono.
+- Lo esencial anda sin JavaScript: cada `hx-get` o `hx-post` va sobre un `form` o un `a` reales.
+  Con `HX-Request`, el controller devuelve el fragmento. Más de 300 ms, `hx-indicator` (RNF-UI-06).
+- Filtrar, cambiar de pestaña o abrir una ficha en la misma pantalla lleva `hx-boost="true"`; el
+  `main#contenido` de los layouts ya trae `hx-target`, `hx-select` y `hx-swap`. No en enlaces a otra
+  pantalla. Los scripts dentro del main se registran una sola vez. Avisos, a la región `aria-live`.
+- JavaScript propio solo como mejora, en `static/js/`, con "reducir movimiento". Alpine (D31):
+  estado que no sale del navegador, lógica en `Alpine.data()`; nada de `fetch`, `XMLHttpRequest`,
+  listas del negocio, `x-html` ni tokens o datos personales en `localStorage`; `x-data` fuera del bloque que
+  HTMX reemplaza.
+- Diálogos: `<dialog popover>` nativo; si confirman algo sin vuelta, `data-bloquea` (`showModal()`).
 
-Al hablar con el usuario o la diseñadora: una decisión por pregunta, como máximo 3 preguntas por
-ronda, opción recomendada, palabras simples y sin jerga técnica
-([reglas](../docs/interfaz/README.md#cómo-se-le-pregunta-al-usuario)).
+## Estilos
+- Solo tokens de uso (`--color-*`, `--fuente-*`, `--tamano-*`, `--espacio-*`, `--radio-*`,
+  `--borde-*`, `--sombra-*`, `--movimiento-*`, `--capa-*`, `--medida-*`); los `--p-*`, solo en
+  `tokens.css`. Sin colores literales ni `style` fuera de él. Media queries con
+  `--medida-quiebre-*`, mobile first. Fuentes OFL en `static/fuentes/`.
+- Capas, una vez en `app.css`: `base, tokens, composicion, utilidades, bloques, excepciones, pantallas`.
+  Las hojas de pantalla solo disponen: sin colores, fuentes, `@keyframes` ni duraciones. El
+  movimiento, con `data-movimiento` (`movimiento.css`). Una hoja heredada que se toca migra antes
+  lo suyo del [backlog](../docs/interfaz/backlog-migracion-componentes.md).
 
-## Pertenencia
-
-- Solo presentación: controllers, modelos de vista, plantillas, estilos y clientes de las APIs.
-- **Sin entidades de dominio ni acceso a bases de negocio** (RNF-CL-01). Los datos llegan por las
-  APIs REST, a través del gateway, como DTOs propios del cliente.
-- **No depende de `common-lib`.** Su `@RestControllerAdvice` convertiría los errores de las vistas
-  en JSON. El `traceId` lo genera el cliente en cada pedido (`TraceIdFiltro`, con el formato de
-  common-lib) y lo manda a las APIs en `X-Trace-Id` (ADR-E6-02, `proposed`, en el PR 938).
-- Stack fijo (D17–D21, ADR-E6-06; D31–D33, [ADR de interacción, movimiento y componentes](../docs/adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)):
-  Spring MVC + Thymeleaf, HTMX, Alpine.js (build CSP), CSS propio con `tokens.css` en capas CUBE y
-  MapLibre solo en pantallas con mapa. Sin build de frontend, sin Node y sin frameworks SPA.
-
-## Estructura
-
-| Paquete o carpeta | Contiene |
-|---|---|
-| `grupo5.cliente.web` | Controllers: reciben el request, piden datos al puerto y eligen la vista. Sin lógica de negocio. `Pantallas` arma el modelo de cada pantalla (el menú de su área, la cuenta y los datos de ejemplo) y lo usan la maqueta y el sitio real; `PantallasController` sirve `/<pantalla>` y `PublicoPortadaController`, la portada (`/`); `AccesoController` (fuera de `maqueta`) lleva ingresar y registrarse a Keycloak. Los controllers de las pantallas con datos del puerto (`<Rol><Pantalla>Controller`, uno por pantalla o sección, como `RankingController`, `MisDonacionesController`, `RecibidasController` o `AdminCamionesController`; sus envíos, en `<Rol><Pantalla>EnvioController` o `<Rol><Pantalla>Envios`) arman su pantalla con `Pantallas.mostrar`. También el `traceId` de cada pedido (`TraceIdFiltro`, ADR-E6-02) y los errores de las APIs → páginas de error (`ErroresHttp`: 401 a Ingresar, 403, 404 y el resto 502). Un envío real (fuera de `maqueta`) termina con `Envios.listo`: redirige y deja el aviso del servidor, que los layouts muestran en `#avisos` (pieza `templates/envio.html`, [SPEC-08](../docs/specs/active/SPEC-08-conexion-de-pantallas.md)) |
-| `grupo5.cliente.seguridad` | Ingreso con Keycloak y acceso por área (fuera de `maqueta`): `Area`, `UsuarioActual` (el único lugar que lee los claims del ID token), `CuentaDelToken` y la cadena de filtros |
-| `grupo5.cliente.vistas` | Modelos de vista (records) que consume la plantilla |
-| `grupo5.cliente.puertos` | Interfaces para obtener y enviar datos. Cada puerto de datos tiene un adaptador de maqueta y uno REST; `cliente.datos.<puerto>=maqueta\|rest` elige cuál (el perfil `maqueta` pone todos en `maqueta`). `AvisosSinLeer` da el número de sin leer de la cabecera de las pantallas privadas (lo pone `Pantallas` en `sinLeer`). `CuentaActual` dice quién es la cuenta: fuera de `maqueta`, la persona del token (`seguridad.CuentaDelToken`); con `maqueta`, la de ejemplo o, con `cliente.datos.cuenta=parametro`, el `?donante=<id>` o el `?entidad=<id>` que guarda la sesión (`web.CuentaPorParametro`) |
-| `grupo5.cliente.rest` | Adaptadores REST: una interfaz `@HttpExchange` por API sobre `RestClient`, con su URL en `cliente.api.<api>.url` (la única propiedad de URL de cada API) y el `X-Trace-Id` en cada llamada (`ClientesHttp`); las de las cuatro APIs (Donaciones, Incentivos, Logística y Notificaciones) llevan también el token de la sesión si hay ingreso, y sin ingreso van sin cabecera; se prueban con `MockRestServiceServer` |
-| `grupo5.cliente.maqueta` | Lo que sirve el sitio con datos de ejemplo (perfil `maqueta`): `SitioController` (`/estilos` y los formularios, que vuelven a su pantalla sin guardar), los adaptadores de maqueta de cada puerto, la cuenta de ejemplo de cada área (y, con `?cuenta=persona`, la de la persona que dona), `?respuesta=` para ver las páginas de error, el sitio abierto sin ingreso, los escenarios y las variantes A/B. Una sección del menú sin plantilla muestra `sin-dibujar` |
-| `templates/<pantalla>.html` | Una plantilla por pantalla. El nombre empieza con el rol (`publico-`, `donante-`, `entidad-`, `admin-`) y, en el nivel 3, con el de su sección (`donante-donaciones-detalle`) |
-| `templates/layout-privado.html` y `layout-publico.html` | Estructura de las pantallas privadas y de las públicas (la portada tiene la suya) |
-| `templates/` (sin rol en el nombre) | Piezas compartidas que no se sirven como pantalla: `iconos`, `pie`, `navegacion-publica`, `piezas-entidad`, `interaccion` (la carga de Alpine y la configuración de View Transitions, en el head de los tres layouts), los datos de ejemplo (`datos-*`, `viaje-datos`) y `sin-dibujar`. `estilos.html` es el catálogo (`/estilos`, RF-CL-05) y `componentes/<componente>.html`, los fragmentos de la capa CUBE |
-| `static/css/tokens.css` | Única fuente de colores, tipografías, espacios, bordes y puntos de quiebre |
-| `static/css/app.css`, `privado.css` y `<pantalla>.css` | Estilos comunes, los de las pantallas privadas y una hoja por pantalla, solo con tokens de uso. Las hojas de pantalla migran a capas CUBE por el [backlog](../docs/interfaz/backlog-migracion-componentes.md) |
-| `static/css/composicion.css`, `utilidades.css`, `movimiento.css` y `componentes/<componente>.css` | Capas CUBE (D33) y primitivas de movimiento (D32), registradas en el [catálogo](../docs/interfaz/componentes.md). Creadas con la fase 0 del backlog; `app.css` las carga cada una en su capa |
-| `static/css/variantes/` | Variantes A/B activas (se borran al decidir); las piezas que comparten varias, en `variantes/comun/` |
-| `templates/variantes/` | Las variantes de estructura: reemplazan la pantalla entera con `?variante=<nombre>`; se borran al decidir |
-| `static/js/` | JavaScript propio y los `Alpine.data()`, solo como mejora sobre lo que ya funciona sin él: `interfaz.js` (los componentes de Alpine: `avisos`, `subidaFotos`, `pestanas`, `pasos` y `avisoDeMuestra`, y la apertura de las ventanas con `data-bloquea`) y `publico.js` (las mejoras de las páginas públicas) |
-
-Una sola identidad visual ([ADR aceptado](../docs/adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
-Una identidad o un rediseño nuevo se propone en una rama propia, sobre el sitio (skills
-`relevamiento-creativo` y `corrida-creativa`).
-
-## Reglas de plantillas
-
-- Una pieza que usan varias pantallas va en una plantilla compartida de `templates/` (sin rol en el
-  nombre) como fragmento parametrizado; no se copia.
-- HTML semántico: `header`, `nav`, `main`, `footer`, `button`, `label`, `table` con `th scope`.
-- Texto siempre con `th:text`. `th:utext` nunca con datos que vienen de afuera.
-- Cada estado del flujo (vacío, cargando, éxito, error, sin permiso) tiene su representación. En el
-  perfil `maqueta` se ve con `?escenario=<nombre>`.
-- Los textos salen de la ficha del flujo (`docs/interfaz/flujos/`), no se improvisan, y siguen el
-  [tono común](../docs/interfaz/tono-y-comunicacion.md): lo pendiente se dice pendiente, las cifras
-  van con período y fecha, sin urgencia ni culpa. La voz propia de la identidad cambia la forma de
-  un título o un rótulo, no lo que significa.
-
-## HTMX y mejora progresiva
-
-- Todo lo esencial funciona sin JavaScript: cada `hx-post` o `hx-get` está sobre un `form` o un
-  `a` con `action` o `href` reales (RNF-CL-02).
-- Si el request trae `HX-Request`, el controller devuelve el fragmento; si no, la página completa.
-- Toda petición que pueda tardar más de 300 ms lleva `hx-indicator` (RNF-UI-06).
-- Cambiar de panel sin recargar ni volver arriba (usuario, 2026-11-10): un formulario GET o un
-  enlace que filtra, cambia de pestaña o abre una ficha en la misma pantalla lleva `hx-boost="true"`.
-  El `main#contenido` de cada layout ya trae `hx-target`, `hx-select` y `hx-swap="outerHTML
-  show:none"`: HTMX toma solo el main de la respuesta, no mueve el scroll y deja la dirección con
-  `pushState`. No se usa en enlaces a otra pantalla. Los scripts de página que viven dentro del main
-  se vuelven a ejecutar en cada cambio: van protegidos para registrarse una sola vez.
-- Los avisos se agregan a la región `aria-live` del layout.
-- JavaScript propio, solo como mejora (aclaración del usuario, 2026-10-30: "está permitido usar
-  javascript mientras se siga considerando Server Side Rendering"). Las páginas se arman en el
-  servidor con Thymeleaf; el JavaScript suma interacción o movimiento encima de enlaces y
-  formularios reales, respeta "reducir movimiento" y va en `static/js/`. Nada de aplicaciones de
-  una sola página (SPA) ni build de frontend; el único framework de cliente es Alpine (D31).
-
-## Alpine (D31)
-
-- Build CSP (WebJar `alpinejs__csp`): las expresiones son nombres de propiedades y métodos; la
-  lógica va en `Alpine.data()` dentro de `static/js/`.
-- Reparto: **HTMX habla con el servidor** (datos, filtros, envíos, polling); **Alpine maneja estado
-  que nunca sale del navegador** (abrir y cerrar, paso actual, pestaña, vista previa de fotos,
-  mostrar la cola de avisos).
-- Prohibido en Alpine: `fetch` o `XMLHttpRequest`, armar listas con datos del negocio, `x-html`,
-  y guardar tokens o datos personales en `localStorage`.
-- `x-data` va fuera del bloque que HTMX reemplaza. `x-cloak` solo en lo que no es esencial.
-- Diálogos con `<dialog class="dialogo" popover>` nativo, que se abre con `popovertarget` y funciona sin
-  JavaScript, sin plugins de foco. Una ventana de la regla 4 (confirmar algo que no se deshace o un
-  formulario corto; [backlog R11-32](../docs/interfaz/backlog-revision-2026-11-11.md)) lleva además
-  `data-bloquea`: con JavaScript, `static/js/interfaz.js` la abre con `showModal()` (fondo inerte, el
-  foco no sale, tocar afuera no la cierra, Esc sí, y la página no se desplaza); sin JavaScript queda
-  el `popover` de siempre. Las que solo muestran algo (la foto de una entrega) siguen como `popover`.
-- Avisos: la región `#avisos` de los layouts lleva `x-data="avisos"`, la cola de Alpine (3 a la vez, 6 s).
-  El texto de cada aviso lo trae el servidor; Alpine no lo arma.
-
-## Reglas de estilos
-
-- Pantallas y componentes usan **solo tokens de uso** (`--color-*`, `--fuente-*`, `--tamano-*`,
-  `--espacio-*`, `--radio-*`, `--borde-*`, `--sombra-*`, `--movimiento-*`, `--capa-*` y `--medida-*`).
-- Los valores base (`--p-*`) se usan solo dentro de `tokens.css`. Pico.css salió del stack
-  ([ADR](../docs/adr/cliente-liviano/20261114-sin-pico-css-en-el-cliente-liviano.md)): no se
-  declaran variables `--pico-*`.
-- Fuera de `tokens.css` no hay colores literales (`#…`, `rgb()`, `hsl()`) ni atributos `style`.
-- Las media queries usan solo los puntos de quiebre de `tokens.css` (`--medida-quiebre-*`), con
-  mobile first.
-- Fuentes con licencia OFL, servidas desde `static/fuentes/` junto con su licencia.
-- Criterios gráficos y lo que evitamos: [dirección de arte](../docs/interfaz/direccion-de-arte.md).
-
-## Capas CUBE, componentes y movimiento (D32, D33)
-
-- **Primero el [catálogo](../docs/interfaz/componentes.md).** Si lo que hace falta existe, se usa
-  como está. Si falta, se agrega al catálogo y a `/estilos` (`templates/estilos.html`) antes de usarlo. No se crean clases
-  parecidas a una existente.
-- Orden de capas, declarado una vez en `app.css`:
-  `@layer base, tokens, composicion, utilidades, bloques, excepciones, pantallas;`.
-- Un componente es un fragmento con parámetros con nombre y slots (`~{::#cuerpo}`) más su hoja en
-  `static/css/componentes/`. Sus variantes van por atributo (`data-estado`, `data-tono`).
-- Las hojas de pantalla tienen solo disposición propia: sin colores, fuentes, `@keyframes` ni
-  duraciones. Rige para lo nuevo: el cerco de `InterfazFitnessTest` lo exige a toda hoja de pantalla
-  que no esté en su lista de heredadas, rechaza las clases de las plantillas que no están en el
-  catálogo ni en `clases-heredadas.txt` (solo baja), y falla si las clases de un solo uso superan su
-  tope. Lo existente se ajusta por el backlog.
-- Movimiento: duraciones, curvas y distancias salen de los tokens `--movimiento-*`; las animaciones
-  son primitivas de `movimiento.css` (`data-movimiento`), con "reducir movimiento" resuelto adentro.
-  View Transitions, `@starting-style`, `@container` y `popover`, como mejora progresiva.
-- Toda tarea que toca una hoja de pantalla migra antes lo que esa pantalla usa del
-  [backlog de migración](../docs/interfaz/backlog-migracion-componentes.md).
-
-## Accesibilidad y anchos
-
-- WCAG AA. Foco visible. Controles de al menos 48×48 px (`--medida-toque-minimo`).
-- Enlace para saltar al contenido. Cada mapa tiene al lado una lista con los mismos datos
-  (RF-CL-06).
-- Anchos de referencia: 360, 1280 y 1920 px. Sin desbordes en ningún ancho intermedio.
-
-## Datos y seguridad
-
-- Los datos de ejemplo son sintéticos: nada de personas, documentos ni direcciones reales.
-- Sin secretos en el código ni en `application*.properties`.
+## Piso y datos
+- WCAG AA, foco visible, toque de 48 px, salto al contenido, lista junto a cada mapa (RF-CL-06) y sin
+  desbordes de 360 a 1920 px. Datos de ejemplo sintéticos; sin secretos.
 
 ## Validación
-
 ```bash
 mvn spotless:check
-mvn clean test -pl cliente-liviano -am             # unitarios y reglas de tokens y contraste
-mvn test -pl cliente-liviano -Pvisual              # capturas en 3 anchos, accesibilidad y toque
-mvn test -pl cliente-liviano -Pvisual -Dverificacion.paginas=donante-inicio   # solo esas rutas
-mvn test -pl cliente-liviano -Pvisual -Dverificacion.variantes=<tema>-a,<tema>-b   # una pasada por variante A/B
-mvn test -pl cliente-liviano -Pvisual -Dspotless.check.skip=true -Dtest=VerificacionVisualTest#paginasCumplenElPisoEnTodosLosAnchos -Dverificacion.boceto=true -Dverificacion.variantes=<tema>-a,<tema>-b -Dverificacion.paginas=<ruta>   # boceto: solo capturas a 1280 px, sin el piso (vueltas de exploración)
-mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090
-mvn -pl cliente-liviano spring-boot:run   # con las APIs: INCENTIVOS_URL (por defecto :8082), DONACIONES_URL (:8080), LOGISTICA_URL (:8083) y NOTIFICACIONES_URL (:8081); el donante, con ?donante=<id>
+mvn clean test -pl cliente-liviano -am
+mvn test -pl cliente-liviano -Pvisual -Dverificacion.paginas=<ruta>,<ruta>   # axe, toque y capturas
+mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta  # http://localhost:8090
 ```
-
-Cuando axe no puede medir el contraste (por un pseudo-elemento, un degradado o una imagen de
-fondo), la verificación visual lo mide con el color de fondo de los contenedores, sin ver lo que
-pinta el pseudo-elemento, y falla por debajo de AA. El texto sobre un degradado lineal, o sobre una
-imagen sin color opaco debajo, no se puede medir así: queda para la revisión a ojo.
-
-La verificación visual deja también la primera pantalla del celular (`-360x640.png`). Para pasar
-capturas a JPG de evidencia, comparar las de antes y después o armar la página de antes y después:
-[`scripts/visual/`](../scripts/visual/README.md).
-
-Una pantalla está lista cuando cumple el checklist de
-[`docs/interfaz/README.md`](../docs/interfaz/README.md#listo-para-entregar) y pasó `revision-ui`
-sin hallazgos bloqueantes.
+Herramientas para las capturas: [`scripts/visual/`](../scripts/visual/README.md).

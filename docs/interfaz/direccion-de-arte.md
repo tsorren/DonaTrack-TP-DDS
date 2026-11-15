@@ -18,7 +18,7 @@ plantilla. La ambición tiene reglas, y debajo hay un piso que no se negocia.
 - El color nunca es la única señal: siempre va con texto o con ícono.
 
 Una propuesta que rompe el piso no se le muestra al usuario. Se corrige antes. Única excepción: las
-vueltas de boceto de una exploración A/B (skill `iteracion-ab`) se muestran sin comprobarlo; la
+vueltas de boceto de una exploración (skill `explorar-ui`) se muestran sin comprobarlo; la
 opción elegida lo pasa antes de aplicarse, con un arreglo que conserva la idea.
 
 ## Cómo se arma una dirección
@@ -95,9 +95,9 @@ el código, nunca la idea. Lo que es libre y lo que no:
 | La metáfora y el mundo visual | El mensaje y el [tono común](tono-y-comunicacion.md): estados, cifras, acciones y errores dicen lo mismo en todas |
 | La tipografía y la paleta, con contraste AA | Lo que el usuario fijó en el encargo creativo |
 
-Reglas para encargar trabajo creativo, a una persona o a un agente (las plantillas de
-[`plantillas/`](plantillas/) ya las traen: `encargo-creativo`, `encargo-constructor` y
-`encargo-critico`):
+Reglas para encargar trabajo creativo, a una persona o a un agente (la skill `explorar-ui` las
+aplica; las plantillas de encargo del harness anterior están en el
+[archivo histórico](../IA/history/harness-ui-2026-11/README.md)):
 
 - **Nunca "cambio mínimo" en una exploración.** El cambio mínimo es para arreglos.
 - **Los conceptos difieren en composición y navegación**, no solo en estilo. Dos versiones del

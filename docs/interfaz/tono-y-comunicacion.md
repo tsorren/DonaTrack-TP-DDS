@@ -197,7 +197,7 @@ con período y fuente) · qué cambia para quien dona · qué hacer ahora.
 ## Filtro de tono (7 preguntas)
 
 Todo texto, sección o pantalla las pasa antes de mostrarse al usuario. Las usan las skills
-`ux-flujo`, `vista-ui` y `revision-ui` (vector U5).
+`construir-ui` y `revisar-ui` (vector U4).
 
 1. ¿Se entiende qué hace DonaTrack y para quién es?
 2. ¿Ayuda a resolver una necesidad real de una organización o de quien dona?

@@ -11,10 +11,10 @@
 
 | Momento | Qué criterios mirar | Skill |
 |---|---|---|
-| Diseñar un flujo | Factores de la experiencia, modelos mentales, arquitectura de la información, wireframes y wireflows | `ux-flujo` |
-| Comparar dos variantes | Patrones de navegación e interacción (las dos variantes usan patrones conocidos), lenguaje visual | `iteracion-ab` |
-| Construir una vista | Patrones de interacción, tipografía, color, accesibilidad | `vista-ui` |
-| Revisar | Las 10 heurísticas, con su "cómo se consigue", y los 7 factores | `revision-ui` |
+| Diseñar un flujo | Factores de la experiencia, modelos mentales, arquitectura de la información, wireframes y wireflows | `construir-ui` (paso 1) |
+| Explorar alternativas | Patrones de navegación e interacción (cada opción usa patrones conocidos), lenguaje visual | `explorar-ui` |
+| Construir una vista | Patrones de interacción, tipografía, color, accesibilidad | `construir-ui` |
+| Revisar | Las 10 heurísticas, con su "cómo se consigue", y los 7 factores | `revisar-ui` (U7) |
 
 ## 1. UX y UI
 
@@ -166,5 +166,5 @@ arquitectura de la información (82). Sus 8 principios (84–106):
    complementario y el acento.
 6. **Accesibilidad con nombre.** Se citan POUR, WCAG y la Ley 26.653; el estado de algo nunca va
    solo con color.
-7. **Evaluación en capas.** La revisión heurística (`revision-ui`) no reemplaza al test con
+7. **Evaluación en capas.** La revisión heurística (`revisar-ui`) no reemplaza al test con
    usuarios: cuando un flujo queda listo, se anota qué conviene probar con personas reales.
