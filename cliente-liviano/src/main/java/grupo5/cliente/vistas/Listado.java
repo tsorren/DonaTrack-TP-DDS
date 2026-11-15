@@ -110,10 +110,11 @@ public record Listado(
 
   /**
    * La misma barra con otras opciones de Estado, escritas en la plantilla como {@code {valor,
-   * texto}} (Organizaciones del admin, que cuenta en la plantilla cuántas hay de cada estado). Un
-   * estado elegido que no está entre ellas queda en el primero.
+   * texto}} (Organizaciones del admin, que cuenta en la plantilla cuántas hay de cada estado), y la
+   * primera con su cuenta ({@code todas}: "Todos los estados · 55"). Un estado elegido que no está
+   * entre ellas queda en el primero.
    */
-  public Listado conEstados(List<? extends Map<String, ?>> opciones) {
+  public Listado conEstados(List<? extends Map<String, ?>> opciones, String todas) {
     List<Opcion> nuevas = deLaPlantilla(opciones);
     String elegido =
         estado != null && nuevas.stream().anyMatch(o -> o.valor().equals(estado.elegido()))
@@ -125,14 +126,16 @@ public record Listado(
         rotulo,
         buscar,
         fecha,
-        new Eleccion("estado", "Estado", elegido, conTodas(nuevas, TODOS_LOS_ESTADOS)),
+        new Eleccion(
+            "estado", "Estado", elegido, conTodas(nuevas, TODOS_LOS_ESTADOS + " · " + todas)),
         categoria,
         quien,
         otras,
         casillas,
         orden,
         ocultos,
-        sacar);
+        sacar,
+        indicador);
   }
 
   private static List<Opcion> deLaPlantilla(List<? extends Map<String, ?>> opciones) {

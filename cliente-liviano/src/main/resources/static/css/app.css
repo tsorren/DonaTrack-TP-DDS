@@ -242,7 +242,7 @@ html {
   scroll-padding-bottom: var(--medida-menu-celular);
 }
 
-html:has(.filtros-barra, form.filtro, .listado) {
+html:has(.filtros-barra, .listado) {
   scroll-padding-top: calc(var(--medida-cabecera-fija) + var(--medida-filtros-fijos));
 }
 
@@ -328,7 +328,6 @@ body::before {
 
   body > header:is(.raices-cabecera, .armazon),
   .filtros-barra,
-  form.filtro,
   .listado,
   [data-fijo="celular"] {
     position: static;

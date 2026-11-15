@@ -100,10 +100,6 @@ etiqueta
 etiqueta-datos
 etiqueta-titulo
 fideos
-filtro
-filtro-icono
-filtro-opcion
-filtro-opciones
 firma
 firma-quien
 formulario

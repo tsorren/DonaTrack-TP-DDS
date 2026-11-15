@@ -25,6 +25,7 @@
       action="/donante-donaciones" th:action="${l.ruta}" aria-label="Filtrar las donaciones"
       th:aria-label="${l.rotulo}" x-data="listado" x-bind:data-plegado="plegado"
       th:hx-indicator="${l.indicador != null} ? |#${l.indicador.id}| : null"
+      hx-disinherit="hx-indicator hx-select-oob"
       th:with="n=${l.elegidos()}">
   <input th:each="o : ${l.ocultos}" type="hidden" th:name="${o.nombre}" th:value="${o.valor}">
 

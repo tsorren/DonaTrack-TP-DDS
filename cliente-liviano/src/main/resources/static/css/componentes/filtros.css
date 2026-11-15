@@ -74,10 +74,9 @@
    los espacios achicados, mide 157 px (un cuarto de 45 em son 180 px). La de tres pastillas o más
    (las listas de la administración, la bandeja) baja en tres o cuatro renglones y llega a 13-21 rem:
    fija taparía casi la mitad de la pantalla junto con el menú de abajo, así que se desplaza con la
-   página. `form.filtro` tampoco queda fijo en el celular: con sus campos uno debajo del otro llega a
-   18 rem. Desde la tableta, todas quedan fijas si la ventana mide al menos 37,5 em de alto, con sus
-   espacios de siempre. Vale también para el formulario anterior, `form.filtro`, salvo el del Mapa
-   público, que ya deja fijo el mapa (decisión 6 de la ficha). */
+   página. Desde la tableta, todas quedan fijas si la ventana mide al menos 37,5 em de alto, con sus
+   espacios de siempre. Las listas con búsqueda usan el componente listado (R11-B04); esta barra
+   queda en Ranking y en su muestra de /estilos. */
 @media (min-height: 45em) {
   .filtros-barra:not(:has(.filtros-pildora ~ .filtros-pildora ~ .filtros-pildora)) {
     position: sticky;
@@ -92,8 +91,7 @@
 }
 
 @media (min-width: 37.5em) and (min-height: 37.5em) {
-  .filtros-barra,
-  form.filtro:not([action$="/publico-mapa"]) {
+  .filtros-barra {
     position: sticky;
     top: var(--medida-cabecera-fija);
     z-index: var(--capa-filtros-fijos);

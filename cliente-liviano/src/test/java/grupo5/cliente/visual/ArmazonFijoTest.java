@@ -40,13 +40,13 @@ class ArmazonFijoTest {
   /**
    * La cabecera, la barra y la distancia entre las dos, medidas en la ventana. La barra es la que
    * queda fija: `.filtros-barra`, la barra del componente listado (`.listado`, R11-B04), la barra
-   * de una pública (`.publica-barra`) o su `form.filtro`.
+   * de una pública (`.publica-barra`).
    */
   private static final String CABECERA_Y_BARRA =
       """
       () => {
         const c = document.querySelector('body > header').getBoundingClientRect();
-        const b = [...document.querySelectorAll('.filtros-barra, .listado, .publica-barra, form.filtro')]
+        const b = [...document.querySelectorAll('.filtros-barra, .listado, .publica-barra')]
           .find(e => getComputedStyle(e).position === 'sticky').getBoundingClientRect();
         return [Math.round(c.top), Math.round(c.bottom), Math.round(b.top)];
       }

@@ -144,7 +144,7 @@
           th:with="estados=${ { {valor: 'activas', texto: 'Activas · ' + cuantasActivas},
               {valor: 'pendientes', texto: 'Pendientes · ' + cuantasPendientes},
               {valor: 'inactivas', texto: 'Inactivas · ' + cuantasInactivas} } }"><form
-          th:replace="~{componentes/listado :: listado(${listado.conEstados(estados)})}"></form></th:block>
+          th:replace="~{componentes/listado :: listado(${listado.conEstados(estados, '' + cuantasTodas)})}"></form></th:block>
 
       <p th:if="${conDatos and paginada and !#lists.isEmpty(lista)}" role="status"
          th:with="n=${adminEntidades.enPaginas.total}, activasTexto=${#numbers.formatInteger(adminEntidades.activas, 1, 'POINT')}"

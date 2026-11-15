@@ -484,9 +484,11 @@ class InterfazFitnessTest {
 
   /**
    * Formularios de filtro que quedan fuera del fragmento, con su motivo. Ranking: el mes es un
-   * selector de período con "Volver al último mes" (R11-23), no una búsqueda; DTI-44.
+   * selector de período con "Volver al último mes" (R11-23), no una búsqueda; /estilos, la muestra
+   * de esa barra en el catálogo. DTI-44.
    */
-  private static final Set<String> BARRAS_EXCEPTUADAS = Set.of("admin-ranking.html");
+  private static final Set<String> BARRAS_EXCEPTUADAS =
+      Set.of("admin-ranking.html", "estilos.html");
 
   private static final Pattern USA_LISTADO = Pattern.compile("~\\{\\s*componentes/listado\\s*::");
 
@@ -517,6 +519,19 @@ class InterfazFitnessTest {
           "algoritmo", // Asignaciones, Propuestas
           "pestana", // Asignaciones, Propuestas y Destino (oculto)
           "vista", // Notificaciones (agrupar)
+          "agrupar", // Notificaciones
+          "autor", // Actividad del admin (Quién)
+          "accion", // Actividad del admin
+          "tipo", // Organizaciones y Donantes del admin
+          "dona", // Donantes del admin
+          "alta", // Donantes del admin (período; la fuente no resuelve un rango)
+          "pedido", // Organizaciones del admin y Entidades públicas (Necesidades)
+          "entidad", // Organizaciones del admin, la elegida (oculto)
+          "capacidad", // Camiones del admin
+          "camion", // Camiones del admin, el elegido (oculto)
+          "emergencia", // Entidades públicas
+          "periodo", // Entregas confirmadas públicas (la fuente no resuelve un rango)
+          "abierta", // Mapa público, la ficha abierta (oculto)
           "escenario"); // Estados de la maqueta (oculto)
 
   private static final Pattern PARAMETRO_DE_BARRA =
@@ -525,7 +540,7 @@ class InterfazFitnessTest {
               + "\\(\\s*\"([\\w-]+)\"");
 
   /** Tope de declaraciones de medida con valor literal en las hojas: solo baja. */
-  private static final int TOPE_DE_MEDIDAS_LITERALES = 1304;
+  private static final int TOPE_DE_MEDIDAS_LITERALES = 1294;
 
   private static final Pattern MEDIDA_LITERAL =
       Pattern.compile(
