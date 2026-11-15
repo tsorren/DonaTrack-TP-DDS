@@ -1,0 +1,84 @@
+{
+  "formato": "oleada-ui/1",
+  "version": "1.0.0",
+  "nombre": "ejemplo",
+  "fecha": "2026-11-15",
+  "backlog": "docs/interfaz/<backlog-de-la-oleada>.md",
+  "prefijoCommit": "E6: oleada ejemplo",
+  "comoLeerlo": "Plantilla del workflow oleada-ui (guía: docs/IA/prompts/orquestacion-oleada-ui.md). Un lote es el trabajo de un agente constructor; los de una misma ola y tanda corren en paralelo y no comparten archivos. 'rol' elige el modelo en 'modelos' (los lotes con rutasVisuales van siempre con Opus high). 'ruta': QUICK, STANDARD o CONTRATO. 'disenio': ninguno, ficha, spec o ficha+spec. 'condicion', si está, hace que el lote corra solo cuando la sesión pasa esa condición. Cada decisión de la ronda con el usuario lleva id, texto, quien y ok (dónde consta el OK), y va a un lote con su 'criterio' comprobable o queda 'diferida' con quien la difirió y dónde consta ese OK. Con una decisión sin asignar, el workflow no arranca y agent-check falla (UI_WAVE_MANIFEST).",
+  "ramas": {
+    "base": "E6_oleada_ejemplo_base",
+    "destino": "ENTREGA_6",
+    "prefijoOla": "E6_oleada_ejemplo_"
+  },
+  "topes": {
+    "constructoresEnParalelo": 4,
+    "rondasDeReparacion": 3
+  },
+  "modelos": {
+    "juicio": { "model": "opus", "effort": "medium" },
+    "mecanico": { "model": "sonnet", "effort": "high" }
+  },
+  "olas": ["P0"],
+  "reglas": [
+    "Nunca traigas una lista completa de un servicio: página, búsqueda y filtros en el servidor; los totales, como números."
+  ],
+  "decisiones": [
+    {
+      "id": "D1",
+      "texto": "La lista de donaciones del donante se filtra por estado con la barra de componentes/listado.",
+      "quien": "usuario",
+      "ok": "ronda de decisiones del 2026-11-15, pregunta 1",
+      "lote": "p0-mis-donaciones",
+      "criterio": "La pantalla /donante-donaciones usa componentes/listado con el campo estado, y InterfazFitnessTest pasa."
+    },
+    {
+      "id": "D2",
+      "texto": "La cuenta de resultados dice el período: \"12 donaciones en noviembre\".",
+      "quien": "usuario",
+      "ok": "ronda de decisiones del 2026-11-15, pregunta 2",
+      "lote": "p0-mis-donaciones",
+      "criterio": "Con el filtro de mes aplicado, la cuenta visible nombra el mes en las capturas de 360 y 1280 px."
+    },
+    {
+      "id": "D3",
+      "texto": "Exportar la lista a CSV.",
+      "quien": "usuario",
+      "ok": "ronda de decisiones del 2026-11-15, pregunta 3",
+      "diferida": {
+        "quien": "usuario",
+        "ok": "ronda de decisiones del 2026-11-15, pregunta 3: \"después de la entrega\""
+      }
+    }
+  ],
+  "lotes": [
+    {
+      "id": "p0-api-donaciones",
+      "ola": "P0",
+      "tanda": 1,
+      "items": ["EJ-01"],
+      "titulo": "El servicio de donaciones filtra por estado",
+      "rol": "juicio",
+      "ruta": "CONTRATO",
+      "disenio": "spec",
+      "modulos": ["donaciones-service"],
+      "archivos": "donaciones-service/** (donaciones); docs/arquitectura/contratos/**",
+      "rutasVisuales": [],
+      "que": "GET /api/donaciones acepta el filtro de estado resuelto en la base, con el total en la respuesta. Los clientes actuales siguen funcionando."
+    },
+    {
+      "id": "p0-mis-donaciones",
+      "ola": "P0",
+      "tanda": 2,
+      "items": ["EJ-02"],
+      "titulo": "Mis donaciones con barra de filtros",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ficha",
+      "modulos": ["cliente-liviano"],
+      "archivos": "cliente-liviano/** (donante, donaciones); docs/interfaz/flujos/**",
+      "rutasVisuales": ["donante-donaciones"],
+      "que": "La pantalla Mis donaciones usa componentes/listado con búsqueda, estado y mes, y muestra la cuenta con su período."
+    }
+  ]
+}

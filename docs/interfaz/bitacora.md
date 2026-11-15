@@ -31,6 +31,24 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-15 · proceso · Las oleadas de interfaz rinden cada decisión del usuario y no abren PR sin la revisión de pantallas (paso 4 de la opción A)
+
+- **Decisión:** el workflow `oleada-ui` reemplaza a `backlog-r11`. Arranca solo si cada decisión
+  de la ronda con el usuario tiene ID y va a un lote, con un criterio que el revisor comprueba, o
+  queda diferida con quién la difirió y dónde consta el OK. Las vistas las construye Opus high;
+  `revisar-ui` es bloqueante; antes del PR, un revisor independiente mira todas las pantallas a 360
+  y 1280 px, y el PR trae la hoja de contacto con una casilla que marca el usuario.
+- **Alternativas:** un workflow por backlog, como R11; abrir el PR con los bloqueantes como
+  pendientes; armar la hoja con `lado` (deforma la de 1280 junto a la de 360).
+- **Por qué:** en R11, la barra común de filtros (R11-B04) se difirió sin que nadie lo marcara, y
+  ningún paso comparaba pantallas entre sí.
+- **Costo:** el workflow no se corrió con agentes reales; las rutas viejas de los registros de R11
+  quedan sin tocar ([DTI-44](../adr/DEUDA_TECNICA.md#dti-44), ítem 16).
+- **Quién decidió:** usuario (2026-11-15, plan del paso 4: sucesor genérico, `backlog-r11` al
+  archivo y el manifiesto de R11 como registro).
+- **Evidencia:** [spec del paso 4](../specs/active/harness-ui-paso-4-workflow-spec.md) y
+  [guía](../IA/prompts/orquestacion-oleada-ui.md).
+
 ### 2026-11-15 · proceso · El harness de interfaz pasa a tres skills cortas sobre el sistema cerrado (paso 3 de la opción A)
 
 - **Decisión:** `construir-ui` (producir), `revisar-ui` (cerrar, en solo lectura, con las pantallas

@@ -97,6 +97,7 @@ con sus capturas; y diagramas con texto de 7 pt o más.
 | Sumar una pantalla | `construir-ui`: ficha en `flujos/`, `templates/<pantalla>.html` y, si hace falta, su hoja |
 | Sumar un componente | Su fragmento en `templates/componentes/`, su hoja en `static/css/componentes/`, su fila en el [catálogo](componentes.md) y su muestra en `/estilos` |
 | Comprobar una página más | Una línea en `cliente-liviano/src/test/resources/verificacion/paginas.txt`, o `-Dverificacion.paginas=<ruta>` |
+| Correr una oleada | Con el usuario, una ronda de decisiones con ID; después, el manifiesto desde la [plantilla](plantillas/manifiesto-oleada.ejemplo.json), con cada decisión en un lote o diferida, y el workflow `oleada-ui` según su [guía](../IA/prompts/orquestacion-oleada-ui.md). El PR trae la hoja de contacto a 360 y 1280 px para que la apruebe el usuario |
 | Probar alternativas | `explorar-ui`, en una rama o con variantes de la maqueta (`?variante=`) |
 | Cambiar la identidad | La exploro con `explorar-ui` junto a la diseñadora; lo elegido entra a `tokens.css` con un ADR |
 | Cambiar la voz o los mensajes | Edito [tono y comunicación](tono-y-comunicacion.md) a partir de una versión nueva del brief de tono del equipo |
@@ -127,6 +128,7 @@ los textos):
 | [identidad/brief.md](identidad/brief.md) y [identidad/referencias/](identidad/referencias/README.md) | La intención de la identidad; los valores mandan desde `tokens.css` |
 | [mapa-del-sitio.md](mapa-del-sitio.md) | Pantallas, roles y niveles |
 | [plantillas/flujo.md](plantillas/flujo.md) | La plantilla de la ficha de flujo |
+| [plantillas/manifiesto-oleada.ejemplo.json](plantillas/manifiesto-oleada.ejemplo.json) | La plantilla del manifiesto de una oleada (`oleada-ui/1`); `agent-check` la valida como a cualquier manifiesto |
 | [flujos/](flujos/) | Las fichas de flujo: la de la pantalla que se toca se actualiza; las demás son historia |
 
 Historia: registros de lo que se hizo. Ninguna regla manda leerlos, y no se mueven porque los

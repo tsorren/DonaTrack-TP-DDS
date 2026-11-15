@@ -1,6 +1,11 @@
 # Orquestación del backlog de la revisión del 2026-11-11
 
-> **Versión 1.0.0 · 2026-11-11**
+> **Histórico desde el 2026-11-15.** La corrida R11 terminó. El workflow `backlog-r11` está en el
+> [archivo del harness de interfaz](../history/harness-ui-2026-11/README.md), en
+> `docs/IA/history/harness-ui-2026-11/workflows/backlog-r11.js`, y ya no se lanza por nombre. Para
+> una oleada nueva: [orquestación de una oleada de interfaz](orquestacion-oleada-ui.md).
+
+> **Versión 1.0.1 · 2026-11-15**
 > Prompt para una sesión nueva de Claude Code, abierta en la raíz del repo. Se pega entera desde
 > "Rol" hasta el final.
 
@@ -9,6 +14,7 @@
 | Versión | Fecha | Qué cambió | Manifiesto | Workflow |
 |---|---|---|---|---|
 | 1.0.0 | 2026-11-11 | Primera versión: tres oleadas (P0, P1, P2), 34 lotes, 45 ítems más uno condicional. | 1.0.0 | `backlog-r11` |
+| 1.0.1 | 2026-11-15 | Nota de historia: el workflow pasa al archivo y lo sucede `oleada-ui`. | 1.0.0 | `backlog-r11` (archivado) |
 
 Cómo se versiona: un cambio de reglas o de procedimiento sube el segundo número; un cambio de alcance,
 de oleadas o del contrato con el workflow (sus `args` o su resultado) sube el primero; una

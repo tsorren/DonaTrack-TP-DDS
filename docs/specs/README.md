@@ -76,6 +76,7 @@ Al completar la implementación y pasar todos los Quality Gates, el archivo se t
 | **SPEC-10** | [`SPEC-10-seeder-de-demo.md`](active/SPEC-10-seeder-de-demo.md) | ARCHITECTURAL | `PROPOSED` | Seeder de demo: seis meses de historia en todos los servicios más lo que pasa hoy (camión en ruta, entrega en la puerta, pendientes del admin), con la seguridad prendida o apagada. Solo agrega `demo/seeder/` y el overlay `docker-compose.seed.yml`. |
 | **R11-B04-kit-listado** | [`R11-B04-kit-listado-spec.md`](active/R11-B04-kit-listado-spec.md) | ARCHITECTURAL | `ACTIVE` | Kit de listas de la opción A del harness de frontend (R11-B04, 2026-11-15): toda lista con búsqueda o filtros usa `componentes/listado`, un nombre por campo, cerco en `InterfazFitnessTest` y Pico.css fuera del stack. Escrita después del código. |
 | **harness-ui-paso-3-skills** | [`harness-ui-paso-3-skills-spec.md`](active/harness-ui-paso-3-skills-spec.md) | ARCHITECTURAL | `ACTIVE` | Paso 3 del harness de frontend de la opción A (2026-11-15): 3 skills cortas de interfaz, el harness anterior archivado, regla y `AGENTS.md` del módulo con tope, y los cercos de sincronía y tamaño en `agent-check`. |
+| **harness-ui-paso-4-workflow** | [`harness-ui-paso-4-workflow-spec.md`](active/harness-ui-paso-4-workflow-spec.md) | ARCHITECTURAL | `ACTIVE` | Paso 4 del harness de frontend de la opción A (2026-11-15): workflow genérico `oleada-ui` con decisiones del usuario trazables por ID, revisión de interfaz bloqueante y hoja de contacto, la plantilla de manifiesto y el check `UI_WAVE_MANIFEST`. |
 
 ---
 
