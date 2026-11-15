@@ -840,18 +840,19 @@ assert('19.11 the rule is identical in the workflow and in the check',
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 const correrWorkflow = async (manifiesto, responder = async () => null) => {
   const llamadas = [];
+  const agentes = [];
   const fn = new AsyncFunction('args', 'agent', 'parallel', 'phase', 'log', WORKFLOW.replace(/^export const meta/m, 'const meta'));
   const resultado = await fn(
     { manifiesto, ola: 'P0', fase: 'construir', carpeta: '/tmp/oleada' },
-    async (prompt, opts) => { llamadas.push(opts.label); return responder(opts); },
+    async (prompt, opts) => { llamadas.push(opts.label); agentes.push({ prompt, ...opts }); return responder(opts); },
     async (thunks) => Promise.all(thunks.map((t) => t())),
     () => {}, () => {});
-  return { resultado, llamadas };
+  return { resultado, llamadas, agentes };
 };
 // Agentes falsos que completan su esquema: todo responde bien, salvo la revisión de pantallas si
-// pantallasPasan es false, los agentes cuya etiqueta está en mudos y la revisión de lote que rinde
-// una decisión como NO CUMPLE sin listarla como bloqueante.
-const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '' } = {}) => async (opts) => {
+// pantallasPasan es false, los agentes cuya etiqueta está en mudos, y las revisiones que rinden una
+// decisión como NO CUMPLE sin listarla como bloqueante o que omiten una.
+const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '', omite = '' } = {}) => async (opts) => {
   if (mudos.includes(opts.label)) return null;
   const props = opts.schema.properties;
   const r = {};
@@ -862,7 +863,7 @@ const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '' } = {}) => asyn
     const falla = !pantallasPasan && opts.label.startsWith('pantallas');
     r.veredicto = falla ? 'CHANGES_REQUIRED' : 'PASS';
     if (falla) r.bloqueantes = ['inconsistencia entre pantallas'];
-    if (noCumple && opts.label.startsWith('revisión ')) r.decisiones = [`${noCumple}: NO CUMPLE — captura`];
+    r.decisiones = ['D1', 'D2'].filter((id) => id !== omite).map((id) => `${id}: ${id === noCumple ? 'NO CUMPLE' : 'CUMPLE'} — captura`);
   }
   if ('url' in props) r.url = 'https://pr';
   return r;
@@ -906,6 +907,22 @@ const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '' } = {}) => asyn
   assert('19.18 visual lote with decisions never built → no PR, decisions not met',
     sinConstruir.resultado.pr === '' && /p0-mis-donaciones/.test(sinConstruir.resultado.detenida) &&
     sinConstruir.resultado.decisionesDelUsuario.filter((d) => d.includes('no cumplida: el constructor no respondió')).length === 2);
+
+  const omitida = await correrWorkflow(PLANTILLA, agenteFalso(true, { omite: 'D2' }));
+  assert('19.19 review with PASS that omits a decision → not met, no PR',
+    omitida.resultado.pr === '' && /p0-mis-donaciones/.test(omitida.resultado.detenida) &&
+    !omitida.resultado.decisionesDelUsuario.some((d) => d.startsWith('D2') && d.includes(': cumplida')));
+
+  const porEtiqueta = (l) => completa.agentes.find((a) => a.label === l);
+  const vista = porEtiqueta('p0-mis-donaciones');
+  const servicio = porEtiqueta('p0-api-donaciones');
+  const pr = porEtiqueta('PR P0');
+  assert('19.20 views: Opus high in builder, review and screen review; no "Lo más simple" in views only',
+    vista.model === 'opus' && vista.effort === 'high' && !vista.prompt.includes('Lo más simple que funcione') &&
+    servicio.effort !== 'high' && servicio.prompt.includes('Lo más simple que funcione') &&
+    ['revisión p0-mis-donaciones r1', 'pantallas r1'].every((l) => porEtiqueta(l).effort === 'high'));
+  assert('19.21 PR as draft with the unchecked contact-sheet box',
+    pr.prompt.includes('gh pr create --draft') && pr.prompt.includes('- [ ] Hoja de contacto aprobada por el usuario'));
 
   resumen();
 })().catch((e) => { console.error(e); failed++; resumen(); });

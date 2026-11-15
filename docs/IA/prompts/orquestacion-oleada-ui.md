@@ -45,14 +45,16 @@ Por cada ola: `disenar`, el usuario aprueba los diseños de una vez y después `
 ## Qué hace `construir`
 
 1. Por tanda: constructores en paralelo (cada uno en su worktree), integración y revisión de cada
-   lote. Los lotes con pantallas van con Opus high en todo su trabajo, revisión incluida, y pasan
-   `revisar-ui` (U1–U7): toda inconsistencia con el sistema visual es bloqueante. Cada decisión del
-   lote se rinde por ID, y un NO CUMPLE bloquea. Solo un PASS aprueba; hasta
-   `topes.rondasDeReparacion` rondas de arreglo.
+   lote. En los lotes con pantallas, diseño, construcción, revisión y arreglos van con Opus high (el
+   integrador y el cierre siguen con el modelo mecánico), y pasan `revisar-ui` (U1–U7): toda
+   inconsistencia con el sistema visual es bloqueante. Cada decisión del lote se rinde en una línea
+   "<ID>: CUMPLE" o "<ID>: NO CUMPLE": un NO CUMPLE bloquea y una sin rendir no aprueba. Solo un
+   PASS aprueba; hasta `topes.rondasDeReparacion` revisiones, con un arreglo entre una y otra.
 2. Cierre: gates completos, stack propio `donatrack-<nombre>` con seed y recorrido con login real,
-   ensayo si `M.ensayo` lo pide y documentación.
+   y ensayo si `M.ensayo` lo pide.
 3. **Revisar pantallas:** un `revisar-ui` independiente sobre todas las pantallas de la oleada, con
-   las capturas de 360 y 1280 px lado a lado, con sus rondas de arreglo.
+   las capturas de 360 y 1280 px lado a lado, con el mismo tope de revisiones. Después, la
+   documentación de cierre, con el estado final de cada decisión.
 4. **Hoja de contacto** en `docs/interfaz/evidencia/<nombre>-<ola>/hoja/`: los JPG y `hoja.html`.
 5. PR borrador con las decisiones por ID, la hoja y la casilla "Hoja de contacto aprobada por el
    usuario", sin marcar.

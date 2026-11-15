@@ -28,11 +28,14 @@ que el usuario vea las pantallas de la oleada juntas antes de mergear.
   - los lotes con `rutasVisuales` van con Opus high en diseño, construcción, revisión y arreglos, y
     sin "Lo más simple que funcione";
   - en los lotes visuales, todo lo que falla en U1–U7 de `revisar-ui` es bloqueante; solo un PASS
-    aprueba, un revisor que no responde se vuelve a revisar, y una decisión rendida como NO CUMPLE
-    cuenta como bloqueante aunque el revisor no la liste;
+    aprueba, y un revisor que no responde se vuelve a revisar;
+  - cada decisión se rinde en una línea "<ID>: CUMPLE — evidencia" o "<ID>: NO CUMPLE — evidencia":
+    solo un CUMPLE con su ID la da por cumplida, un NO CUMPLE es bloqueante aunque el revisor no lo
+    liste, y una decisión sin rendir deja la revisión sin PASS;
   - "Revisar pantallas": un `revisar-ui` independiente (Opus high) sobre todas las pantallas, con
-    las capturas de 360 y 1280 px lado a lado, hasta `RONDAS` rondas de arreglo; sin PASS no se abre
-    el PR, y el resultado dice por qué;
+    las capturas de 360 y 1280 px lado a lado: hasta `RONDAS` revisiones, con un arreglo entre una y
+    otra (`RONDAS` − 1 arreglos), como en los lotes; sin PASS no se abre el PR, y el resultado dice
+    por qué;
   - la hoja de contacto en `docs/interfaz/evidencia/<oleada>/hoja/` y en el cuerpo del PR, con la
     casilla sin marcar "Hoja de contacto aprobada por el usuario";
   - las reglas propias de una oleada salen de `COMUN` y pasan a `M.reglas[]`.
@@ -70,9 +73,13 @@ que el usuario vea las pantallas de la oleada juntas antes de mergear.
 - Con una decisión sin asignar, el workflow no llama a ningún agente y `agent-check` falla.
 - Cada decisión de los lotes de la ola vuelve en el resultado y en el PR por ID: cumplida, no
   cumplida con el motivo, o pendiente; las diferidas, con quién y dónde consta el OK.
-- Solo un PASS aprueba una revisión; un revisor mudo no cuenta como PASS.
+- Solo un PASS aprueba una revisión; un revisor mudo no cuenta como PASS, y una decisión sin su línea
+  CUMPLE tampoco.
+- La documentación de cierre se escribe después de la revisión de pantallas, con el estado final de
+  cada decisión.
 - Un lote visual o con decisiones que termina sin PASS de su revisión, por la razón que sea, frena
-  el PR.
+  el PR. Un lote condicional cuya condición no se pasó no corre y no frena: sus decisiones vuelven
+  como no cumplidas, con la condición como motivo.
 - Ningún registro histórico ni ADR se edita.
 
 ## 5. Criterios de Aceptación
@@ -89,8 +96,16 @@ que el usuario vea las pantallas de la oleada juntas antes de mergear.
   y D3 como diferida.
 - **Dado** que la revisión de pantallas no llega a PASS, **cuando** termina, **entonces** no arma la
   hoja ni abre el PR, y las decisiones de los lotes visuales quedan como no cumplidas.
-- **Dado** una revisión de lote con PASS que rinde una decisión como NO CUMPLE, o un lote con
-  decisiones cuyo constructor no responde, **cuando** termina la oleada, **entonces** no se abre el PR.
+- **Dado** una revisión de lote con PASS que rinde una decisión como NO CUMPLE, que omite una, o un
+  lote con decisiones cuyo constructor no responde, **cuando** termina la oleada, **entonces** no se
+  abre el PR y esa decisión no vuelve como cumplida.
+
+## 6. Riesgos
+
+- El workflow no se corrió con agentes reales: las pruebas usan agentes falsos que contestan con el
+  esquema. Lo verifica la primera oleada real.
+- Un revisor que no respeta el formato de las decisiones deja el lote sin PASS: es más caro, pero no
+  deja pasar una decisión sin comprobar.
 
 ## 7. Especificación Técnica de Diseño (Technical Design)
 
@@ -108,11 +123,13 @@ Diferencias con `backlog-r11.js`, además de lo de §2:
   ensayo por `M.ensayo`, en lugar de los ítems R11-03 y R11-B08.
 - El PR se abre como borrador (`gh pr create --draft`).
 
-Plan TDD: los tests 19.1 a 19.18 de `run-tests.js` cubren la regla, que las dos copias coincidan,
-el arranque del workflow (`AsyncFunction` sin el `export`) y cuatro corridas con agentes falsos.
+Plan TDD: los tests 19.1 a 19.21 de `run-tests.js` cubren la regla, que las dos copias coincidan,
+el arranque del workflow (`AsyncFunction` sin el `export`) y corridas con agentes falsos: todo
+PASS, pantallas sin PASS, NO CUMPLE, decisión omitida, constructor mudo, modelos de las vistas,
+"Lo más simple", PR en borrador y la casilla de la hoja.
 
 ## 8. Validación
 
 - `node scripts/agent-check.js` sin fallas, con `UI_WAVE_MANIFEST` en PASS sobre la plantilla.
-- `node scripts/tests/run-tests.js` en verde (125 casos).
+- `node scripts/tests/run-tests.js` en verde (128 casos).
 - Sin Java tocado: no corre Maven. El workflow no se corrió con agentes reales.

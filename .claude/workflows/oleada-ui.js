@@ -326,10 +326,21 @@ const BASELINE = prep.baseline === 'RED' ? ` El baseline ya fallaba antes de emp
 // bloqueantes), frena el PR.
 const conPass = new Set()
 const frenaElPr = (l) => esVisual(l) || decisionesDe(l).length > 0
-// Una decisión rendida como NO CUMPLE es bloqueante aunque el revisor no la haya listado como tal.
-const conDecisionesComoBloqueantes = (r) => {
-  const noCumple = r.decisiones.filter((x) => /NO CUMPLE/i.test(x) && !r.bloqueantes.includes(x))
-  return noCumple.length ? { ...r, veredicto: 'CHANGES_REQUIRED', bloqueantes: [...r.bloqueantes, ...noCumple] } : r
+// Cada decisión se rinde en una línea "<ID>: CUMPLE — evidencia" o "<ID>: NO CUMPLE — evidencia".
+// Solo un CUMPLE con su ID la da por cumplida. Un NO CUMPLE es bloqueante aunque el revisor no lo
+// liste; una decisión sin rendir deja la revisión sin PASS y se vuelve a revisar.
+const escaparRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const rendida = (r, d) => {
+  const patron = new RegExp('^\\s*' + escaparRegex(d.id) + '\\s*:\\s*(NO CUMPLE|CUMPLE)\\b', 'i')
+  const m = r.decisiones.map((x) => x.match(patron)).find(Boolean)
+  return m ? m[1].toUpperCase() : ''
+}
+const FORMATO_DECISIONES = 'en "decisiones", una línea por ID con este formato exacto: "<ID>: CUMPLE — <evidencia>" o "<ID>: NO CUMPLE — <evidencia>" (archivo:línea o captura); una decisión sin su línea cuenta como no comprobada'
+const conDecisionesRendidas = (r, ds) => {
+  const noCumple = ds.filter((d) => rendida(r, d) === 'NO CUMPLE').map((d) => `${d.id}: NO CUMPLE — criterio: ${d.criterio}`)
+  const sinRendir = ds.filter((d) => rendida(r, d) === '')
+  if (!noCumple.length && !sinRendir.length) return r
+  return { ...r, veredicto: 'CHANGES_REQUIRED', bloqueantes: [...r.bloqueantes, ...noCumple], sinRendir: sinRendir.map((d) => d.id) }
 }
 
 for (const t of tandas) {
@@ -391,8 +402,8 @@ Devolvé sha, hecho, resumen, archivos, gates (cuáles corriste y cómo dieron),
 ${ficha(l)}
 ${l.disenio !== 'ninguno' ? `Su diseño aprobado está en docs/interfaz/flujos/ o docs/specs/active/ (buscá ${l.id}): revisá contra eso.` : ''}
 Cómo revisar: ${l.ruta === 'QUICK' ? 'LIGHTWEIGHT_CLOSING_CHECK de docs/IA/review/evaluator.md.' : 'skill implementation-review (.agents/skills/implementation-review/SKILL.md), vectores V1–V9.'}${esVisual(l) ? ' Además, skill revisar-ui (.agents/skills/revisar-ui/SKILL.md), vectores U1–U7, mirando las capturas de cliente-liviano/target/capturas a 360 y 1280 px con la herramienta de lectura de imágenes, junto a las de otra pantalla que use las mismas piezas.' : ''}
-Cada decisión del usuario de la ficha es un criterio de aceptación: en "decisiones", una línea por ID con CUMPLE o NO CUMPLE y su evidencia (archivo:línea o captura).${M.reglas.length ? ` Comprobá también las reglas propias de la oleada: ${M.reglas.join(' | ')}.` : ''}${gatesRotos ? ` Al integrar fallaron gates: ${gatesRotos}. Decí si la causa es de este lote.` : ''}
-Bloqueante es lo que rompe un criterio de aceptación (incluida toda decisión del usuario que NO CUMPLE), un gate, un requerimiento del enunciado o una regla del repo${esVisual(l) ? ', y todo lo que falla en U1–U7 de revisar-ui: cualquier inconsistencia con el sistema visual o con otra pantalla es BLOQUEANTE, no menor' : ''}. Lo demás va en menores. Con un bloqueante, el veredicto es CHANGES_REQUIRED. Cada hallazgo con archivo:línea y qué habría que cambiar.`, { label: `revisión ${l.id} r${ronda}`, phase: 'Revisar', schema: REVISION, ...(esVisual(l) ? VISTAS : JUICIO) }).then((r) => r && { ...conDecisionesComoBloqueantes(r), lote: l })))).filter(Boolean)
+Cada decisión del usuario de la ficha es un criterio de aceptación: ${FORMATO_DECISIONES}.${M.reglas.length ? ` Comprobá también las reglas propias de la oleada: ${M.reglas.join(' | ')}.` : ''}${gatesRotos ? ` Al integrar fallaron gates: ${gatesRotos}. Decí si la causa es de este lote.` : ''}
+Bloqueante es lo que rompe un criterio de aceptación (incluida toda decisión del usuario que NO CUMPLE), un gate, un requerimiento del enunciado o una regla del repo${esVisual(l) ? ', y todo lo que falla en U1–U7 de revisar-ui: cualquier inconsistencia con el sistema visual o con otra pantalla es BLOQUEANTE, no menor' : ''}. Lo demás va en menores. Con un bloqueante, el veredicto es CHANGES_REQUIRED. Cada hallazgo con archivo:línea y qué habría que cambiar.`, { label: `revisión ${l.id} r${ronda}`, phase: 'Revisar', schema: REVISION, ...(esVisual(l) ? VISTAS : JUICIO) }).then((r) => r && { ...conDecisionesRendidas(r, decisionesDe(l)), lote: l })))).filter(Boolean)
 
     const aprobados = revisiones.filter((r) => r.veredicto === 'PASS' && !r.bloqueantes.length)
     for (const r of aprobados) {
@@ -484,29 +495,11 @@ Comiteá "${PREFIJO}arreglos del cierre". Devolvé los campos de siempre (sha = 
   if (arreglo) { anotar(`cierre ${OLA}`, arreglo); base = arreglo.sha || base }
 }
 
-rendirDecisiones()
-const adrs = hechos.filter((l) => l.ruta === 'CONTRATO')
-const docs = await agent(`${COMUN}
-
-Escribís la documentación de cierre de la oleada ${OLA}, en este checkout, rama ${RAMA} (HEAD ${base}). Solo documentos.
-Lotes integrados: ${hechos.map((l) => `${l.id} (${l.items.join(', ')}; ${l.ruta})`).join('; ')}.
-1. ${M.backlog}: marcá el estado de cada ítem de la oleada (hecho, parcial con lo que falta, o no hecho con el motivo).
-2. docs/interfaz/bitacora.md: una entrada por decisión de diseño de esta oleada, con el formato de la bitácora. Las del usuario llevan su ID y su "quién"; las que tomó un agente sin consultar dicen "agente".
-3. Lo que corresponda de: docs/interfaz/patrones-y-microcopy.md, componentes.md, mapa-del-sitio.md, tono-y-comunicacion.md, el documento de requerimientos de la entrega si cambia el estado de uno, y docs/adr/DEUDA_TECNICA.md (lo que quedó pendiente de esta oleada).
-4. ADRs de los lotes de contrato: ${adrs.length ? adrs.map((l) => l.id).join(', ') : 'ninguno'}. Uno por decisión, con docs/adr/README.md, tomando la decisión, las alternativas y el porqué de la spec y del código integrado. Cada uno dice que se escribió después del código, como desvío acordado del ciclo ARCHITECTURAL. Mové las specs cerradas de docs/specs/active/ a docs/specs/completed/.
-5. ${DIR}/decisiones.md (fuera del repo), en lenguaje llano, para el informe final al usuario:
-Decisiones del usuario, por ID: ${resultado.decisionesDelUsuario.join(' || ') || '(ninguna)'}
-Decisiones que tomaron los agentes sin consultar: ${resultado.decisiones.join(' || ') || '(ninguna)'}
-Pendientes: ${resultado.pendientes.join(' || ') || '(ninguno)'}
-Comiteá "${PREFIJO}documentación". Devolvé sha, documentos, adrs y decisiones (la ruta del archivo del punto 5).`, { label: `documentación ${OLA}`, phase: 'Cerrar oleada', schema: DOCUMENTOS, ...JUICIO })
-if (docs) base = docs.sha || base
-else resultado.pendientes.push(`Documentación de cierre de ${OLA}: el agente no respondió`)
-resultado.sha = base
-
 // ── Revisar pantallas: revisar-ui independiente sobre todas las pantallas de la oleada, con las
 // capturas a 360 y 1280 lado a lado. Sin PASS no hay PR. Después, la hoja de contacto. ──────────
 const visuales = hechos.filter(esVisual)
 const gV = gatesDe(visuales)
+const DECISIONES_PANTALLAS = DECISIONES_OLA.filter((d) => visuales.some((l) => l.id === d.lote))
 let revisionOk = !visuales.length
 if (visuales.length) {
   phase('Revisar pantallas')
@@ -514,15 +507,15 @@ if (visuales.length) {
     const rev = await agent(`Sos un revisor de interfaz independiente en el repo DonaTrack, en la rama ${RAMA} (HEAD ${base}). No conocés cómo se construyó: recibís solo los artefactos. Seguí la skill revisar-ui (.agents/skills/revisar-ui/SKILL.md), Mode INDEPENDENT_REVIEW, sobre TODAS las pantallas de la oleada juntas: ${gV.paginas.join(', ')}.
 1. Capturas: ${gV.visual}. Por cada pantalla, mirá su captura de 360 y la de 1280 una al lado de la otra (herramienta de lectura de imágenes), y comparalas con las de las demás pantallas de la oleada y con al menos una pantalla del sitio que use las mismas piezas.
 2. U1–U7 de revisar-ui: todo lo que falla es BLOQUEANTE, en especial cualquier inconsistencia entre pantallas o con el sistema visual (componentes.md, componentes/listado, tokens).
-3. Decisiones del usuario que estas pantallas cumplen (criterios de aceptación): ${DECISIONES_OLA.filter((d) => visuales.some((l) => l.id === d.lote)).map((d) => `${d.id}: ${d.texto}; se comprueba así: ${d.criterio}`).join(' | ') || '(ninguna)'}. En "decisiones", una línea por ID con CUMPLE o NO CUMPLE y su evidencia; un NO CUMPLE es bloqueante.${M.reglas.length ? `\n4. Reglas propias de la oleada: ${M.reglas.join(' | ')}.` : ''}
-No modificás nada. Cada hallazgo con archivo:línea o captura, qué falla y cómo se arregla. Con un bloqueante, CHANGES_REQUIRED.`, { label: `pantallas r${ronda}`, phase: 'Revisar pantallas', schema: REVISION, ...VISTAS }).then((r) => r && conDecisionesComoBloqueantes(r))
+3. Decisiones del usuario que estas pantallas cumplen (criterios de aceptación): ${DECISIONES_PANTALLAS.map((d) => `${d.id}: ${d.texto}; se comprueba así: ${d.criterio}`).join(' | ') || '(ninguna)'}. ${FORMATO_DECISIONES}; un NO CUMPLE es bloqueante.${M.reglas.length ? `\n4. Reglas propias de la oleada: ${M.reglas.join(' | ')}.` : ''}
+No modificás nada. Cada hallazgo con archivo:línea o captura, qué falla y cómo se arregla. Con un bloqueante, CHANGES_REQUIRED.`, { label: `pantallas r${ronda}`, phase: 'Revisar pantallas', schema: REVISION, ...VISTAS }).then((r) => r && conDecisionesRendidas(r, DECISIONES_PANTALLAS))
     if (rev && rev.veredicto === 'PASS' && !rev.bloqueantes.length) {
       revisionOk = true
       resultado.revisionDePantallas = `PASS en la ronda ${ronda}`
       for (const m of rev.menores) resultado.pendientes.push(`pantallas, menor: ${m}`)
       break
     }
-    const motivo = rev ? rev.bloqueantes.join(' | ') || 'CHANGES_REQUIRED sin bloqueantes' : 'el revisor no respondió'
+    const motivo = !rev ? 'el revisor no respondió' : [...rev.bloqueantes, ...(rev.sinRendir || []).map((id) => `${id} sin rendir`)].join(' | ') || 'CHANGES_REQUIRED sin bloqueantes'
     resultado.revisionDePantallas = `sin PASS en la ronda ${ronda}: ${motivo}`
     if (ronda === RONDAS || !rev || !rev.bloqueantes.length) continue
     const arreglo = await agent(`${COMUN}
@@ -545,6 +538,27 @@ if (!revisionOk) {
   for (const l of visuales) noCumplida(l, 'la revisión de pantallas no llegó a PASS')
 }
 if (sinPass.length) motivosSinPr.push(`lotes sin PASS de su revisión: ${sinPass.join(', ')}`)
+
+// La documentación va después de la revisión de pantallas: registra el estado final de cada decisión.
+rendirDecisiones()
+const adrs = hechos.filter((l) => l.ruta === 'CONTRATO')
+const docs = await agent(`${COMUN}
+
+Escribís la documentación de cierre de la oleada ${OLA}, en este checkout, rama ${RAMA} (HEAD ${base}). Solo documentos.
+Lotes integrados: ${hechos.map((l) => `${l.id} (${l.items.join(', ')}; ${l.ruta})`).join('; ')}.
+1. ${M.backlog}: marcá el estado de cada ítem de la oleada (hecho, parcial con lo que falta, o no hecho con el motivo).
+2. docs/interfaz/bitacora.md: una entrada por decisión de diseño de esta oleada, con el formato de la bitácora. Las del usuario llevan su ID y su "quién"; las que tomó un agente sin consultar dicen "agente".
+3. Lo que corresponda de: docs/interfaz/patrones-y-microcopy.md, componentes.md, mapa-del-sitio.md, tono-y-comunicacion.md, el documento de requerimientos de la entrega si cambia el estado de uno, y docs/adr/DEUDA_TECNICA.md (lo que quedó pendiente de esta oleada).
+4. ADRs de los lotes de contrato: ${adrs.length ? adrs.map((l) => l.id).join(', ') : 'ninguno'}. Uno por decisión, con docs/adr/README.md, tomando la decisión, las alternativas y el porqué de la spec y del código integrado. Cada uno dice que se escribió después del código, como desvío acordado del ciclo ARCHITECTURAL. Mové las specs cerradas de docs/specs/active/ a docs/specs/completed/.
+5. ${DIR}/decisiones.md (fuera del repo), en lenguaje llano, para el informe final al usuario:
+Decisiones del usuario, por ID: ${resultado.decisionesDelUsuario.join(' || ') || '(ninguna)'}
+Decisiones que tomaron los agentes sin consultar: ${resultado.decisiones.join(' || ') || '(ninguna)'}
+Pendientes: ${resultado.pendientes.join(' || ') || '(ninguno)'}
+Comiteá "${PREFIJO}documentación". Devolvé sha, documentos, adrs y decisiones (la ruta del archivo del punto 5).`, { label: `documentación ${OLA}`, phase: 'Cerrar oleada', schema: DOCUMENTOS, ...JUICIO })
+if (docs) base = docs.sha || base
+else resultado.pendientes.push(`Documentación de cierre de ${OLA}: el agente no respondió`)
+resultado.sha = base
+
 if (motivosSinPr.length) return terminar(`No se abre el PR de ${OLA}: ${motivosSinPr.join('; ')}. La rama ${RAMA} queda local en ${base}.`)
 
 if (visuales.length) {
