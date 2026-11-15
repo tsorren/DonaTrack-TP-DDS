@@ -435,17 +435,12 @@ class InterfazFitnessTest {
         .isEmpty();
   }
 
-  /**
-   * Las skills de interfaz viven en .claude/skills desde el harness de R11-B04 (antes, vista-ui y
-   * revision-ui en .agents/skills): construir-ui cita el catálogo por su archivo y revisar-ui lo
-   * nombra.
-   */
   @Test
   void lasSkillsDeInterfazEmpiezanPorElCatalogo() {
-    Path construir = Path.of("../.claude/skills/construir-ui/SKILL.md");
-    assertThat(leer(construir)).as("%s cita el catálogo", construir).contains("componentes.md");
-    Path revisar = Path.of("../.claude/skills/revisar-ui/SKILL.md");
-    assertThat(leer(revisar)).as("%s nombra el catálogo", revisar).contains("catálogo");
+    for (String skill : List.of("vista-ui", "revision-ui")) {
+      Path ruta = Path.of("../.agents/skills", skill, "SKILL.md");
+      assertThat(leer(ruta)).as("%s cita el catálogo", ruta).contains("componentes.md");
+    }
   }
 
   @Test
