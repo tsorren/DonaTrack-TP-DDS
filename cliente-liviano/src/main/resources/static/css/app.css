@@ -194,6 +194,12 @@ body {
   :root:where(:has(.listado[data-plegado="si"])) {
     --medida-filtros-fijos: 10.25rem;
   }
+
+  /* La barra sin pliegue (solo la búsqueda o un campo): la más alta es la de Camiones del admin, la
+     búsqueda y Capacidad, 193,75 px medidos el 2026-11-15 a 390 px, redondeado a 1/8 rem. */
+  :root:where(:has(.listado[data-pliegue="no"])) {
+    --medida-filtros-fijos: 12.125rem;
+  }
 }
 
 @media (min-width: 53.75em) and (min-height: 37.5em) {

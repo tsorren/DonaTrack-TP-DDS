@@ -207,7 +207,9 @@
    si la ventana mide al menos 45 em de alto. Abierta, solo desde 68,75 em y con al menos 37,5 em
    de alto: en el celular, abierta, taparía casi toda la pantalla. */
 @media (min-height: 45em) {
-  .listado[data-plegado="si"] {
+  /* La plegada y la que no tiene pliegue (solo la búsqueda o un campo): las dos son chicas. */
+  .listado[data-plegado="si"],
+  .listado[data-pliegue="no"] {
     position: sticky;
     top: var(--medida-cabecera-fija);
     z-index: var(--capa-filtros-fijos);
