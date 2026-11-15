@@ -617,9 +617,10 @@ class InterfazFitnessTest {
   /** Las líneas de {@code css} con una medida literal (sin tokens). */
   static long medidasLiterales(String css) {
     return css.lines()
-        // Las media queries no cuentan: sus quiebres los controla
-        // mediaQueriesUsanSoloLosQuiebresDeTokens
-        .filter(linea -> !linea.strip().startsWith("@media"))
+        // La cabecera de una media query no cuenta (no puede usar var()): sus anchos los controla
+        // mediaQueriesUsanSoloLosQuiebresDeTokens; sus altos, nadie todavía (DTI-44). Una regla
+        // escrita en la misma línea que su @media sí cuenta.
+        .filter(linea -> !(linea.strip().startsWith("@media") && linea.strip().endsWith("{")))
         .filter(linea -> MEDIDA_LITERAL.matcher(linea).find() && !linea.contains("var("))
         .count();
   }
