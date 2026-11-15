@@ -226,6 +226,66 @@ class ArmazonFijoTest {
         });
   }
 
+  /**
+   * R11-B04: desde la tableta, la barra del componente listado de cada lista migrada queda fija y
+   * entra en --medida-filtros-fijos (lo que deja libre el scroll-padding para que el foco no quede
+   * debajo), con todos sus campos.
+   */
+  @Test
+  void desdeLaTabletaLaBarraDelListadoEntraEnSuMedida() {
+    List<String> fallas = new ArrayList<>();
+    for (int ancho : List.of(768, 960, 1280, 1920)) {
+      for (String ruta :
+          List.of(
+              "/donante-donaciones",
+              "/entidad-recibidas",
+              "/donante-entidades",
+              "/admin-donaciones",
+              "/admin-asignaciones?vista=decididas",
+              "/donante-notificaciones")) {
+        conPagina(
+            ancho,
+            900,
+            false,
+            pagina -> {
+              pagina.navigate(url(ruta));
+              List<?> medidas =
+                  (List<?>)
+                      pagina.evaluate(
+                          """
+                          () => {
+                            const b = document.querySelector('.listado');
+                            const prueba = document.createElement('div');
+                            prueba.style.height = 'var(--medida-filtros-fijos)';
+                            document.body.append(prueba);
+                            const medida = prueba.getBoundingClientRect().height;
+                            prueba.remove();
+                            return [getComputedStyle(b).position === 'sticky',
+                              b.getBoundingClientRect().height, medida];
+                          }
+                          """);
+              boolean fija = Boolean.TRUE.equals(medidas.get(0));
+              double alto = ((Number) medidas.get(1)).doubleValue();
+              double medida = ((Number) medidas.get(2)).doubleValue();
+              if (!fija || alto > medida + 0.5) {
+                fallas.add(
+                    ruta
+                        + " a "
+                        + ancho
+                        + " px: fija "
+                        + fija
+                        + ", mide "
+                        + alto
+                        + " px, la medida es "
+                        + medida
+                        + " px");
+              }
+            });
+      }
+    }
+    assertThat(fallas).as("Barras del listado que no quedan fijas o pasan su medida").isEmpty();
+  }
+
   @Test
   void enElCelularConTabYShiftTabElFocoNoQuedaTapado() {
     List<String> tapados = new ArrayList<>();

@@ -188,6 +188,12 @@ body {
   :root:where(:has(.filtros-barra):not(:has(.filtros-pildora ~ .filtros-pildora ~ .filtros-pildora))) {
     --medida-filtros-fijos: 9.875rem;
   }
+
+  /* La barra del componente listado plegada (R11-B04): la búsqueda y "Filtros y orden", 162,6 px
+     medidos el 2026-11-14 a 390 px con las letras cargadas, redondeado hacia arriba a 1/8 rem. */
+  :root:where(:has(.listado[data-plegado="si"])) {
+    --medida-filtros-fijos: 10.25rem;
+  }
 }
 
 @media (min-width: 53.75em) and (min-height: 37.5em) {
@@ -207,6 +213,12 @@ body {
 @media (min-width: 68.75em) and (min-height: 37.5em) {
   :root:is(:has(body > .armazon), :has(body > .raices-cabecera)) {
     --medida-filtros-fijos: 11rem;
+  }
+
+  /* La barra del componente listado abierta (R11-B04): dos renglones de campos, 205,75 px medidos
+     el 2026-11-14 de 1280 a 1920 px, redondeado hacia arriba a 1/8 rem. */
+  :root:is(:has(body > .armazon), :has(body > .raices-cabecera)):has(.listado) {
+    --medida-filtros-fijos: 13rem;
   }
 
   :root:has(body > .armazon) {

@@ -7,7 +7,7 @@
    Se carga en la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md.
    En el celular, la búsqueda arriba y los campos en dos columnas (la fecha a todo el ancho). Con
    JavaScript, los campos se pliegan debajo de "Filtros y orden" (`.listado-alternar`,
-   `data-plegado`). Desde 53,75 em, todo en una fila que baja de renglón, alineado abajo. */
+   `data-plegado`). Desde 68,75 em, todo en una fila que baja de renglón, alineado abajo. */
 
 .listado {
   display: grid;
@@ -131,7 +131,7 @@
 }
 
 /* En el celular, con JavaScript: los campos se pliegan debajo de "Filtros y orden". */
-@media (width < 53.75em) {
+@media (width < 68.75em) {
   .listado-alternar {
     justify-self: start;
   }
@@ -141,9 +141,9 @@
   }
 }
 
-/* Desde 53,75 em, la búsqueda y los campos en una sola fila que baja de renglón, alineados abajo:
+/* Desde 68,75 em, la búsqueda y los campos en una sola fila que baja de renglón, alineados abajo:
    el botón que pliega no hace falta. */
-@media (min-width: 53.75em) {
+@media (min-width: 68.75em) {
   .listado {
     display: flex;
     flex-wrap: wrap;
@@ -196,8 +196,8 @@
 
 /* La barra queda fija mientras se recorre su listado (regla general 5, como la anterior), sobre
    papel y con el filete abajo; el papel sube un poco para que entre la cabecera y la barra no se vea
-   la lista. Plegada (con JavaScript, por debajo de 53,75 em) cabe en un cuarto del alto: queda fija
-   si la ventana mide al menos 45 em de alto. Abierta, solo desde 53,75 em y con al menos 37,5 em
+   la lista. Plegada (con JavaScript, por debajo de 68,75 em) cabe en un cuarto del alto: queda fija
+   si la ventana mide al menos 45 em de alto. Abierta, solo desde 68,75 em y con al menos 37,5 em
    de alto: en el celular, abierta, taparía casi toda la pantalla. */
 @media (min-height: 45em) {
   .listado[data-plegado="si"] {
@@ -211,7 +211,7 @@
   }
 }
 
-@media (min-width: 53.75em) and (min-height: 37.5em) {
+@media (min-width: 68.75em) and (min-height: 37.5em) {
   .listado,
   .listado[data-plegado="si"] {
     position: sticky;
