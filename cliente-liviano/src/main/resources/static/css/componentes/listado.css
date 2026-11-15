@@ -248,4 +248,9 @@
 
 .tarjeta .listado {
   position: static;
+  z-index: auto;
+  padding-block: 0;
+  border-bottom: 0;
+  background: none;
+  box-shadow: none;
 }

@@ -185,7 +185,13 @@ class ArmazonFijoTest {
   void enElCelularSoloQuedaFijaLaBarraQueEntraEnUnCuartoDelAlto() {
     List<String> fallas = new ArrayList<>();
     for (String ruta :
-        List.of("/admin-donantes", "/admin-donaciones", "/donante-entidades", "/admin-camiones")) {
+        List.of(
+            "/admin-donantes",
+            "/admin-donaciones",
+            "/donante-entidades",
+            "/admin-camiones",
+            // Sin pliegue y con un filtro elegido: no queda fija en el celular
+            "/admin-camiones?buscar=Norte&capacidad=grande")) {
       conPagina(
           390,
           844,
