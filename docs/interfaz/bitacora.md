@@ -31,6 +31,27 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-15 · componente:listado · Toda lista con búsqueda o filtros usa la misma barra (kit de la opción A)
+
+- **Decisión:** las 9 listas que seguían con pastillas o con `form.filtro` pasan a `componentes/listado`:
+  Organizaciones, Camiones, Registrar donación, Actividad, Importaciones y Donantes del admin, y
+  Entidades, Entregas confirmadas y el Mapa públicos. También pasan Propuestas y Destino de
+  Asignaciones. Un nombre por campo: `q` pasa a `buscar`, `ver` a `estado` y `pedidos` a `pedido`,
+  y los nombres viejos siguen valiendo como alias. Los menús de período de Actividad e
+  Importaciones pasan a rango. Organizaciones del donante suma el orden por nombre de la condición
+  (ii) de la línea base. Pico.css sale del stack.
+- **Alternativas:** las opciones B (skills de stock y brief corto) y C (librería tematizada) del
+  harness de frontend; dejar Pico declarado o cargarlo.
+- **Por qué:** en la línea base solo la A unificó los nombres y contuvo las medidas sueltas (3
+  nuevas, contra 32 y 35). Comparando (ii) y (iii) en la maqueta, el usuario dijo "No se ven
+  diferencias". Pico no se cargaba desde la identidad única: sacarlo no cambia el aspecto.
+- **Costo:** Ranking conserva su selector de mes, y los alias y los períodos que no pasan a rango
+  quedan en [DTI-44](../adr/DEUDA_TECNICA.md#dti-44). El usuario no vio las 9 pantallas sumadas.
+- **Quién decidió:** usuario (opción A, públicas dentro del fragmento y sin Pico, 2026-11-14); la
+  forma de cada barra, agente.
+- **Evidencia:** [ADR sin Pico.css](../adr/cliente-liviano/20261114-sin-pico-css-en-el-cliente-liviano.md);
+  cercos en `InterfazFitnessTest`.
+
 ### 2026-11-14 · componente:listado · La barra de filtros nueva, con los campos abiertos (R11-B04)
 
 - **Decisión:** `componentes/listado` reemplaza a la fila de pastillas en Mis donaciones (empresa y
