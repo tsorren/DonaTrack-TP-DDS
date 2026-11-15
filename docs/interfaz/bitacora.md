@@ -31,6 +31,26 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-15 · proceso · El harness de interfaz pasa a tres skills cortas sobre el sistema cerrado (paso 3 de la opción A)
+
+- **Decisión:** `construir-ui` (producir), `revisar-ui` (cerrar, en solo lectura, con las pantallas
+  comparadas entre sí y todo desvío del sistema como bloqueante) y `explorar-ui` (opciones que
+  divergen en para qué sirve la pantalla, metáfora y densidad, sin ranking y sin mergear). La regla
+  baja a 10 líneas y `cliente-liviano/AGENTS.md`, a 80. Las 7 skills anteriores, la corrida creativa
+  y sus plantillas van al [archivo](../IA/history/harness-ui-2026-11/README.md).
+- **Alternativas:** archivar en `docs/interfaz/archivo/` o borrar; mover también la bitácora, la
+  evidencia y las fichas cerradas; las dos skills del borrador de la línea base (iii).
+- **Por qué:** el diagnóstico encontró mucho texto para leer y poca restricción verificable. La
+  lectura obligatoria baja de unos 206 KB a unos 24 KB, y los topes los controla `agent-check`. Lo
+  histórico no se mueve porque lo enlazan ADRs que no se editan.
+- **Costo:** quedan rotos los enlaces de los registros a las skills archivadas
+  ([DTI-44](../adr/DEUDA_TECNICA.md#dti-44), ítem 15). El panel de críticos y el A/B de un solo tema
+  no tienen reemplazo: elige el humano mirando.
+- **Quién decidió:** usuario (2026-11-14, opción A; 2026-11-15, archivo, histórico sin mover y
+  plan de los pasos 3 y 4).
+- **Evidencia:** [ADR `proposed`](../adr/cliente-liviano/20261115-harness-de-interfaz-con-sistema-cerrado-y-tres-skills-cortas.md)
+  y [spec del paso 3](../specs/active/harness-ui-paso-3-skills-spec.md).
+
 ### 2026-11-15 · componente:listado · Toda lista con búsqueda o filtros usa la misma barra (kit de la opción A)
 
 - **Decisión:** las 9 listas que seguían con pastillas o con `form.filtro` pasan a `componentes/listado`:

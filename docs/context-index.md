@@ -33,7 +33,7 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | `notificaciones-service` | [`arquitectura/aggregates-notificaciones.md`](arquitectura/aggregates-notificaciones.md) | REST / Persistencia JPA / AMQP RabbitMQ Pub-Sub → ADRs en `docs/adr/notificaciones-service/`, ADR transversal [`adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md), [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) y [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) (DTI-13) |
 | `common-lib` | [`arquitectura/shared-kernel.md`](arquitectura/shared-kernel.md) | Impacto cross-service → aggregates docs de los servicios afectados |
 | `api-gateway` | [`../api-gateway/README.md`](../api-gateway/README.md) | Rutas, allowlist y JWT → [ADR-E6-02](adr/20261107-api-gateway-validacion-jwt-en-doble-capa-y-rutas-publicas.md) y [SPEC-07](specs/active/SPEC-07-api-gateway-etapa-1.md); ruta nueva en un servicio → sumarla a `RutasGateway` (y a `rutas-publicas` si la usa una pantalla pública); trazabilidad → [`arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) |
-| `cliente-liviano` | [`../cliente-liviano/AGENTS.md`](../cliente-liviano/AGENTS.md) | Proceso de diseño, identidad y flujos → [`interfaz/README.md`](interfaz/README.md); stack (D17–D21, D31–D33), una sola identidad visual y verificación visual → ADRs en `docs/adr/cliente-liviano/`; catálogo y migración a componentes → [`interfaz/componentes.md`](interfaz/componentes.md) y [`interfaz/backlog-migracion-componentes.md`](interfaz/backlog-migracion-componentes.md); verificación fuera del CI y deuda de componentes → [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) (DTI-28, DTI-34) |
+| `cliente-liviano` | [`../cliente-liviano/AGENTS.md`](../cliente-liviano/AGENTS.md) | Skills `construir-ui`, `revisar-ui` y `explorar-ui`; índice de diseño, identidad y flujos → [`interfaz/README.md`](interfaz/README.md); kit de listas y su cerco → `InterfazFitnessTest` y [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) (DTI-44); stack (D17–D21, D31–D33), una sola identidad visual y verificación visual → ADRs en `docs/adr/cliente-liviano/`; catálogo y migración a componentes → [`interfaz/componentes.md`](interfaz/componentes.md) y [`interfaz/backlog-migracion-componentes.md`](interfaz/backlog-migracion-componentes.md); verificación fuera del CI y deuda de componentes → [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) (DTI-28, DTI-34) |
 
 ---
 
@@ -55,7 +55,7 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | Catálogo Vivo de Contratos | [`generated/README.md`](generated/README.md) + `docs/generated/` |
 | Mentoría conceptual / didáctica | [`IA/prompts/transversal-mentoria-conceptos.md`](IA/prompts/transversal-mentoria-conceptos.md) + skill `.agents/skills/explain-concept/` |
 | Compliance académico | `docs/entregas/<N>/Enunciado-<N>.pdf` — solo el enunciado de la entrega vigente |
-| Interfaz del cliente liviano (UX, identidad visual, vistas) | [`interfaz/README.md`](interfaz/README.md) + [`../cliente-liviano/AGENTS.md`](../cliente-liviano/AGENTS.md) + skills de interfaz (abajo); textos y mensajes → [`interfaz/tono-y-comunicacion.md`](interfaz/tono-y-comunicacion.md) |
+| Interfaz del cliente liviano (UX, identidad visual, vistas) | [`../cliente-liviano/AGENTS.md`](../cliente-liviano/AGENTS.md) (dice qué más leer) + skills de interfaz (abajo); índice de la carpeta → [`interfaz/README.md`](interfaz/README.md); harness anterior, archivado → [`IA/history/harness-ui-2026-11/`](IA/history/harness-ui-2026-11/README.md) |
 
 ### Skills de `.agents/skills/`
 
@@ -69,15 +69,11 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | [`implementation-review`](../.agents/skills/implementation-review/SKILL.md) | Revisión adversarial de código implementado (vectores V1–V9). |
 | [`review-pr`](../.agents/skills/review-pr/SKILL.md) | Review de Pull Requests con GrepAI. |
 | [`explain-concept`](../.agents/skills/explain-concept/SKILL.md) | Mentoría conceptual y explicaciones didácticas. |
-| [`identidad-visual`](../.agents/skills/identidad-visual/SKILL.md) | Definir o ajustar la identidad visual del cliente liviano con rondas de preguntas, A/B y `tokens.css`. |
-| [`iteracion-ab`](../.agents/skills/iteracion-ab/SKILL.md) | Comparar dos variantes de un solo tema de diseño y dejar que el usuario elija. |
-| [`ux-flujo`](../.agents/skills/ux-flujo/SKILL.md) | Diseñar un flujo de pantallas antes del código: recorrido, estados, textos y heurísticas. |
-| [`vista-ui`](../.agents/skills/vista-ui/SKILL.md) | Construir vistas y componentes Thymeleaf + HTMX con estados, accesibilidad y comprobación visual. |
-| [`revision-ui`](../.agents/skills/revision-ui/SKILL.md) | Revisión independiente de flujos y pantallas (vectores U1–U9) y panel de exploración para criticar conceptos. |
-| [`relevamiento-creativo`](../.agents/skills/relevamiento-creativo/SKILL.md) | Relevar con el usuario un encargo creativo (referencias, mensaje, libertades, alcance) antes de diseñar desde cero. |
-| [`corrida-creativa`](../.agents/skills/corrida-creativa/SKILL.md) | Diseñar desde cero sin el usuario a partir de un encargo aprobado; motor: workflow `.claude/workflows/corrida-creativa.js`. |
+| [`construir-ui`](../.agents/skills/construir-ui/SKILL.md) | Construir o cambiar una pantalla o un componente del cliente liviano con el sistema visual cerrado y el kit de listas. |
+| [`revisar-ui`](../.agents/skills/revisar-ui/SKILL.md) | Revisar pantallas entre sí contra el sistema visual (U1–U7), en solo lectura, antes de cerrar. |
+| [`explorar-ui`](../.agents/skills/explorar-ui/SKILL.md) | Explorar alternativas que divergen en ejes de producto, sin ranking, y dejar que el humano elija. |
 
-> Las skills de interfaz tienen además un adaptador en `.claude/skills/<nombre>/SKILL.md` para que Claude Code las descubra; la versión canónica es la de `.agents/skills/`.
+> Las skills de interfaz tienen además un adaptador en `.claude/skills/<nombre>/SKILL.md` para que Claude Code las descubra; la versión canónica es la de `.agents/skills/` y `agent-check` controla que el frontmatter de los dos coincida.
 
 ---
 

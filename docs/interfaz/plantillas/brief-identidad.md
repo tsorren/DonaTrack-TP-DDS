@@ -1,7 +1,8 @@
 # Brief de identidad visual
 
 > **Estado:** borrador | aprobado · **Fecha:** AAAA-MM-DD · **Aprobó:** <quién>
-> Plantilla de la skill `identidad-visual`. El resultado va en `docs/interfaz/identidad/brief.md`.
+> Plantilla de la skill `identidad-visual`, archivada el 2026-11-15 ([archivo](../../IA/history/harness-ui-2026-11/README.md)); hoy
+> una identidad nueva se explora con `explorar-ui`. El resultado va en `docs/interfaz/identidad/brief.md`.
 > Se completa con las respuestas del usuario; lo que el usuario no definió dice "abierto".
 
 ## Personalidad

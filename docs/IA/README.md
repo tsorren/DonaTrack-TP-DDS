@@ -76,16 +76,14 @@ Las skills viven en `.agents/skills/` (detalle en [`../context-index.md`](../con
 | [`implementation-review`](../../.agents/skills/implementation-review/SKILL.md) | Revisión adversarial de código (V1–V9). |
 | [`review-pr`](../../.agents/skills/review-pr/SKILL.md) | Review de PRs con GrepAI. |
 | [`explain-concept`](../../.agents/skills/explain-concept/SKILL.md) | Mentoría conceptual. |
-| [`identidad-visual`](../../.agents/skills/identidad-visual/SKILL.md) | Identidad visual del cliente liviano con preguntas, A/B y tokens. |
-| [`iteracion-ab`](../../.agents/skills/iteracion-ab/SKILL.md) | Comparación A/B de un tema de diseño. |
-| [`ux-flujo`](../../.agents/skills/ux-flujo/SKILL.md) | Diseño de un flujo de pantallas antes del código. |
-| [`vista-ui`](../../.agents/skills/vista-ui/SKILL.md) | Construcción de vistas Thymeleaf + HTMX. |
-| [`revision-ui`](../../.agents/skills/revision-ui/SKILL.md) | Revisión independiente de la interfaz (U1–U9) y panel de exploración para criticar conceptos. |
-| [`relevamiento-creativo`](../../.agents/skills/relevamiento-creativo/SKILL.md) | Relevamiento con el usuario de un diseño nuevo desde cero: referencias, mensaje, libertades y alcance; deja un encargo creativo aprobado. |
-| [`corrida-creativa`](../../.agents/skills/corrida-creativa/SKILL.md) | Diseño creativo desatendido a partir de un encargo aprobado (workflow `.claude/workflows/corrida-creativa.js`). |
+| [`construir-ui`](../../.agents/skills/construir-ui/SKILL.md) | Construcción de pantallas y componentes con el sistema visual cerrado. |
+| [`revisar-ui`](../../.agents/skills/revisar-ui/SKILL.md) | Revisión de la interfaz entre pantallas (U1–U7), en solo lectura. |
+| [`explorar-ui`](../../.agents/skills/explorar-ui/SKILL.md) | Exploración de alternativas en ejes de producto, sin ranking. |
 
 ### Histórico
 
+- [`history/harness-ui-2026-11/`](./history/harness-ui-2026-11/README.md)  
+  Harness de interfaz anterior a la opción A (7 skills de UI, el workflow `corrida-creativa.js` y las plantillas de encargo), archivado el 2026-11-15. No describe las reglas vigentes.
 - [`history/AGENTS-v3.5.md`](./history/AGENTS-v3.5.md)  
   Versión 3.5 de `AGENTS.md`, conservada como referencia histórica (base de la comparación A/B de los evals). No describe las reglas vigentes.
 

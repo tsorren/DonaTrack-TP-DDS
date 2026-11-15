@@ -438,9 +438,12 @@ class InterfazFitnessTest {
 
   @Test
   void lasSkillsDeInterfazEmpiezanPorElCatalogo() {
-    for (String skill : List.of("vista-ui", "revision-ui")) {
+    for (String skill : List.of("construir-ui", "revisar-ui")) {
       Path ruta = Path.of("../.agents/skills", skill, "SKILL.md");
-      assertThat(leer(ruta)).as("%s cita el catálogo", ruta).contains("componentes.md");
+      assertThat(leer(ruta))
+          .as("%s cita el catálogo y el kit de listas", ruta)
+          .contains("componentes.md")
+          .contains("componentes/listado");
     }
   }
 

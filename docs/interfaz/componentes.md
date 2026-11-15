@@ -1,7 +1,7 @@
 # Catálogo de componentes y capas CUBE
 
 > Índice para los agentes y las personas: lo primero que se lee antes de construir o revisar una
-> pantalla (skills `vista-ui` y `revision-ui`). Lo pide el
+> pantalla (skills `construir-ui` y `revisar-ui`, que lo consultan por búsqueda). Lo pide el
 > [ADR de interacción, movimiento y componentes](../adr/cliente-liviano/20261104-interaccion-movimiento-y-componentes-del-cliente-liviano.md)
 > (`proposed`). La versión visual es `/estilos` (RF-CL-05), con el mismo orden.
 >

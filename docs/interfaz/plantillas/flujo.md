@@ -1,7 +1,8 @@
 # Flujo: <nombre del flujo>
 
 > **Estado:** borrador | en revisión | aprobado · **Fecha:** AAAA-MM-DD · **Aprobó:** <quién>
-> Plantilla de la skill `ux-flujo`. Copiar a `docs/interfaz/flujos/<flujo>.md` y completar todo.
+> Plantilla del paso 1 de la skill `construir-ui`. Copiar a `docs/interfaz/flujos/<flujo>.md` y
+> completar todo, en 150 líneas o menos.
 
 ## 1. Para quién y para qué
 

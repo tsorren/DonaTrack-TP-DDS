@@ -14,7 +14,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * Comparaciones de diseño (skill iteracion-ab). {@code ?variante=<tema>-a|b} suma {@code
+ * Alternativas de diseño (skill explorar-ui). {@code ?variante=<tema>-<letra>} suma {@code
  * static/css/variantes/<variante>.css} a la pantalla o la reemplaza por {@code
  * templates/variantes/<variante>.html}.
  */

@@ -82,6 +82,7 @@ docs/
 │   │   ├── scenarios/                     # 11 scenarios E01–E11 (golden + adversariales integrados)
 │   │   ├── scorecards/                    # Plantilla de scorecard por run
 │   │   └── results/                       # Resultados de runs (no versionados individualmente)
+│   ├── history/                           # Histórico: AGENTS-v3.5.md y el harness de interfaz anterior (harness-ui-2026-11/)
 │   └── prompts/                           # Prompts especializados por rol de equipo
 │
 ├── herramientas/                          # Aplicaciones web y utilidades locales
@@ -132,8 +133,8 @@ docs/
 │   ├── identidad/                         # El brief de la identidad del sitio (Raíces) y sus referencias
 │   ├── flujos/ · evidencia/               # Fichas de flujo aprobadas y capturas de las decisiones
 │   ├── historico/                         # Identidades retiradas el 2026-11-03; no es guía para diseñar
-│   ├── encargos/                          # Encargos creativos aprobados (relevamiento-creativo → corrida-creativa)
-│   └── plantillas/                        # Ficha de flujo, iteración A/B, brief de identidad y encargos creativos
+│   ├── encargos/                          # Histórico: encargos de la corrida creativa del harness anterior
+│   └── plantillas/                        # Ficha de flujo (construir-ui) y brief de identidad
 │
 ├── entrega-4/                             # 🟢 Documentación de Entrega 4 (índice: README.md)
 │   ├── README.md                          # Índice de los .md de la entrega
@@ -208,6 +209,7 @@ docs/
 * 🪟 **Ventanas que bloquean el fondo y publicar una necesidad en 3 pasos (R11-32 y R11-31, construida en `p2-ventanas`):** [ficha de flujo](interfaz/flujos/r11-p2-ventanas.md) · [ADR `proposed`](adr/cliente-liviano/20261112-ventanas-que-bloquean-el-fondo-con-showmodal-sobre-el-dialogo-con-popover.md)
 * 🔐 **Contraseña provisoria cifrada en la sesión (Spring Session JDBC):** [ADR `proposed`](adr/cliente-liviano/20261113-contrasena-provisoria-cifrada-en-la-sesion-con-aes-gcm.md)
 * 🎨 **Sin Pico.css: la base es CSS propio con tokens (kit de listas R11-B04):** [ADR `proposed`](adr/cliente-liviano/20261114-sin-pico-css-en-el-cliente-liviano.md)
+* 🧭 **Harness de interfaz de la opción A: sistema cerrado y tres skills cortas (`construir-ui`, `revisar-ui`, `explorar-ui`):** [ADR `proposed`](adr/cliente-liviano/20261115-harness-de-interfaz-con-sistema-cerrado-y-tres-skills-cortas.md) · [spec del paso 3](specs/active/harness-ui-paso-3-skills-spec.md) · [harness anterior, archivado](IA/history/harness-ui-2026-11/README.md) · deuda: [DTI-44](adr/DEUDA_TECNICA.md#dti-44), ítem 15
 * 📝 **Ver y corregir la solicitud mientras se espera (R11-41, construida en `p2-pendiente-solicitud`):** [ficha de flujo](interfaz/flujos/r11-p2-pendiente-solicitud.md) · contrato: `GET` y `PUT /api/personas/{id}/solicitud-entidad` en [`openapi-donaciones.yaml`](arquitectura/contratos/openapi-donaciones.yaml) (1.11.0) y `ERR-EST-115` en el [catálogo de errores](arquitectura/catalogo-errores.md) · deuda que salda: [DTI-41](adr/DEUDA_TECNICA.md#dti-41), ítem 4, y el `aria-current` de [DTI-42](adr/DEUDA_TECNICA.md#dti-42), ítem 1
 * 📄 **ADRs de la oleada P1 de R11 (`proposed`, escritos después del código):** [cuentas de administración en el realm](adr/auth-service/20261112-cuentas-de-administracion-marcadas-en-el-realm-y-alta-desde-el-sitio.md) · [autor de la decisión desde el token](adr/donaciones-service/20261112-autor-de-la-decision-de-una-propuesta-desde-el-token.md) · [historial de importaciones](adr/donaciones-service/20261112-historial-de-importaciones-con-nombre-y-fecha-de-subida-en-el-archivo.md) · [entidades vistas por un donante](adr/donaciones-service/20261112-entidades-vistas-por-un-donante-en-un-recurso-propio-con-la-marca-ya-le-dono.md) · [bandeja paginada](adr/notificaciones-service/20261112-bandeja-por-persona-paginada-con-busqueda-sin-tildes-por-translate.md) · [mapa por período y con tope](adr/logistica-service/20261112-mapa-publico-por-periodo-y-con-tope.md) · [sugerencias de cada algoritmo](adr/donaciones-service/20261112-propuestas-con-la-sugerencia-de-cada-algoritmo-y-su-situacion-calculada-en-donaciones.md) · deuda: [DTI-42](adr/DEUDA_TECNICA.md#dti-42)
 * 📋 **Tablero del inicio de la empresa donante, tres columnas paginadas (R11-25, aprobado y construido en el lote `p2-tablero`):** [ficha de flujo](interfaz/flujos/r11-p2-tablero.md)
