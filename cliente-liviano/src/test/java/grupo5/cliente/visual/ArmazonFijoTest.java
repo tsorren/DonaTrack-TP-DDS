@@ -190,7 +190,8 @@ class ArmazonFijoTest {
             "/admin-donaciones",
             "/donante-entidades",
             "/admin-camiones",
-            // Sin pliegue y con un filtro elegido: no queda fija en el celular
+            // Sin pliegue y con un filtro elegido: en el celular no reserva medida (0), así que
+            // si quedara fija esta prueba fallaría
             "/admin-camiones?buscar=Norte&capacidad=grande")) {
       conPagina(
           390,

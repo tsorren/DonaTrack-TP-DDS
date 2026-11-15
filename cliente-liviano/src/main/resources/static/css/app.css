@@ -197,7 +197,6 @@ body {
 
 }
 
-
 @media (min-width: 53.75em) and (min-height: 37.5em) {
   :root:is(:has(body > .armazon), :has(body > .raices-cabecera)) {
     --medida-filtros-fijos: 14.5rem;
