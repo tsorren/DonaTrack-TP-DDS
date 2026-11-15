@@ -86,10 +86,7 @@ public record Listado(
    * entre ellas queda en la primera.
    */
   public Listado conCategorias(List<? extends Map<String, ?>> opciones) {
-    List<Opcion> nuevas =
-        opciones.stream()
-            .map(o -> new Opcion(String.valueOf(o.get("valor")), String.valueOf(o.get("texto"))))
-            .toList();
+    List<Opcion> nuevas = deLaPlantilla(opciones);
     String elegido =
         categoria != null && nuevas.stream().anyMatch(o -> o.valor().equals(categoria.elegido()))
             ? categoria.elegido()
@@ -109,6 +106,39 @@ public record Listado(
         ocultos,
         sacar,
         indicador);
+  }
+
+  /**
+   * La misma barra con otras opciones de Estado, escritas en la plantilla como {@code {valor,
+   * texto}} (Organizaciones del admin, que cuenta en la plantilla cuántas hay de cada estado). Un
+   * estado elegido que no está entre ellas queda en el primero.
+   */
+  public Listado conEstados(List<? extends Map<String, ?>> opciones) {
+    List<Opcion> nuevas = deLaPlantilla(opciones);
+    String elegido =
+        estado != null && nuevas.stream().anyMatch(o -> o.valor().equals(estado.elegido()))
+            ? estado.elegido()
+            : "";
+    return new Listado(
+        id,
+        ruta,
+        rotulo,
+        buscar,
+        fecha,
+        new Eleccion("estado", "Estado", elegido, conTodas(nuevas, TODOS_LOS_ESTADOS)),
+        categoria,
+        quien,
+        otras,
+        casillas,
+        orden,
+        ocultos,
+        sacar);
+  }
+
+  private static List<Opcion> deLaPlantilla(List<? extends Map<String, ?>> opciones) {
+    return opciones.stream()
+        .map(o -> new Opcion(String.valueOf(o.get("valor")), String.valueOf(o.get("texto"))))
+        .toList();
   }
 
   /** Si va "Sacar los filtros": hay a dónde llevar y algo buscado o elegido. */
