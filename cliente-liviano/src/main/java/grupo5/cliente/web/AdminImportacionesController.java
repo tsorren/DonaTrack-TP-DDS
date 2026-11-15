@@ -1,12 +1,15 @@
 package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.AdminPersonasPuerto;
+import grupo5.cliente.vistas.AdminDonantesVista;
 import grupo5.cliente.vistas.AdminImportacionesVista;
 import grupo5.cliente.vistas.ConsultaImportaciones;
+import grupo5.cliente.vistas.Listado;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
  * históricas, de a una página, con la búsqueda, los filtros y el orden en la dirección y resueltos
  * en la fuente. Es una pestaña de la sección Donantes. Un estado o una fecha que no se entiende se
  * descarta y se avisa arriba de la lista. Con HTMX ({@code hx-boost}) se pide la misma página: el
- * layout toma el {@code main}.
+ * layout toma el {@code main}. La subida es un rango ({@code ?desde=} y {@code ?hasta=}, R11-B04);
+ * el período de antes ({@code ?subida=7-dias}) se sigue entendiendo y se ve como sus dos días.
  */
 @Controller
 public class AdminImportacionesController {
@@ -60,6 +64,7 @@ public class AdminImportacionesController {
             LocalDate.now(reloj.withZone(ARGENTINA)));
     AdminImportacionesVista datos = personas.importaciones(consulta, escenario);
     model.addAttribute("adminImportaciones", datos);
+    model.addAttribute("listado", listado(datos));
     model.addAttribute(
         "actualizar",
         pedido.getQueryString() == null
@@ -68,5 +73,21 @@ public class AdminImportacionesController {
     model.addAttribute(
         "paginador", Paginadores.de(pedido, "Páginas de importaciones", datos.importaciones()));
     return vista;
+  }
+
+  /** La barra (R11-B04): la búsqueda por nombre del archivo, la subida, el estado y el orden. */
+  private static Listado listado(AdminImportacionesVista datos) {
+    ConsultaImportaciones c = datos.consulta();
+    return Listado.en("importaciones", "/" + PANTALLA, "Filtrar las importaciones")
+        .buscar("Buscar por nombre del archivo", c.buscar(), "Por ejemplo: donantes-octubre")
+        .fecha("Subida", c.desde(), c.hasta())
+        .estado(c.estado(), opciones(datos.estados()))
+        .orden(c.orden(), opciones(datos.ordenes()))
+        .sacar("/" + PANTALLA)
+        .listo();
+  }
+
+  private static List<Listado.Opcion> opciones(List<AdminDonantesVista.Opcion> opciones) {
+    return opciones.stream().map(o -> new Listado.Opcion(o.valor(), o.texto())).toList();
   }
 }

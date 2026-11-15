@@ -1,10 +1,12 @@
 package grupo5.cliente.maqueta;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -43,6 +45,14 @@ class ListadoEnAdminRegistrosTest {
   /** El día {@code dia} escrito en el campo {@code nombre} (desde o hasta) de la barra. */
   private static String dia(String nombre, LocalDate dia) {
     return "name=\"" + nombre + "\" type=\"date\" value=\"" + dia + "\"";
+  }
+
+  private String pagina(String direccion) throws Exception {
+    return mvc.perform(get(direccion))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
   }
 
   @Test
@@ -85,5 +95,47 @@ class ListadoEnAdminRegistrosTest {
         .andExpect(content().string(containsString(dia("hasta", hoy))))
         .andExpect(content().string(containsString("Sacar los filtros")))
         .andExpect(content().string(not(containsString("name=\"fecha\""))));
+  }
+
+  @Test
+  void importacionesFiltraPorBusquedaSubidaEstadoYOrden() throws Exception {
+    mvc.perform(get("/admin-importaciones?buscar=octubre"))
+        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(containsString("Coincide 1 importación.")))
+        .andExpect(content().string(containsString("donantes-octubre.csv")))
+        .andExpect(content().string(containsString("Sacar los filtros")));
+
+    mvc.perform(get("/admin-importaciones?desde=2026-09-29&hasta=2026-09-30"))
+        .andExpect(content().string(containsString("Coinciden 2 importaciones.")))
+        .andExpect(content().string(containsString("prueba.csv")))
+        .andExpect(content().string(not(containsString("donantes-octubre.csv"))))
+        .andExpect(content().string(containsString(dia("hasta", LocalDate.of(2026, 9, 30)))));
+
+    mvc.perform(get("/admin-importaciones?estado=cortadas"))
+        .andExpect(content().string(containsString("padron-agosto.csv")))
+        .andExpect(content().string(not(containsString("donantes-octubre.csv"))))
+        .andExpect(
+            content()
+                .string(matchesPattern(elegida("cortadas", "Se cortaron o no se importaron"))));
+
+    String antiguas = pagina("/admin-importaciones?buscar=donantes&orden=antiguas");
+    assertThat(antiguas).matches(elegida("antiguas", "Más antiguas primero"));
+    assertThat(antiguas.indexOf("donantes-escuela.csv"))
+        .isPositive()
+        .isLessThan(antiguas.indexOf("donantes-noviembre.csv"));
+
+    mvc.perform(get("/admin-importaciones"))
+        .andExpect(content().string(not(containsString("Sacar los filtros"))));
+  }
+
+  @Test
+  void importacionesEntiendeLaSubidaDeAntesComoSusDosDias() throws Exception {
+    LocalDate hoy = LocalDate.now(ARGENTINA);
+    mvc.perform(get("/admin-importaciones?subida=hoy"))
+        .andExpect(content().string(not(containsString("No entendimos la fecha pedida"))))
+        .andExpect(content().string(containsString(dia("desde", hoy))))
+        .andExpect(content().string(containsString(dia("hasta", hoy))))
+        .andExpect(content().string(containsString("Sacar los filtros")))
+        .andExpect(content().string(not(containsString("name=\"subida\""))));
   }
 }
