@@ -26,6 +26,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("maqueta")
 class ListadoEnLasPublicasTest {
 
+  private static final String BARRA = "class=\"listado\"";
+
   private static final String SACAR = "Sacar los filtros";
   private static final String COMEDOR = "Comedor Barrio Ejemplo";
   private static final String HOGAR = "Hogar Casa Ejemplo";
@@ -51,7 +53,7 @@ class ListadoEnLasPublicasTest {
   void organizacionesBuscaConBuscarYConElQViejo() throws Exception {
     mvc.perform(get("/publico-entidades"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(containsString(BARRA)))
         .andExpect(content().string(containsString(COMEDOR)))
         .andExpect(content().string(not(containsString(SACAR))));
 
@@ -98,7 +100,7 @@ class ListadoEnLasPublicasTest {
   void entregasConfirmadasEligeElPeriodoEnElListado() throws Exception {
     mvc.perform(get("/publico-donaciones"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(containsString(BARRA)))
         .andExpect(content().string(containsString(FRAZADAS)))
         .andExpect(content().string(containsString("en el último mes")))
         .andExpect(content().string(not(containsString(SACAR))));
@@ -121,7 +123,7 @@ class ListadoEnLasPublicasTest {
   void elMapaFiltraPorCategoriaYConservaLoSuyo() throws Exception {
     mvc.perform(get("/publico-mapa"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(containsString(BARRA)))
         .andExpect(content().string(containsString(FRAZADAS)))
         .andExpect(content().string(not(containsString(SACAR))));
 

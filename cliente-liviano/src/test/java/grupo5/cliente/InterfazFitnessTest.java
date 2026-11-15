@@ -703,7 +703,7 @@ class InterfazFitnessTest {
     return SOLO_DE_MOVIMIENTO_CSS
         .matcher(sinComentariosCss(css))
         .results()
-        .map(java.util.regex.MatchResult::group)
+        .map(MatchResult::group)
         .toList();
   }
 

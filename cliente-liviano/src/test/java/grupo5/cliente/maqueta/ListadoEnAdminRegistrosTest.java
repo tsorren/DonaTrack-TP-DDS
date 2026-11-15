@@ -28,6 +28,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("maqueta")
 class ListadoEnAdminRegistrosTest {
 
+  private static final String BARRA = "class=\"listado\"";
+
   private static final ZoneId ARGENTINA = ZoneId.of("America/Argentina/Buenos_Aires");
 
   @Autowired private MockMvc mvc;
@@ -58,7 +60,7 @@ class ListadoEnAdminRegistrosTest {
   @Test
   void actividadFiltraPorBusquedaFechaQuienYAccion() throws Exception {
     mvc.perform(get("/admin-actividad?buscar=bruno"))
-        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(containsString(BARRA)))
         .andExpect(content().string(containsString("Marcó una donación como vencida.")))
         .andExpect(content().string(not(containsString("Deshabilitó el camión"))))
         .andExpect(content().string(containsString("Sacar los filtros")));
@@ -82,7 +84,7 @@ class ListadoEnAdminRegistrosTest {
         .andExpect(content().string(containsString("Sacar los filtros")));
 
     mvc.perform(get("/admin-actividad"))
-        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(containsString(BARRA)))
         .andExpect(content().string(not(containsString("Sacar los filtros"))));
   }
 
@@ -100,7 +102,7 @@ class ListadoEnAdminRegistrosTest {
   @Test
   void importacionesFiltraPorBusquedaSubidaEstadoYOrden() throws Exception {
     mvc.perform(get("/admin-importaciones?buscar=octubre"))
-        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(containsString(BARRA)))
         .andExpect(content().string(containsString("Coincide 1 importación.")))
         .andExpect(content().string(containsString("donantes-octubre.csv")))
         .andExpect(content().string(containsString("Sacar los filtros")));
@@ -142,7 +144,7 @@ class ListadoEnAdminRegistrosTest {
   @Test
   void donantesFiltraPorBusquedaEstadoTipoDonaAltaYOrden() throws Exception {
     mvc.perform(get("/admin-donantes?buscar=juan"))
-        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(containsString(BARRA)))
         .andExpect(content().string(containsString("Coincide 1 donante.")))
         .andExpect(content().string(containsString("Juan Ejemplo")))
         .andExpect(content().string(containsString("Sacar los filtros")));
@@ -177,7 +179,7 @@ class ListadoEnAdminRegistrosTest {
     assertThat(porNombre).contains("Sacar los filtros");
 
     mvc.perform(get("/admin-donantes"))
-        .andExpect(content().string(containsString("class=\"listado\"")))
+        .andExpect(content().string(containsString(BARRA)))
         .andExpect(content().string(not(containsString("Sacar los filtros"))));
   }
 
