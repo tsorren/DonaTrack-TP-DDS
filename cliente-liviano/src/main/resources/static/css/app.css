@@ -1,11 +1,11 @@
 /* Piezas comunes de las pantallas de Raíces: marca, botones, papel y tierra impresos, y cifras. */
 
 /* Las capas CUBE (D32 y D33), declaradas una sola vez y en este orden: la que viene después gana.
-   `pico` es de Pico.css, que hoy no se carga (cliente-liviano/AGENTS.md; queda lugar abajo de todo
-   para cuando se cargue, con @import url(...) layer(pico)). `bloques`, `excepciones` y `pantallas`
+   `base` lleva las reglas propias de los elementos sueltos (antes se llamaba `pico`; Pico.css salió
+   del stack: docs/adr/cliente-liviano/20261114-sin-pico-css-en-el-cliente-liviano.md). `bloques`, `excepciones` y `pantallas`
    se llenan con el backlog de migración: lo que está sin capa (las hojas de hoy) gana a todas, así
    que migrar una hoja a una capa nunca cambia lo que ya se ve en las demás. */
-@layer pico, tokens, composicion, utilidades, bloques, excepciones, pantallas;
+@layer base, tokens, composicion, utilidades, bloques, excepciones, pantallas;
 
 @import url("tokens.css") layer(tokens);
 @import url("composicion.css") layer(composicion);
@@ -60,10 +60,10 @@ body {
   font: 400 1.0625rem/1.6 var(--fuente-texto);
 }
 
-/* El color de los enlaces y el anillo de foco son la base: van en la capa `pico` para que los
+/* El color de los enlaces y el anillo de foco son la base: van en la capa `base` para que los
    componentes (el botón con forma de enlace, la barra de navegación) le ganen sin pelear por
    especificidad. */
-@layer pico {
+@layer base {
   a {
     color: var(--color-acento);
   }

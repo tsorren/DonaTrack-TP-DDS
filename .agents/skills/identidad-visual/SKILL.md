@@ -74,8 +74,7 @@ sigan abiertos, en el orden del [catálogo](../../../docs/interfaz/temas-ab.md):
 
 ## 5. Llevar a `tokens.css`
 
-1. Valores base con prefijo `--p-*`, tokens de uso (`--color-*`, `--fuente-*`, etc.) y asignación
-   de `--pico-*` a partir de los usos, todo en
+1. Valores base con prefijo `--p-*`, tokens de uso (`--color-*`, `--fuente-*`, etc.), todo en
    `cliente-liviano/src/main/resources/static/css/tokens.css`, la única fuente de valores del
    sitio. Una identidad nueva se diseña en su propia rama sobre ese mismo archivo, `app.css`,
    `privado.css` y las hojas de las pantallas, y reemplaza el brief vigente,

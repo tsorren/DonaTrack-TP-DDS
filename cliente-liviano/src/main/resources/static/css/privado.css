@@ -134,9 +134,9 @@ main h1 {
   text-wrap: balance;
 }
 
-/* El título de sección es la base: va en la capa `pico` para que los componentes (el título del banner
+/* El título de sección es la base: va en la capa `base` para que los componentes (el título del banner
    de error) le ganen sin pelear por especificidad. */
-@layer pico {
+@layer base {
   main h2 {
     color: var(--color-tinta);
     font: 850 1.375rem/1.2 var(--fuente-titulo);
