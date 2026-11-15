@@ -180,4 +180,17 @@ class ListadoEnAdminRegistrosTest {
         .andExpect(content().string(containsString("class=\"listado\"")))
         .andExpect(content().string(not(containsString("Sacar los filtros"))));
   }
+
+  /** RNF-UI-06: las fuentes que pueden tardar avisan mientras HTMX trae la lista. */
+  @Test
+  void actividadEImportacionesAvisanMientrasBuscan() throws Exception {
+    assertThat(pagina("/admin-actividad"))
+        .contains("hx-indicator=\"#actividad-buscando\"")
+        .contains("id=\"actividad-buscando\"")
+        .contains("Buscando actividad…");
+    assertThat(pagina("/admin-importaciones"))
+        .contains("hx-indicator=\"#importaciones-buscando\"")
+        .contains("Buscando importaciones…");
+    assertThat(pagina("/admin-donantes")).doesNotContain("-buscando\"");
+  }
 }

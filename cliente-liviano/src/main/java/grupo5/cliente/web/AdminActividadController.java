@@ -93,6 +93,7 @@ public class AdminActividadController {
         .otra(new Listado.Eleccion("autor", "Quién", c.autor(), opciones(datos.quienes())))
         .otra(new Listado.Eleccion("accion", "Acción", c.accion(), opciones(datos.grupos())))
         .sacar("/" + PANTALLA)
+        .indicador("Buscando actividad…")
         .listo();
   }
 

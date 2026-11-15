@@ -24,6 +24,7 @@
 <form th:fragment="listado(l)" class="listado" role="search" method="get" hx-boost="true"
       action="/donante-donaciones" th:action="${l.ruta}" aria-label="Filtrar las donaciones"
       th:aria-label="${l.rotulo}" x-data="listado" x-bind:data-plegado="plegado"
+      th:hx-indicator="${l.indicador != null} ? |#${l.indicador.id}| : null"
       th:with="n=${l.elegidos()}">
   <input th:each="o : ${l.ocultos}" type="hidden" th:name="${o.nombre}" th:value="${o.valor}">
 
@@ -46,13 +47,13 @@
       <legend th:text="${l.fecha.rotulo}">Registrada</legend>
       <div class="campo">
         <label th:for="|${l.id}-desde|" for="donaciones-desde">Desde</label>
-        <input th:id="|${l.id}-desde|" id="donaciones-desde" name="desde" type="date"
-               th:value="${l.fecha.desde}">
+        <input th:id="|${l.id}-desde|" id="donaciones-desde"
+               name="desde" type="date" th:value="${l.fecha.desde}">
       </div>
       <div class="campo">
         <label th:for="|${l.id}-hasta|" for="donaciones-hasta">Hasta</label>
-        <input th:id="|${l.id}-hasta|" id="donaciones-hasta" name="hasta" type="date"
-               th:value="${l.fecha.hasta}">
+        <input th:id="|${l.id}-hasta|" id="donaciones-hasta"
+               name="hasta" type="date" th:value="${l.fecha.hasta}">
       </div>
     </fieldset>
 
@@ -82,6 +83,8 @@
          th:href="${l.sacar}">Sacar los filtros</a>
     </div>
   </div>
+  <th:block th:if="${l.indicador != null}"><p
+      th:replace="~{envio :: indicador(${l.indicador.id}, ${l.indicador.texto})}"></p></th:block>
 </form>
 
 <!--/* Un desplegable de la barra: su rótulo arriba y sus opciones; los grupos, después. */-->

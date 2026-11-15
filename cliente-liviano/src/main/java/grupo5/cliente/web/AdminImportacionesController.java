@@ -84,6 +84,7 @@ public class AdminImportacionesController {
         .estado(c.estado(), opciones(datos.estados()))
         .orden(c.orden(), opciones(datos.ordenes()))
         .sacar("/" + PANTALLA)
+        .indicador("Buscando importaciones…")
         .listo();
   }
 

@@ -20,7 +20,9 @@ import java.util.stream.Stream;
  *
  * <p>{@code id} distingue los ids de los controles cuando hay más de una lista; {@code ocultos}, lo
  * que la lista conserva sin mostrarlo (la vista, el donante elegido); {@code sacar}, a dónde lleva
- * "Sacar los filtros" (null, sin el enlace; solo se ve si hay algo buscado o elegido).
+ * "Sacar los filtros" (null, sin el enlace; solo se ve si hay algo buscado o elegido); {@code
+ * indicador}, el aviso mientras HTMX trae la lista, para las fuentes que pueden tardar más de 300
+ * ms (RNF-UI-06; null, sin aviso).
  */
 public record Listado(
     String id,
@@ -35,7 +37,8 @@ public record Listado(
     List<Casilla> casillas,
     Eleccion orden,
     List<Oculto> ocultos,
-    String sacar) {
+    String sacar,
+    Indicador indicador) {
 
   /** El valor de {@code orden} para "Más antiguas primero"; '' es "Más recientes primero". */
   public static final String ANTIGUAS = "antiguas";
@@ -104,7 +107,8 @@ public record Listado(
         casillas,
         orden,
         ocultos,
-        sacar);
+        sacar,
+        indicador);
   }
 
   /** Si va "Sacar los filtros": hay a dónde llevar y algo buscado o elegido. */
@@ -278,6 +282,9 @@ public record Listado(
   /** Un parámetro que la lista conserva sin mostrarlo. */
   public record Oculto(String nombre, String valor) {}
 
+  /** El aviso mientras HTMX trae la lista: el id del elemento y su texto ("Buscando…"). */
+  public record Indicador(String id, String texto) {}
+
   /** Arma la barra campo por campo, en el orden de siempre. */
   public static final class Armado {
     private final String id;
@@ -293,6 +300,7 @@ public record Listado(
     private Eleccion orden;
     private final List<Oculto> ocultos = new ArrayList<>();
     private String sacar;
+    private Indicador indicador;
 
     private Armado(String id, String ruta, String rotulo) {
       this.id = Objects.requireNonNull(id);
@@ -356,10 +364,16 @@ public record Listado(
       return this;
     }
 
+    /** El aviso mientras HTMX trae la lista ({@code texto}, por ejemplo "Buscando actividad…"). */
+    public Armado indicador(String texto) {
+      this.indicador = new Indicador(id + "-buscando", texto);
+      return this;
+    }
+
     public Listado listo() {
       return new Listado(
           id, ruta, rotulo, buscar, fecha, estado, categoria, quien, otras, casillas, orden,
-          ocultos, sacar);
+          ocultos, sacar, indicador);
     }
   }
 }
