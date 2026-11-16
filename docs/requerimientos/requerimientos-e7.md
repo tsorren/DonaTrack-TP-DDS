@@ -182,7 +182,8 @@ Alcance: ⭐ los cuatro servicios, el gateway y el cliente; ⭐ la infraestructu
 
 ### Ronda 4 — Rate limiting (RQ-E7-03)
 
-**E7-Q10 — ¿Dónde se limita? ⏸️**
+**E7-Q10 — ¿Dónde se limita? ✅ (2026-11-16): A, en el api-gateway**
+> **Respuesta del grupo:** un filtro en el gateway. `[OBSERVED]` el jar de Spring Cloud Gateway 5.0.1 (WebMVC) ya trae `Bucket4jFilterFunctions` (capacidad, período, resolvedor de clave, código de estado, encabezado y *timeout*); `api-gateway/pom.xml` no declara todavía la librería Bucket4j. Quedan fuera: el Ingress y los servicios.
 
 | Opción | Qué implica |
 |---|---|
@@ -191,13 +192,26 @@ Alcance: ⭐ los cuatro servicios, el gateway y el cliente; ⭐ la infraestructu
 | C. En el cliente liviano | Protege solo lo que pasa por la interfaz; no protege las APIs. |
 | D. Gateway más límites finos en servicios críticos | Más robusto, más trabajo. |
 
-**E7-Q11 — ¿Qué librería y dónde viven los contadores? ⏸️**
+**E7-Q11 — ¿Qué librería y dónde viven los contadores? ✅ (2026-11-16): B, Bucket4j con Redis**
+> **Respuesta del grupo:** Bucket4j con los contadores en un Redis compartido (la recomendación del agente era A, en memoria con una réplica). Consecuencias `[PROPOSED]`: un workload nuevo de Redis en el cluster (sin persistencia, sus contadores son descartables) y dos o más dependencias nuevas en el gateway (Bucket4j y su integración con Redis); se toma la elección de B como aprobación de esas dependencias y de la imagen de Redis (AGENTS.md §6), a confirmar con el grupo; el gateway puede escalar a varias réplicas con un límite único y exacto; Redis entra en las probes y en el panel de observabilidad. Abiertas Q11b y Q11c.
+
+**E7-Q11b — Si Redis no responde, ¿el gateway deja pasar o rechaza? ⏸️**
+⭐ **Deja pasar (*fail-open*) con una alerta:** prioriza que el sistema siga disponible; durante la caída no hay límite. · Rechaza todo (*fail-closed*): protege contra el abuso pero convierte a Redis en un punto único de falla de todo el sitio. · Cae a un contador local en memoria por réplica: se pierde exactitud pero se conserva algo de protección. `[OBSERVED]` el filtro del gateway tiene un *timeout* configurable.
+
+**E7-Q11c — ¿Cuántas réplicas del gateway? ⏸️**
+⭐ **2 réplicas:** muestra el beneficio de Redis (el límite se cuenta en conjunto) y la tolerancia a fallos de Kubernetes; consume más recursos en un entorno local ya inestable. · 1 réplica: más liviano, pero Redis no aporta nada que la memoria no diera.
 ⭐ **A. Bucket4j con contadores en memoria** (una sola instancia del gateway; sin infraestructura nueva) · B. Bucket4j con Redis (necesario si el gateway se replica; suma un contenedor y una dependencia) · C. Filtro propio sin librería. `[OBSERVED]` hoy hay una sola instancia del gateway.
 
-**E7-Q12 — ¿A quién y con qué límites? ⏸️**
+**E7-Q12 — ¿A quién y con qué límites? ✅ (2026-11-16): identificación en dos niveles y límites iniciales**
+> **Respuesta del grupo:** por IP para el tráfico público y por `sub` del token cuando hay usuario. Límites iniciales `[PROPOSED]`, a calibrar con k6 (`tests/performance/`): público 60 por minuto por IP; autenticado en lectura 300 por minuto por usuario; escrituras (POST, PUT, DELETE) 30 por minuto; subidas pesadas (fotos, importaciones) 10 por minuto; seguimiento del camión **aparte**, 120 por minuto por usuario (el ADR-E6-07 pide contarlo o excluirlo); endpoint GraphQL 60 por minuto por usuario **más un tope de profundidad y complejidad dentro del servicio**, porque todas las consultas entran por una sola URL. `[INFERRED]` Con un Ingress delante, el gateway ve la IP del Ingress: hay que leer `X-Forwarded-For` y confiar solo en el proxy propio, o la IP se puede falsificar.
+
+(Planteo original:)
 Clave del límite: ⭐ por usuario autenticado (`sub`) y por IP para el tráfico público · solo por IP · por ruta. Límites base `[PROPOSED]`: público 60 solicitudes por minuto por IP; autenticado 300 por minuto por usuario; rutas de escritura más bajas; el seguimiento del camión (polling cada 30 s) **excluido o con un límite aparte**, como pide el ADR-E6-07. Los valores se calibran con k6.
 
-**E7-Q13 — ¿Cómo responde y qué se registra? ⏸️**
+**E7-Q13 — ¿Cómo responde y qué se registra? ✅ (2026-11-16): A, respuesta completa**
+> **Respuesta del grupo:** `429` con `Retry-After`, el formato de error del catálogo, el `traceId`, una métrica de rechazos y una alerta en el panel. `[INFERRED]` el filtro de Bucket4j configura un encabezado propio, pero `Retry-After` probablemente haya que agregarlo a mano: verificar al implementar.
+
+(Planteo original:)
 ⭐ `429 Too Many Requests` con `Retry-After`, el `traceId` de la solicitud, un contador de rechazos en las métricas y una alerta en el panel · solo `429` sin métricas. `[OBSERVED]` el [catálogo de errores](../arquitectura/catalogo-errores.md) fija el formato de error, y la respuesta tiene que respetarlo.
 
 ---
@@ -240,10 +254,10 @@ Para confirmar con docentes `[PROPOSED]`: (1) si "Seguridad" incluye algo más q
 | Q07 Mecanismo de restart | C1 (Kubernetes híbrido); el grupo eligió **C2, todo en Kubernetes** | ✅ C2; Q07b kind, Q07c A, Q07d Kustomize |
 | Q08 Alcance y política | Servicios e infraestructura; reinicio sin tope con alerta; liveness y readiness separados | ✅ las tres recomendaciones |
 | Q09 Demostración | Script de caos reproducible | ✅ opción A |
-| Q10 Dónde se limita | En el gateway | ⏸️ |
-| Q11 Librería | Bucket4j en memoria | ⏸️ |
-| Q12 Clave y límites | Por usuario y por IP; seguimiento aparte | ⏸️ |
-| Q13 Respuesta | `429` con `Retry-After`, métrica y alerta | ⏸️ |
+| Q10 Dónde se limita | En el gateway | ✅ opción A |
+| Q11 Librería | Bucket4j en memoria | ✅ B, con Redis (distinto de la recomendación); Q11b y Q11c sin responder |
+| Q12 Clave y límites | Por usuario y por IP; seguimiento aparte | ✅ tal cual |
+| Q13 Respuesta | `429` con `Retry-After`, métrica y alerta | ✅ opción A |
 | Q14 Diagramas | PlantUML, componentes y despliegue separados | ⏸️ |
 | Q15 Partición | Un PR por requerimiento | ⏸️ |
 | Q16 ADRs | Observabilidad, rate limiting y gRPC o GraphQL | ⏸️ |
