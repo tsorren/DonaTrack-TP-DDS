@@ -40,7 +40,7 @@ public class SeguridadAutoConfiguration {
 
   @Bean
   @ConditionalOnBooleanProperty(name = PROPIEDAD, havingValue = false, matchIfMissing = true)
-  SecurityFilterChain cadenaAbierta(HttpSecurity http) throws Exception {
+  SecurityFilterChain cadenaAbierta(HttpSecurity http) {
     return http.csrf(AbstractHttpConfigurer::disable)
         .anonymous(anonimo -> anonimo.principal(new Administrador()))
         .authorizeHttpRequests(rutas -> rutas.anyRequest().permitAll())
@@ -65,8 +65,7 @@ public class SeguridadAutoConfiguration {
     }
 
     @Bean
-    SecurityFilterChain cadenaProtegida(HttpSecurity http, List<ReglasDeAcceso> reglas)
-        throws Exception {
+    SecurityFilterChain cadenaProtegida(HttpSecurity http, List<ReglasDeAcceso> reglas) {
       return http.csrf(AbstractHttpConfigurer::disable)
           .sessionManagement(sesion -> sesion.sessionCreationPolicy(STATELESS))
           .authorizeHttpRequests(rutas -> rutas.requestMatchers(publicas(reglas)).permitAll())

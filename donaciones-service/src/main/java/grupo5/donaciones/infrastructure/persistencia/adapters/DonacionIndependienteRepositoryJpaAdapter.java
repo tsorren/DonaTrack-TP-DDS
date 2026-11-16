@@ -558,7 +558,10 @@ public class DonacionIndependienteRepositoryJpaAdapter
   }
 
   private static LocalDate fecha(Object valor) {
-    return valor instanceof LocalDate d ? d : LocalDate.parse(valor.toString());
+    if (valor == null || valor instanceof LocalDate) {
+      return (LocalDate) valor;
+    }
+    return LocalDate.parse(valor.toString());
   }
 
   // Las fotos son una colección lazy: se mapean a dominio con la sesión abierta
