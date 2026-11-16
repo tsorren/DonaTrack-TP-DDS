@@ -1,0 +1,490 @@
+/* Inicio del admin en Raíces (ficha raices-entidad-navegable, 4.4, por temas desde R11-21): la mesa
+   de trabajo de quien decide, sobria. Lo que espera una decisión, una tarjeta por tema con su
+   cantidad en el título; cómo está todo, en cuatro tarjetas con su período, cada cifra grande en la
+   letra de cifras, alineada a la derecha de su columna y con su nombre al lado. Debajo, los gráficos
+   de los últimos 12 meses (R11-42), cada uno a todo el ancho con su tabla al lado. */
+@import url("entidad-comun.css");
+
+.mesa {
+  max-width: none;
+}
+
+.mesa-cabecera {
+  margin: 0 0 2rem;
+}
+
+/* La bajada, a todo el ancho que permite una línea legible (ronda 2026-11-09, regla general 1). */
+.mesa-cabecera p:not(.rotulo) {
+  max-width: 70ch;
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.mesa-fecha {
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+.decisiones,
+.todo {
+  margin: 0 0 2.5rem;
+}
+
+.decisiones > h2,
+.todo > h2 {
+  margin: 0 0 1rem;
+}
+
+.decisiones-lista {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* Cada lista que espera: la etiqueta de herbario, con su cantidad en el título. */
+.decision {
+  --espacio-relleno: 1.125rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+main .decision h3 {
+  display: grid;
+  gap: 0.125rem;
+  margin: 0;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--color-tinta);
+  color: var(--color-acento);
+  font: 700 0.875rem var(--fuente-texto);
+  font-stretch: 112%;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.decision h3 span {
+  color: var(--color-tinta);
+  font: 800 1.25rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.decision p,
+.decision ul {
+  margin: 0;
+}
+
+.decision-nombres {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0;
+  list-style: none;
+  color: var(--color-tinta);
+}
+
+.decision-nombres li::before {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.5rem;
+  border: 1.5px solid var(--color-tinta);
+  border-radius: 50%;
+  background: var(--color-raiz);
+  vertical-align: 0.1em;
+}
+
+/* El botón al pie de la tarjeta: en el celular, a todo el ancho; desde el quiebre medio, los tres a
+   la misma altura. El enlace, debajo. */
+.decision .boton {
+  align-self: stretch;
+  margin-top: auto;
+}
+
+/* El enlace suelto debajo del botón, con su toque mínimo de 48 px. */
+.decision .boton + a {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 3rem;
+}
+
+.decisiones .vacio {
+  margin: 0;
+}
+
+/* --- Cómo está todo: cuatro tarjetas por tema, cada cifra con su nombre al lado --------------- */
+.todo-fecha {
+  margin: -0.5rem 0 1rem;
+}
+
+.registros {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.registro-mesa {
+  --espacio-relleno: 1rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+main .registro-mesa h3 {
+  margin: 0;
+  color: var(--color-acento);
+  font: 700 0.875rem var(--fuente-texto);
+  font-stretch: 112%;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.registro-mesa .tarjeta-cabeza {
+  margin: 0;
+  padding: 0 0 0.5rem;
+  border-bottom-color: var(--color-tinta);
+}
+
+.registro-mesa p {
+  margin: 0;
+}
+
+.registro-mesa dl {
+  display: grid;
+  margin: 0;
+}
+
+/* Una fila: el número a la derecha de su columna (números tabulares), el nombre y su «Ver ›». */
+.registro-mesa dl > div {
+  display: grid;
+  grid-template-columns: 6ch minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0 0.75rem;
+  padding: 0.25rem 0;
+}
+
+.registro-mesa dl > div + div {
+  border-top: 1px dotted var(--color-tinta-suave);
+}
+
+.registro-mesa dt {
+  grid-column: 2;
+  grid-row: 1;
+  line-height: 1.3;
+}
+
+.registro-mesa dd {
+  margin: 0;
+}
+
+.registro-mesa dt + dd {
+  grid-column: 1;
+  grid-row: 1;
+  color: var(--color-tinta);
+  font: 800 1.625rem / 1.1 var(--fuente-cifra);
+  font-stretch: 118%;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.registro-mesa dd + dd {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+/* La aclaración de una fila sin enlace propio baja debajo del nombre. */
+.registro-mesa dd[data-parte="nota"] {
+  grid-column: 2 / -1;
+  grid-row: 2;
+  color: var(--color-texto-suave);
+  font-size: 0.875rem;
+}
+
+/* El «Ver ›» de cada fila, con su toque mínimo de 48 px. */
+.registro-mesa dd + dd a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3rem;
+  min-height: 3rem;
+}
+
+.registro-mesa .salidas {
+  margin-top: auto;
+}
+
+.registro-mesa .banner {
+  margin: 0;
+}
+
+@media (min-width: 53.75em) {
+  .decisiones-lista {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .decision .boton {
+    align-self: flex-start;
+  }
+
+  /* Donaciones por estado, la más larga, a la izquierda; las demás, de a dos. */
+  .registros {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+}
+
+/* --- R11-42: los gráficos de los últimos 12 meses, a todo el ancho, al final ------------------ */
+/* En el celular, menos relleno: la tabla de tres columnas entra en 360 px sin ensanchar la página. */
+.registros > [data-tema="grafico"] {
+  --espacio-relleno: 1rem 0.75rem 1.25rem;
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+@media (min-width: 37.5em) {
+  .registros > [data-tema="grafico"] {
+    --espacio-relleno: 1rem 1.25rem 1.25rem;
+  }
+}
+
+/* El gráfico y su tabla: en el celular y la tableta, la tabla debajo; desde el quiebre medio, al
+   lado. */
+.registro-mesa [data-parte="grafico"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* Las columnas en minmax(0, 1fr): sin eso, los doce meses piden su ancho de contenido y la página se
+   ensancha en el celular. */
+.registro-mesa figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  min-width: 0;
+  margin: 0;
+}
+
+.registro-mesa figcaption {
+  max-width: 70ch;
+}
+
+.registro-mesa > p[data-parte="nota"] {
+  max-width: 70ch;
+  color: var(--color-texto-suave);
+  font-size: 0.875rem;
+}
+
+/* Las dos series: lo registrado, neutro y en contorno; lo entregado, lleno del acento (60-30-10).
+   Se distinguen también por la forma (contorno o lleno), el lugar en el par y la leyenda. */
+[data-parte="leyenda"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+[data-parte="leyenda"] span::before {
+  content: "";
+  display: inline-block;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-right: 0.375rem;
+  border: 1.5px solid var(--color-tinta-suave);
+  border-radius: 2px;
+  background: var(--color-pendiente-fondo);
+  vertical-align: -0.125em;
+}
+
+[data-parte="leyenda"] [data-serie="entregadas"]::before {
+  border-color: var(--color-acento);
+  background: var(--color-acento);
+}
+
+[data-parte="dibujo"] svg {
+  overflow: visible;
+}
+
+[data-parte="dibujo"] rect[data-serie="registradas"] {
+  fill: var(--color-pendiente-fondo);
+  stroke: var(--color-tinta-suave);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-parte="dibujo"] rect[data-serie="entregadas"] {
+  fill: var(--color-acento);
+}
+
+/* El mes en curso: en trazo punteado, además de la palabra «en curso» debajo. */
+[data-parte="dibujo"] [data-curso] rect {
+  stroke-dasharray: 3 2;
+}
+
+[data-parte="dibujo"] [data-curso] rect[data-serie="entregadas"] {
+  fill: var(--color-acento-claro);
+  stroke: var(--color-acento);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-parte="dibujo"] line {
+  stroke: var(--color-filete);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-parte="dibujo"] line[data-parte="base"] {
+  stroke: var(--color-tinta);
+}
+
+/* Mes a mes: la escala a la izquierda, las columnas y los meses debajo, uno por columna. */
+[data-forma="columnas"] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: 12rem auto;
+  gap: 0.375rem 0.5rem;
+}
+
+[data-forma="columnas"] svg {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  height: 100%;
+}
+
+[data-parte="escala"] {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  grid-column: 1;
+  grid-row: 1;
+  margin: -0.375rem 0;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: right;
+}
+
+[data-parte="meses"] {
+  display: grid;
+  grid-column: 2;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  list-style: none;
+  text-align: center;
+}
+
+[data-parte="meses"] li {
+  display: grid;
+  margin: 0;
+}
+
+[data-parte="curso"] {
+  color: var(--color-texto-suave);
+}
+
+/* Por categoría: el ícono y el nombre arriba de sus dos barras, cada una con su número al final. */
+[data-forma="barras"] {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-forma="barras"] li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5ch;
+  align-items: center;
+  gap: 0.125rem 0.5rem;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-forma="barras"] [data-parte="nombre"] {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+[data-forma="barras"] [data-parte="nombre"] svg {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: currentColor;
+}
+
+[data-forma="barras"] li > svg {
+  width: 100%;
+  height: 0.75rem;
+}
+
+[data-forma="barras"] li > span:not([data-parte]) {
+  font-size: 0.875rem;
+  text-align: right;
+}
+
+/* La tabla de cada gráfico: compacta también en el celular, los números a la derecha. */
+.registro-mesa table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.registro-mesa caption {
+  padding: 0 0 0.5rem;
+  caption-side: top;
+  color: var(--color-texto-suave);
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.registro-mesa th,
+.registro-mesa td {
+  padding: 0.25rem 0.375rem;
+  border-bottom: 1px dotted var(--color-tinta-suave);
+  background: none;
+}
+
+.registro-mesa th:first-child {
+  padding-left: 0;
+  text-align: left;
+}
+
+.registro-mesa td,
+.registro-mesa thead th + th {
+  padding-right: 0;
+  text-align: right;
+}
+
+.registro-mesa tfoot th,
+.registro-mesa tfoot td {
+  border-top: 1px solid var(--color-tinta);
+  border-bottom: 0;
+  font-weight: 700;
+}
+
+@media (min-width: 53.75em) {
+  .registro-mesa [data-parte="grafico"] {
+    grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr);
+  }
+
+  [data-forma="barras"] li {
+    grid-template-columns: 11rem minmax(0, 1fr) 5ch;
+  }
+
+  [data-forma="barras"] [data-parte="nombre"] {
+    grid-row: 1 / span 2;
+    grid-column: 1;
+  }
+}

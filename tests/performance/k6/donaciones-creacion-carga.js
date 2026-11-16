@@ -1,5 +1,6 @@
 ﻿import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { cabeceras, tokenDePruebas } from './token.js';
 
 export const options = {
   stages: [
@@ -15,7 +16,11 @@ export const options = {
 
 const BASE_URL = __ENV.DONACIONES_URL || 'http://donaciones-service:8080';
 
-export default function () {
+export function setup() {
+  return { token: tokenDePruebas() };
+}
+
+export default function (data) {
   const uniqueId = `${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
   const dni = `${Math.floor(10000000 + Math.random() * 90000000)}`;
 
@@ -37,7 +42,7 @@ export default function () {
   });
 
   const personaRes = http.post(`${BASE_URL}/api/personas`, personaPayload, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: cabeceras(data.token),
   });
 
   const personaCheck = check(personaRes, {
@@ -54,7 +59,7 @@ export default function () {
   // 2. Crear Donante
   const donantePayload = JSON.stringify({ idPersona: personaId });
   const donanteRes = http.post(`${BASE_URL}/api/donantes`, donantePayload, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: cabeceras(data.token),
   });
 
   const donanteCheck = check(donanteRes, {
@@ -83,7 +88,7 @@ export default function () {
   });
 
   const donacionRes = http.post(`${BASE_URL}/api/donaciones`, donacionPayload, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: cabeceras(data.token),
   });
 
   check(donacionRes, {

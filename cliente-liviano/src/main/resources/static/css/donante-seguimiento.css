@@ -1,0 +1,465 @@
+/* Seguimiento del donante en Raíces: el mapa de las entregas en curso (el mapa real de
+   componentes/mapa.css, que llena static/js/mapa.js: el depósito, cada destino y la posición
+   aproximada de cada entrega, desde el 2026-11-10) y, debajo, la lista con el mismo número. El dibujo
+   de subte (.camion, .nodo-numero y la tierra de figure.seguimiento-dibujo) queda para el seguimiento
+   de la entidad, que importa esta hoja. */
+@import url("privado.css");
+@import url("sellos.css");
+
+/* De 50 a 75 caracteres por línea (criterios de la cátedra, sección 8). */
+.seguimiento-bajada {
+  max-width: 38rem;
+  margin: 0 0 1.5rem;
+  font-size: 1.125rem;
+}
+
+.seguimiento-cuerpo {
+  display: grid;
+  gap: 2rem;
+}
+
+/* --- Las cifras por estado: un registro de campo con doble filete ------------------------------ */
+.cifras {
+  max-width: 48rem;
+  margin: 0 0 2rem;
+}
+
+.cifras-titulo {
+  margin: 0 0 0.75rem;
+  color: var(--color-tinta);
+  font: 700 0.875rem var(--fuente-texto);
+  font-stretch: 112%;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cifras dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 6px;
+  border: 1px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  outline: 1px solid var(--color-tinta);
+  outline-offset: 5px;
+  /* El fondo de "Esperan destino" sigue las esquinas redondeadas (plan de la ronda, regla 4). */
+  overflow: hidden;
+}
+
+.cifra {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.cifra:nth-child(n + 3) {
+  border-top: 1px dotted var(--color-tinta-suave);
+}
+
+.cifra:nth-child(even) {
+  border-left: 1px dotted var(--color-tinta-suave);
+}
+
+.cifra dt {
+  display: flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  font-weight: 700;
+}
+
+.cifra dt a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-enlace);
+}
+
+.cifra dd {
+  margin: 0;
+  color: var(--color-acento);
+  font: 900 2.5rem / 1 var(--fuente-cifra);
+  font-stretch: 125%;
+}
+
+/* Las que esperan destino van aparte: todavía no están en curso. */
+.cifra--aparte {
+  background: var(--color-pendiente-fondo);
+}
+
+/* --- El mapa (y el dibujo de la entidad) ------------------------------------------------------- */
+.seguimiento-dibujo {
+  margin: 0;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+}
+
+.seguimiento-dibujo[data-mapa] {
+  overflow: hidden;
+}
+
+/* El mapa: cuadrado en el celular (mapa.css); desde la tableta, más ancho que alto, y en pantalla
+   grande, del alto de la columna de las cifras, sin pasar el alto de la ventana. */
+@media (min-width: 53.75em) {
+  .seguimiento-dibujo[data-mapa] {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+@media (min-width: 68.75em) {
+  .seguimiento-dibujo[data-mapa] {
+    aspect-ratio: auto;
+    height: min(30rem, 100vh - 8rem);
+  }
+}
+
+/* La tierra, bajo la línea de tierra del dibujo (y = 80 de un alto de 380). */
+figure.seguimiento-dibujo {
+  background: linear-gradient(transparent calc(80 / 380 * 100%), var(--color-suelo) 0);
+}
+
+.camion circle {
+  fill: var(--color-papel);
+  stroke: var(--color-tinta);
+  stroke-width: 2;
+}
+
+.camion path {
+  fill: none;
+  stroke: var(--color-tinta);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+/* El sello del camión: el círculo con la mitad izquierda en ámbar. Sin abeja: el dibujo es bajo
+   tierra (usuario, 2026-11-09). */
+.camion .sello-medio {
+  fill: var(--color-en-camino-sello);
+  stroke: none;
+}
+
+.nodo-numero {
+  fill: var(--color-tinta);
+  font: 800 22px var(--fuente-cifra);
+  text-anchor: middle;
+}
+
+/* --- La lista ----------------------------------------------------------------------------------- */
+.seguimiento-lista h2 {
+  margin: 0 0 1rem;
+}
+
+.entregas {
+  display: grid;
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.entrega {
+  display: grid;
+  align-content: start;
+  gap: 0.625rem;
+  padding: 1rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+}
+
+/* Qué es: el número, el nombre y la cantidad, en un renglón que baja si no entra. */
+.entrega > header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.625rem;
+}
+
+.entrega-numero {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--color-raiz);
+  box-shadow: 0.15rem 0.15rem 0 var(--color-hoja);
+  color: var(--color-tinta);
+  font: 800 1.0625rem/1 var(--fuente-cifra);
+}
+
+.entrega h3 {
+  flex: 1 1 8rem;
+  margin: 0;
+  font: 800 1.25rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+.entrega h3 a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-tinta);
+  text-underline-offset: 0.25em;
+}
+
+/* La cantidad, una pastilla de tinta suave junto al nombre. */
+.entrega [data-dato="cantidad"] {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: var(--color-acento-claro);
+  color: var(--color-acento-hondo);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.entrega p {
+  margin: 0;
+}
+
+/* A dónde va: la categoría y la entidad, cada una con su ícono en un cuadro redondeado. */
+.entrega :is(.entrega-categoria, .entrega-destino) {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--color-tinta);
+}
+
+.entrega-destino {
+  font-weight: 700;
+}
+
+.entrega :is(.entrega-categoria, .entrega-destino) > svg {
+  flex: none;
+  box-sizing: content-box;
+  width: 1.125rem;
+  height: 1.125rem;
+  padding: 0.3125rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-pendiente-fondo);
+  fill: var(--color-tinta);
+}
+
+.entrega :is(.entrega-destino, [data-dato="cuando"]) > svg {
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Cómo va: el estado con su fecha, las etapas y la última noticia, en un panel propio. */
+.entrega [data-grupo="estado"] {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+}
+
+.entrega-estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.75rem;
+}
+
+.entrega [data-dato="cuando"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-weight: 700;
+}
+
+.entrega [data-dato="cuando"] > svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+}
+
+.entrega-noticia {
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+/* Las etapas, una barra de progreso (A/B 4): los cinco sellos en fila, unidos por una línea, y
+   debajo el estado de la entrega con su nota (un solo renglón, decisión del usuario, 2026-11-01).
+   Los nombres de las etapas siguen en la lista, ocultos a la vista, para el lector de pantalla. */
+.etapas {
+  position: relative;
+  display: flex;
+  gap: 1.25rem;
+  margin: 0.25rem 0;
+  padding: 0;
+  list-style: none;
+  background: linear-gradient(var(--color-tinta-suave), var(--color-tinta-suave)) no-repeat 0.6875rem 0.625rem / 10.5rem 2px;
+}
+
+.etapa .estado-sello {
+  display: block;
+}
+
+.etapa :is(.etapa-nombre, .etapa-detalle) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --- Lo que espera destino: un aviso con ícono, título y lista (R11-39) ------------------------- */
+/* En el celular, el ícono va arriba del título; desde 37,5 em, a la izquierda. Es información, no un
+   problema: el tono de info y un filete a la izquierda. */
+[data-v="sin-destino"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 0.5rem 1rem;
+  max-width: 40rem;
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.25rem;
+  border-left: 0.4rem solid var(--color-info-texto);
+  border-radius: 0 var(--radio-lamina) var(--radio-lamina) 0;
+  background: var(--color-info-fondo);
+  color: var(--color-info-texto);
+}
+
+[data-v="sin-destino"] > svg {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+[data-v="sin-destino-circulo"] {
+  fill: var(--color-info-texto);
+}
+
+[data-v="sin-destino-manos"] {
+  fill: none;
+  stroke: var(--color-papel);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.seguimiento-lista [data-v="sin-destino"] h3 {
+  margin: 0.25rem 0 0.5rem;
+  color: var(--color-info-texto);
+  font-size: 1.125rem;
+}
+
+[data-v="sin-destino"] ul {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+  font-weight: 700;
+}
+
+[data-v="sin-destino"] p {
+  margin: 0 0 0.5rem;
+}
+
+@media (min-width: 37.5em) {
+  [data-v="sin-destino"] {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+
+/* --- Cargando: el lugar de cada parte, sin datos ------------------------------------------------ */
+.seguimiento-reserva {
+  min-height: 14rem;
+  background: var(--color-pendiente-fondo);
+}
+
+/* Desde la tableta, las cuatro cifras en una fila. */
+@media (min-width: 53.75em) {
+  .cifras dl {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .cifra:nth-child(n) {
+    border-top: 0;
+    border-left: 1px dotted var(--color-tinta-suave);
+  }
+
+  .cifra:first-child {
+    border-left: 0;
+  }
+}
+
+/* En pantalla grande, el dibujo arriba, con los nombres legibles, y una tarjeta por entrega debajo,
+   con el mismo número (A/B 3; patrón: tarjetas, un tema por tarjeta). Con datos, las cifras por
+   estado van a la derecha del dibujo, en una columna, como su leyenda (variante B del pulido,
+   2026-11-03: llena el lado vacío). */
+@media (min-width: 68.75em) {
+  .seguimiento-cuerpo {
+    gap: 2.5rem;
+  }
+
+  .seguimiento-dibujo {
+    max-width: 48rem;
+  }
+
+  .seguimiento:has(> .cifras) {
+    display: grid;
+    grid-template-columns: minmax(0, 48rem) minmax(0, 1fr);
+    grid-template-areas:
+      "cabecera cabecera"
+      "dibujo cifras"
+      "lista lista";
+    align-items: start;
+    gap: 0 2.5rem;
+  }
+
+  .seguimiento:has(> .cifras) .seguimiento-cuerpo {
+    display: contents;
+  }
+
+  .seguimiento-cabecera {
+    grid-area: cabecera;
+  }
+
+  .cifras {
+    grid-area: cifras;
+    max-width: 18rem;
+    margin: 0;
+  }
+
+  .seguimiento:has(> .cifras) .seguimiento-dibujo {
+    grid-area: dibujo;
+  }
+
+  .seguimiento:has(> .cifras) .seguimiento-lista {
+    grid-area: lista;
+    margin-top: 2.5rem;
+  }
+
+  .cifras dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cifra:nth-child(n) {
+    flex-direction: row;
+    align-items: center;
+    border-top: 1px dotted var(--color-tinta-suave);
+    border-left: 0;
+  }
+
+  .cifra:first-child {
+    border-top: 0;
+  }
+
+  .entregas {
+    /* Tres por fila mientras entren: la barra de etapas no se achica (18.5 rem, lo mínimo de una
+       tarjeta); en anchos intermedios, con el menú abierto, pasan a dos. */
+    grid-template-columns: repeat(auto-fit, minmax(18.5rem, 1fr));
+    gap: 1.5rem;
+  }
+
+  .entrega {
+    padding: 1.25rem;
+  }
+}

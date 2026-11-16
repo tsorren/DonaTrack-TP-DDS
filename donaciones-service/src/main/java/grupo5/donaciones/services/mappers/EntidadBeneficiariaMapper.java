@@ -6,6 +6,11 @@ import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,14 +27,28 @@ public class EntidadBeneficiariaMapper {
   public EntidadBeneficiariaOutputDTO toOutputDTO(EntidadBeneficiaria entidad) {
     if (entidad == null) return null;
 
-    JuridicaOutputDTO juridicaOutput = null;
-    if (entidad.juridicaId() != null) {
-      Persona persona = personasRepository.findById(entidad.juridicaId()).orElse(null);
-      if (persona instanceof Juridica j) {
-        juridicaOutput = (JuridicaOutputDTO) personaMapper.toOutputDTO(j);
-      }
-    }
+    Persona persona =
+        entidad.juridicaId() == null
+            ? null
+            : personasRepository.findById(entidad.juridicaId()).orElse(null);
+    return toOutputDTO(entidad, persona);
+  }
 
+  /** Una página: las jurídicas se leen juntas, no una por fila (R11-01). */
+  public List<EntidadBeneficiariaOutputDTO> toOutputDTOs(List<EntidadBeneficiaria> entidades) {
+    Map<UUID, Persona> personas =
+        personasRepository
+            .findAllById(entidades.stream().map(EntidadBeneficiaria::juridicaId).toList())
+            .stream()
+            .collect(Collectors.toMap(Persona::getId, Function.identity(), (a, b) -> a));
+    return entidades.stream().map(e -> toOutputDTO(e, personas.get(e.juridicaId()))).toList();
+  }
+
+  private EntidadBeneficiariaOutputDTO toOutputDTO(EntidadBeneficiaria entidad, Persona persona) {
+    JuridicaOutputDTO juridicaOutput = null;
+    if (persona instanceof Juridica j) {
+      juridicaOutput = (JuridicaOutputDTO) personaMapper.toOutputDTO(j);
+    }
     return new EntidadBeneficiariaOutputDTO(entidad.getId(), juridicaOutput, entidad.estaActivo());
   }
 }

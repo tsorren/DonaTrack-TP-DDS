@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<!--/* La campanita de la cabecera privada (R11-29, R11-30; ficha docs/interfaz/flujos/r11-p2-campanita.md,
+       spec R11-p2-campanita): la campana con el número de sin leer abre un desplegable liviano con
+       las 5 sin leer más nuevas (título y hace cuánto) y «Ver todas». Es un <details>, como el menú
+       de la cuenta: abre sin JavaScript y lo cierran static/js/paneles.js (tocar afuera, Esc, perder
+       el foco). Sin JavaScript se ve solo «Ver todas»; con JavaScript, la lista se pide cada vez que
+       se abre (hx-get al evento campanita:abrir, que dispara paneles.js en el toggle) y llega a la
+       región que se anuncia. Cada fila es un formulario post a -notificaciones-abrir (con CSRF), que
+       marca el aviso como leído y lleva a su destino. Componente: static/css/componentes/campanita.css.
+       Catálogo: docs/interfaz/componentes.md.
+       Fragmentos:
+       - campana(area, sinLeer): la campana y el desplegable; area es donante, entidad o admin.
+       - lista: lo que trae el desplegable (CampanitaController): la cifra, las filas o el texto de
+         vacío o de error. Del modelo: area y campanita (CampanitaVista, null si no contestó). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<details th:fragment="campana(area, sinLeer)" class="campanita"
+         th:with="organizacion=${area == 'entidad'}"
+         hx-trigger="campanita:abrir" hx-target="find .campanita-estado" hx-swap="innerHTML"
+         hx-sync="this:replace"
+         th:attr="hx-get=@{/{a}-notificaciones-recientes(a=${area})}">
+  <summary class="armazon-avisos"
+           th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
+           aria-label="Notificaciones, 4 sin leer">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+      <path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>
+    </svg>
+    <span class="armazon-avisos-texto">Notificaciones</span>
+    <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">4</b>
+  </summary>
+  <div class="campanita-panel" role="group" th:aria-labelledby="|campanita-titulo-${area}|">
+    <div class="campanita-cabeza">
+      <p class="campanita-titulo" th:id="|campanita-titulo-${area}|"
+         th:text="${organizacion} ? 'Novedades' : 'Notificaciones'">Notificaciones</p>
+    </div>
+    <p class="campanita-cargando" role="status"
+       th:text="${area == 'admin'} ? 'Buscando las notificaciones de la administración…' : (${organizacion} ? 'Buscando tus novedades…' : 'Buscando tus notificaciones…')">Buscando
+      tus notificaciones…</p>
+    <div class="campanita-estado" aria-live="polite"></div>
+    <a class="campanita-todas" href="/donante-notificaciones" th:href="@{/{a}-notificaciones(a=${area})}"
+       th:text="${organizacion} ? 'Ver todas las novedades' : 'Ver todas las notificaciones'">Ver todas las
+      notificaciones</a>
+  </div>
+</details>
+
+<th:block th:fragment="lista"
+          th:with="organizacion=${area == 'entidad'}, admin=${area == 'admin'},
+                   filas=${campanita != null ? campanita.filas : null}">
+  <th:block th:if="${campanita == null}">
+    <p><strong th:text="${admin} ? 'No pudimos traer las notificaciones de la administración.' : (${organizacion} ? 'No pudimos traer tus novedades.' : 'No pudimos traer tus notificaciones.')">No
+      pudimos traer tus notificaciones.</strong></p>
+    <p class="campanita-cifra">Probá de nuevo en un rato o abrí la bandeja.</p>
+  </th:block>
+  <th:block th:if="${campanita != null and #lists.isEmpty(filas)}">
+    <p><strong th:text="${admin} ? 'No hay notificaciones sin leer para la administración.' : (${organizacion} ? 'No tenés novedades sin leer.' : 'No tenés notificaciones sin leer.')">No
+      tenés notificaciones sin leer.</strong></p>
+    <p class="campanita-cifra">Las que ya leíste siguen en la bandeja.</p>
+  </th:block>
+  <th:block th:if="${campanita != null and !#lists.isEmpty(filas)}"
+            th:with="reloj=${#temporals.createDateTime(campanita.ahora)}, total=${campanita.sinLeer},
+                     cifra=${#numbers.formatInteger(total, 1, 'POINT')}">
+    <p class="campanita-cifra"
+       th:text="${total > #lists.size(filas)} ? |${#lists.size(filas)} de ${cifra} sin leer| : |${cifra} sin leer|">4
+      sin leer</p>
+    <ol class="campanita-filas" role="list">
+      <li th:each="f : ${filas}">
+        <form method="post" action="/donante-notificaciones-abrir"
+              th:action="@{/{a}-notificaciones-abrir(a=${area})}">
+          <input type="hidden" name="id" th:value="${f.id}" value="d1">
+          <button type="submit" class="campanita-fila"><span class="solo-lectores">Sin leer: </span><strong
+              th:text="${f.titulo}">Donación en camino</strong><span class="campanita-cuando"><span
+              class="solo-lectores">, </span><time th:replace="~{componentes/buzon :: cuando(${f.fecha}, ${reloj})}"></time></span></button>
+        </form>
+      </li>
+    </ol>
+  </th:block>
+</th:block>
+</body>
+</html>

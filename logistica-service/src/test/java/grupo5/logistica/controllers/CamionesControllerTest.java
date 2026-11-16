@@ -96,6 +96,43 @@ class CamionesControllerTest extends AbstractLogisticaWebMvcTest {
         .andExpect(jsonPath("$").isEmpty());
   }
 
+  @Test
+  void listar_conIncluirDeshabilitadosEnFalse_respondeIgualQueSinElParametro() throws Exception {
+    when(camionesService.consultarTodos()).thenReturn(List.of(RESPONSE_DTO));
+
+    mockMvc
+        .perform(get("/api/camiones").param("incluirDeshabilitados", "false"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].estado").value("DISPONIBLE"));
+    verify(camionesService, never()).consultarIncluyendoDeshabilitados();
+  }
+
+  @Test
+  void listar_conIncluirDeshabilitados_devuelveTambienLosDeshabilitados() throws Exception {
+    CamionResponseDTO deshabilitado =
+        new CamionResponseDTO(
+            UUID.randomUUID(), "AC456DE", 10f, 2f, 5000f, EstadoCamion.DESHABILITADO, null);
+    when(camionesService.consultarIncluyendoDeshabilitados())
+        .thenReturn(List.of(RESPONSE_DTO, deshabilitado));
+
+    mockMvc
+        .perform(get("/api/camiones").param("incluirDeshabilitados", "true"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[1].estado").value("DESHABILITADO"));
+    verify(camionesService, never()).consultarTodos();
+  }
+
+  @Test
+  void listar_sinElParametro_noPideLosDeshabilitados() throws Exception {
+    when(camionesService.consultarTodos()).thenReturn(List.of(RESPONSE_DTO));
+
+    mockMvc.perform(get("/api/camiones")).andExpect(status().isOk());
+
+    verify(camionesService).consultarTodos();
+    verify(camionesService, never()).consultarIncluyendoDeshabilitados();
+  }
+
   // ===================== GET /api/camiones/{id} =====================
 
   @Test

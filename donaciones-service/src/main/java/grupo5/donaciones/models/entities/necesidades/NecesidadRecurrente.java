@@ -3,7 +3,6 @@ package grupo5.donaciones.models.entities.necesidades;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.dto.NecesidadDTO;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
@@ -148,10 +147,48 @@ public class NecesidadRecurrente extends Necesidad {
     return TipoNecesidad.RECURRENTE;
   }
 
+  /** Uno de los tres largos, o {@code null} si se creó antes de cerrarlos con otro largo. */
+  public Periodicidad getPeriodicidad() {
+    return Periodicidad.de(periodo);
+  }
+
+  /** Una recurrente está vigente o dada de baja: cada período tiene su propio resultado. */
   @Override
-  public NecesidadDTO toDTO(int cantidadAcumulada) {
+  public EstadoNecesidad estado(int recibido, LocalDate hoy) {
+    return getActiva() ? EstadoNecesidad.VIGENTE : EstadoNecesidad.DADA_DE_BAJA;
+  }
+
+  @Override
+  public LocalDate finDelPeriodoActual() {
     PeriodoNecesidad actual = obtenerPeriodoActual();
-    LocalDate fechaFin = actual != null ? actual.fechaFin() : null;
-    return super.toDTO(fechaFin, estaSatisfechaCon(cantidadAcumulada));
+    return actual != null ? actual.fechaFin() : null;
+  }
+
+  /** Empieza donde terminó el anterior; el primero, el día de la publicación. */
+  public LocalDate inicioDe(PeriodoNecesidad unPeriodo) {
+    int i = periodos.indexOf(unPeriodo);
+    return i <= 0 ? getFechaInicio() : periodos.get(i - 1).fechaFin();
+  }
+
+  /**
+   * El cambio de cantidad vale también para el período en curso (ADR 20261102 punto 5): su objetivo
+   * pasa a la cantidad nueva. Los períodos cerrados no cambian.
+   */
+  @Override
+  public void actualizarCantidadNecesitada(Integer cantidadNecesitada) {
+    super.actualizarCantidadNecesitada(cantidadNecesitada);
+    PeriodoNecesidad actual = obtenerPeriodoActual();
+    if (actual != null) {
+      periodos.set(
+          periodos.size() - 1,
+          new PeriodoNecesidad(actual.id(), actual.fechaFin(), cantidadNecesitada));
+    }
+  }
+
+  @Override
+  public boolean muestraUltimoCambio() {
+    PeriodoNecesidad actual = obtenerPeriodoActual();
+    return super.muestraUltimoCambio()
+        && (actual == null || !getFechaUltimoCambio().isBefore(inicioDe(actual)));
   }
 }

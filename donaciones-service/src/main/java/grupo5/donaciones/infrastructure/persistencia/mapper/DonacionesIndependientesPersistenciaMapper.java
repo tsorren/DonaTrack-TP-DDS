@@ -10,6 +10,7 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.CambioEstado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DatosDonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.EnDeposito;
+import grupo5.donaciones.models.entities.donacionesIndependientes.EnPuerta;
 import grupo5.donaciones.models.entities.donacionesIndependientes.EnTraslado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.EntregaFallida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.Entregada;
@@ -55,6 +56,11 @@ public class DonacionesIndependientesPersistenciaMapper {
     entity.setNecesidadId(domain.getNecesidadId());
     entity.setPeriodoId(domain.getPeriodoId());
     entity.setEntidadBeneficiariaId(domain.getEntidadBeneficiariaId());
+    entity.setCantidadNoRecibida(domain.getCantidadNoRecibida());
+    entity.setFechaEntrega(domain.getFechaEntrega());
+    entity.getFotosRecepcion().clear();
+    entity.getFotosRecepcion().addAll(domain.getFotosRecepcion());
+    entity.setCancelacionPedida(domain.isCancelacionPedida());
     reemplazarItems(domain, entity);
     agregarCambiosNuevos(domain, entity);
     return entity;
@@ -89,10 +95,14 @@ public class DonacionesIndependientesPersistenciaMapper {
             actual,
             entity.getFechaRegistro(),
             destino(entity),
-            entity.getVersion());
+            entity.getVersion(),
+            entity.isCancelacionPedida());
     List<ItemDonacionIndependiente> items =
         entity.getItems().stream().map(this::itemToDomain).toList();
-    return new DonacionIndependiente(datos, items, historial);
+    DonacionIndependiente donacion = new DonacionIndependiente(datos, items, historial);
+    donacion.reconstituirCantidadNoRecibida(entity.getCantidadNoRecibida());
+    donacion.reconstituirFotosDeRecepcion(entity.getFechaEntrega(), entity.getFotosRecepcion());
+    return donacion;
   }
 
   // Los ítems no tienen identidad en el dominio: la fila de cada uno se identifica por su posición
@@ -225,6 +235,7 @@ public class DonacionesIndependientesPersistenciaMapper {
       case ASIGNACION_REALIZADA -> new AsignacionRealizada();
       case LISTA_PARA_ENTREGAR -> new ListaParaEntregar();
       case EN_TRASLADO -> new EnTraslado();
+      case EN_PUERTA -> new EnPuerta();
       case ENTREGADA -> new Entregada(patenteCamion);
       case ENTREGA_FALLIDA -> new EntregaFallida();
       case VENCIDA -> new Vencida();

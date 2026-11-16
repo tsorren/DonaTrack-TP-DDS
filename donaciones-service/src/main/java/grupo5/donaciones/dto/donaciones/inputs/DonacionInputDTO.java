@@ -16,4 +16,17 @@ public record DonacionInputDTO(
         List<@Valid ItemDonacionInputDTO> items,
     String nombreDeposito,
     @Valid DireccionInputDTO direccion,
-    LocalDateTime fecha) {}
+    LocalDateTime fecha,
+    Boolean mostrarNombre) {
+
+  /** Sin "Esta vez, sin mi nombre" (HB-20): la donación sigue al perfil del donante. */
+  public DonacionInputDTO(
+      UUID idDonante,
+      String descripcion,
+      List<ItemDonacionInputDTO> items,
+      String nombreDeposito,
+      DireccionInputDTO direccion,
+      LocalDateTime fecha) {
+    this(idDonante, descripcion, items, nombreDeposito, direccion, fecha, null);
+  }
+}

@@ -1,6 +1,6 @@
 @startuml donaciones-DER
 ' ============================================================
-' DER del schema donaciones, tal como lo crean las migraciones Flyway V1 a V13
+' DER del schema donaciones, tal como lo crean las migraciones Flyway V1 a V13 y V16
 ' (donaciones-service/src/main/resources/db/migration). Fuente de verdad: las migraciones.
 ' * = NOT NULL. En rojo: lo que no está o cambia respecto del DER de Lucid (versión del
 ' 19/10/2026); el detalle y el motivo de cada cambio están en cambios-der-donaciones.md.
@@ -17,7 +17,7 @@ skinparam class {
 }
 !define CAMBIO(x) <color:#C0392B>x</color>
 
-title Schema donaciones — DER implementado (V1 a V13)
+title Schema donaciones — DER implementado (V1 a V13 y V16)
 
 package "Personas" {
   entity direccion {
@@ -103,6 +103,19 @@ package "Personas" {
     --
     * path : TEXT
     * CAMBIO(estado_archivo : VARCHAR(30))
+    CAMBIO(total_filas : INTEGER)
+    * CAMBIO(creadas : INTEGER)
+    * CAMBIO(actualizadas : INTEGER)
+    * CAMBIO(con_error : INTEGER)
+  }
+
+  entity archivo_fila_error {
+    * CAMBIO(id : BIGSERIAL) <<PK>>
+    --
+    * CAMBIO(id_archivo : UUID) <<FK>>
+    * CAMBIO(linea : INTEGER)
+    * CAMBIO(motivo : VARCHAR(40))
+    CAMBIO(codigo : VARCHAR(20))
   }
 }
 
@@ -121,6 +134,7 @@ package "Catálogo" {
     --
     * id_categoria : UUID <<FK>>
     * nombre : TEXT
+    CAMBIO(unidad : VARCHAR(20))
   }
 
   entity alias {
@@ -146,6 +160,9 @@ package "Necesidades" {
     * activa : BOOLEAN
     periodo : CAMBIO(VARCHAR(20) ISO-8601)
     * CAMBIO(version : BIGINT)
+    CAMBIO(fecha_limite : DATE)
+    CAMBIO(cantidad_anterior : BIGINT)
+    CAMBIO(fecha_ultimo_cambio : DATE)
   }
 
   entity periodo_necesidad {
@@ -367,6 +384,7 @@ donacion_independiente ||--o{ posible_fragmentacion
 ' ---------- Logística ----------
 donacion_independiente ||--o{ solicitud_entrega
 solicitud_entrega ||--o{ outbox_logistica
+archivo ||--o{ archivo_fila_error
 donacion_independiente |o..o{ evento_consumido
 
 legend right

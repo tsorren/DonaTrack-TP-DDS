@@ -1,0 +1,25 @@
+@import url("publico-listas.css");
+
+/* Raíces, sitio A: Mapa (publico-mapa.html). El marco, el reparto en dos columnas, la lista de fichas
+   y el resalte cruzado son el bloque `.mapa-cuerpo` (componentes/mapa.css). Desde el 2026-11-09 el
+   mapa es MapLibre (componentes/mapa.css, static/js/mapa.js); acá queda el esqueleto de la carga y el
+   número de las estaciones de la lista. Va sin capa porque compite con `.dibujo-rotulo` (sellos.css)
+   y con el `.esqueleto` de las páginas públicas (publico-listas.css). */
+
+figure.mapa-dibujo.esqueleto {
+  aspect-ratio: 800 / 590;
+  min-height: 0;
+  border-color: var(--color-pendiente-fondo);
+  background: var(--color-pendiente-fondo);
+}
+
+.estacion-numero {
+  fill: var(--color-tinta);
+  font: 800 24px var(--fuente-cifra);
+  text-anchor: middle;
+}
+
+.estacion-sello .estacion-numero {
+  font-size: 20px;
+}
+

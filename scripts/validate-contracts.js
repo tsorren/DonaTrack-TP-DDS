@@ -579,6 +579,31 @@ assert('evento_entrega_solicitada_v1_extra_properties_aceptadas_d5', validateSch
   descripcion: 'Caja de ropa'
 }).valid, 'D5: un campo extra no rompe el contrato');
 
+// HB-19: comando entrega.cancelada.<proveedorId>.v1 y evento de vuelta entrega.cancelada
+const eventoEntregaCanceladaV1Schema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-entrega-cancelada-v1.schema.json'), 'utf8'));
+assert('evento_entrega_cancelada_v1_valido', validateSchemaObject(eventoEntregaCanceladaV1Schema, {
+  donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  motivo: 'NECESIDAD_DADA_DE_BAJA',
+  fecha: '2026-11-09T12:00:00Z'
+}).valid);
+assert('evento_entrega_cancelada_v1_invalido_motivo', !validateSchemaObject(eventoEntregaCanceladaV1Schema, {
+  donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  motivo: 'OTRO',
+  fecha: '2026-11-09T12:00:00Z'
+}).valid);
+const eventoEntregaCanceladaSchema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-entrega-cancelada.schema.json'), 'utf8'));
+assert('evento_entrega_cancelada_valido', validateSchemaObject(eventoEntregaCanceladaSchema, {
+  entregaId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  motivo: 'NECESIDAD_DADA_DE_BAJA',
+  fechaCancelacion: '2026-11-09T12:00:05Z'
+}).valid);
+assert('evento_entrega_cancelada_invalido_missing_entrega', !validateSchemaObject(eventoEntregaCanceladaSchema, {
+  donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  motivo: 'NECESIDAD_DADA_DE_BAJA',
+  fechaCancelacion: '2026-11-09T12:00:05Z'
+}).valid);
+
 // 13. evento-donacion-segmentada (Consumido por Incentivos)
 const eventoDonacionSegmentadaSchema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-donacion-segmentada.schema.json'), 'utf8'));
 assert('evento_donacion_segmentada_valido', validateSchemaObject(eventoDonacionSegmentadaSchema, {

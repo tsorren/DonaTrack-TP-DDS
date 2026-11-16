@@ -25,9 +25,11 @@ import grupo5.logistica.services.impl.RutasService;
 import grupo5.logistica.services.mappers.DireccionMapper;
 import grupo5.logistica.services.mappers.EntregaMapper;
 import grupo5.logistica.services.mappers.RutaMapper;
+import grupo5.logistica.testutils.EntregaMother;
 import grupo5.logistica.testutils.RutaMother;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,6 +66,32 @@ class RutaServiceTest {
             choferesRepository,
             rutaMapper,
             comunicadorEventos);
+  }
+
+  // =====================================================
+  // organizacionesDe()
+  // =====================================================
+
+  @Test
+  void organizacionesDe_deberiaDevolverBeneficiariasYDonantesDeLasEntregasDeLaRuta() {
+    UUID rutaId = UUID.randomUUID();
+    UUID donante = UUID.randomUUID();
+    Entrega conDonante = EntregaMother.pendiente();
+    conDonante.registrarDonante(donante);
+    Entrega sinDonante = EntregaMother.pendiente();
+    when(entregasRepository.findByRutaId(rutaId)).thenReturn(List.of(conDonante, sinDonante));
+
+    assertEquals(
+        Set.of(conDonante.getIdBeneficiaria(), donante, sinDonante.getIdBeneficiaria()),
+        rutasService.organizacionesDe(rutaId));
+  }
+
+  @Test
+  void organizacionesDe_cuandoLaRutaNoLlevaEntregas_deberiaDevolverVacio() {
+    UUID rutaId = UUID.randomUUID();
+    when(entregasRepository.findByRutaId(rutaId)).thenReturn(List.of());
+
+    assertTrue(rutasService.organizacionesDe(rutaId).isEmpty());
   }
 
   // =====================================================

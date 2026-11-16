@@ -1,0 +1,169 @@
+/* Bloque campanita (R11-29, R11-30; ficha docs/interfaz/flujos/r11-p2-campanita.md): la campana de
+   la cabecera privada de los tres roles, un <details class="campanita"> como el menú de la cuenta.
+   El <summary> es la campana de siempre (`.armazon-avisos`, privado.css, con el número en su
+   disco); al abrirse, el desplegable (`.campanita-panel`): la cabecera (`.campanita-cabeza`, con
+   `.campanita-titulo` y la región que se anuncia, `.campanita-estado`), la carga
+   (`.campanita-cargando`, solo mientras HTMX la pide), la cifra (`.campanita-cifra`), hasta 5 filas
+   (`.campanita-filas`; cada una, un botón de formulario `.campanita-fila` con el punto, el título y
+   hace cuánto, `.campanita-cuando`) y «Ver todas» (`.campanita-todas`), siempre presente. En la
+   computadora, 22 rem alineado a la derecha de la campana; en el celular, todo el ancho con 16 px
+   de margen, pegado debajo de la cabecera. Fragmentos: templates/componentes/campanita.html. Se carga en la
+   capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+.campanita > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.campanita > summary::-webkit-details-marker {
+  display: none;
+}
+
+.campanita[open] > summary {
+  color: var(--color-acento);
+}
+
+.campanita-panel {
+  position: absolute;
+  top: 100%;
+  right: var(--espacio-3);
+  left: var(--espacio-3);
+  z-index: 6;
+  display: grid;
+  gap: var(--espacio-1);
+  padding: var(--espacio-2);
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel), 0 0 0 1px var(--color-filete);
+  color: var(--color-tinta);
+  font-weight: 400;
+}
+
+.campanita-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-1);
+  padding: 0 var(--espacio-1) var(--espacio-1);
+  border-bottom: 1px solid var(--color-filete);
+}
+
+.campanita-titulo {
+  margin: 0;
+  font-weight: 700;
+}
+
+.campanita-estado {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.campanita-estado p {
+  margin: 0;
+  padding: 0 var(--espacio-1);
+}
+
+.campanita-cifra {
+  color: var(--color-tinta-suave);
+  font-size: var(--tamano-chico);
+}
+
+/* La carga: solo mientras HTMX pide la lista (la clase htmx-request la pone HTMX en el details). */
+.campanita-cargando {
+  display: none;
+}
+
+.campanita.htmx-request .campanita-cargando {
+  display: block;
+}
+
+.campanita.htmx-request .campanita-estado {
+  display: none;
+}
+
+.campanita-filas {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.campanita-filas form {
+  margin: 0;
+}
+
+.campanita-fila {
+  display: grid;
+  grid-template-columns: 0.5rem 1fr;
+  align-items: center;
+  column-gap: var(--espacio-2);
+  width: 100%;
+  min-height: 3rem;
+  margin: 0;
+  padding: var(--espacio-1);
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--color-tinta);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.campanita-fila::before {
+  content: "";
+  grid-row: 1 / span 2;
+  box-sizing: border-box;
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 0.25rem solid var(--color-acento);
+  border-radius: 50%;
+}
+
+.campanita-fila:hover {
+  background: var(--color-acento-claro);
+}
+
+.campanita-fila strong,
+.campanita-cuando {
+  grid-column: 2;
+}
+
+.campanita-cuando {
+  color: var(--color-tinta-suave);
+  font-size: var(--tamano-chico);
+}
+
+.campanita-todas {
+  display: flex;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0 var(--espacio-1);
+  border-top: 1px solid var(--color-filete);
+  color: var(--color-enlace);
+  font-weight: 700;
+}
+
+/* Desde la tableta, el desplegable cuelga de la campana, a su derecha. */
+@media (min-width: 37.5em) {
+  .campanita {
+    position: relative;
+  }
+
+  .campanita-panel {
+    top: calc(100% + var(--espacio-1));
+    right: 0;
+    left: auto;
+    width: 22rem;
+  }
+}
+
+@media (forced-colors: active) {
+  .campanita-panel {
+    border: 1px solid CanvasText;
+  }
+
+  .campanita-fila::before {
+    border-color: CanvasText;
+  }
+}

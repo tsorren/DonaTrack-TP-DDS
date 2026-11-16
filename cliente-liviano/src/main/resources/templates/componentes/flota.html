@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--/* Componente flota (2026-11-10, Camiones del admin): las piezas dibujadas de las tarjetas y de la
+       ficha de un camión. La grilla, las tarjetas y la ficha se escriben en la pantalla (ver
+       admin-camiones.html); acá, lo que se repite. Hoja: static/css/componentes/flota.css. Catálogo:
+       docs/interfaz/componentes.md.
+
+       dibujo(forma): el camión de perfil, mirando a la izquierda, decorativo (aria-hidden). forma es
+       'camion' (cabina y caja) o 'furgon' (de una pieza). Los colores salen de la hoja, por parte
+       (data-parte): la caja en papel, la cabina en verde, el vidrio en agua y las ruedas en tinta.
+
+       barras(valores): el rendimiento de los últimos 30 días en barras (una cada dos días, de 0 a 10),
+       decorativo: las cifras van en palabras al lado. La última barra, la más reciente, va en verde. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<svg th:fragment="dibujo(forma)" class="flota-dibujo" th:data-forma="${forma}" viewBox="0 0 160 88"
+     width="160" height="88" aria-hidden="true" focusable="false">
+  <th:block th:if="${forma == 'furgon'}">
+    <path data-parte="caja" d="M4 70V48Q4 42 8 38L25 20Q29 16 35 16H150Q156 16 156 22V70Z"/>
+    <path data-parte="franja" d="M5 52H155V58H5Z"/>
+    <path data-parte="vidrio" d="M30 23H54V40H14Z"/>
+    <path d="M60 22V64" fill="none"/>
+  </th:block>
+  <th:block th:unless="${forma == 'furgon'}">
+    <rect data-parte="caja" x="54" y="6" width="102" height="62" rx="4"/>
+    <path data-parte="franja" d="M55 50H155V57H55Z"/>
+    <path data-parte="cabina" d="M51 70V30Q51 23 44 23H25Q18 23 15 29L7 43Q4 48 4 54V70Z"/>
+    <path data-parte="vidrio" d="M23 29H45V44H12L17 34Q19 29 23 29Z"/>
+  </th:block>
+  <rect data-parte="chasis" x="2" y="66" width="156" height="6" rx="3"/>
+  <circle data-parte="rueda" cx="31" cy="74" r="11"/>
+  <circle data-parte="llanta" cx="31" cy="74" r="4"/>
+  <circle data-parte="rueda" cx="128" cy="74" r="11"/>
+  <circle data-parte="llanta" cx="128" cy="74" r="4"/>
+</svg>
+
+<svg th:fragment="barras(valores)" class="flota-barras" viewBox="0 0 150 40" preserveAspectRatio="none"
+     aria-hidden="true" focusable="false">
+  <rect th:each="v, i : ${valores}" th:attr="x=${i.index * 10},y=${40 - v * 4},height=${v * 4}" width="6"
+        rx="2" x="0" y="20" height="20"/>
+</svg>
+</body>
+</html>

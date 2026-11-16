@@ -37,8 +37,21 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
   private UUID periodoId;
   private UUID entidadBeneficiariaId;
 
+  // Lo que no llegó según el reporte de la entidad al confirmar (HB-17): nulo si llegó todo
+  private Integer cantidadNoRecibida;
+
+  // Réplica de entrega.exitosa para las destacadas (HB-01): fecha y fotos de una entrega sin
+  // reporte. Sin fotos, la fecha queda nula y la donación no es destacada.
+  private LocalDateTime fechaEntrega;
+
+  @Getter(AccessLevel.NONE)
+  private List<String> fotosRecepcion = new ArrayList<>();
+
   // Versión de la fila guardada (bloqueo optimista): nula hasta que se guarda por primera vez
   private Long version;
+
+  // HB-19: su necesidad se dio de baja y se espera que Logística confirme la cancelación
+  private boolean cancelacionPedida;
 
   public DonacionIndependiente(UUID donacionOriginalId, List<ItemDonacionIndependiente> items) {
     if (donacionOriginalId == null) {
@@ -67,6 +80,54 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     this.fechaRegistro = datos.fechaRegistro();
     asignarDestino(datos.destino());
     this.version = datos.version();
+    this.cancelacionPedida = datos.cancelacionPedida();
+  }
+
+  /**
+   * La entidad contó que llegó menos (HB-17, DTI-29): la necesidad cuenta lo que llegó, no lo que
+   * salió. Una cantidad igual o mayor que la enviada no descuenta nada.
+   */
+  public void registrarCantidadRecibida(double cantidadRecibida) {
+    // ponytail: la cantidad es entera y lo recibido se redondea hacia abajo (14,5 kg cuenta 14);
+    // pasar a cantidades decimales si alguna unidad lo pide
+    int recibida = (int) Math.max(0, Math.floor(cantidadRecibida));
+    int faltante = getCantidad() - recibida;
+    this.cantidadNoRecibida = faltante > 0 ? faltante : null;
+  }
+
+  /** Lo que cuenta para la necesidad: lo enviado menos lo que no llegó. */
+  public int getCantidadContada() {
+    return getCantidad() - (cantidadNoRecibida != null ? cantidadNoRecibida : 0);
+  }
+
+  /** Lo hidrata el adaptador de persistencia, sin validar. */
+  public void reconstituirCantidadNoRecibida(Integer cantidadNoRecibida) {
+    this.cantidadNoRecibida = cantidadNoRecibida;
+  }
+
+  public List<String> getFotosRecepcion() {
+    return Collections.unmodifiableList(fotosRecepcion);
+  }
+
+  /**
+   * Fotos de recepción que trajo {@code entrega.exitosa} (HB-01, ADR de réplicas por evento). Solo
+   * las de una entrega sin reporte; una lista vacía no cambia nada.
+   */
+  public void registrarFotosDeRecepcion(LocalDateTime fechaEntrega, List<String> fotos) {
+    if (fotos == null || fotos.isEmpty()) {
+      return;
+    }
+    if (fechaEntrega == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    this.fechaEntrega = fechaEntrega;
+    this.fotosRecepcion = new ArrayList<>(fotos);
+  }
+
+  /** Lo hidrata el adaptador de persistencia, sin validar. */
+  public void reconstituirFotosDeRecepcion(LocalDateTime fechaEntrega, List<String> fotos) {
+    this.fechaEntrega = fechaEntrega;
+    this.fotosRecepcion = fotos == null ? new ArrayList<>() : new ArrayList<>(fotos);
   }
 
   /** Lo asigna el adaptador de persistencia después de guardar, con la versión nueva de la fila. */
@@ -155,6 +216,7 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
       case ASIGNACION_REALIZADA -> this.estadoActual.asignar(this, solicitud);
       case LISTA_PARA_ENTREGAR -> this.estadoActual.planificarRuta(this, solicitud);
       case EN_TRASLADO -> this.estadoActual.iniciarRecorrido(this, solicitud);
+      case EN_PUERTA -> this.estadoActual.llegarAPuerta(this, solicitud);
       case ENTREGADA -> this.estadoActual.confirmarEntrega(this, solicitud);
       case ENTREGA_FALLIDA -> this.estadoActual.registrarFalla(this, solicitud);
       case EN_DEPOSITO -> this.estadoActual.retornar(this, solicitud);
@@ -180,6 +242,10 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     this.estadoActual.iniciarRecorrido(this, actor);
   }
 
+  public void llegarAPuerta(String actor) {
+    this.estadoActual.llegarAPuerta(this, actor);
+  }
+
   public void confirmarEntrega(String actor) {
     this.estadoActual.confirmarEntrega(this, actor);
   }
@@ -200,6 +266,29 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     this.estadoActual.vencer(this, actor);
   }
 
+  /**
+   * HB-19: su necesidad se dio de baja mientras esperaba salir. Queda asignada hasta que Logística
+   * confirme la cancelación; si antes sale, la marca se limpia sola y llega igual.
+   */
+  public void pedirCancelacion() {
+    if (!esCancelable()) {
+      throw new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA);
+    }
+    this.cancelacionPedida = true;
+  }
+
+  /** Lo que todavía no salió: asignada, con o sin ruta planificada (HB-19). */
+  public boolean esCancelable() {
+    TipoEstadoDonacion tipo = this.estadoActual.getTipo();
+    return tipo == TipoEstadoDonacion.ASIGNACION_REALIZADA
+        || tipo == TipoEstadoDonacion.LISTA_PARA_ENTREGAR;
+  }
+
+  /** Vuelve al depósito sin destino porque se canceló su entrega (HB-19). */
+  public void liberarPorCancelacion(String actor) {
+    this.estadoActual.liberarPorCancelacion(this, actor);
+  }
+
   public void asignarDestino(DestinoAsignacion destino) {
     this.necesidadId = destino != null ? destino.necesidadId() : null;
     this.periodoId = destino != null ? destino.periodoId() : null;
@@ -211,6 +300,9 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     CambioEstado cambio = new CambioEstado(this.estadoActual, nuevoEstado, justificacion, actor);
     this.historial.add(cambio);
     this.estadoActual = nuevoEstado;
+    if (!esCancelable()) {
+      this.cancelacionPedida = false;
+    }
   }
 
   public List<CambioEstado> getHistorial() {

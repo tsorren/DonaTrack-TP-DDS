@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<!--/* Cerrar sesión: POST /logout con CSRF (th:action lo agrega). Lo usan el menú de cuenta del layout
+       privado y las pantallas de una sesión sin perfil o con la solicitud recibida.
+       Fragmentos:
+       - boton: el formulario con su botón. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<form th:fragment="boton" method="post" action="/logout" th:action="@{/logout}">
+  <button class="boton" data-tono="secundario" type="submit">Cerrar sesión</button>
+</form>
+</body>
+</html>

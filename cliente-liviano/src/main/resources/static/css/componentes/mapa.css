@@ -1,0 +1,387 @@
+/* Bloque de mapa con su lista (D33, B2-13, RF-CL-06): un mapa y, al lado (debajo, en el celular), la
+   lista con los mismos datos, entidad por entidad. El dibujo es la pieza de cada pantalla (hoy el de
+   Seguir entregas dentro de `.mapa-dibujo`; en el sistema, MapLibre, D21); este bloque pone el marco,
+   el reparto en dos columnas, la lista de fichas y el resalte cruzado: al pasar, enfocar o llegar a
+   una entidad de la lista (#entidad-<clave>), su estación queda llena y las demás se apagan. Se carga
+   en la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+
+.mapa-cuerpo {
+  display: grid;
+  gap: 1.75rem;
+  align-items: start;
+}
+
+.mapa-dibujo {
+  margin: 0;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  overflow: hidden;
+}
+
+/* La tierra, bajo la línea de tierra del dibujo (y = 80 de un alto de 590). */
+figure.mapa-dibujo {
+  background: linear-gradient(transparent calc(80 / 590 * 100%), var(--color-suelo) 0);
+}
+
+/* Al pasar, enfocar o llegar a una entidad de la lista, las demás estaciones se apagan.
+   ponytail: una regla por número de estación, hasta 6; en el sistema, MapLibre. */
+.mapa-cuerpo:has(.estacion-ficha:is(:hover, :focus-within, :target)) .estacion {
+  opacity: 0.3;
+}
+
+.mapa-cuerpo:has(.estacion-ficha--1:is(:hover, :focus-within, :target)) .estacion--1,
+.mapa-cuerpo:has(.estacion-ficha--2:is(:hover, :focus-within, :target)) .estacion--2,
+.mapa-cuerpo:has(.estacion-ficha--3:is(:hover, :focus-within, :target)) .estacion--3,
+.mapa-cuerpo:has(.estacion-ficha--4:is(:hover, :focus-within, :target)) .estacion--4,
+.mapa-cuerpo:has(.estacion-ficha--5:is(:hover, :focus-within, :target)) .estacion--5,
+.mapa-cuerpo:has(.estacion-ficha--6:is(:hover, :focus-within, :target)) .estacion--6 {
+  opacity: 1;
+}
+
+/* --- El mapa real (MapLibre, D21; desde el 2026-11-09) --------------------------------------------
+   `<div class="mapa-dibujo mapa-real" data-mapa>`: static/js/mapa.js lo llena con MapLibre y un
+   `button.mapa-marcador` por ficha; sin JavaScript queda `.mapa-real-aviso` y la lista. En
+   Seguimiento es `<div class="seguimiento-dibujo mapa-real" data-mapa>` (sin el marco fijo de
+   `.mapa-dibujo`), con el depósito y los destinos (`data-tipo`) y los recorridos. */
+.mapa-real {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1;
+  background: var(--color-papel);
+}
+
+.mapa-real[data-listo="no"] {
+  display: none;
+}
+
+.mapa-real-aviso {
+  margin: 0;
+  padding: 1.25rem;
+  color: var(--color-tinta-suave);
+}
+
+/* El marcador: el sello numerado de las estaciones, del tamaño de un toque. */
+.mapa-marcador {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--color-tinta);
+  border-radius: 50%;
+  background: var(--color-raiz);
+  box-shadow: 0.1875rem 0.1875rem 0 var(--color-tinta);
+  color: var(--color-tinta);
+  font: 800 1.25rem/1 var(--fuente-cifra);
+  cursor: pointer;
+}
+
+/* Seguimiento (desde el 2026-11-10): el depósito, un sello de tinta con el ícono en papel; el destino
+   de una entrega, una casa sobre el campo, en un cuadrado redondeado. Los números van encima. */
+.mapa-marcador[data-tipo] svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mapa-marcador[data-tipo="deposito"] {
+  background: var(--color-tinta);
+  color: var(--color-papel);
+}
+
+.mapa-marcador[data-tipo="destino"] {
+  border-radius: var(--radio-boton);
+  background: var(--color-campo);
+}
+
+.mapa-marcador:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 3px;
+}
+
+.mapa-real[data-destacado] .mapa-marcador {
+  opacity: 0.45;
+}
+
+.mapa-real[data-destacado] .mapa-marcador[data-activo] {
+  z-index: 1;
+  opacity: 1;
+  background: var(--color-acento);
+  color: var(--color-papel);
+}
+
+/* El globo de MapLibre, con el papel y las esquinas de las tarjetas. */
+.mapa-real [class~="maplibregl-popup-content"] {
+  padding: 0.875rem 2.25rem 0.875rem 1rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+  color: var(--color-tinta-suave);
+  font: 0.9375rem/1.4 var(--fuente-texto);
+}
+
+.mapa-real [class~="maplibregl-popup-close-button"] {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radio-boton);
+  font-size: 1.25rem;
+}
+
+.mapa-globo-cuerpo {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.mapa-globo-cuerpo p {
+  margin: 0;
+}
+
+.mapa-globo-nombre {
+  color: var(--color-tinta);
+  font: 800 1.0625rem/1.2 var(--fuente-titulo);
+}
+
+.mapa-globo-cuerpo a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  font-weight: 700;
+}
+
+.mapa-real [class~="maplibregl-ctrl-attrib"] {
+  border-radius: var(--radio-boton) 0 0 0;
+  font-size: 0.75rem;
+}
+
+/* --- La lista ---------------------------------------------------------------------------------- */
+
+.mapa-lista :is(h2, h3) {
+  margin: 0 0 1rem;
+}
+
+.estaciones {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.estacion-ficha {
+  padding: 1rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+  scroll-margin-top: 1rem;
+}
+
+/* La ficha a la que se llegó con #entidad-<clave>: el fondo verde claro, sin el recuadro verde (regla
+   general de la ronda del 2026-11-09, tarde). */
+.estacion-ficha:target {
+  background: var(--color-acento-claro);
+}
+
+.estacion-cabeza {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.estacion-cabeza > div {
+  min-width: 0;
+}
+
+.estacion-cabeza :is(h3, h4) {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-tinta);
+  font: 800 1.1875rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+.estacion-cabeza p {
+  margin: 0;
+}
+
+.estacion-sello {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.estacion-entregas {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--color-tinta-suave);
+  list-style: none;
+}
+
+.estacion-entregas > li {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.25rem 0.75rem;
+}
+
+.estacion-entregas p {
+  margin: 0;
+  color: var(--color-tinta);
+}
+
+.estacion-entregas .boton {
+  grid-column: 2;
+}
+
+/* --- El mapa con la lista plegada (R11-19, publico-mapa) --------------------------------------------
+   `<div class="pila" data-parte="mapa">` junta el mapa, la lista oculta de sus puntos y los botones
+   de salida (`[data-parte="salidas"]`), debajo del mapa. La lista va plegada: cada `.estacion-ficha` lleva un
+   `.plegable` (número, nombre y cantidad; abierto, el barrio y sus entregas), de a una página. */
+.mapa-cuerpo > [data-parte="mapa"] {
+  min-width: 0;
+}
+
+/* Los botones, apilados y a lo ancho en el celular ("Quiero donar" primero). */
+.mapa-cuerpo [data-parte="salidas"] > .boton {
+  flex: 1 1 100%;
+  justify-content: center;
+}
+
+.estaciones:has(> .estacion-ficha > .plegable) {
+  gap: var(--espacio-2);
+}
+
+.estacion-ficha:has(> .plegable) {
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.estacion-ficha:target > .plegable {
+  background: var(--color-acento-claro);
+}
+
+.estacion-ficha > .plegable > summary {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.estacion-ficha > .plegable .plegable-titulo > b {
+  overflow-wrap: anywhere;
+  font-size: var(--tamano-grande);
+}
+
+/* Mientras llega otra página de la lista (HTMX), la que está queda a la vista, atenuada. */
+.mapa-lista[aria-busy="true"] {
+  opacity: 0.6;
+}
+
+@media (min-width: 37.5em) {
+  .mapa-cuerpo [data-parte="salidas"] > .boton {
+    flex: 0 1 auto;
+  }
+}
+
+@media (min-width: 68.75em) {
+  .mapa-cuerpo {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+
+  .mapa-dibujo {
+    position: sticky;
+    top: calc(var(--medida-cabecera-fija) + 1rem);
+  }
+
+  .mapa-real {
+    aspect-ratio: auto;
+    height: min(40rem, 100vh - 2rem);
+  }
+
+  /* El mapa y los botones quedan fijos mientras se recorre la lista. */
+  .mapa-cuerpo > [data-parte="mapa"] {
+    position: sticky;
+    top: calc(var(--medida-cabecera-fija) + 1rem);
+  }
+
+  .mapa-cuerpo > [data-parte="mapa"] .mapa-real {
+    aspect-ratio: auto;
+    height: min(40rem, 100vh - 10rem);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mapa-marcador {
+    transition: var(--movimiento-transicion-atenua);
+  }
+
+  .estacion {
+    transition: var(--movimiento-transicion-atenua);
+  }
+}
+
+/* Con "reducir movimiento", el aviso de «Usá Ctrl y la rueda» de MapLibre aparece sin fundido (la
+   biblioteca le pone su propia transición de opacidad, y su hoja va sin capa: solo el !important de una
+   capa le gana). */
+@media (prefers-reduced-motion: reduce) {
+  .mapa-real [class~="maplibregl-cooperative-gesture-screen"] {
+    transition: none !important;
+  }
+}
+
+/* Los controles, el globo y la atribución de MapLibre, con la estética del sitio: papel, tinta,
+   esquinas redondeadas y la sombra plana de los botones. Son clases de la biblioteca (maplibregl-*),
+   no del catálogo: se nombran por atributo para dejar claro que no son nuestras. */
+.mapa-real [class~="maplibregl-ctrl-group"] {
+  overflow: hidden;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-boton);
+  background: var(--color-campo);
+  box-shadow: 0.1875rem 0.1875rem 0 var(--color-tinta);
+}
+
+.mapa-real [class~="maplibregl-ctrl-group"] button + button {
+  border-top: 1px solid var(--color-filete);
+}
+
+/* Piso de toque de 48 px: los botones de zoom (29 px en la biblioteca) y los enlaces de la atribución
+   (14 px de alto). La atribución sigue visible (D21); solo crece el alto del enlace. El !important
+   es solo de los botones: la hoja de MapLibre va sin capa y le gana a esta, que está en `bloques`. */
+.mapa-real [class~="maplibregl-ctrl-group"] button {
+  width: 3rem !important;
+  height: 3rem !important;
+}
+
+.mapa-real [class~="maplibregl-ctrl-attrib"] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
+.mapa-real [class~="maplibregl-popup-content"] {
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-boton);
+  background: var(--color-campo);
+  box-shadow: 0.1875rem 0.1875rem 0 var(--color-tinta);
+  color: var(--color-tinta);
+  font: inherit;
+}
+
+.mapa-real [class~="maplibregl-popup-tip"] {
+  display: none;
+}
+
+.mapa-real [class~="maplibregl-ctrl-attrib"] {
+  border-radius: var(--radio-boton) 0 0;
+  background: var(--color-campo);
+  color: var(--color-tinta-suave);
+  font-size: 0.75rem;
+}

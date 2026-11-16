@@ -1,0 +1,87 @@
+/* Bloque info (2026-11-09): un botón con el ícono de información que abre un globo con más
+   información. El globo es un popover nativo: anda con toque, teclado y sin JavaScript. Con
+   posicionamiento por ancla (el popover queda anclado al botón que lo abre) sale arriba del botón; sin
+   él, queda centrado en la pantalla. Se carga en la capa `bloques` desde app.css. Catálogo:
+   docs/interfaz/componentes.md. */
+.info {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+/* El área de toque es de 48 px aunque el ícono mida 28. */
+.info-boton {
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-tinta);
+  cursor: pointer;
+}
+
+.info-boton svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.info-circulo {
+  fill: var(--color-tinta);
+}
+
+.info-letra {
+  fill: var(--color-papel);
+}
+
+.info-boton:hover .info-circulo,
+.info:has(.info-globo:popover-open) .info-circulo {
+  fill: var(--color-acento);
+}
+
+.info-boton:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.info-globo {
+  width: min(20rem, 100% - 2rem);
+  margin: auto;
+  padding: 1rem 1.125rem;
+  border: 1px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+  color: var(--color-tinta-suave);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  text-align: start;
+}
+
+.info-globo:popover-open {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.info-titulo {
+  color: var(--color-tinta);
+  font-family: var(--fuente-titulo);
+}
+
+.info-globo a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  font-weight: 700;
+}
+
+/* Anclado al botón que lo abre: arriba, y abajo si no entra. */
+@supports (position-area: top) {
+  .info-globo {
+    margin: 0.5rem;
+    position-area: top;
+    position-try-fallbacks: flip-block;
+  }
+}

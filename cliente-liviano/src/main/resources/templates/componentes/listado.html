@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<!--/* Componente listado (R11-B04, decisión del usuario del 2026-11-11: "rediseñar el componente, no
+       convence el de pastillas"): la barra de búsqueda y filtros de toda lista. Reemplaza a la fila
+       de pastillas (componentes/filtros) en las listas: los campos se ven abiertos, con su rótulo
+       arriba, y la fecha es un rango que elige la persona (desde y hasta), no un menú de períodos.
+
+       Un solo formulario GET con role="search" y hx-boost: sin JavaScript se completa y se envía con
+       "Filtrar" (o Enter en un campo de texto); con JavaScript cambia la lista sin recargar. Nada se
+       envía solo al cambiar un campo (WCAG 3.2.2). Los campos van siempre en este orden y con estos
+       parámetros: Buscar (buscar), la fecha (desde y hasta), Estado (estado), Categoría (categoria),
+       quién (quien: el donante o la organización del ítem), los propios de la pantalla, Ordenar
+       (orden), y al final "Filtrar" y "Sacar los filtros". Cada pantalla dibuja los que su ítem tiene
+       y su fuente resuelve.
+
+       En el celular, con JavaScript (Alpine.data("listado"), static/js/interfaz.js), los campos se
+       pliegan debajo de un botón ("Filtros", "Orden" o "Filtros y orden", según lo que haya) con
+       cuántos hay elegidos, solo con dos campos o más; sin JavaScript se ven abiertos,
+       uno al lado del otro. Desde 68,75 em se ven siempre. Su hoja es
+       static/css/componentes/listado.css. Catálogo: docs/interfaz/componentes.md.
+
+       Fragmento:
+       - listado(l): l es un vistas.Listado (lo arma el controller o la vista de la pantalla). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<form th:fragment="listado(l)" class="listado" role="search" method="get" hx-boost="true"
+      action="/donante-donaciones" th:action="${l.ruta}" aria-label="Filtrar las donaciones"
+      th:aria-label="${l.rotulo}" x-data="listado" x-bind:data-plegado="plegado"
+      th:hx-indicator="${l.indicador != null} ? |#${l.indicador.id}| : null"
+      hx-disinherit="hx-indicator hx-select-oob"
+      th:with="n=${l.elegidos()}" th:data-pliegue="${l.conPliegue()} ? null : 'no'">
+  <input th:each="o : ${l.ocultos}" type="hidden" th:name="${o.nombre}" th:value="${o.valor}">
+
+  <div th:if="${l.buscar != null}" class="campo listado-buscar">
+    <label th:for="|${l.id}-buscar|" for="donaciones-buscar" th:text="${l.buscar.rotulo}">Buscar por lo que se
+      donó</label>
+    <input th:id="|${l.id}-buscar|" id="donaciones-buscar" th:name="${l.buscar.nombre}" name="buscar"
+           type="search" autocomplete="off" maxlength="100" th:value="${l.buscar.valor}"
+           th:placeholder="${l.buscar.ejemplo}" placeholder="Por ejemplo: leche">
+  </div>
+
+  <!--/* Solo con JavaScript y en el celular, y solo con dos campos o más además de la búsqueda:
+         abre y cierra los campos. Su texto dice lo que hay adentro (Listado.rotuloDelPliegue). */-->
+  <button th:if="${l.conPliegue()}" class="boton listado-alternar" data-tono="secundario" type="button" hidden
+          x-bind:hidden="sinBoton" x-on:click="alternar" x-bind:aria-expanded="expandido"
+          th:aria-controls="|${l.id}-campos|" aria-controls="donaciones-campos"><th:block
+      th:text="${l.rotuloDelPliegue()}">Filtros y orden</th:block><th:block
+      th:if="${n > 0}" th:text="| (${n})|"> (2)</th:block></button>
+
+  <div class="listado-campos" th:id="|${l.id}-campos|" id="donaciones-campos">
+    <fieldset th:if="${l.fecha != null}" class="listado-fecha">
+      <legend th:text="${l.fecha.rotulo}">Registrada</legend>
+      <div class="campo">
+        <label th:for="|${l.id}-desde|" for="donaciones-desde">Desde</label>
+        <input th:id="|${l.id}-desde|" id="donaciones-desde"
+               name="desde" type="date" th:value="${l.fecha.desde}">
+      </div>
+      <div class="campo">
+        <label th:for="|${l.id}-hasta|" for="donaciones-hasta">Hasta</label>
+        <input th:id="|${l.id}-hasta|" id="donaciones-hasta"
+               name="hasta" type="date" th:value="${l.fecha.hasta}">
+      </div>
+    </fieldset>
+
+    <th:block th:if="${l.estado != null}"><div th:replace="~{componentes/listado :: eleccion(${l.id}, ${l.estado})}"></div></th:block>
+    <th:block th:if="${l.categoria != null}"><div th:replace="~{componentes/listado :: eleccion(${l.id}, ${l.categoria})}"></div></th:block>
+
+    <div th:if="${l.quien != null}" class="campo">
+      <label th:for="|${l.id}-quien|" for="donaciones-quien" th:text="${l.quien.rotulo}">Donante</label>
+      <input th:id="|${l.id}-quien|" id="donaciones-quien" th:name="${l.quien.nombre}" name="quien"
+             type="search" autocomplete="off" maxlength="100" th:value="${l.quien.valor}"
+             th:placeholder="${l.quien.ejemplo}" placeholder="Por ejemplo: Ana">
+    </div>
+
+    <th:block th:each="e : ${l.otras}">
+      <div th:replace="~{componentes/listado :: eleccion(${l.id}, ${e})}"></div>
+    </th:block>
+
+    <label th:each="c : ${l.casillas}" class="listado-casilla"><input type="checkbox" th:name="${c.nombre}"
+           name="ya" th:value="${c.valor}" value="si" th:checked="${c.prendida}"><span
+        th:text="${c.rotulo}">Ya doné</span></label>
+
+    <th:block th:if="${l.orden != null}"><div th:replace="~{componentes/listado :: eleccion(${l.id}, ${l.orden})}"></div></th:block>
+
+    <div class="listado-acciones">
+      <button class="boton" data-tono="principal" type="submit"
+              th:text="${l.soloBusqueda()} ? 'Buscar' : 'Filtrar'">Filtrar</button>
+      <a th:if="${l.conSacar()}" class="listado-sacar" href="/donante-donaciones"
+         th:href="${l.sacar}" th:text="${l.soloBusqueda()} ? 'Borrar la búsqueda' : 'Sacar los filtros'">Sacar
+        los filtros</a>
+    </div>
+  </div>
+  <th:block th:if="${l.indicador != null}"><p
+      th:replace="~{envio :: indicador(${l.indicador.id}, ${l.indicador.texto})}"></p></th:block>
+</form>
+
+<!--/* Un desplegable de la barra: su rótulo arriba y sus opciones; los grupos, después. */-->
+<div th:fragment="eleccion(id, e)" class="campo">
+  <label th:for="|${id}-${e.nombre}|" for="donaciones-estado" th:text="${e.rotulo}">Estado</label>
+  <select th:id="|${id}-${e.nombre}|" id="donaciones-estado" th:name="${e.nombre}" name="estado">
+    <option th:each="o : ${e.opciones}" th:value="${o.valor}" th:selected="${e.elegido == o.valor}"
+            th:text="${o.texto}" value="">Todos</option>
+    <optgroup th:each="g : ${e.grupos}" th:label="${g.texto}" label="Alimentos">
+      <option th:each="o : ${g.opciones}" th:value="${o.valor}" th:selected="${e.elegido == o.valor}"
+              th:text="${o.texto}" value="arroz">Arroz</option>
+    </optgroup>
+  </select>
+</div>
+</body>
+</html>

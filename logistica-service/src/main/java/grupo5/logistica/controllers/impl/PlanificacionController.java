@@ -1,5 +1,8 @@
 package grupo5.logistica.controllers.impl;
 
+import static grupo5.logistica.seguridad.Acceso.ADMIN;
+import static grupo5.logistica.seguridad.Acceso.ADMIN_O_SERVICIO;
+
 import grupo5.logistica.controllers.IPlanificacionController;
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
@@ -7,6 +10,7 @@ import grupo5.logistica.services.IPlanificacionService;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  * proveedor de rutas y la consulta de una solicitud ya existente.
  */
 @RestController
+@PreAuthorize(ADMIN)
 @RequestMapping("/api/logistica")
 public class PlanificacionController implements IPlanificacionController {
   private final IPlanificacionService planificacionService;
@@ -29,6 +34,7 @@ public class PlanificacionController implements IPlanificacionController {
   }
 
   @Override
+  @PreAuthorize(ADMIN_O_SERVICIO)
   @PostMapping({"/resultados", "/callback/rutas"})
   public ResponseEntity<SolicitudPlanificacionResponseDTO> procesarCallback(
       @Valid @RequestBody CallbackPlanificacionRequestDTO dto) {

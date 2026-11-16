@@ -1,0 +1,84 @@
+/* Bloque paginas (R11-11, ficha docs/interfaz/flujos/r11-p1-paginador.md): el paginador del sitio,
+   debajo de todo listado completo y centrado. Fragmento: templates/componentes/paginas.html. Se
+   carga en la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md.
+   Primero el celular: la forma corta (‹ 3 de 9 ›). Desde 37,5 em (el corte de navegacion.css), la
+   larga (« ‹ 1 2 3 … 9 › »), salvo con data-forma="corta" (las columnas del tablero de la empresa).
+   Las reglas apuntan a la lista de adentro: Mis donaciones y Entidades del donante todavía tienen su
+   propio nav.paginas, con su regla en la hoja de la pantalla, hasta que adopten este componente. */
+.paginas > ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paginas li {
+  display: flex;
+  margin: 0;
+}
+
+/* Cada casilla, de al menos 48 × 48 px, en contorno de tinta como el botón secundario. */
+.paginas li > a,
+.paginas li > span:not(.solo-lectores) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3rem;
+  min-height: 3rem;
+  padding: 0 0.75rem;
+  border-radius: var(--radio-boton);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}
+
+.paginas li > a {
+  box-shadow: inset 0 0 0 2px var(--color-tinta);
+  background: var(--color-papel);
+  color: var(--color-tinta);
+}
+
+.paginas li > a:hover {
+  background: var(--color-acento-claro);
+}
+
+/* La actual: llena del acento, no solo otro color (fondo, letra clara y peso). */
+.paginas li > [aria-current="page"] {
+  background: var(--color-acento);
+  color: var(--color-papel);
+}
+
+/* Lo que no sigue: se ve, sin contorno y apagado, para que el paginador no cambie de ancho. */
+.paginas li > [data-estado="apagado"] {
+  color: var(--color-tinta-suave);
+  font-weight: 400;
+}
+
+/* El "…" y el lugar ("3 de 9") son texto, sin contorno. */
+.paginas-hueco > span,
+.paginas-lugar > span {
+  color: var(--color-tinta-suave);
+}
+
+.paginas .paginas-lugar > span:not(.solo-lectores) {
+  padding: 0 var(--espacio-2);
+}
+
+.paginas .paginas-extremo,
+.paginas .paginas-numero {
+  display: none;
+}
+
+@media (min-width: 37.5em) {
+  .paginas:not([data-forma="corta"]) :is(.paginas-extremo, .paginas-numero) {
+    display: flex;
+  }
+
+  .paginas:not([data-forma="corta"]) .paginas-lugar {
+    display: none;
+  }
+}

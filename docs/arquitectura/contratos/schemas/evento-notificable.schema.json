@@ -179,6 +179,11 @@
           "type": "string",
           "minLength": 1,
           "description": "Descripción sintética de la donación asignada"
+        },
+        "referenciaId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Donación a la que se refiere el evento (HB-09). Opcional; queda guardada en la notificación"
         }
       },
       "required": ["tipo", "personaId", "fecha", "personaBeneficiariaId", "descripcion"],
@@ -216,6 +221,11 @@
         "patenteCamion": {
           "type": "string",
           "description": "Identificador del camión que completó la entrega (opcional)"
+        },
+        "referenciaId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Donación a la que se refiere el evento (HB-09). Opcional; queda guardada en la notificación"
         }
       },
       "required": ["tipo", "personaId", "fecha", "personaBeneficiariaId", "descripcion"],
@@ -253,6 +263,11 @@
         "urlMapa": {
           "type": "string",
           "description": "URL pública o tracking code para seguir el camión (opcional)"
+        },
+        "referenciaId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Donación a la que se refiere el evento (HB-09). Opcional; queda guardada en la notificación"
         }
       },
       "required": ["tipo", "personaId", "fecha", "personaBeneficiariaId", "descripcion"],
@@ -300,6 +315,11 @@
         "replanificable": {
           "type": "boolean",
           "description": "Indica si la entrega califica para reintento automático"
+        },
+        "referenciaId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Donación a la que se refiere el evento (HB-09). Opcional; queda guardada en la notificación"
         }
       },
       "required": [
@@ -346,6 +366,11 @@
         "motivo": {
           "type": "string",
           "minLength": 1
+        },
+        "referenciaId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Donación a la que se refiere el evento (HB-09). Opcional; queda guardada en la notificación"
         }
       },
       "required": ["tipo", "personaId", "fecha", "personaAdminId", "descripcion", "motivo"],

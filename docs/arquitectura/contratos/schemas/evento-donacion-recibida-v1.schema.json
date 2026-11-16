@@ -35,6 +35,11 @@
       "type": "string",
       "minLength": 1,
       "description": "Patente del camión que completó la entrega"
+    },
+    "donacionIndependienteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Opcional (HB-09). Identificador de la donación independiente a la que se refiere el aviso; permite enlazar la notificación con el detalle de la donación"
     }
   },
   "required": ["donanteId", "personaId", "fecha", "personaBeneficiariaId", "descripcion", "patenteCamion"],

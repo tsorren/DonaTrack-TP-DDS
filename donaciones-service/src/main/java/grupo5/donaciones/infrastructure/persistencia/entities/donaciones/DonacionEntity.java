@@ -40,6 +40,9 @@ public class DonacionEntity {
   @Column(name = "estado_donacion", nullable = false, length = 20)
   private EstadoDonacion estado;
 
+  @Column(name = "nombre_oculto", nullable = false)
+  private boolean nombreOculto;
+
   @ManyToOne
   @JoinColumn(name = "id_deposito_donde_esta")
   private DepositoEntity deposito;

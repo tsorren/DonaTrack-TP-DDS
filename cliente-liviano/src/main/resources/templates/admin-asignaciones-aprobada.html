@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Raíces, Asignar donaciones después de aprobar una propuesta (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.7). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Hecho - Asignar donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-asignaciones :: hoja('aprobada')}"></th:block>
+</th:block>
+</body>
+</html>

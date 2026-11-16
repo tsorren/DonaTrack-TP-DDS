@@ -1,0 +1,100 @@
+/* Las piezas del dibujo de las entregas (la tierra, el brote y las raíces de cada entrega, como en K) y el
+   pictograma de categoría en su cuadro salvia. Los comparten las pantallas privadas que muestran
+   entregas: Seguir entregas y Confirmar recepción. Los sellos de estado son el bloque
+   componentes/sello.css. */
+
+/* --- El dibujo -------------------------------------------------------------------------------- */
+/* La tierra no es parte del dibujo: la pinta el fondo de su marco, bajo la línea de tierra, para
+   que la textura impresa quede detrás de las raíces (app.css, .tierra-impresa). */
+
+.dibujo-tierra {
+  stroke: var(--color-tinta);
+  stroke-width: 3;
+}
+
+.dibujo-tallo {
+  stroke: var(--color-tallo);
+  stroke-width: 4;
+}
+
+.dibujo .dibujo-hoja {
+  fill: var(--color-hoja);
+}
+
+/* En el celular el dibujo es chico: los nombres los dice la lista, con el mismo número. */
+.dibujo-rotulo {
+  display: none;
+  fill: var(--color-texto-suelo);
+  font: 700 15px var(--fuente-titulo);
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--color-suelo);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+
+.dibujo-rotulo--papel {
+  fill: var(--color-tinta);
+  stroke: var(--color-papel);
+  text-anchor: start;
+}
+
+/* Las líneas de cada entrega, como las raíces de K (estética de K, 2026-11-08; antes, líneas de subte
+   paja con borde): lo recorrido, una raíz paja llena; lo que falta, punteada. Los nombres de las
+   piezas siguen siendo los de antes (subte-*) para no tocar los dibujos. */
+.dibujo path {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.subte-borde {
+  stroke: none;
+}
+
+.subte-linea {
+  stroke: var(--color-raiz);
+  stroke-width: 5;
+}
+
+.subte-hueco {
+  stroke: var(--color-raiz);
+  stroke-width: 3;
+  stroke-dasharray: 2 9;
+}
+
+.subte-hueco-centro {
+  stroke: none;
+}
+
+.subte-estacion {
+  fill: var(--color-raiz);
+  stroke: var(--color-suelo);
+  stroke-width: 3;
+}
+
+/* El pictograma de categoría, impreso en un cuadro salvia, como en el cuaderno de la portada. Con
+   aire alrededor (viewBox="-14 -14 128 128"), el `use` lleva width="100" height="100": sin eso, el
+   símbolo ocupa el 100 % del viewBox desde el 0 y queda corrido abajo y a la derecha (2026-11-09,
+   tarde: íconos centrados en su caja). */
+.categoria-icono {
+  width: 1.75rem;
+  height: 1.75rem;
+  /* Redondeado, como el resto de las cajas (ronda del 2026-11-09, regla general 4). */
+  border-radius: var(--radio-boton);
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  fill: var(--color-tinta);
+}
+
+/* Los pictogramas (iconos.html) se definen una vez y no ocupan lugar. */
+.iconos {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+@media (min-width: 37.5em) {
+  .dibujo-rotulo {
+    display: inline;
+  }
+}

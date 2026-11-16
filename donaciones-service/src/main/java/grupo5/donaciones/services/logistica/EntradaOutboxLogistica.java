@@ -18,6 +18,7 @@ public class EntradaOutboxLogistica {
   private final DatosEntregaLogistica datos;
   private final String traceId;
   private final int maxIntentos;
+  private final TipoEntradaOutbox tipo;
   private int intentos;
   private LocalDateTime proximoIntento;
   private EstadoEntradaOutbox estado;
@@ -28,7 +29,8 @@ public class EntradaOutboxLogistica {
       DatosEntregaLogistica datos,
       String traceId,
       int maxIntentos,
-      LocalDateTime disponibleDesde) {
+      LocalDateTime disponibleDesde,
+      TipoEntradaOutbox tipo) {
     this.id = UUID.randomUUID();
     this.solicitudId = solicitudId;
     this.proveedorId = proveedorId;
@@ -38,6 +40,7 @@ public class EntradaOutboxLogistica {
     this.intentos = 0;
     this.proximoIntento = disponibleDesde;
     this.estado = EstadoEntradaOutbox.PENDIENTE;
+    this.tipo = tipo;
   }
 
   private EntradaOutboxLogistica(RegistroEntradaOutbox registro) {
@@ -50,6 +53,7 @@ public class EntradaOutboxLogistica {
     this.intentos = registro.intentos();
     this.proximoIntento = registro.proximoIntento();
     this.estado = registro.estado();
+    this.tipo = registro.tipo() != null ? registro.tipo() : TipoEntradaOutbox.SOLICITUD;
   }
 
   /** Reconstituye una entrada guardada (adaptador JPA del outbox): no valida. */
@@ -69,7 +73,43 @@ public class EntradaOutboxLogistica {
       int maxIntentos,
       LocalDateTime disponibleDesde) {
     return new EntradaOutboxLogistica(
-        solicitudId, proveedorId, datos, traceId, maxIntentos, disponibleDesde);
+        solicitudId,
+        proveedorId,
+        datos,
+        traceId,
+        maxIntentos,
+        disponibleDesde,
+        TipoEntradaOutbox.SOLICITUD);
+  }
+
+  /**
+   * Cancelación de la entrega de una solicitud (HB-19). {@code datos} lleva la donación; el
+   * proveedor al que se manda se resuelve al enviarla, con la solicitud ya {@code ENVIADA}.
+   */
+  public static EntradaOutboxLogistica cancelacion(
+      UUID solicitudId,
+      String proveedorId,
+      DatosEntregaLogistica datos,
+      String traceId,
+      int maxIntentos,
+      LocalDateTime disponibleDesde) {
+    return new EntradaOutboxLogistica(
+        solicitudId,
+        proveedorId,
+        datos,
+        traceId,
+        maxIntentos,
+        disponibleDesde,
+        TipoEntradaOutbox.CANCELACION);
+  }
+
+  public boolean esCancelacion() {
+    return tipo == TipoEntradaOutbox.CANCELACION;
+  }
+
+  /** La cancelación espera a que la solicitud quede {@code ENVIADA}: no gasta un intento. */
+  public void posponer(LocalDateTime hasta) {
+    this.proximoIntento = hasta;
   }
 
   public boolean estaPendiente() {

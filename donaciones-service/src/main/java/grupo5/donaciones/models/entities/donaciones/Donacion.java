@@ -8,6 +8,7 @@ import grupo5.donaciones.models.entities.donaciones.events.DonacionCargada;
 import grupo5.donaciones.models.entities.donaciones.events.DonacionNormalizada;
 import grupo5.donaciones.models.entities.donaciones.events.DonacionSegmentada;
 import grupo5.donaciones.models.entities.donaciones.events.EventoDonacion;
+import grupo5.donaciones.models.entities.donantes.Donante;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +39,9 @@ public class Donacion extends AgregadoConEventos<EventoDonacion> {
 
   private EstadoDonacion estadoActual;
   private final List<CambioEstadoDonacion> historialEstados;
+
+  /** "Esta vez, sin mi nombre" (HB-20): solo oculta, no muestra lo que el perfil oculta. */
+  private boolean nombreOculto;
 
   public Donacion(
       UUID donanteId, Deposito depositoRecepcion, String descripcion, LocalDateTime fecha) {
@@ -71,6 +75,15 @@ public class Donacion extends AgregadoConEventos<EventoDonacion> {
     this.items = items != null ? new ArrayList<>(items) : new ArrayList<>();
     this.historialEstados =
         historialEstados != null ? new ArrayList<>(historialEstados) : new ArrayList<>();
+  }
+
+  public void ocultarNombre() {
+    this.nombreOculto = true;
+  }
+
+  /** La entidad ve el nombre solo si ni el perfil del donante ni esta donación lo ocultan. */
+  public boolean muestraNombreDe(Donante donante) {
+    return !nombreOculto && donante.muestraNombre();
   }
 
   public List<ItemDonacion> getItems() {

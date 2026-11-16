@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Raíces, Activar cuenta, el enlace pedido: el mismo aviso exista o no la cuenta (RNF-AUTH-10). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-ingresar', ~{::contenido})}">
+<head>
+  <title>Enlace pedido - Activar cuenta - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{publico-activar-pedir :: hoja(true)}"></th:block>
+</th:block>
+</body>
+</html>

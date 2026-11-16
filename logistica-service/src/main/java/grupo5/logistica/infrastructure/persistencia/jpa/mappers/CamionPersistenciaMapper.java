@@ -4,6 +4,7 @@ import grupo5.logistica.infrastructure.persistencia.jpa.entities.CambioEstadoCam
 import grupo5.logistica.infrastructure.persistencia.jpa.entities.CamionEntity;
 import grupo5.logistica.models.entities.camiones.CambioEstadoCamion;
 import grupo5.logistica.models.entities.camiones.Camion;
+import grupo5.logistica.models.entities.camiones.PosicionCamion;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -38,6 +39,10 @@ public class CamionPersistenciaMapper {
     entity.setCapacidadPeso(aDouble(domain.getCapacidadKG()));
     entity.setAltura(aDouble(domain.getAltura()));
     entity.setEstadoCamion(domain.getEstado());
+    PosicionCamion posicion = domain.getPosicion();
+    entity.setPosicionLatitud(posicion != null ? posicion.latitud() : null);
+    entity.setPosicionLongitud(posicion != null ? posicion.longitud() : null);
+    entity.setPosicionRegistradaEn(posicion != null ? posicion.registradaEn() : null);
     if (existing == null && domain.getVersion() != null) {
       entity.setVersion(domain.getVersion());
     }
@@ -76,7 +81,8 @@ public class CamionPersistenciaMapper {
         aFloat(entity.getAltura()),
         entity.getEstadoCamion(),
         historial,
-        entity.getVersion());
+        entity.getVersion(),
+        aPosicion(entity));
   }
 
   private static void sincronizarHistorial(Camion domain, CamionEntity entity) {
@@ -97,6 +103,17 @@ public class CamionPersistenciaMapper {
       nuevo.setTimestamp(aInstantUtc(cambio.timestamp()));
       historialEntity.add(nuevo);
     }
+  }
+
+  private static PosicionCamion aPosicion(CamionEntity entity) {
+    // ck_camion_posicion_completa (V6) garantiza que las tres columnas vienen juntas o ninguna.
+    if (entity.getPosicionRegistradaEn() == null) {
+      return null;
+    }
+    return new PosicionCamion(
+        entity.getPosicionLatitud(),
+        entity.getPosicionLongitud(),
+        entity.getPosicionRegistradaEn());
   }
 
   private static Double aDouble(Float valor) {

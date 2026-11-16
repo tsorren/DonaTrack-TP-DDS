@@ -217,6 +217,8 @@ public class GlobalExceptionHandler {
         || ex.getError() == ErrorCatalog.INSIGNIA_NO_ENCONTRADA
         || ex.getError() == ErrorCatalog.RANKING_NO_ENCONTRADO) {
       status = HttpStatus.NOT_FOUND;
+    } else if (ex.getError() == ErrorCatalog.CONTACTO_LIMITE_EXCEDIDO) {
+      status = HttpStatus.TOO_MANY_REQUESTS;
     }
     log.warn(
         "[ERROR-HANDLER] [ERROR-CODE: {}] [EXCEPTION: {}] - Business state exception: {}",

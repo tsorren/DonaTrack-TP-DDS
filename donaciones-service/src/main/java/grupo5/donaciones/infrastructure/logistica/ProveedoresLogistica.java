@@ -28,6 +28,11 @@ public class ProveedoresLogistica implements ICatalogoProveedoresLogistica {
     return porId.containsKey(proveedorId);
   }
 
+  @Override
+  public boolean admiteCancelacion(String proveedorId) {
+    return buscar(proveedorId).map(IProveedorLogistica::admiteCancelacion).orElse(false);
+  }
+
   public int cantidad() {
     return porId.size();
   }

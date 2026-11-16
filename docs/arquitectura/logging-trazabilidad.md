@@ -12,6 +12,9 @@ El subsistema de observabilidad en `grupo5.common.logging` proporciona logging d
 HTTP Request / Inbound
     │
     ▼
+ServerHttpObservationFilter de Spring Boot (Brave abre el span; XTraceIdPropagationFactory adopta el X-Trace-Id)
+    │
+    ▼
 TraceResponseHeaderFilter (Inyecta cabecera HTTP X-Trace-Id en Response)
     │
     ▼
@@ -49,6 +52,22 @@ Configurado en `common-lib/src/main/resources/logback-spring.xml` con formato de
 * **`ScheduledJobLoggingAspect.java`**: Genera un span y `traceId` dedicado para cada ejecución de cron jobs (`@Scheduled`), como la verificación de inactividad o cálculo de rachas.
 * **`FeignTraceRequestInterceptor.java`**: Propaga las cabeceras de trazabilidad en llamadas Feign entre microservicios.
 * **`MdcTaskDecorator.java`**: Propaga el contexto de trazabilidad hacia hilos asíncronos (`@Async`).
+* **`XTraceIdPropagationFactory.java`**: Hace que Brave adopte el `X-Trace-Id` entrante como `traceId` del span del servidor (ADR-E6-02, `proposed`: el cliente liviano lo genera en `TraceIdFiltro` y lo manda en cada llamada a las APIs). `LoggingAutoConfiguration` la registra con un `BeanPostProcessor` que envuelve la `Propagation.Factory` de Spring Boot, así toda app que use `common-lib` la toma sin configuración.
+
+### D. Cómo se elige el `traceId` de un pedido HTTP
+El span del servidor lo abre Micrometer Tracing (Brave) antes de `TraceResponseHeaderFilter`, y Brave carga su `traceId` en el MDC. Por eso el `traceId` sale de Brave, en este orden:
+
+1. Contexto W3C (`traceparent`) o B3 del pedido, si viene.
+2. `X-Trace-Id`, si tiene el formato de `common-lib`: 32 caracteres hexadecimales en minúscula, con las dos mitades de 16 caracteres distintas de cero (con la alta en cero, Brave lo imprimiría con 16 caracteres; con la baja en cero, no lo acepta). Se conserva la decisión de muestreo que haya llegado, por ejemplo `b3: 0`.
+3. Uno nuevo, generado por Brave.
+
+`TraceResponseHeaderFilter` devuelve en `X-Trace-Id` el mismo valor del MDC. Sin tracing en el classpath, el filtro usa el header tal como llega (o `X-Request-Id`, o un UUID).
+
+[VERIFIED] 2026-11-07: `curl -H "X-Trace-Id: 0123456789abcdef0123456789abcdef" http://localhost:8080/api/categorias` contra `donaciones-service` devuelve ese id y los logs del controller y del service lo muestran. `XTraceIdPropagationFactoryTest` levanta la autoconfiguración de Brave de Spring Boot y comprueba que la propagación queda envuelta.
+
+[INFERRED] Vale igual para `notificaciones-service`, `incentivos-service` y `logistica-service`: toman `LoggingAutoConfiguration` de `common-lib` y ninguno configura `management.tracing.*` ni una `Propagation.Factory` propia. No se probó con curl en esos tres.
+
+**Con el gateway (SPEC-07).** `api-gateway` toma la misma autoconfiguración, así que elige el `traceId` con este mismo orden. Después lo copia en el `X-Trace-Id` del pedido que manda al servicio, y el servicio lo adopta por el paso 2. A la respuesta le saca el `X-Trace-Id` del servicio para que el header no quede duplicado. [VERIFIED] 2026-11-07 con `RutasGatewayTest` y servicios falsos: el header enviado y el generado llegan al servicio y vuelven una sola vez.
 
 ---
 

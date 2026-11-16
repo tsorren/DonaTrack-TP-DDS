@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-entrega-cancelada.schema.json",
+  "title": "EventoEntregaCancelada",
+  "description": "Evento AMQP de vuelta que un proveedor de logística publica en logistica.exchange con routing key entrega.cancelada (alias __TypeId__ entrega.cancelada) cuando cancela una entrega que no había salido (HB-19, ADR 20261109-cancelacion-de-entregas-que-no-salieron). Va firmado con X-Proveedor-Id y X-Proveedor-Token como los otros cuatro eventos de vuelta. Puede repetirse: el proveedor lo vuelve a publicar si recibe otra vez la cancelación de una entrega ya cancelada.",
+  "type": "object",
+  "properties": {
+    "entregaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Entrega cancelada; con la donación, clave de idempotencia en Donaciones"
+    },
+    "donacionIndependienteId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "motivo": {
+      "type": "string",
+      "enum": ["NECESIDAD_DADA_DE_BAJA"]
+    },
+    "fechaCancelacion": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["entregaId", "donacionIndependienteId", "motivo", "fechaCancelacion"],
+  "additionalProperties": true
+}

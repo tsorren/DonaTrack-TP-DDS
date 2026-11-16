@@ -1,0 +1,26 @@
+/* La portada con la composición de la variante K (2026-11-08): las piezas son del componente huerta
+   (componentes/huerta.css); acá, solo dónde va cada una. El papel de arriba (la portada y cómo
+   funciona) y el de abajo (las cifras, las entregas del mes, quién participa, las preguntas y el
+   cierre) van centrados; la tierra con las raíces, a todo el ancho entre los dos. */
+@import url("app.css");
+
+main > .centro {
+  --espacio-entre: 4.5rem;
+  padding-block: 2rem 1rem;
+}
+
+/* El árbol de cómo funciona queda apoyado sobre la tierra. */
+main > .centro:first-child {
+  padding-bottom: 0;
+}
+
+main > .centro:last-child {
+  padding-top: 4rem;
+}
+
+@media (min-width: 53.75em) {
+  main > .centro {
+    --espacio-entre: 6rem;
+    padding-top: 3.5rem;
+  }
+}

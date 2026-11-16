@@ -1,0 +1,126 @@
+/* Mi perfil del donante en Raíces (mínimo): la elección de si las entidades ven tu nombre, en una
+   lámina de formulario, con el ejemplo de cada opción debajo de su texto, y la constancia de los
+   términos aceptados. */
+@import url("privado.css");
+@import url("formularios.css");
+
+.perfil {
+  width: 100%;
+  max-width: none;
+}
+
+.perfil-cuenta {
+  margin: 0 0 1.5rem;
+  font-size: 1.125rem;
+}
+
+.perfil .formulario {
+  width: 100%;
+  max-width: none;
+  margin-top: 0;
+}
+
+.perfil .opciones legend h2 {
+  margin: 0 0 0.25rem;
+}
+
+.perfil .opciones p {
+  margin: 0 0 0.5rem;
+}
+
+/* Cada opción, con su ejemplo debajo: el renglón crece y el sello queda arriba. */
+.perfil .opciones label {
+  align-items: flex-start;
+  padding: 0.5rem 0;
+}
+
+.perfil .opciones label span {
+  display: grid;
+  gap: 0.125rem;
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+.perfil .opciones small {
+  color: var(--color-tinta-suave);
+  font-weight: 400;
+}
+
+.perfil .opciones .nota {
+  margin: 0.5rem 0 0;
+}
+
+.perfil-legales {
+  margin-top: 2rem;
+}
+
+.perfil-legales h2 {
+  margin: 0 0 0.25rem;
+}
+
+.perfil-legales p {
+  margin: 0;
+}
+
+.perfil-legales a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+/* --- Los datos de la cuenta y los avisos (nota de Nico, 2026-11-04) ------------------------------ */
+.perfil-seccion > h2 {
+  margin: 0 0 0.25rem;
+}
+
+.perfil-seccion > p {
+  margin: 0 0 0.5rem;
+}
+
+.perfil-grupo {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.perfil-grupo legend {
+  padding: 0;
+  font-weight: 700;
+}
+
+.perfil-par {
+  display: grid;
+  align-items: end;
+  gap: 1rem;
+}
+
+.campo label small {
+  display: inline;
+  font-weight: 400;
+}
+
+.campo input[readonly] {
+  border-style: dashed;
+  background: transparent;
+}
+
+@media (min-width: 37.5em) {
+  .perfil-par {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .perfil-par--calle {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+  }
+}
+
+/* --- Las pestañas ---------------------------------------------------------------------------------
+   Son el bloque `.pestanas` (componentes/pestanas.css): "Cómo te ven", "Datos de la cuenta" y "Avisos",
+   como pestañas de carpeta sobre la lámina. Acá solo cómo se pega la lámina (el formulario) a su
+   pestaña: sin la esquina de arriba a la izquierda, que es la de la pestaña (el aire de arriba ya
+   lo quita `.perfil .formulario`). */
+.perfil .pestanas-panel > .formulario {
+  border-top-left-radius: 0;
+}

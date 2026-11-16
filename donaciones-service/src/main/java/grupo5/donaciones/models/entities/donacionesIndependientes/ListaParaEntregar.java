@@ -34,4 +34,11 @@ public class ListaParaEntregar implements EstadoDonacionIndependiente {
     }
     iniciarRecorrido(d, urlMapa, solicitud.getActor());
   }
+
+  @Override
+  public void liberarPorCancelacion(DonacionIndependiente d, String actor) {
+    // HB-19: Logística confirmó que la entrega no salió; vuelve al stock sin destino
+    d.asignarDestino(null);
+    d.cambiarEstado(new EnDeposito(), "Su necesidad se dio de baja", actor);
+  }
 }

@@ -8,7 +8,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import grupo5.common.logging.FeignTraceRequestInterceptor;
 import grupo5.logistica.config.RabbitMQConfig;
+import grupo5.logistica.dto.eventos.EventoEntregaCancelada;
+import grupo5.logistica.dto.eventos.EventoEntregaEnPuerta;
 import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
 import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.dto.eventos.EventoRutaAsignada;
@@ -22,6 +25,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
+import org.slf4j.MDC;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.core.MessageProperties;
@@ -97,5 +101,48 @@ class LogisticaEventPublisherTest {
             () -> new LogisticaEventPublisher(rabbitTemplate, "donatrack", token));
 
     assertTrue(error.getMessage().contains("LOGISTICA_TOKEN_VUELTA"));
+  }
+
+  @Test
+  void entregaCancelada_seFirmaYLlevaElTraceIdDelProceso() {
+    LogisticaEventPublisher publisher =
+        new LogisticaEventPublisher(rabbitTemplate, "donatrack", "token-sintetico");
+    UUID id = UUID.randomUUID();
+    MDC.put(FeignTraceRequestInterceptor.MDC_TRACE_KEY, "0af7651916cd43dd8448eb211c80319c");
+    try {
+      publisher.publicarEntregaCancelada(
+          new EventoEntregaCancelada(id, id, "NECESIDAD_DADA_DE_BAJA", LocalDateTime.now()));
+
+      MessageProperties propiedades =
+          propiedadesQueSeAgregan(RabbitMQConfig.ROUTING_KEY_ENTREGA_CANCELADA);
+      assertEquals("donatrack", propiedades.getHeader(RabbitMQConfig.HEADER_PROVEEDOR_ID));
+      assertEquals("token-sintetico", propiedades.getHeader(RabbitMQConfig.HEADER_PROVEEDOR_TOKEN));
+      assertEquals(
+          "0af7651916cd43dd8448eb211c80319c",
+          propiedades.getHeader(FeignTraceRequestInterceptor.TRACE_HEADER));
+    } finally {
+      MDC.remove(FeignTraceRequestInterceptor.MDC_TRACE_KEY);
+    }
+  }
+
+  @Test
+  void entregaEnPuerta_salePorSuRoutingKeyFirmadaYConElTraceId() {
+    LogisticaEventPublisher publisher =
+        new LogisticaEventPublisher(rabbitTemplate, "donatrack", "token-sintetico");
+    UUID id = UUID.randomUUID();
+    MDC.put(FeignTraceRequestInterceptor.MDC_TRACE_KEY, "0af7651916cd43dd8448eb211c80319c");
+    try {
+      publisher.publicarEntregaEnPuerta(new EventoEntregaEnPuerta(id, id, LocalDateTime.now()));
+
+      MessageProperties propiedades =
+          propiedadesQueSeAgregan(RabbitMQConfig.ROUTING_KEY_ENTREGA_EN_PUERTA);
+      assertEquals("donatrack", propiedades.getHeader(RabbitMQConfig.HEADER_PROVEEDOR_ID));
+      assertEquals("token-sintetico", propiedades.getHeader(RabbitMQConfig.HEADER_PROVEEDOR_TOKEN));
+      assertEquals(
+          "0af7651916cd43dd8448eb211c80319c",
+          propiedades.getHeader(FeignTraceRequestInterceptor.TRACE_HEADER));
+    } finally {
+      MDC.remove(FeignTraceRequestInterceptor.MDC_TRACE_KEY);
+    }
   }
 }

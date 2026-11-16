@@ -12,6 +12,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +51,15 @@ public class CamionEntity {
   @JdbcType(PostgreSQLEnumJdbcType.class)
   @Column(name = "estado_camion", nullable = false, columnDefinition = "estado_camion")
   private EstadoCamion estadoCamion;
+
+  @Column(name = "posicion_latitud")
+  private Double posicionLatitud;
+
+  @Column(name = "posicion_longitud")
+  private Double posicionLongitud;
+
+  @Column(name = "posicion_registrada_en")
+  private Instant posicionRegistradaEn;
 
   @Version
   @Column(name = "version", nullable = false)

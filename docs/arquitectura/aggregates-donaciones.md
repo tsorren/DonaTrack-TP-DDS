@@ -30,6 +30,7 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 *   **Identidad**: el `id` del donante **es el `personaId`** de su persona (identidad compartida, ver ADR `20261007-identidad-compartida-de-roles-donante-y-entidad-beneficiaria`, `proposed`). Por eso una persona no puede quedar registrada como donante dos veces.
 *   **Estado**: `activo` (baja lógica). `darDeBaja()` y `reactivar()` devuelven `true` solo si hubo transición, para que el servicio publique el evento una única vez. Un donante dado de baja no puede cargar donaciones (`DONANTE_INACTIVO`) y su historial se conserva.
 *   **Responsabilidad**: Modelar el perfil del donante para gamificación, historial de aportes y canal de contacto predeterminado.
+*   **Nombre visible** (HB-20): `mostrarNombre` (por defecto `true`) decide si la entidad ve su nombre; vale también para sus donaciones pasadas, porque `quienDono` se calcula al leer. Una `Donacion` puede ocultarlo solo para sí (`nombreOculto`), nunca mostrar lo que el perfil oculta. La constancia de los legales es `AceptacionLegales` (persona, versión y fecha), fuera del agregado.
 *   **Paquete**: `grupo5.donaciones.models.entities.donantes`
 
 ### 2.3. Agregado: Donación (Carga Histórica)
@@ -47,17 +48,19 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
     *   `ItemDonacionIndependiente` (Objeto de valor).
     *   `Bien` (Objeto de valor compartido).
     *   `CambioEstado` (Registro inmutable de auditoría de transiciones).
-*   **Estados de Ciclo de Vida (State Pattern con 7 clases concretas)**:
+*   **Estados de Ciclo de Vida (State Pattern con 8 clases concretas)**:
     *   `EnDeposito`: Bien ingresado físicamente en depósito disponible para matching.
     *   `AsignacionRealizada`: Bien emparejado formalmente con una necesidad insatisfecha.
     *   `ListaParaEntregar`: Bien preparado para ser retirado por el camión de logística.
     *   `EnTraslado`: Bien cargado en ruta de transporte hacia la entidad receptora.
+    *   `EnPuerta` (HB-22, [ADR](../adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md)): el camión llegó a la entidad y la donación espera su confirmación. Extiende `EnTraslado`: se llega solo desde `EnTraslado` (`llegarAPuerta`, por el evento `entrega.en-puerta`) y sale igual, a `Entregada` o `EntregaFallida`; no vuelve a llegar.
     *   `Entregada`: Bien recepcionado exitosamente por la entidad beneficiaria.
     *   `EntregaFallida`: Entrega rechazada o frustrada, en proceso de resolución o retorno.
     *   `Vencida`: Bien perecedero que superó su fecha límite en depósito antes de ser entregado.
 *   **Referencias Externas (por ID)**: 
     *   `donacionOriginalId` (UUID que apunta a la `Donacion` de origen).
     *   `necesidadId` (UUID nulable que apunta a la `Necesidad` de destino cuando transiciona a `AsignacionRealizada`).
+*   **Cancelación por baja de la necesidad (HB-19, [ADR 20261109](../adr/20261109-cancelacion-de-entregas-que-no-salieron.md))**: `esCancelable()` (asignada, con o sin ruta planificada); `pedirCancelacion()` deja la marca `cancelacionPedida` mientras se espera la confirmación de Logística (se limpia sola si la donación sale); `liberarPorCancelacion(actor)` vuelve a `EnDeposito` sin destino. La transición no está en el `PATCH` de estado: entra solo por la baja (`CancelacionDeEntregas`) y por el evento `entrega.cancelada`.
 *   **Responsabilidad**: Gestionar de forma transaccional el estado físico, la fragmentación de cantidades para asignaciones parciales y el tracking logístico de cada lote en depósito.
 *   **Paquete**: `grupo5.donaciones.models.entities.donacionesIndependientes`
 

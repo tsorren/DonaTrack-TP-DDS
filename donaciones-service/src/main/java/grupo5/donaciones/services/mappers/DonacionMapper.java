@@ -20,7 +20,11 @@ import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.IFotosBienesService;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -65,6 +69,9 @@ public class DonacionMapper {
         new Deposito(dto.nombreDeposito(), direccionMapper.toEntity(dto.direccion()));
 
     Donacion donacion = new Donacion(donanteId, deposito, dto.descripcion(), dto.fecha());
+    if (Boolean.FALSE.equals(dto.mostrarNombre())) {
+      donacion.ocultarNombre();
+    }
 
     if (dto.items() != null) {
       dto.items().forEach(item -> donacion.agregarItem(toItemEntity(item)));
@@ -77,7 +84,50 @@ public class DonacionMapper {
     if (donacion == null) {
       return null;
     }
+    DonanteResumenDTO donanteResumen = null;
+    if (donacion.getDonanteId() != null) {
+      donanteResumen =
+          donantesRepository
+              .findById(donacion.getDonanteId())
+              .map(
+                  donante ->
+                      resumen(
+                          donante,
+                          donante.personaId() == null
+                              ? null
+                              : personasRepository.findById(donante.personaId()).orElse(null)))
+              .orElse(null);
+    }
+    return toOutputDTO(donacion, donanteResumen);
+  }
 
+  /** Una página: los donantes y sus personas se leen juntos, no uno por fila (R11-01). */
+  public List<DonacionOutputDTO> toOutputDTOs(List<Donacion> donaciones) {
+    List<UUID> donanteIds =
+        donaciones.stream().map(Donacion::getDonanteId).filter(Objects::nonNull).toList();
+    Map<UUID, Donante> donantes =
+        donantesRepository.findAllById(donanteIds).stream()
+            .collect(Collectors.toMap(Donante::getId, Function.identity(), (a, b) -> a));
+    Map<UUID, Persona> personas =
+        personasRepository.findAllById(donantes.keySet()).stream()
+            .collect(Collectors.toMap(Persona::getId, Function.identity(), (a, b) -> a));
+    return donaciones.stream()
+        .map(
+            d -> {
+              Donante donante = d.getDonanteId() == null ? null : donantes.get(d.getDonanteId());
+              DonanteResumenDTO resumen =
+                  donante == null ? null : resumen(donante, personas.get(donante.personaId()));
+              return toOutputDTO(d, resumen);
+            })
+        .toList();
+  }
+
+  private DonanteResumenDTO resumen(Donante donante, Persona persona) {
+    PersonaOutputDTO personaDTO = persona == null ? null : personaMapper.toOutputDTO(persona);
+    return new DonanteResumenDTO(donante.getId(), donante.personaId(), personaDTO);
+  }
+
+  private DonacionOutputDTO toOutputDTO(Donacion donacion, DonanteResumenDTO donanteResumen) {
     List<ItemDonacionOutputDTO> items =
         donacion.getItems().stream().map(this::toItemOutputDTO).toList();
 
@@ -85,26 +135,6 @@ public class DonacionMapper {
         donacion.getHistorialEstados().stream()
             .map(DonacionMapper::toCambioEstadoOutputDTO)
             .toList();
-
-    DonanteResumenDTO donanteResumen = null;
-    if (donacion.getDonanteId() != null) {
-      donanteResumen =
-          donantesRepository
-              .findById(donacion.getDonanteId())
-              .map(
-                  donante -> {
-                    PersonaOutputDTO personaDTO = null;
-                    if (donante.personaId() != null) {
-                      personaDTO =
-                          personasRepository
-                              .findById(donante.personaId())
-                              .map(personaMapper::toOutputDTO)
-                              .orElse(null);
-                    }
-                    return new DonanteResumenDTO(donante.getId(), donante.personaId(), personaDTO);
-                  })
-              .orElse(null);
-    }
 
     return new DonacionOutputDTO(
         donacion.getId(),

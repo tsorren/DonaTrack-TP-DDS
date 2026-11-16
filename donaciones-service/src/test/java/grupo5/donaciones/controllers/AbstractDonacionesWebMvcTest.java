@@ -2,6 +2,7 @@ package grupo5.donaciones.controllers;
 
 import grupo5.common.CommonLibAutoConfiguration;
 import grupo5.common.logging.LoggingAutoConfiguration;
+import grupo5.donaciones.controllers.impl.ActividadController;
 import grupo5.donaciones.controllers.impl.CategoriasController;
 import grupo5.donaciones.controllers.impl.DonacionesController;
 import grupo5.donaciones.controllers.impl.DonacionesIndependientesController;
@@ -9,10 +10,13 @@ import grupo5.donaciones.controllers.impl.DonantesController;
 import grupo5.donaciones.controllers.impl.EntidadBeneficiariaController;
 import grupo5.donaciones.controllers.impl.FotosBienesController;
 import grupo5.donaciones.controllers.impl.ItemDonacionNormalizadoController;
+import grupo5.donaciones.controllers.impl.LegalesController;
 import grupo5.donaciones.controllers.impl.NecesidadesController;
 import grupo5.donaciones.controllers.impl.PersonasController;
 import grupo5.donaciones.controllers.impl.PropuestaDeAsignacionController;
+import grupo5.donaciones.controllers.impl.SolicitudEntidadController;
 import grupo5.donaciones.controllers.impl.SubcategoriasController;
+import grupo5.donaciones.services.IActividadService;
 import grupo5.donaciones.services.IArchivoDonantesService;
 import grupo5.donaciones.services.ICategoriasService;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
@@ -21,10 +25,15 @@ import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import grupo5.donaciones.services.IFotosBienesService;
 import grupo5.donaciones.services.IItemDonacionNormalizadoService;
+import grupo5.donaciones.services.ILegalesService;
 import grupo5.donaciones.services.INecesidadesService;
 import grupo5.donaciones.services.IPersonasService;
 import grupo5.donaciones.services.IPropuestaDeAsignacionService;
+import grupo5.donaciones.services.ISolicitudEntidadService;
 import grupo5.donaciones.services.ISubcategoriasService;
+import grupo5.donaciones.services.impl.ContadoresPublicosService;
+import grupo5.donaciones.services.impl.EvolucionAdminService;
+import grupo5.donaciones.services.impl.ResumenAdminService;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.api.parallel.ResourceLock;
@@ -35,6 +44,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest({
+  ActividadController.class,
   CategoriasController.class,
   DonacionesController.class,
   DonacionesIndependientesController.class,
@@ -42,9 +52,11 @@ import org.springframework.test.web.servlet.MockMvc;
   EntidadBeneficiariaController.class,
   FotosBienesController.class,
   ItemDonacionNormalizadoController.class,
+  LegalesController.class,
   NecesidadesController.class,
   PersonasController.class,
   PropuestaDeAsignacionController.class,
+  SolicitudEntidadController.class,
   SubcategoriasController.class
 })
 @Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
@@ -70,11 +82,22 @@ public abstract class AbstractDonacionesWebMvcTest {
 
   @MockitoBean protected IItemDonacionNormalizadoService itemDonacionNormalizadoService;
 
+  @MockitoBean protected ILegalesService legalesService;
+
   @MockitoBean protected INecesidadesService necesidadesService;
 
   @MockitoBean protected IPersonasService personasService;
 
   @MockitoBean protected IPropuestaDeAsignacionService propuestaDeAsignacionService;
 
+  @MockitoBean protected ISolicitudEntidadService solicitudEntidadService;
+
   @MockitoBean protected ISubcategoriasService subcategoriasService;
+
+  @MockitoBean protected ContadoresPublicosService contadoresPublicosService;
+
+  @MockitoBean protected ResumenAdminService resumenAdminService;
+  @MockitoBean protected EvolucionAdminService evolucionAdminService;
+
+  @MockitoBean protected IActividadService actividadService;
 }

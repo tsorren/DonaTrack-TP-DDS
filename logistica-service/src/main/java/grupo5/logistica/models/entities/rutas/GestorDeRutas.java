@@ -69,6 +69,7 @@ public final class GestorDeRutas {
                 e ->
                     Objects.equals(e.getIdRuta(), ruta.getId())
                         && (e.getEstadoActual() == EstadoEntrega.EN_TRASLADO
+                            || e.getEstadoActual() == EstadoEntrega.EN_PUERTA
                             || e.getEstadoActual() == EstadoEntrega.PENDIENTE))) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }

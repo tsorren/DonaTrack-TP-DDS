@@ -17,8 +17,8 @@ Provee un inventario consolidado que erradica la duplicación manual y acelera e
 | Dimensión | Cantidad Identificada |
 |---|---:|
 | **Microservicios Documentados** | 4 |
-| **Endpoints REST Públicos** | 104 |
-| **Schemas JSON Canónicos** | 25 |
+| **Endpoints REST Públicos** | 129 |
+| **Schemas JSON Canónicos** | 28 |
 | **Eventos RabbitMQ Topológicos** | 9 |
 
 ## 3. Catálogos Disponibles

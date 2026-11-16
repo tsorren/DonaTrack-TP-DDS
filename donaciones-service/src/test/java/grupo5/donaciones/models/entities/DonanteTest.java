@@ -77,4 +77,16 @@ class DonanteTest {
     assertFalse(donante.reactivar());
     assertTrue(donante.estaActivo());
   }
+
+  @Test
+  void porDefectoMuestraSuNombre_yPuedeOcultarloYVolverAMostrarlo() {
+    Donante donante = new Donante(PersonaMother.juanPerez().getId());
+    assertTrue(donante.muestraNombre());
+
+    donante.mostrarNombre(false);
+    assertFalse(donante.muestraNombre());
+
+    donante.mostrarNombre(true);
+    assertTrue(donante.muestraNombre());
+  }
 }

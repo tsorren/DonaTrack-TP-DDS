@@ -102,8 +102,19 @@ public class SolicitudEntrega implements AggregateRoot {
     this.estado = EstadoSolicitudEntrega.FALLIDA;
   }
 
+  /**
+   * Logística confirmó que canceló la entrega (HB-19). Se cierra para que la donación pueda pedir
+   * otra si el algoritmo la reasigna.
+   */
+  public void marcarCancelada() {
+    if (estado != EstadoSolicitudEntrega.ENVIADA) {
+      throw new BusinessStateException(ErrorCatalog.SOLICITUD_ENTREGA_TRANSICION_INVALIDA);
+    }
+    this.estado = EstadoSolicitudEntrega.CANCELADA;
+  }
+
   public boolean estaActiva() {
-    return estado != EstadoSolicitudEntrega.FALLIDA;
+    return estado != EstadoSolicitudEntrega.FALLIDA && estado != EstadoSolicitudEntrega.CANCELADA;
   }
 
   public boolean fueDescartado(String proveedorId) {

@@ -1,0 +1,114 @@
+/* Bloque de carga (D33, B2-09): el indicador de carga (`.cargando`, un texto que dice qué se está
+   trayendo) y el esqueleto (`.esqueleto`, el lugar de una parte que espera). Se carga en la capa
+   `bloques` desde app.css. El estado vacío (`.vacio`) comparte el papel del aviso y vive en
+   aviso.css. Las variantes van por atributo: `data-forma="punteado"` y `data-forma="hueco"` y
+   `data-tamano="alto"` y `data-tamano="bajo"` en el esqueleto. Catálogo: docs/interfaz/componentes.md. */
+
+/* El texto de lo que carga. Va con role="status" o dentro de una región con aria-busy="true". */
+.cargando {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  font-weight: 700;
+}
+
+/* La abeja vuela mientras la página trae los datos (ilustraciones de diseño, 2026-11-08). Decorativa:
+   el texto dice qué carga. */
+.cargando::before {
+  content: "";
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: url("../../img/ilustraciones/abeja-arriba.svg") center / contain no-repeat;
+}
+
+/* Indicador común de HTMX: el script lo anuncia recién después de 300 ms para no parpadear en las
+   respuestas rápidas. Vive fuera de #contenido para no desaparecer cuando HTMX reemplaza el panel. */
+#indicador-carga {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: var(--movimiento-transicion-atenua);
+}
+
+#indicador-carga[aria-hidden="false"] {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cargando::before {
+    animation: var(--movimiento-animacion-vuelo-carga);
+  }
+}
+
+/* El lugar de una parte que espera: papel gris tierra, sin datos inventados. */
+.esqueleto {
+  position: relative;
+  overflow: hidden;
+  min-height: 9rem;
+  border-radius: var(--radio-lamina);
+  background: var(--color-pendiente-fondo);
+}
+
+/* La ola: un brillo que cruza el papel de izquierda a derecha mientras carga (usuario, 2026-11-12).
+   Va encima del fondo, así sirve aunque una pantalla cambie el papel. Con "reducir movimiento"
+   la animación no existe y el brillo queda fuera del lugar: se ve el papel quieto. */
+.esqueleto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, var(--color-superficie) 65%, transparent) 50%,
+    transparent 80%
+  );
+  translate: -100% 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .esqueleto::after {
+    animation: var(--movimiento-animacion-ola);
+  }
+}
+
+.esqueleto[data-forma="punteado"] {
+  border: 2px dashed var(--color-tinta-suave);
+}
+
+/* El hueco de la entidad: el mismo contorno punteado, pero sin papel gris adentro. */
+.esqueleto[data-forma="hueco"] {
+  border: 2px dashed var(--color-tinta-suave);
+  background: none;
+}
+
+.esqueleto[data-tamano="alto"] {
+  min-height: 14rem;
+}
+
+.esqueleto[data-tamano="bajo"] {
+  min-height: 6rem;
+}
+
+/* El indicador de un envío (conexión de pantallas, SPEC-08): un .cargando que el hx-indicator del
+   formulario nombra. Oculto, sin ocupar lugar ni leerse, hasta que HTMX le pone .htmx-request
+   mientras dura el pedido. La pieza está en templates/envio.html. */
+.cargando.htmx-indicator {
+  display: none;
+}
+
+.cargando.htmx-indicator.htmx-request {
+  display: flex;
+}

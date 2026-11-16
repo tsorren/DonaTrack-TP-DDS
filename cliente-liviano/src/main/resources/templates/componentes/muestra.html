@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<!--/* La muestra del catálogo /estilos (D33, B0-06): el nombre de una pieza, cuándo se usa y su
+       ejemplo vivo. Es el único bloque de la capa CUBE por ahora y enseña el patrón de un
+       componente: fragmento con parámetros con nombre y un slot (cuerpo), más su hoja en
+       static/css/componentes/muestra.css.
+       Uso: <div th:replace="~{componentes/muestra :: muestra('.pila', 'Cuándo se usa',
+            ~{::demo-pila})}"><th:block th:fragment="demo-pila">…ejemplo…</th:block></div>
+       No es una pantalla: SitioController solo sirve nombres con rol. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<section class="muestra" th:fragment="muestra(nombre, cuando, cuerpo)">
+  <h3 class="muestra-nombre"><code th:text="${nombre}">.nombre</code></h3>
+  <p class="muestra-cuando" th:text="${cuando}">Cuándo se usa.</p>
+  <div class="muestra-demo" th:insert="${cuerpo}"></div>
+</section>
+</body>
+</html>

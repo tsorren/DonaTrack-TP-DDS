@@ -9,6 +9,7 @@ import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.rutas.GeneradorDeRutas;
 import grupo5.logistica.models.entities.rutas.PlanificacionSolicitada;
 import grupo5.logistica.models.entities.rutas.RespuestaPlanificacion;
@@ -104,7 +105,11 @@ public class PlanificacionService implements IPlanificacionService {
   }
 
   private void planificar(LocalDate fechaObjetivo) {
-    List<Entrega> entregas = entregasRepository.findSinRuta();
+    // Una entrega cancelada tampoco tiene ruta, pero no se planifica (HB-19)
+    List<Entrega> entregas =
+        entregasRepository.findSinRuta().stream()
+            .filter(e -> e.getEstadoActual() == EstadoEntrega.PENDIENTE)
+            .toList();
     if (entregas.isEmpty()) {
       log.info("No hay entregas pendientes de planificación.");
       return;

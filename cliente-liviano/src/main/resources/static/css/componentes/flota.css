@@ -1,0 +1,503 @@
+/* Bloque flota (2026-11-10, Camiones del admin): una grilla de tarjetas para elegir de a un camión y su
+   ficha, como un tablero de logística. `ul.flota` con un `li` por camión y, en él, el enlace real que
+   lo elige (`a`, con `aria-current="true"` el elegido): la patente grande, el estado en su pastilla,
+   los datos (`dl`) y el dibujo del camión (`svg.flota-dibujo`). La ficha (`section.flota-ficha`) va
+   dentro del `li` elegido, después del enlace: en el celular, justo debajo de la tarjeta; desde la
+   tableta, a la derecha de las tarjetas, de arriba abajo (el truco de `.maestro`: el `li` elegido se
+   disuelve con display: contents). Arriba de las tarjetas, las cifras de la flota (`dl.flota-resumen`).
+   Las partes de la ficha, por atributo y sin clases nuevas: `[data-parte="identidad"]` (patente,
+   estado, nombre y el dibujo grande), las etapas (`ol.flota-etapas`, con `data-paso="hecho|actual|
+   falta"` en cada `li`), `[data-parte="tablero"]` (las cajas `viaje`, `mapa`, `carga` y `rendimiento`,
+   en dos columnas cuando entran; el mapa y el rendimiento, a todo el ancho), las paradas como puntos (`[data-lista="paradas"]`, `data-hecha`),
+   el rendimiento en barras (`svg.flota-barras`, la última en verde), `[data-parte="chofer"]` (las
+   iniciales, el nombre y sus enlaces) y `[data-parte="acciones"]`. Papel claro con la sombra suave, sin
+   filetes de tinta; el color solo acompaña: el estado se dice en palabras. Se carga en la capa
+   `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+
+/* --- Las cifras de la flota ------------------------------------------------------------------- */
+.flota-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2) var(--espacio-4);
+  margin: 0;
+}
+
+.flota-resumen > div {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.flota-resumen dt {
+  color: var(--color-tinta-suave);
+  font-size: var(--tamano-chico);
+}
+
+.flota-resumen dd {
+  margin: 0;
+  color: var(--color-tinta);
+  font: 800 1.375rem / 1.1 var(--fuente-cifra);
+}
+
+/* --- La grilla y las tarjetas ----------------------------------------------------------------- */
+.flota {
+  display: grid;
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flota > li {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.flota > li > a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: start;
+  gap: var(--espacio-2) var(--espacio-2);
+  min-width: 0;
+  padding: var(--espacio-3) 0 0 var(--espacio-3);
+  overflow: hidden;
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+  color: var(--color-tinta);
+  text-decoration: none;
+}
+
+.flota > li > a:hover {
+  outline: 2px solid var(--color-filete);
+}
+
+/* El elegido: un contorno de tinta, como la tarjeta abierta de la referencia, sin anillo verde. */
+.flota > li > a[aria-current] {
+  outline: 2px solid var(--color-tinta);
+  outline-offset: -2px;
+}
+
+.flota > li > a:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 3px;
+}
+
+.flota [data-parte="cabeza"] {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-1) var(--espacio-2);
+  margin-inline-end: var(--espacio-3);
+  padding-block-end: var(--espacio-2);
+  border-bottom: 1px solid var(--color-filete);
+}
+
+.flota [data-parte="patente"] {
+  font: 850 1.5rem / 1.05 var(--fuente-titulo);
+  font-stretch: 125%;
+  letter-spacing: -0.01em;
+}
+
+.flota [data-parte="nombre"] {
+  display: block;
+  color: var(--color-tinta-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.flota > li > a > dl {
+  display: grid;
+  gap: var(--espacio-2);
+  align-self: start;
+  margin: 0;
+  padding-block-end: var(--espacio-3);
+  font-size: var(--tamano-chico);
+}
+
+.flota > li > a dt {
+  color: var(--color-tinta-suave);
+}
+
+.flota > li > a dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* El dibujo, abajo a la derecha, cortado por el borde de la tarjeta como en la referencia. */
+.flota > li > a > .flota-dibujo {
+  align-self: end;
+  width: 7.5rem;
+  margin-inline-end: -1.25rem;
+  margin-block-end: var(--espacio-2);
+}
+
+/* Un camión deshabilitado, apagado: el dibujo en gris (el estado sigue en palabras). */
+:is(.flota > li > a, .flota-ficha)[data-estado="deshabilitado"] .flota-dibujo {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+
+/* --- El dibujo del camión (componentes/flota :: dibujo) --------------------------------------- */
+.flota-dibujo {
+  display: block;
+  height: auto;
+  overflow: visible;
+  stroke: var(--color-tinta);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.flota-dibujo [data-parte="caja"] {
+  fill: var(--color-superficie);
+}
+
+.flota-dibujo [data-parte="cabina"] {
+  fill: var(--color-acento);
+}
+
+.flota-dibujo [data-parte="vidrio"] {
+  fill: var(--color-agua);
+}
+
+.flota-dibujo [data-parte="franja"] {
+  fill: var(--color-acento-claro);
+  stroke: none;
+}
+
+.flota-dibujo [data-parte="chasis"],
+.flota-dibujo [data-parte="rueda"] {
+  fill: var(--color-tinta);
+}
+
+.flota-dibujo [data-parte="llanta"] {
+  fill: var(--color-papel);
+  stroke: none;
+}
+
+/* --- La ficha --------------------------------------------------------------------------------- */
+.flota-ficha {
+  display: grid;
+  gap: var(--espacio-4);
+  align-content: start;
+  min-width: 0;
+  padding: var(--espacio-3);
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+}
+
+.flota-ficha :is(h2, h3, p, dl, dd) {
+  margin: 0;
+}
+
+.flota-ficha > [data-parte="identidad"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--espacio-2) var(--espacio-3);
+  align-items: center;
+}
+
+.flota-ficha [data-parte="identidad"] h2 {
+  color: var(--color-tinta);
+  font: 850 clamp(1.75rem, 1.4rem + 1vw, 2.25rem) / 1 var(--fuente-titulo);
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.flota-ficha [data-parte="identidad"] > div {
+  display: grid;
+  gap: var(--espacio-2);
+  justify-items: start;
+}
+
+.flota-ficha [data-parte="identidad"] p {
+  color: var(--color-tinta-suave);
+}
+
+.flota-ficha [data-parte="identidad"] .flota-dibujo {
+  width: clamp(6rem, 24vw, 8.5rem);
+}
+
+/* Las etapas del recorrido: un punto por etapa sobre una línea; lo hecho en tinta, la actual en verde
+   con su aro y su palabra en negrita. */
+.flota-etapas {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flota-etapas > li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--espacio-1);
+  padding-inline: 0.125rem;
+  color: var(--color-tinta-suave);
+  font-size: var(--tamano-chico);
+  line-height: 1.2;
+  text-align: center;
+}
+
+.flota-etapas > li::before {
+  content: "";
+  position: relative;
+  z-index: 1;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  background: var(--color-superficie);
+  box-shadow: inset 0 0 0 2px var(--color-filete);
+}
+
+.flota-etapas > li + li::after {
+  content: "";
+  position: absolute;
+  top: 0.375rem;
+  right: 50%;
+  width: 100%;
+  height: 0.125rem;
+  background: var(--color-filete);
+}
+
+.flota-etapas > li:is([data-paso="hecho"], [data-paso="actual"])::after {
+  background: var(--color-tinta);
+}
+
+.flota-etapas > li[data-paso="hecho"]::before {
+  background: var(--color-tinta);
+  box-shadow: none;
+}
+
+.flota-etapas > li[data-paso="actual"] {
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+.flota-etapas > li[data-paso="actual"]::before {
+  background: var(--color-acento);
+  box-shadow: 0 0 0 0.25rem var(--color-acento-claro);
+}
+
+/* El tablero: las cajas del viaje, el mapa, la carga y el rendimiento, en dos columnas si entran. */
+.flota-ficha > [data-parte="tablero"] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: var(--espacio-3);
+}
+
+.flota-ficha [data-parte="tablero"] > section {
+  display: grid;
+  gap: var(--espacio-2);
+  align-content: start;
+  min-width: 0;
+  padding: var(--espacio-3);
+  border: 1px solid var(--color-filete);
+  border-radius: var(--radio-boton);
+}
+
+.flota-ficha [data-parte="tablero"] h3 {
+  color: var(--color-tinta);
+  font: 800 var(--tamano-base) / 1.2 var(--fuente-titulo);
+  font-stretch: 110%;
+}
+
+.flota-ficha [data-parte="tablero"] h3 small {
+  display: block;
+  color: var(--color-tinta-suave);
+  font: 400 var(--tamano-chico) / 1.3 var(--fuente-texto);
+}
+
+.flota-ficha [data-parte="tablero"] dl {
+  display: grid;
+  gap: var(--espacio-2);
+  font-size: var(--tamano-chico);
+}
+
+.flota-ficha [data-parte="tablero"] dt {
+  color: var(--color-tinta-suave);
+}
+
+.flota-ficha [data-parte="tablero"] dd {
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+/* Un dato con el rótulo a la izquierda y la cifra a la derecha (el rendimiento). */
+.flota-ficha dl[data-forma="renglones"] > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+}
+
+.flota-ficha dl[data-forma="renglones"] dd {
+  font-family: var(--fuente-cifra);
+  text-align: end;
+}
+
+/* La cifra grande de una caja (cuánto va del recorrido, cuánto está cargado). */
+.flota-ficha [data-parte="cifra"] {
+  color: var(--color-tinta);
+  font: 800 1.5rem / 1.1 var(--fuente-cifra);
+}
+
+/* El mapa chico, con las esquinas de un botón; sin JavaScript, su aviso. */
+.flota-ficha [data-parte="tablero"] > :is([data-parte="mapa"], [data-parte="rendimiento"]) {
+  grid-column: 1 / -1;
+}
+
+.flota-ficha [data-parte="tablero"] > [data-parte="mapa"] {
+  padding: 0;
+  overflow: hidden;
+}
+
+.flota-ficha [data-parte="mapa"] > h3 {
+  padding: var(--espacio-3) var(--espacio-3) 0;
+}
+
+.flota-ficha .mapa-real {
+  aspect-ratio: 16 / 10;
+  height: auto;
+}
+
+/* Las paradas: un punto por parada, las hechas en tinta. */
+.flota-ficha [data-lista="paradas"] {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3125rem;
+  vertical-align: middle;
+  margin-inline-end: var(--espacio-1);
+}
+
+.flota-ficha [data-lista="paradas"] > span {
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  background: var(--color-filete);
+}
+
+.flota-ficha [data-lista="paradas"] > span[data-hecha] {
+  background: var(--color-tinta);
+}
+
+/* Las barras del rendimiento: una por cada dos días, la última (los días más recientes) en verde. */
+.flota-barras {
+  display: block;
+  width: 100%;
+  height: 3rem;
+}
+
+.flota-barras rect {
+  fill: var(--color-filete);
+}
+
+.flota-barras rect:last-of-type {
+  fill: var(--color-acento);
+}
+
+/* El chofer: sus iniciales en un disco, el nombre y su rol, y los enlaces para llamar o escribir. */
+.flota-ficha > [data-parte="chofer"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-3);
+  padding-block-start: var(--espacio-3);
+  border-top: 1px solid var(--color-filete);
+}
+
+.flota-ficha [data-parte="chofer"] > div:not(.racimo) {
+  display: grid;
+  flex: 1 1 10rem;
+}
+
+.flota-ficha [data-parte="chofer"] small {
+  color: var(--color-tinta-suave);
+}
+
+.flota-ficha [data-parte="iniciales"] {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  font: 800 1rem / 1 var(--fuente-titulo);
+}
+
+.flota-ficha > [data-parte="acciones"] {
+  display: grid;
+  gap: var(--espacio-2);
+  justify-items: start;
+}
+
+/* --- Disposición ------------------------------------------------------------------------------- */
+
+/* Desde el celular grande: dos columnas de tarjetas; la ficha, a todo el ancho debajo de la fila de
+   la elegida (dense rellena el hueco que deja al lado). */
+@media (min-width: 37.5em) {
+  .flota {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: row dense;
+  }
+
+  .flota > li:has(> .flota-ficha) {
+    display: contents;
+  }
+
+  .flota-ficha {
+    grid-column: 1 / -1;
+    padding: var(--espacio-4);
+  }
+}
+
+/* Desde la tableta: las tarjetas en una columna a la izquierda y la ficha a la derecha, de arriba
+   abajo. Como en .maestro, la última fila (1fr) toma lo que la ficha mide de más y el espacio entre
+   tarjetas es su margen (sin row-gap: las filas vacías no suman aire). */
+@media (min-width: 53.75em) {
+  .flota {
+    grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+    grid-template-rows: repeat(40, auto) 1fr;
+    grid-auto-flow: row;
+    row-gap: 0;
+    column-gap: var(--espacio-4);
+  }
+
+  .flota > li > a {
+    grid-column: 1;
+    margin-block-end: var(--espacio-3);
+  }
+
+  .flota > li:not(:has(> .flota-ficha)) {
+    display: contents;
+  }
+
+  .flota-ficha {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    align-self: start;
+    margin-block-end: var(--espacio-3);
+  }
+}
+
+/* En pantalla ancha: dos columnas de tarjetas y la ficha en la tercera. */
+@media (min-width: 68.75em) {
+  .flota {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(28rem, 1.15fr);
+  }
+
+  .flota > li > a {
+    grid-column: auto;
+  }
+
+  .flota-ficha {
+    grid-column: 3;
+  }
+}

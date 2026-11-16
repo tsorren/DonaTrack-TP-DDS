@@ -12,7 +12,12 @@ import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.models.repositories.listados.CriterioPersonas;
+import grupo5.donaciones.models.repositories.listados.Tramo;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -29,6 +34,8 @@ public class PersonaRepositoryJpaAdapter
     implements IPersonasRepository {
 
   private final PersonasPersistenciaMapper mapper;
+
+  @PersistenceContext private EntityManager em;
 
   public PersonaRepositoryJpaAdapter(
       SpringDataPersonaRepository springDataRepo, PersonasPersistenciaMapper mapper) {
@@ -53,6 +60,32 @@ public class PersonaRepositoryJpaAdapter
   @Transactional
   public List<Persona> saveAll(List<Persona> personas) {
     return personas.stream().map(this::save).toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Tramo<Persona> buscar(CriterioPersonas criterio) {
+    ConsultaListado consulta =
+        SqlPersona.filtrar(
+                new ConsultaListado("FROM donaciones.persona p" + SqlPersona.UNIONES),
+                criterio.q(),
+                criterio.tipo(),
+                criterio.tipoJuridico())
+            .siHay(criterio.ids(), "p.id IN (:ids)", "ids");
+    List<UUID> ids =
+        consulta.ids(em, "p.id", SqlPersona.NOMBRE_VISIBLE + ", p.id", criterio.paginado());
+    List<Persona> pagina = ConsultaListado.enOrden(ids, findAllById(ids), Persona::getId);
+    return new Tramo<>(pagina, consulta.total(em));
+  }
+
+  /** Una consulta para todas; los medios y representantes llegan de a lotes (batch size). */
+  @Override
+  @Transactional(readOnly = true)
+  public List<Persona> findAllById(Collection<UUID> ids) {
+    if (ids.isEmpty()) {
+      return List.of();
+    }
+    return springDataRepo.findAllById(ids).stream().map(mapper::toDomain).toList();
   }
 
   @Override

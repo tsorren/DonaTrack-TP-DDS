@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!--/* Raíces, sitio A: Recuperar la contraseña, el paso que sale de Ingresar ("¿Olvidaste tu
+       contraseña?" y "Pedir una contraseña nueva"), para no dejar el sitio a mitad del recorrido
+       (arreglo de la pre-auditoría, 2026-11-02). Las piezas de Ingresar: su cabecera y el formulario
+       en su lámina, sin las cuentas de ejemplo. Pide un correo y da el
+       enlace. Es un formulario real (POST) que va a publico-recuperar-enviado; el aviso no dice si
+       el correo tiene cuenta (RNF-AUTH-10).
+       Fragmentos:
+       - hoja(enviado): la pantalla entera; con enviado, el aviso en lugar del formulario. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-ingresar', ~{::contenido})}">
+<head>
+  <title>Recuperar la contraseña - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{publico-recuperar :: hoja(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="hoja(enviado)">
+  <div class="publica cuenta">
+    <div class="cuenta-principal">
+      <header class="publica-cabeza">
+        <p class="rotulo">Ingresar</p>
+        <h1>Pedí una <em>contraseña nueva</em></h1>
+        <p class="lectura-bajada">Escribí el correo de tu cuenta y te mandamos un enlace para crear una
+          contraseña nueva.</p>
+      </header>
+
+      <section th:if="${enviado}" class="banner" role="status" tabindex="-1" autofocus
+               aria-labelledby="enviado-titulo">
+        <h2 id="enviado-titulo">Si hay una cuenta con ese correo, te mandamos un enlace.</h2>
+        <p>Revisá tu bandeja de entrada: el enlace sirve una sola vez y por tiempo limitado.</p>
+        <a class="boton" data-tono="secundario" href="/publico-ingresar"
+           th:href="@{/publico-ingresar}">Volver a Ingresar</a>
+      </section>
+
+      <form th:unless="${enviado}" class="formulario" action="/publico-recuperar-enviado"
+            th:action="@{/publico-recuperar-enviado}" method="post"
+            data-enviando="Enviando…">
+        <div class="campo">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" name="correo" type="email" required autocomplete="email" placeholder="nombre@ejemplo.com">
+        </div>
+        <button class="boton" data-tono="principal" type="submit">Mandame el enlace</button>
+        <p class="cuenta-salida">¿Te acordaste? <a href="/publico-ingresar"
+           th:href="@{/publico-ingresar}">Volver a Ingresar</a></p>
+      </form>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

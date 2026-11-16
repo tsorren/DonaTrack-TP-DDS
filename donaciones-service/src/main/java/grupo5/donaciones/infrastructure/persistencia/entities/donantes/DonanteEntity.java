@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,4 +19,11 @@ public class DonanteEntity {
 
   @Column(name = "activo", nullable = false)
   private boolean activo;
+
+  @Column(name = "mostrar_nombre", nullable = false)
+  private boolean mostrarNombre = true;
+
+  // V21: la del primer registro; no se actualiza
+  @Column(name = "fecha_alta", nullable = false, updatable = false)
+  private LocalDateTime fechaAlta;
 }

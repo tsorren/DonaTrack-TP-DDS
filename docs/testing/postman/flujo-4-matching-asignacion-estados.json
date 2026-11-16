@@ -506,7 +506,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad A QA matching\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad A QA matching\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/necesidades",
@@ -1100,7 +1100,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad B QA para vencer\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad B QA para vencer\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/necesidades",

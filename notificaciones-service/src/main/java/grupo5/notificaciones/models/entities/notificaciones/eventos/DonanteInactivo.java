@@ -1,6 +1,7 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
+import grupo5.notificaciones.models.entities.notificaciones.TipoEvento;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,7 +17,7 @@ public class DonanteInactivo extends EventoNotificable {
   }
 
   @Override
-  public List<Notificacion> generarNotificaciones() {
+  protected List<Notificacion> crearNotificaciones() {
 
     String mensaje =
         "¡Te extrañamos en DonaTrack! "
@@ -29,5 +30,10 @@ public class DonanteInactivo extends EventoNotificable {
         new Notificacion(this.getPersona().getId(), mensaje, this.getFecha());
 
     return List.of(notificacion);
+  }
+
+  @Override
+  public TipoEvento tipoEvento() {
+    return TipoEvento.DONANTE_INACTIVO;
   }
 }

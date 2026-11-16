@@ -53,4 +53,55 @@ class OpenApiContractDriftTest {
         "La respuesta de donacion debe ser valida contra openapi-donaciones.yaml: "
             + report.getMessages());
   }
+
+  @Test
+  void evolucionDelInicioDelAdmin_debeSerValidaContraSpec_R1142() {
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-donaciones.yaml");
+    OpenApiInteractionValidator validator = OpenApiInteractionValidator.createFor(specPath).build();
+    String conDatos =
+        """
+        {
+          "desde": "2026-09",
+          "hasta": "2026-10",
+          "meses": [
+            { "mes": "2026-09", "registradas": 4, "entregadas": 0 },
+            { "mes": "2026-10", "registradas": 2, "entregadas": 3 }
+          ],
+          "categorias": [
+            {
+              "categoriaId": "11111111-1111-1111-1111-111111111111",
+              "nombre": "Alimentos",
+              "registradas": 6,
+              "entregadas": 3
+            }
+          ],
+          "otras": null,
+          "calculadoEn": "2026-10-15T18:30:00-03:00"
+        }
+        """;
+    String sinDonaciones =
+        """
+        {
+          "desde": null,
+          "hasta": null,
+          "meses": [],
+          "categorias": [],
+          "otras": null,
+          "calculadoEn": "2026-10-15T18:30:00-03:00"
+        }
+        """;
+    for (String cuerpo : new String[] {conDatos, sinDonaciones}) {
+      ValidationReport report =
+          validator.validateResponse(
+              "/api/donaciones/resumen/evolucion",
+              Request.Method.GET,
+              SimpleResponse.Builder.status(200)
+                  .withContentType("application/json")
+                  .withBody(cuerpo)
+                  .build());
+      assertFalse(
+          report.hasErrors(),
+          "La evolución debe ser válida contra openapi-donaciones.yaml: " + report.getMessages());
+    }
+  }
 }

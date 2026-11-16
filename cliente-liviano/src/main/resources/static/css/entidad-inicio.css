@@ -1,0 +1,285 @@
+/* Inicio de la entidad en Raíces (ficha raices-entidad-navegable, 4.1), ordenado por lo que hay que
+   hacer. Lo que espera en la puerta va en la tierra, el umbral de la entidad, con un acta de papel
+   por entrega. Debajo, como el mockup 18 (2026-11-10): lo que viene en un panel cálido con la abeja
+   de la huerta y su lista con barra de tinta; tus necesidades, un renglón claro por necesidad con la
+   barra de .progreso; y lo recibido en el mes, un fruto de la rama de la portada en una tarjeta
+   clara. Dos columnas desde el quiebre ancho, una en el celular. */
+@import url("entidad-comun.css");
+
+.inicio {
+  max-width: 82rem;
+}
+
+.inicio-partes {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.inicio-partes h2 {
+  margin: 0 0 0.5rem;
+}
+
+.inicio-partes section > p {
+  margin: 0 0 1rem;
+}
+
+.inicio-partes .salidas {
+  margin: var(--espacio-2) 0 0;
+}
+
+/* --- En tu puerta: la tierra, con las actas de papel encima ------------------------------------- */
+.puerta {
+  padding: 1.25rem 1rem 1.5rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-lamina);
+  background: var(--color-suelo);
+  color: var(--color-texto-suelo);
+}
+
+main .puerta h2 {
+  color: var(--color-texto-suelo);
+  font-size: clamp(1.625rem, 3vw, 2.25rem);
+  font-stretch: 122%;
+  letter-spacing: -0.02em;
+}
+
+/* La línea de tierra: el filete paja bajo el título, como la superficie del corte de suelo. */
+.puerta h2::after {
+  content: "";
+  display: block;
+  width: 4rem;
+  margin-top: 0.5rem;
+  border-bottom: 0.3rem solid var(--color-raiz);
+}
+
+.puerta .puerta-bajada {
+  margin: 0 0 1.25rem;
+  font-weight: 700;
+}
+
+.puerta-lista {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.puerta .esqueleto {
+  border-color: var(--color-texto-suelo);
+}
+
+/* --- Lo que viene (mockup 18, 2026-11-10): un panel cálido redondeado, con la abeja quieta de la
+   huerta al lado del título y la lista con una barra de tinta gruesa a la izquierda. ------------- */
+.viene {
+  padding: var(--espacio-4) var(--espacio-4) var(--espacio-3);
+  border-radius: var(--radio-lamina);
+  background: var(--color-advertencia-fondo);
+}
+
+main .viene h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-size: clamp(1.625rem, 3vw, 2.25rem);
+}
+
+.viene h2 > svg {
+  flex: none;
+  width: 2.75rem;
+  height: auto;
+  aspect-ratio: 11.82 / 12.99;
+  overflow: visible;
+}
+
+.viene-lista {
+  display: grid;
+  gap: var(--espacio-4);
+  margin: 0;
+  padding: var(--espacio-1) 0 var(--espacio-1) var(--espacio-4);
+  border-left: 0.3rem solid var(--color-tinta);
+  list-style: none;
+}
+
+.viene-paso {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.viene-paso b {
+  color: var(--color-tinta);
+}
+
+/* La pastilla "En camino" tiene el mismo fondo que el panel: acá va en paja, más honda (contraste 4,7:1
+   con su texto). */
+.viene span.estado:is([data-estado="camino"], [data-estado="en-camino"]) {
+  background: var(--color-raiz);
+}
+
+/* --- Tus necesidades: un renglón claro por necesidad, con el ícono en su caja redondeada, y cuánto
+   llegó sobre la barra redondeada de Necesidades (.progreso). ---------------------------------- */
+.pedidos-renglones {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pedidos-renglones li {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  gap: var(--espacio-2) var(--espacio-3);
+  align-items: center;
+  padding: var(--espacio-3) var(--espacio-4);
+  border-radius: var(--radio-boton);
+  background: var(--color-superficie);
+}
+
+.pedidos-renglones .categoria-icono {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.375rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-acento-claro);
+}
+
+.renglon-que {
+  display: grid;
+}
+
+.renglon-que b {
+  color: var(--color-tinta);
+}
+
+.renglon-que small {
+  font-size: var(--tamano-chico);
+}
+
+.renglon-va {
+  display: grid;
+  grid-column: 2;
+  gap: var(--espacio-1);
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+/* --- Lo recibido en el mes: en una tarjeta clara con el filete paja arriba, un fruto que cuelga de
+   la rama, con la cifra adentro ------------------------------------------------------------------ */
+.recibido-rama {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-4) var(--espacio-5);
+  padding: var(--espacio-5) var(--espacio-4) var(--espacio-4);
+  border-top: 0.45rem solid var(--color-raiz);
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+}
+
+.recibido-fruto {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 7rem;
+  aspect-ratio: 1;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--color-fruto);
+  box-shadow: 0.35rem 0.35rem 0 var(--color-fruto-hondo);
+  color: var(--color-tinta);
+  font: 900 2.5rem / 1 var(--fuente-cifra);
+  font-stretch: 112%;
+  letter-spacing: -0.03em;
+}
+
+/* El cabo, de la rama al fruto, y su hoja. */
+.recibido-fruto::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 0.25rem;
+  height: 1.75rem;
+  background: var(--color-raiz);
+  translate: -50% 0;
+}
+
+.recibido-fruto::before {
+  content: "";
+  position: absolute;
+  top: -0.5rem;
+  right: 0.5rem;
+  width: 1.75rem;
+  height: 0.95rem;
+  border-radius: 0 100%;
+  background: var(--color-hoja);
+  rotate: -18deg;
+}
+
+.recibido-texto {
+  display: grid;
+  flex: 1 1 14rem;
+  gap: var(--espacio-3);
+  justify-items: start;
+}
+
+.recibido-texto p {
+  margin: 0;
+}
+
+@media (min-width: 53.75em) {
+  .puerta {
+    padding: 1.75rem 2rem 2rem;
+  }
+
+  .puerta-lista {
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+/* En pantalla grande (mockup 18): la puerta a todo el ancho, primero; debajo, dos columnas: lo que
+   viene y lo recibido a la izquierda, y tus necesidades a la derecha. La última fila es 1fr para que
+   el alto de las necesidades no estire el panel de lo que viene. */
+@media (min-width: 68.75em) {
+  .inicio-partes {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "puerta puerta"
+      "viene pedidos"
+      "recibido pedidos";
+    gap: 2.5rem 3rem;
+    align-items: start;
+  }
+
+  .puerta {
+    grid-area: puerta;
+  }
+
+  .viene {
+    grid-area: viene;
+    padding: var(--espacio-5) var(--espacio-5) var(--espacio-4);
+  }
+
+  .pedidos-inicio {
+    grid-area: pedidos;
+    /* El título a la altura del de lo que viene, que va dentro de su panel. */
+    padding-top: var(--espacio-5);
+  }
+
+  .recibido {
+    grid-area: recibido;
+  }
+
+  .pedidos-renglones li {
+    grid-template-columns: 2.75rem minmax(0, 1fr) 11rem;
+  }
+
+  .renglon-va {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}

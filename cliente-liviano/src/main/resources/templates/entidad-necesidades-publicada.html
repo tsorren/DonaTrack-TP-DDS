@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Raíces, Necesidades: la lista con la necesidad recién publicada (Fideos secos), abierta y marcada como nueva, y el aviso con el foco (docs/interfaz/flujos/raices-necesidades.md). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-necesidades', ~{::contenido})}">
+<head>
+  <title>Publicada - Necesidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{entidad-necesidades :: hoja('publicada')}"></th:block>
+</th:block>
+</body>
+</html>

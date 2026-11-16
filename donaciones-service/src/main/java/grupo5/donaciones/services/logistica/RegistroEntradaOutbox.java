@@ -17,4 +17,29 @@ public record RegistroEntradaOutbox(
     int maxIntentos,
     int intentos,
     LocalDateTime proximoIntento,
-    EstadoEntradaOutbox estado) {}
+    EstadoEntradaOutbox estado,
+    TipoEntradaOutbox tipo) {
+
+  public RegistroEntradaOutbox(
+      UUID id,
+      UUID solicitudId,
+      String proveedorId,
+      DatosEntregaLogistica datos,
+      String traceId,
+      int maxIntentos,
+      int intentos,
+      LocalDateTime proximoIntento,
+      EstadoEntradaOutbox estado) {
+    this(
+        id,
+        solicitudId,
+        proveedorId,
+        datos,
+        traceId,
+        maxIntentos,
+        intentos,
+        proximoIntento,
+        estado,
+        TipoEntradaOutbox.SOLICITUD);
+  }
+}

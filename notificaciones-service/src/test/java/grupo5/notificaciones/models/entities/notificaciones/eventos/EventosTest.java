@@ -1,6 +1,7 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -305,5 +306,56 @@ class EventosNotificablesTest {
     assertThrows(
         ValidationException.class,
         () -> new DonacionVencida(donante, admin, "5 kg de leche", "   ", TEST_DATE_TIME));
+  }
+
+  @Test
+  void donacionRecibida_marcaTipoYReferenciaEnLasNotificacionesDeDonanteYEntidad() {
+    Persona donante =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Donante", TipoPersona.HUMANA);
+    Persona entidad =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Comedor", TipoPersona.JURIDICA);
+    UUID donacionId = UUID.randomUUID();
+    DonacionRecibida evento =
+        new DonacionRecibida(donante, entidad, "10 kg de arroz", "AB123CD", TEST_DATE_TIME);
+    evento.asociarReferencia(donacionId);
+
+    List<Notificacion> notificaciones = evento.generarNotificaciones();
+
+    assertEquals(2, notificaciones.size());
+    notificaciones.forEach(
+        n -> {
+          assertEquals("DONACION_RECIBIDA", n.getTipoEvento());
+          assertEquals(donacionId, n.getReferenciaId());
+        });
+  }
+
+  @Test
+  void eventoSinReferencia_marcaElTipoYDejaLaReferenciaEnNulo() {
+    Persona persona =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Persona", TipoPersona.HUMANA);
+
+    Notificacion notificacion =
+        new MisionCumplida(persona, "Donador Frecuente", "100 puntos", TEST_DATE_TIME)
+            .generarNotificaciones()
+            .getFirst();
+
+    assertEquals("MISION_CUMPLIDA", notificacion.getTipoEvento());
+    assertNull(notificacion.getReferenciaId());
+  }
+
+  @Test
+  void entregaFallida_marcaTipoEnLasTresNotificaciones() {
+    Persona donante =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Donante", TipoPersona.HUMANA);
+    Persona entidad =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Comedor", TipoPersona.JURIDICA);
+    Persona admin = new Persona(UUID.randomUUID(), new ArrayList<>(), "Admin", TipoPersona.HUMANA);
+
+    List<Notificacion> notificaciones =
+        new EntregaFallida(donante, entidad, admin, "Arroz", "No había nadie", true, TEST_DATE_TIME)
+            .generarNotificaciones();
+
+    assertEquals(3, notificaciones.size());
+    assertTrue(notificaciones.stream().allMatch(n -> "ENTREGA_FALLIDA".equals(n.getTipoEvento())));
   }
 }

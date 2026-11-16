@@ -209,7 +209,8 @@ class ControllersWebMvcValidationTest {
     mockMvc
         .perform(get("/api/incentivos/ranking/2026-05"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.periodo").value("2026-05"));
+        .andExpect(jsonPath("$.periodo").value("2026-05"))
+        .andExpect(jsonPath("$.calculadoEn").value(ranking.getCalculadoEn().toString()));
 
     when(rankingService.obtenerUltimoRanking()).thenReturn(Optional.empty());
     mockMvc.perform(get("/api/incentivos/ranking/ultimo")).andExpect(status().isNoContent());

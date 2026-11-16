@@ -27,6 +27,7 @@ docs/arquitectura/
 │
 ├── contratos-rest.md                      # 🌐 Contratos REST consolidados y OpenAPI 3.0
 ├── eventos-amqp.md                        # 🐇 Topología RabbitMQ y contratos de eventos
+├── seguridad/matriz-permisos.md           # 🔐 Matriz de permisos E6 (rol, permiso, pertenencia)
 │
 ├── contratos/                             # 📜 Archivos OpenAPI YAML y JSON Schemas
 │   └── schemas/                           # 25 Schemas JSON validados mecánicamente

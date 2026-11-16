@@ -1,0 +1,173 @@
+/* El inicio de la persona que dona (templates/persona/donante-inicio.html, segunda ronda del
+   2026-11-09): su 2026 mes a mes (componente .almanaque) con la lista de cada mes debajo y, al
+   costado, el año en cifras, la próxima misión y las noticias. Hoja nueva: solo disposición, por id y
+   sin clases propias; el papel, la tierra y los colores vienen de las piezas del donante
+   (donante-inicio.css), del componente huerta y del almanaque. */
+@import url("donante-inicio.css");
+
+#persona-inicio > .inicio-cabecera {
+  margin-bottom: var(--espacio-4);
+}
+
+#anio {
+  display: grid;
+  gap: var(--espacio-4);
+  align-items: start;
+}
+
+#anio-meses {
+  --espacio-relleno: var(--espacio-4);
+
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+#anio-meses :is(h2, h3, p) {
+  margin: 0;
+}
+
+#anio-meses > header {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+#anio-meses > header p:last-child {
+  max-width: 42rem;
+}
+
+/* Mes por mes. */
+#anio-lista section {
+  display: grid;
+  gap: var(--espacio-2);
+  scroll-margin-top: var(--espacio-5);
+}
+
+#anio-lista h3 {
+  font-size: 1.125rem;
+}
+
+#anio-lista ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#anio-lista li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-2);
+}
+
+/* Cada donación del mes es un enlace al detalle: con el alto de toque mínimo. */
+#anio-lista li a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+}
+
+#anio-lista figure {
+  max-width: 28rem;
+  margin: 0;
+}
+
+#anio-lista figure img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radio-boton);
+}
+
+/* La columna del costado. */
+#anio-lado .huerta-cabeza {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#anio-lado p {
+  margin: 0;
+}
+
+#anio-lado a:not(.noticia-texto) {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  font-weight: 700;
+}
+
+#anio-cifras {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espacio-2);
+  margin: 0;
+}
+
+#anio-cifras div {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+#anio-cifras dt {
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}
+
+#anio-cifras dd {
+  order: -1;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+@media (min-width: 53.75em) {
+  #anio {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  }
+}
+
+/* El acceso a la huerta: el dibujo y, encima, el botón real donde la diseñadora dibujó el suyo. */
+/* La huerta, arriba de todo (R11-06): compacta, para que el año se vea enseguida. Centrada (R11-37):
+   en el celular, el título y el dibujo uno sobre otro y al medio; en pantalla ancha, el título al lado
+   del dibujo, los dos juntos y al medio de la lámina, no uno en cada punta. */
+#anio-huerta {
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-3);
+  align-items: center;
+  margin-bottom: var(--espacio-4);
+  text-align: center;
+}
+
+#anio-huerta .huerta-cabeza {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+
+@media (min-width: 53.75em) {
+  #anio-huerta {
+    grid-template-columns: minmax(0, 24rem) minmax(0, 28rem);
+    justify-content: center;
+    column-gap: var(--espacio-5);
+  }
+}
+
+#anio-huerta-dibujo {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+  margin-inline: auto;
+}
+
+#anio-huerta-dibujo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* El botón, al medio del invernadero (no del dibujo entero, que suma las macetas de los costados). */
+#anio-huerta-dibujo .boton {
+  position: absolute;
+  top: 62%;
+  left: 53.5%;
+  translate: -50% -50%;
+  white-space: nowrap;
+}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!--/* Raíces, Activar cuenta, la cuenta activada (ficha docs/interfaz/flujos/raices-conocer-y-activar.md,
+       4.4): el sello de hecho, como el de Contacto enviado, y la salida a Ingresar. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-ingresar', ~{::contenido})}">
+<head>
+  <title>Cuenta activada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="publica cuenta">
+    <div class="cuenta-principal">
+      <header class="publica-cabeza">
+        <p class="rotulo">Activar cuenta</p>
+        <h1>Tu cuenta <em>está lista</em></h1>
+      </header>
+      <div class="recibido" role="status">
+        <svg viewBox="-30 -30 64 64" aria-hidden="true" focusable="false">
+          <circle class="sello-tinta" cx="4" cy="4" r="26"/><circle class="sello-disco" r="26"/>
+          <path class="sello-calado sello-calado--fino" d="M-10 1L-3 8L11 -7"/>
+        </svg>
+        <p>Ya podés ingresar con tu correo y la contraseña que elegiste.</p>
+      </div>
+      <a class="boton" data-tono="principal" href="/publico-ingresar"
+         th:href="@{/publico-ingresar}">Ingresar</a>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

@@ -2,6 +2,7 @@ package grupo5.donaciones.services.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
 
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
 import grupo5.donaciones.infrastructure.logistica.ProveedoresLogistica;
@@ -13,6 +14,7 @@ import grupo5.donaciones.models.repositories.impl.SolicitudesEntregaRepositoryEn
 import grupo5.donaciones.services.logistica.EnvioInciertoException;
 import grupo5.donaciones.services.logistica.EnvioRechazadoException;
 import grupo5.donaciones.services.logistica.IProveedorLogistica;
+import grupo5.donaciones.services.logistica.ResultadoPedidoCancelacion;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
 /** Broker + relay + outbox reales, con proveedores de prueba y un reloj que se puede adelantar. */
 class LogisticaBrokerFlujoTest {
@@ -70,17 +73,17 @@ class LogisticaBrokerFlujoTest {
     when(donatrack.id()).thenReturn("donatrack");
     when(externo.id()).thenReturn("externo");
 
+    ProveedoresLogistica proveedores = new ProveedoresLogistica(List.of(donatrack, externo));
     broker =
         new LogisticaBroker(
             solicitudes,
             outbox,
             new SeleccionPorPreferenciaConFallback(List.of("donatrack", "externo"), "donatrack"),
+            proveedores,
             reloj,
             3,
             30);
-    relay =
-        new LogisticaOutboxRelay(
-            outbox, broker, new ProveedoresLogistica(List.of(donatrack, externo)), reloj);
+    relay = new LogisticaOutboxRelay(outbox, broker, proveedores, reloj);
   }
 
   private static DatosEntregaLogistica pedido() {
@@ -179,5 +182,40 @@ class LogisticaBrokerFlujoTest {
     verify(donatrack, times(3)).enviar(any(), any(), any());
     verify(externo, never()).enviar(any(), any(), any());
     assertEquals(EstadoSolicitudEntrega.FALLIDA, unicaSolicitud().getEstado());
+  }
+
+  // ===================== Cancelación (HB-19) =====================
+
+  @Test
+  void cancelacionPedidaAntesDeQueSalgaElPedido_salePrimeroElPedidoYDespuesLaCancelacion() {
+    when(donatrack.admiteCancelacion()).thenReturn(true);
+    DatosEntregaLogistica datos = pedido();
+    broker.solicitarEntrega(datos);
+    broker.pedirCancelacion(datos.donacionIndependienteId());
+
+    // El relay recorre en orden: primero el pedido (la solicitud queda ENVIADA) y después la
+    // cancelación, que recién entonces tiene destino
+    relay.procesarPendientes();
+    reloj.adelantar(Duration.ofMinutes(1));
+    relay.procesarPendientes();
+
+    InOrder orden = inOrder(donatrack);
+    orden.verify(donatrack).enviar(any(), eq(datos), any());
+    orden.verify(donatrack).cancelar(any(), eq(datos.donacionIndependienteId()), any());
+    verify(externo, never()).cancelar(any(), any(), any());
+  }
+
+  @Test
+  void proveedorQueNoCancela_laBajaNoEncolaNada() {
+    DatosEntregaLogistica datos = pedido();
+    broker.solicitarEntrega(datos);
+    relay.procesarPendientes();
+
+    assertEquals(
+        ResultadoPedidoCancelacion.NO_SOPORTADA,
+        broker.pedirCancelacion(datos.donacionIndependienteId()));
+    relay.procesarPendientes();
+
+    verify(donatrack, never()).cancelar(any(), any(), any());
   }
 }

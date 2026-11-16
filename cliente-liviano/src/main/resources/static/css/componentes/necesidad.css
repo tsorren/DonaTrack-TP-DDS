@@ -1,0 +1,84 @@
+/* Bloque necesidad (2026-11-09, noche): una necesidad de una entidad, como la dibujó la usuaria en la
+   tarjeta de Entidades. A la izquierda, el ícono centrado en su caja redondeada (salvia; con
+   `data-tono="emergencia"`, el de alerta en los colores del problema); al lado, qué es, en negrita, y
+   en tinta suave lo que falta y hasta cuándo o si se repite; debajo, la barra de lo que ya llegó
+   (`.progreso`). `.necesidades` las pone en una lista de una columna y, desde el quiebre medio, de dos.
+   Se carga en la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+.necesidades {
+  display: grid;
+  gap: var(--espacio-4) var(--espacio-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 53.75em) {
+  .necesidades {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.necesidad {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: var(--espacio-1) var(--espacio-3);
+  align-items: center;
+  margin: 0;
+}
+
+.necesidad-icono {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-acento-claro);
+  color: var(--color-tinta);
+  fill: var(--color-tinta);
+}
+
+.necesidad-icono > svg {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.necesidad[data-tono="emergencia"] .necesidad-icono {
+  background: var(--color-problema-fondo);
+  color: var(--color-problema-texto);
+  fill: none;
+}
+
+.necesidad[data-tono="emergencia"] .necesidad-icono > svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.necesidad[data-tono="emergencia"] .necesidad-icono circle {
+  fill: currentcolor;
+}
+
+.necesidad-texto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--espacio-2);
+  margin: 0;
+}
+
+.necesidad-texto > b {
+  color: var(--color-tinta);
+  font-family: var(--fuente-titulo);
+  font-size: var(--tamano-grande);
+  line-height: 1.25;
+}
+
+.necesidad-texto > span {
+  color: var(--color-tinta-suave);
+  font-size: var(--tamano-chico);
+}
+
+/* Sin barra (la necesidad no dice de cuánto), el texto queda centrado con el ícono. */
+.necesidad-texto:last-child {
+  grid-row: span 2;
+}

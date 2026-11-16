@@ -378,7 +378,7 @@
             "url": "{{donacionesUrl}}/api/necesidades",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker A {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker A {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             }
           },
           "event": [
@@ -417,7 +417,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas?orden=reciente&size=100"
           },
           "event": [
             {
@@ -684,7 +684,7 @@
             "url": "{{donacionesUrl}}/api/necesidades",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker B {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker B {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             }
           },
           "event": [
@@ -723,7 +723,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas?orden=reciente&size=100"
           },
           "event": [
             {
@@ -990,7 +990,7 @@
             "url": "{{donacionesUrl}}/api/necesidades",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker C {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker C {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             }
           },
           "event": [
@@ -1029,7 +1029,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas?orden=reciente&size=100"
           },
           "event": [
             {
@@ -1874,7 +1874,7 @@
             "url": "{{donacionesUrl}}/api/necesidades",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker D {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker D {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             }
           },
           "event": [
@@ -1913,7 +1913,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas?orden=reciente&size=100"
           },
           "event": [
             {
@@ -2159,7 +2159,7 @@
             "url": "{{donacionesUrl}}/api/necesidades",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker E {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker E {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaLimite\": \"2099-12-31\"\n}"
             }
           },
           "event": [
@@ -2198,7 +2198,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas?orden=reciente&size=100"
           },
           "event": [
             {
@@ -2300,6 +2300,55 @@
         }
       ],
       "description": "ANTES de correrla: recrear donaciones con LOGISTICA_EXTERNA_READ_TIMEOUT_MS=1 (ver guion) y correr también la carpeta 0. El broker nunca pasa a otro proveedor ante un timeout: reintenta con el mismo (ver el log). Espera ~25 s para que ocurran reintentos y verifica que donatrack no recibió nada. Las entregas en externo son informativas: si externo llegó a procesar antes del corte, queda como mucho una (desde #886 POST /api/entregas deduplica con 409, D55)."
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Token de la cuenta de pruebas (SPEC-06 E2-07). Inactivo si pruebasClientSecret está vacío: con la",
+          "// seguridad apagada los pedidos salen como siempre. Para encenderlo: newman --env-var pruebasClientSecret=...",
+          "// o cargar la variable de colección. El token solo se manda a NUESTROS servicios, nunca al proveedor",
+          "// logístico externo (flujo 9): es un ADMIN. Se compara la URL entera, no un prefijo suelto.",
+          "const pruebasSecreto = pm.variables.get('pruebasClientSecret');",
+          "const propias = ['baseUrl', 'donacionesUrl', 'notificacionesUrl', 'incentivosUrl', 'logisticaUrl']",
+          "  .map((v) => pm.variables.get(v)).filter(Boolean);",
+          "const destino = pm.variables.replaceIn(pm.request.url.toString());",
+          "const esPropia = (base) => destino === base || destino.startsWith(base + '/') || destino.startsWith(base + '?');",
+          "if (pruebasSecreto && propias.some(esPropia)) {",
+          "  const poner = (token) => pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + token });",
+          "  const vence = Number(pm.collectionVariables.get('pruebasTokenVence') || 0);",
+          "  const guardado = pm.collectionVariables.get('pruebasToken');",
+          "  if (guardado && Date.now() < vence - 30000) {",
+          "    poner(guardado);",
+          "  } else {",
+          "    pm.sendRequest({",
+          "      url: pm.variables.get('keycloakTokenUrl') || 'http://localhost:8180/realms/donatrack/protocol/openid-connect/token',",
+          "      method: 'POST',",
+          "      header: { 'Content-Type': 'application/x-www-form-urlencoded' },",
+          "      body: {",
+          "        mode: 'urlencoded',",
+          "        urlencoded: [",
+          "          { key: 'grant_type', value: 'client_credentials' },",
+          "          { key: 'client_id', value: pm.variables.get('pruebasClientId') || 'donatrack-pruebas' },",
+          "          { key: 'client_secret', value: pruebasSecreto },",
+          "        ],",
+          "      },",
+          "    }, (error, res) => {",
+          "      if (error || res.code !== 200) {",
+          "        throw new Error('No se pudo obtener el token de pruebas: ' + (error || 'HTTP ' + res.code));",
+          "      }",
+          "      const cuerpo = res.json();",
+          "      pm.collectionVariables.set('pruebasToken', cuerpo.access_token);",
+          "      pm.collectionVariables.set('pruebasTokenVence', String(Date.now() + cuerpo.expires_in * 1000));",
+          "      poner(cuerpo.access_token);",
+          "    });",
+          "  }",
+          "}"
+        ]
+      }
     }
   ],
   "variable": [
@@ -2422,6 +2471,18 @@
     {
       "key": "entregaIdA",
       "value": ""
+    },
+    {
+      "key": "pruebasClientSecret",
+      "value": ""
+    },
+    {
+      "key": "pruebasClientId",
+      "value": "donatrack-pruebas"
+    },
+    {
+      "key": "keycloakTokenUrl",
+      "value": "http://localhost:8180/realms/donatrack/protocol/openid-connect/token"
     }
   ]
 }

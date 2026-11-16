@@ -57,6 +57,7 @@ public class LogisticaPersistenciaMapper {
     entity.setEstado(domain.getEstado());
     entity.setIntentos(domain.getIntentos());
     entity.setMaxIntentos(domain.getMaxIntentos());
+    entity.setTipo(domain.getTipo());
     return entity;
   }
 
@@ -71,7 +72,8 @@ public class LogisticaPersistenciaMapper {
             entity.getMaxIntentos(),
             entity.getIntentos(),
             entity.getProximoIntento(),
-            entity.getEstado()));
+            entity.getEstado(),
+            entity.getTipo()));
   }
 
   public EventoConsumidoEntity toEntity(EventoConsumido evento) {

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<!--/* Corregí los datos de tu organización (ficha docs/interfaz/flujos/r11-p2-pendiente-solicitud.md,
+       4.2, R11-41): el mismo formulario del registro de entidad (publico-registro-entidad :: hoja) en
+       su modo corregir, en página aparte. Es un POST real a esta misma dirección; al guardar vuelve a
+       "Recibimos la solicitud". Estados (los arma hoja): campos (lo que Donaciones rechazó: el resumen
+       arriba y el campo marcado), fallo (no se pudo guardar, con lo escrito) y sinDatos (no se pudo
+       leer: el aviso y "Volver a la solicitud", sin formulario vacío). Escenarios de la maqueta: error,
+       fallo, sin-datos y lento. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-registro', ~{::contenido})}">
+<head>
+  <title>Corregí los datos de tu organización - Tu solicitud - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:with="modo='corregir'">
+    <th:block th:replace="~{publico-registro-entidad :: hoja(false)}"></th:block>
+  </th:block>
+</th:block>
+</body>
+</html>

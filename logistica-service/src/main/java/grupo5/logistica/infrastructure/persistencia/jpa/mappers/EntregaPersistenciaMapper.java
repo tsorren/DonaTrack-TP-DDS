@@ -8,6 +8,7 @@ import grupo5.logistica.infrastructure.persistencia.jpa.entities.PaisEntity;
 import grupo5.logistica.infrastructure.persistencia.jpa.entities.ProvinciaEntity;
 import grupo5.logistica.models.entities.entregas.CambioEstadoEntrega;
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.entregas.ReporteRecepcion;
 import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
@@ -49,7 +50,13 @@ public class EntregaPersistenciaMapper {
     entity.setIdRuta(domain.getIdRuta());
     entity.setIdDonacion(domain.getIdDonacion());
     entity.setIdBeneficiario(domain.getIdBeneficiaria());
+    entity.setDonanteId(domain.getDonanteId());
     entity.setEstado(domain.getEstadoActual());
+    entity.setNumeroRemito(domain.getNumeroRemito());
+    ReporteRecepcion reporte = domain.getReporteRecepcion();
+    entity.setReporteMotivo(reporte != null ? reporte.motivo() : null);
+    entity.setReporteDetalle(reporte != null ? reporte.detalle() : null);
+    entity.setReporteCantidadRecibida(reporte != null ? reporte.cantidadRecibida() : null);
     entity.setHoraArribo(aInstantUtc(domain.getHoraArribo()));
     entity.setHoraSalida(aInstantUtc(domain.getHoraSalida()));
     entity.setFotoRecepcionUrl(domain.getFotoRecepcionUrl());
@@ -107,20 +114,31 @@ public class EntregaPersistenciaMapper {
 
     List<String> fotos = resolverFotosDesdeEntidad(entity);
 
-    return new Entrega(
-        entity.getIdEntrega(),
-        entity.getIdRuta(),
-        entity.getIdDonacion(),
-        entity.getIdBeneficiario(),
-        mapearDireccion(entity.getDireccion()),
-        entity.getEstado(),
-        historial,
-        aLocalDateTimeUtc(entity.getHoraArribo()),
-        aLocalDateTimeUtc(entity.getHoraSalida()),
-        fotos,
-        entity.getPesoTotalKg() != null ? entity.getPesoTotalKg().floatValue() : 0f,
-        entity.getVolumenTotalM3() != null ? entity.getVolumenTotalM3().floatValue() : 0f,
-        entity.getVersion());
+    Entrega entrega =
+        new Entrega(
+            entity.getIdEntrega(),
+            entity.getIdRuta(),
+            entity.getIdDonacion(),
+            entity.getIdBeneficiario(),
+            mapearDireccion(entity.getDireccion()),
+            entity.getEstado(),
+            historial,
+            aLocalDateTimeUtc(entity.getHoraArribo()),
+            aLocalDateTimeUtc(entity.getHoraSalida()),
+            fotos,
+            entity.getPesoTotalKg() != null ? entity.getPesoTotalKg().floatValue() : 0f,
+            entity.getVolumenTotalM3() != null ? entity.getVolumenTotalM3().floatValue() : 0f,
+            entity.getVersion());
+    entrega.reconstituirRecepcion(
+        entity.getNumeroRemito(),
+        entity.getReporteMotivo() != null
+            ? new ReporteRecepcion(
+                entity.getReporteMotivo(),
+                entity.getReporteDetalle(),
+                entity.getReporteCantidadRecibida())
+            : null);
+    entrega.registrarDonante(entity.getDonanteId());
+    return entrega;
   }
 
   private static List<String> resolverFotosDesdeEntidad(EntregaEntity entity) {

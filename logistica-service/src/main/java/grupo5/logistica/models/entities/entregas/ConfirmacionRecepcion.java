@@ -2,11 +2,20 @@ package grupo5.logistica.models.entities.entregas;
 
 import java.util.List;
 
-public record ConfirmacionRecepcion(Entrega entrega, String actor, List<String> fotosRecepcion)
+public record ConfirmacionRecepcion(
+    Entrega entrega,
+    String actor,
+    List<String> fotosRecepcion,
+    String numeroRemito,
+    ReporteRecepcion reporte)
     implements SolicitudTransicionEntrega {
 
   public ConfirmacionRecepcion {
     fotosRecepcion = fotosRecepcion != null ? List.copyOf(fotosRecepcion) : List.of();
+  }
+
+  public ConfirmacionRecepcion(Entrega entrega, String actor, List<String> fotosRecepcion) {
+    this(entrega, actor, fotosRecepcion, null, null);
   }
 
   public ConfirmacionRecepcion(Entrega entrega, String actor, String fotoRecepcionUrl) {

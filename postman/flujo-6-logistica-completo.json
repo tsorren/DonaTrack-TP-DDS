@@ -5,6 +5,55 @@
     "description": "Autocontenido. Cubre el ciclo de vida completo de Camión y Chofer, la creación de Entrega y sus transiciones inválidas desde PENDIENTE. IMPORTANTE: no existe POST /api/rutas — una Ruta solo nace del scheduler diario de planificación (PlanificadorDeEntregas, cron por defecto 2 AM) + el proveedor externo simulado. Por eso EN_TRASLADO/ENTREGADA de una Entrega y el callback de planificación NO son 100% testeables solo con Postman sin que ese proceso corra primero — la última carpeta lo documenta y deja los requests listos para cuando exista una Ruta real.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Token de la cuenta de pruebas (SPEC-06 E2-07). Inactivo si pruebasClientSecret está vacío: con la",
+          "// seguridad apagada los pedidos salen como siempre. Para encenderlo: newman --env-var pruebasClientSecret=...",
+          "// o cargar la variable de colección. El token solo se manda a NUESTROS servicios, nunca al proveedor",
+          "// logístico externo (flujo 9): es un ADMIN. Se compara la URL entera, no un prefijo suelto.",
+          "const pruebasSecreto = pm.variables.get('pruebasClientSecret');",
+          "const propias = ['baseUrl', 'donacionesUrl', 'notificacionesUrl', 'incentivosUrl', 'logisticaUrl']",
+          "  .map((v) => pm.variables.get(v)).filter(Boolean);",
+          "const destino = pm.variables.replaceIn(pm.request.url.toString());",
+          "const esPropia = (base) => destino === base || destino.startsWith(base + '/') || destino.startsWith(base + '?');",
+          "if (pruebasSecreto && propias.some(esPropia)) {",
+          "  const poner = (token) => pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + token });",
+          "  const vence = Number(pm.collectionVariables.get('pruebasTokenVence') || 0);",
+          "  const guardado = pm.collectionVariables.get('pruebasToken');",
+          "  if (guardado && Date.now() < vence - 30000) {",
+          "    poner(guardado);",
+          "  } else {",
+          "    pm.sendRequest({",
+          "      url: pm.variables.get('keycloakTokenUrl') || 'http://localhost:8180/realms/donatrack/protocol/openid-connect/token',",
+          "      method: 'POST',",
+          "      header: { 'Content-Type': 'application/x-www-form-urlencoded' },",
+          "      body: {",
+          "        mode: 'urlencoded',",
+          "        urlencoded: [",
+          "          { key: 'grant_type', value: 'client_credentials' },",
+          "          { key: 'client_id', value: pm.variables.get('pruebasClientId') || 'donatrack-pruebas' },",
+          "          { key: 'client_secret', value: pruebasSecreto },",
+          "        ],",
+          "      },",
+          "    }, (error, res) => {",
+          "      if (error || res.code !== 200) {",
+          "        throw new Error('No se pudo obtener el token de pruebas: ' + (error || 'HTTP ' + res.code));",
+          "      }",
+          "      const cuerpo = res.json();",
+          "      pm.collectionVariables.set('pruebasToken', cuerpo.access_token);",
+          "      pm.collectionVariables.set('pruebasTokenVence', String(Date.now() + cuerpo.expires_in * 1000));",
+          "      poner(cuerpo.access_token);",
+          "    });",
+          "  }",
+          "}"
+        ]
+      }
+    }
+  ],
   "variable": [
     {
       "key": "baseUrl",
@@ -29,6 +78,18 @@
     {
       "key": "rutaId",
       "value": ""
+    },
+    {
+      "key": "pruebasClientSecret",
+      "value": ""
+    },
+    {
+      "key": "pruebasClientId",
+      "value": "donatrack-pruebas"
+    },
+    {
+      "key": "keycloakTokenUrl",
+      "value": "http://localhost:8180/realms/donatrack/protocol/openid-connect/token"
     }
   ],
   "item": [

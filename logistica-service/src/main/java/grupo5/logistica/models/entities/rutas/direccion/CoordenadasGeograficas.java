@@ -19,6 +19,11 @@ public record CoordenadasGeograficas(double latitud, double longitud) {
   private static final double MAX_LONGITUD = 180.0;
 
   public CoordenadasGeograficas {
+    validar(latitud, longitud);
+  }
+
+  /** Rechaza coordenadas fuera de rango WGS84; la reusa la posición del camión. */
+  public static void validar(double latitud, double longitud) {
     if (Double.isNaN(latitud)
         || Double.isInfinite(latitud)
         || latitud < MIN_LATITUD

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-cuenta-enlace-solicitado-v1.schema.json",
+  "title": "EventoCuentaEnlaceSolicitadoV1",
+  "description": "Evento publicado por el SPI de correo de Keycloak (auth-service) cuando una cuenta pide un enlace de un solo uso: recuperar la clave o verificar el email. Lleva un secreto (el enlace) y un dato personal (el destinatario): notificaciones-service no lo persiste ni lo loguea.",
+  "type": "object",
+  "properties": {
+    "tipo": {
+      "type": "string",
+      "enum": ["RECUPERAR_CLAVE", "VERIFICAR_EMAIL"],
+      "description": "Para qué es el enlace"
+    },
+    "cuentaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Id de la cuenta en Keycloak (el sub de sus tokens). No es el id de la Persona: una cuenta puede no tener Persona todavía"
+    },
+    "destinatario": {
+      "type": "string",
+      "format": "email",
+      "description": "Email de la cuenta, al que hay que mandar el enlace"
+    },
+    "enlace": {
+      "type": "string",
+      "pattern": "^https?://\\S+$",
+      "description": "Enlace de un solo uso de Keycloak. notificaciones-service solo lo manda si apunta a nuestro Keycloak"
+    },
+    "venceEnMinutos": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Cuántos minutos vale el enlace. El mensaje AMQP vence a la vez (propiedad expiration)"
+    },
+    "idioma": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Idioma en que la cuenta ve Keycloak (código de dos letras)"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Instante en que se pidió el enlace, sin fracciones de segundo"
+    }
+  },
+  "required": ["tipo", "cuentaId", "destinatario", "enlace", "venceEnMinutos", "idioma", "fecha"],
+  "additionalProperties": true
+}

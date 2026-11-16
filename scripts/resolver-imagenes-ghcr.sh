@@ -33,6 +33,8 @@ resolver() {
 for pom in */pom.xml; do
   svc="${pom%/pom.xml}"
   [[ -f "$svc/Dockerfile" ]] || continue
+  # auth-service (Keycloak, E2-12 de SPEC-06) y api-gateway (SPEC-07) están en docker-compose.preprod.yml: su imagen se
+  # publica en GHCR como la de los demás servicios y se etiqueta donatrack/<servicio>:preprod.
   [[ "$svc" == "common-lib" || "$svc" == "integration-tests" || "$svc" == "adr-generator" ]] && continue
 
   if [[ -n "${PR_TAG:-}" && "$CHANGED" == *" $svc "* ]]; then

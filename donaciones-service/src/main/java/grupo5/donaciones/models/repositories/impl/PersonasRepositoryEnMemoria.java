@@ -3,6 +3,9 @@ package grupo5.donaciones.models.repositories.impl;
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.models.repositories.listados.CriterioPersonas;
+import grupo5.donaciones.models.repositories.listados.PersonaEnListado;
+import grupo5.donaciones.models.repositories.listados.Tramo;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.context.annotation.Profile;
@@ -12,6 +15,18 @@ import org.springframework.stereotype.Repository;
 @Profile("!postgres")
 public class PersonasRepositoryEnMemoria extends CrudRepositoryEnMemoria<Persona>
     implements IPersonasRepository {
+
+  @Override
+  public Tramo<Persona> buscar(CriterioPersonas criterio) {
+    List<Persona> filtradas =
+        storage.values().stream()
+            .filter(p -> criterio.ids().isEmpty() || criterio.ids().contains(p.getId()))
+            .filter(p -> PersonaEnListado.esDelTipo(p, criterio.tipo(), criterio.tipoJuridico()))
+            .filter(p -> PersonaEnListado.coincide(p, criterio.q()))
+            .sorted(PersonaEnListado.POR_NOMBRE)
+            .toList();
+    return Tramo.de(filtradas, criterio.paginado());
+  }
 
   @Override
   public Optional<Persona> findByDocumento(String documento) {

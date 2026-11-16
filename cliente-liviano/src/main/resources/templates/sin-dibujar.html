@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<!--/* Una pantalla del menú que todavía no está dibujada (decisión del usuario, 2026-11-01): dice
+       qué falta. SitioController la muestra para toda pantalla de una sección del menú sin
+       plantilla. Desde F7 del roadmap de vistas (2026-11-07), ningún enlace del sitio lleva acá:
+       lo comprueba SitioControllerTest.ningunEnlaceDelSitioEstaRoto. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'privado', ~{::contenido})}">
+<head>
+  <title th:text="|${seccion} - DonaTrack|">Sección - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="sin-dibujar">
+    <p class="rotulo" th:text="${seccion}">Sección</p>
+    <h1>Esta pantalla todavía no está dibujada.</h1>
+  </div>
+</th:block>
+</body>
+</html>

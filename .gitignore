@@ -59,6 +59,10 @@ __pycache__/
 
 # Credenciales locales de docker compose (ver .env.example)
 .env
+# Credenciales de Google para probar el ingreso (ver .env.google.example): tiene un secreto
+.env.google
+# Claves y URL de la demo pública (scripts/demo-publica.sh)
+.env.publica
 
 # Reportes de analyze_preprod_logs.py --export-report
 docker-logs/

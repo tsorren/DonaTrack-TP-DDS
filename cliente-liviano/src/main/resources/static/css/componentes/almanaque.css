@@ -1,0 +1,100 @@
+/* Bloque almanaque (segunda ronda del 2026-11-09): un año en doce meses, para la persona que dona
+   (usuaria: "las personas particulares no donan todos los días, es irrealista y culpabiliza"). Es un
+   `<ol class="almanaque" role="list" aria-label>` con un `li` por mes y `data-mes`: "con" (donó ese
+   mes: un enlace a su lista, con el nombre, la cuenta y una planta por donación en `[data-plantas]`),
+   "sin" (pasó sin donaciones) o "por-venir". El mes sin donaciones y el que viene se ven neutros, en
+   papel: nunca como falta ni racha perdida; el texto para lectores lo dice tranquilo. El mes actual
+   lleva `data-hoy` en el `li` y la marca "Este mes" (`small[data-hoy]`). Sin borde de selección. Tres
+   columnas en el celular, cuatro desde 37,5 em y seis desde 68,75 em. Se carga en la capa `bloques`
+   desde app.css. Catálogo: docs/interfaz/componentes.md. */
+.almanaque {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.almanaque > li {
+  margin: 0;
+}
+
+.almanaque > li > :is(a, div) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+  height: 100%;
+  min-height: 7rem;
+  padding: var(--espacio-2);
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+  color: var(--color-tinta-suave);
+  text-decoration: none;
+}
+
+.almanaque b {
+  color: var(--color-tinta-suave);
+  font: 700 0.9375rem/1.15 var(--fuente-titulo);
+}
+
+.almanaque span:not([data-plantas]) {
+  font-size: 0.8125rem;
+  line-height: 1.25;
+}
+
+/* El mes en que donó: la hoja clara, la tinta plena y sus plantas abajo. */
+.almanaque [data-mes="con"] > a {
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+  color: var(--color-tinta);
+}
+
+.almanaque [data-mes="con"] b {
+  color: var(--color-tinta);
+  font-weight: 850;
+}
+
+.almanaque [data-mes="con"] > a:hover {
+  background: var(--color-acento-claro);
+}
+
+.almanaque [data-plantas] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.125rem;
+  margin-top: auto;
+  padding-top: var(--espacio-1);
+}
+
+.almanaque [data-plantas] img {
+  width: 1.5rem;
+  height: 3rem;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+/* La marca del mes actual: una etiqueta de paja, redondeada. */
+.almanaque small[data-hoy] {
+  padding: 0.125rem var(--espacio-1);
+  border-radius: 999px;
+  background: var(--color-destacado);
+  color: var(--color-tinta);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (min-width: 37.5em) {
+  .almanaque {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 68.75em) {
+  .almanaque {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}

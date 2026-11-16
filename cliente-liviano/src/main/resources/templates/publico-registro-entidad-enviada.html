@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<!--/* Raíces, sitio A: Solicitud enviada (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.7):
+       el sello de recibido, qué pasa ahora y "Cómo sigue" con el paso 2 como actual. R11-08: dice
+       cuánto suele tardar la revisión ("unos días hábiles", sin cifra fija: no hay un plazo acordado)
+       y que mientras tanto puede recorrer lo público. R11-41 (ficha r11-p2-pendiente-solicitud.md,
+       4.1): con la cuenta pendiente, "Lo que nos enviaste" con lo que tiene Donaciones y "Corregir
+       los datos"; si no se pudo leer (sinDatos), un aviso sin corregir; si el equipo ya la aprobó
+       (aprobada), "Ingresar de nuevo"; al volver de guardar (guardado), el aviso de éxito. "Mientras
+       tanto…" va junto a las salidas que anuncia. Sin sesión, como antes: sin la tarjeta.
+       Escenarios de la maqueta: con-sesion-pendiente, corregida, sin-datos y aprobada. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-registro', ~{::contenido})}">
+<head>
+  <title>Solicitud recibida - Crear una cuenta - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="publica cuenta cuenta--enviada"
+       th:with="corregida=${guardado} or ${param.escenario != null and param.escenario[0] == 'corregida'}">
+    <div class="recibido" role="status">
+      <svg viewBox="-30 -30 64 64" aria-hidden="true" focusable="false">
+        <circle class="sello-tinta" cx="4" cy="4" r="26"/><circle class="sello-disco" r="26"/>
+        <path class="sello-calado sello-calado--fino" d="M-10 1L-3 8L11 -7"/>
+      </svg>
+      <p class="recibido-sello">Solicitud recibida</p>
+    </div>
+    <h1>Recibimos la solicitud <em>de tu organización</em></h1>
+    <p class="lectura-bajada">El equipo de DonaTrack la revisa antes de sumarla. La revisión suele llevar
+      unos días hábiles. Te escribimos al correo que dejaste cuando esté aprobada; desde ese día podés
+      ingresar y publicar lo que le hace falta a tu organización.</p>
+
+    <section th:if="${corregida and solicitud != null}" class="banner" role="status"
+             aria-labelledby="guardado-titulo">
+      <h2 id="guardado-titulo">Guardamos los cambios.</h2>
+      <p>El equipo revisa la solicitud con estos datos.</p>
+    </section>
+
+    <section th:replace="~{publico-registro-entidad :: comoSigue(2)}"></section>
+
+    <section th:if="${aprobada}" class="banner" role="alert" tabindex="-1" autofocus
+             aria-labelledby="aprobada-titulo">
+      <h2 id="aprobada-titulo">El equipo ya aprobó tu solicitud.</h2>
+      <p>Ingresá de nuevo para entrar a tu organización; desde ahí, los datos se cambian en Mi perfil.</p>
+      <form method="post" action="/publico-registro-entidad-enviada"
+            th:action="@{/publico-registro-entidad-enviada}">
+        <button class="boton" data-tono="principal" type="submit">Ingresar de nuevo</button>
+      </form>
+    </section>
+
+    <section th:if="${solicitud != null}" class="tarjeta" data-parte="enviado"
+             aria-labelledby="enviado-titulo">
+      <h2 id="enviado-titulo">Lo que nos enviaste</h2>
+      <p>Podés corregirlo mientras el equipo la revisa.</p>
+      <h3>La organización</h3>
+      <dl>
+        <div><dt>Nombre</dt><dd th:text="${solicitud.entidad}">Merendero Ejemplo Oeste</dd></div>
+        <div><dt>Qué es</dt><dd th:text="${solicitud.queEs}">Merendero</dd></div>
+        <div><dt>Tipo</dt><dd th:text="${solicitud.tipoTexto}">Asociación civil u ONG</dd></div>
+      </dl>
+      <h3>Dirección de entrega</h3>
+      <dl>
+        <div><dt>Dirección</dt><dd th:text="${solicitud.direccion}">Calle Ejemplo 1234, Localidad
+          Ejemplo, Provincia Ejemplo · CP 1000</dd></div>
+      </dl>
+      <h3>Quién la representa</h3>
+      <dl>
+        <div><dt>Nombre y apellido</dt><dd th:text="${solicitud.representante}">Rosa Ejemplo</dd></div>
+        <div><dt>Correo</dt><dd><th:block th:text="${solicitud.correo}">rosa@merendero-ejemplo.test</th:block>
+          <small>Es el de tu cuenta. Para cambiarlo, escribinos desde <a href="/publico-contacto"
+          th:href="@{/publico-contacto}">Contacto</a>.</small></dd></div>
+      </dl>
+      <a class="boton" data-tono="secundario" href="/publico-registro-entidad-corregir"
+         th:href="@{/publico-registro-entidad-corregir}">Corregir los datos</a>
+    </section>
+
+    <section th:if="${sinDatos}" class="banner" data-estado="error" role="alert" tabindex="-1" autofocus
+             aria-labelledby="sin-datos-titulo">
+      <h2 id="sin-datos-titulo">Ahora no podemos mostrarte los datos que enviaste.</h2>
+      <p>La solicitud sigue en revisión: no se perdió nada. Probá de nuevo en unos minutos.</p>
+    </section>
+
+    <div class="salidas">
+      <p>Mientras tanto, podés recorrer el sitio: la portada, las organizaciones y lo que piden.</p>
+      <a class="boton" data-tono="principal" href="/publico-entidades"
+         th:href="@{/publico-entidades}">Ver las organizaciones y lo que piden</a>
+      <a class="boton" data-tono="secundario" href="/publico-portada"
+         th:href="@{/publico-portada}">Ir a la portada</a>
+      <th:block th:if="${sesionPendiente}"><form th:replace="~{cerrar-sesion :: boton}"></form></th:block>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

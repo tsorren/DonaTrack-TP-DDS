@@ -25,6 +25,7 @@
         "EN_DEPOSITO",
         "ASIGNACION_REALIZADA",
         "EN_TRASLADO",
+        "EN_PUERTA",
         "LISTA_PARA_ENTREGAR",
         "ENTREGADA",
         "ENTREGA_FALLIDA",
@@ -48,6 +49,11 @@
     "cantidad": {
       "type": "integer",
       "description": "Cantidad total de ítems"
+    },
+    "necesidadId": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Necesidad a la que se asignó la donación (HB-17); nulo sin destino."
     }
   },
   "required": ["id", "donacionOriginalId", "estadoActual", "fechaRegistro"],

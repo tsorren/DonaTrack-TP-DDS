@@ -11,6 +11,7 @@ const SKIP_DIRS = new Set(['.git', 'node_modules', 'target', '.mvn', '.idea', 'd
 const AGENTS_ALLOWLIST = new Set([
   'AGENTS.md',
   'common-lib/AGENTS.md', // Wave 8: Shared Kernel governance
+  'cliente-liviano/AGENTS.md', // E6: RNF-CL-06, guardarraíles de la interfaz
 ]);
 
 // Path prefixes (forward-slash, relative to repo root) treated as historical archives.

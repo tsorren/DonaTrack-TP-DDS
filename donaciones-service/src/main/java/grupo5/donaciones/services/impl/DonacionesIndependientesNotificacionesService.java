@@ -83,7 +83,8 @@ public class DonacionesIndependientesNotificacionesService
                 : LocalDateTime.now(ZoneId.systemDefault()),
             idPersonaBeneficiaria,
             descripcion,
-            event.getUrlMapa());
+            event.getUrlMapa(),
+            event.getDonacionIndependienteId());
 
     try {
       eventPublisher.publicarDonacionEnCamino(evento);
@@ -116,7 +117,8 @@ public class DonacionesIndependientesNotificacionesService
                 : LocalDateTime.now(ZoneId.systemDefault()),
             idPersonaBeneficiaria,
             descripcion,
-            event.getPatenteCamion());
+            event.getPatenteCamion(),
+            event.getDonacionIndependienteId());
 
     try {
       eventPublisher.publicarDonacionRecibida(evento);
@@ -149,7 +151,8 @@ public class DonacionesIndependientesNotificacionesService
                 : LocalDateTime.now(ZoneId.systemDefault()),
             idPersonaAdmin,
             descripcion,
-            event.getMotivo());
+            event.getMotivo(),
+            event.getDonacionIndependienteId());
 
     try {
       eventPublisher.publicarDonacionVencida(evento);
@@ -185,7 +188,8 @@ public class DonacionesIndependientesNotificacionesService
             descripcion,
             idPersonaAdmin,
             event.getJustificacion(),
-            event.getReplanificable());
+            event.getReplanificable(),
+            event.getDonacionIndependienteId());
 
     try {
       eventPublisher.publicarDonacionEntregaFallida(evento);

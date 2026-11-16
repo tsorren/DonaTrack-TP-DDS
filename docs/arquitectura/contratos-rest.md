@@ -28,22 +28,27 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 |---|---|---|---|:---:|
 | `POST` | `/api/donaciones` | Alta de donación general y desglose en ítems (`409` si el donante está dado de baja) | `DonacionInputDTO` | `201`, `400`, `409` |
 | `GET` | `/api/donaciones` | Listado de donaciones registradas | — | `200` |
+| `GET` | `/api/donaciones/contadores` | **Ruta pública** (RF-01, HB-02): `ContadoresPublicosDTO` con `donantesActivos` (activos con al menos una donación), `donacionesRealizadas` (donaciones independientes en `ENTREGADA`), `beneficiariosActivos` (las entidades de `/api/entidades/publicas`) y `calculadoEn`. Totales desde el inicio, sin datos personales | — | `200` |
+| `GET` | `/api/donaciones/destacadas` | **Ruta pública** (RF-01, HB-01, D28): `DonacionDestacadaDTO` de las entregadas con fotos de recepción replicadas de `entrega.exitosa`, de la más nueva a la más vieja. `periodo` = `SEMANA`, `MES` (por defecto) o `ANIO`; `limite` de 1 a 50 (10 por defecto); header `X-Total-Count`. Sin el donante; una entrega con reporte no sale | — | `200`, `400` |
 | `GET` | `/api/donaciones/{id}` | Consulta de donación por ID | — | `200`, `404` |
 | `POST` | `/api/donaciones/fotos` | URL prefirmada (PUT, 15 min) para subir la foto de un bien a MinIO y referencia para `fotoUrl` | `SolicitudSubidaFotoInputDTO` | `200`, `400` |
-| `GET` | `/donaciones-independientes` | Listado con filtros (`estado`, `subcategoriaId`, `donanteId`) | — | `200` |
-| `GET` | `/donaciones-independientes/{id}` | Consulta de donación independiente por UUID | — | `200`, `404` |
-| `PATCH` | `/donaciones-independientes/{id}/estado` | Transición en máquina de 7 estados (header `X-Actor` obligatorio) | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404` |
-| `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias (`409` si la entidad está dada de baja) | `NecesidadDTO` | `201`, `400`, `409` |
-| `GET` | `/api/necesidades` | Listado de necesidades activas (filtros `entidadId`, `tipo`) | — | `200` |
+| `GET` | `/donaciones-independientes` | Listado con filtros opcionales y combinables: `estado`, `subcategoriaId`, `categoriaId`, `donanteId`, `entidadId` (entidad asignada), `desde`/`hasta` (fecha de registro ISO, inclusivas) y `necesidadId` (las que cubren esa necesidad, HB-18). Sin auth, el donante y la entidad llegan por parámetro (HB-03, HB-04) | — | `200`, `400` |
+| `GET` | `/donaciones-independientes/{id}` | Consulta de donación independiente por UUID; devuelve `necesidadId` (opcional, HB-17) para que el cliente pida la necesidad | — | `200`, `404` |
+| `PATCH` | `/donaciones-independientes/{id}/estado` | Transición en máquina de estados (header `X-Actor` obligatorio). Desde HB-22 (OpenAPI de Donaciones 1.8.0) la donación en traslado puede pasar a `EN_PUERTA`: el camión llegó y la entidad todavía no confirmó. Asignar a una necesidad que no admite asignaciones responde `409` `NECESIDAD_INACTIVA` (HB-19). La salida suma `cancelacionPedida` | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404`, `409` |
+| `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias (`409` si la entidad está dada de baja). **HB-18, incompatible:** una `EXTRAORDINARIA` exige `fechaLimite` futura y una `RECURRENTE` exige `periodicidad` (`SEMANAL`, `QUINCENAL`, `MENSUAL`); `fechaFin` deprecado como entrada | `NecesidadDTO` | `201`, `400`, `409` |
+| `GET` | `/api/necesidades` | Listado de necesidades (filtros `entidadId`, `tipo` y `estado`, uno o varios separados por coma). Sin `estado` devuelve todas, también las dadas de baja. La salida suma `estado`, `version`, `fechaLimite`, `periodicidad`, `unidad` y `ultimoCambio` (HB-18) | — | `200`, `400` |
+| `GET` | `/api/necesidades/publicas` | **Ruta pública** (D26, HB-08): necesidades activas, sin vencer (HB-18) y no satisfechas con `NecesidadPublicaDTO` (sin datos internos); filtro opcional `entidadId` | — | `200` |
 | `GET` | `/api/necesidades/{id}` | Consulta de necesidad por ID | — | `200`, `404` |
-| `PUT` | `/api/necesidades/{id}` | Actualización de necesidad existente | `NecesidadDTO` | `200`, `400`, `404` |
-| `DELETE` | `/api/necesidades/{id}` | Baja de necesidad registrada | — | `204`, `404` |
+| `PUT` | `/api/necesidades/{id}` | Actualización de necesidad existente. Con `version` distinta de la guardada responde `409`; en una recurrente la cantidad nueva vale para el período en curso (HB-18) | `NecesidadDTO` | `200`, `400`, `404`, `409` |
+| `GET` | `/api/necesidades/{id}/periodos` | Historia de períodos de una recurrente: inicio, fin, objetivo, asignado, recibido y resultado (`EN_CURSO`, `CUMPLIDO`, `INCOMPLETO`); vacía en una extraordinaria (HB-18) | — | `200`, `404` |
+| `DELETE` | `/api/necesidades/{id}` | Baja de necesidad registrada. Las donaciones asignadas que todavía no salieron se cancelan: quedan con `cancelacionPedida` hasta que Logística confirma y vuelven a `EN_DEPOSITO` sin destino; las que salieron llegan (HB-19) | — | `204`, `404` |
 | `POST` | `/api/asignaciones/ejecuciones` | Ejecución del algoritmo de asignación | — | `201`, `400` |
 | `GET` | `/api/asignaciones/ejecuciones` | Historial de ejecuciones de asignación | — | `200` |
 | `GET` | `/api/asignaciones/propuestas` | Listado de propuestas de asignación generadas | — | `200` |
 | `PUT` | `/api/asignaciones/propuestas/{id}/estado` | Actualización de estado de propuesta (al aprobar: `409` si la necesidad ya no está activa o si una donación es de la propia entidad) | `ActualizarEstadoRequestDTO` | `200`, `400`, `404`, `409` |
 | `POST` | `/api/entidades` | Alta idempotente de entidad beneficiaria (id = `juridicaId`; `200` si ya existía o se reactivó; `409` si la jurídica fue anonimizada) | `EntidadBeneficiariaInputDTO` | `201`, `200`, `400`, `404`, `409` |
-| `GET` | `/api/entidades` | Listado de entidades beneficiarias | — | `200` |
+| `GET` | `/api/entidades` | Listado de entidades beneficiarias. Opcionales: `nombre` (contiene, sin distinguir mayúsculas), `page` (desde 0) y `size` (1..100, por defecto 20). Sin `page` ni `size` devuelve todas en el orden de siempre; paginando, ordena por razón social. El total va en el header `X-Total-Count` (HB-15) | — | `200`, `400` |
+| `GET` | `/api/entidades/publicas` | **Ruta pública** (D26, HB-08): entidades activas con `EntidadPublicaDTO` (`id`, `razonSocial`, `rubro`; sin documento, dirección, contacto ni representantes). Mismos `nombre`/`page`/`size` y header `X-Total-Count` que el listado. Desde R11-12 (OpenAPI de Donaciones 1.10.0), `categoriaId` opcional: solo las que tienen una necesidad activa y no vencida de esa categoría; una categoría que no existe no da error, no coincide ninguna | — | `200`, `400` |
 | `GET` | `/api/entidades/{id}` | Consulta de entidad beneficiaria por ID | — | `200`, `404` |
 | `PUT` | `/api/entidades/{id}` | Revalidación de entidad beneficiaria (no cambia estado; `409` si está de baja) | `EntidadBeneficiariaInputDTO` | `200`, `400`, `404`, `409` |
 | `DELETE` | `/api/entidades/{id}` | Baja lógica e idempotente de entidad beneficiaria (desactiva sus necesidades) | — | `204`, `404` |
@@ -51,17 +56,20 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/donantes` | Listado de donantes (filtro opcional `canal`: con él, solo activos y no anonimizados) | — | `200` |
 | `GET` | `/api/donantes/{id}` | Consulta de donante por ID | — | `200`, `404` |
 | `DELETE` | `/api/donantes/{id}` | Baja lógica e idempotente de donante | — | `204`, `404` |
+| `GET` | `/api/donantes/{id}/entidades` | Entidades activas vistas por un donante (R11-12, OpenAPI de Donaciones 1.10.0): misma búsqueda (`nombre`, sin tildes) y orden que `/api/entidades/publicas`, más `categoriaId` y `soloDonadas` (solo las que recibieron alguna donación de ese donante, en cualquier estado), combinados con Y; `page`/`size` y el total en `X-Total-Count`. `EntidadParaDonanteDTO` suma `yaLeDono`. Solo el propio donante o el administrador | — | `200`, `400`, `401`, `403`, `404` |
+| `PATCH` | `/api/donantes/{id}/preferencias` | Si la entidad ve el nombre del donante (HB-20); vale también para sus donaciones pasadas | `PreferenciasDonanteDTO` | `200`, `400`, `403`, `404` |
 | `POST` | `/api/donantes/archivos` | Carga asíncrona del padrón CSV de donantes: `multipart/form-data` con la parte `archivo`, guardado en MinIO | `multipart: archivo` | `202`, `400`, `413`, `415` |
-| `GET` | `/api/donantes/archivos/{id}` | Consulta de estado de procesamiento de archivo | — | `200`, `404` |
+| `GET` | `/api/donantes/archivos/{id}` | Consulta de estado y progreso del procesamiento: `totalFilas`, `procesadas`, `creadas`, `actualizadas` y `conError` (HB-14, aditivo) | — | `200`, `404` |
+| `GET` | `/api/donantes/archivos/{id}/filas-con-error` | Filas del padrón que no se importaron (línea, motivo y código, sin datos de la persona), ordenadas por línea; paginado con `page` y `size` y el total en `X-Total-Count` (HB-14) | — | `200`, `400`, `404` |
 | `POST` | `/api/categorias` | Alta de categoría de donación | `CategoriaInputDTO` | `201`, `400` |
 | `GET` | `/api/categorias` | Listado de categorías de donación | — | `200` |
 | `GET` | `/api/categorias/{id}` | Consulta de categoría por ID | — | `200`, `404` |
 | `PUT` | `/api/categorias/{id}` | Actualización de categoría existente | `CategoriaInputDTO` | `200`, `400`, `404` |
 | `DELETE` | `/api/categorias/{id}` | Baja de categoría (retorna entidad eliminada en el cuerpo) | — | `200`, `404` |
-| `POST` | `/api/subcategorias` | Alta de subcategoría | `SubcategoriaInputDTO` | `201`, `400` |
+| `POST` | `/api/subcategorias` | Alta de subcategoría (`unidad` opcional: sin ella hereda la de su categoría, HB-18) | `SubcategoriaInputDTO` | `201`, `400` |
 | `GET` | `/api/subcategorias` | Listado de subcategorías | — | `200` |
 | `GET` | `/api/subcategorias/{id}` | Consulta de subcategoría por ID | — | `200`, `404` |
-| `PUT` | `/api/subcategorias/{id}` | Actualización de subcategoría existente | `SubcategoriaInputDTO` | `200`, `400`, `404` |
+| `PUT` | `/api/subcategorias/{id}` | Actualización de subcategoría existente (sin `unidad`, vuelve a heredar la de su categoría, HB-18) | `SubcategoriaInputDTO` | `200`, `400`, `404` |
 | `DELETE` | `/api/subcategorias/{id}` | Baja de subcategoría (retorna entidad eliminada en el cuerpo) | — | `200`, `404` |
 | `POST` | `/api/subcategorias/{id}/aliases` | Agregar alias semántico a una subcategoría | `AliasSubcategoriaInputDTO` | `200`, `400`, `404` |
 | `DELETE` | `/api/subcategorias/{id}/aliases/{alias}` | Quitar alias semántico de una subcategoría | — | `200`, `404` |
@@ -72,6 +80,8 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/personas` | Listado de personas (filtro opcional por `?tipo=HUMANA|JURIDICA`) | — | `200` |
 | `PUT` | `/api/personas/{id}` | Actualización de datos de persona (`400` si una jurídica con entidad activa pasaría a EMPRESA o sin dirección; `409` si la persona fue anonimizada) | `PersonaInputDTO` | `200`, `400`, `404`, `409` |
 | `DELETE` | `/api/personas/{id}` | Baja y supresión de persona (da de baja sus roles de donante y entidad) | — | `204`, `404` |
+| `GET` | `/api/personas/{id}/legales` | Constancia de los legales: versión aceptada, fecha y si aceptó la vigente (HB-20) | — | `200`, `403`, `404` |
+| `PUT` | `/api/personas/{id}/legales` | Aceptar la versión vigente de los legales; idempotente (HB-20). El alta de persona no la exige | `AceptarLegalesDTO` | `200`, `400`, `403`, `404` |
 | `GET` | `/api/logistica/proveedores` | Broker de logística: proveedores configurados, transporte, disponibilidad y preferido (header `X-API-Key` de administración) | — | `200`, `401` |
 | `PUT` | `/api/logistica/proveedor-preferido` | Broker de logística: cambia en caliente el proveedor preferido (header `X-API-Key` de administración) | `PreferenciaProveedorRequestDTO` | `200`, `400`, `401` |
 
@@ -90,11 +100,17 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 
 | Método | Endpoint | Descripción | Request DTO / Schema | Códigos HTTP |
 |---|---|---|---|:---:|
-| `POST` | `/api/entregas` | Registrar entrega de donación para planificar | [`crear-entrega-request.schema.json`](./contratos/schemas/crear-entrega-request.schema.json) | `201`, `400`, `409` |
+| `POST` | `/api/entregas` | Registrar entrega de donación para planificar. `donanteId` opcional desde el 2026-11-08 (HB-16) | [`crear-entrega-request.schema.json`](./contratos/schemas/crear-entrega-request.schema.json) | `201`, `400`, `409` |
 | `GET` | `/api/entregas` | Listar entregas registradas | — | `200` |
 | `GET` | `/api/entregas/{id}` | Consulta de entrega por ID | — | `200`, `404` |
-| `PATCH` | `/api/entregas/{id}/estado` | Transición de estado de entrega (`PENDIENTE`, `EN_TRASLADO`, etc.) | [`cambio-estado-entrega-request.schema.json`](./contratos/schemas/cambio-estado-entrega-request.schema.json) | `200`, `400`, `404` |
+| `GET` | `/api/entregas/mapa` | Mapa público de entregas completadas (RF-02): solo `ENTREGADA` con coordenadas válidas, en `EntregaMapaPublicoResponseDTO` (coordenadas exactas, sin el texto de la dirección ni fotos) | — | `200` |
+| `GET` | `/api/entregas/seguimiento/donaciones/{idDonacion}` | Seguimiento de la entrega de una donación para el donante (RF-09): estado, ruta, camión, avance por paradas sin direcciones de otras entregas y, desde 1.3.0, `posicionCamion` (`latitud`, `longitud`, `registradaEn`, exacta; `null` si la ruta no está `EN_TRASLADO`, ADR-E6-07) | — | `200`, `404` |
+| `GET` | `/api/entregas/seguimiento/beneficiarios/{idBeneficiaria}` | Seguimiento de las entregas de una entidad beneficiaria (RF-14): lista de `SeguimientoEntregaResponseDTO`, el mismo DTO que el anterior | — | `200` |
+| `GET` | `/api/entregas/seguimiento/donantes/{donanteId}` | Seguimiento de las entregas activas (`PENDIENTE`, `EN_TRASLADO` o `EN_PUERTA`) de un donante, en una llamada (RF-09, HB-16): lista de `SeguimientoEntregaResponseDTO`. Las entregas creadas sin `donanteId` no aparecen. Sin auth, el donante llega por parámetro | — | `200` |
+| `PATCH` | `/api/entregas/{id}/estado` | Transición de estado de entrega (`PENDIENTE`, `EN_TRASLADO`, `EN_PUERTA`, etc.). `EN_PUERTA` (HB-22) la informa quien mueve el camión (con su `actor`), solo desde `EN_TRASLADO`, y es idempotente; `ENTREGADA` y `NO_RECIBIDA` se aceptan desde `EN_TRASLADO` o `EN_PUERTA`. Con `ENTREGADA` acepta además `numeroRemito` (1 a 40 caracteres) y `reporte` (`motivo`, `detalle`, `cantidadRecibida`), los dos opcionales; `EntregaResponseDTO` los devuelve (HB-17, DTI-29). `CANCELADA` no entra por acá (`400`): llega solo por el comando del broker. Las respuestas de entregas pueden traer `CANCELADA`, estado final (HB-19) | [`cambio-estado-entrega-request.schema.json`](./contratos/schemas/cambio-estado-entrega-request.schema.json) | `200`, `400`, `404` |
 | `PATCH` | `/api/entregas/{id}/fotos` | Adjuntar URL de foto de recepción | `AdjuntarFotoRecepcionRequestDTO` | `200`, `400`, `404` |
+| `POST` | `/api/entregas/{id}/fotos` | Subir fotos de recepción (HB-10, ADR-E6-08): `multipart/form-data` con una o más partes `foto`, JPEG o PNG por magic bytes, hasta 5 MB y 24 MP cada una; se guardan re-codificadas, sin EXIF, en el bucket privado `logistica-fotos-recepcion`. No toca la entrega: devuelve `FotoRecepcionSubidaDTO` (`fotoId`, `url` estable) por foto, para mandar después en `fotosRecepcion` al confirmar | `multipart/form-data` | `201`, `400`, `404`, `409` (ya `ENTREGADA`), `413`, `415` |
+| `GET` | `/api/entregas/{id}/fotos/{fotoId}` | URL estable de una foto de recepción: `302` hacia una URL firmada de MinIO de 5 minutos (RNF-PRIV-03) | — | `302`, `404` |
 | `GET` | `/api/entregas/{id}/historial` | Historial de transiciones de una entrega | — | `200`, `404` |
 | `GET` | `/api/rutas` | Listar rutas planificadas (filtro opcional `camionId`) | — | `200` |
 | `GET` | `/api/rutas/{id}` | Consulta de ruta con paradas y URL de seguimiento | — | `200`, `404` |
@@ -102,7 +118,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `POST` | `/api/rutas/{id}/entregas` | Agregar entrega a una ruta planificada | `AgregarEntregaRutaRequestDTO` | `201`, `400`, `404` |
 | `PATCH` | `/api/rutas/{id}/estado` | Cambio de estado de ruta | `CambioEstadoRutaRequestDTO` | `200`, `400`, `404` |
 | `POST` | `/api/camiones` | Alta de camión en la flota (patente, capacidad, peso) | `CamionRequestDTO` | `201`, `400` |
-| `GET` | `/api/camiones` | Listado de camiones | — | `200` |
+| `GET` | `/api/camiones` | Listado de camiones, sin los `DESHABILITADO`. Con `incluirDeshabilitados=true`, todos (HB-23; OpenAPI de Logística 1.8.0) | — | `200` |
 | `GET` | `/api/camiones/{id}` | Consulta de camión por ID | — | `200`, `404` |
 | `PATCH` | `/api/camiones/{id}/estado` | Cambio de estado operativo de camión | `CambioEstadoCamionRequestDTO` | `200`, `400`, `404` |
 | `DELETE` | `/api/camiones/{id}` | Baja de camión de la flota | — | `204`, `404` |
@@ -159,16 +175,20 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 |---|---|---|---|:---:|
 | `POST` | `/api/notificaciones/eventos` | **[Secundario QA]** Adaptador secundario para testing, QA y disparos manuales vía REST con deduplicación por Transactional Inbox (`eventId`) | [`evento-notificable.schema.json`](./contratos/schemas/evento-notificable.schema.json) | `202`, `400` |
 | `POST` | `/notificaciones` | **[Legado, DTI-13]** Alias de `POST /api/notificaciones/eventos`; hoy solo lo invoca `incentivos-service` por Feign (`NotificacionesFeignClient`) y se dará de baja al completar la migración a AMQP | [`evento-notificable.schema.json`](./contratos/schemas/evento-notificable.schema.json) | `202`, `400` |
-| `GET` | `/api/notificaciones` | **[Canónico]** Consulta y filtrado de notificaciones por `personaId` (UUID) y/o `estado` (Enum `EstadoNotificacion`) | — | `200`, `400` |
+| `GET` | `/api/notificaciones` | **[Canónico]** Consulta y filtrado de notificaciones por `personaId` (UUID) y/o `estado` (Enum `EstadoNotificacion`). Desde HB-09 (OpenAPI de Notificaciones 1.2.0) cada notificación trae `tipoEvento` y `referenciaId` opcionales | — | `200`, `400` |
 | `GET` | `/api/notificaciones/{id}` | **[Canónico]** Consulta de notificación por su identificador unívoco | — | `200`, `404` |
-| `GET` | `/api/notificaciones/persona/{personaId}` | **[Canónico]** Consulta de historial de notificaciones despachadas a una persona (filtro opcional `?leida=true|false`) | — | `200` |
-| `GET` | `/notificaciones/persona/{personaId}` | **[Secundario QA]** Alias secundario de consulta de historial por persona (filtro opcional `?leida=true|false`) | — | `200` |
+| `GET` | `/api/notificaciones/persona/{personaId}` | **[Canónico]** La bandeja de una persona, de a una página (R11-14, OpenAPI de Notificaciones 1.3.0): `?leida=true|false`, `q` (busca en el mensaje sin distinguir mayúsculas ni tildes, hasta 100 caracteres), `tipo` y `excluirTipo` (repetibles, `TipoEvento`; excluir también trae las que no tienen tipo), `orden=recientes|antiguas`, `page` (desde 0) y `size` (1..100, 20 por defecto). Sin parámetros, la página 0 de 20. El total con esos filtros va en `X-Total-Count`. Cada notificación trae `tipoEvento` y `referenciaId` (HB-09; desde 1.4.0, R11-30, `tipoEvento` suma `IMPORTACION_TERMINADA`, `IMPORTACION_CORTADA` y `MENSAJE_CONTACTO`, y `referenciaId` es el archivo en los de importación); la página no trae el historial de envíos | — | `200`, `400` |
+| `GET` | `/notificaciones/persona/{personaId}` | **[Secundario QA]** Alias secundario de la bandeja por persona, con los mismos parámetros, la misma página y el mismo `X-Total-Count` (R11-14) | — | `200`, `400` |
 | `GET` | `/api/notificaciones/persona/{personaId}/no-leidas/conteo` | **[Canónico]** Conteo de notificaciones no leídas para badge de UI | — | `200` |
 | `PATCH` | `/api/notificaciones/{id}/leida` | **[Canónico]** Marcar notificación como leída o no leída (`?leida=true|false`, default: `true`) | — | `200`, `404` |
 | `PATCH` | `/api/notificaciones/persona/{personaId}/marcar-todas-leidas` | **[Canónico]** Marcar todas las notificaciones de una persona como leídas masivamente | — | `204` |
 | `PUT` | `/api/notificaciones/personas` | Sincronización idempotente de réplica de persona y contactos (reconciliación diferencial sin Key Churn) | [`persona-replica.schema.json`](./contratos/schemas/persona-replica.schema.json) | `200`, `400` |
 | `GET` | `/api/notificaciones/personas/{id}` | Consulta de réplica de persona | — | `200`, `404` |
 | `DELETE` | `/api/notificaciones/personas/{id}` | Baja y desasociación de datos de contacto (Crypto-Shredding) | — | `204`, `404` |
+| `POST` | `/api/contacto` | Mensaje del formulario de contacto (HB-21, [ADR `proposed`](../adr/notificaciones-service/20261110-recepcion-de-mensajes-de-contacto-en-notificaciones.md)). Público (allowlist del gateway). `{tema, texto (1..2000), codigoError?, correo, claveEnvio}`; la IP del navegador va primera en `X-Forwarded-For`. Primero la clave: si ya estaba, `200` con el número del primero; después el límite (5 por hora por correo y 20 por día por IP, en configuración): `429` `ERR-EST-903`. Cada mensaje nuevo avisa a la Administración en su bandeja | `MensajeContactoInputDTO` | `201`, `200`, `400`, `429` |
+| `GET` | `/api/contacto` | Mensajes de contacto, del más nuevo al más viejo, 20 por página (`pagina` desde 0, `estado` opcional: `RECIBIDO`, `RESPONDIDO`, `ENVIO_FALLIDO`); el total en `X-Total-Count`. Solo `ADMIN` con HB-13 | — | `200`, `400` |
+| `GET` | `/api/contacto/{numero}` | Un mensaje de contacto con su respuesta. Solo `ADMIN` con HB-13 | — | `200`, `404` |
+| `POST` | `/api/contacto/{numero}/respuesta` | Responde por correo con "Respuesta a tu mensaje Nº …": `RESPONDIDO`, o `ENVIO_FALLIDO` si falla el proveedor (se reintenta igual). Solo `ADMIN` con HB-13 | `{texto}` (1..5000) | `200`, `400`, `404` |
 
 > **Notas de migración y compatibilidad (`notificaciones-service`):**
 > - **D7 (Hard Cutover Inter-Servicios y Erradicación de Feign — Arquitectura Objetivo Etapa 2):** La comunicación inter-servicios hacia `notificaciones-service` desde `donaciones-service` e `incentivos-service` se especifica como 100% asíncrona mediante eventos AMQP en RabbitMQ (ver SPEC-03). En la arquitectura objetivo de la Etapa 2 se erradicará el cliente síncrono `NotificacionesFeignClient` y se dará de baja el alias legacy `POST /notificaciones`. Estado runtime verificado (auditoría 2026-10-14): `donaciones-service` ya publica hacia notificaciones por AMQP y no tiene cliente Feign; el único `NotificacionesFeignClient` vigente es el de `incentivos-service`, y el alias `POST /notificaciones` sigue expuesto para retrocompatibilidad (deuda técnica [DTI-13](../adr/DEUDA_TECNICA.md#dti-13-migracion-de-clientes-consumidores-de-la-api-rest-deprecada-de-notificaciones-a-ruta-canonica-y-amqp) en estado `in-progress`). El endpoint `POST /api/notificaciones/eventos` se conserva como adaptador secundario de testing, QA y herramientas externas (Postman).

@@ -1,6 +1,9 @@
 package grupo5.incentivos.models.entities.ranking;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -14,6 +17,7 @@ import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
+import java.time.Instant;
 import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
@@ -21,6 +25,25 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class RankingMensualTest {
+
+  @Test
+  void rankingMensual_alCalcularse_deberiaGuardarCuandoSeCalculo() {
+    Instant antes = Instant.now();
+
+    RankingMensual ranking = new RankingMensual(YearMonth.of(2026, Month.MAY));
+
+    assertNotNull(ranking.getCalculadoEn());
+    assertFalse(ranking.getCalculadoEn().isBefore(antes));
+  }
+
+  @Test
+  void rankingMensual_reconstituidoSinFecha_deberiaQuedarSinFecha() {
+    RankingMensual ranking =
+        RankingMensual.reconstituir(
+            UUID.randomUUID(), YearMonth.of(2026, Month.MAY), List.of(), null);
+
+    assertNull(ranking.getCalculadoEn());
+  }
 
   @Test
   void rankingMensual_conCuatroDonantes_deberiaTenerPodioDeTres() {

@@ -1,6 +1,7 @@
 package grupo5.donaciones.infrastructure.persistencia.entities.necesidades;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Getter;
@@ -36,4 +37,10 @@ public abstract class NecesidadEntity {
 
   @Column(name = "activa", nullable = false)
   private boolean activa;
+
+  @Column(name = "cantidad_anterior")
+  private Long cantidadAnterior;
+
+  @Column(name = "fecha_ultimo_cambio")
+  private LocalDate fechaUltimoCambio;
 }

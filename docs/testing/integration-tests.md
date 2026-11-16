@@ -130,10 +130,13 @@ El script es el **punto de entrada único** (RM-04 del [roadmap de preprod fiel]
 | `--test <Clase>` | — | Corre una clase puntual (`-Dit.test`) |
 | `--groups <Grupo>` | `smoke`, `contract`, `integration`, `e2e`, `performance` | Corre un grupo; `performance` corre k6 |
 | `--stay` | — | Deja el stack arriba hasta presionar una tecla |
+| `--auth` | — | Los servicios y el gateway validan el JWT de Keycloak y las pruebas llaman con el token de `donatrack-pruebas`. En CI, la variable de repositorio `PREPROD_AUTH=true` hace lo mismo |
 
 **Criterios de falla, iguales en local y en CI:** sin filtros, corre `smoke` primero (fail-fast) y después `contract,integration,e2e`. `PREPROD_STRICT=true` por defecto: un servicio caído hace fallar el test en lugar de saltearlo (RM-02). `report_test_failures.py` falla con 0 tests o con un test salteado de un grupo requerido, y marca como *heredadas de la base* las fallas de servicios que el PR no modificó (`CHANGED_SERVICES`).
 
 Los envoltorios conservan su nombre y sus argumentos: `run-preprod-tests-stay.sh` equivale a `--stay` y `run-hybrid-tests.sh` a `--target hybrid`.
+
+**Con la seguridad encendida (`--auth`, SPEC-06 E2-07).** El compose del preprod lee `PREPROD_SEGURIDAD` (el script la exporta) y enciende `DONACIONES_`, `INCENTIVOS_`, `NOTIFICACIONES_`, `LOGISTICA_` y `GATEWAY_SEGURIDAD_HABILITADA`. Antes de correr nada, el script comprueba que de verdad quedó encendida: sin token, el gateway y los cuatro servicios tienen que responder `401`, y el token de la cuenta `donatrack-pruebas` tiene que abrir una ruta protegida, directo y por el gateway. Si no, corta: de lo contrario las pruebas pasarían con la seguridad apagada sin avisar. Después, `BaseIT` agrega ese token a cada pedido de RestAssured y el contenedor de k6 lo pide por su cuenta. El secreto sale de `PRUEBAS_CLIENT_SECRET` en `.env` (lo genera `scripts/generar-env-db.sh`) y viaja por la entrada estándar de `curl`, nunca por la línea de comandos. Sin `--auth` nada de esto corre y todo sigue como siempre.
 
 **Contratos vivos (RM-08, [política de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md)):**
 

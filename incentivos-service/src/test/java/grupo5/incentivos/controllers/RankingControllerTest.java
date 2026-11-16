@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.BusinessStateException;
+import grupo5.incentivos.dto.HistorialDeRankings;
 import grupo5.incentivos.dto.RankingMensualDTO;
 import grupo5.incentivos.fixtures.RankingMensualMother;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
@@ -58,16 +59,27 @@ class RankingControllerTest {
   }
 
   @Test
-  void obtenerHistorial_deberiaRetornarStatus200OkYLista() {
-    List<RankingMensualDTO> historial =
+  void obtenerHistorial_sinParametros_pideLaPrimeraPaginaDe12YDevuelveElTotal() {
+    List<RankingMensualDTO> meses =
         List.of(RankingMensualDTO.desde(RankingMensualMother.vacioDeMayo2026()));
 
-    when(rankingService.obtenerHistorial()).thenReturn(historial);
+    when(rankingService.obtenerHistorial(0, 12)).thenReturn(new HistorialDeRankings(meses, 30));
 
-    ResponseEntity<List<RankingMensualDTO>> response = controller.obtenerHistorial();
+    ResponseEntity<List<RankingMensualDTO>> response = controller.obtenerHistorial(null, null);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(historial, response.getBody());
+    assertEquals(meses, response.getBody());
+    assertEquals("30", response.getHeaders().getFirst("X-Total-Count"));
+  }
+
+  @Test
+  void obtenerHistorial_conPaginaYTamanio_losPasaAlServicio() {
+    when(rankingService.obtenerHistorial(2, 5)).thenReturn(new HistorialDeRankings(List.of(), 7));
+
+    ResponseEntity<List<RankingMensualDTO>> response = controller.obtenerHistorial(2, 5);
+
+    assertEquals(List.of(), response.getBody());
+    assertEquals("7", response.getHeaders().getFirst("X-Total-Count"));
   }
 
   @Test

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!--/* Componente filtros (usuario, 2026-11-08, con la barra de LinkedIn de referencia): una fila de
+       pastillas. Cada filtro con opciones es un <details> que se abre como un menú con sus opciones
+       (radios) y "Mostrar resultados"; un filtro de sí o no es una pastilla que se prende. La pastilla
+       con un filtro elegido queda llena y dice lo elegido. Va dentro del formulario get de la pantalla:
+       sin JavaScript, se elige y se envía con "Mostrar resultados"; con JavaScript (publico.js,
+       [data-al-cambiar]), tocar una opción ya filtra. Su hoja es static/css/componentes/filtros.css.
+       Catálogo: docs/interfaz/componentes.md.
+
+       Fragmentos:
+       - menu(nombre, rotulo, elegido, opciones): un filtro con opciones. nombre es el parámetro del
+         formulario; rotulo, lo que dice la pastilla sin nada elegido; elegido, el valor actual ('' si
+         ninguno); opciones, una lista de {valor, texto} cuya primera es "todos" (valor '').
+       - interruptor(nombre, valor, rotulo, prendido): un filtro de sí o no. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<details th:fragment="menu(nombre, rotulo, elegido, opciones)" class="filtros-pildora"
+         th:attr="data-activa=${elegido != ''} ? 'si' : null"
+         th:with="actual=${elegido == '' ? null : opciones.^[valor == '__${elegido}__']}">
+  <summary>
+    <span th:text="${actual == null} ? ${rotulo} : ${actual.texto}">Categoría</span>
+    <svg viewBox="0 0 12 8" aria-hidden="true" focusable="false"><path d="M1 1.5l5 5 5-5"/></svg>
+  </summary>
+  <fieldset class="filtros-menu">
+    <legend th:text="${rotulo}">Categoría</legend>
+    <label th:each="o : ${opciones}" class="filtros-opcion"><input type="radio" th:name="${nombre}"
+           name="categoria" th:value="${o.valor}" value="" th:checked="${elegido == o.valor}"><span
+           th:text="${o.texto}">Todas</span></label>
+    <button class="boton" data-tono="principal" data-tamano="chico" type="submit">Mostrar resultados</button>
+  </fieldset>
+</details>
+
+<label th:fragment="interruptor(nombre, valor, rotulo, prendido)" class="filtros-pildora filtros-interruptor"
+       th:attr="data-activa=${prendido} ? 'si' : null">
+  <input type="checkbox" th:name="${nombre}" name="emergencia" th:value="${valor}" value="si"
+         th:checked="${prendido}">
+  <span th:text="${rotulo}">Emergencias</span>
+</label>
+</body>
+</html>

@@ -2,11 +2,14 @@ package grupo5.donaciones.infrastructure.logistica;
 
 import grupo5.common.logging.FeignTraceRequestInterceptor;
 import grupo5.donaciones.config.RabbitMQConfig;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaCanceladaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaSolicitadaV1;
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
 import grupo5.donaciones.services.logistica.EnvioInciertoException;
 import grupo5.donaciones.services.logistica.EnvioRechazadoException;
 import grupo5.donaciones.services.logistica.IProveedorLogistica;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +35,9 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
  * </ul>
  */
 public class ProveedorLogisticaAmqp implements IProveedorLogistica {
+
+  /** Único motivo de cancelación hoy (HB-19). */
+  public static final String MOTIVO_NECESIDAD_DADA_DE_BAJA = "NECESIDAD_DADA_DE_BAJA";
 
   private final String proveedorId;
   private final RabbitTemplate rabbitTemplate;
@@ -59,12 +65,34 @@ public class ProveedorLogisticaAmqp implements IProveedorLogistica {
 
   @Override
   public void enviar(UUID envioId, DatosEntregaLogistica datos, String traceId) {
+    publicar(routingKey(), aComando(datos), envioId, traceId);
+  }
+
+  @Override
+  public boolean admiteCancelacion() {
+    return true;
+  }
+
+  /** Comando {@code entrega.cancelada.<proveedorId>.v1} (HB-19), con las mismas garantías. */
+  @Override
+  public void cancelar(UUID envioId, UUID donacionIndependienteId, String traceId) {
+    publicar(
+        RabbitMQConfig.routingKeyEntregaCancelada(proveedorId),
+        new EventoEntregaCanceladaV1(
+            donacionIndependienteId,
+            MOTIVO_NECESIDAD_DADA_DE_BAJA,
+            LocalDateTime.now(ZoneOffset.UTC)),
+        envioId,
+        traceId);
+  }
+
+  private void publicar(String routingKey, Object comando, UUID envioId, String traceId) {
     CorrelationData correlacion = new CorrelationData(envioId.toString());
     try {
       rabbitTemplate.convertAndSend(
           RabbitMQConfig.EXCHANGE_DONACIONES,
-          routingKey(),
-          aComando(datos),
+          routingKey,
+          comando,
           envelope(envioId, traceId),
           correlacion);
     } catch (AmqpConnectException e) {
@@ -72,10 +100,10 @@ public class ProveedorLogisticaAmqp implements IProveedorLogistica {
     } catch (AmqpException e) {
       throw new EnvioInciertoException(proveedorId, "error de canal AMQP al publicar", e);
     }
-    esperarAcuse(correlacion);
+    esperarAcuse(correlacion, routingKey);
   }
 
-  private void esperarAcuse(CorrelationData correlacion) {
+  private void esperarAcuse(CorrelationData correlacion, String routingKey) {
     CorrelationData.Confirm confirm;
     try {
       confirm = correlacion.getFuture().get(acuseTimeoutMs, TimeUnit.MILLISECONDS);
@@ -92,7 +120,7 @@ public class ProveedorLogisticaAmqp implements IProveedorLogistica {
       throw new EnvioRechazadoException(
           proveedorId,
           "mensaje devuelto, no hay cola para "
-              + routingKey()
+              + routingKey
               + " ("
               + correlacion.getReturned().getReplyText()
               + ")");
@@ -109,7 +137,8 @@ public class ProveedorLogisticaAmqp implements IProveedorLogistica {
         datos.destino(),
         datos.pesoTotalKG(),
         datos.volumenTotalM3(),
-        datos.fecha());
+        datos.fecha(),
+        datos.donanteId());
   }
 
   private static MessagePostProcessor envelope(UUID envioId, String traceId) {

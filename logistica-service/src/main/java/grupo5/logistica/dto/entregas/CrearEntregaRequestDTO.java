@@ -11,4 +11,16 @@ public record CrearEntregaRequestDTO(
     @NotNull UUID idBeneficiaria,
     @NotNull @Valid DireccionDTO destino,
     @NotNull @Positive Float pesoTotalKG,
-    @NotNull @Positive Float volumenTotalM3) {}
+    @NotNull @Positive Float volumenTotalM3,
+    UUID donanteId) {
+
+  /** Pedido sin donante: el {@code donanteId} es opcional (ADR de réplicas por evento, HB-16). */
+  public CrearEntregaRequestDTO(
+      UUID idDonacion,
+      UUID idBeneficiaria,
+      DireccionDTO destino,
+      Float pesoTotalKG,
+      Float volumenTotalM3) {
+    this(idDonacion, idBeneficiaria, destino, pesoTotalKG, volumenTotalM3, null);
+  }
+}

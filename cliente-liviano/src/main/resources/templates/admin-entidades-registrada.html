@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!--/* Raíces, la entidad quedó registrada por el admin: queda activa sin aprobación
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.4). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Organización registrada - Organizaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="mesa">
+    <header class="mesa-cabecera">
+      <p class="rotulo"><a href="/admin-entidades" th:href="@{/admin-entidades}">Organizaciones</a> ›
+        Registrar organización</p>
+      <h1>Registrar organización</h1>
+    </header>
+    <section class="banner" role="status" tabindex="-1" autofocus aria-labelledby="hecho-titulo">
+      <h2 id="hecho-titulo">Registraste a Escuela Ejemplo N.º 5. Queda activa: la registraste vos, no
+        necesita aprobación.</h2>
+      <p>Le enviamos un correo a su responsable para que active su cuenta.</p>
+      <div class="racimo">
+        <a class="boton" data-tono="secundario" href="/admin-entidades"
+           th:href="@{/admin-entidades}">Volver a Organizaciones</a>
+      </div>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

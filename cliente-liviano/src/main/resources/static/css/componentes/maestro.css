@@ -1,0 +1,252 @@
+/* Bloque maestro (ronda del 2026-11-09, tarde): una lista para elegir de a un elemento y su ficha
+   (Material: List-detail). `ul.maestro` con un `li` por elemento y, en él, el enlace real que lo
+   elige (`a`, con `aria-current="true"` el elegido); la ficha (`.maestro-ficha`) va dentro del `li`
+   elegido, después del enlace. En el celular queda justo debajo del ítem que se eligió; desde
+   53,75 em, a la derecha de la lista, arriba. El elegido se marca con el papel claro, la sombra suave
+   y un indicador redondeado a la izquierda: sin borde ni anillo verde. Se carga en la capa `bloques`
+   desde app.css. Catálogo: docs/interfaz/componentes.md.
+   Las partes de la ficha (ronda del 2026-11-10, maqueta 15), por atributo y sin clases nuevas:
+   `[data-parte="identidad"]` (el pictograma grande, el título `h2` o `h3`, la bajada y un `dl` de
+   datos), `[data-parte="resumen"]` (el estado y sus bloques `dl`, cada uno con un filete verde
+   claro), `[data-parte="necesidades"]` (título `h3` o `h4` y `ul[data-lista="necesidades-ficha"]`, en
+   dos columnas cuando entran) y `[data-parte="acciones"]` (al pie). Cada dato de un `dl` va en un
+   renglón, el rótulo en negrita y el valor al lado; con `data-forma="apilado"`, el valor debajo. */
+.maestro {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.maestro > li > a {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--espacio-2);
+  align-items: center;
+  min-height: 3.5rem;
+  margin-block-end: var(--espacio-1);
+  padding: var(--espacio-2) var(--espacio-2) var(--espacio-2) var(--espacio-3);
+  border-radius: var(--radio-boton);
+  color: var(--color-tinta);
+  text-decoration: none;
+}
+
+.maestro > li > a:hover {
+  background: var(--color-acento-claro);
+}
+
+.maestro > li > a[aria-current] {
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+}
+
+.maestro > li > a[aria-current]::before {
+  content: "";
+  position: absolute;
+  top: var(--espacio-2);
+  bottom: var(--espacio-2);
+  left: 0.375rem;
+  width: 0.25rem;
+  border-radius: 999px;
+  background: var(--color-tinta);
+}
+
+.maestro > li > a > span:not(.estado) {
+  display: grid;
+}
+
+.maestro small {
+  color: var(--color-tinta-suave);
+}
+
+/* El pictograma, centrado en su caja redondeada. */
+:is(.maestro, .maestro-ficha) .categoria-icono {
+  display: block;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0.25rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-acento-claro);
+  fill: var(--color-acento);
+}
+
+.maestro-ficha .categoria-icono[data-tamano="grande"] {
+  width: 4.5rem;
+  height: 4.5rem;
+  padding: 0.5rem;
+}
+
+[data-lista="necesidades-ficha"] .categoria-icono {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.maestro-ficha {
+  --espacio-relleno: var(--espacio-3);
+  display: grid;
+  gap: var(--espacio-4);
+  align-content: start;
+  margin-block: 0 var(--espacio-3);
+}
+
+.maestro-ficha :is(h2, h3, p, dl, dd) {
+  margin: 0;
+}
+
+/* La identidad: el pictograma y, al lado, el nombre y "Tipo · Localidad"; los datos, debajo de los
+   dos. */
+.maestro-ficha > [data-parte="identidad"] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--espacio-3);
+  align-items: center;
+}
+
+.maestro-ficha > [data-parte="identidad"] > dl {
+  grid-column: 1 / -1;
+}
+
+.maestro-ficha [data-parte="identidad"] :is(h2, h3) {
+  color: var(--color-tinta);
+  font: 850 clamp(1.375rem, 1.1rem + 0.8vw, 1.75rem) / 1.05 var(--fuente-titulo);
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.maestro-ficha [data-parte="identidad"] :is(h2, h3) + p {
+  margin-block-start: var(--espacio-1);
+  color: var(--color-tinta-suave);
+  font-size: var(--tamano-grande);
+}
+
+/* Los datos: el rótulo en negrita y el valor al lado, en la tinta suave. */
+.maestro-ficha dl {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.maestro-ficha dl > div > :is(dt, dd) {
+  display: inline;
+}
+
+.maestro-ficha dl[data-forma="apilado"] > div > :is(dt, dd) {
+  display: block;
+}
+
+.maestro-ficha dt {
+  color: var(--color-tinta);
+  font-weight: 700;
+}
+
+.maestro-ficha dd {
+  color: var(--color-tinta-suave);
+}
+
+/* El resumen: el estado con su fecha, más grande que en la lista, y cada bloque con su filete verde
+   claro (a la izquierda en una columna; a la derecha cuando el resumen va a la derecha). */
+.maestro-ficha > [data-parte="resumen"] {
+  display: grid;
+  gap: var(--espacio-3);
+  align-content: start;
+}
+
+.maestro-ficha [data-parte="resumen"] .estado {
+  font-size: var(--tamano-base);
+}
+
+.maestro-ficha [data-parte="resumen"] > dl {
+  padding-inline-start: var(--espacio-2);
+  font-size: var(--tamano-chico);
+  border-inline-start: 0.25rem solid var(--color-acento-claro);
+}
+
+/* Las necesidades vigentes: cada una con su pictograma, el nombre y lo que falta; en dos columnas
+   cuando entran. */
+.maestro-ficha > [data-parte="necesidades"] {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.maestro-ficha [data-parte="necesidades"] > :is(h3, h4) {
+  color: var(--color-tinta-suave);
+  font: 850 var(--tamano-grande) / 1.2 var(--fuente-titulo);
+  font-stretch: 110%;
+}
+
+[data-lista="necesidades-ficha"] {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: var(--espacio-3) var(--espacio-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-lista="necesidades-ficha"] li {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+[data-lista="necesidades-ficha"] li > span {
+  display: grid;
+}
+
+[data-lista="necesidades-ficha"] small {
+  font-size: var(--tamano-base);
+}
+
+/* Desde la pantalla ancha: la identidad a la izquierda y el resumen a la derecha, alineado a la
+   derecha y con lo que miden sus renglones (hasta la mitad); lo demás, a todo el ancho debajo. */
+@media (min-width: 68.75em) {
+  .maestro-ficha {
+    grid-template-columns: minmax(0, 1fr) fit-content(50%);
+    column-gap: var(--espacio-4);
+  }
+
+  .maestro-ficha > :not([data-parte="identidad"], [data-parte="resumen"]) {
+    grid-column: 1 / -1;
+  }
+
+  .maestro-ficha > [data-parte="resumen"] {
+    justify-items: end;
+    text-align: end;
+  }
+
+  .maestro-ficha [data-parte="resumen"] > dl {
+    padding-inline: 0 var(--espacio-2);
+    border-inline-start: 0;
+    border-inline-end: 0.25rem solid var(--color-acento-claro);
+  }
+}
+
+/* Desde la tableta: la lista a la izquierda y la ficha a la derecha. El `li` elegido se disuelve
+   (display: contents) para que su enlace siga en la lista y su ficha ocupe la otra columna, de arriba
+   abajo: la última fila (1fr) toma lo que la ficha mide de más, sin separar los renglones. */
+@media (min-width: 53.75em) {
+  .maestro {
+    grid-template-columns: minmax(18rem, 27rem) minmax(0, 1fr);
+    grid-template-rows: repeat(40, auto) 1fr;
+    column-gap: var(--espacio-4);
+    align-items: start;
+  }
+
+  .maestro > li,
+  .maestro > li > a {
+    grid-column: 1;
+  }
+
+  .maestro > li:has(> .maestro-ficha) {
+    display: contents;
+  }
+
+  .maestro-ficha {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    --espacio-relleno: var(--espacio-4);
+    margin: 0;
+  }
+}

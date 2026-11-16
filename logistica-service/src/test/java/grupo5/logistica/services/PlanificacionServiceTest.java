@@ -101,6 +101,18 @@ class PlanificacionServiceTest {
   }
 
   @Test
+  void iniciarPlanificacionIgnoraLasEntregasCanceladas() {
+    Entrega cancelada = EntregaMother.pendiente();
+    cancelada.cancelar("broker-donaciones", "NECESIDAD_DADA_DE_BAJA");
+    when(entregasRepository.findSinRuta()).thenReturn(List.of(cancelada));
+
+    service.iniciarPlanificacion();
+
+    verify(camionesRepository, never()).findDisponibles();
+    verify(planificadorExterno, never()).solicitarPlanificacion(any(), any());
+  }
+
+  @Test
   void iniciarPlanificacionConEntregasPeroSinCamionesTerminaSinSolicitar() {
     when(entregasRepository.findSinRuta()).thenReturn(List.of(EntregaMother.pendiente()));
     when(camionesRepository.findDisponibles()).thenReturn(List.of());

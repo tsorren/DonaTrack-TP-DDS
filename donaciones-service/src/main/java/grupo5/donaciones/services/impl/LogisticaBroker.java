@@ -4,13 +4,17 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.logging.FeignTraceRequestInterceptor;
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
+import grupo5.donaciones.models.entities.logistica.EstadoSolicitudEntrega;
 import grupo5.donaciones.models.entities.logistica.SolicitudEntrega;
 import grupo5.donaciones.models.repositories.ISolicitudesEntregaRepository;
 import grupo5.donaciones.services.logistica.EntradaOutboxLogistica;
+import grupo5.donaciones.services.logistica.EstadoEntradaOutbox;
+import grupo5.donaciones.services.logistica.ICatalogoProveedoresLogistica;
 import grupo5.donaciones.services.logistica.IEstrategiaSeleccionProveedor;
 import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import grupo5.donaciones.services.logistica.ILogisticaOutbox;
 import grupo5.donaciones.services.logistica.ResultadoEnvio;
+import grupo5.donaciones.services.logistica.ResultadoPedidoCancelacion;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,6 +52,7 @@ public class LogisticaBroker implements ILogisticaBroker {
   private final ISolicitudesEntregaRepository solicitudesRepository;
   private final ILogisticaOutbox outbox;
   private final IEstrategiaSeleccionProveedor estrategia;
+  private final ICatalogoProveedoresLogistica catalogo;
   private final Clock clock;
   private final int maxIntentos;
   private final long backoffBaseSegundos;
@@ -56,12 +61,14 @@ public class LogisticaBroker implements ILogisticaBroker {
       ISolicitudesEntregaRepository solicitudesRepository,
       ILogisticaOutbox outbox,
       IEstrategiaSeleccionProveedor estrategia,
+      ICatalogoProveedoresLogistica catalogo,
       Clock clock,
       @Value("${donatrack.logistica.outbox.max-intentos:5}") int maxIntentos,
       @Value("${donatrack.logistica.outbox.backoff-base-segundos:30}") long backoffBaseSegundos) {
     this.solicitudesRepository = solicitudesRepository;
     this.outbox = outbox;
     this.estrategia = estrategia;
+    this.catalogo = catalogo;
     this.clock = clock;
     this.maxIntentos = maxIntentos;
     this.backoffBaseSegundos = backoffBaseSegundos;
@@ -104,6 +111,10 @@ public class LogisticaBroker implements ILogisticaBroker {
       return;
     }
     EntradaOutboxLogistica entrada = buscada.get();
+    if (entrada.esCancelacion()) {
+      aplicarResultadoCancelacion(entrada, resultado);
+      return;
+    }
 
     Optional<SolicitudEntrega> solicitud = solicitudesRepository.findById(entrada.getSolicitudId());
     if (solicitud.isEmpty()) {
@@ -121,6 +132,102 @@ public class LogisticaBroker implements ILogisticaBroker {
       case RECHAZADO -> aplicarRechazado(entrada, solicitud.get());
       case INCIERTO -> aplicarIncierto(entrada, solicitud.get());
       case ERROR_CONTRATO -> aplicarErrorContrato(entrada, solicitud.get());
+    }
+  }
+
+  @Override
+  @Transactional
+  public ResultadoPedidoCancelacion pedirCancelacion(UUID donacionIndependienteId) {
+    if (donacionIndependienteId == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    Optional<SolicitudEntrega> activa =
+        solicitudesRepository.findActivaPorDonacion(donacionIndependienteId);
+    if (activa.isEmpty()) {
+      return ResultadoPedidoCancelacion.SIN_ENTREGA;
+    }
+    SolicitudEntrega solicitud = activa.get();
+    if (!catalogo.admiteCancelacion(solicitud.getProveedorActual())) {
+      log.warn(
+          "[BROKER-LOGISTICA] El proveedor {} no cancela entregas: la donación {} sigue su camino",
+          solicitud.getProveedorActual(),
+          donacionIndependienteId);
+      return ResultadoPedidoCancelacion.NO_SOPORTADA;
+    }
+    outbox.guardar(
+        EntradaOutboxLogistica.cancelacion(
+            solicitud.getId(),
+            solicitud.getProveedorActual(),
+            DatosEntregaLogistica.soloDonacion(donacionIndependienteId),
+            traceIdActual(),
+            maxIntentos,
+            ahora()));
+    log.info(
+        "[BROKER-LOGISTICA] Cancelación de la donación {} pendiente de envío al proveedor {}",
+        donacionIndependienteId,
+        solicitud.getProveedorActual());
+    return ResultadoPedidoCancelacion.PEDIDA;
+  }
+
+  @Override
+  @Transactional
+  public Optional<String> destinoDeCancelacion(UUID entradaId) {
+    EntradaOutboxLogistica entrada =
+        outbox.buscarPorId(entradaId).filter(EntradaOutboxLogistica::estaPendiente).orElse(null);
+    if (entrada == null || !entrada.esCancelacion()) {
+      return Optional.empty();
+    }
+    SolicitudEntrega solicitud =
+        solicitudesRepository.findById(entrada.getSolicitudId()).orElse(null);
+    if (solicitud != null && solicitud.getEstado() == EstadoSolicitudEntrega.ENVIADA) {
+      return Optional.of(solicitud.getProveedorActual());
+    }
+    if (solicitud != null && solicitud.getEstado() == EstadoSolicitudEntrega.PENDIENTE) {
+      // El pedido todavía no salió del outbox: la cancelación no puede adelantarse
+      entrada.posponer(ahora().plusSeconds(backoffBaseSegundos));
+      outbox.guardar(entrada);
+      return Optional.empty();
+    }
+    entrada.marcarFallida();
+    outbox.guardar(entrada);
+    log.error(
+        "[BROKER-LOGISTICA] Cancelación {} descartada: la solicitud {} está {}. Requiere revisión"
+            + " manual",
+        entradaId,
+        entrada.getSolicitudId(),
+        solicitud != null ? solicitud.getEstado() : "inexistente");
+    return Optional.empty();
+  }
+
+  @Override
+  @Transactional
+  public void registrarCancelacionConfirmada(UUID donacionIndependienteId) {
+    solicitudesRepository
+        .findActivaPorDonacion(donacionIndependienteId)
+        .filter(s -> s.getEstado() == EstadoSolicitudEntrega.ENVIADA)
+        .ifPresent(
+            solicitud -> {
+              solicitud.marcarCancelada();
+              solicitudesRepository.save(solicitud);
+            });
+  }
+
+  private void aplicarResultadoCancelacion(
+      EntradaOutboxLogistica entrada, ResultadoEnvio resultado) {
+    switch (resultado) {
+      case PUBLICADO -> entrada.marcarPublicada();
+        // Un rechazo no pasa a otro proveedor: la entrega está en este
+      case RECHAZADO, INCIERTO -> entrada.registrarIntentoIncierto(ahora(), backoffBaseSegundos);
+      case ERROR_CONTRATO -> entrada.marcarFallida();
+    }
+    outbox.guardar(entrada);
+    if (entrada.getEstado() == EstadoEntradaOutbox.FALLIDO) {
+      log.error(
+          "[BROKER-LOGISTICA] No se pudo cancelar la entrega de la donación {} en el proveedor {}"
+              + " ({}). Requiere revisión manual",
+          entrada.getDatos().donacionIndependienteId(),
+          entrada.getProveedorId(),
+          resultado);
     }
   }
 

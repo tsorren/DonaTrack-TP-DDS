@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-importacion-terminada-v1.schema.json",
+  "title": "EventoImportacionTerminadaV1",
+  "description": "Evento de dominio emitido por donaciones-service una vez por importación de donantes, cuando termina o se corta, después de guardar el estado final del archivo (R11-30). No lleva el nombre del archivo ni datos de los donantes.",
+  "type": "object",
+  "properties": {
+    "archivoId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "El archivo importado; Notificaciones lo guarda como referenciaId del aviso"
+    },
+    "resultado": {
+      "type": "string",
+      "enum": ["TERMINADA", "TERMINADA_CON_ERRORES", "CORTADA"],
+      "description": "TERMINADA (estado PROCESADO), TERMINADA_CON_ERRORES (PROCESADO_CON_ERRORES) o CORTADA (ERROR). Nombres propios del evento, no del enum interno de Donaciones"
+    },
+    "totalFilas": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Las filas contadas; nulo si se cortó antes de contarlas"
+    },
+    "procesadas": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Filas leídas (creadas + actualizadas + conError)"
+    },
+    "creadas": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Donantes nuevos"
+    },
+    "actualizadas": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Donantes actualizados"
+    },
+    "conError": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Filas con error"
+    },
+    "subidoEn": {
+      "type": ["string", "null"],
+      "description": "Cuándo se subió el archivo, hora de Buenos Aires sin zona (yyyy-MM-dd'T'HH:mm:ss, como subido_en); nulo en archivos anteriores a V23"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Cuándo terminó la importación"
+    }
+  },
+  "required": ["archivoId", "resultado", "procesadas", "creadas", "actualizadas", "conError", "fecha"],
+  "additionalProperties": true
+}

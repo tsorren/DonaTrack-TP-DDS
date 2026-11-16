@@ -4,9 +4,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import grupo5.donaciones.config.RabbitMQConfig;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaCancelada;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
@@ -114,5 +116,27 @@ class LogisticaEventListenerTest {
         new EventoRutaAsignada(UUID.randomUUID(), donacionId, null), PROVEEDOR, TOKEN);
 
     verify(verificador).esOrigenValido(PROVEEDOR, TOKEN, List.of(donacionId));
+  }
+
+  @Test
+  void onEntregaCancelada_conOrigenValido_delegaEnElProcesadorConSuCola() {
+    UUID donacionId = UUID.randomUUID();
+    EventoEntregaCancelada evento =
+        new EventoEntregaCancelada(UUID.randomUUID(), donacionId, "NECESIDAD_DADA_DE_BAJA", null);
+    when(verificador.esOrigenValido(PROVEEDOR, TOKEN, List.of(donacionId))).thenReturn(true);
+
+    listener.onEntregaCancelada(evento, PROVEEDOR, TOKEN);
+
+    verify(procesador).procesarEntregaCancelada(evento, RabbitMQConfig.QUEUE_ENTREGA_CANCELADA);
+  }
+
+  @Test
+  void onEntregaCancelada_conOrigenInvalido_noSeProcesa() {
+    when(verificador.esOrigenValido(any(), any(), any())).thenReturn(false);
+
+    listener.onEntregaCancelada(
+        new EventoEntregaCancelada(UUID.randomUUID(), UUID.randomUUID(), "m", null), "x", "y");
+
+    verifyNoInteractions(procesador);
   }
 }

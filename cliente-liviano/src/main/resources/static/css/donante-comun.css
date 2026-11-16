@@ -1,0 +1,56 @@
+/* Raíces A: lo que comparten las pantallas nuevas del donante (inicio, mis donaciones y su detalle,
+   entidades y notificaciones): la bajada, el aviso de carga y el lugar reservado, la lámina, el
+   volver, el sello de entregada, los campos de filtro. El cuaderno de noticias es el bloque `componentes/noticias.css`. */
+@import url("privado.css");
+@import url("sellos.css");
+
+/* De 50 a 75 caracteres por línea (criterios de la cátedra, sección 8). */
+.bajada {
+  max-width: 38rem;
+  margin: 0 0 1.5rem;
+  font-size: 1.125rem;
+}
+
+main h1 em {
+  color: var(--color-acento);
+}
+
+/* El relleno de una parte (el papel y el filete, de .tarjeta). */
+.lamina {
+  padding: 1.25rem;
+}
+
+.lamina h2 {
+  margin: 0 0 0.75rem;
+}
+
+.lamina p {
+  margin: 0 0 0.75rem;
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-acento);
+  font-weight: 700;
+  text-underline-offset: 0.25em;
+}
+
+.volver::before {
+  content: "← ";
+  white-space: pre;
+}
+
+/* El pictograma de categoría y su texto. */
+.categoria {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.resultado {
+  margin: 0 0 1rem;
+  font-weight: 700;
+}
+

@@ -2,11 +2,15 @@ package grupo5.incentivos.dto;
 
 import grupo5.incentivos.models.entities.ranking.EntradaRanking;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 public record RankingMensualDTO(
-    String periodo, List<EntradaRankingDTO> entradas, List<EntradaRankingDTO> podio) {
+    String periodo,
+    List<EntradaRankingDTO> entradas,
+    List<EntradaRankingDTO> podio,
+    Instant calculadoEn) {
 
   public RankingMensualDTO {
     entradas = entradas != null ? List.copyOf(entradas) : List.of();
@@ -17,7 +21,8 @@ public record RankingMensualDTO(
     return new RankingMensualDTO(
         ranking.getPeriodo().toString(),
         ranking.getEntradas().stream().map(EntradaRankingDTO::desde).toList(),
-        ranking.getPodio().stream().map(EntradaRankingDTO::desde).toList());
+        ranking.getPodio().stream().map(EntradaRankingDTO::desde).toList(),
+        ranking.getCalculadoEn());
   }
 
   public record EntradaRankingDTO(

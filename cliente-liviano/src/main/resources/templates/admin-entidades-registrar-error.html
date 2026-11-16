@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!--/* Raíces, Registrar entidad con el error de datos (el 400 del contrato: falta la dirección), como
+       lo devolvería el servidor: el resumen arriba recibe el foco y enlaza al campo; lo escrito sigue
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.4). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Revisá los datos - Registrar organización - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-entidades-registrar :: hoja(true)}"></th:block>
+</th:block>
+</body>
+</html>

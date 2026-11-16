@@ -101,6 +101,21 @@ class CamionesServiceTest {
     assertTrue(resultado.isEmpty());
   }
 
+  @Test
+  void consultarIncluyendoDeshabilitados_deberiaDevolverTambienLosDeshabilitados() {
+    Camion disponible = CamionMother.disponible();
+    Camion deshabilitado = CamionMother.disponible();
+    deshabilitado.deshabilitar();
+    when(camionRepository.findAll()).thenReturn(List.of(disponible, deshabilitado));
+
+    List<CamionResponseDTO> resultado = camionesService.consultarIncluyendoDeshabilitados();
+
+    assertEquals(
+        List.of(EstadoCamion.DISPONIBLE, EstadoCamion.DESHABILITADO),
+        resultado.stream().map(CamionResponseDTO::estado).toList());
+    verify(camionRepository, never()).findActivos();
+  }
+
   // ===================== consultarPorId() =====================
 
   @Test

@@ -132,6 +132,19 @@ class DonacionesRepositoriesJpaTest {
   }
 
   @Test
+  void guardarYLeer_donacionSinNombre_conservaLaMarca() {
+    Donacion original = DonacionMother.simple(donanteId);
+    original.ocultarNombre();
+
+    donaciones.save(original);
+
+    assertTrue(donaciones.findById(original.getId()).orElseThrow().isNombreOculto());
+    Donacion conNombre = DonacionMother.simple(donanteId);
+    donaciones.save(conNombre);
+    assertFalse(donaciones.findById(conNombre.getId()).orElseThrow().isNombreOculto());
+  }
+
+  @Test
   void guardar_alAvanzarElEstado_agregaAlHistorialSinDuplicarNiTocarLoAnterior() {
     Donacion donacion = DonacionMother.normalizada(donanteId, BienMother.simple("Arroz"), 5);
     donaciones.save(donacion);

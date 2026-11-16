@@ -5,11 +5,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.ValidationException;
+import grupo5.incentivos.dto.HistorialDeRankings;
 import grupo5.incentivos.dto.RankingMensualDTO;
 import grupo5.incentivos.fixtures.DonanteIncentivosMother;
 import grupo5.incentivos.infrastructure.IN8nClient;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.ranking.GestorDeRankings;
+import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import grupo5.incentivos.models.repositories.RankingRepository;
 import java.time.Month;
@@ -269,8 +272,37 @@ class RankingServiceTest {
     service.calcularYPersistir(abril);
     service.calcularYPersistir(mayo);
 
-    List<RankingMensualDTO> historial = service.obtenerHistorial();
+    HistorialDeRankings historial = service.obtenerHistorial(0, 12);
 
-    assertEquals(2, historial.size());
+    assertEquals(2, historial.meses().size());
+    assertEquals(2, historial.total());
+  }
+
+  @Test
+  void obtenerHistorial_vaDelMesMasRecienteAlMasViejoDeAUnaPagina() {
+    for (int mes = 1; mes <= 12; mes++) {
+      rankingRepository.save(new RankingMensual(YearMonth.of(2025, mes)));
+    }
+    for (int mes = 1; mes <= 6; mes++) {
+      rankingRepository.save(new RankingMensual(YearMonth.of(2026, mes)));
+    }
+
+    HistorialDeRankings primera = service.obtenerHistorial(0, 12);
+    HistorialDeRankings segunda = service.obtenerHistorial(1, 12);
+
+    assertEquals(18, primera.total());
+    assertEquals(12, primera.meses().size());
+    assertEquals("2026-06", primera.meses().get(0).periodo());
+    assertEquals("2025-07", primera.meses().get(11).periodo());
+    assertEquals(
+        List.of("2025-06", "2025-05", "2025-04", "2025-03", "2025-02", "2025-01"),
+        segunda.meses().stream().map(RankingMensualDTO::periodo).toList());
+  }
+
+  @Test
+  void obtenerHistorial_conPaginaOTamanioFueraDeRango_rechaza() {
+    assertThrows(ValidationException.class, () -> service.obtenerHistorial(-1, 12));
+    assertThrows(ValidationException.class, () -> service.obtenerHistorial(0, 0));
+    assertThrows(ValidationException.class, () -> service.obtenerHistorial(0, 101));
   }
 }

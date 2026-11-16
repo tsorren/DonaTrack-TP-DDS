@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img">
+  <title>Sillas apiladas en un aula</title>
+  <!-- Ilustración sintética para datos de ejemplo: sillas apiladas en un aula. -->
+  <rect width="640" height="400" fill="#e9ecea"/>
+  <rect x="60" y="50" width="220" height="130" fill="#5f7a6b"/>
+  <rect y="350" width="640" height="50" fill="#b8c2bd"/>
+  <rect x="330" y="160" width="16" height="190" fill="#8a5a34"/>
+  <rect x="330" y="250" width="130" height="16" fill="#a8703f"/>
+  <rect x="444" y="250" width="16" height="100" fill="#8a5a34"/>
+  <rect x="400" y="140" width="16" height="210" fill="#8a5a34"/>
+  <rect x="400" y="230" width="130" height="16" fill="#b98b52"/>
+  <rect x="514" y="230" width="16" height="120" fill="#8a5a34"/>
+  <rect x="140" y="200" width="16" height="150" fill="#8a5a34"/>
+  <rect x="140" y="270" width="110" height="14" fill="#a8703f"/>
+  <rect x="234" y="270" width="16" height="80" fill="#8a5a34"/>
+</svg>

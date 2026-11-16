@@ -1,0 +1,4 @@
+/* Notificaciones de la entidad (ficha raices-entidad-navegable, 4.3): desde la ronda del 2026-11-10,
+   la bandeja es el bloque buzón (componentes/buzon.css, capa bloques) y la cabecera, el bloque
+   cabecera-entidad. Esta hoja solo trae lo común de la entidad. */
+@import url("entidad-comun.css");

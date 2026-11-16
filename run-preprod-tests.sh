@@ -12,6 +12,7 @@
 #   ./run-preprod-tests.sh --groups smoke         # ejecutar un grupo (o "performance" para k6)
 #   ./run-preprod-tests.sh --images ghcr          # imágenes de GHCR (lo que usa CI)
 #   ./run-preprod-tests.sh --stay                 # dejar el stack arriba hasta presionar una tecla
+#   ./run-preprod-tests.sh --auth                 # servicios y gateway validando el JWT de Keycloak (o PREPROD_AUTH=true)
 #   ./run-preprod-tests.sh --target hybrid ...    # stack híbrido (ver ./run-hybrid-tests.sh --help)
 #
 # Envoltorios con el nombre y los argumentos de siempre: run-preprod-tests-stay.sh (--stay)
@@ -59,6 +60,8 @@ IMAGES=local
 STAY=false
 TEST_FILTER=""
 GROUPS_FILTER=""
+# Seguridad encendida: --auth o PREPROD_AUTH=true (en CI, la repository variable PREPROD_AUTH).
+AUTH="${PREPROD_AUTH:-false}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -67,6 +70,7 @@ while [[ $# -gt 0 ]]; do
     --stay)       STAY=true; shift ;;
     --test)       TEST_FILTER="$2"; shift 2 ;;
     --groups)     GROUPS_FILTER="$2"; shift 2 ;;
+    --auth)       AUTH=true; shift ;;
     -h|--help)
       echo "Uso: $0 [opciones]"
       echo "  --target compose|hybrid  Stack Docker completo (default) o híbrido con la nube"
@@ -75,6 +79,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --test <Clase>           Ejecutar una clase puntual (ej. SmokeIT)"
       echo "  --groups <Grupo>         Ejecutar grupo/tag (ej. smoke, contract, e2e, performance)"
       echo "  --stay                   Dejar el stack arriba hasta presionar una tecla"
+      echo "  --auth                   Servicios y gateway validan el JWT; las pruebas llaman con el token de pruebas"
       echo "  -h, --help               Mostrar esta ayuda"
       exit 0
       ;;
@@ -82,12 +87,16 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 [[ "$IMAGES" == "local" || "$IMAGES" == "ghcr" ]] || { echo "--images inválido: $IMAGES (local|ghcr)"; exit 1; }
+[[ "$AUTH" == "true" ]] || AUTH=false
+# El compose lo lee como ${PREPROD_SEGURIDAD:-false} en cada servicio y en el gateway.
+export PREPROD_SEGURIDAD="$AUTH"
 
 COMPOSE_FILE="docker-compose.preprod.yml"
 DONACIONES_URL="http://localhost:8080"
 NOTIFICACIONES_URL="http://localhost:8081"
 INCENTIVOS_URL="http://localhost:8082"
 LOGISTICA_URL="http://localhost:8083"
+GATEWAY_URL="http://localhost:8086"
 
 # Gate cerrado ante la duda (RM-02): un servicio caído falla en lugar de saltearse.
 export PREPROD_STRICT="${PREPROD_STRICT:-true}"
@@ -162,6 +171,8 @@ else
     "notificaciones-service/target/notificaciones-service-1.0.jar"
     "incentivos-service/target/incentivos-service-1.0.jar"
     "logistica-service/target/logistica-service-1.0.jar"
+    "api-gateway/target/api-gateway-1.0.jar"
+    "cliente-liviano/target/cliente-liviano-1.0.jar"
   )
   MISSING_JAR=false
   for jar in "${REQUIRED_JARS[@]}"; do
@@ -187,6 +198,63 @@ step "Levantando stack pre-producción (esperando healthchecks)"
 scripts/generar-env-db.sh
 docker compose -f "$COMPOSE_FILE" up "${UP_ARGS[@]}" --wait -d
 ok "Todos los servicios están healthy."
+
+# ── Seguridad encendida (--auth) ─────────────────────────────────────────────
+# Con --auth los servicios y el gateway validan el JWT de Keycloak, y las pruebas llaman con el token de
+# la cuenta de servicio donatrack-pruebas (rol ADMIN). Antes de correr nada se comprueba que de verdad quedó
+# encendida: si no, las pruebas pasarían igual, con la seguridad apagada, sin avisar.
+verificar_seguridad_encendida() {
+  local url codigo kc_host token_url secreto respuesta token
+  for url in "$GATEWAY_URL/api/personas" "$DONACIONES_URL/api/personas" \
+             "$NOTIFICACIONES_URL/api/notificaciones" \
+             "$INCENTIVOS_URL/api/incentivos/ranking/historial" "$LOGISTICA_URL/api/entregas"; do
+    codigo="$(curl -s -o /dev/null -w '%{http_code}' "$url" || true)"
+    if [[ "$codigo" != "401" ]]; then
+      fail "Sin token, $url dio $codigo y se esperaba 401: la seguridad no quedó encendida."
+      exit 1
+    fi
+    ok "$url -> 401 sin token"
+  done
+
+  kc_host="$(sed -n 's/^KC_HOSTNAME=//p' .env)"
+  secreto="$(sed -n 's/^PRUEBAS_CLIENT_SECRET=//p' .env)"
+  if [[ -z "$kc_host" || -z "$secreto" ]]; then
+    fail "Faltan KC_HOSTNAME o PRUEBAS_CLIENT_SECRET en .env: no hay con qué pedir el token de pruebas."
+    exit 1
+  fi
+  token_url="${kc_host}/realms/donatrack/protocol/openid-connect/token"
+  # El secreto viaja por stdin (printf es interno del shell): no queda en la lista de procesos ni en el log.
+  respuesta="$(printf 'grant_type=client_credentials&client_id=donatrack-pruebas&client_secret=%s' "$secreto" \
+    | curl -s -w '\n%{http_code}' -d @- "$token_url" || true)"
+  codigo="${respuesta##*$'\n'}"
+  if [[ "$codigo" != "200" ]]; then
+    fail "Keycloak respondió $codigo al pedir el token de pruebas (${token_url})."
+    exit 1
+  fi
+  token="$(printf '%s' "${respuesta%$'\n'*}" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')"
+  if [[ -z "$token" ]]; then
+    fail "La respuesta de Keycloak no trae access_token."
+    exit 1
+  fi
+  # El token tiene que abrir una ruta protegida, directo al servicio y por el gateway.
+  for url in "$DONACIONES_URL/api/personas" "$GATEWAY_URL/api/personas"; do
+    codigo="$(printf 'Authorization: Bearer %s' "$token" | curl -s -o /dev/null -w '%{http_code}' -H @- "$url" || true)"
+    if [[ "$codigo" != "200" ]]; then
+      fail "Con el token de pruebas, $url dio $codigo y se esperaba 200."
+      exit 1
+    fi
+    ok "$url -> 200 con el token de pruebas"
+  done
+  # Lo leen BaseIT (integration-tests) y, por el entorno del contenedor, k6.
+  export PRUEBAS_CLIENT_SECRET="$secreto"
+  export KEYCLOAK_TOKEN_URL="$token_url"
+}
+
+if [[ "$AUTH" == "true" ]]; then
+  step "Verificando que la seguridad quedó encendida (--auth)"
+  verificar_seguridad_encendida
+  ok "Seguridad encendida: las pruebas llaman con el token de donatrack-pruebas."
+fi
 
 step "Importando y activando workflows en n8n"
 MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --separate --input=//etc/n8n/workflows
@@ -248,7 +316,10 @@ run_suite() {
 
 if [[ "$GROUPS_FILTER" == "performance" ]]; then
   step "Ejecutando pruebas de rendimiento con k6 en Docker Compose (--profile perf)"
-  if docker compose -f "$COMPOSE_FILE" --profile perf run --rm k6 run /scripts/donaciones-creacion-carga.js; then
+  K6_ENV=()
+  # El contenedor de k6 está en la red del compose: pide el token a keycloak:8080 (token.js lo usa por defecto).
+  [[ "$AUTH" == "true" ]] && K6_ENV=(-e PRUEBAS_CLIENT_SECRET)
+  if docker compose -f "$COMPOSE_FILE" --profile perf run --rm "${K6_ENV[@]}" k6 run /scripts/donaciones-creacion-carga.js; then
     ok "Pruebas de rendimiento k6 APROBADAS (cumplieron SLAs y thresholds de latencia/error)."
   else
     fail "Pruebas de rendimiento k6 FALLIDAS — superaron umbrales de SLA o tasa de error."

@@ -34,6 +34,8 @@ public class CamionDocument {
 
   @Indexed private EstadoCamion estado;
 
+  private PosicionCamionSubdocument posicion;
+
   @Version private Long version;
 
   @Builder.Default private List<CambioEstadoSubdocument> historialEstado = new ArrayList<>();

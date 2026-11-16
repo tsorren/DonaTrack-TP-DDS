@@ -39,6 +39,11 @@
       "type": "number",
       "exclusiveMinimum": 0,
       "description": "Volumen cúbico total requerido en metros cúbicos"
+    },
+    "donanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Opcional. Donante de la donación original, para listar sus entregas activas (HB-16)"
     }
   },
   "required": ["idDonacion", "idBeneficiaria", "destino", "volumenTotalM3"],

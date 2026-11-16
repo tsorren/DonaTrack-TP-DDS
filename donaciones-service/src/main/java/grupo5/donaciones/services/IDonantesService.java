@@ -1,17 +1,22 @@
 package grupo5.donaciones.services;
 
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
-import java.util.List;
+import grupo5.donaciones.dto.donantes.FiltroDonantes;
 import java.util.UUID;
 
 public interface IDonantesService {
   /** Registro idempotente: {@code creado = false} si la persona ya era donante. */
   ResultadoRegistro<DonanteOutputDTO> crearDonante(DonanteInputDTO dto);
 
-  List<DonanteOutputDTO> listarDonantesPorContacto(String canal);
+  /** Una página de donantes, con la búsqueda, los filtros y el orden en la base (R11-01). */
+  Pagina<DonanteOutputDTO> buscar(FiltroDonantes filtro, ParametrosListado listado);
 
   DonanteOutputDTO obtenerPorId(UUID id);
+
+  /** Si la entidad ve su nombre (HB-20). Vale desde ya para todas sus donaciones. */
+  DonanteOutputDTO actualizarPreferencias(UUID id, boolean mostrarNombre);
 
   /**
    * Registra a la persona como donante solo si nunca lo fue. Si ya lo era (activo o de baja) no

@@ -44,6 +44,11 @@
     "replanificable": {
       "type": "boolean",
       "description": "Indica si la entrega de la donación puede volver a planificarse"
+    },
+    "donacionIndependienteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Opcional (HB-09). Identificador de la donación independiente a la que se refiere el aviso; permite enlazar la notificación con el detalle de la donación"
     }
   },
   "required": [

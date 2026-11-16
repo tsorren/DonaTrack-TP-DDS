@@ -38,6 +38,7 @@ public class DonacionesPersistenciaMapper {
     entity.setDescripcion(domain.getDescripcion());
     entity.setFecha(domain.getFecha());
     entity.setEstado(domain.getEstadoActual());
+    entity.setNombreOculto(domain.isNombreOculto());
     entity.setDeposito(
         domain.getDepositoRecepcion() != null ? resolver(domain.getDepositoRecepcion()) : null);
     reemplazarItems(domain, entity);
@@ -63,7 +64,11 @@ public class DonacionesPersistenciaMapper {
                     new CambioEstadoDonacion(
                         c.getEstadoAnterior(), c.getEstadoNuevo(), c.getTimestamp()))
             .toList();
-    return new Donacion(datos, items, historial);
+    Donacion donacion = new Donacion(datos, items, historial);
+    if (entity.isNombreOculto()) {
+      donacion.ocultarNombre();
+    }
+    return donacion;
   }
 
   // P-2 y D-9: el depósito se comparte; se reutiliza la fila con el mismo nombre y dirección

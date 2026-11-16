@@ -22,6 +22,7 @@ public class Camion implements AggregateRoot {
   private final Float altura;
   private final Float capacidadKG;
   private EstadoCamion estado;
+  private PosicionCamion posicion;
 
   @Getter(AccessLevel.NONE)
   private final List<CambioEstadoCamion> historialEstado;
@@ -60,6 +61,32 @@ public class Camion implements AggregateRoot {
       EstadoCamion estado,
       List<CambioEstadoCamion> historialEstado,
       Long version) {
+    this(
+        id,
+        rutaId,
+        patente,
+        capacidadVolumen,
+        capacidadKG,
+        altura,
+        estado,
+        historialEstado,
+        version,
+        null);
+  }
+
+  /** Reconstitución con la última posición conocida (ADR-E6-07). */
+  @SuppressWarnings("java:S107")
+  public Camion(
+      UUID id,
+      UUID rutaId,
+      String patente,
+      Float capacidadVolumen,
+      Float capacidadKG,
+      Float altura,
+      EstadoCamion estado,
+      List<CambioEstadoCamion> historialEstado,
+      Long version,
+      PosicionCamion posicion) {
     this.id = id;
     this.rutaId = rutaId;
     this.patente = patente;
@@ -70,6 +97,25 @@ public class Camion implements AggregateRoot {
     this.historialEstado =
         historialEstado != null ? new ArrayList<>(historialEstado) : new ArrayList<>();
     this.version = version;
+    this.posicion = posicion;
+  }
+
+  /**
+   * Guarda la posición si es más nueva que la actual. Una posición con {@code registradaEn} igual o
+   * anterior se descarta, para que un reintento o un mensaje desordenado no haga retroceder al
+   * camión.
+   *
+   * @return {@code true} si la posición reemplazó a la guardada
+   */
+  public boolean registrarPosicion(PosicionCamion nueva) {
+    if (Objects.isNull(nueva)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    if (!nueva.esPosteriorA(this.posicion)) {
+      return false;
+    }
+    this.posicion = nueva;
+    return true;
   }
 
   public void asignarARuta(UUID rutaId) {

@@ -17,5 +17,6 @@ public record EventoEntregaFallidaDTO(
     @NotBlank(message = "La descripción de la donación es obligatoria") String descripcion,
     @NotNull(message = "El ID de la persona administradora es obligatorio") UUID personaAdminId,
     @NotBlank(message = "La justificación es obligatoria") String justificacion,
-    boolean replanificable)
+    boolean replanificable,
+    UUID referenciaId)
     implements EventoNotificableDTO {}

@@ -40,6 +40,7 @@ public class NecesidadesPersistenciaMapper {
               ? ee
               : new NecesidadExtraordinariaEntity();
       mapearCamposComunes(extra, entity);
+      entity.setFechaLimite(extra.getFechaLimite());
       return entity;
     }
 
@@ -64,7 +65,8 @@ public class NecesidadesPersistenciaMapper {
       return null;
     }
     if (entity instanceof NecesidadExtraordinariaEntity extraEntity) {
-      return new NecesidadExtraordinaria(datosComunes(extraEntity), extraEntity.isActiva());
+      return new NecesidadExtraordinaria(
+          datosComunes(extraEntity), extraEntity.isActiva(), extraEntity.getFechaLimite());
     }
     if (entity instanceof NecesidadRecurrenteEntity recEntity) {
       return recurrenteToDomain(recEntity);
@@ -87,7 +89,9 @@ public class NecesidadesPersistenciaMapper {
         entity.getDescripcion(),
         fechaInicio,
         entity.getEntidadBeneficiariaId(),
-        entity.getVersion());
+        entity.getVersion(),
+        entity.getCantidadAnterior() != null ? entity.getCantidadAnterior().intValue() : null,
+        entity.getFechaUltimoCambio());
   }
 
   private static NecesidadRecurrente recurrenteToDomain(NecesidadRecurrenteEntity recEntity) {
@@ -122,6 +126,9 @@ public class NecesidadesPersistenciaMapper {
             ? domain.getFechaInicio().atStartOfDay()
             : LocalDateTime.now(ZoneId.systemDefault()));
     entity.setActiva(domain.isActiva());
+    entity.setCantidadAnterior(
+        domain.getCantidadAnterior() != null ? domain.getCantidadAnterior().longValue() : null);
+    entity.setFechaUltimoCambio(domain.getFechaUltimoCambio());
   }
 
   private static void sincronizarPeriodos(
@@ -136,9 +143,11 @@ public class NecesidadesPersistenciaMapper {
     Set<UUID> guardados =
         actuales.stream().map(PeriodoNecesidadEntity::getId).collect(Collectors.toSet());
 
-    // Solo se agregan los períodos nuevos, reconocidos por id: un período guardado no cambia
+    // Se agregan los períodos nuevos, reconocidos por id. De los guardados solo cambia el objetivo:
+    // el del período en curso sigue a la cantidad (ADR 20261102 del ciclo de vida, punto 5)
     for (PeriodoNecesidad p : domain.getPeriodos()) {
       if (guardados.contains(p.id())) {
+        actualizarObjetivo(actuales, p);
         continue;
       }
       PeriodoNecesidadEntity pe = new PeriodoNecesidadEntity();
@@ -157,6 +166,16 @@ public class NecesidadesPersistenciaMapper {
       }
       actuales.add(pe);
     }
+  }
+
+  private static void actualizarObjetivo(
+      List<PeriodoNecesidadEntity> actuales, PeriodoNecesidad p) {
+    actuales.stream()
+        .filter(pe -> pe.getId().equals(p.id()))
+        .forEach(
+            pe ->
+                pe.setCantidadObjetivo(
+                    p.cantidadObjetivo() != null ? p.cantidadObjetivo().longValue() : null));
   }
 
   /** El próximo período arranca donde terminó el último guardado, o al inicio de la necesidad. */

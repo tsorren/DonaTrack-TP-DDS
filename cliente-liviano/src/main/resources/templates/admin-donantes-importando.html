@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!--/* Raíces, la página de avance de una importación de donantes (R11-02), sin la lista de donantes
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.1, "R11-02"). Se actualiza sola
+       mientras importa; la arma el fragmento avance de admin-donantes. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Importando - Donantes - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-donantes :: hoja('importando')}"></th:block>
+</th:block>
+</body>
+</html>

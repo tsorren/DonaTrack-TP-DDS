@@ -15,5 +15,6 @@ public record EventoDonacionEnCaminoDTO(
     @NotNull(message = "El ID de la entidad beneficiaria es obligatorio")
         UUID personaBeneficiariaId,
     @NotBlank(message = "La descripción de la donación es obligatoria") String descripcion,
-    String urlMapa)
+    String urlMapa,
+    UUID referenciaId)
     implements EventoNotificableDTO {}

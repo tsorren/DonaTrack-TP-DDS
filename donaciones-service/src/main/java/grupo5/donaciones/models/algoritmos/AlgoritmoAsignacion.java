@@ -5,6 +5,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
+import grupo5.donaciones.models.entities.propuestas.TipoAlgoritmo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -74,6 +75,9 @@ public abstract class AlgoritmoAsignacion {
         && Objects.equals(donacion.getSubcategoriaId(), necesidad.getSubcategoriaId());
   }
 
+  // Gancho del Template Method: el orden por defecto no usa `datos`; AlgoritmoPrioridadSubAtendidos
+  // sí (AGENTS.md §4.1: no se cambia la firma del patrón).
+  @SuppressWarnings("java:S1172")
   public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades, DatosDeAsignacion datos) {
     if (necesidades == null)
       throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDADES_NULAS);
@@ -86,6 +90,9 @@ public abstract class AlgoritmoAsignacion {
     if (donaciones == null) throw new ValidationException(ErrorCatalog.ALGORITMO_DONACIONES_NULAS);
     return donaciones.stream().filter(donacion -> mismaSubcategoria(donacion, necesidad)).toList();
   }
+
+  /** Qué algoritmo es: queda en cada propuesta que sugiere (R11-24). */
+  public abstract TipoAlgoritmo tipo();
 
   public abstract List<DonacionIndependiente> filtrarDonaciones(
       Necesidad necesidad, List<DonacionIndependiente> donaciones);

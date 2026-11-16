@@ -96,7 +96,8 @@ class DonacionesEventPublisherTest {
             "donacion.entrega-fallida.v1", p -> p.publicarDonacionEntregaFallida(null),
             "donacion.vencida.v1", p -> p.publicarDonacionVencida(null),
             "persona.sincronizada.v1", p -> p.publicarPersonaSincronizada(null),
-            "donacion.segmentada.v1", p -> p.publicarDonacionSegmentada(null));
+            "donacion.segmentada.v1", p -> p.publicarDonacionSegmentada(null),
+            "importacion.terminada.v1", p -> p.publicarImportacionTerminada(null));
 
     publicaciones.forEach(
         (routingKey, publicacion) -> {

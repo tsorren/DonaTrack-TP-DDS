@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<!--/* Componente info: un botón con el ícono de información (círculo de tinta con la "i") que abre un
+       globo con más información y, si hace falta, el enlace a la página completa (usuaria, 2026-11-09:
+       "íconos tipo info con una tooltip que diga más info"). Es un popover nativo: se abre con toque,
+       clic, Enter o Espacio, se cierra con Esc o tocando afuera, sin JavaScript; el navegador devuelve
+       el foco al botón. Donde hay posicionamiento por ancla, el globo sale arriba del botón; si no,
+       queda centrado en la pantalla. Hoja: static/css/componentes/info.css. Catálogo:
+       docs/interfaz/componentes.md.
+
+       info(id, etiqueta, titulo, cuerpo, enlace, enlaceTexto):
+       - id: único en la página (lo usa popovertarget).
+       - etiqueta: el nombre accesible del botón ("Qué podés donar").
+       - titulo: el título del globo; cuerpo: un texto corto.
+       - enlace y enlaceTexto: la página con todo (pueden ser null). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<span th:fragment="info(id, etiqueta, titulo, cuerpo, enlace, enlaceTexto)" class="info">
+  <button type="button" class="info-boton" popovertarget="info-muestra" th:popovertarget="${id}"
+          aria-label="Qué podés donar" th:aria-label="${etiqueta}" title="Qué podés donar" th:title="${etiqueta}">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle class="info-circulo" cx="12" cy="12" r="11"/>
+      <circle class="info-letra" cx="12" cy="7.25" r="1.6"/>
+      <path class="info-letra" d="M10.4 10.5h2.9v6.6h1.3v1.9h-4.2v-1.9h1.1v-4.7h-1.1z"/>
+    </svg>
+  </button>
+  <span class="info-globo" id="info-muestra" th:id="${id}" popover role="dialog"
+        aria-labelledby="info-muestra-titulo" th:aria-labelledby="|${id}-titulo|">
+    <b class="info-titulo" id="info-muestra-titulo" th:id="|${id}-titulo|" th:text="${titulo}">Qué podés donar</b>
+    <span th:text="${cuerpo}">Alimentos envasados y sin vencer, ropa limpia y en buen estado, y muebles que se puedan usar.</span>
+    <a th:if="${enlace}" href="/publico-para-donantes" th:href="@{${enlace}}" th:text="${enlaceTexto}">Ver todo para donantes</a>
+  </span>
+</span>
+</body>
+</html>

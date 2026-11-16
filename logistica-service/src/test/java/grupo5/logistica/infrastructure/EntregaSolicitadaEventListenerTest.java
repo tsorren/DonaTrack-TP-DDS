@@ -2,8 +2,11 @@ package grupo5.logistica.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -11,8 +14,10 @@ import static org.mockito.Mockito.when;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.common.logging.FeignTraceRequestInterceptor;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.eventos.DestinoEventoDTO;
+import grupo5.logistica.dto.eventos.EventoEntregaCanceladaV1;
 import grupo5.logistica.dto.eventos.EventoEntregaSolicitadaV1;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.services.IEntregasService;
@@ -24,6 +29,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.MDC;
 
 @ExtendWith(MockitoExtension.class)
 class EntregaSolicitadaEventListenerTest {
@@ -74,6 +80,31 @@ class EntregaSolicitadaEventListenerTest {
     assertEquals(0.25f, dto.volumenTotalM3());
     assertEquals("Av. Medrano", dto.destino().calle());
     assertEquals("CABA", dto.destino().localidad());
+    assertNull(dto.donanteId());
+  }
+
+  @Test
+  void onEntregaSolicitada_cuandoComandoTraeDonante_loPasaAlPedidoDeEntrega() {
+    EventoEntregaSolicitadaV1 base = comandoDeEjemplo(UUID.randomUUID());
+    UUID donanteId = UUID.randomUUID();
+    EventoEntregaSolicitadaV1 comando =
+        new EventoEntregaSolicitadaV1(
+            base.donacionIndependienteId(),
+            base.personaBeneficiariaId(),
+            base.destino(),
+            base.pesoTotalKG(),
+            base.volumenTotalM3(),
+            base.fecha(),
+            donanteId);
+    when(entregasRepository.existsByIdDonacion(comando.donacionIndependienteId()))
+        .thenReturn(false);
+
+    listener.onEntregaSolicitada(comando);
+
+    ArgumentCaptor<CrearEntregaRequestDTO> captor =
+        ArgumentCaptor.forClass(CrearEntregaRequestDTO.class);
+    verify(entregasService).crear(captor.capture());
+    assertEquals(donanteId, captor.getValue().donanteId());
   }
 
   @Test
@@ -108,5 +139,48 @@ class EntregaSolicitadaEventListenerTest {
     assertDoesNotThrow(() -> listener.onEntregaSolicitada(null));
 
     verifyNoInteractions(entregasService);
+  }
+
+  // ===================== Cancelación (HB-19) =====================
+
+  @Test
+  void onEntregaCancelada_delegaEnElServicioYDejaElTraceIdSoloDuranteElProceso() {
+    UUID donacionId = UUID.randomUUID();
+    String[] traceDuranteElProceso = new String[1];
+    doAnswer(
+            invocation -> {
+              traceDuranteElProceso[0] = MDC.get(FeignTraceRequestInterceptor.MDC_TRACE_KEY);
+              return null;
+            })
+        .when(entregasService)
+        .cancelarPorDonacion(donacionId, "NECESIDAD_DADA_DE_BAJA");
+
+    listener.onEntregaCancelada(
+        new EventoEntregaCanceladaV1(donacionId, "NECESIDAD_DADA_DE_BAJA", LocalDateTime.now()),
+        "0af7651916cd43dd8448eb211c80319c");
+
+    assertEquals("0af7651916cd43dd8448eb211c80319c", traceDuranteElProceso[0]);
+    assertNull(MDC.get(FeignTraceRequestInterceptor.MDC_TRACE_KEY));
+  }
+
+  @Test
+  void onEntregaCancelada_sinDonacionNoHaceNada() {
+    listener.onEntregaCancelada(new EventoEntregaCanceladaV1(null, "x", null), null);
+    listener.onEntregaCancelada(null, null);
+
+    verifyNoInteractions(entregasService);
+  }
+
+  @Test
+  void onEntregaCancelada_errorDeValidacionSeLogueaSinPropagar() {
+    UUID donacionId = UUID.randomUUID();
+    doThrow(new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA))
+        .when(entregasService)
+        .cancelarPorDonacion(donacionId, "m");
+
+    assertDoesNotThrow(
+        () ->
+            listener.onEntregaCancelada(
+                new EventoEntregaCanceladaV1(donacionId, "m", LocalDateTime.now()), null));
   }
 }

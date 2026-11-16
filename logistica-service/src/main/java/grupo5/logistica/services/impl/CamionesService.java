@@ -55,6 +55,12 @@ public class CamionesService implements ICamionesService {
 
   @Override
   @Transactional(readOnly = true)
+  public List<CamionResponseDTO> consultarIncluyendoDeshabilitados() {
+    return camionRepository.findAll().stream().map(camionMapper::toResponseDTO).toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
   public CamionResponseDTO consultarPorId(UUID id) {
     return camionMapper.toResponseDTO(buscarCamionActivo(id));
   }

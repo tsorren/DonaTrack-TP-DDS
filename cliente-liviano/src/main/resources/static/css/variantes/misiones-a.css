@@ -1,0 +1,218 @@
+/* Prueba A/B de Misiones, segunda ronda del 2026-11-09 (tarde), opción A: figuritas literal
+   (templates/variantes/misiones-a.html). Una huerta armada en 4 piezas: cada botón muestra un
+   cuadrante del mismo dibujo (la imagen al doble de tamaño, corrida dentro de un recorte). La pieza
+   que falta, en gris y apagada, con su número al centro. La lista de abajo dice lo mismo en texto.
+   Sin borde verde de selección: el diálogo es lo que se abre. Solo tokens de uso. Se borra al decidir. */
+
+#huerta-figuritas {
+  display: grid;
+  gap: var(--espacio-4);
+  align-items: start;
+}
+
+#huerta-figuritas header {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+#huerta-figuritas :is(h2, p) {
+  margin: 0;
+}
+
+#huerta-figuritas header p {
+  max-width: 44rem;
+}
+
+/* --- La imagen en 4 piezas -------------------------------------------------------------------- */
+#huerta-piezas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-1);
+  width: 100%;
+  max-width: 46rem;
+  margin: 0;
+  padding: var(--espacio-1);
+  border-radius: var(--radio-lamina);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-papel);
+  list-style: none;
+}
+
+#huerta-piezas li {
+  margin: 0;
+}
+
+#huerta-piezas button {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radio-boton);
+  background: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+/* Las esquinas que dan al borde de la imagen, más redondeadas, como un solo dibujo. */
+#huerta-piezas [data-pieza="1"] :is(button, [data-recorte]) {
+  border-top-left-radius: var(--radio-lamina);
+}
+
+#huerta-piezas [data-pieza="2"] :is(button, [data-recorte]) {
+  border-top-right-radius: var(--radio-lamina);
+}
+
+#huerta-piezas [data-pieza="3"] :is(button, [data-recorte]) {
+  border-bottom-left-radius: var(--radio-lamina);
+}
+
+#huerta-piezas [data-pieza="4"] :is(button, [data-recorte]) {
+  border-bottom-right-radius: var(--radio-lamina);
+}
+
+/* El recorte: un cuadrante de 4:3 con la imagen al doble, corrida según la pieza. */
+[data-recorte] {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+}
+
+[data-recorte] img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  max-width: none;
+  height: 200%;
+  border: 0;
+}
+
+[data-pieza="2"] [data-recorte] img {
+  left: -100%;
+}
+
+[data-pieza="3"] [data-recorte] img {
+  top: -100%;
+}
+
+[data-pieza="4"] [data-recorte] img {
+  top: -100%;
+  left: -100%;
+}
+
+/* La que falta: la silueta en gris, apagada. */
+[data-estado="falta"] [data-recorte] img {
+  filter: grayscale(1) contrast(0.55) brightness(1.18);
+  opacity: 0.45;
+}
+
+#huerta-piezas button:hover [data-recorte] img {
+  scale: 1.02;
+}
+
+/* El número de la pieza: abajo a la izquierda si la tenés; al centro, grande, si falta. */
+[data-chapa] {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--color-destacado);
+  color: var(--color-tinta);
+  font: 850 1rem/1 var(--fuente-titulo);
+}
+
+#huerta-piezas [data-chapa] {
+  position: absolute;
+  bottom: var(--espacio-2);
+  left: var(--espacio-2);
+}
+
+#huerta-piezas [data-estado="falta"] [data-chapa] {
+  inset: 0;
+  width: 3rem;
+  height: 3rem;
+  margin: auto;
+  background: var(--color-superficie);
+  font-size: 1.375rem;
+  box-shadow: var(--sombra-papel);
+}
+
+/* --- Las piezas en texto ---------------------------------------------------------------------- */
+#piezas-estado {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#piezas-estado li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--espacio-2);
+  align-items: center;
+  margin: 0;
+  padding: var(--espacio-2) var(--espacio-3);
+  border-radius: var(--radio-boton);
+  background: var(--color-superficie);
+}
+
+#piezas-estado li > span:last-child {
+  display: grid;
+  gap: 0.125rem;
+}
+
+#piezas-estado small {
+  color: var(--color-tinta-suave);
+  font-size: 0.9375rem;
+}
+
+#piezas-estado [data-estado="falta"] {
+  background: var(--color-papel);
+}
+
+#piezas-estado [data-estado="falta"] [data-chapa] {
+  background: var(--color-pendiente-fondo);
+  color: var(--color-pendiente-texto);
+}
+
+/* --- El diálogo de cada pieza ----------------------------------------------------------------- */
+dialog[id^="pieza-"] [data-recorte] {
+  width: min(16rem, 100%);
+}
+
+dialog[id^="pieza-"] ul {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+dialog[id^="pieza-"] li {
+  margin: 0;
+}
+
+dialog[id^="pieza-"] .progreso {
+  margin: var(--espacio-1) 0;
+}
+
+dialog[id^="pieza-"] .boton {
+  margin-top: var(--espacio-2);
+}
+
+/* En pantalla ancha, la imagen a la izquierda y las piezas en texto al lado. */
+@media (min-width: 53.75em) {
+  #huerta-figuritas {
+    grid-template-columns: minmax(0, 46rem) minmax(16rem, 1fr);
+  }
+
+  #huerta-figuritas header {
+    grid-column: 1 / -1;
+  }
+}

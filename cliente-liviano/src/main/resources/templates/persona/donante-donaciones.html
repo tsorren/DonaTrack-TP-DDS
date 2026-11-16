@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<!--/* Mis donaciones de la persona que dona (Martina Ruiz, RF-05): la misma pantalla que la de la
+       empresa (ficha docs/interfaz/flujos/raices-donante-navegable.md), con los textos de una persona
+       y sus datos (persona/datos-persona). La búsqueda y los filtros son la misma barra que la de la
+       empresa (componentes/listado, R11-B04; la arma MisDonacionesController): la fecha de registro,
+       estado, categoría, la organización a la que fue, la subcategoría (RF-05, R11-13; como en la
+       maqueta de la empresa, una subcategoría filtra por su categoría) y el orden. Un formulario get
+       real; un valor desconocido se ignora. Acá filtra la plantilla, sobre las ocho de ejemplo. Una
+       lámina por donación, la más reciente primero (o la primera, con "Más antiguas primero"); las
+       ocho entran en una página, así que no hay paginador (con una sola página no se dibuja).
+       ?escenario=vacio (cuenta nueva), error y lento. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-donaciones', ~{::contenido})}">
+<head>
+  <title>Mis donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{persona/datos-persona :: persona(~{::cuerpo})}"></th:block>
+</th:block>
+
+<th:block th:fragment="cuerpo"
+    th:with="fEstado=${listado.estado.elegido},
+             fCategoria=${listado.categoria.elegido},
+             fDesde=${listado.fecha.desde == null ? '' : listado.fecha.desde.toString()},
+             fHasta=${listado.fecha.hasta == null ? '' : listado.fecha.hasta.toString()},
+             fQuien=${listado.quien == null ? '' : listado.quien.valor},
+             antiguas=${listado.orden.elegida()},
+             filtrado=${listado.filtrada()},
+             lista=${donaciones.?[(#root.fEstado == '' or estado.tono == #root.fEstado)
+                     and (#root.fCategoria == '' or categoria.substring(4) == #root.fCategoria)
+                     and (#root.fDesde == '' or registrada >= #root.fDesde)
+                     and (#root.fHasta == '' or registrada <= #root.fHasta)
+                     and (#root.fQuien == '' or (destino != null and #strings.containsIgnoreCase(destino, #root.fQuien)))]},
+             cuantas=${#lists.size(lista)}">
+  <div class="donaciones" id="persona-donaciones">
+    <header>
+      <p class="rotulo" th:text="${seccion}">Mis donaciones</p>
+      <h1>Lo que <em>donaste</em></h1>
+    </header>
+
+    <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no tenés donaciones registradas.</h2>
+      <p>Las registra el equipo del depósito cuando las recibe. Desde ese momento ves cada una acá,
+        con su estado.</p>
+      <a class="boton" data-tono="secundario" href="/donante-entidades"
+         th:href="@{/donante-entidades}">Conocer las organizaciones</a>
+    </section>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{datos-donante :: error('No pudimos cargar tus donaciones.', '/donante-donaciones')}"></section>
+    </th:block>
+
+    <th:block th:unless="${escenario == 'vacio' or escenario == 'error'}">
+      <form th:replace="~{componentes/listado :: listado(${listado})}"></form>
+    </th:block>
+
+    <th:block th:if="${escenario == 'lento'}">
+      <p class="cargando" role="status">Cargando tus donaciones…</p>
+      <div class="esqueleto" data-forma="punteado" data-tamano="alto" aria-busy="true"></div>
+    </th:block>
+
+    <th:block th:if="${escenario == ''}">
+      <p th:unless="${filtrado and lista.isEmpty()}" class="bajada" role="status"
+         th:text="${filtrado}
+           ? |${#lists.size(lista)} ${#lists.size(lista) == 1 ? 'donación' : 'donaciones'} con esos filtros.|
+           : |${#lists.size(lista)} donaciones desde junio de 2026, ${antiguas ? 'de la primera a la más reciente' : 'de la más reciente a la primera'}. Actualizado hoy, 15 de octubre, 16:25.|">8
+        donaciones desde junio de 2026, de la más reciente a la primera. Actualizado hoy, 15 de octubre, 16:25.</p>
+
+      <section th:if="${filtrado and lista.isEmpty()}" class="vacio" role="status"
+               aria-labelledby="sin-resultados">
+        <h2 id="sin-resultados">No hay donaciones con esos filtros.</h2>
+        <p>Probá con otras fechas, otro estado o categoría, o sacá los filtros.</p>
+        <a class="boton" data-tono="secundario" href="/donante-donaciones"
+           th:href="@{/donante-donaciones}">Sacar los filtros</a>
+      </section>
+
+      <svg th:replace="~{iconos :: categorias}"></svg>
+      <ul th:unless="${lista.isEmpty()}" class="lista huerta-lista" role="list">
+        <th:block th:each="i : ${antiguas ? #numbers.sequence(cuantas - 1, 0, -1) : #numbers.sequence(0, cuantas - 1)}"
+                  th:with="d=${lista[i]}">
+          <li th:replace="~{componentes/huerta :: planta(${d})}"></li>
+        </th:block>
+      </ul>
+
+      <div class="donaciones-pie">
+        <p>Las que están en curso también se ven en Seguimiento, con dónde va el camión. Cada una
+          cuenta para tus misiones.</p>
+        <div class="racimo">
+          <a class="boton" data-tono="secundario" href="/donante-seguimiento"
+             th:href="@{/donante-seguimiento}">Ver seguimiento</a>
+          <a class="boton" data-tono="secundario" href="/donante-misiones"
+             th:href="@{/donante-misiones}">Ver tus misiones</a>
+        </div>
+      </div>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

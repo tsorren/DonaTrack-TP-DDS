@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
@@ -19,12 +20,22 @@ public class DonacionEventListener {
   private static final Logger log = LoggerFactory.getLogger(DonacionEventListener.class);
   private final NotificacionService notificacionService;
   private final grupo5.notificaciones.services.mappers.PersonaMapper personaMapper;
+  private final ReintentoPersonaFaltante reintentoPersonaFaltante;
 
+  @Autowired
   public DonacionEventListener(
       NotificacionService notificacionService,
       grupo5.notificaciones.services.mappers.PersonaMapper personaMapper) {
+    this(notificacionService, personaMapper, ReintentoPersonaFaltante.porDefecto());
+  }
+
+  DonacionEventListener(
+      NotificacionService notificacionService,
+      grupo5.notificaciones.services.mappers.PersonaMapper personaMapper,
+      ReintentoPersonaFaltante reintentoPersonaFaltante) {
     this.notificacionService = notificacionService;
     this.personaMapper = personaMapper;
+    this.reintentoPersonaFaltante = reintentoPersonaFaltante;
   }
 
   // 1. Donación Asignada
@@ -73,16 +84,29 @@ public class DonacionEventListener {
     notificacionService.procesar(evento, messageId);
   }
 
-  // 6. Donante Registrado
+  // 6. Donante Registrado: si su persona todavía no se copió, vuelve a la cola con tope (R11-B08)
   @RabbitHandler
   public void onDonanteRegistrado(
       @Valid EventoDonanteRegistradoV1 evento,
       @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
     log.info("Consumiendo evento donante.registrado: donanteId={}", evento.donanteId());
+    reintentoPersonaFaltante.ejecutar(
+        () -> notificacionService.procesar(evento, messageId), evento.personaId(), messageId);
+  }
+
+  // 7. Importación terminada o cortada: el aviso es para la Administración (R11-30)
+  @RabbitHandler
+  public void onImportacionTerminada(
+      @Valid EventoImportacionTerminadaV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+    log.info(
+        "Consumiendo evento importacion.terminada.v1: archivoId={}, resultado={}",
+        evento.archivoId(),
+        evento.resultado());
     notificacionService.procesar(evento, messageId);
   }
 
-  // 7. Persona Sincronizada
+  // 8. Persona Sincronizada
   @RabbitHandler
   public void onPersonaSincronizada(
       @Valid EventoPersonaSincronizadaV1 evento,

@@ -15,6 +15,33 @@ const EXPECTED_SKILLS = [
   'review-pr',
 ];
 
+// Frontmatter (name + description) of a SKILL.md, or null.
+function frontmatter(file) {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---/.exec(fs.readFileSync(file, 'utf8'));
+  return match ? match[1].replace(/\r/g, '') : null;
+}
+
+// Every adapter in .claude/skills/ points to a canonical .agents/skills/ with the same frontmatter.
+function checkSkillAdapters(repoRoot) {
+  const adaptersDir = path.join(repoRoot, '.claude', 'skills');
+  if (!fs.existsSync(adaptersDir)) return [];
+  return fs.readdirSync(adaptersDir, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(({ name }) => {
+      const rel = `.claude/skills/${name}/SKILL.md`;
+      const canonical = path.join(repoRoot, '.agents', 'skills', name, 'SKILL.md');
+      const adapter = path.join(adaptersDir, name, 'SKILL.md');
+      if (!fs.existsSync(adapter) || !fs.existsSync(canonical)) {
+        return failed('SKILL_ADAPTER_SYNC', `${rel} needs its canonical .agents/skills/${name}/SKILL.md`, rel);
+      }
+      const own = frontmatter(adapter);
+      if (!own || own !== frontmatter(canonical)) {
+        return failed('SKILL_ADAPTER_SYNC', `${rel} frontmatter missing or different from .agents/skills/${name}/SKILL.md`, rel);
+      }
+      return passed('SKILL_ADAPTER_SYNC', `${name} adapter matches its canonical skill`);
+    });
+}
+
 function checkSkillsIntegrity(repoRoot) {
   const findings = [];
   const skillsDirRel = '.agents/skills';
@@ -27,6 +54,7 @@ function checkSkillsIntegrity(repoRoot) {
     return findings;
   }
   findings.push(passed('SKILLS_DIR_EXISTS', `${skillsDirRel} directory present`));
+  findings.push(...checkSkillAdapters(repoRoot));
 
   // 2. Check gitignore un-ignore rule
   if (fs.existsSync(gitignoreFull)) {
@@ -132,4 +160,4 @@ function checkSkillsIntegrity(repoRoot) {
   return findings;
 }
 
-module.exports = { checkSkillsIntegrity, EXPECTED_SKILLS };
+module.exports = { checkSkillsIntegrity, checkSkillAdapters, EXPECTED_SKILLS };

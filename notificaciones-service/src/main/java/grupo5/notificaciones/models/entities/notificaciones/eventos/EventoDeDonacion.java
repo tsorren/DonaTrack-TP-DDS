@@ -27,7 +27,7 @@ public abstract class EventoDeDonacion extends EventoNotificable {
   }
 
   @Override
-  public List<Notificacion> generarNotificaciones() {
+  protected List<Notificacion> crearNotificaciones() {
     Notificacion notificacionDonante =
         new Notificacion(this.getPersona().getId(), this.armarMensajeDonante(), this.getFecha());
 

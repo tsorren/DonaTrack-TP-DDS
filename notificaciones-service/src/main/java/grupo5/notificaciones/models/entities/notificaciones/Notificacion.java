@@ -27,16 +27,25 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
     implements Anonimizable {
   static final ZoneId ZONA_HORARIA = ZoneId.of("America/Argentina/Buenos_Aires");
 
-  private UUID id;
-  private UUID personaId;
+  private final UUID id;
+  private final UUID personaId;
   private String mensaje;
-  private LocalDateTime fechaCreacion;
+  private final LocalDateTime fechaCreacion;
   private EstadoNotificacion estadoNotificacion;
   private boolean leida;
   private LocalDateTime fechaLectura;
 
+  /**
+   * Tipo del evento que la originó ({@link TipoEvento}) o null: las anteriores a HB-09 no lo
+   * tienen.
+   */
+  private String tipoEvento;
+
+  /** La donación a la que se refiere, o null si el emisor no la informó. */
+  private UUID referenciaId;
+
   @Getter(AccessLevel.NONE)
-  private List<CambioEstadoNotificacion> historialEstado;
+  private final List<CambioEstadoNotificacion> historialEstado;
 
   public Notificacion(UUID personaId, String mensaje) {
     this(personaId, mensaje, LocalDateTime.now(ZONA_HORARIA));
@@ -88,6 +97,12 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
 
   public List<CambioEstadoNotificacion> getHistorialEstado() {
     return List.copyOf(this.historialEstado);
+  }
+
+  /** Marca de qué evento viene y a qué donación se refiere (HB-09). */
+  public void etiquetar(String tipoEvento, UUID referenciaId) {
+    this.tipoEvento = tipoEvento;
+    this.referenciaId = referenciaId;
   }
 
   public void actualizarEstado(EstadoNotificacion nuevoEstado) {

@@ -1,6 +1,7 @@
 package grupo5.donaciones.infrastructure.persistencia.entities.logistica;
 
 import grupo5.donaciones.services.logistica.EstadoEntradaOutbox;
+import grupo5.donaciones.services.logistica.TipoEntradaOutbox;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -47,4 +48,9 @@ public class OutboxLogisticaEntity {
 
   @Column(name = "max_intentos", nullable = false)
   private Integer maxIntentos;
+
+  // HB-19: pedido de entrega o su cancelación
+  @Enumerated(EnumType.STRING)
+  @Column(name = "tipo", nullable = false, length = 20)
+  private TipoEntradaOutbox tipo;
 }

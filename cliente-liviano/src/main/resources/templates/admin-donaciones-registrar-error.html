@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Raíces, Registrar donación con el error de datos, como lo devolvería el servidor: el resumen arriba recibe el foco y enlaza a cada campo; lo escrito sigue. ?escenario=inactivo: el donante está dado de baja (409 DONANTE_INACTIVO) (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.6). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Revisá los datos - Registrar donación - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-donaciones-registrar :: hoja(true)}"></th:block>
+</th:block>
+</body>
+</html>

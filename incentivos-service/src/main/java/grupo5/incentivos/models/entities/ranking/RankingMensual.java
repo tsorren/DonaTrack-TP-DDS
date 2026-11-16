@@ -3,6 +3,7 @@ package grupo5.incentivos.models.entities.ranking;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
+import java.time.Instant;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +13,11 @@ import lombok.Getter;
 @Getter
 public class RankingMensual implements AggregateRoot {
   private final UUID id;
-  private YearMonth periodo;
-  private List<EntradaRanking> entradas;
+  private final YearMonth periodo;
+  private final List<EntradaRanking> entradas;
+
+  /** Cuándo se calculó; falta en los rankings guardados antes de que existiera el dato. */
+  private final Instant calculadoEn;
 
   public RankingMensual(YearMonth periodo) {
     if (periodo == null) {
@@ -22,21 +26,24 @@ public class RankingMensual implements AggregateRoot {
     this.id = UUID.randomUUID();
     this.periodo = periodo;
     this.entradas = new ArrayList<>();
+    this.calculadoEn = Instant.now();
   }
 
-  private RankingMensual(UUID id, YearMonth periodo, List<EntradaRanking> entradas) {
+  private RankingMensual(
+      UUID id, YearMonth periodo, List<EntradaRanking> entradas, Instant calculadoEn) {
     if (periodo == null) {
       throw new ValidationException(ErrorCatalog.RANKING_PERIODO_NULO);
     }
     this.id = id;
     this.periodo = periodo;
     this.entradas = entradas != null ? new ArrayList<>(entradas) : new ArrayList<>();
+    this.calculadoEn = calculadoEn;
   }
 
   /** Reconstituye un ranking ya calculado (p. ej. desde la base) conservando su id. */
   public static RankingMensual reconstituir(
-      UUID id, YearMonth periodo, List<EntradaRanking> entradas) {
-    return new RankingMensual(id, periodo, entradas);
+      UUID id, YearMonth periodo, List<EntradaRanking> entradas, Instant calculadoEn) {
+    return new RankingMensual(id, periodo, entradas, calculadoEn);
   }
 
   public void agregarEntrada(EntradaRanking entrada) {

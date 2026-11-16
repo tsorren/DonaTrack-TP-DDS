@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<!--/* Pista de onboarding contextual. Se muestra como una ayuda breve y se puede cerrar; la
+       preferencia de cierre la guarda static/js/paneles.js en una cookie técnica, sin datos de negocio. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="pista(id, titulo, texto)" class="aviso-breve" data-pista role="note"
+       th:attr="data-pista-id=${id},aria-labelledby=${id + '-titulo'}">
+  <div>
+    <p class="rotulo">Para empezar</p>
+    <h2 th:id="${id + '-titulo'}" th:text="${titulo}">Una pista para empezar</h2>
+    <p th:text="${texto}">Acá vas a encontrar la información más importante de esta pantalla.</p>
+  </div>
+  <button class="boton" data-tono="secundario" data-tamano="chico" type="button"
+          data-pista-cerrar>Entendido</button>
+</aside>
+</body>
+</html>

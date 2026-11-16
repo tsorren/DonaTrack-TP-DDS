@@ -8,6 +8,7 @@ import grupo5.donaciones.dto.comunicaciones.EventoDonacionSegmentadaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionVencidaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
+import grupo5.donaciones.dto.comunicaciones.EventoImportacionTerminadaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 
 /**
@@ -33,4 +34,7 @@ public interface IDonacionesEventPublisher {
   void publicarPersonaSincronizada(EventoPersonaSincronizadaV1 evento);
 
   void publicarDonacionSegmentada(EventoDonacionSegmentadaV1 evento);
+
+  /** Terminó o se cortó una importación de donantes (R11-30). */
+  void publicarImportacionTerminada(EventoImportacionTerminadaV1 evento);
 }

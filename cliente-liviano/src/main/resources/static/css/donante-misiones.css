@@ -1,0 +1,98 @@
+/* Misiones e insignias de la persona que dona en Raíces (ficha raices-misiones): las insignias en
+   una fila que baja de renglón y las misiones de cada categoría en tarjetas, de a dos desde la
+   tableta. Hoja nueva: solo dispone, por id y sin clases propias; lo demás viene de las capas CUBE
+   (.tarjeta, .lista, .estado, .progreso, .racimo, .pila). */
+@import url("privado.css");
+
+/* El encabezado ocupa todo el ancho (regla general de la ronda del 2026-11-09); la bajada conserva
+   un largo de línea legible. */
+#misiones > header p {
+  max-width: 42rem;
+}
+
+#misiones h2 {
+  margin: 0 0 var(--espacio-3);
+}
+
+/* Las insignias: el sello grande y, debajo, su nombre y su fecha. */
+#insignias {
+  align-items: start;
+  padding: 0;
+}
+
+#insignias > li {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--espacio-1);
+  width: 8.5rem;
+  text-align: center;
+}
+
+#insignias .estado-sello {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+#insignias p {
+  margin: 0;
+}
+
+/* Las misiones de una categoría, con aire entre las tarjetas (usuaria, 2026-11-09: "no tienen
+   gutter en el medio"). */
+#misiones .lista {
+  --medida-columna: 22rem;
+  gap: var(--espacio-3);
+  margin-block-start: var(--espacio-3);
+}
+
+#misiones .lista .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-2);
+  height: 100%;
+}
+
+#misiones .tarjeta :is(h3, p) {
+  margin: 0;
+}
+
+/* La categoría completa, plegada: el desplegable es una tarjeta con su resumen como renglón tocable;
+   abierto, las misiones adentro. */
+#misiones details[data-categoria="completa"] {
+  --espacio-relleno: var(--espacio-3);
+}
+
+#misiones details[data-categoria="completa"] > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: var(--medida-toque-minimo);
+  cursor: pointer;
+}
+
+#misiones details[data-categoria="completa"] > summary span {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+/* Lo que viene: solo el nombre y cuándo se abre, junto al sello pendiente. */
+#misiones section[data-categoria="despues"] {
+  --espacio-relleno: var(--espacio-3);
+
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+#misiones section[data-categoria="despues"] .estado-sello {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+#misiones section[data-categoria="despues"] :is(h2, p) {
+  margin: 0;
+}

@@ -8,9 +8,13 @@ import grupo5.donaciones.dto.comunicaciones.EventoDonacionSegmentadaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionVencidaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaCancelada;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaCanceladaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaEnPuerta;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaSolicitadaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoImportacionTerminadaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
@@ -41,6 +45,8 @@ public class RabbitMQConfig {
   public static final String QUEUE_RUTA_INICIADA = "donaciones.ruta.iniciada";
   public static final String QUEUE_ENTREGA_EXITOSA = "donaciones.entrega.exitosa";
   public static final String QUEUE_ENTREGA_FALLIDA = "donaciones.entrega.fallida";
+  public static final String QUEUE_ENTREGA_CANCELADA = "donaciones.entrega.cancelada";
+  public static final String QUEUE_ENTREGA_EN_PUERTA = "donaciones.entrega.en-puerta";
 
   // Routing Keys emitidas hacia donaciones.exchange
   public static final String ROUTING_KEY_DONACION_SEGMENTADA = "donacion.segmentada.v1";
@@ -52,10 +58,14 @@ public class RabbitMQConfig {
   public static final String ROUTING_KEY_DONANTE_REGISTRADO = "donante.registrado.v1";
   public static final String ROUTING_KEY_DONANTE_DADO_DE_BAJA = "donante.dado-de-baja.v1";
   public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
+  public static final String ROUTING_KEY_IMPORTACION_TERMINADA = "importacion.terminada.v1";
 
   // Comando dirigido a un proveedor de logística: entrega.solicitada.<proveedorId>.v1. El alias de
   // tipo es fijo y no depende del proveedor, para que el mapeo clase -> __TypeId__ no sea ambiguo.
   public static final String TYPE_ID_ENTREGA_SOLICITADA = "entrega.solicitada.v1";
+
+  // HB-19: segundo comando del broker, entrega.cancelada.<proveedorId>.v1, con su alias fijo
+  public static final String TYPE_ID_ENTREGA_CANCELADA = "entrega.cancelada.v1";
 
   // Identidad de quien publica un evento de vuelta en logistica.exchange: el id del proveedor y
   // un token propio de ese proveedor (donatrack.logistica.proveedor.<id>.token-vuelta).
@@ -64,6 +74,10 @@ public class RabbitMQConfig {
 
   public static String routingKeyEntregaSolicitada(String proveedorId) {
     return "entrega.solicitada." + proveedorId + ".v1";
+  }
+
+  public static String routingKeyEntregaCancelada(String proveedorId) {
+    return "entrega.cancelada." + proveedorId + ".v1";
   }
 
   // --- Exchanges ---
@@ -119,6 +133,32 @@ public class RabbitMQConfig {
     return BindingBuilder.bind(queueEntregaFallida).to(logisticaExchange).with("entrega.fallida");
   }
 
+  @Bean
+  public Queue queueEntregaCancelada() {
+    return new Queue(QUEUE_ENTREGA_CANCELADA, true);
+  }
+
+  @Bean
+  public Binding bindingEntregaCancelada(
+      Queue queueEntregaCancelada, TopicExchange logisticaExchange) {
+    return BindingBuilder.bind(queueEntregaCancelada)
+        .to(logisticaExchange)
+        .with("entrega.cancelada");
+  }
+
+  @Bean
+  public Queue queueEntregaEnPuerta() {
+    return new Queue(QUEUE_ENTREGA_EN_PUERTA, true);
+  }
+
+  @Bean
+  public Binding bindingEntregaEnPuerta(
+      Queue queueEntregaEnPuerta, TopicExchange logisticaExchange) {
+    return BindingBuilder.bind(queueEntregaEnPuerta)
+        .to(logisticaExchange)
+        .with("entrega.en-puerta");
+  }
+
   // --- Serialización JSON y Templates ---
   @Bean
   public DefaultClassMapper classMapper() {
@@ -134,11 +174,15 @@ public class RabbitMQConfig {
     idClassMapping.put(ROUTING_KEY_DONANTE_REGISTRADO, EventoDonanteRegistradoV1.class);
     idClassMapping.put(ROUTING_KEY_DONANTE_DADO_DE_BAJA, EventoDonanteDadoDeBajaV1.class);
     idClassMapping.put(ROUTING_KEY_PERSONA_SINCRONIZADA, EventoPersonaSincronizadaV1.class);
+    idClassMapping.put(ROUTING_KEY_IMPORTACION_TERMINADA, EventoImportacionTerminadaV1.class);
     idClassMapping.put(TYPE_ID_ENTREGA_SOLICITADA, EventoEntregaSolicitadaV1.class);
+    idClassMapping.put(TYPE_ID_ENTREGA_CANCELADA, EventoEntregaCanceladaV1.class);
     idClassMapping.put("ruta.asignada", EventoRutaAsignada.class);
     idClassMapping.put("ruta.iniciada", EventoRutaIniciada.class);
     idClassMapping.put("entrega.exitosa", EventoEntregaExitosa.class);
     idClassMapping.put("entrega.fallida", EventoEntregaFallida.class);
+    idClassMapping.put("entrega.cancelada", EventoEntregaCancelada.class);
+    idClassMapping.put("entrega.en-puerta", EventoEntregaEnPuerta.class);
     classMapper.setIdClassMapping(idClassMapping);
     return classMapper;
   }

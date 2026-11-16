@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<!--/* Raíces A, el detalle de una donación de la empresa, según la ficha
+       docs/interfaz/flujos/raices-donante-navegable.md. ?donacion=<clave>: los datos vienen del
+       controller (detalle: de la maqueta, con las claves de viaje-datos, o de Donaciones, con el id);
+       sin parámetro, la maqueta muestra lentejas (la que va en camino); una clave que no está, o una
+       donación de otro donante, muestra "No encontramos esa donación". Arriba, qué es, para quién
+       y su estado, y "Ver dónde está" si va en curso. Las etapas son la raíz de esta donación, de arriba abajo: lo cumplido impreso, lo que falta hueco
+       (la imagen de raíz de la pantalla). Al lado, la prueba: la foto de la entidad si llegó, o el
+       marco sin imprimir que dice qué falta y quién la sube; la etiqueta de herbario con los datos;
+       y las noticias de esta donación. ?escenario=error y lento. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-donaciones-detalle', ~{::contenido})}">
+<head>
+  <title>Detalle de la donación - Mis donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{datos-donante :: donante(~{::cuerpo})}"></th:block>
+</th:block>
+
+<th:block th:fragment="cuerpo"
+    th:with="d=${detalle == null ? null : detalle.donacion},
+             destino=${d == null ? null : d.destino},
+             enCurso=${destino != null and d.estado.tono != 'entregada'}">
+  <div class="detalle">
+    <a class="volver" href="/donante-donaciones"
+       th:href="@{/donante-donaciones}">Volver a Mis donaciones</a>
+
+    <!--/* No encontrada: el aviso, sin datos. */-->
+    <th:block th:if="${d == null}">
+      <p class="rotulo" th:text="${seccion}">Mis donaciones</p>
+      <h1>No encontramos esa donación.</h1>
+      <p class="bajada">Puede que el enlace esté incompleto. Buscala en Mis donaciones.</p>
+      <a class="boton" data-tono="secundario" href="/donante-donaciones"
+         th:href="@{/donante-donaciones}">Volver a Mis donaciones</a>
+    </th:block>
+
+    <th:block th:if="${d != null}">
+      <header class="detalle-cabecera">
+        <p class="rotulo" th:text="${seccion}">Mis donaciones</p>
+        <h1 th:text="${d.titulo}">Lentejas secas</h1>
+        <th:block th:if="${escenario == ''}">
+          <p class="bajada" th:text="${destino == null} ? |${d.cantidad}, todavía sin destino| : |${d.cantidad} para ${destino}|">15
+            kg para Comedor Barrio Ejemplo</p>
+          <p class="detalle-estado">
+            <span class="estado" th:data-estado="${d.estado.tono}">
+              <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
+              <span th:text="${d.estado.texto}">En camino</span>
+            </span>
+            <span th:text="${d.nota}">Salió
+              hoy a las 14:30</span>
+          </p>
+          <a th:if="${enCurso}" class="boton" data-tono="principal" href="/donante-seguimiento"
+             th:href="@{/donante-seguimiento(donacion=${d.clave})}">Ver dónde está</a>
+        </th:block>
+      </header>
+
+      <th:block th:if="${escenario == 'error'}">
+        <section th:replace="~{datos-donante :: error('No pudimos cargar esta donación.', |/donante-donaciones-detalle?donacion=${d.clave}|)}"></section>
+      </th:block>
+
+      <th:block th:if="${escenario == 'lento'}">
+        <p class="cargando" role="status">Cargando la donación…</p>
+        <div class="detalle-cuerpo" aria-busy="true">
+          <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+          <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+          <div class="esqueleto" data-forma="punteado"></div>
+        </div>
+      </th:block>
+
+      <th:block th:if="${escenario == ''}">
+        <!--/* Con problema: qué pasó, la última noticia y la nueva salida, sin alarma. */-->
+        <section th:if="${detalle.problema}" class="tarjeta lamina demora"
+                 aria-labelledby="demora-titulo">
+          <h2 id="demora-titulo" th:text="${detalle.problema.titulo}">No pudo llegar a Escuela
+            Ejemplo N.º 12.</h2>
+          <p th:text="${detalle.problema.texto}">El camino estaba cortado. Sale de nuevo el 17 de
+            octubre. Última noticia: 11 de octubre, 16:10.</p>
+        </section>
+
+        <div class="detalle-cuerpo">
+          <section class="detalle-etapas" aria-labelledby="etapas-titulo">
+            <h2 id="etapas-titulo">Cada paso de esta donación</h2>
+            <!--/* La raíz: lo hecho, un disco paja con el tilde; la actual, el sello del estado; lo que
+                   falta, un círculo hueco, y la raíz hacia él, hueca: todavía no se imprimió. */-->
+            <ol class="raiz" role="list" th:aria-label="|Etapas de ${d.titulo}|">
+              <li th:each="p : ${detalle.pasos}" class="raiz-paso"
+                  th:classappend="|raiz-paso--${p.avance.tono()}|"
+                  th:aria-current="${p.avance.tono() == 'actual'} ? 'step' : null">
+                <th:block th:if="${p.avance.tono() == 'hecho'}"><th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block></th:block>
+                <th:block th:if="${p.avance.tono() == 'actual'}">
+                  <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
+                </th:block>
+                <th:block th:if="${p.avance.tono() == 'pendiente'}"><th:block th:replace="~{componentes/sello :: sello('falta')}"></th:block></th:block>
+                <span class="raiz-nombre" th:text="${p.nombre}">En camino</span>
+                <span class="raiz-detalle" th:text="${p.detalle}">Hoy, 14:30</span>
+              </li>
+            </ol>
+          </section>
+
+          <section class="detalle-foto" aria-labelledby="foto-titulo">
+            <h2 id="foto-titulo">La foto de la organización</h2>
+            <figure th:if="${detalle.foto}" class="tarjeta foto">
+              <img src="/img/ejemplo-entrega.svg" th:src="@{${detalle.foto}}" th:alt="${detalle.fotoAlt}"
+                   alt="Cajas con la ropa de abrigo junto a la puerta del merendero" width="640" height="400">
+              <figcaption th:text="${detalle.pieFoto}">Merendero Ejemplo Sur confirmó la entrega el 9
+                de octubre y subió esta foto.</figcaption>
+            </figure>
+            <!--/* Entregada sin foto: lo que confirmó la entidad, sin decir que falta. */-->
+            <p th:if="${detalle.foto == null and detalle.pieFoto != null}" class="foto-falta"
+               th:text="${detalle.pieFoto}">Comedor Barrio Ejemplo confirmó la entrega el 5 de
+              octubre.</p>
+            <p th:if="${detalle.foto == null and detalle.pieFoto == null}" class="foto-falta"
+               th:text="${destino == null}
+                 ? 'Todavía sin destino: espera una necesidad que le corresponda. Cuando se le asigne una organización, vas a ver acá a cuál y cuándo sale.'
+                 : |Falta confirmar la entrega: la confirma ${destino} con la foto.|">Falta confirmar la
+              entrega: la confirma Comedor Barrio Ejemplo con la foto.</p>
+          </section>
+
+          <svg th:replace="~{iconos :: categorias}"></svg>
+
+          <section class="tarjeta detalle-datos etiqueta-datos" data-filete="doble" aria-labelledby="datos-titulo">
+            <h2 id="datos-titulo">
+              <svg th:if="${d.icono}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                <use href="#cat-alimentos" th:href="|#${d.icono}|"/>
+              </svg>
+              Los datos
+            </h2>
+            <dl>
+              <div><dt>Donación</dt><dd th:text="|N.º ${d.numero}|">N.º 5</dd></div>
+              <div><dt>Qué</dt><dd th:text="${d.titulo}">Lentejas secas</dd></div>
+              <div><dt>Cuánto</dt><dd th:text="${d.cantidad}">15 kg</dd></div>
+              <div th:if="${d.categoriaTexto}"><dt>Categoría</dt>
+                <dd th:text="${d.categoriaTexto}">Alimentos</dd></div>
+              <div><dt>Para</dt><dd th:text="${destino ?: 'Todavía sin destino'}">Comedor Barrio Ejemplo</dd></div>
+              <div><dt>Donada</dt><dd th:text="${d.donada}">12 de octubre de 2026</dd></div>
+              <div th:if="${detalle.llego}"><dt>Entregada</dt><dd th:text="${detalle.llego}">9 de octubre de 2026</dd></div>
+              <!--/* Con datos reales, quienDono.nombreVisible; si el donante lo ocultó, no se muestra. */-->
+              <div th:if="${detalle.figuraComo}" class="datos-figura"><dt>Figura como</dt>
+                <dd><span th:text="${detalle.figuraComo}">Distribuidora Ejemplo SA</span>
+                  <a href="/donante-perfil" th:href="@{/donante-perfil}">Cambialo
+                    en Mi perfil</a></dd></div>
+            </dl>
+          </section>
+
+          <section class="detalle-noticias" aria-labelledby="noticias-titulo">
+            <h2 id="noticias-titulo">Noticias de esta donación</h2>
+            <p class="nota">De la más nueva a la primera.</p>
+            <ol class="noticias" role="list">
+              <li th:each="c : ${detalle.noticias}" class="noticia">
+                <time class="noticia-cuando" th:datetime="${c.fecha}" th:text="${c.cuando}">Hoy,
+                  14:30</time>
+                <span class="noticia-texto" th:text="${c.texto}">El
+                  camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</span>
+              </li>
+            </ol>
+          </section>
+        </div>
+      </th:block>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

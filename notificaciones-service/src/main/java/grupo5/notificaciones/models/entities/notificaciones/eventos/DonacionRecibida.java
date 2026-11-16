@@ -1,5 +1,6 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
+import grupo5.notificaciones.models.entities.notificaciones.TipoEvento;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -43,5 +44,10 @@ public class DonacionRecibida extends EventoDeDonacion {
         + getFecha().format(FORMATO_COMPROBANTE)
         + " - camión "
         + patenteCamion;
+  }
+
+  @Override
+  public TipoEvento tipoEvento() {
+    return TipoEvento.DONACION_RECIBIDA;
   }
 }

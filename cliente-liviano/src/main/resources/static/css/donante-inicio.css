@@ -1,0 +1,404 @@
+/* El inicio de la empresa donante, con la composición de la variante K (2026-11-08): las piezas son
+   del componente huerta (la fila de cifras, las láminas, la tierra con las raíces y el recorrido) y
+   de noticias; acá, solo dónde va cada una. */
+@import url("donante-comun.css");
+
+.inicio-cuerpo {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.hito {
+  margin: 0.75rem 0 0;
+  font-size: 0.9375rem;
+}
+
+/* Las láminas, de a dos en el celular y de al menos 12 rem desde la tableta. */
+.huerta .lista {
+  --medida-columna: 9rem;
+  column-gap: 1rem;
+}
+
+/* Las raíces y las noticias, lado a lado cuando entran, siempre del mismo alto (usuario,
+   2026-11-09): la fila se estira a la más alta y las dos la llenan. */
+.inicio-cuerpo > .grilla {
+  --medida-grilla: 22rem;
+  gap: 1.75rem;
+  align-items: stretch;
+}
+
+
+@media (min-width: 37.5em) {
+  .huerta .lista {
+    --medida-columna: 12rem;
+    column-gap: 1.5rem;
+  }
+}
+
+/* El saludo a la izquierda y las acciones a la derecha (usuario, 2026-11-08). */
+@media (min-width: 53.75em) {
+  .inicio-cabecera {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 2rem;
+    align-items: end;
+  }
+
+  .inicio-cabecera > .racimo {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: end;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Con la fila estirada, el dibujo de las raíces arriba y su texto abajo. */
+.inicio-cuerpo > .grilla > .huerta-tierra--caja {
+  align-content: space-between;
+}
+
+/* --- La empresa: el mes en cuatro preguntas (era la prueba inicio-empresa-a, elegida el
+   2026-11-09) ------------------------------------------------------------------------------------ */
+[data-v="inicio-empresa"] .inicio-cuerpo {
+  gap: 3rem;
+}
+
+/* 1. Las cifras con su dibujo, plantadas en la misma línea de suelo. */
+[data-v="frutos"] {
+  display: grid;
+  gap: 1.25rem;
+}
+
+[data-v="frutos"] .huerta-cifras {
+  gap: 1.5rem 2rem;
+}
+
+[data-v="frutos"] .huerta-cifra {
+  grid-template-columns: minmax(4.5rem, 6.5rem) minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  min-height: 10rem;
+  padding: 0 0 1.375rem;
+  background-position: 0 100%;
+}
+
+/* Los dibujos a escala, como las láminas (2026-11-09, tarde): el alto sale de sus unidades
+   (--medida-alto, del componente huerta) por una misma escala; el dibujo apoya en la línea de suelo
+   (a 10 rem). El árbol, el más alto, mide 278 unidades: entra justo. */
+[data-v="frutos"] {
+  --medida-escala: 0.56px;
+}
+
+[data-v="frutos"] .huerta-cifra img[data-dibujo] {
+  grid-row: 1 / span 2;
+  width: auto;
+  max-width: 100%;
+  height: calc(var(--medida-alto) * var(--medida-escala));
+  margin: 0 auto;
+}
+
+[data-v="frutos"] .huerta-cifra img + b {
+  margin-top: 0;
+}
+
+/* 2. El tablero: tres columnas, cada una con el color de su estado en la cabeza. */
+[data-v="tablero"] {
+  display: grid;
+  gap: 1rem;
+}
+
+[data-v="tablero"] .grilla {
+  --medida-grilla: 18rem;
+  gap: 1.75rem;
+  align-items: stretch;
+}
+
+/* Cada columna, de arriba abajo: la cabeza, la lista (hasta 3) y el pie, que apoya abajo y queda a
+   la misma altura en las tres (la fila se estira a la más alta). Ficha r11-p2-tablero, §4.1. */
+[data-v="columna"] {
+  --espacio-relleno: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Con más de una página, la lista reserva el alto de 3 donaciones (3 marcos de 4,5 rem y los dos
+   filetes con su aire): en la última página, con 1 o 2, el paginador no sube bajo el dedo. */
+[data-v="columna"][data-paginas] > ul {
+  min-height: calc(3 * 4.5rem + 2 * (0.875rem + 0.875rem + 1px));
+}
+
+[data-v="columna"] .banner {
+  margin: 0;
+}
+
+/* Las que esperan destino: sobre el pie, separadas por el filete. */
+[data-v="esperan"] {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: auto;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--color-filete);
+}
+
+[data-v="esperan"] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-weight: 800;
+}
+
+[data-v="esperan"] span {
+  font-size: 0.875rem;
+}
+
+[data-v="pie-columna"] {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+[data-v="esperan"] + [data-v="pie-columna"] {
+  margin-top: 0;
+}
+
+[data-v="pie-columna"] p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+[data-v="columna"] h3 {
+  align-self: flex-start;
+  margin: 0;
+  padding: 0.375rem 0.875rem;
+  border-radius: 999px;
+  background: var(--color-pendiente-fondo);
+  color: var(--color-pendiente-texto);
+  font: 800 1rem/1.2 var(--fuente-titulo);
+  font-stretch: 112%;
+}
+
+[data-v="columna"][data-estado="entregada"] h3 {
+  background: var(--color-entregada-fondo);
+  color: var(--color-entregada-texto);
+}
+
+[data-v="columna"][data-estado="en-camino"] h3 {
+  background: var(--color-en-camino-fondo);
+  color: var(--color-en-camino-texto);
+}
+
+[data-v="columna"][data-estado="con-problema"] h3 {
+  background: var(--color-problema-fondo);
+  color: var(--color-problema-texto);
+}
+
+[data-v="columna"] > ul {
+  display: grid;
+  align-content: start;
+  gap: 0.875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Cada donación: su dibujo en un marco redondeado a la izquierda, el nombre y qué pasó. */
+[data-v="columna"] > ul > li {
+  display: grid;
+  grid-template-columns: 3.75rem minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 0.875rem;
+  align-items: center;
+}
+
+[data-v="columna"] > ul > li + li {
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--color-filete);
+}
+
+/* El marco mide siempre 3,75 × 4,5 rem; el dibujo, a escala (la misma para todos), apoya abajo:
+   la maceta queda igual en todas y la planta crece. */
+[data-v="columna"] {
+  --medida-escala: 0.26px;
+}
+
+[data-v="columna"] > ul > li img {
+  grid-row: 1 / span 2;
+  width: 3.75rem;
+  height: 4.5rem;
+  padding: calc(4.25rem - var(--medida-alto, 230) * var(--medida-escala)) 0.25rem 0.25rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-papel);
+  object-fit: contain;
+  object-position: bottom;
+}
+
+[data-v="columna"] > ul > li a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-tinta);
+  font-weight: 800;
+  text-underline-offset: 0.2em;
+}
+
+[data-v="columna"] > ul > li span {
+  align-self: start;
+  font-size: 0.9375rem;
+}
+
+/* 4. Lo acumulado: las raíces y las noticias, siempre del mismo alto. */
+[data-v="acumulado"] {
+  --medida-grilla: 22rem;
+  gap: 1.75rem;
+  align-items: stretch;
+}
+
+[data-v="acumulado"] > .huerta-tierra--caja {
+  align-content: space-between;
+}
+
+[data-v="inicio-empresa"] > .inicio-cabecera {
+  margin-bottom: 2.5rem;
+}
+
+[data-v="frutos"] .hito {
+  margin: 0;
+}
+
+/* --- Últimas noticias: una línea de tiempo (era la prueba noticias-a, rehecha el 2026-11-09) -----
+   La bolita de cada noticia va a la altura de la primera línea del título (el título tiene
+   interlineado fijo de 1,5 rem y la bolita, 1 rem: 0,25 rem más abajo que el renglón). Debajo del
+   título, discretos y en un solo renglón: "Sin leer" (solo si lo está; la leída lo dice para el
+   lector), cuándo y de qué donación. "Ver todas", al final de la tile. */
+.noticias-inicio {
+  grid-template-rows: auto 1fr auto;
+  align-content: stretch;
+}
+
+.noticias-inicio .noticias {
+  align-self: start;
+  gap: 1.75rem;
+  margin: 0.25rem 0 0;
+  padding-left: 1.75rem;
+}
+
+/* El hilo, de cada bolita a la siguiente: termina en la última. */
+.noticias-inicio .noticia:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 1.5rem;
+  bottom: -2rem;
+  left: calc(-1.75rem + 0.4375rem);
+  border-left: 2px dotted var(--color-tinta-suave);
+}
+
+.noticias-inicio .noticia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.375rem 0;
+  padding: 0;
+  border-bottom: 0;
+}
+
+/* La bolita: llena con su anillo si está sin leer; hueca si ya se leyó. */
+.noticias-inicio .noticia::before,
+.noticias-inicio .noticia--sin-leer::before {
+  content: "";
+  position: absolute;
+  top: 0.25rem;
+  left: -1.75rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--color-superficie);
+  box-shadow: inset 0 0 0 2px var(--color-tinta-suave), 0 0 0 0.25rem var(--color-superficie);
+}
+
+.noticias-inicio .noticia--sin-leer::before {
+  background: var(--color-acento);
+  box-shadow: 0 0 0 0.25rem var(--color-superficie), 0 0 0 0.375rem var(--color-acento-claro);
+}
+
+.noticias-inicio .noticia-texto {
+  display: -webkit-box;
+  flex: 1 1 100%;
+  order: 1;
+  /* 48 px de toque aunque la noticia entre en una línea (piso del gate visual). */
+  min-height: var(--medida-toque-minimo);
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  text-underline-offset: 0.3em;
+}
+
+/* Toda la noticia es el toque del enlace (al menos 3 rem de alto). */
+.noticias-inicio .noticia {
+  min-height: var(--medida-toque-minimo);
+}
+
+.noticias-inicio .noticia-texto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.noticias-inicio .noticia-estado {
+  display: none;
+}
+
+/* El renglón de abajo: "Sin leer", cuándo y de qué donación, separados por un punto. */
+.noticias-inicio :is(.noticia-marca, .noticia-cuando, .noticia-donacion) {
+  color: var(--color-tinta-suave);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.noticias-inicio .noticia-marca {
+  order: 2;
+  padding: 0;
+  background: none;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.noticias-inicio .noticia--sin-leer .noticia-marca {
+  background: none;
+  color: var(--color-acento-hondo);
+}
+
+.noticias-inicio .noticia:not(.noticia--sin-leer) .noticia-marca {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.noticias-inicio .noticia-cuando {
+  order: 3;
+}
+
+.noticias-inicio .noticia--sin-leer .noticia-cuando::before,
+.noticias-inicio .noticia-donacion::before {
+  content: "\00a0·\00a0";
+}
+
+.noticias-inicio .noticia-donacion {
+  order: 4;
+}
+
+.noticias-todas {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: var(--medida-toque-minimo);
+  font-weight: 700;
+}

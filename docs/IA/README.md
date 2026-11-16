@@ -76,9 +76,14 @@ Las skills viven en `.agents/skills/` (detalle en [`../context-index.md`](../con
 | [`implementation-review`](../../.agents/skills/implementation-review/SKILL.md) | Revisión adversarial de código (V1–V9). |
 | [`review-pr`](../../.agents/skills/review-pr/SKILL.md) | Review de PRs con GrepAI. |
 | [`explain-concept`](../../.agents/skills/explain-concept/SKILL.md) | Mentoría conceptual. |
+| [`construir-ui`](../../.agents/skills/construir-ui/SKILL.md) | Construcción de pantallas y componentes con el sistema visual cerrado. |
+| [`revisar-ui`](../../.agents/skills/revisar-ui/SKILL.md) | Revisión de la interfaz entre pantallas (U1–U7), en solo lectura. |
+| [`explorar-ui`](../../.agents/skills/explorar-ui/SKILL.md) | Exploración de alternativas en ejes de producto, sin ranking. |
 
 ### Histórico
 
+- [`history/harness-ui-2026-11/`](./history/harness-ui-2026-11/README.md)  
+  Harness de interfaz anterior a la opción A (7 skills de UI, los workflows `corrida-creativa.js` y `backlog-r11.js`, y las plantillas de encargo), archivado el 2026-11-15. No describe las reglas vigentes.
 - [`history/AGENTS-v3.5.md`](./history/AGENTS-v3.5.md)  
   Versión 3.5 de `AGENTS.md`, conservada como referencia histórica (base de la comparación A/B de los evals). No describe las reglas vigentes.
 
@@ -131,6 +136,14 @@ Los prompts se encuentran en [`prompts/`](./prompts/).
 
 - [`prompts/retrospectiva.md`](./prompts/retrospectiva.md)  
   Para analizar feedback del equipo después de un caso piloto o cierre de etapa.
+
+### Orquestación de la interfaz
+
+- [`prompts/orquestacion-oleada-ui.md`](./prompts/orquestacion-oleada-ui.md)  
+  Para correr una oleada de pantallas con el workflow `oleada-ui`, desde un manifiesto `oleada-ui/1` en el que cada decisión del usuario va a un lote o queda diferida con su OK.
+
+- [`prompts/orquestacion-backlog-r11.md`](./prompts/orquestacion-backlog-r11.md)  
+  Histórico: la orquestación del backlog de la revisión del 2026-11-11, con el workflow `backlog-r11`, ya archivado.
 
 ---
 

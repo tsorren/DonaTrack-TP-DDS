@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Raíces, la donación después de marcarla como vencida (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.5). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Marcada como vencida - Donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-donaciones :: hoja('vencida')}"></th:block>
+</th:block>
+</body>
+</html>

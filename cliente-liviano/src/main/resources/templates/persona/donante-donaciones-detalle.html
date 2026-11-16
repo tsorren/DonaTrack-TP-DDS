@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<!--/* El detalle de una donación de la persona que dona (Martina Ruiz): la misma pantalla que la de
+       la empresa (donante-donaciones-detalle :: cuerpo), con los datos de la persona
+       (persona/datos-persona). ?donacion=<clave> con las claves de esos datos; sin parámetro, las
+       lentejas (la primera que donó; los enlaces siempre llevan la clave). ?escenario=error y lento, como la de la empresa. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-donaciones-detalle', ~{::contenido})}">
+<head>
+  <title>Detalle de la donación - Mis donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{persona/datos-persona :: persona(~{::cuerpo})}"></th:block>
+</th:block>
+
+<th:block th:fragment="cuerpo">
+  <th:block th:replace="~{donante-donaciones-detalle :: cuerpo}"></th:block>
+</th:block>
+</body>
+</html>

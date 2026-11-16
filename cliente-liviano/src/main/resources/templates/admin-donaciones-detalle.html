@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!--/* Raíces, el detalle de una donación del admin (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.5). ?donacion=<clave>; ?escenario=cambio, el 409 al marcarla vencida. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
+<head>
+  <title>Detalle - Donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{admin-donaciones :: hoja('detalle')}"></th:block>
+</th:block>
+</body>
+</html>

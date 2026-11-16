@@ -2,6 +2,8 @@ package grupo5.donaciones.infrastructure.logistica;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaCancelada;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaEnPuerta;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
@@ -9,12 +11,15 @@ import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.infrastructure.idempotency.EventoConsumido;
 import grupo5.donaciones.infrastructure.idempotency.IEventosConsumidosRepository;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
+import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import grupo5.donaciones.services.logistica.IProcesadorEventosLogistica;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,12 +39,15 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
 
   private static final Logger log = LoggerFactory.getLogger(ProcesadorEventosLogistica.class);
   private static final String ACTOR = "logistica-service";
+  private static final String EN_PUERTA = "EntregaEnPuerta";
   private static final int MAX_INTENTOS_POR_CONFLICTO = 3;
+  private static final Runnable NADA = () -> {};
   private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Argentina/Buenos_Aires");
 
   private final IDonacionesIndependientesService donacionesIndependientesService;
   private final IEventosConsumidosRepository eventosConsumidosRepository;
   private final IDonacionesIndependientesRepository donacionesIndependientesRepository;
+  private final ILogisticaBroker broker;
   // Nulo en el perfil en memoria, que no tiene base ni transacciones
   private final TransactionTemplate transacciones;
 
@@ -47,10 +55,12 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
       IDonacionesIndependientesService donacionesIndependientesService,
       IEventosConsumidosRepository eventosConsumidosRepository,
       IDonacionesIndependientesRepository donacionesIndependientesRepository,
+      ILogisticaBroker broker,
       ObjectProvider<PlatformTransactionManager> transactionManager) {
     this.donacionesIndependientesService = donacionesIndependientesService;
     this.eventosConsumidosRepository = eventosConsumidosRepository;
     this.donacionesIndependientesRepository = donacionesIndependientesRepository;
+    this.broker = broker;
     PlatformTransactionManager manager = transactionManager.getIfAvailable();
     this.transacciones = manager != null ? new TransactionTemplate(manager) : null;
   }
@@ -98,13 +108,38 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
         evento.donacionIndependienteId(),
         evento.patenteCamion());
 
+    UUID donacionId = evento.donacionIndependienteId();
+    Double cantidadRecibida = evento.reporte() != null ? evento.reporte().cantidadRecibida() : null;
+    List<String> fotosPublicables = fotosPublicables(evento);
     aplicarCambioEstado(
-        evento.donacionIndependienteId(),
+        donacionId,
         new CambioEstadoDonacionIndependienteRequestDTO(
             TipoEstadoDonacion.ENTREGADA, null, null, null, evento.patenteCamion(), null),
         "EntregaExitosa",
         origen,
-        evento.entregaId());
+        evento.entregaId(),
+        () -> {
+          if (cantidadRecibida != null) {
+            donacionesIndependientesService.registrarCantidadRecibida(donacionId, cantidadRecibida);
+          }
+          if (!fotosPublicables.isEmpty()) {
+            donacionesIndependientesService.registrarFotosDeRecepcion(
+                donacionId, evento.fechaEntrega(), fotosPublicables);
+          }
+        });
+  }
+
+  /**
+   * Fotos que pueden salir en las destacadas (HB-01): ninguna si la entrega llegó con reporte (ADR
+   * de entregas con problema, 2026-11-08) o si el mensaje no trae fecha.
+   */
+  private static List<String> fotosPublicables(EventoEntregaExitosa evento) {
+    if (evento.reporte() != null
+        || evento.fechaEntrega() == null
+        || evento.fotosRecepcion() == null) {
+      return List.of();
+    }
+    return evento.fotosRecepcion().stream().filter(f -> f != null && !f.isBlank()).toList();
   }
 
   @Override
@@ -129,6 +164,97 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
   }
 
   /**
+   * HB-19: Logística confirmó que canceló la entrega (no había salido). La donación vuelve a {@code
+   * EN_DEPOSITO} sin destino y la solicitud se cierra, en la misma transacción que el registro del
+   * evento. Si la donación ya salió (perdió la carrera con {@code ruta.iniciada}), no se toca.
+   */
+  @Override
+  public void procesarEntregaCancelada(EventoEntregaCancelada evento, String origen) {
+    UUID donacionId = evento.donacionIndependienteId();
+    log.info(
+        "Evento EntregaCancelada recibido: donacionId={}, motivo={}", donacionId, evento.motivo());
+    try {
+      conReintentoPorConflicto(
+          () -> {
+            if (eventosConsumidosRepository.yaFueConsumido(
+                "EntregaCancelada", evento.entregaId(), donacionId)) {
+              log.info("Evento duplicado ignorado: EntregaCancelada de la donación {}", donacionId);
+              return;
+            }
+            donacionesIndependientesRepository
+                .findById(donacionId)
+                .filter(DonacionIndependiente::esCancelable)
+                .ifPresentOrElse(
+                    donacion -> {
+                      donacion.liberarPorCancelacion(ACTOR);
+                      donacionesIndependientesRepository.save(donacion);
+                      broker.registrarCancelacionConfirmada(donacionId);
+                    },
+                    () ->
+                        log.warn(
+                            "La donación {} ya no está esperando salir: la cancelación no la"
+                                + " cambia",
+                            donacionId));
+            eventosConsumidosRepository.registrar(
+                new EventoConsumido(
+                    UUID.randomUUID(),
+                    "EntregaCancelada",
+                    origen,
+                    evento.entregaId(),
+                    donacionId,
+                    LocalDateTime.now(ZONA_HORARIA)));
+          });
+    } catch (Exception e) {
+      log.error(
+          "Error al procesar la cancelación de la donación {}: {}", donacionId, e.getMessage(), e);
+    }
+  }
+
+  /**
+   * HB-22: el camión llegó a la entidad. Solo pasa a {@code EN_PUERTA} una donación en traslado: si
+   * ya está en otro estado (el evento llegó después de {@code entrega.exitosa} o se repitió), se
+   * registra como consumido sin tocarla.
+   */
+  @Override
+  public void procesarEntregaEnPuerta(EventoEntregaEnPuerta evento, String origen) {
+    UUID donacionId = evento.donacionIndependienteId();
+    log.info("Evento EntregaEnPuerta recibido: donacionId={}", donacionId);
+    try {
+      conReintentoPorConflicto(
+          () -> {
+            if (eventosConsumidosRepository.yaFueConsumido(
+                EN_PUERTA, evento.entregaId(), donacionId)) {
+              log.info("Evento duplicado ignorado: EntregaEnPuerta de la donación {}", donacionId);
+              return;
+            }
+            donacionesIndependientesRepository
+                .findById(donacionId)
+                .filter(d -> d.getEstadoActual().getTipo() == TipoEstadoDonacion.EN_TRASLADO)
+                .ifPresentOrElse(
+                    donacion -> {
+                      donacion.llegarAPuerta(ACTOR);
+                      donacionesIndependientesRepository.save(donacion);
+                    },
+                    () ->
+                        log.info(
+                            "La donación {} ya no está en traslado: la llegada no la cambia",
+                            donacionId));
+            eventosConsumidosRepository.registrar(
+                new EventoConsumido(
+                    UUID.randomUUID(),
+                    EN_PUERTA,
+                    origen,
+                    evento.entregaId(),
+                    donacionId,
+                    LocalDateTime.now(ZONA_HORARIA)));
+          });
+    } catch (Exception e) {
+      log.error(
+          "Error al procesar la llegada de la donación {}: {}", donacionId, e.getMessage(), e);
+    }
+  }
+
+  /**
    * Una transacción por donación: el cambio de estado y el registro del evento como consumido se
    * guardan juntos. Si dos entregas del mismo mensaje llegan a la vez, la restricción única de
    * {@code evento_consumido} hace fallar la segunda y se deshace su cambio.
@@ -139,9 +265,23 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
       String eventType,
       String origen,
       UUID businessId) {
+    aplicarCambioEstado(donacionId, request, eventType, origen, businessId, NADA);
+  }
+
+  /**
+   * {@code ademas} corre en la misma transacción, después del cambio, si el evento no es duplicado.
+   */
+  private void aplicarCambioEstado(
+      UUID donacionId,
+      CambioEstadoDonacionIndependienteRequestDTO request,
+      String eventType,
+      String origen,
+      UUID businessId,
+      Runnable ademas) {
     try {
       conReintentoPorConflicto(
-          () -> aplicarSiNoFueConsumido(donacionId, request, eventType, origen, businessId));
+          () ->
+              aplicarSiNoFueConsumido(donacionId, request, eventType, origen, businessId, ademas));
     } catch (Exception e) {
       log.error(
           "Error al procesar donación {} en evento {} (estado destino={}): {}",
@@ -186,7 +326,8 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
       CambioEstadoDonacionIndependienteRequestDTO request,
       String eventType,
       String origen,
-      UUID businessId) {
+      UUID businessId,
+      Runnable ademas) {
     if (eventosConsumidosRepository.yaFueConsumido(eventType, businessId, donacionId)) {
       log.info(
           "Evento duplicado ignorado: tipo={}, businessId={}, donacionId={}",
@@ -205,6 +346,8 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
     } else {
       donacionesIndependientesService.cambiarEstado(donacionId, request, ACTOR);
     }
+    // Idempotente: también corre si la donación ya estaba en el estado destino
+    ademas.run();
     eventosConsumidosRepository.registrar(
         new EventoConsumido(
             UUID.randomUUID(),

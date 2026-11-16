@@ -31,4 +31,24 @@ public record EventoEntregaSolicitadaV1(
     @NotNull(message = "La fecha es obligatoria")
         @PastOrPresent(message = "La fecha no puede ser futura")
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
-        LocalDateTime fecha) {}
+        LocalDateTime fecha,
+    UUID donanteId) {
+
+  /** Comando sin donante: el {@code donanteId} es opcional (ADR de réplicas por evento, HB-16). */
+  public EventoEntregaSolicitadaV1(
+      UUID donacionIndependienteId,
+      UUID personaBeneficiariaId,
+      DestinoEventoDTO destino,
+      Double pesoTotalKG,
+      Double volumenTotalM3,
+      LocalDateTime fecha) {
+    this(
+        donacionIndependienteId,
+        personaBeneficiariaId,
+        destino,
+        pesoTotalKG,
+        volumenTotalM3,
+        fecha,
+        null);
+  }
+}

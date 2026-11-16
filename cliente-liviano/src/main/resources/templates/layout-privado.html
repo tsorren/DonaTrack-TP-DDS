@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<!--/* Estructura de las pantallas privadas: la marca, el
+       menú del rol, la campana de notificaciones y la foto de perfil con el menú de la cuenta en una sola cabecera de papel (piel Huerta, 2026-11-08); el contenido debajo. En el
+       celular, el menú es una barra inferior; desde la tableta, va horizontal en la cabecera
+       (privado.css; usuario, 2026-11-03). La usan todas las pantallas privadas.
+       Uso: <html th:replace="~{layout-privado :: pagina(~{::title}, 'hoja', ~{::contenido})}">,
+       donde 'hoja' es el nombre de la hoja de la pantalla en css/. El modelo trae
+       navegacion (List<OpcionNavegacion>), cuenta (CuentaVista) y perfil (la dirección de Mi perfil
+       del rol). Al final, el pie de todas las páginas (pie.html). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, hoja, contenido)">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:replace="${titulo}">DonaTrack</title>
+  <link rel="stylesheet" href="/css/privado.css"
+        th:href="@{/css/{hoja}.css(hoja=${hoja})}">
+  <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
+        th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
+  <link th:if="${hoja == 'donante-misiones'}" rel="stylesheet"
+        href="/css/variantes/misiones-b.css">
+  <th:block th:replace="~{interaccion :: cargar}"></th:block>
+</head>
+<body class="raices-privado" hx-indicator="#indicador-carga">
+<p id="indicador-carga" class="cargando" role="status" aria-live="polite" aria-hidden="true">Cargando…</p>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<header class="armazon">
+  <a class="marca" href="/publico-portada" th:href="@{/publico-portada}"
+     aria-label="DonaTrack, ir a la portada">
+    <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
+    <span>Dona<em>Track</em></span>
+  </a>
+  <!--/* El menú del rol. Con hasta 5 secciones (donante y entidad), en el celular una barra oscura
+         abajo con un ícono sobre cada nombre (usuario, 2026-11-12); desde la tableta, en la cabecera,
+         sin íconos. La administración, con 7, va directo a un botón de menú (hamburguesa) que abre
+         todas las secciones, con su ícono, en un panel de pantalla completa con la marca
+         (data-forma="panel"; usuario, 2026-11-12). El panel es una ventana del navegador (popover): anda
+         sin JavaScript, y sin popover se ve la lista entera. */-->
+  <nav th:unless="${#lists.size(navegacion) > 5}" id="menu" class="navegacion" aria-label="Secciones">
+    <svg th:replace="~{iconos :: navegacion}"></svg>
+    <ul role="list">
+      <li th:each="opcion : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
+          th:aria-current="${opcion.actual} ? 'page' : null"><svg class="navegacion-icono" aria-hidden="true"
+          focusable="false"><use href="#nav-inicio" th:href="|#nav-${opcion.icono}|"></use></svg><span
+          th:text="${opcion.texto}">Sección</span></a></li>
+    </ul>
+  </nav>
+  <nav th:if="${#lists.size(navegacion) > 5}" id="menu" class="navegacion" data-forma="panel"
+       aria-label="Secciones">
+    <svg th:replace="~{iconos :: navegacion}"></svg>
+    <button class="navegacion-abrir" type="button" popovertarget="menu-completo"><svg viewBox="0 0 24 24"
+        aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span
+        class="solo-lectores">Menú</span></button>
+    <div id="menu-completo" class="navegacion-hoja" popover role="dialog"
+         aria-labelledby="menu-completo-titulo">
+      <div class="navegacion-hoja-cabecera">
+        <p class="marca"><img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18"
+           height="24"><span>Dona<em>Track</em></span></p>
+        <p id="menu-completo-titulo" class="solo-lectores">Secciones</p>
+        <button class="boton" data-tono="secundario" type="button" popovertarget="menu-completo"
+                popovertargetaction="hide">Cerrar</button>
+      </div>
+      <!--/* Al abrirse, el foco entra al panel, en la primera sección (autofocus de la ventana). */-->
+      <ul role="list">
+        <li th:each="opcion, vuelta : ${navegacion}"><a href="#" th:href="${opcion.ruta}"
+            th:autofocus="${vuelta.first}"
+            th:aria-current="${opcion.actual} ? 'page' : null"><svg class="navegacion-icono" aria-hidden="true"
+            focusable="false"><use href="#nav-inicio" th:href="|#nav-${opcion.icono}|"></use></svg><span
+            th:text="${opcion.texto}">Sección</span></a></li>
+      </ul>
+    </div>
+  </nav>
+  <!--/* La campanita de los tres roles (fichas raices-donante-navegable.md y raices-entidad-navegable.md,
+         sección 2; la del admin, ronda 2026-11-09; desplegable, R11-29 y R11-30, ficha
+         r11-p2-campanita.md): no es una sección del menú; va en todas las pantallas del rol, con la
+         cantidad sin leer, y abre un desplegable con las 5 sin leer más nuevas y «Ver todas» hacia la
+         bandeja del rol (pieza componentes/campanita.html). Se reconoce el área por su Mi perfil. La cantidad la
+         trae el modelo (sinLeer, de Pantallas y el puerto AvisosSinLeer): en la maqueta, 4 del
+         donante, 3 de la entidad y 3 de la administración, y ninguna en la pantalla de después de
+         marcarlas como leídas; fuera, Notificaciones (el admin, la bandeja de la Administración). */-->
+  <th:block th:if="${perfil != null and (#strings.endsWith(perfil, '/donante-perfil')
+                     or #strings.endsWith(perfil, '/entidad-perfil') or #strings.endsWith(perfil, '/admin-perfil'))}"
+            th:with="pantalla=${#execInfo.processedTemplateName},
+                     areaAvisos=${#strings.endsWith(perfil, '/donante-perfil') ? 'donante'
+                         : (#strings.endsWith(perfil, '/entidad-perfil') ? 'entidad' : 'admin')},
+                     sinLeerAvisos=${#strings.endsWith(pantalla, '-leidas') ? 0 : sinLeer}">
+    <details th:replace="~{componentes/campanita :: campana(${areaAvisos}, ${sinLeerAvisos})}"></details>
+  </th:block>
+  <!--/* La cuenta: la foto de perfil y su menú (cuenta-menu.html), el mismo que lo público muestra
+         con la sesión iniciada (docs/interfaz/flujos/r11-p1-portada.md). */-->
+  <details th:replace="~{cuenta-menu :: menu}"></details>
+</header>
+<main id="contenido" tabindex="-1" hx-target="#contenido" hx-select="#contenido" hx-swap="outerHTML show:none" th:insert="${contenido}"></main>
+<footer th:replace="~{pie :: pie}"></footer>
+<!--/* Los avisos breves se agregan acá: los lectores de pantalla los anuncian, y la cola de Alpine
+       (avisos, static/js/interfaz.js) deja ver tres a la vez y los quita a los 6 segundos. */-->
+<div id="avisos" class="avisos" aria-live="polite" x-data="avisos" x-on:click="cerrar"
+     x-on:mouseenter="pausar" x-on:mouseleave="seguir" x-on:focusin="pausar" x-on:focusout="seguir"><th:block th:if="${avisoDelServidor}"><p th:replace="~{envio :: aviso(${avisoDelServidor})}"></p></th:block></div>
+</body>
+</html>
