@@ -101,7 +101,7 @@ Criterios: ajuste al enunciado, riesgo de plazo, costo de dependencias nuevas, v
 
 `[INFERRED]` la opción A es la que cubre los tres tipos de señal con menos piezas, pero **requiere superar el ADR de trazabilidad** (que descartó los trazadores de terceros) con un ADR sucesor `proposed`, y agrega imágenes de Docker (AGENTS.md §6: pide aprobación previa).
 
-**E7-Q05 — ¿Dónde corre el stack? ✅ (2026-11-16): A, compose propio `docker-compose.observabilidad.yml`**
+**E7-Q05 — ¿Dónde corre el stack? ✅ (2026-11-16): A, compose propio `docker-compose.observabilidad.yml`; reinterpretada tras Q07 (C2): namespace propio del cluster de Kubernetes, a confirmar**
 
 ⭐ **A. En un compose propio de observabilidad** (`docker-compose.observabilidad.yml`, opcional, junto al de preprod) · B. Dentro de `docker-compose.yml` · C. Solo en el preprod · D. Solo en la demo pública. `[OBSERVED]` hay siete archivos `docker-compose*.yml` en la raíz (base, demo, hybrid, preprod, publica, seed y tunel).
 
@@ -149,7 +149,10 @@ El grupo pidió más métricas de negocio que las tres mínimas (donaciones regi
 
 ### Ronda 3 — Monitoreo proactivo y autorestart (RQ-E7-02)
 
-**E7-Q07 — ¿Qué mecanismo reinicia los servicios? ⏸️**
+**E7-Q07 — ¿Qué mecanismo reinicia los servicios? ✅ (2026-11-16): C2, todo en Kubernetes**
+> **Respuesta del grupo:** opción C2, desplegar todo en Kubernetes, por el valor de aprender la herramienta. La recomendación del agente era C1 (Compose para desarrollo y CI, Kubernetes como segundo destino, con vuelta a la opción A si el cluster no estaba estable el 21 de noviembre `[PROPOSED]`). **Riesgos que el grupo toma con C2** `[INFERRED]`: son 14 contenedores a migrar (varias decenas de YAML, sin medir) en 11 días, junto con GraphQL, observabilidad, rate limiting y las cuatro medidas de seguridad; el CI de Gate 4 y los scripts de preprod hoy usan Compose; el entorno local ya tuvo inestabilidad con Docker (RabbitMQ `eacces`). **Consecuencias:** ADR ARCHITECTURAL de despliegue en Kubernetes (`proposed`); `autoheal` y el socket de Docker dejan de hacer falta; **Q05 se reinterpreta** (el stack de observabilidad corre en un namespace propio del cluster, no en un `docker-compose.observabilidad.yml`); AGENTS.md §11 y `docs/testing/` mencionan Compose, y AGENTS.md solo se modifica en un PR aparte con revisión humana (§13). Quedan abiertas Q07b a Q07d, más abajo.
+
+(Opciones originales:)
 
 | Opción | Qué implica |
 |---|---|
@@ -158,10 +161,18 @@ El grupo pidió más métricas de negocio que las tres mínimas (donaciones regi
 | C. Kubernetes (probes y `restartPolicy`) | Es el estándar de la industria, pero implica migrar el despliegue: fuera de proporción para 11 días. |
 | D. Supervisor propio en un script | No recomendable: reimplementa lo que Docker ya hace. |
 
-**E7-Q08 — ¿Qué se supervisa y con qué política? ⏸️**
+**E7-Q07b a Q07d — Consecuencias de elegir Kubernetes ⏸️** (preguntas nuevas, sin responder)
+- **Q07b — ¿Qué cluster local?** Opciones `[INFERRED]`: ⭐ **kind** (Kubernetes dentro de contenedores Docker, reproducible y usable en GitHub Actions) · Docker Desktop Kubernetes (ya instalado, un solo nodo, menos reproducible) · minikube (más herramientas, más pesado) · k3d (liviano, menos difundido).
+- **Q07c — ¿Qué pasa con Docker Compose?** ⭐ **Conviven durante E7 y el CI migra al final, solo si Kubernetes pasa todas las pruebas** (la demo pública y el túnel siguen en Compose) · se retira ya · queda para siempre como alternativa.
+- **Q07d — ¿Cómo se escriben los manifiestos?** ⭐ **YAML con Kustomize** (viene en `kubectl`, sin plantillas, base más variantes) · un Helm chart propio · generarlos con `kompose` y ajustarlos a mano.
+
+**E7-Q08 — ¿Qué se supervisa y con qué política? ✅ (2026-11-16): Q08a = 1, Q08b = 1, Q08c = sí**
+> **Respuesta del grupo** (formulación final, con recomendación y alternativa en cada una): **Q08a:** se vigilan los cuatro servicios, el gateway, el cliente **y** la infraestructura (Postgres, Mongo, RabbitMQ, Keycloak, MinIO). **Q08b:** reinicio **sin tope** (Kubernetes lo hace por defecto, con espera creciente), más una alerta en Grafana cuando un servicio se reinicia varias veces seguidas. **Q08c:** se **separan liveness y readiness** (probes de Kubernetes y grupos de salud de Spring Boot); el reinicio mira solo liveness, porque `[OBSERVED]` el `/actuator/health` de Incentivos incluye a RabbitMQ y un corte breve provocaría reinicios en cascada.
+
+(Planteo original:)
 Alcance: ⭐ los cuatro servicios, el gateway y el cliente; ⭐ la infraestructura (Postgres, Mongo, RabbitMQ, Keycloak, MinIO). Política: ⭐ reinicio con espera creciente y tope de intentos, y visibilidad de cada reinicio en el panel; reinicio siempre y sin tope. `[OBSERVED]` hoy `/actuator/health` no distingue *liveness* de *readiness*: ⭐ habilitar los grupos de salud de Spring Boot (liveness y readiness) y usarlos en los `healthcheck`.
 
-**E7-Q09 — ¿Cómo se demuestra el autorestart? ⏸️**
+**E7-Q09 — ¿Cómo se demuestra el autorestart? ✅ (2026-11-16): A, script de caos reproducible** (con Kubernetes: `kubectl delete pod` y espera de la recuperación)
 ⭐ Un script de caos (`docker kill` de un servicio y espera de recuperación) que se corre en la defensa y queda en el CI como prueba de preprod · solo una demostración manual · sin demostración automática.
 
 ---
@@ -223,9 +234,9 @@ Para confirmar con docentes `[PROPOSED]`: (1) si "Seguridad" incluye algo más q
 | Q04 Stack | Grafana LGTM liviano (Prometheus, Tempo, Loki) | ✅ opción A |
 | Q05 Dónde corre | Compose propio de observabilidad | ✅ opción A |
 | Q06 Qué se mide | Señales de oro, métricas de negocio mínimas y alertas en el panel | ✅ en lo general, con más métricas de negocio; falta podar el §3.1 |
-| Q07 Mecanismo de restart | `restart: unless-stopped` + `healthcheck` + autoheal | ⏸️ |
-| Q08 Alcance y política | Servicios e infraestructura; reinicio con espera y tope; liveness y readiness | ⏸️ |
-| Q09 Demostración | Script de caos reproducible | ⏸️ |
+| Q07 Mecanismo de restart | C1 (Kubernetes híbrido); el grupo eligió **C2, todo en Kubernetes** | ✅ C2; Q07b a Q07d sin responder |
+| Q08 Alcance y política | Servicios e infraestructura; reinicio sin tope con alerta; liveness y readiness separados | ✅ las tres recomendaciones |
+| Q09 Demostración | Script de caos reproducible | ✅ opción A |
 | Q10 Dónde se limita | En el gateway | ⏸️ |
 | Q11 Librería | Bucket4j en memoria | ⏸️ |
 | Q12 Clave y límites | Por usuario y por IP; seguimiento aparte | ⏸️ |
