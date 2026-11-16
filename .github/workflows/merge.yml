@@ -703,12 +703,13 @@ jobs:
             echo ""
           } >> "$GITHUB_STEP_SUMMARY"
           
+          FALLO="failure"
           if [[ "$RES_PROMOTE" == "success" ]]; then
             echo "✅ **Candidato validado y promovido.** \`:$BRANCH_TAG\` apunta a los digests de \`sha-$SHA_SHORT\`; el manifiesto de versión quedó como artefacto." >> "$GITHUB_STEP_SUMMARY"
-          elif [[ "$RES_POSTMERGE" == "failure" ]]; then
+          elif [[ "$RES_POSTMERGE" == "$FALLO" ]]; then
             echo "❌ **El preprod post-merge falló: no se promovió.** \`:$BRANCH_TAG\` sigue en la última versión validada; hay que arreglar la rama hacia adelante." >> "$GITHUB_STEP_SUMMARY"
-          elif [[ "$RES_DOCKER" == "failure" || "$RES_AUTH" == "failure" ]]; then
+          elif [[ "$RES_DOCKER" == "$FALLO" || "$RES_AUTH" == "$FALLO" ]]; then
             echo "❌ **Fallo en la publicación del candidato.** No hubo post-merge ni promoción." >> "$GITHUB_STEP_SUMMARY"
           fi
           # La corrida falla si el candidato no llegó a promoverse.
-          [[ "$RES_DOCKER" != "failure" && "$RES_AUTH" != "failure" && "$RES_POSTMERGE" != "failure" && "$RES_PROMOTE" != "failure" ]]
+          [[ "$RES_DOCKER" != "$FALLO" && "$RES_AUTH" != "$FALLO" && "$RES_POSTMERGE" != "$FALLO" && "$RES_PROMOTE" != "$FALLO" ]]

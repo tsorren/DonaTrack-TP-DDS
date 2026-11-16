@@ -73,12 +73,10 @@ jobs:
           echo "📌 PR: $SRC_BRANCH → $BASE_BRANCH"
 
           # Caso 1: Merge a main — solo desde ramas ENTREGA_*
-          if [[ "$BASE_BRANCH" == "main" ]]; then
-            if [[ ! "$SRC_BRANCH" =~ ^ENTREGA_[0-9]+$ ]]; then
-              echo "::error::Pull Requests a 'main' solo se permiten desde ramas 'ENTREGA_N'."
-              echo "::notice::Si la PR debía apuntar a una rama ENTREGA_N, cambiá la rama base en la interfaz de GitHub. El pipeline se disparará automáticamente con el nuevo contexto."
-              exit 1
-            fi
+          if [[ "$BASE_BRANCH" == "main" && ! "$SRC_BRANCH" =~ ^ENTREGA_[0-9]+$ ]]; then
+            echo "::error::Pull Requests a 'main' solo se permiten desde ramas 'ENTREGA_N'."
+            echo "::notice::Si la PR debía apuntar a una rama ENTREGA_N, cambiá la rama base en la interfaz de GitHub. El pipeline se disparará automáticamente con el nuevo contexto."
+            exit 1
           fi
 
           # Caso 2: Merge a ENTREGA_N — desde ramas E<N>_* o ENTREGA_<N>_*, o desde
@@ -615,14 +613,12 @@ jobs:
       - name: Generar PUML de Base
         run: |
           echo "📐 Generando diagrama de clase para ${{ matrix.service }} en rama Base..."
-          if [ -d "${{ matrix.service }}" ]; then
-            if ! mvn -B clean test \
+          if [ -d "${{ matrix.service }}" ] && ! mvn -B clean test \
               -pl ${{ matrix.service }} -am \
               -DskipTests=true \
               -Dspotless.check.skip=true \
               -Dplantuml-generator.skip=false; then
-              echo "::warning::No se pudo generar el diagrama de ${{ matrix.service }} en la rama base; la comparación queda sin línea base."
-            fi
+            echo "::warning::No se pudo generar el diagrama de ${{ matrix.service }} en la rama base; la comparación queda sin línea base."
           fi
 
           if [ ! -f "${{ matrix.service }}/target/modelo_tecnico.puml" ]; then
@@ -906,6 +902,7 @@ jobs:
               any-or-auth) [[ "$any_service" == "true" || "$auth_changed" == "true" ]] && is_required=true ;;
               sonar)       [[ "$any_service" == "true" && "$SONAR_CONFIGURED" == "true" && ( "$BASE_REF" == "main" || "$BASE_REF" == ENTREGA_* ) ]] && is_required=true ;;
               never)       is_required=false ;;
+              *)           is_required=false ;;
             esac
 
             if [[ "$result" == "success" ]]; then
