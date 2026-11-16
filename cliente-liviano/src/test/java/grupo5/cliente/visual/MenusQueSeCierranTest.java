@@ -50,9 +50,10 @@ class MenusQueSeCierranTest {
           pagina.keyboard().press("Escape");
           assertThat(estaAbierto(pagina, CUENTA)).isFalse();
           assertThat(
-                  pagina.evaluate(
-                      "() => document.activeElement.matches('" + CUENTA + " > summary')"))
-              .isEqualTo(true);
+                  (Boolean)
+                      pagina.evaluate(
+                          "() => document.activeElement.matches('" + CUENTA + " > summary')"))
+              .isTrue();
         });
   }
 

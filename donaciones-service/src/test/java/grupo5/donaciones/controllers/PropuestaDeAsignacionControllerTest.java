@@ -18,6 +18,7 @@ import grupo5.donaciones.models.entities.propuestas.SituacionPropuesta;
 import grupo5.donaciones.services.EjecucionRealizada;
 import grupo5.donaciones.services.ParametrosListado;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -242,8 +243,8 @@ class PropuestaDeAsignacionControllerTest extends AbstractDonacionesWebMvcTest {
                 null,
                 categoria,
                 "SISTEMA",
-                java.time.LocalDate.of(2026, 11, 1),
-                java.time.LocalDate.of(2026, 11, 12)),
+                java.time.LocalDate.of(2026, Month.NOVEMBER, 1),
+                java.time.LocalDate.of(2026, Month.NOVEMBER, 12)),
             new ParametrosListado(null, null, "arroz", "decision_reciente"));
   }
 

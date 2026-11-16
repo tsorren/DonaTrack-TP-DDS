@@ -41,6 +41,7 @@ import grupo5.donaciones.services.mappers.DonacionMapper;
 import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -165,8 +166,8 @@ class DonacionesServiceTest {
   void buscar_pasaFiltrosYPaginaAlRepositorioYDevuelveElTotal_R1101() {
     when(donacionesRepository.buscar(any())).thenReturn(new Tramo<>(List.of(donacion), 7));
     when(donantesRepository.findAllById(any())).thenReturn(List.of(donante));
-    LocalDate desde = LocalDate.of(2026, 11, 1);
-    LocalDate hasta = LocalDate.of(2026, 11, 30);
+    LocalDate desde = LocalDate.of(2026, Month.NOVEMBER, 1);
+    LocalDate hasta = LocalDate.of(2026, Month.NOVEMBER, 30);
 
     Pagina<DonacionOutputDTO> result =
         service.buscar(
@@ -202,7 +203,8 @@ class DonacionesServiceTest {
   @Test
   void buscar_conDesdePosteriorAHasta_lanza400SinConsultar() {
     FiltroDonaciones invertido =
-        new FiltroDonaciones(null, LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 1));
+        new FiltroDonaciones(
+            null, LocalDate.of(2026, Month.NOVEMBER, 5), LocalDate.of(2026, Month.NOVEMBER, 1));
     ParametrosListado listado = ParametrosListado.primeraPagina();
 
     ValidationException ex =

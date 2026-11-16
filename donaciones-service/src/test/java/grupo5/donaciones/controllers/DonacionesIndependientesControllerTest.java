@@ -24,6 +24,7 @@ import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.services.ParametrosListado;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -219,11 +220,11 @@ class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTes
             categoriaId,
             donanteId,
             entidadId,
-            LocalDate.of(2026, 11, 1),
-            LocalDate.of(2026, 11, 5),
+            LocalDate.of(2026, Month.NOVEMBER, 1),
+            LocalDate.of(2026, Month.NOVEMBER, 5),
             necesidadId,
             id,
-            LocalDate.of(2026, 11, 19));
+            LocalDate.of(2026, Month.NOVEMBER, 19));
     ParametrosListado listado = new ParametrosListado(3, 25, "campera", "ANTIGUAS");
     when(donacionesIndependientesService.obtenerConFiltros(esperado, listado))
         .thenReturn(new Pagina<>(List.of(), 0));

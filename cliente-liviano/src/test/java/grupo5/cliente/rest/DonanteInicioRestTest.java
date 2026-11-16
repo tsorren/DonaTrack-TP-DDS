@@ -137,8 +137,8 @@ class DonanteInicioRestTest {
         .andRespond(withSuccess(cuerpo, MediaType.APPLICATION_JSON).headers(cabeceras));
   }
 
-  @Test
-  void elAnioDeLaPersonaPideTresPorMesYLasCifrasComoTotales() {
+  /** De enero a octubre, tres por mes; octubre con 7 registradas y septiembre con una. */
+  private DonanteAnioVista anioConDonacionesEnSeptiembreYOctubre() {
     // De enero a septiembre, una página de 3 por mes; septiembre trae una.
     for (int mes = 1; mes <= 9; mes++) {
       String inicio = "2026-%02d-01".formatted(mes);
@@ -178,6 +178,13 @@ class DonanteInicioRestTest {
     DonanteAnioVista vista = adaptador.anio(DONANTE);
 
     apis.verify();
+    return vista;
+  }
+
+  @Test
+  void elAnioDeLaPersonaPideTresPorMesYLasCifrasComoTotales() {
+    DonanteAnioVista vista = anioConDonacionesEnSeptiembreYOctubre();
+
     assertEquals(2026, vista.anio());
     assertEquals(10, vista.mesHoy());
     assertEquals(10, vista.meses().size());
@@ -186,6 +193,12 @@ class DonanteInicioRestTest {
     assertEquals(1, vista.enCamino());
     assertEquals(3, vista.enDeposito());
     assertTrue(vista.algunaVez());
+  }
+
+  @Test
+  void elAnioMuestraOctubreYSeptiembreConSusPrimerasLoSinLeerYLosAvisos() {
+    DonanteAnioVista vista = anioConDonacionesEnSeptiembreYOctubre();
+
     DonanteAnioVista.Mes octubre = vista.meses().get(9);
     assertEquals("octubre", octubre.nombre());
     assertEquals("2026-10", octubre.clave());

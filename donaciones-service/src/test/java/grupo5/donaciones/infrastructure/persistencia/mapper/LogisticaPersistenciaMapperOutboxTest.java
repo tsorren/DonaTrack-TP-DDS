@@ -8,6 +8,7 @@ import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
 import grupo5.donaciones.infrastructure.persistencia.entities.logistica.OutboxLogisticaEntity;
 import grupo5.donaciones.services.logistica.EntradaOutboxLogistica;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -48,11 +49,11 @@ class LogisticaPersistenciaMapperOutboxTest {
             null,
             10.0,
             1.0,
-            LocalDateTime.of(2026, 11, 8, 12, 0),
+            LocalDateTime.of(2026, Month.NOVEMBER, 8, 12, 0),
             donanteId),
         "trace-1",
         3,
-        LocalDateTime.of(2026, 11, 8, 12, 0));
+        LocalDateTime.of(2026, Month.NOVEMBER, 8, 12, 0));
   }
 
   private OutboxLogisticaEntity entidadCon(String payload) {

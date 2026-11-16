@@ -33,6 +33,7 @@ import grupo5.notificaciones.models.repositories.IPersonaRepository;
 import grupo5.notificaciones.models.repositories.PaginaBandeja;
 import grupo5.notificaciones.mothers.NotificacionMother;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -161,7 +162,7 @@ class RepositoriosJpaTest {
   @Test
   void bandeja_paginaFiltraSinTildesYExcluyeTiposEnLaBaseSinTraerElHistorial() {
     UUID personaId = UUID.randomUUID();
-    LocalDateTime base = LocalDateTime.of(2026, 10, 1, 9, 0);
+    LocalDateTime base = LocalDateTime.of(2026, Month.OCTOBER, 1, 9, 0);
     for (int i = 0; i < 25; i++) {
       Notificacion n =
           new Notificacion(

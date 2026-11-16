@@ -76,8 +76,11 @@ class LegalesServiceTest {
 
   @Test
   void unaVersionQueNoEsLaVigente_responde400() {
+    LegalesService conVersion2 = conVigente(2);
+    UUID juanId = juan.getId();
+
     ValidationException error =
-        assertThrows(ValidationException.class, () -> conVigente(2).aceptar(juan.getId(), 1));
+        assertThrows(ValidationException.class, () -> conVersion2.aceptar(juanId, 1));
 
     assertEquals(ErrorCatalog.LEGALES_VERSION_NO_VIGENTE.getCode(), error.getErrorCode());
   }

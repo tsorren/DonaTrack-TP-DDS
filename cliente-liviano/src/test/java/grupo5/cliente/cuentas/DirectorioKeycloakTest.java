@@ -149,8 +149,11 @@ class DirectorioKeycloakTest {
         .expect(requestTo(ROLES + "/available"))
         .andRespond(withSuccess("[]", APPLICATION_JSON));
 
+    var atributos = Map.of("personaId", "p-1");
+    var plantilla = Optional.of("NO_ES");
+
     org.assertj.core.api.Assertions.assertThatThrownBy(
-            () -> directorio.vincular("cuenta-1", Map.of("personaId", "p-1"), Optional.of("NO_ES")))
+            () -> directorio.vincular("cuenta-1", atributos, plantilla))
         .isInstanceOf(NoSuchElementException.class);
   }
 

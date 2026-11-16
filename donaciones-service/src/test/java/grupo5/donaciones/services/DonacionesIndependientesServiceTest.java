@@ -61,6 +61,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
@@ -507,8 +508,8 @@ class DonacionesIndependientesServiceTest {
 
   @Test
   void obtenerConFiltros_porRangoDeFechas_esInclusivoEnAmbosExtremos() {
-    LocalDate desde = LocalDate.of(2026, 11, 1);
-    LocalDate hasta = LocalDate.of(2026, 11, 5);
+    LocalDate desde = LocalDate.of(2026, Month.NOVEMBER, 1);
+    LocalDate hasta = LocalDate.of(2026, Month.NOVEMBER, 5);
     DonacionIndependiente antes = registradaEl(desde.minusDays(1));
     DonacionIndependiente enDesde = registradaEl(desde);
     DonacionIndependiente enHasta = registradaEl(hasta);
@@ -521,7 +522,7 @@ class DonacionesIndependientesServiceTest {
 
   @Test
   void obtenerConFiltros_conSoloDesde_noAcotaElFinal() {
-    LocalDate desde = LocalDate.of(2026, 11, 1);
+    LocalDate desde = LocalDate.of(2026, Month.NOVEMBER, 1);
     DonacionIndependiente antes = registradaEl(desde.minusDays(1));
     DonacionIndependiente despues = registradaEl(desde.plusDays(30));
     guardar(antes, despues);
@@ -532,7 +533,11 @@ class DonacionesIndependientesServiceTest {
   @Test
   void obtenerConFiltros_conDesdePosteriorAHasta_lanzaValidationException() {
     FiltroDonacionesIndependientes invertido =
-        filtro(null, null, LocalDate.of(2026, 11, 5), LocalDate.of(2026, 11, 1));
+        filtro(
+            null,
+            null,
+            LocalDate.of(2026, Month.NOVEMBER, 5),
+            LocalDate.of(2026, Month.NOVEMBER, 1));
 
     ValidationException ex =
         assertThrows(
@@ -638,7 +643,7 @@ class DonacionesIndependientesServiceTest {
 
   @Test
   void obtenerConFiltros_venceHasta_dejaLasQueTienenAlgunBienQueVenceEseDiaOAntes_R1134() {
-    LocalDate dia = LocalDate.of(2027, 3, 10);
+    LocalDate dia = LocalDate.of(2027, Month.MARCH, 10);
     DonacionIndependiente justo = queVence(dia.plusDays(20), dia);
     DonacionIndependiente antes = queVence(dia.minusDays(2));
     DonacionIndependiente despues = queVence(dia.plusDays(1));
@@ -651,7 +656,7 @@ class DonacionesIndependientesServiceTest {
 
   @Test
   void obtenerConFiltros_ordenVence_laMasProximaPrimeroYLasQueNoVencenAlFinal_R1134() {
-    LocalDate dia = LocalDate.of(2027, 3, 10);
+    LocalDate dia = LocalDate.of(2027, Month.MARCH, 10);
     DonacionIndependiente sinVencimiento = queVence((LocalDate) null);
     DonacionIndependiente tarde = queVence(dia.plusDays(30));
     DonacionIndependiente pronto = queVence(dia.plusDays(40), dia);
@@ -693,9 +698,9 @@ class DonacionesIndependientesServiceTest {
 
   @Test
   void obtenerConFiltros_devuelveUnaPaginaConElTotalDeLasQueCumplen_R1101() {
-    DonacionIndependiente primera = registradaEl(LocalDate.of(2026, 11, 1));
-    DonacionIndependiente segunda = registradaEl(LocalDate.of(2026, 11, 2));
-    DonacionIndependiente tercera = registradaEl(LocalDate.of(2026, 11, 3));
+    DonacionIndependiente primera = registradaEl(LocalDate.of(2026, Month.NOVEMBER, 1));
+    DonacionIndependiente segunda = registradaEl(LocalDate.of(2026, Month.NOVEMBER, 2));
+    DonacionIndependiente tercera = registradaEl(LocalDate.of(2026, Month.NOVEMBER, 3));
     guardar(primera, segunda, tercera);
 
     var pagina =
@@ -759,7 +764,7 @@ class DonacionesIndependientesServiceTest {
   // ===================== R11-43: orden ATENCION y conteos =====================
 
   private static final UUID COMEDOR = UUID.randomUUID();
-  private static final LocalDateTime BASE = LocalDateTime.of(2026, 11, 1, 10, 0);
+  private static final LocalDateTime BASE = LocalDateTime.of(2026, Month.NOVEMBER, 1, 10, 0);
 
   /** Una asignada al comedor en {@code estado}, con un cambio a ese estado en {@code cambio}. */
   private static DonacionIndependiente asignadaAlComedor(
@@ -816,20 +821,19 @@ class DonacionesIndependientesServiceTest {
 
   @Test
   void obtenerConFiltros_conUnOrdenDesconocido_rechaza() {
+    FiltroDonacionesIndependientes filtro = filtro(null, COMEDOR, null, null);
+    ParametrosListado parametros = new ParametrosListado(null, null, null, "AL_AZAR");
+
     assertThrows(
-        ValidationException.class,
-        () ->
-            servicioConFiltros.obtenerConFiltros(
-                filtro(null, COMEDOR, null, null),
-                new ParametrosListado(null, null, null, "AL_AZAR")));
+        ValidationException.class, () -> servicioConFiltros.obtenerConFiltros(filtro, parametros));
   }
 
   @Test
   void conteos_traeLosOchoEstadosLasDelMesYCadaNecesidadConSusEstados() {
     UUID arroz = UUID.randomUUID();
     UUID leche = UUID.randomUUID();
-    LocalDateTime esteMes = LocalDateTime.of(2026, 11, 5, 9, 0);
-    LocalDateTime mesPasado = LocalDateTime.of(2026, 10, 20, 9, 0);
+    LocalDateTime esteMes = LocalDateTime.of(2026, Month.NOVEMBER, 5, 9, 0);
+    LocalDateTime mesPasado = LocalDateTime.of(2026, Month.OCTOBER, 20, 9, 0);
     guardar(
         asignadaAlComedor(new EnPuerta(), arroz, BASE, esteMes),
         asignadaAlComedor(new EnPuerta(), arroz, BASE, esteMes),

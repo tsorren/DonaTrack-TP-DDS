@@ -218,10 +218,9 @@ class AdministradoresKeycloakTest {
         .andExpect(method(POST))
         .andRespond(withStatus(HttpStatus.CONFLICT));
 
-    assertThatThrownBy(
-            () ->
-                directorio.alta(
-                    new Alta("Bruno", "Díaz", "usado@ejemplo.org"), "K7pQ-m4Rt-x9Wa-2Lse", "a"))
+    var alta = new Alta("Bruno", "Díaz", "usado@ejemplo.org");
+
+    assertThatThrownBy(() -> directorio.alta(alta, "K7pQ-m4Rt-x9Wa-2Lse", "a"))
         .isInstanceOf(CorreoEnUso.class);
     keycloak.verify();
   }
@@ -236,12 +235,9 @@ class AdministradoresKeycloakTest {
     keycloak.expect(requestTo(ROLES + "/available")).andRespond(withServerError());
     keycloak.expect(requestTo(NUEVA)).andExpect(method(DELETE)).andRespond(withNoContent());
 
-    assertThatThrownBy(
-            () ->
-                directorio.alta(
-                    new Alta("Bruno", "Díaz", "bruno.diaz@ejemplo.org"),
-                    "K7pQ-m4Rt-x9Wa-2Lse",
-                    "cuenta-ana"))
+    var alta = new Alta("Bruno", "Díaz", "bruno.diaz@ejemplo.org");
+
+    assertThatThrownBy(() -> directorio.alta(alta, "K7pQ-m4Rt-x9Wa-2Lse", "cuenta-ana"))
         .isInstanceOf(AltaIncompleta.class);
     keycloak.verify();
   }

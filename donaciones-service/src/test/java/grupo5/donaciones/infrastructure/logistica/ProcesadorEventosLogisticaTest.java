@@ -31,6 +31,7 @@ import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -308,7 +309,7 @@ class ProcesadorEventosLogisticaTest {
         donacionId,
         UUID.randomUUID(),
         "ABC-123",
-        LocalDateTime.of(2026, 11, 8, 13, 0),
+        LocalDateTime.of(2026, Month.NOVEMBER, 8, 13, 0),
         reporte,
         fotos);
   }
@@ -325,7 +326,8 @@ class ProcesadorEventosLogisticaTest {
     orden.verify(donacionesIndependientesService).cambiarEstado(eq(donacionId), any(), any());
     orden
         .verify(donacionesIndependientesService)
-        .registrarFotosDeRecepcion(donacionId, LocalDateTime.of(2026, 11, 8, 13, 0), FOTOS);
+        .registrarFotosDeRecepcion(
+            donacionId, LocalDateTime.of(2026, Month.NOVEMBER, 8, 13, 0), FOTOS);
     orden.verify(eventosConsumidosRepository).registrar(any(EventoConsumido.class));
   }
 

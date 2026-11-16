@@ -228,9 +228,10 @@ class AprobacionPropuestaTransaccionalJpaTest {
         .when(logisticaBroker)
         .solicitarEntrega(any());
 
+    UUID propuestaId = propuesta.getId();
     assertThrows(
         IllegalStateException.class,
-        () -> service.actualizarEstado(propuesta.getId(), EstadoPropuesta.APROBADA, "sub-de-ana"));
+        () -> service.actualizarEstado(propuestaId, EstadoPropuesta.APROBADA, "sub-de-ana"));
 
     // La primera fragmentación llegó a guardarse y a pedirse al broker, y después se revirtió
     verify(logisticaBroker, times(2)).solicitarEntrega(any());

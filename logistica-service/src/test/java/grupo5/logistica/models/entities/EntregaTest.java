@@ -136,11 +136,13 @@ class EntregaTest {
     assertThrows(
         ValidationException.class,
         () -> entrega.confirmarEntrega("Comedor Infantil", (List<String>) null));
+    List<String> sinFotos = List.of();
+    List<String> fotoEnBlanco = List.of("   ");
     assertThrows(
-        ValidationException.class, () -> entrega.confirmarEntrega("Comedor Infantil", List.of()));
+        ValidationException.class, () -> entrega.confirmarEntrega("Comedor Infantil", sinFotos));
     assertThrows(
         ValidationException.class,
-        () -> entrega.confirmarEntrega("Comedor Infantil", List.of("   ")));
+        () -> entrega.confirmarEntrega("Comedor Infantil", fotoEnBlanco));
     assertThrows(
         ValidationException.class,
         () -> entrega.confirmarEntrega("Comedor Infantil", Arrays.asList(FOTO_VALIDA_1, null)));
@@ -483,7 +485,8 @@ class EntregaTest {
     cancelada.cancelar("broker-donaciones", "motivo");
     assertThrows(
         ValidationException.class, () -> cancelada.cancelar("broker-donaciones", "motivo"));
-    assertThrows(ValidationException.class, () -> cancelada.asignarRuta(UUID.randomUUID()));
+    UUID ruta = UUID.randomUUID();
+    assertThrows(ValidationException.class, () -> cancelada.asignarRuta(ruta));
   }
 
   // HB-22: EN_PUERTA, intermedio y opcional entre el traslado y la confirmación

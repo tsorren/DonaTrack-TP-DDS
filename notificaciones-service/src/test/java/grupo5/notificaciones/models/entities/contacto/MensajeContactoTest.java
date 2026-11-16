@@ -15,6 +15,7 @@ import grupo5.notificaciones.exceptions.ProveedorMensajeriaException;
 import grupo5.notificaciones.models.entities.personas.Correo;
 import grupo5.notificaciones.models.ports.NotificacionSender;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -32,7 +33,7 @@ class MensajeContactoTest {
             null,
             "ana@ejemplo.org",
             "203.0.113.7",
-            LocalDateTime.of(2026, 11, 10, 9, 0));
+            LocalDateTime.of(2026, Month.NOVEMBER, 10, 9, 0));
     mensaje.asignarNumero(numero);
     return mensaje;
   }

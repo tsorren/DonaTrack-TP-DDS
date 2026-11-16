@@ -27,6 +27,7 @@ import grupo5.donaciones.models.repositories.impl.DonacionesIndependientesReposi
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +39,7 @@ import org.junit.jupiter.api.Test;
 class DestacadasServiceTest {
 
   private static final String ACTOR = "logistica-service";
-  private static final LocalDateTime AHORA = LocalDateTime.of(2026, 11, 8, 12, 0);
+  private static final LocalDateTime AHORA = LocalDateTime.of(2026, Month.NOVEMBER, 8, 12, 0);
   private static final List<String> FOTOS = List.of("https://ejemplo.org/a.jpg");
 
   private final DonacionesIndependientesRepositoryEnMemoria repositorio =

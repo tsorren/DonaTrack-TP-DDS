@@ -51,6 +51,7 @@ import grupo5.donaciones.models.repositories.listados.PorVencer;
 import grupo5.donaciones.models.repositories.listados.Tramo;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
@@ -132,7 +133,8 @@ class ListadosPostgresJpaTest {
   private int documento = 20_000_000;
 
   private Humana humana(String nombre, String apellido) {
-    Humana humana = new Humana(nombre, apellido, LocalDate.of(1990, 1, 1), Genero.NO_BINARIO);
+    Humana humana =
+        new Humana(nombre, apellido, LocalDate.of(1990, Month.JANUARY, 1), Genero.NO_BINARIO);
     humana.actualizarDocumento(TipoDocumento.DNI, String.valueOf(documento++));
     return humana;
   }
@@ -230,7 +232,7 @@ class ListadosPostgresJpaTest {
 
   @Test
   void donantes_ordenPorAltaYPorNombre_yTramoConElTotal() {
-    LocalDateTime hoy = LocalDateTime.of(2026, 11, 11, 10, 0);
+    LocalDateTime hoy = LocalDateTime.of(2026, Month.NOVEMBER, 11, 10, 0);
     Donante maria = donanteDe(humana("María", "Gómez"), true, hoy.minusDays(10));
     Donante juan = donanteDe(humana("Juan", "Pérez"), true, hoy);
     Donante empresa =
@@ -485,8 +487,8 @@ class ListadosPostgresJpaTest {
         donaciones.buscar(
             new CriterioDonaciones(
                 null,
-                LocalDate.of(2000, 1, 1),
-                LocalDate.of(2000, 1, 2),
+                LocalDate.of(2000, Month.JANUARY, 1),
+                LocalDate.of(2000, Month.JANUARY, 2),
                 null,
                 OrdenPorFecha.RECIENTES,
                 PRIMERA));
@@ -590,7 +592,7 @@ class ListadosPostgresJpaTest {
     UUID subcategoriaId = crearSubcategoria();
     Donante donante = donanteDe(humana("Ana", "Orden"), true, LocalDateTime.now());
     UUID comedor = entidadLlamada("Comedor Atencion");
-    LocalDateTime base = LocalDateTime.of(2026, 11, 1, 10, 0);
+    LocalDateTime base = LocalDateTime.of(2026, Month.NOVEMBER, 1, 10, 0);
     UUID recibida =
         asignadaEn(donante, subcategoriaId, comedor, null, "ENTREGADA", base.plusDays(9));
     UUID porSalir =
@@ -658,7 +660,7 @@ class ListadosPostgresJpaTest {
     Donante donante = donanteDe(humana("Ana", "Acta"), true, LocalDateTime.now());
     UUID comedor = entidadLlamada("Comedor Acta");
     UUID otroComedor = entidadLlamada("Comedor Vecino");
-    LocalDateTime base = LocalDateTime.of(2026, 11, 1, 10, 0);
+    LocalDateTime base = LocalDateTime.of(2026, Month.NOVEMBER, 1, 10, 0);
     UUID pedida = asignadaEn(donante, subcategoriaId, comedor, null, "EN_PUERTA", base);
     asignadaEn(donante, subcategoriaId, comedor, null, "EN_PUERTA", base.plusDays(1));
     UUID ajena = asignadaEn(donante, subcategoriaId, otroComedor, null, "EN_PUERTA", base);
@@ -759,21 +761,21 @@ class ListadosPostgresJpaTest {
             comedor,
             null,
             "EN_DEPOSITO",
-            LocalDateTime.of(2026, 9, 3, 12, 0));
+            LocalDateTime.of(2026, Month.SEPTEMBER, 3, 12, 0));
     asignadaEn(
         donante,
         subcategoriaId,
         comedor,
         null,
         "EN_DEPOSITO",
-        LocalDateTime.of(2026, 10, 2, 12, 0));
+        LocalDateTime.of(2026, Month.OCTOBER, 2, 12, 0));
     asignadaEn(
         donante,
         subcategoriaId,
         comedor,
         null,
         "EN_DEPOSITO",
-        LocalDateTime.of(2026, 10, 20, 8, 0));
+        LocalDateTime.of(2026, Month.OCTOBER, 20, 8, 0));
     // Fuera de los meses pedidos
     asignadaEn(
         donante,
@@ -781,14 +783,14 @@ class ListadosPostgresJpaTest {
         comedor,
         null,
         "EN_DEPOSITO",
-        LocalDateTime.of(2026, 12, 10, 9, 0));
+        LocalDateTime.of(2026, Month.DECEMBER, 10, 9, 0));
     jdbc.update(
         "UPDATE donaciones.cambio_estado_donacion_independiente SET \"timestamp\" = ?"
             + " WHERE id_donacion_independiente = ?",
-        LocalDateTime.of(2026, 10, 5, 12, 0),
+        LocalDateTime.of(2026, Month.OCTOBER, 5, 12, 0),
         deSeptiembre);
-    YearMonth septiembre = YearMonth.of(2026, 9);
-    YearMonth octubre = YearMonth.of(2026, 10);
+    YearMonth septiembre = YearMonth.of(2026, Month.SEPTEMBER);
+    YearMonth octubre = YearMonth.of(2026, Month.OCTOBER);
 
     assertEquals(
         Map.of(septiembre, 1L, octubre, 2L),
@@ -807,7 +809,7 @@ class ListadosPostgresJpaTest {
             TipoEstadoDonacion.ASIGNACION_REALIZADA, desde, hasta));
     // La fecha se escribió sin la conversión de zona de Hibernate: alcanza con el día
     assertEquals(
-        Optional.of(LocalDate.of(2026, 9, 3)),
+        Optional.of(LocalDate.of(2026, Month.SEPTEMBER, 3)),
         independientes.primeraFechaRegistro().map(LocalDateTime::toLocalDate));
   }
 
@@ -825,7 +827,7 @@ class ListadosPostgresJpaTest {
   void independientes_venceHastaYOrdenVence_laMasProximaPrimeroYSinVencimientoAlFinal() {
     UUID subcategoriaId = crearSubcategoria();
     Donante donante = donanteDe(humana("Ana", "Vence"), true, LocalDateTime.now());
-    LocalDate dia = LocalDate.of(2027, 3, 10);
+    LocalDate dia = LocalDate.of(2027, Month.MARCH, 10);
     UUID sinVencimiento = queVence(donante, subcategoriaId, null);
     UUID tarde = queVence(donante, subcategoriaId, dia.plusDays(30));
     UUID justo = queVence(donante, subcategoriaId, dia);
@@ -877,7 +879,7 @@ class ListadosPostgresJpaTest {
   // R11-34: el período de alta, con días inclusivos
   @Test
   void donantes_porPeriodoDeAlta_diasInclusivos() {
-    LocalDateTime dia = LocalDateTime.of(2026, 11, 10, 23, 59);
+    LocalDateTime dia = LocalDateTime.of(2026, Month.NOVEMBER, 10, 23, 59);
     donanteDe(humana("Ana", "Antes"), true, dia.minusDays(5));
     Donante enElDia = donanteDe(humana("Ana", "Justo"), true, dia);
     donanteDe(humana("Ana", "Despues"), true, dia.plusDays(1));
@@ -942,7 +944,7 @@ class ListadosPostgresJpaTest {
   void independientes_porVencer_cuentaLasDelDepositoEnLaVentana_yDaLaMasProxima() {
     UUID subcategoriaId = crearSubcategoria();
     Donante donante = donanteDe(humana("Ana", "Prueba"), true, LocalDateTime.now());
-    LocalDate hoy = LocalDate.of(2027, 12, 1);
+    LocalDate hoy = LocalDate.of(2027, Month.DECEMBER, 1);
     DonacionIndependiente venceEn2 =
         independiente(normalizadoQueVence(donante, subcategoriaId, hoy.plusDays(2)));
     DonacionIndependiente venceEn5 =
@@ -980,7 +982,8 @@ class ListadosPostgresJpaTest {
   @Test
   void independientes_porVencer_sinNingunaDevuelveCero() {
     PorVencer porVencer =
-        independientes.buscarPorVencer(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 1, 8));
+        independientes.buscarPorVencer(
+            LocalDate.of(2000, Month.JANUARY, 1), LocalDate.of(2000, Month.JANUARY, 8));
 
     assertEquals(0, porVencer.cantidad());
     assertNull(porVencer.proximaId());

@@ -13,6 +13,7 @@ import grupo5.donaciones.models.repositories.listados.Paginado;
 import grupo5.donaciones.models.repositories.listados.Tramo;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.IntStream;
@@ -43,7 +44,7 @@ class ActividadRepositoryJpaAdapterTest {
   @Container @ServiceConnection
   static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
-  private static final LocalDateTime BASE = LocalDateTime.of(2026, 11, 12, 18, 0);
+  private static final LocalDateTime BASE = LocalDateTime.of(2026, Month.NOVEMBER, 12, 18, 0);
 
   @Autowired private IActividadRepository repositorio;
   @Autowired private SpringDataActividadRepository filas;
@@ -110,7 +111,7 @@ class ActividadRepositoryJpaAdapterTest {
     guardar(
         "admin-a",
         AccionDeAdministracion.DONACION_VENCIDA,
-        LocalDate.of(2026, 11, 12).atTime(23, 59),
+        LocalDate.of(2026, Month.NOVEMBER, 12).atTime(23, 59),
         null);
 
     Tramo<Actividad> tramo =
@@ -118,8 +119,8 @@ class ActividadRepositoryJpaAdapterTest {
             new CriterioActividad(
                 Set.of("admin-a"),
                 Set.of(AccionDeAdministracion.DONACION_VENCIDA),
-                LocalDate.of(2026, 11, 10),
-                LocalDate.of(2026, 11, 12),
+                LocalDate.of(2026, Month.NOVEMBER, 10),
+                LocalDate.of(2026, Month.NOVEMBER, 12),
                 new Paginado(0, 1)));
 
     assertEquals(3, tramo.total());

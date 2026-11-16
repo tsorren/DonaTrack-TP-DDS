@@ -1,7 +1,6 @@
 package grupo5.donaciones.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,6 +20,7 @@ import grupo5.donaciones.models.entities.actividad.AccionDeAdministracion;
 import grupo5.donaciones.services.ParametrosListado;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ class ActividadControllerTest extends AbstractDonacionesWebMvcTest {
   private static ActividadDTO fila() {
     return new ActividadDTO(
         UUID.randomUUID(),
-        LocalDateTime.of(2026, 11, 12, 18, 20),
+        LocalDateTime.of(2026, Month.NOVEMBER, 12, 18, 20),
         "admin-a",
         AccionDeAdministracion.PROPUESTA_APROBADA,
         UUID.randomUUID().toString(),
@@ -78,8 +78,8 @@ class ActividadControllerTest extends AbstractDonacionesWebMvcTest {
             new FiltroActividad(
                 List.of("admin-a", "admin-b"),
                 List.of("DONACION_VENCIDA"),
-                LocalDate.of(2026, 11, 10),
-                LocalDate.of(2026, 11, 12)),
+                LocalDate.of(2026, Month.NOVEMBER, 10),
+                LocalDate.of(2026, Month.NOVEMBER, 12)),
             new ParametrosListado(0, 1, null, null));
   }
 
@@ -109,7 +109,7 @@ class ActividadControllerTest extends AbstractDonacionesWebMvcTest {
     ActividadDTO anotada =
         new ActividadDTO(
             UUID.randomUUID(),
-            LocalDateTime.of(2026, 11, 12, 11, 10),
+            LocalDateTime.of(2026, Month.NOVEMBER, 12, 11, 10),
             "admin-a",
             AccionDeAdministracion.CAMION_AGREGADO,
             "camion-1",
@@ -131,7 +131,7 @@ class ActividadControllerTest extends AbstractDonacionesWebMvcTest {
 
     // El autor del cuerpo no llega al servicio: el DTO no lo tiene.
     verify(actividadService)
-        .anotar(eq(new AnotacionActividadDTO("CAMION_AGREGADO", "camion-1", "AB123CD")));
+        .anotar(new AnotacionActividadDTO("CAMION_AGREGADO", "camion-1", "AB123CD"));
   }
 
   @Test

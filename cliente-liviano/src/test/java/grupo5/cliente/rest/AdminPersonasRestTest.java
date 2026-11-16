@@ -165,8 +165,10 @@ class AdminPersonasRestTest {
     assertEquals(2, vista.enPaginas().pendientes());
   }
 
-  @Test
-  void lasEntidadesSalenPorNombreConSusNecesidadesYLasQuePidenSumarseConSusDatos() {
+  /**
+   * Una que pide sumarse, dos registradas (una con necesidad vigente) y las cifras del servicio.
+   */
+  private AdminEntidadesVista entidadesConPendienteYNecesidadVigente() {
     UUID juridica = UUID.fromString("00000000-0000-4000-8000-0000000000e3");
     SolicitudesDeEntidad solicitudes = mock(SolicitudesDeEntidad.class);
     when(solicitudes.pendientes())
@@ -218,6 +220,13 @@ class AdminPersonasRestTest {
     AdminEntidadesVista vista = adaptador.entidades("", Filtro.NINGUNO, 1);
 
     donaciones.verify();
+    return vista;
+  }
+
+  @Test
+  void lasEntidadesSalenPorNombrePrimeroLasQuePidenSumarseConLasCifrasDelServicio() {
+    AdminEntidadesVista vista = entidadesConPendienteYNecesidadVigente();
+
     // Las activas, un número del servicio: no se cuentan sobre la página.
     assertEquals(57, vista.activas());
     // Primero las que piden sumarse; después, la página de registradas por nombre.
@@ -237,6 +246,12 @@ class AdminPersonasRestTest {
     assertEquals("Calle Ejemplo 1234, Localidad Ejemplo, Buenos Aires", hogar.direccion());
     assertNull(hogar.cuando());
     assertNull(hogar.constancia());
+  }
+
+  @Test
+  void laRegistradaActivaLlevaSusDatosDeContactoYSuNecesidadVigente() {
+    AdminEntidadesVista vista = entidadesConPendienteYNecesidadVigente();
+
     Entidad merendero = vista.todas().get(2);
     assertEquals("activa", merendero.estado());
     assertEquals("Merendero", merendero.tipo());

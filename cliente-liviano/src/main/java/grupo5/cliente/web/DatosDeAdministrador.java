@@ -24,7 +24,8 @@ final class DatosDeAdministrador {
   private static final int LARGO = 255;
   private static final Pattern SIGNOS =
       Pattern.compile("[<>&\"$%!#?§;*~/\\\\|^=\\[\\]{}()\\p{Cntrl}]");
-  private static final Pattern FORMA_DE_CORREO = Pattern.compile("[^@\\s]+@[^@\\s]+\\.[^@\\s]+");
+  // visible para el test de equivalencia
+  static final Pattern FORMA_DE_CORREO = Pattern.compile("[^@\\s]++@[^@\\s][^@\\s.]*+\\.[^@\\s]++");
   private static final String SIGNOS_NO_ACEPTADOS =
       "El nombre no puede llevar signos como < > & o comillas.";
   private static final String MUY_LARGO = "Usá hasta 255 letras.";

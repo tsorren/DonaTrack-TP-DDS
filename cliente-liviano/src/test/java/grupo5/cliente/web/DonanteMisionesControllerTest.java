@@ -3,7 +3,6 @@ package grupo5.cliente.web;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -101,7 +100,7 @@ class DonanteMisionesControllerTest {
   @Test
   void unaPersonaVeSusMisionesAunqueNoHayaHistoriaDeLasPlantas() throws Exception {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
-    when(misiones.misiones(eq(DONANTE))).thenReturn(conUnaCompleta());
+    when(misiones.misiones(DONANTE)).thenReturn(conUnaCompleta());
 
     mvc.perform(get("/donante-misiones"))
         .andExpect(status().isOk())
@@ -124,7 +123,7 @@ class DonanteMisionesControllerTest {
   @Test
   void laPlantaConseguidaSinHistoriaDiceCuandoSeCompleto() throws Exception {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
-    when(misiones.misiones(eq(DONANTE))).thenReturn(conUnaCompleta());
+    when(misiones.misiones(DONANTE)).thenReturn(conUnaCompleta());
 
     mvc.perform(get("/donante-misiones?variante=misiones-b&lugar=estante-izq"))
         .andExpect(status().isOk())
@@ -145,7 +144,7 @@ class DonanteMisionesControllerTest {
   @Test
   void conUnaMacetaElegidaTocarAfueraOEscLaSueltaPorElEnlaceDeVerTodaLaHuerta() throws Exception {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
-    when(misiones.misiones(eq(DONANTE))).thenReturn(conUnaCompleta());
+    when(misiones.misiones(DONANTE)).thenReturn(conUnaCompleta());
 
     mvc.perform(get("/donante-misiones?variante=misiones-b&lugar=estante-izq"))
         .andExpect(status().isOk())
@@ -160,7 +159,7 @@ class DonanteMisionesControllerTest {
   @Test
   void quienNoEsUnaPersonaVeSinPermiso() throws Exception {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
-    when(misiones.misiones(eq(DONANTE)))
+    when(misiones.misiones(DONANTE))
         .thenReturn(
             new DonanteMisionesVista(
                 false, false, null, null, null, 0, "", List.of(), List.of(), null, null));

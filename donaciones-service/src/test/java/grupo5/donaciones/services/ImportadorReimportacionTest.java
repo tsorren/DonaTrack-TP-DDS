@@ -92,7 +92,7 @@ class ImportadorReimportacionTest {
             donantesService,
             storage,
             AlmacenamientoFixtures.propiedades(),
-            org.mockito.Mockito.mock(IDonacionesEventPublisher.class));
+            mock(IDonacionesEventPublisher.class));
   }
 
   @Test

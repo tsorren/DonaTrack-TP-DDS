@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -112,9 +113,10 @@ class ArchivoDonantesServiceTest {
   @NullSource
   @ValueSource(strings = {"padron.xlsx", "padron", "padron.csv.exe"})
   void cargarArchivoDonantes_sinExtensionCsvDeberiaRechazarlo(String nombre) {
+    ArchivoDonantesSubido archivo = subido(nombre, PADRON);
+
     ValidationException ex =
-        assertThrows(
-            ValidationException.class, () -> service.cargarArchivoDonantes(subido(nombre, PADRON)));
+        assertThrows(ValidationException.class, () -> service.cargarArchivoDonantes(archivo));
 
     assertEquals(ErrorCatalog.ARCHIVO_DONANTES_INVALIDO, ex.getError());
     verifyNoInteractions(archivoRepository, importadorService);
@@ -122,10 +124,10 @@ class ArchivoDonantesServiceTest {
 
   @Test
   void cargarArchivoDonantes_vacioDeberiaRechazarlo() {
+    ArchivoDonantesSubido archivo = subido("padron.csv", new byte[0]);
+
     ValidationException ex =
-        assertThrows(
-            ValidationException.class,
-            () -> service.cargarArchivoDonantes(subido("padron.csv", new byte[0])));
+        assertThrows(ValidationException.class, () -> service.cargarArchivoDonantes(archivo));
 
     assertEquals(ErrorCatalog.ARCHIVO_DONANTES_INVALIDO, ex.getError());
   }
@@ -213,10 +215,10 @@ class ArchivoDonantesServiceTest {
   @ParameterizedTest
   @CsvSource({"-1, 20", "0, 0", "0, 101"})
   void obtenerFilasConError_conPaginadoFueraDeRango_rechazaSinConsultar(int page, int size) {
+    UUID id = UUID.randomUUID();
+
     ValidationException ex =
-        assertThrows(
-            ValidationException.class,
-            () -> service.obtenerFilasConError(UUID.randomUUID(), page, size));
+        assertThrows(ValidationException.class, () -> service.obtenerFilasConError(id, page, size));
 
     assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, ex.getError());
     verifyNoInteractions(archivoRepository);
@@ -247,7 +249,7 @@ class ArchivoDonantesServiceTest {
     ArchivoOutputDTO leido = conRepositorio(repo).obtenerPorId(subido.id());
 
     assertEquals("donantes-octubre.csv", subido.nombre());
-    assertEquals(LocalDateTime.of(2026, 10, 15, 23, 30), subido.subidoEn());
+    assertEquals(LocalDateTime.of(2026, Month.OCTOBER, 15, 23, 30), subido.subidoEn());
     assertEquals("donantes-octubre.csv", leido.nombre());
     assertEquals(subido.subidoEn(), leido.subidoEn());
   }
@@ -255,7 +257,7 @@ class ArchivoDonantesServiceTest {
   @Test
   void listar_sinParametros_devuelveLasVeinteMasRecientesYElTotal_C1() {
     ArchivoDonantesRepositoryEnMemoria repo = new ArchivoDonantesRepositoryEnMemoria();
-    LocalDateTime base = LocalDateTime.of(2026, 10, 1, 10, 0);
+    LocalDateTime base = LocalDateTime.of(2026, Month.OCTOBER, 1, 10, 0);
     IntStream.range(0, 25)
         .forEach(i -> repo.save(new Archivo(i + ".csv", "padron-" + i + ".csv", base.plusDays(i))));
 
@@ -271,8 +273,9 @@ class ArchivoDonantesServiceTest {
   @Test
   void listar_buscaEnElNombreSinTildesNiMayusculas_C2() {
     ArchivoDonantesRepositoryEnMemoria repo = new ArchivoDonantesRepositoryEnMemoria();
-    repo.save(new Archivo("a.csv", "padrón-octubre.csv", LocalDateTime.of(2026, 10, 1, 9, 0)));
-    repo.save(new Archivo("b.csv", "donantes.csv", LocalDateTime.of(2026, 10, 2, 9, 0)));
+    repo.save(
+        new Archivo("a.csv", "padrón-octubre.csv", LocalDateTime.of(2026, Month.OCTOBER, 1, 9, 0)));
+    repo.save(new Archivo("b.csv", "donantes.csv", LocalDateTime.of(2026, Month.OCTOBER, 2, 9, 0)));
 
     Pagina<ArchivoOutputDTO> pagina =
         conRepositorio(repo)
@@ -285,7 +288,7 @@ class ArchivoDonantesServiceTest {
   @Test
   void listar_conVariosEstados_devuelveSoloEsosYSuTotal_C3() {
     ArchivoDonantesRepositoryEnMemoria repo = new ArchivoDonantesRepositoryEnMemoria();
-    LocalDateTime cuando = LocalDateTime.of(2026, 10, 1, 9, 0);
+    LocalDateTime cuando = LocalDateTime.of(2026, Month.OCTOBER, 1, 9, 0);
     repo.save(new Archivo("p.csv", "pendiente.csv", cuando));
     Archivo procesando = new Archivo("q.csv", "procesando.csv", cuando.plusHours(1));
     procesando.marcarComoProcesando();
@@ -316,7 +319,7 @@ class ArchivoDonantesServiceTest {
     ArchivoDonantesRepositoryEnMemoria repo = new ArchivoDonantesRepositoryEnMemoria();
     conRepositorio(repo).cargarArchivoDonantes(subido("tarde.csv", PADRON));
     ArchivoDonantesService conRepo = conRepositorio(repo);
-    LocalDate dia = LocalDate.of(2026, 10, 15);
+    LocalDate dia = LocalDate.of(2026, Month.OCTOBER, 15);
 
     Pagina<ArchivoOutputDTO> elMismoDia =
         conRepo.listar(new FiltroArchivos(null, dia, dia), ParametrosListado.primeraPagina());
@@ -333,8 +336,8 @@ class ArchivoDonantesServiceTest {
     ArchivoDonantesRepositoryEnMemoria repo = new ArchivoDonantesRepositoryEnMemoria();
     Archivo vieja = new Archivo("vieja.csv");
     repo.save(vieja);
-    repo.save(new Archivo("a.csv", "a.csv", LocalDateTime.of(2026, 10, 1, 9, 0)));
-    repo.save(new Archivo("b.csv", "b.csv", LocalDateTime.of(2026, 10, 2, 9, 0)));
+    repo.save(new Archivo("a.csv", "a.csv", LocalDateTime.of(2026, Month.OCTOBER, 1, 9, 0)));
+    repo.save(new Archivo("b.csv", "b.csv", LocalDateTime.of(2026, Month.OCTOBER, 2, 9, 0)));
     ArchivoDonantesService conRepo = conRepositorio(repo);
 
     List<ArchivoOutputDTO> recientes =
@@ -345,7 +348,7 @@ class ArchivoDonantesServiceTest {
             .elementos();
     Pagina<ArchivoOutputDTO> conFecha =
         conRepo.listar(
-            new FiltroArchivos(null, LocalDate.of(2026, 1, 1), null),
+            new FiltroArchivos(null, LocalDate.of(2026, Month.JANUARY, 1), null),
             ParametrosListado.primeraPagina());
     Pagina<ArchivoOutputDTO> conBusqueda =
         conRepo.listar(FiltroArchivos.ninguno(), new ParametrosListado(null, null, "csv", null));
@@ -377,7 +380,8 @@ class ArchivoDonantesServiceTest {
   @Test
   void listar_conDesdePosteriorAHasta_rechazaSinConsultar_C6() {
     FiltroArchivos filtro =
-        new FiltroArchivos(null, LocalDate.of(2026, 10, 16), LocalDate.of(2026, 10, 15));
+        new FiltroArchivos(
+            null, LocalDate.of(2026, Month.OCTOBER, 16), LocalDate.of(2026, Month.OCTOBER, 15));
     ParametrosListado listado = ParametrosListado.primeraPagina();
 
     ValidationException ex =

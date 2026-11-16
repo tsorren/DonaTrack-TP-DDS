@@ -21,6 +21,7 @@ import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -107,7 +108,7 @@ class RolesRepositoriesJpaTest {
   void ultimaDe_devuelveLaVersionMasAltaQueAceptoLaPersona() {
     Humana juan = PersonaMother.juanPerez();
     personas.save(juan);
-    LocalDateTime ayer = LocalDateTime.of(2026, 11, 9, 10, 0);
+    LocalDateTime ayer = LocalDateTime.of(2026, Month.NOVEMBER, 9, 10, 0);
     aceptaciones.save(new AceptacionLegales(juan.getId(), 1, ayer));
     AceptacionLegales nueva = new AceptacionLegales(juan.getId(), 2, ayer.plusDays(1));
     aceptaciones.save(nueva);

@@ -151,7 +151,10 @@ class LimpiadorFotoRecepcionTest {
     FotoLimpia igual = new FotoLimpia(new byte[] {1, 2, 3}, LimpiadorFotoRecepcion.Formato.PNG);
     FotoLimpia otra = new FotoLimpia(new byte[] {1, 2, 4}, LimpiadorFotoRecepcion.Formato.PNG);
 
-    assertThat(una).isEqualTo(igual).hasSameHashCodeAs(igual).isNotEqualTo(otra);
-    assertThat(una).hasToString("FotoLimpia[PNG, 3 bytes]");
+    assertThat(una)
+        .isEqualTo(igual)
+        .hasSameHashCodeAs(igual)
+        .isNotEqualTo(otra)
+        .hasToString("FotoLimpia[PNG, 3 bytes]");
   }
 }

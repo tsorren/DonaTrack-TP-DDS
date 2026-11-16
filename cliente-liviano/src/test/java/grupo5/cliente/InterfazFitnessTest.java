@@ -98,8 +98,8 @@ class InterfazFitnessTest {
   private static final Pattern ANCHO_EN_MEDIA =
       Pattern.compile("\\(\\s*(min|max)-width\\s*:\\s*([^)\\s]+)\\s*\\)");
   private static final Pattern QUIEBRE =
-      Pattern.compile("--medida-quiebre-[\\w-]+\\s*:\\s*([^;]+);");
-  private static final Pattern DECLARACION = Pattern.compile("(--[\\w-]+)\\s*:\\s*([^;]+);");
+      Pattern.compile("--medida-quiebre-[\\w-]++\\s*+:\\s*+([^;]++);");
+  private static final Pattern DECLARACION = Pattern.compile("(--[\\w-]++)\\s*+:\\s*+([^;]++);");
   private static final Pattern ESTILO_EN_LINEA =
       Pattern.compile("<style|\\sstyle\\s*=|th:style", Pattern.CASE_INSENSITIVE);
   private static final Pattern HEX = Pattern.compile("#(\\p{XDigit}{6}|\\p{XDigit}{3})");
@@ -282,7 +282,7 @@ class InterfazFitnessTest {
   private static final Pattern URL_CSS = Pattern.compile("url\\([^)]*\\)");
   private static final Pattern CLASE_CSS = Pattern.compile("\\.([A-Za-z_][\\w-]*)");
   private static final Pattern DURACION =
-      Pattern.compile("(?<![\\w.-])(?:\\d+\\.?\\d*|\\.\\d+)m?s\\b");
+      Pattern.compile("(?<![\\w.-])(?:\\d++(?:\\.\\d*+)?+|\\.\\d++)m?s\\b");
   private static final Pattern CURVA =
       Pattern.compile("cubic-bezier\\(|steps\\(|\\bease(?:-in-out|-in|-out)?\\b");
   private static final Pattern DE_PANTALLA_PROHIBIDO =

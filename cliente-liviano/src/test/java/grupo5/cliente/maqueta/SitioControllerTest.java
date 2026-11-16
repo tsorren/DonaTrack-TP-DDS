@@ -154,7 +154,9 @@ class SitioControllerTest {
               .getContentAsString();
       assertTrue(
           Pattern.compile(
-                  "<script[^>]*src=\"" + alpine + "[\\d.]+/dist/cdn\\.min\\.js\"[^>]*\\bdefer\\b")
+                  "<script(?:\\s[^>\\s]*+)*?\\ssrc=\""
+                      + alpine
+                      + "[\\d.]++/dist/cdn\\.min\\.js\"(?:\\s[^>\\s]*+)*?\\sdefer\\b")
               .matcher(html)
               .find(),
           pantalla + ": falta Alpine con defer");

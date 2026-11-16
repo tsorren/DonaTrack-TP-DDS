@@ -80,8 +80,8 @@ class RecibidasRestTest {
       """
           .formatted(ALIMENTOS);
 
-  @Test
-  void agrupaEnElOrdenDeLoQueHayQueHacerConQuienDonoYSoloLasRecibidasDelMes() {
+  /** Las ocho de {@link #OCHO}, "hoy" el 8 de noviembre de 2026 a las 18:30 en Buenos Aires. */
+  private RecibidasVista recibidasDeLasOcho() {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer donaciones = MockRestServiceServer.bindTo(builder).build();
     donaciones.expect(requestTo(INICIO)).andRespond(withSuccess(OCHO, MediaType.APPLICATION_JSON));
@@ -94,6 +94,13 @@ class RecibidasRestTest {
     RecibidasVista vista = adaptador.recibidas(ENTIDAD);
 
     donaciones.verify();
+    return vista;
+  }
+
+  @Test
+  void agrupaEnElOrdenDeLoQueHayQueHacerYLasDeCaminoConQuienDono() {
+    RecibidasVista vista = recibidasDeLasOcho();
+
     List<Recibida> lista = vista.asignadas();
     assertEquals(
         List.of("problema", "problema", "camino", SALIR, SALIR, SALIR, "recibida"),
@@ -117,6 +124,11 @@ class RecibidasRestTest {
     assertNull(lentejas.pedido());
     assertEquals("salió del depósito el 8 de noviembre", lentejas.breve());
     assertNull(lentejas.llego());
+  }
+
+  @Test
+  void lasQueEsperanElCamionYSoloLasRecibidasDelMesSalenConQuienDono() {
+    List<Recibida> lista = recibidasDeLasOcho().asignadas();
 
     Recibida leche = lista.get(3);
     assertEquals("Lista para entregar desde el 6 de noviembre. Espera el camión.", leche.paso());

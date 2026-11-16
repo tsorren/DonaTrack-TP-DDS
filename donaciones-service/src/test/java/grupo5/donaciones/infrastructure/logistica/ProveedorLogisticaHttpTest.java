@@ -196,9 +196,9 @@ class ProveedorLogisticaHttpTest {
   @Test
   void noCancelaEntregas_HB19() {
     assertFalse(proveedor.admiteCancelacion());
+    UUID envioId = UUID.randomUUID();
     UUID donacionId = UUID.randomUUID();
     assertThrows(
-        UnsupportedOperationException.class,
-        () -> proveedor.cancelar(UUID.randomUUID(), donacionId, "t"));
+        UnsupportedOperationException.class, () -> proveedor.cancelar(envioId, donacionId, "t"));
   }
 }

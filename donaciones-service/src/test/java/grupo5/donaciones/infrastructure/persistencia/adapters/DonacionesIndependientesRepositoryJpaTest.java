@@ -34,6 +34,7 @@ import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
@@ -533,6 +534,7 @@ class DonacionesIndependientesRepositoryJpaTest {
   @Test
   void actualizar_itemConUnItemNormalizadoInexistente_loRechazaLaBase() {
     independientes.save(nueva(10));
+    UUID inexistente = UUID.randomUUID();
 
     // Por SQL: por JPA, Hibernate ya rechaza la referencia al no encontrar el ítem normalizado
     assertThrows(
@@ -540,19 +542,19 @@ class DonacionesIndependientesRepositoryJpaTest {
         () ->
             jdbc.update(
                 "UPDATE donaciones.item_donacion_independiente SET id_item_normalizado = ?",
-                UUID.randomUUID()));
+                inexistente));
   }
 
   @Test
   void borrar_itemNormalizadoUsadoPorUnaDonacionIndependiente_loRechazaLaBase() {
     independientes.save(nueva(10));
+    UUID normalizadoId = normalizado.getId();
 
     assertThrows(
         DataIntegrityViolationException.class,
         () ->
             jdbc.update(
-                "DELETE FROM donaciones.item_donacion_normalizado WHERE id = ?",
-                normalizado.getId()));
+                "DELETE FROM donaciones.item_donacion_normalizado WHERE id = ?", normalizadoId));
   }
 
   @Test
@@ -560,14 +562,16 @@ class DonacionesIndependientesRepositoryJpaTest {
     DonacionIndependiente donacion = nueva(10);
     NecesidadRecurrente necesidad = recurrente();
     independientes.save(donacion);
+    UUID periodoId = necesidad.periodoActualId();
+    UUID donacionId = donacion.getId();
 
     assertThrows(
         DataIntegrityViolationException.class,
         () ->
             jdbc.update(
                 "UPDATE donaciones.donacion_independiente SET id_periodo = ? WHERE id = ?",
-                necesidad.periodoActualId(),
-                donacion.getId()));
+                periodoId,
+                donacionId));
   }
 
   @Test
@@ -628,7 +632,7 @@ class DonacionesIndependientesRepositoryJpaTest {
 
   @Test
   void guardarYLeer_fotosDeRecepcion_conservaFechaYOrden() {
-    LocalDateTime fecha = LocalDateTime.of(2026, 11, 8, 13, 0);
+    LocalDateTime fecha = LocalDateTime.of(2026, Month.NOVEMBER, 8, 13, 0);
     List<String> fotos = List.of("https://ejemplo.org/b.jpg", "https://ejemplo.org/a.jpg");
     DonacionIndependiente donacion = entregadaCon(fecha, fotos);
 
@@ -641,7 +645,7 @@ class DonacionesIndependientesRepositoryJpaTest {
 
   @Test
   void destacadas_filtranPorFechaOrdenanYLimitan() {
-    LocalDateTime ahora = LocalDateTime.of(2026, 11, 8, 12, 0);
+    LocalDateTime ahora = LocalDateTime.of(2026, Month.NOVEMBER, 8, 12, 0);
     List<String> fotos = List.of("https://ejemplo.org/a.jpg");
     DonacionIndependiente vieja = entregadaCon(ahora.minusDays(10), fotos);
     DonacionIndependiente nueva = entregadaCon(ahora.minusDays(1), fotos);

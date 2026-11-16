@@ -21,6 +21,7 @@ import grupo5.notificaciones.services.mappers.EventoMapper;
 import grupo5.notificaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.notificaciones.services.mappers.PersonaMapper;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -41,7 +42,7 @@ class FlujoEventosNotificacionesTest {
 
   private Persona donante;
   private Persona beneficiario;
-  private final LocalDateTime fechaBase = LocalDateTime.of(2026, 10, 16, 10, 0);
+  private final LocalDateTime fechaBase = LocalDateTime.of(2026, Month.OCTOBER, 16, 10, 0);
 
   @BeforeEach
   void setUp() {

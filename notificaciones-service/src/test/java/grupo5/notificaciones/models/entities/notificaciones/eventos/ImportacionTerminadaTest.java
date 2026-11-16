@@ -7,6 +7,7 @@ import grupo5.notificaciones.models.entities.notificaciones.TipoEvento;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -15,8 +16,8 @@ import org.junit.jupiter.api.Test;
 /** El aviso de importación terminada de la Administración (R11-30, ficha §6). */
 class ImportacionTerminadaTest {
 
-  private static final LocalDateTime SUBIDO = LocalDateTime.of(2026, 11, 12, 18, 30);
-  private static final LocalDateTime FIN = LocalDateTime.of(2026, 11, 12, 18, 45);
+  private static final LocalDateTime SUBIDO = LocalDateTime.of(2026, Month.NOVEMBER, 12, 18, 30);
+  private static final LocalDateTime FIN = LocalDateTime.of(2026, Month.NOVEMBER, 12, 18, 45);
   private final Persona administracion =
       new Persona(UUID.randomUUID(), new ArrayList<>(), "Administración", TipoPersona.HUMANA);
 

@@ -84,9 +84,10 @@ class ContactoServiceTest {
       service.recibir(mensaje("ana@ejemplo.org"), IP);
     }
 
+    var sexto = mensaje("ana@ejemplo.org");
+
     BusinessStateException ex =
-        assertThrows(
-            BusinessStateException.class, () -> service.recibir(mensaje("ana@ejemplo.org"), IP));
+        assertThrows(BusinessStateException.class, () -> service.recibir(sexto, IP));
     assertEquals(ErrorCatalog.CONTACTO_LIMITE_EXCEDIDO, ex.getError());
     assertEquals(5, repository.contar(null));
   }
@@ -97,8 +98,9 @@ class ContactoServiceTest {
       service.recibir(mensaje("ana@ejemplo.org"), IP);
     }
 
-    assertThrows(
-        BusinessStateException.class, () -> service.recibir(mensaje("  ANA@Ejemplo.org "), IP));
+    var otraGrafia = mensaje("  ANA@Ejemplo.org ");
+
+    assertThrows(BusinessStateException.class, () -> service.recibir(otraGrafia, IP));
   }
 
   @Test
@@ -121,9 +123,10 @@ class ContactoServiceTest {
       service.recibir(mensaje("persona" + i + "@ejemplo.org"), IP + ", 10.0.0.5");
     }
 
+    var mensaje21 = mensaje("otra@ejemplo.org");
+
     BusinessStateException ex =
-        assertThrows(
-            BusinessStateException.class, () -> service.recibir(mensaje("otra@ejemplo.org"), IP));
+        assertThrows(BusinessStateException.class, () -> service.recibir(mensaje21, IP));
     assertEquals(ErrorCatalog.CONTACTO_LIMITE_EXCEDIDO, ex.getError());
   }
 

@@ -31,6 +31,7 @@ import grupo5.notificaciones.services.IPersonasService;
 import grupo5.notificaciones.services.impl.ContactoService;
 import grupo5.notificaciones.services.impl.NotificacionService;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -80,7 +81,7 @@ class SeguridadNotificacionesTest {
   private static final UUID NOTIFICACION_PROPIA = UUID.randomUUID();
   private static final UUID NOTIFICACION_AJENA = UUID.randomUUID();
   private static final UUID NOTIFICACION_INEXISTENTE = UUID.randomUUID();
-  private static final LocalDateTime FECHA = LocalDateTime.of(2026, 6, 18, 12, 0, 0);
+  private static final LocalDateTime FECHA = LocalDateTime.of(2026, Month.JUNE, 18, 12, 0, 0);
   private static final String NOTIFICACIONES = "/api/notificaciones";
   private static final String PERSONAS = "/api/notificaciones/personas";
   private static final String CONTACTO = "/api/contacto";

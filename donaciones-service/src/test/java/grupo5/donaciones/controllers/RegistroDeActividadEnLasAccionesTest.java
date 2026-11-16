@@ -90,8 +90,9 @@ class RegistroDeActividadEnLasAccionesTest extends AbstractDonacionesWebMvcTest 
   @Test
   void marcarVencida_registraLaDonacionAunqueXActorDigaOtraCosa() throws Exception {
     UUID id = UUID.randomUUID();
+    DonacionIndependienteResponseDTO respuesta = mock(DonacionIndependienteResponseDTO.class);
     when(donacionesIndependientesService.cambiarEstado(eq(id), any(), eq("otra-cuenta")))
-        .thenReturn(mock(DonacionIndependienteResponseDTO.class));
+        .thenReturn(respuesta);
 
     mockMvc
         .perform(
@@ -109,8 +110,8 @@ class RegistroDeActividadEnLasAccionesTest extends AbstractDonacionesWebMvcTest 
   @Test
   void otroCambioDeEstado_noEsUnaAccionDelRegistro() throws Exception {
     UUID id = UUID.randomUUID();
-    when(donacionesIndependientesService.cambiarEstado(eq(id), any(), any()))
-        .thenReturn(mock(DonacionIndependienteResponseDTO.class));
+    DonacionIndependienteResponseDTO respuesta = mock(DonacionIndependienteResponseDTO.class);
+    when(donacionesIndependientesService.cambiarEstado(eq(id), any(), any())).thenReturn(respuesta);
 
     mockMvc
         .perform(

@@ -27,6 +27,7 @@ import grupo5.donaciones.models.repositories.listados.Paginado;
 import grupo5.donaciones.models.repositories.listados.Tramo;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -93,10 +94,10 @@ class ListadosEnMemoriaTest {
     activa.agregarMedioDeContacto(PersonaMother.correoValido());
     Humana deBaja = PersonaMother.mariaGomez();
     deBaja.agregarMedioDeContacto(PersonaMother.correoValido());
-    Humana anonimizada = new Humana("Ana", "Lopez", LocalDate.of(1992, 3, 3));
+    Humana anonimizada = new Humana("Ana", "Lopez", LocalDate.of(1992, Month.MARCH, 3));
     anonimizada.agregarMedioDeContacto(PersonaMother.correoValido());
     anonimizada.anonimizar();
-    Humana sinCorreo = new Humana("Luis", "Diaz", LocalDate.of(1980, 1, 1));
+    Humana sinCorreo = new Humana("Luis", "Diaz", LocalDate.of(1980, Month.JANUARY, 1));
     Donante esperado = donanteDe(activa, true, LocalDateTime.now());
     donanteDe(deBaja, false, LocalDateTime.now());
     donanteDe(anonimizada, true, LocalDateTime.now());
@@ -118,7 +119,7 @@ class ListadosEnMemoriaTest {
 
   @Test
   void donantes_ordenPorAltaYPorNombre() {
-    LocalDateTime hoy = LocalDateTime.of(2026, 11, 11, 10, 0);
+    LocalDateTime hoy = LocalDateTime.of(2026, Month.NOVEMBER, 11, 10, 0);
     Donante viejo = donanteDe(PersonaMother.mariaGomez(), true, hoy.minusDays(10));
     Donante nuevo = donanteDe(PersonaMother.juanPerez(), true, hoy);
 
@@ -136,7 +137,7 @@ class ListadosEnMemoriaTest {
 
   @Test
   void donantes_porPeriodoDeAlta_diasInclusivos() {
-    LocalDateTime dia = LocalDateTime.of(2026, 11, 10, 23, 59);
+    LocalDateTime dia = LocalDateTime.of(2026, Month.NOVEMBER, 10, 23, 59);
     Donante antes = donanteDe(PersonaMother.mariaGomez(), true, dia.minusDays(5));
     Donante enElDia = donanteDe(PersonaMother.juanPerez(), true, dia);
     Donante despues = donanteDe(PersonaMother.empresaSA(), true, dia.plusDays(3));
@@ -152,8 +153,8 @@ class ListadosEnMemoriaTest {
                 null,
                 OrdenDonantes.NUEVOS,
                 PRIMERA,
-                LocalDate.of(2026, 11, 10),
-                LocalDate.of(2026, 11, 10)));
+                LocalDate.of(2026, Month.NOVEMBER, 10),
+                LocalDate.of(2026, Month.NOVEMBER, 10)));
     Tramo<Donante> desdeElDia =
         donantes.buscar(
             new CriterioDonantes(
@@ -165,7 +166,7 @@ class ListadosEnMemoriaTest {
                 null,
                 OrdenDonantes.NUEVOS,
                 PRIMERA,
-                LocalDate.of(2026, 11, 10),
+                LocalDate.of(2026, Month.NOVEMBER, 10),
                 null));
     Tramo<Donante> hastaElDia =
         donantes.buscar(
@@ -179,7 +180,7 @@ class ListadosEnMemoriaTest {
                 OrdenDonantes.NUEVOS,
                 PRIMERA,
                 null,
-                LocalDate.of(2026, 11, 10)));
+                LocalDate.of(2026, Month.NOVEMBER, 10)));
 
     assertEquals(List.of(enElDia.getId()), ids(delDia));
     assertEquals(1, delDia.total());
@@ -265,8 +266,8 @@ class ListadosEnMemoriaTest {
         donaciones.buscar(
             new CriterioDonaciones(
                 donanteId,
-                LocalDate.of(2000, 1, 1),
-                LocalDate.of(2000, 1, 2),
+                LocalDate.of(2000, Month.JANUARY, 1),
+                LocalDate.of(2000, Month.JANUARY, 2),
                 null,
                 OrdenPorFecha.RECIENTES,
                 PRIMERA));

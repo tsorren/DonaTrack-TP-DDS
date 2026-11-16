@@ -17,6 +17,7 @@ import grupo5.donaciones.models.repositories.listados.Paginado;
 import grupo5.donaciones.models.repositories.listados.Tramo;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -164,7 +165,7 @@ class ArchivoDonantesRepositoryJpaAdapterTest {
 
   @Test
   void guardarYLeer_conNombreYFechaDeSubida_losConserva_C7() {
-    LocalDateTime cuando = LocalDateTime.of(2026, 10, 15, 18, 2);
+    LocalDateTime cuando = LocalDateTime.of(2026, Month.OCTOBER, 15, 18, 2);
     Archivo original = new Archivo("/tmp/h.csv", "donantes-octubre.csv", cuando);
 
     repository.save(original);
@@ -177,11 +178,13 @@ class ArchivoDonantesRepositoryJpaAdapterTest {
   @Test
   void buscar_porNombreSinTildesYEnHoraArgentina_C2_C4() {
     repository.save(
-        new Archivo("/tmp/i.csv", "padrón-octubre.csv", LocalDateTime.of(2026, 10, 15, 23, 30)));
+        new Archivo(
+            "/tmp/i.csv", "padrón-octubre.csv", LocalDateTime.of(2026, Month.OCTOBER, 15, 23, 30)));
     repository.save(
-        new Archivo("/tmp/j.csv", "donantes.csv", LocalDateTime.of(2026, 10, 16, 0, 10)));
+        new Archivo(
+            "/tmp/j.csv", "donantes.csv", LocalDateTime.of(2026, Month.OCTOBER, 16, 0, 10)));
     repository.save(new Archivo("/tmp/k.csv"));
-    LocalDate dia = LocalDate.of(2026, 10, 15);
+    LocalDate dia = LocalDate.of(2026, Month.OCTOBER, 15);
 
     Tramo<Archivo> porNombre = repository.buscar(criterio(Set.of(), null, null, "PADRON"));
     Tramo<Archivo> delDia = repository.buscar(criterio(Set.of(), dia, dia, null));
@@ -200,10 +203,12 @@ class ArchivoDonantesRepositoryJpaAdapterTest {
   void buscar_porEstadoYConLasViejasAlFinal_C3_C5() {
     Archivo vieja = new Archivo("/tmp/l.csv");
     repository.save(vieja);
-    Archivo procesando = new Archivo("/tmp/m.csv", "m.csv", LocalDateTime.of(2026, 10, 2, 9, 0));
+    Archivo procesando =
+        new Archivo("/tmp/m.csv", "m.csv", LocalDateTime.of(2026, Month.OCTOBER, 2, 9, 0));
     procesando.marcarComoProcesando();
     repository.save(procesando);
-    repository.save(new Archivo("/tmp/n.csv", "n.csv", LocalDateTime.of(2026, 10, 1, 9, 0)));
+    repository.save(
+        new Archivo("/tmp/n.csv", "n.csv", LocalDateTime.of(2026, Month.OCTOBER, 1, 9, 0)));
 
     Tramo<Archivo> enCurso =
         repository.buscar(

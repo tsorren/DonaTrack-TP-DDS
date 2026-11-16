@@ -107,7 +107,7 @@ class BajoTierraRotulosTest {
         Browser navegador = playwright.chromium().launch()) {
       Page pagina = abrir(navegador, AnchosDeReferencia.CELULAR);
       pagina.evaluate(ALARGAR, List.of(ROTULOS, true, ""));
-      assertThat(pagina.evaluate(DESBORDA)).isEqualTo(false);
+      assertThat((Boolean) pagina.evaluate(DESBORDA)).isFalse();
       pagina.close();
     }
   }

@@ -154,8 +154,8 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
                 null,
                 true,
                 categoriaId,
-                LocalDate.of(2026, 11, 1),
-                LocalDate.of(2026, 11, 12)),
+                LocalDate.of(2026, Month.NOVEMBER, 1),
+                LocalDate.of(2026, Month.NOVEMBER, 12)),
             new ParametrosListado(1, 50, "gómez", "NOMBRE"));
   }
 
@@ -310,12 +310,12 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
             40,
             List.of(),
             "donantes-octubre.csv",
-            LocalDateTime.of(2026, 10, 15, 18, 2));
+            LocalDateTime.of(2026, Month.OCTOBER, 15, 18, 2));
     when(archivoDonantesService.listar(
             new FiltroArchivos(
                 List.of(EstadoArchivo.PENDIENTE, EstadoArchivo.PROCESANDO),
-                LocalDate.of(2026, 10, 1),
-                LocalDate.of(2026, 10, 31)),
+                LocalDate.of(2026, Month.OCTOBER, 1),
+                LocalDate.of(2026, Month.OCTOBER, 31)),
             new ParametrosListado(0, 1, "octubre", "antiguas")))
         .thenReturn(new Pagina<>(List.of(output), 2));
 
@@ -399,7 +399,7 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
             0,
             List.of(),
             "donantes-octubre.csv",
-            LocalDateTime.of(2026, 10, 15, 18, 2));
+            LocalDateTime.of(2026, Month.OCTOBER, 15, 18, 2));
     when(archivoDonantesService.cargarArchivoDonantes(any(ArchivoDonantesSubido.class)))
         .thenReturn(output);
 

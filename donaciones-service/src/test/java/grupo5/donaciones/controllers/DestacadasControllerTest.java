@@ -16,6 +16,7 @@ import grupo5.donaciones.dto.donaciones.PeriodoDestacadas;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionDestacadaDTO;
 import grupo5.donaciones.services.impl.DestacadasService;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -49,7 +50,7 @@ class DestacadasControllerTest {
                         "UNIDADES",
                         UUID.randomUUID(),
                         "Comedor Los Pibes",
-                        LocalDateTime.of(2026, 11, 8, 13, 0),
+                        LocalDateTime.of(2026, Month.NOVEMBER, 8, 13, 0),
                         List.of("https://ejemplo.org/a.jpg"))),
                 12));
 

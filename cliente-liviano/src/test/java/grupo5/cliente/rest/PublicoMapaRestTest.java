@@ -42,8 +42,8 @@ class PublicoMapaRestTest {
         new PublicoMapaRest(ClientesHttp.cliente(builder, LOGISTICA, LogisticaApi.class), hoy);
   }
 
-  @Test
-  void agrupaLasEntregasDelUltimoMesPorLugarYDiceLoQueNoSabe() {
+  /** Cuatro entregas del último mes: dos en el mismo lugar, una sin nombre y una sin fecha. */
+  private PublicoMapaVista mapaConCuatroEntregas() {
     apis.expect(requestTo(MAPA_DEL_MES))
         .andRespond(
             withSuccess(
@@ -65,6 +65,13 @@ class PublicoMapaRestTest {
     PublicoMapaVista mapa = adaptador.mapa(null);
 
     apis.verify();
+    return mapa;
+  }
+
+  @Test
+  void agrupaLasEntregasDelUltimoMesPorLugar() {
+    PublicoMapaVista mapa = mapaConCuatroEntregas();
+
     assertEquals(2, mapa.estaciones().size());
     Estacion palermo = mapa.estaciones().getFirst();
     assertEquals(1, palermo.numero());
@@ -83,6 +90,12 @@ class PublicoMapaRestTest {
     assertEquals(2, sinNombre.numero());
     assertEquals("Lugar sin nombre", sinNombre.nombre());
     assertEquals("", sinNombre.barrio());
+  }
+
+  @Test
+  void diceElRangoLoQueNoSabeYCuantasEntregasHuboEnElPeriodo() {
+    PublicoMapaVista mapa = mapaConCuatroEntregas();
+
     assertEquals(3, mapa.todas().size());
     assertEquals("del 11 de octubre al 10 de noviembre de 2026", mapa.rango());
     assertEquals("10 de noviembre de 2026, 14:30", mapa.actualizado());

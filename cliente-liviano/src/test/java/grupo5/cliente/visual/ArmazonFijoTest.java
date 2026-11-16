@@ -92,10 +92,11 @@ class ArmazonFijoTest {
         pagina -> {
           pagina.navigate(url("/donante-inicio"));
           assertThat(
-                  pagina.evaluate(
-                      "() => document.getAnimations().some(a => a.animationName"
-                          + " === 'pantalla-de-carga')"))
-              .isEqualTo(true);
+                  (Boolean)
+                      pagina.evaluate(
+                          "() => document.getAnimations().some(a => a.animationName"
+                              + " === 'pantalla-de-carga')"))
+              .isTrue();
           assertThat(
                   pagina.evaluate(
                       "() => getComputedStyle(document.body, '::before').pointerEvents"))
@@ -112,8 +113,8 @@ class ArmazonFijoTest {
         true,
         pagina -> {
           pagina.navigate(url("/donante-inicio"));
-          assertThat(pagina.evaluate(CARGA_VISIBLE)).isEqualTo(false);
-          assertThat(pagina.evaluate("() => document.getAnimations().length")).isEqualTo(0);
+          assertThat((Boolean) pagina.evaluate(CARGA_VISIBLE)).isFalse();
+          assertThat((Integer) pagina.evaluate("() => document.getAnimations().length")).isZero();
         });
   }
 

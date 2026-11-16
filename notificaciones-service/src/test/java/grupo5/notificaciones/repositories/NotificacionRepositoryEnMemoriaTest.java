@@ -12,6 +12,7 @@ import grupo5.notificaciones.models.repositories.PaginaBandeja;
 import grupo5.notificaciones.models.repositories.impl.NotificacionRepositoryEnMemoria;
 import grupo5.notificaciones.mothers.NotificacionMother;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -91,7 +92,7 @@ class NotificacionRepositoryEnMemoriaTest {
 
   // ==================== Bandeja paginada (R11-14) ====================
 
-  private static final LocalDateTime BASE = LocalDateTime.of(2026, 10, 1, 9, 0);
+  private static final LocalDateTime BASE = LocalDateTime.of(2026, Month.OCTOBER, 1, 9, 0);
 
   private static ConsultaBandeja pagina(int pagina, int tamanio) {
     return new ConsultaBandeja(null, null, Set.of(), Set.of(), false, pagina, tamanio);

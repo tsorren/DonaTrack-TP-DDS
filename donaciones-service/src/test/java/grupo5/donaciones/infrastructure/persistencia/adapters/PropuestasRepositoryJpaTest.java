@@ -40,6 +40,7 @@ import grupo5.donaciones.models.repositories.listados.PropuestaEnListado;
 import grupo5.donaciones.models.repositories.listados.StockEnPropuestas;
 import grupo5.donaciones.models.repositories.listados.Tramo;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -271,12 +272,12 @@ class PropuestasRepositoryJpaTest {
   @Test
   void borrar_donacionIndependienteEnUnaPropuesta_loRechazaLaBase() {
     propuestas.save(propuestaCon(donacion));
+    UUID donacionId = donacion.getId();
 
     assertThrows(
         DataIntegrityViolationException.class,
         () ->
-            jdbc.update(
-                "DELETE FROM donaciones.donacion_independiente WHERE id = ?", donacion.getId()));
+            jdbc.update("DELETE FROM donaciones.donacion_independiente WHERE id = ?", donacionId));
   }
 
   @Test
@@ -621,8 +622,8 @@ class PropuestasRepositoryJpaTest {
                         null,
                         null,
                         null,
-                        LocalDate.of(2026, 11, 10),
-                        LocalDate.of(2026, 11, 12))))));
+                        LocalDate.of(2026, Month.NOVEMBER, 10),
+                        LocalDate.of(2026, Month.NOVEMBER, 12))))));
 
     // Por la fecha de la decisión: las que no la tienen, al final o primero
     assertEquals(

@@ -69,8 +69,8 @@ class DonanteMisionesRestTest {
             nombre);
   }
 
-  @Test
-  void laPrimeraSinCompletarEstaEnCursoLaSiguienteEsperaYLasDeMasAdelanteNoSeAbren() {
+  /** Dos completas, una en curso, una que espera y una cerrada, con un ascenso a Sostenedor. */
+  private DonanteMisionesVista misionesConDosCompletasYUnaEnCurso() {
     donanteDe("HUMANA");
     apis.expect(requestTo(BASE))
         .andRespond(
@@ -106,6 +106,13 @@ class DonanteMisionesRestTest {
     DonanteMisionesVista vista = adaptador.misiones(DONANTE);
 
     apis.verify();
+    return vista;
+  }
+
+  @Test
+  void laPrimeraSinCompletarEstaEnCursoLaSiguienteEsperaYLasDeMasAdelanteNoSeAbren() {
+    DonanteMisionesVista vista = misionesConDosCompletasYUnaEnCurso();
+
     assertTrue(vista.persona());
     assertFalse(vista.nueva());
     assertEquals("Lucía", vista.nombre());
@@ -118,6 +125,13 @@ class DonanteMisionesRestTest {
     assertEquals(
         List.of("completa", "completa", "curso", "espera", "cerrada"),
         m.stream().map(Mision::estado).toList());
+  }
+
+  @Test
+  void lasMisionesYLasCategoriasSalenConSusCuentasLaBienvenidaYLoQueEspera() {
+    DonanteMisionesVista vista = misionesConDosCompletasYUnaEnCurso();
+
+    List<Mision> m = vista.misiones();
     assertEquals("3 de agosto de 2026", m.getFirst().fecha());
     assertEquals("Colaborador", m.getFirst().categoria());
     assertEquals("Gran Aporte", m.get(2).nombre());

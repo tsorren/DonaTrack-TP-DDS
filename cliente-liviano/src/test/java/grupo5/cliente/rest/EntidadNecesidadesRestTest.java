@@ -55,8 +55,8 @@ class EntidadNecesidadesRestTest {
           ClientesHttp.cliente(builder, "http://donaciones", DonacionesApi.class),
           Clock.fixed(Instant.parse("2026-11-08T21:30:00Z"), ZoneOffset.UTC));
 
-  @Test
-  void lasVigentesConSusEntregasQuienDonoYSusPeriodos() {
+  /** Dos vigentes (lentejas y sillas) y una dada de baja, con entregas, quién donó y períodos. */
+  private EntidadNecesidadesVista vistaConDosVigentesYUnaDadaDeBaja() {
     servidor
         .expect(requestTo(API + "necesidades?entidadId=" + ENTIDAD))
         .andRespond(
@@ -164,6 +164,13 @@ class EntidadNecesidadesRestTest {
     EntidadNecesidadesVista vista = adaptador.necesidades(ENTIDAD, "");
 
     servidor.verify();
+    return vista;
+  }
+
+  @Test
+  void lasVigentesSalenConSuPlazoSuCambioYSuMotivo() {
+    EntidadNecesidadesVista vista = vistaConDosVigentesYUnaDadaDeBaja();
+
     assertEquals("8 de noviembre de 2026", vista.al());
     assertEquals("2026-11-08", vista.hoy());
     assertEquals(2, vista.todas().size());
@@ -180,6 +187,13 @@ class EntidadNecesidadesRestTest {
     assertEquals("Hoy pasó de 30 a 40 kg.", lentejas.cambio());
     assertEquals("Cambiada hoy", lentejas.cambiada());
     assertEquals("Para el almuerzo.", lentejas.motivo());
+  }
+
+  @Test
+  void lasLentejasLlevanSusEntregasQuienDonoYSusPeriodos() {
+    EntidadNecesidadesVista vista = vistaConDosVigentesYUnaDadaDeBaja();
+
+    Necesidad lentejas = vista.todas().getFirst();
     assertEquals(1, lentejas.camino());
     assertEquals("en-camino", lentejas.entregas().getFirst().tono());
     assertEquals(
@@ -194,7 +208,13 @@ class EntidadNecesidadesRestTest {
     assertFalse(lentejas.hayMasEntregas());
     assertEquals("Desde octubre de 2026", lentejas.desde());
     assertEquals(
-        List.of("curso", "parte"), lentejas.periodos().stream().map(p -> p.tono()).toList());
+        List.of("curso", "parte"),
+        lentejas.periodos().stream().map(EntidadNecesidadesVista.Periodo::tono).toList());
+  }
+
+  @Test
+  void lasSillasLlevanElSelloDeLaPuertaYLasTerminadasYElCatalogoSalenAparte() {
+    EntidadNecesidadesVista vista = vistaConDosVigentesYUnaDadaDeBaja();
 
     Necesidad sillas = vista.todas().get(1);
     assertEquals("cat-muebles", sillas.categoria());
@@ -218,7 +238,8 @@ class EntidadNecesidadesRestTest {
     assertEquals("Frazadas · 20 unidades", vista.terminadas().getFirst().titulo());
     assertEquals("La diste de baja.", vista.terminadas().getFirst().texto());
     assertEquals(
-        List.of("Alimentos", "Muebles"), vista.catalogo().stream().map(g -> g.nombre()).toList());
+        List.of("Alimentos", "Muebles"),
+        vista.catalogo().stream().map(EntidadNecesidadesVista.Grupo::nombre).toList());
     assertEquals(LEGUMBRES, vista.catalogo().getFirst().opciones().getFirst().id());
     assertEquals("Lentejas secas (kg)", vista.catalogo().getFirst().opciones().getFirst().texto());
   }

@@ -104,7 +104,9 @@ class PerfilServiceTest {
   void siDonacionesFallaAlCrearNoSeTocaLaCuenta() {
     when(donaciones.crear(any())).thenThrow(new IllegalStateException("caído"));
 
-    assertThatThrownBy(() -> servicio.completar(CUENTA, new DonantePersona("Ana", "Pérez")))
+    var donante = new DonantePersona("Ana", "Pérez");
+
+    assertThatThrownBy(() -> servicio.completar(CUENTA, donante))
         .isInstanceOf(IllegalStateException.class);
 
     verify(cuentas, never()).vincular(any(), any(), any());
@@ -115,7 +117,9 @@ class PerfilServiceTest {
   void siFallaElAltaDelDonanteSeDaDeBajaLaPersona() {
     doThrow(new IllegalStateException("409")).when(donaciones).registrarDonante(PERSONA);
 
-    assertThatThrownBy(() -> servicio.completar(CUENTA, new DonantePersona("Ana", "Pérez")))
+    var donante = new DonantePersona("Ana", "Pérez");
+
+    assertThatThrownBy(() -> servicio.completar(CUENTA, donante))
         .isInstanceOf(IllegalStateException.class);
 
     verify(donaciones).eliminar(PERSONA);

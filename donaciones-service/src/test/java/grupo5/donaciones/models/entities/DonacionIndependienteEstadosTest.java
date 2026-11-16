@@ -353,13 +353,10 @@ class DonacionIndependienteEstadosTest {
   @Test
   void elPatchAEnDeposito_sigueSinPoderLiberarUnaAsignada() {
     donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
+    SolicitudCambioEstadoDonacionIndependiente solicitud =
+        new SolicitudCambioEstadoDonacionIndependiente(TipoEstadoDonacion.EN_DEPOSITO, ACTOR);
 
-    assertThrows(
-        BusinessStateException.class,
-        () ->
-            donacion.cambiarEstado(
-                new SolicitudCambioEstadoDonacionIndependiente(
-                    TipoEstadoDonacion.EN_DEPOSITO, ACTOR)));
+    assertThrows(BusinessStateException.class, () -> donacion.cambiarEstado(solicitud));
   }
 
   // ===================== EN_PUERTA (HB-22) =====================

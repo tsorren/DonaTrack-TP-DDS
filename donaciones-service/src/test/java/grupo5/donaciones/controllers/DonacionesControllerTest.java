@@ -132,7 +132,10 @@ class DonacionesControllerTest extends AbstractDonacionesWebMvcTest {
 
     verify(donacionesService)
         .buscar(
-            new FiltroDonaciones(donanteId, LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 30)),
+            new FiltroDonaciones(
+                donanteId,
+                LocalDate.of(2026, Month.NOVEMBER, 1),
+                LocalDate.of(2026, Month.NOVEMBER, 30)),
             new ParametrosListado(2, 10, "arroz", "ANTIGUAS"));
   }
 

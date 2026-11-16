@@ -64,6 +64,7 @@ import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
 import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -741,8 +742,8 @@ class PropuestaDeAsignacionServiceTest {
             null,
             categoria,
             "sub-de-ana",
-            LocalDate.of(2026, 11, 1),
-            LocalDate.of(2026, 11, 12)),
+            LocalDate.of(2026, Month.NOVEMBER, 1),
+            LocalDate.of(2026, Month.NOVEMBER, 12)),
         new ParametrosListado(null, null, "  arroz ", "decision_reciente"));
 
     verify(propuestaRepository)
@@ -759,8 +760,8 @@ class PropuestaDeAsignacionServiceTest {
                     "arroz",
                     categoria,
                     "sub-de-ana",
-                    LocalDate.of(2026, 11, 1),
-                    LocalDate.of(2026, 11, 12))));
+                    LocalDate.of(2026, Month.NOVEMBER, 1),
+                    LocalDate.of(2026, Month.NOVEMBER, 12))));
   }
 
   @Test
@@ -773,8 +774,8 @@ class PropuestaDeAsignacionServiceTest {
             null,
             null,
             null,
-            LocalDate.of(2026, 11, 12),
-            LocalDate.of(2026, 11, 1));
+            LocalDate.of(2026, Month.NOVEMBER, 12),
+            LocalDate.of(2026, Month.NOVEMBER, 1));
     ParametrosListado listado = ParametrosListado.primeraPagina();
 
     assertThrows(ValidationException.class, () -> service.listarPropuestas(filtro, listado));

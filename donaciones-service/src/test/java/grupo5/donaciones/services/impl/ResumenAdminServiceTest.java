@@ -21,6 +21,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -32,7 +33,7 @@ import org.junit.jupiter.api.Test;
 class ResumenAdminServiceTest {
 
   private static final Instant AHORA = Instant.parse("2026-11-11T15:00:00Z");
-  private static final LocalDate HOY = LocalDate.of(2026, 11, 11);
+  private static final LocalDate HOY = LocalDate.of(2026, Month.NOVEMBER, 11);
 
   private final IDonacionesIndependientesRepository independientes =
       mock(IDonacionesIndependientesRepository.class);
@@ -56,8 +57,8 @@ class ResumenAdminServiceTest {
         .thenReturn(Map.of(TipoEstadoDonacion.EN_DEPOSITO, 12L, TipoEstadoDonacion.ENTREGADA, 30L));
     when(independientes.contarQuePasaronA(
             TipoEstadoDonacion.ENTREGADA,
-            LocalDateTime.of(2026, 11, 1, 0, 0),
-            LocalDateTime.of(2026, 12, 1, 0, 0)))
+            LocalDateTime.of(2026, Month.NOVEMBER, 1, 0, 0),
+            LocalDateTime.of(2026, Month.DECEMBER, 1, 0, 0)))
         .thenReturn(4L);
     when(donantes.count()).thenReturn(50L);
     when(donantes.contarActivos()).thenReturn(45L);

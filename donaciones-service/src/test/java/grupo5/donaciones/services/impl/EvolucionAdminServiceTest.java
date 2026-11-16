@@ -18,6 +18,7 @@ import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
@@ -36,9 +37,9 @@ import org.junit.jupiter.api.Test;
 class EvolucionAdminServiceTest {
 
   private static final Instant AHORA = Instant.parse("2026-10-15T18:30:00Z");
-  private static final LocalDateTime INICIO_12 = LocalDateTime.of(2025, 11, 1, 0, 0);
-  private static final LocalDateTime FIN = LocalDateTime.of(2026, 11, 1, 0, 0);
-  private static final YearMonth OCTUBRE = YearMonth.of(2026, 10);
+  private static final LocalDateTime INICIO_12 = LocalDateTime.of(2025, Month.NOVEMBER, 1, 0, 0);
+  private static final LocalDateTime FIN = LocalDateTime.of(2026, Month.NOVEMBER, 1, 0, 0);
+  private static final YearMonth OCTUBRE = YearMonth.of(2026, Month.OCTOBER);
 
   private final IDonacionesIndependientesRepository independientes =
       mock(IDonacionesIndependientesRepository.class);
@@ -54,12 +55,15 @@ class EvolucionAdminServiceTest {
   @Test
   void ventanaCompleta_docesMesesTodosPresentes_conCeroDondeNoHay() {
     when(independientes.primeraFechaRegistro())
-        .thenReturn(Optional.of(LocalDateTime.of(2024, 3, 1, 10, 0)));
-    when(independientes.contarRegistradasPorMes(YearMonth.of(2025, 11), OCTUBRE))
-        .thenReturn(Map.of(YearMonth.of(2025, 11), 96L, YearMonth.of(2026, 10), 58L));
+        .thenReturn(Optional.of(LocalDateTime.of(2024, Month.MARCH, 1, 10, 0)));
+    when(independientes.contarRegistradasPorMes(YearMonth.of(2025, Month.NOVEMBER), OCTUBRE))
+        .thenReturn(
+            Map.of(
+                YearMonth.of(2025, Month.NOVEMBER), 96L, YearMonth.of(2026, Month.OCTOBER), 58L));
     when(independientes.contarQuePasaronAPorMes(
-            TipoEstadoDonacion.ENTREGADA, YearMonth.of(2025, 11), OCTUBRE))
-        .thenReturn(Map.of(YearMonth.of(2026, 1), 90L, YearMonth.of(2026, 10), 9L));
+            TipoEstadoDonacion.ENTREGADA, YearMonth.of(2025, Month.NOVEMBER), OCTUBRE))
+        .thenReturn(
+            Map.of(YearMonth.of(2026, Month.JANUARY), 90L, YearMonth.of(2026, Month.OCTOBER), 9L));
     when(categorias.findAll()).thenReturn(List.of());
 
     EvolucionAdminDTO evolucion = service.calcular();
@@ -77,8 +81,8 @@ class EvolucionAdminServiceTest {
   @Test
   void plataformaNueva_losMesesEmpiezanEnElDeLaPrimeraDonacion() {
     when(independientes.primeraFechaRegistro())
-        .thenReturn(Optional.of(LocalDateTime.of(2026, 7, 20, 9, 0)));
-    YearMonth julio = YearMonth.of(2026, 7);
+        .thenReturn(Optional.of(LocalDateTime.of(2026, Month.JULY, 20, 9, 0)));
+    YearMonth julio = YearMonth.of(2026, Month.JULY);
     when(independientes.contarRegistradasPorMes(julio, OCTUBRE)).thenReturn(Map.of());
     when(independientes.contarQuePasaronAPorMes(TipoEstadoDonacion.ENTREGADA, julio, OCTUBRE))
         .thenReturn(Map.of());
@@ -109,7 +113,7 @@ class EvolucionAdminServiceTest {
   @Test
   void categorias_todasConSuCero_deMasAMenos_yPorNombreSiEmpatan() {
     when(independientes.primeraFechaRegistro())
-        .thenReturn(Optional.of(LocalDateTime.of(2024, 3, 1, 10, 0)));
+        .thenReturn(Optional.of(LocalDateTime.of(2024, Month.MARCH, 1, 10, 0)));
     Categoria ropa = categoria("Ropa");
     Categoria alimentos = categoria("Alimentos");
     Categoria juguetes = categoria("Juguetes");
@@ -135,7 +139,7 @@ class EvolucionAdminServiceTest {
   @Test
   void masDeOchoCategorias_lasOchoPrimerasYLaSumaDeLasOtras() {
     when(independientes.primeraFechaRegistro())
-        .thenReturn(Optional.of(LocalDateTime.of(2024, 3, 1, 10, 0)));
+        .thenReturn(Optional.of(LocalDateTime.of(2024, Month.MARCH, 1, 10, 0)));
     List<Categoria> once = new ArrayList<>();
     Map<UUID, Long> registradas = new HashMap<>();
     Map<UUID, Long> entregadas = new HashMap<>();

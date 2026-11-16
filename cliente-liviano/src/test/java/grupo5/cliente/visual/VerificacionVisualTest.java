@@ -485,15 +485,16 @@ class VerificacionVisualTest {
       pagina.navigate("http://localhost:" + puerto + "/estilos");
       String abierto =
           "() => document.getElementById('dialogo-de-muestra').matches(':popover-open')";
-      assertThat(pagina.evaluate(abierto)).isEqualTo(false);
+      assertThat((Boolean) pagina.evaluate(abierto)).isFalse();
       pagina.locator("[popovertarget='dialogo-de-muestra']:not([popovertargetaction])").click();
-      assertThat(pagina.evaluate(abierto)).isEqualTo(true);
+      assertThat((Boolean) pagina.evaluate(abierto)).isTrue();
       assertThat(
-              pagina.evaluate(
-                  "() => document.getElementById('dialogo-de-muestra').contains(document.activeElement)"))
-          .isEqualTo(true);
+              (Boolean)
+                  pagina.evaluate(
+                      "() => document.getElementById('dialogo-de-muestra').contains(document.activeElement)"))
+          .isTrue();
       pagina.keyboard().press("Escape");
-      assertThat(pagina.evaluate(abierto)).isEqualTo(false);
+      assertThat((Boolean) pagina.evaluate(abierto)).isFalse();
     }
   }
 
@@ -609,9 +610,10 @@ class VerificacionVisualTest {
           .first()
           .click();
       assertThat(
-              pagina.evaluate(
-                  "() => document.getElementById('publicar-ventana').matches(':modal')"))
-          .isEqualTo(true);
+              (Boolean)
+                  pagina.evaluate(
+                      "() => document.getElementById('publicar-ventana').matches(':modal')"))
+          .isTrue();
       assertThat(pagina.evaluate("() => document.activeElement.id")).isEqualTo("que");
       assertThat(ventana.locator("fieldset[data-paso='2']").isVisible()).isFalse();
       ventana.locator("[data-boton=siguiente]").click();
@@ -870,6 +872,6 @@ class VerificacionVisualTest {
       return "";
     }
     Matcher comentario = COMENTARIO.matcher(Files.readString(css, StandardCharsets.UTF_8));
-    return comentario.find() ? comentario.group(1).replaceAll("\\s*\\*\\s*", " ").strip() : "";
+    return comentario.find() ? comentario.group(1).replaceAll("\\s*+\\*\\s*+", " ").strip() : "";
   }
 }

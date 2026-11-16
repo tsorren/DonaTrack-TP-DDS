@@ -3,6 +3,7 @@ package grupo5.cliente.web;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -142,10 +143,10 @@ class DonanteInicioControllerTest {
         .andExpect(
             content()
                 .string(
-                    matchesPattern(
-                        Pattern.compile(
-                            "(?s).*Para tener en cuenta · 1<.*En camino o por salir · 5<"
-                                + ".*Ya llegó · 1.284<.*"))))
+                    stringContainsInOrder(
+                        "Para tener en cuenta · 1<",
+                        "En camino o por salir · 5<",
+                        "Ya llegó · 1.284<")))
         .andExpect(content().string(containsString("Ya llegó, 1.284 donaciones, página 1 de 428")))
         .andExpect(content().string(containsString("Para tener en cuenta, 1 donación<")))
         .andExpect(content().string(containsString("Mostrando 1 a 3 de 5.")))
@@ -343,12 +344,7 @@ class DonanteInicioControllerTest {
         .andExpect(content().string(containsString("href=\"/donante-donaciones?mes=2026-11\"")))
         .andExpect(content().string(containsString("Ver todas las de noviembre (5)")))
         .andExpect(content().string(containsString("Ver todas (1 sin leer)")))
-        .andExpect(
-            content()
-                .string(
-                    matchesPattern(
-                        Pattern.compile(
-                            "(?s).*Ver mi huerta.*id=\"anio-meses\".*", Pattern.DOTALL))))
+        .andExpect(content().string(stringContainsInOrder("Ver mi huerta", "id=\"anio-meses\"")))
         .andExpect(content().string(containsString(">Misiones<")))
         .andExpect(content().string(not(containsString("planta sos vos"))))
         .andExpect(content().string(not(containsString("Tu próxima misión"))))

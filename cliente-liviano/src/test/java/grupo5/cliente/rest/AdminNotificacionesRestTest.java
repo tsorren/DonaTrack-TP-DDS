@@ -21,6 +21,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -94,7 +95,7 @@ class AdminNotificacionesRestTest {
     assertEquals("12 de noviembre de 2026, 18:45", vista.actualizado());
     assertEquals(
         List.of("", "importaciones", "contacto", "otras"),
-        vista.temas().stream().map(t -> t.valor()).toList());
+        vista.temas().stream().map(AdminNotificacionesVista.Tema::valor).toList());
     assertEquals(45, vista.pagina().total());
     assertEquals(3, vista.pagina().paginas());
     assertEquals(2, vista.sinLeer());
@@ -149,7 +150,7 @@ class AdminNotificacionesRestTest {
     AdminNotificacionesVista otras =
         adaptador.bandeja(new ConsultaBandeja(false, "", "otras", false, 1));
 
-    assertDoesNotThrow(() -> servidor.verify());
+    assertDoesNotThrow((Executable) servidor::verify);
     // Sin conteo, la cifra queda en cero: la pantalla no se rompe.
     assertEquals(0, otras.sinLeer());
   }

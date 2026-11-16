@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -352,7 +353,7 @@ class ImportadorServiceTest {
     Archivo archivo = nuevoArchivoEnStorage();
     when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
     PadronFixtures.entregar(lectorCSV, new FilaPadron(2, null));
-    org.mockito.Mockito.doThrow(new IllegalStateException("base caída"))
+    doThrow(new IllegalStateException("base caída"))
         .when(archivoRepository)
         .guardarFilasConError(any());
 
@@ -423,9 +424,10 @@ class ImportadorServiceTest {
     UUID archivoId = UUID.randomUUID();
     Archivo archivo =
         archivoEnStorage(
-            "\uFEFFTipoPersona,TipoDoc,Documento,Nombre/Razón Social,Email,Teléfono\n"
-                + "JURIDICA,CUIT,30-52235350-3,Distribuidora Ejemplo S.A.,"
-                + "contacto@ejemplo.test,+54 11 4000-0000\n");
+            """
+            \uFEFFTipoPersona,TipoDoc,Documento,Nombre/Razón Social,Email,Teléfono
+            JURIDICA,CUIT,30-52235350-3,Distribuidora Ejemplo S.A.,contacto@ejemplo.test,+54 11 4000-0000
+            """);
     when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
     when(validadorDuplicados.buscarDuplicado(any(Persona.class))).thenReturn(Optional.empty());
     when(personaService.crearPersona(any(PersonaInputDTO.class))).thenReturn(humanaCreada());
@@ -464,7 +466,8 @@ class ImportadorServiceTest {
     UUID archivoId = UUID.randomUUID();
     Archivo archivo =
         archivoEnStorageConNombre(
-            "padron-con-datos.csv", java.time.LocalDateTime.of(2026, 11, 12, 18, 30));
+            "padron-con-datos.csv",
+            java.time.LocalDateTime.of(2026, java.time.Month.NOVEMBER, 12, 18, 30));
     when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
     PadronFixtures.entregar(
         lectorCSV, new FilaPadron(2, Map.of("TipoPersona", "HUMANA", "Nombre", "Ana")));
@@ -481,7 +484,8 @@ class ImportadorServiceTest {
     assertEquals(1, evento.creadas());
     assertEquals(0, evento.actualizadas());
     assertEquals(0, evento.conError());
-    assertEquals(java.time.LocalDateTime.of(2026, 11, 12, 18, 30), evento.subidoEn());
+    assertEquals(
+        java.time.LocalDateTime.of(2026, java.time.Month.NOVEMBER, 12, 18, 30), evento.subidoEn());
     assertNotNull(evento.fecha());
     org.assertj.core.api.Assertions.assertThat(evento.toString())
         .doesNotContain("padron-con-datos");
@@ -527,9 +531,7 @@ class ImportadorServiceTest {
     UUID archivoId = UUID.randomUUID();
     Archivo archivo = nuevoArchivoEnStorage();
     when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
-    org.mockito.Mockito.doThrow(new IllegalStateException("base caída"))
-        .when(archivoRepository)
-        .save(archivo);
+    doThrow(new IllegalStateException("base caída")).when(archivoRepository).save(archivo);
 
     org.junit.jupiter.api.Assertions.assertThrows(
         IllegalStateException.class, () -> service.procesarImportacionAsincronica(archivoId));
@@ -544,7 +546,7 @@ class ImportadorServiceTest {
     Archivo archivo = nuevoArchivoEnStorage();
     when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
     PadronFixtures.entregar(lectorCSV, new FilaPadron(2, null));
-    org.mockito.Mockito.doThrow(new IllegalStateException("broker caído"))
+    doThrow(new IllegalStateException("broker caído"))
         .when(publisher)
         .publicarImportacionTerminada(any());
 

@@ -488,7 +488,8 @@ class AdminOperacionRestTest {
     assertEquals("Se decidió antes de que guardáramos quién y cuándo.", segunda.quien());
     assertEquals("", segunda.motivo());
     assertEquals(
-        List.of("", "vos", "antes"), vista.autores().stream().map(o -> o.valor()).toList());
+        List.of("", "vos", "antes"),
+        vista.autores().stream().map(AdminAsignacionesVista.Opcion::valor).toList());
     donaciones.verify();
   }
 

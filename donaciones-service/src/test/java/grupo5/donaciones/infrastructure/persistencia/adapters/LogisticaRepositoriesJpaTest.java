@@ -26,6 +26,7 @@ import grupo5.donaciones.services.logistica.IEstrategiaSeleccionProveedor;
 import grupo5.donaciones.services.logistica.ILogisticaOutbox;
 import grupo5.donaciones.services.logistica.ResultadoEnvio;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -125,7 +126,7 @@ class LogisticaRepositoriesJpaTest {
             "Av. Corrientes", 1234, 3, "B", "C1043", "CABA", "Buenos Aires", "Argentina"),
         12.5,
         0.75,
-        LocalDateTime.of(2026, 10, 22, 10, 30, 15, 123456789));
+        LocalDateTime.of(2026, Month.OCTOBER, 22, 10, 30, 15, 123456789));
   }
 
   private int contar(String tabla) {
@@ -311,7 +312,8 @@ class LogisticaRepositoriesJpaTest {
   void solicitarEntrega_siFallaElOutbox_noQuedaLaSolicitud() {
     doThrow(new IllegalStateException("outbox caído")).when(outboxEspiado).guardar(any());
 
-    assertThrows(IllegalStateException.class, () -> broker.solicitarEntrega(datos()));
+    DatosEntregaLogistica datos = datos();
+    assertThrows(IllegalStateException.class, () -> broker.solicitarEntrega(datos));
 
     // Transactional Outbox: o se guardan las dos o ninguna
     assertEquals(0, contar("solicitud_entrega"));

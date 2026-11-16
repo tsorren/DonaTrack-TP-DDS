@@ -32,6 +32,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +48,7 @@ class ActividadServiceTest {
 
   private static final ZoneId ARGENTINA = ZoneId.of("America/Argentina/Buenos_Aires");
   private static final Clock RELOJ = Clock.fixed(Instant.parse("2026-11-12T21:20:00Z"), ARGENTINA);
-  private static final LocalDateTime AHORA = LocalDateTime.of(2026, 11, 12, 18, 20);
+  private static final LocalDateTime AHORA = LocalDateTime.of(2026, Month.NOVEMBER, 12, 18, 20);
 
   private final ActividadRepositoryEnMemoria repositorio = new ActividadRepositoryEnMemoria();
   private final IPropuestasRepository propuestas = mock(IPropuestasRepository.class);
@@ -201,26 +202,31 @@ class ActividadServiceTest {
 
   @Test
   void filtraPorQuienAccionYFecha() {
-    guardar("admin-a", AccionDeAdministracion.DONACION_VENCIDA, LocalDate.of(2026, 11, 11));
-    guardar("admin-a", AccionDeAdministracion.DONACION_VENCIDA, LocalDate.of(2026, 11, 12));
-    guardar("admin-a", AccionDeAdministracion.DONACION_VENCIDA, LocalDate.of(2026, 11, 9));
-    guardar("admin-a", AccionDeAdministracion.CAMION_AGREGADO, LocalDate.of(2026, 11, 11));
-    guardar("admin-b", AccionDeAdministracion.DONACION_VENCIDA, LocalDate.of(2026, 11, 11));
+    guardar(
+        "admin-a", AccionDeAdministracion.DONACION_VENCIDA, LocalDate.of(2026, Month.NOVEMBER, 11));
+    guardar(
+        "admin-a", AccionDeAdministracion.DONACION_VENCIDA, LocalDate.of(2026, Month.NOVEMBER, 12));
+    guardar(
+        "admin-a", AccionDeAdministracion.DONACION_VENCIDA, LocalDate.of(2026, Month.NOVEMBER, 9));
+    guardar(
+        "admin-a", AccionDeAdministracion.CAMION_AGREGADO, LocalDate.of(2026, Month.NOVEMBER, 11));
+    guardar(
+        "admin-b", AccionDeAdministracion.DONACION_VENCIDA, LocalDate.of(2026, Month.NOVEMBER, 11));
 
     Pagina<ActividadDTO> pagina =
         servicio.listar(
             new FiltroActividad(
                 List.of("admin-a"),
                 List.of("DONACION_VENCIDA"),
-                LocalDate.of(2026, 11, 10),
-                LocalDate.of(2026, 11, 12)),
+                LocalDate.of(2026, Month.NOVEMBER, 10),
+                LocalDate.of(2026, Month.NOVEMBER, 12)),
             new ParametrosListado(0, 1, null, null));
 
     assertEquals(2, pagina.total());
     assertEquals(1, pagina.elementos().size());
     ActividadDTO fila = pagina.elementos().get(0);
     assertEquals("admin-a", fila.autor());
-    assertEquals(LocalDate.of(2026, 11, 12), fila.ocurrioEn().toLocalDate());
+    assertEquals(LocalDate.of(2026, Month.NOVEMBER, 12), fila.ocurrioEn().toLocalDate());
   }
 
   @Test
@@ -234,7 +240,11 @@ class ActividadServiceTest {
             new FiltroActividad(veintiuno, null, null, null),
             new FiltroActividad(List.of("x".repeat(65)), null, null, null),
             new FiltroActividad(List.of(" "), null, null, null),
-            new FiltroActividad(null, null, LocalDate.of(2026, 11, 12), LocalDate.of(2026, 11, 1)));
+            new FiltroActividad(
+                null,
+                null,
+                LocalDate.of(2026, Month.NOVEMBER, 12),
+                LocalDate.of(2026, Month.NOVEMBER, 1)));
 
     invalidos.forEach(
         filtro -> assertThrows(ValidationException.class, () -> servicio.listar(filtro, primera)));

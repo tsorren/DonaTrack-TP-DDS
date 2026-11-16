@@ -1021,9 +1021,8 @@ class EntregaServiceTest {
     Entrega entrega = EntregaMother.pendiente();
     when(entregasRepository.findById(entrega.getId())).thenReturn(Optional.of(entrega));
 
-    assertThrows(
-        ValidationException.class,
-        () -> entregasService.marcarEnPuerta(entrega.getId(), "SIMULADOR"));
+    UUID id = entrega.getId();
+    assertThrows(ValidationException.class, () -> entregasService.marcarEnPuerta(id, "SIMULADOR"));
     verifyNoInteractions(comunicadorEventos);
   }
 }

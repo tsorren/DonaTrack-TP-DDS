@@ -234,8 +234,9 @@ class ProveedorLogisticaAmqpTest {
   @Test
   void cancelar_deberiaRechazar_CuandoNoHayColaParaLaCancelacion() {
     cuandoRabbitResponde(true, true);
+    UUID donacionId = UUID.randomUUID();
 
     assertThrows(
-        EnvioRechazadoException.class, () -> proveedor.cancelar(ENVIO_ID, UUID.randomUUID(), "t"));
+        EnvioRechazadoException.class, () -> proveedor.cancelar(ENVIO_ID, donacionId, "t"));
   }
 }

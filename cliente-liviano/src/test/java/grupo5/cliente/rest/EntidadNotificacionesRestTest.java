@@ -21,6 +21,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -99,7 +100,7 @@ class EntidadNotificacionesRestTest {
     assertEquals("8 de noviembre de 2026, 18:30", vista.actualizado());
     assertEquals(
         List.of("", "camino", "asignadas", "recibidas", "problemas", "otras"),
-        vista.temas().stream().map(t -> t.valor()).toList());
+        vista.temas().stream().map(EntidadNotificacionesVista.Tema::valor).toList());
     assertEquals(43, vista.pagina().total());
     assertEquals(3, vista.pagina().paginas());
     assertEquals(5, vista.sinLeer());
@@ -179,7 +180,7 @@ class EntidadNotificacionesRestTest {
     adaptador.bandeja(ENTIDAD, new ConsultaBandeja(true, "arroz", "recibidas", true, 2));
     adaptador.bandeja(ENTIDAD, new ConsultaBandeja(false, "", "otras", false, 1));
 
-    assertDoesNotThrow(() -> servidor.verify());
+    assertDoesNotThrow((Executable) servidor::verify);
   }
 
   private String enCamino() {

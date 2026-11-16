@@ -19,6 +19,7 @@ import grupo5.notificaciones.dto.contacto.MensajeContactoDTO;
 import grupo5.notificaciones.models.entities.contacto.EstadoMensajeContacto;
 import grupo5.notificaciones.services.impl.ContactoService;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,7 @@ class ContactoControllerTest {
         null,
         "ana@ejemplo.org",
         estado,
-        LocalDateTime.of(2026, 11, 10, 9, 0),
+        LocalDateTime.of(2026, Month.NOVEMBER, 10, 9, 0),
         null,
         null);
   }
