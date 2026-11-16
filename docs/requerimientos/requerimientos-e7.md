@@ -88,7 +88,9 @@ Criterios: ajuste al enunciado, riesgo de plazo, costo de dependencias nuevas, v
 
 ### Ronda 2 — Observabilidad (RQ-E7-01)
 
-**E7-Q04 — ¿Qué stack de observabilidad? ⏸️**
+**E7-Q04 — ¿Qué stack de observabilidad? ✅ (2026-11-16): A, Grafana + Prometheus + Tempo + Loki**
+> **Respuesta del grupo:** opción A. `[PROPOSED]` Consecuencias a atender: un ADR sucesor parcial del de trazabilidad (`proposed`); las imágenes de Docker nuevas quedan aprobadas por esta respuesta (AGENTS.md §6); la dependencia `micrometer-registry-prometheus`; verificar que Tempo acepte el formato Zipkin para conservar Brave `[INFERRED]`; decidir cómo el recolector de logs lee los de Docker sin chocar con el ADR "sin volúmenes del host".
+
 
 | Opción | Métricas | Trazas | Logs | Costo |
 |---|---|---|---|---|
@@ -99,13 +101,51 @@ Criterios: ajuste al enunciado, riesgo de plazo, costo de dependencias nuevas, v
 
 `[INFERRED]` la opción A es la que cubre los tres tipos de señal con menos piezas, pero **requiere superar el ADR de trazabilidad** (que descartó los trazadores de terceros) con un ADR sucesor `proposed`, y agrega imágenes de Docker (AGENTS.md §6: pide aprobación previa).
 
-**E7-Q05 — ¿Dónde corre el stack? ⏸️**
+**E7-Q05 — ¿Dónde corre el stack? ✅ (2026-11-16): A, compose propio `docker-compose.observabilidad.yml`**
+
 ⭐ **A. En un compose propio de observabilidad** (`docker-compose.observabilidad.yml`, opcional, junto al de preprod) · B. Dentro de `docker-compose.yml` · C. Solo en el preprod · D. Solo en la demo pública. `[OBSERVED]` hay siete archivos `docker-compose*.yml` en la raíz (base, demo, hybrid, preprod, publica, seed y tunel).
 
-**E7-Q06 — ¿Qué se mide y qué se alerta? ⏸️ (multiselección)**
+**E7-Q06 — ¿Qué se mide y qué se alerta? ✅ en lo general (2026-11-16); falta elegir las métricas de negocio del §3.1**
+> **Respuesta del grupo:** las señales de oro, las métricas de negocio mínimas y un tablero por servicio más uno general, con alertas solo en el panel. Pidió **más métricas de negocio** que las tres mínimas: el §3.1 propone un catálogo ampliado para que el grupo lo pode.
+
+(Opciones originales, multiselección:)
 ⭐ Las señales de oro por servicio (latencia, tasa de error, tráfico, saturación) · ⭐ métricas de negocio mínimas (donaciones registradas, eventos AMQP procesados y fallidos, cola de RabbitMQ) · ⭐ un tablero por servicio más uno general · alertas por correo o Slack (suma un canal externo) · alertas solo en el panel (⭐ sin canal externo).
 
 ---
+
+### 3.1 Catálogo ampliado de métricas de negocio `[PROPOSED]` (para podar)
+
+El grupo pidió más métricas de negocio que las tres mínimas (donaciones registradas, eventos AMQP procesados y fallidos, cola de RabbitMQ). Este catálogo sale de los estados, eventos y colas que ya existen (`docs/arquitectura/eventos-amqp.md`). **Prioridad:** **P1** = recomendada, **P2** = si alcanza el tiempo, **P3** = opcional.
+
+**Reglas para todas** (AGENTS.md §4.3): etiquetas de baja cardinalidad (tipo, estado, canal, resultado), nunca ids de donación, de persona ni datos personales; los valores salen de los eventos y servicios de aplicación, no de consultas nuevas a la base.
+
+| ID | Servicio | Métrica | Qué pregunta responde | Pri. |
+|---|---|---|---|---|
+| M01 | Donaciones | Donaciones registradas (contador, por tipo) | ¿Cuánto se dona y cómo evoluciona? | P1 |
+| M02 | Donaciones | Donaciones por estado actual (`EN_DEPOSITO`, `EN_TRASLADO`, `EN_PUERTA`, `ENTREGADA`, `ENTREGA_FALLIDA`, `VENCIDA`) | ¿Dónde está el stock en cada momento? ¿Se acumula algo? | P1 |
+| M03 | Donaciones | Tiempo desde el registro hasta la entrega (histograma) | ¿Cuánto tarda una donación en llegar? | P1 |
+| M04 | Donaciones | Entregas fallidas y replanificadas (contador) | ¿Qué proporción falla? | P1 |
+| M05 | Donaciones | Pedidos de entrega al broker: enviados, rechazados por falta de cola y pendientes en el outbox | ¿Se atasca la salida hacia Logística? | P1 |
+| M06 | Donaciones | Necesidades abiertas y cubiertas | ¿Se cubre lo que las entidades piden? | P2 |
+| M07 | Donaciones | Importaciones de donantes: filas procesadas y rechazadas, duración | ¿Las cargas masivas funcionan? | P2 |
+| M08 | Donaciones | Consultas GraphQL por operación: cantidad, duración y rechazos por complejidad | ¿Se usa el endpoint nuevo y qué cuesta? | P1 |
+| M09 | Logística | Entregas por resultado (`exitosa`, `fallida`, `en-puerta`, `cancelada`) | ¿Cómo terminan las entregas? | P1 |
+| M10 | Logística | Planificaciones ejecutadas: duración y rutas generadas | ¿Cuánto tarda planificar? | P2 |
+| M11 | Logística | Camiones en ruta (medidor) y escrituras de posición por minuto | ¿Cuánta carga genera el seguimiento? Alimenta el rate limiting de Q12 | P1 |
+| M12 | Logística | Fotos de recepción subidas a MinIO: correctas y fallidas | ¿Funciona el almacenamiento de objetos? | P3 |
+| M13 | Logística | Callbacks de proveedores descartados (token incorrecto o entrega ajena) | ¿Hay intentos no válidos desde afuera? Es seguridad | P2 |
+| M14 | Incentivos | Misiones cumplidas, subidas de categoría y donantes inactivos detectados | ¿Está viva la gamificación? | P2 |
+| M15 | Incentivos | Puntos otorgados (contador) | ¿Cuánto reconocimiento se reparte? | P3 |
+| M16 | Notificaciones | Notificaciones por canal y estado (enviada, fallida, pendiente) | ¿Llegan los avisos? | P1 |
+| M17 | Notificaciones | Latencia entre el evento y el envío (histograma) | ¿Qué tan rápido avisamos? | P2 |
+| M18 | Notificaciones | Mensajes en las colas muertas (`*.dlq`) | ¿Hay mensajes que no se pudieron procesar? Es la alerta más útil de la lista | P1 |
+| M19 | Transversal | Eventos AMQP publicados y consumidos por routing key, con fallidos y reintentos | ¿Fluye la mensajería? | P1 |
+| M20 | Transversal | Duplicados descartados por idempotencia (`evento_procesado`) | ¿Hay reentregas? Valida el patrón del ADR de idempotencia | P2 |
+| M21 | Transversal | Profundidad de las colas de RabbitMQ | ¿Hay un consumidor caído o lento? | P1 |
+| M22 | Cliente liviano | Consultas de seguimiento por segundo y páginas con error por pantalla | ¿Cómo se usa la interfaz? Alimenta Q12 | P2 |
+| M23 | Autenticación | Inicios de sesión correctos y fallidos (de Keycloak, si se habilita su endpoint de métricas) | ¿Hay intentos de abuso? | P3 |
+
+**Pendiente de decidir:** qué filas quedan. `[PROPOSED]` P1 (12) más P2 (8) son 20 métricas: alcanzan para un tablero por servicio y uno general sin sobrecargar.
 
 ### Ronda 3 — Monitoreo proactivo y autorestart (RQ-E7-02)
 
@@ -180,9 +220,9 @@ Para confirmar con docentes `[PROPOSED]`: (1) si "Seguridad" incluye algo más q
 | Q01 gRPC o GraphQL | GraphQL en Donaciones, solo lectura | ✅ GraphQL en Donaciones; Logística abierta |
 | Q02 Key Broker | Diferido y reprogramado | ⏸️ pendiente por decisión del grupo |
 | Q03 Otra seguridad | Proteger observabilidad y encabezados en el gateway | ✅ las cuatro medidas |
-| Q04 Stack | Grafana LGTM liviano (Prometheus, Tempo, Loki) | ⏸️ |
-| Q05 Dónde corre | Compose propio de observabilidad | ⏸️ |
-| Q06 Qué se mide | Señales de oro, métricas de negocio mínimas y alertas en el panel | ⏸️ |
+| Q04 Stack | Grafana LGTM liviano (Prometheus, Tempo, Loki) | ✅ opción A |
+| Q05 Dónde corre | Compose propio de observabilidad | ✅ opción A |
+| Q06 Qué se mide | Señales de oro, métricas de negocio mínimas y alertas en el panel | ✅ en lo general, con más métricas de negocio; falta podar el §3.1 |
 | Q07 Mecanismo de restart | `restart: unless-stopped` + `healthcheck` + autoheal | ⏸️ |
 | Q08 Alcance y política | Servicios e infraestructura; reinicio con espera y tope; liveness y readiness | ⏸️ |
 | Q09 Demostración | Script de caos reproducible | ⏸️ |
