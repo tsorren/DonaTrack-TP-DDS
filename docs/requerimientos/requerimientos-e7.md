@@ -55,7 +55,9 @@
 
 ### Ronda 1 — Alcance y opción del requerimiento 4
 
-**E7-Q01 — ¿gRPC o GraphQL? ⏸️**
+**E7-Q01 — ¿gRPC o GraphQL? ✅ (2026-11-16): GraphQL en Donaciones (opción A); GraphQL en Logística queda abierta**
+> **Respuesta del grupo:** GraphQL en Donaciones. Sumar también Logística (opción B) es posible, pero por ahora no; la decisión puede cambiar en los próximos días. Consecuencia `[PROPOSED]`: diseñar el endpoint de Donaciones para que Logística pueda sumar el suyo sin rehacerlo (un esquema por servicio, sin acoplarlos), y no empezar Logística hasta que el grupo lo confirme. gRPC queda descartado para E7 `[REJECTED]` por riesgo de plazo y por el costo del gateway; el ADR-E6-07 no cambia.
+
 `[OBSERVED]` gRPC pide reemplazar HTTP "entre servicios que requieren actualizaciones en tiempo real", y hoy no hay ningún canal entre servicios que sea tiempo real: la posición del camión llega al cliente por REST con polling, y lo demás es RabbitMQ. `[OBSERVED]` GraphQL pide filtros dinámicos y selección de campos en Donaciones o Logística, y esos servicios ya tienen listados con filtros por parámetro (D28 de E6).
 
 | Opción | Qué implica |
@@ -67,7 +69,7 @@
 
 Criterios: ajuste al enunciado, riesgo de plazo, costo de dependencias nuevas, valor para la demo, cambios a ADRs aceptados.
 
-**E7-Q02 — ¿El Key Broker (DTI-07) entra en E7? ⏸️**
+**E7-Q02 — ¿El Key Broker (DTI-07) entra en E7? ⏸️ (pendiente por decisión del grupo, 2026-11-16)**
 `[DOCUMENTED]` D29 lo mandó a E7 "entero": un servicio nuevo, la emisión de `ClaveUsuarioDestruidaEvent` por RabbitMQ y el crypto-shredding definitivo (DTI-01). Ese servicio **no** figura en los cuatro requerimientos de E7.
 
 | Opción | Qué implica |
@@ -76,7 +78,10 @@ Criterios: ajuste al enunciado, riesgo de plazo, costo de dependencias nuevas, v
 | B. Contrato y diseño en E7, implementación después | Se escribe el ADR y el contrato del Key Broker, sin construirlo. |
 | C. Se implementa en E7 | Es "Seguridad" en serio, pero suma un servicio y una base de claves a una entrega que ya trae cuatro frentes. |
 
-**E7-Q03 — ¿Qué otras medidas de seguridad entran, si alguna? ⏸️ (multiselección)**
+**E7-Q03 — ¿Qué otras medidas de seguridad entran, si alguna? ✅ (2026-11-16): entran las cuatro**
+> **Respuesta del grupo:** proteger los endpoints de observabilidad, encabezados de seguridad en el gateway, validar la cadena JWT encendida en el preprod y escaneo de dependencias o imágenes en el CI. Las dos últimas no estaban recomendadas: suman trabajo (un Keycloak real en el preprod y un paso nuevo del pipeline) y el plan de PRs de Q15 las tiene que contar.
+
+(Opciones originales, multiselección:)
 `[OBSERVED]` hoy solo `health` está expuesto y los contenedores corren sin root. Opciones: ⭐ **proteger los endpoints de observabilidad** (que `/actuator/prometheus` y los paneles no queden públicos), ⭐ **encabezados de seguridad en el gateway**, validación de la cadena de seguridad encendida en el preprod (queda pendiente de E6), escaneo de dependencias o imágenes en el CI, ninguna otra. 🎓 Si la cátedra espera algo más bajo "Seguridad y Control", conviene preguntarlo.
 
 ---
@@ -145,11 +150,10 @@ Clave del límite: ⭐ por usuario autenticado (`sub`) y por IP para el tráfico
 
 ### Ronda 5 — Detalle de la opción elegida en E7-Q01 (RQ-E7-04)
 
-Se redacta cuando se responda E7-Q01. Preguntas previstas:
+Q01 se respondió: **GraphQL en Donaciones** (Logística, abierta). La rama gRPC queda descartada. Preguntas previstas:
 
-- **Si GraphQL (A o B):** ¿qué consultas entran (donaciones, necesidades, entregas)? ¿Solo lectura o también mutaciones? ⭐ solo lectura · ¿paginación y tope de profundidad y complejidad? ⭐ sí, con límites fijos · ¿cómo se autoriza por campo y por rol? ⭐ con la misma cadena de seguridad que REST · ¿pasa por el gateway? ⭐ sí, bajo `/api/…/graphql` · ¿se documenta el esquema como contrato (equivalente al OpenAPI)? ⭐ sí.
-- **Si gRPC (C):** ¿qué servicio es servidor y cuál cliente? ¿unario o streaming? ¿dónde viven los `.proto` (¿`common-lib`? el [criterio del Shared Kernel](../adr/20260901-limites-y-responsabilidades-del-shared-kernel-common-lib.md) dice que solo entra lo neutro)? ¿cómo llega al navegador, que no habla gRPC (gRPC-Web, o un puente en el cliente liviano)? ¿se conserva REST como alternativa?
-- **En ambos casos:** ¿se mantiene la compatibilidad hacia atrás de los contratos REST (AGENTS.md §8.2)? ⭐ sí, la nueva interfaz es aditiva.
+- **GraphQL (Donaciones; Logística si se confirma):** ¿qué consultas entran (donaciones, necesidades, entregas)? ¿Solo lectura o también mutaciones? ⭐ solo lectura · ¿paginación y tope de profundidad y complejidad? ⭐ sí, con límites fijos · ¿cómo se autoriza por campo y por rol? ⭐ con la misma cadena de seguridad que REST · ¿pasa por el gateway? ⭐ sí, bajo `/api/…/graphql` · ¿se documenta el esquema como contrato (equivalente al OpenAPI)? ⭐ sí.
+- **Siempre:** ¿se mantiene la compatibilidad hacia atrás de los contratos REST (AGENTS.md §8.2)? ⭐ sí, la nueva interfaz es aditiva.
 
 ---
 
@@ -173,9 +177,9 @@ Para confirmar con docentes `[PROPOSED]`: (1) si "Seguridad" incluye algo más q
 
 | Pregunta | Recomendación | Estado |
 |---|---|---|
-| Q01 gRPC o GraphQL | GraphQL en Donaciones, solo lectura | ⏸️ |
-| Q02 Key Broker | Diferido y reprogramado | ⏸️ |
-| Q03 Otra seguridad | Proteger observabilidad y encabezados en el gateway | ⏸️ |
+| Q01 gRPC o GraphQL | GraphQL en Donaciones, solo lectura | ✅ GraphQL en Donaciones; Logística abierta |
+| Q02 Key Broker | Diferido y reprogramado | ⏸️ pendiente por decisión del grupo |
+| Q03 Otra seguridad | Proteger observabilidad y encabezados en el gateway | ✅ las cuatro medidas |
 | Q04 Stack | Grafana LGTM liviano (Prometheus, Tempo, Loki) | ⏸️ |
 | Q05 Dónde corre | Compose propio de observabilidad | ⏸️ |
 | Q06 Qué se mide | Señales de oro, métricas de negocio mínimas y alertas en el panel | ⏸️ |
