@@ -121,7 +121,7 @@ docs/
 │   ├── plan-e6-trabajo-sin-auth.md        # Trabajo de E6 que avanza sin auth ni estilos (priorizado)
 │   ├── plan-e6-cliente-datos-reales-y-gateway.md # Cliente con datos reales, gateway y base para auth (alternativas y fases)
 │   ├── brechas-de-datos-por-pantalla-e6.md # Qué pantallas conectan hoy y qué le falta al backend (insumo de F2)
-│   └── requerimientos-e7.md               # Rondas de decisión de E7 (observabilidad, autorestart, rate limiting, gRPC o GraphQL); Rondas 1 a 3 respondidas (GraphQL en Donaciones, stack Grafana, todo en Kubernetes), el resto sin responder
+│   └── requerimientos-e7.md               # Rondas de decisión de E7 (observabilidad, autorestart, rate limiting, gRPC o GraphQL); Rondas 1 a 3 respondidas (GraphQL en Donaciones, stack Grafana, todo en Kubernetes con kind y Kustomize), el resto sin responder
 │
 ├── interfaz/                              # 🎨 Proceso de diseño de la interfaz del cliente liviano (E6)
 │   ├── README.md                          # Proceso en 6 pasos, quién decide, listo para entregar, cómo extender

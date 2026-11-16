@@ -101,7 +101,7 @@ Criterios: ajuste al enunciado, riesgo de plazo, costo de dependencias nuevas, v
 
 `[INFERRED]` la opción A es la que cubre los tres tipos de señal con menos piezas, pero **requiere superar el ADR de trazabilidad** (que descartó los trazadores de terceros) con un ADR sucesor `proposed`, y agrega imágenes de Docker (AGENTS.md §6: pide aprobación previa).
 
-**E7-Q05 — ¿Dónde corre el stack? ✅ (2026-11-16): A, compose propio `docker-compose.observabilidad.yml`; reinterpretada tras Q07 (C2): namespace propio del cluster de Kubernetes, a confirmar**
+**E7-Q05 — ¿Dónde corre el stack? ✅ (2026-11-16): A, compose propio `docker-compose.observabilidad.yml`; reinterpretada tras Q07 (C2) y confirmada por el grupo: namespace propio del cluster de Kubernetes**
 
 ⭐ **A. En un compose propio de observabilidad** (`docker-compose.observabilidad.yml`, opcional, junto al de preprod) · B. Dentro de `docker-compose.yml` · C. Solo en el preprod · D. Solo en la demo pública. `[OBSERVED]` hay siete archivos `docker-compose*.yml` en la raíz (base, demo, hybrid, preprod, publica, seed y tunel).
 
@@ -161,7 +161,10 @@ El grupo pidió más métricas de negocio que las tres mínimas (donaciones regi
 | C. Kubernetes (probes y `restartPolicy`) | Es el estándar de la industria, pero implica migrar el despliegue: fuera de proporción para 11 días. |
 | D. Supervisor propio en un script | No recomendable: reimplementa lo que Docker ya hace. |
 
-**E7-Q07b a Q07d — Consecuencias de elegir Kubernetes ⏸️** (preguntas nuevas, sin responder)
+**E7-Q07b a Q07d — Consecuencias de elegir Kubernetes ✅ (2026-11-16): kind, Compose convive y el CI migra al final, Kustomize**
+> **Respuesta del grupo:** Q07b **kind**; Q07c **A**: Compose convive durante E7 y el CI migra al final solo si Kubernetes pasa todas las pruebas (la demo pública y el túnel siguen en Compose); Q07d **YAML con Kustomize**. `[INFERRED]` Con Compose y Kubernetes en paralelo hay dos definiciones del despliegue que pueden desfasarse: conviene una prueba o un chequeo que las compare (puertos, variables y imágenes) antes de migrar el CI.
+
+(Opciones originales:)
 - **Q07b — ¿Qué cluster local?** Opciones `[INFERRED]`: ⭐ **kind** (Kubernetes dentro de contenedores Docker, reproducible y usable en GitHub Actions) · Docker Desktop Kubernetes (ya instalado, un solo nodo, menos reproducible) · minikube (más herramientas, más pesado) · k3d (liviano, menos difundido).
 - **Q07c — ¿Qué pasa con Docker Compose?** ⭐ **Conviven durante E7 y el CI migra al final, solo si Kubernetes pasa todas las pruebas** (la demo pública y el túnel siguen en Compose) · se retira ya · queda para siempre como alternativa.
 - **Q07d — ¿Cómo se escriben los manifiestos?** ⭐ **YAML con Kustomize** (viene en `kubectl`, sin plantillas, base más variantes) · un Helm chart propio · generarlos con `kompose` y ajustarlos a mano.
@@ -232,9 +235,9 @@ Para confirmar con docentes `[PROPOSED]`: (1) si "Seguridad" incluye algo más q
 | Q02 Key Broker | Diferido y reprogramado | ⏸️ pendiente por decisión del grupo |
 | Q03 Otra seguridad | Proteger observabilidad y encabezados en el gateway | ✅ las cuatro medidas |
 | Q04 Stack | Grafana LGTM liviano (Prometheus, Tempo, Loki) | ✅ opción A |
-| Q05 Dónde corre | Compose propio de observabilidad | ✅ opción A |
+| Q05 Dónde corre | Compose propio de observabilidad | ✅ A, reinterpretada como namespace del cluster |
 | Q06 Qué se mide | Señales de oro, métricas de negocio mínimas y alertas en el panel | ✅ en lo general, con más métricas de negocio; falta podar el §3.1 |
-| Q07 Mecanismo de restart | C1 (Kubernetes híbrido); el grupo eligió **C2, todo en Kubernetes** | ✅ C2; Q07b a Q07d sin responder |
+| Q07 Mecanismo de restart | C1 (Kubernetes híbrido); el grupo eligió **C2, todo en Kubernetes** | ✅ C2; Q07b kind, Q07c A, Q07d Kustomize |
 | Q08 Alcance y política | Servicios e infraestructura; reinicio sin tope con alerta; liveness y readiness separados | ✅ las tres recomendaciones |
 | Q09 Demostración | Script de caos reproducible | ✅ opción A |
 | Q10 Dónde se limita | En el gateway | ⏸️ |
