@@ -37,16 +37,19 @@ public record DonanteNotificacionesVista(
       boolean leida) {
 
     /** El donante no tiene acción principal en la fila: la fila del buzón la pide igual. */
+    @SuppressWarnings("java:S2325") // componentes/buzon.html lo lee como propiedad de la fila
     public String boton() {
       return null;
     }
 
     /** Lo que nombra la acción principal, para lectores; el donante no tiene. */
+    @SuppressWarnings("java:S2325") // componentes/buzon.html lo lee como propiedad de la fila
     public String que() {
       return null;
     }
 
     /** El renglón chico debajo del mensaje; el donante no tiene. */
+    @SuppressWarnings("java:S2325") // componentes/buzon.html lo lee como propiedad de la fila
     public String nota() {
       return null;
     }

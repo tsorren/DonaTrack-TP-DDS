@@ -22,7 +22,7 @@ public record ConsultaAsignaciones(
   public static final String PROPUESTAS = "propuestas";
   public static final String CONFLICTOS = "conflictos";
   public static final String DESTINO = "destino";
-  public static final String DECIDIDAS = "decididas";
+  public static final String VISTA_DECIDIDAS = "decididas";
   public static final String PARECIDO = "parecido";
   public static final String MENOS_RECIBIERON = "menos-recibieron";
   public static final String LAS_DOS = "las-dos";
@@ -32,7 +32,7 @@ public record ConsultaAsignaciones(
   private static final String CLAVE = "[A-Za-z0-9-]{1,64}";
 
   public ConsultaAsignaciones {
-    pestana = PESTANAS.contains(pestana) || DECIDIDAS.equals(pestana) ? pestana : PROPUESTAS;
+    pestana = PESTANAS.contains(pestana) || VISTA_DECIDIDAS.equals(pestana) ? pestana : PROPUESTAS;
     algoritmo = ALGORITMOS.contains(algoritmo) ? algoritmo : "";
     categoria = categoria != null && categoria.matches(CLAVE) ? categoria : "";
     donacion = donacion != null && donacion.matches(CLAVE) ? donacion : "";
@@ -68,7 +68,7 @@ public record ConsultaAsignaciones(
       String categoria,
       String donacion,
       int pagina) {
-    String elegida = DECIDIDAS.equals(vista) ? DECIDIDAS : vacio(pestana);
+    String elegida = VISTA_DECIDIDAS.equals(vista) ? VISTA_DECIDIDAS : vacio(pestana);
     return new ConsultaAsignaciones(
         elegida, vacio(algoritmo), vacio(categoria), vacio(donacion), pagina);
   }

@@ -113,20 +113,12 @@ public class PropuestaMapper {
                   StockEnPropuestas stock = enListado.porDonacion().get(e.getKey());
                   int disponible =
                       stock != null ? stock.disponible() : lecturas.disponible(e.getKey());
-                  int pedidaEnOtras =
-                      stock == null
-                          ? 0
-                          : Math.max(0, stock.pedidaEnPendientes() - (pendiente ? cantidad : 0));
-                  int otrasPropuestas =
-                      stock == null
-                          ? 0
-                          : Math.max(0, stock.propuestasPendientes() - (pendiente ? 1 : 0));
                   return new GrupoFragmentacionDTO(
                       lecturas.dtos.get(e.getKey()),
                       e.getValue(),
                       disponible,
-                      pedidaEnOtras,
-                      otrasPropuestas);
+                      pedidaEnOtras(stock, pendiente, cantidad),
+                      otrasPropuestas(stock, pendiente));
                 })
             .toList();
 
@@ -150,6 +142,22 @@ public class PropuestaMapper {
         enListado.situacion(),
         enListado.otrasPendientesMismaNecesidad(),
         propuesta.getMotivoDescarte());
+  }
+
+  private static int pedidaEnOtras(StockEnPropuestas stock, boolean pendiente, int cantidad) {
+    if (stock == null) {
+      return 0;
+    }
+    int propia = pendiente ? cantidad : 0;
+    return Math.max(0, stock.pedidaEnPendientes() - propia);
+  }
+
+  private static int otrasPropuestas(StockEnPropuestas stock, boolean pendiente) {
+    if (stock == null) {
+      return 0;
+    }
+    int propia = pendiente ? 1 : 0;
+    return Math.max(0, stock.propuestasPendientes() - propia);
   }
 
   /** Lo que hace falta para armar una página, leído una vez y por lote. */

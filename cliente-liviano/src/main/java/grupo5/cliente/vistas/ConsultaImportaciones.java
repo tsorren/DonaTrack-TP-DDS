@@ -83,7 +83,7 @@ public record ConsultaImportaciones(
     if (RANGO.equals(subidaEntendida)) {
       rango = fechas(desde, hasta);
     }
-    if (rango == null) {
+    if (rango == null || rango.length == 0) {
       avisos.add(NO_ENTENDIMOS_LA_FECHA);
       subidaEntendida = "";
       rango = new LocalDate[2];
@@ -127,18 +127,18 @@ public record ConsultaImportaciones(
     };
   }
 
-  /** Las fechas escritas (AAAA-MM-DD); null si alguna no se entiende o están al revés. */
+  /** Las fechas escritas (AAAA-MM-DD); vacío si alguna no se entiende o están al revés. */
   private static LocalDate[] fechas(String desde, String hasta) {
     try {
       LocalDate inicio = vacio(desde).isEmpty() ? null : LocalDate.parse(vacio(desde));
       LocalDate fin = vacio(hasta).isEmpty() ? null : LocalDate.parse(vacio(hasta));
       if ((inicio == null && fin == null)
           || (inicio != null && fin != null && inicio.isAfter(fin))) {
-        return null;
+        return new LocalDate[0];
       }
       return new LocalDate[] {inicio, fin};
     } catch (DateTimeParseException noEsFecha) {
-      return null;
+      return new LocalDate[0];
     }
   }
 

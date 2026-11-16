@@ -1,5 +1,7 @@
 package grupo5.cliente.cuentas;
 
+import grupo5.cliente.puertos.AltaIncompleta;
+import grupo5.cliente.puertos.CorreoEnUso;
 import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import java.net.URI;
 import java.time.Instant;

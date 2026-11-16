@@ -335,10 +335,6 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
         .toLowerCase(Locale.ROOT);
   }
 
-  /**
-   * La importación de la ficha (20.000 filas) en la pantalla pedida. Escenarios del avance: {@code
-   * esperando}, {@code leyendo} y {@code cortada}; del resultado, {@code sin-errores}.
-   */
   /** Las importaciones de ejemplo de la ficha r11-p1-importaciones; el escenario elige cuáles. */
   @Override
   public AdminImportacionesVista importaciones(ConsultaImportaciones consulta, String ejemplo) {
@@ -351,6 +347,10 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
     return AdminImportacionesDeEjemplo.filasConError(FILAS_CON_ERROR);
   }
 
+  /**
+   * La importación de la ficha (20.000 filas) en la pantalla pedida. Escenarios del avance: {@code
+   * esperando}, {@code leyendo} y {@code cortada}; del resultado, {@code sin-errores}.
+   */
   @Override
   public Importacion importacion(UUID archivo, String nombre, String ejemplo, int pagina) {
     return conSubida(ejemplo(ejemplo, pagina));
@@ -379,7 +379,7 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
         "00000000-0000-4000-8000-000000000001");
   }
 
-  private Importacion ejemplo(String ejemplo, int pagina) {
+  private static Importacion ejemplo(String ejemplo, int pagina) {
     return switch (ejemplo == null ? "" : ejemplo) {
       case "importando:esperando" ->
           new Importacion(

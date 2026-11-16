@@ -94,6 +94,8 @@ public abstract class Necesidad implements AggregateRoot {
    * Si puede recibir asignaciones: activa y, en una extraordinaria, sin vencer. Una necesidad
    * {@link EstadoNecesidad#TERMINADA} deja de recibirlas.
    */
+  // `hoy` lo usa NecesidadExtraordinaria al sobrescribir; la base no vence nunca.
+  @SuppressWarnings("java:S1172")
   public boolean admiteAsignaciones(LocalDate hoy) {
     return isActiva();
   }

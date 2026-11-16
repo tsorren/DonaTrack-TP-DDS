@@ -23,7 +23,7 @@ public record AdminActividadVista(
     List<Opcion> fechas) {
 
   /** Las opciones de Acción (ficha §6). */
-  public static final List<Opcion> GRUPOS =
+  public static final List<Opcion> GRUPOS_DE_ACCION =
       List.of(
           new Opcion("", "Todas"),
           new Opcion("propuestas", "Propuestas y asignación"),
@@ -67,7 +67,7 @@ public record AdminActividadVista(
         filtrada,
         avisos,
         quienes,
-        GRUPOS,
+        GRUPOS_DE_ACCION,
         AdminImportacionesVista.subidas(consulta.comoFechas()));
   }
 

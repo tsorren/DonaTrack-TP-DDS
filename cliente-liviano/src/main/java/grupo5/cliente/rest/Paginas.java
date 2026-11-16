@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
  */
 final class Paginas {
 
-  static final String TOTAL = "X-Total-Count";
+  static final String CABECERA_TOTAL = "X-Total-Count";
 
   private Paginas() {}
 
@@ -44,7 +44,7 @@ final class Paginas {
 
   /** El total de la cabecera; sin ella, lo que se ve hasta esta página. */
   static long total(ResponseEntity<?> respuesta, List<?> filas, int pagina, int tamanio) {
-    String total = respuesta.getHeaders().getFirst(TOTAL);
+    String total = respuesta.getHeaders().getFirst(CABECERA_TOTAL);
     if (total != null && total.strip().matches("\\d{1,18}")) {
       return Long.parseLong(total.strip());
     }

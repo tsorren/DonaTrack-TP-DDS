@@ -25,11 +25,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.cliente.puertos.AdminActividadPuerto;
 import grupo5.cliente.puertos.AdminActividadPuerto.AccionDelSitio;
+import grupo5.cliente.puertos.AltaIncompleta;
+import grupo5.cliente.puertos.CorreoEnUso;
 import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.Administrador;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.Alta;
-import grupo5.cliente.puertos.DirectorioDeAdministradores.AltaIncompleta;
-import grupo5.cliente.puertos.DirectorioDeAdministradores.CorreoEnUso;
 import grupo5.cliente.sesion.CifradoDeLaSesion;
 import grupo5.cliente.web.AdminAdministradoresController;
 import grupo5.cliente.web.AdminPerfilController;

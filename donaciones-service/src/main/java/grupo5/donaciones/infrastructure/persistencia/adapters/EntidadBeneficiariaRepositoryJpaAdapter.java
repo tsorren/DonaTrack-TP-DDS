@@ -95,11 +95,14 @@ public class EntidadBeneficiariaRepositoryJpaAdapter
   private static void filtrarOrganizaciones(ConsultaListado consulta, CriterioEntidades criterio) {
     FiltroOrganizaciones filtro = criterio.filtro();
     if (filtro.activa() != null) {
-      consulta.donde(filtro.activa() ? "e.activo" : "NOT e.activo");
+      consulta.donde(Boolean.TRUE.equals(filtro.activa()) ? "e.activo" : "NOT e.activo");
     }
     if (filtro.conNecesidades() != null) {
       consulta
-          .donde(filtro.conNecesidades() ? TIENE_NECESIDADES : "NOT " + TIENE_NECESIDADES)
+          .donde(
+              Boolean.TRUE.equals(filtro.conNecesidades())
+                  ? TIENE_NECESIDADES
+                  : "NOT " + TIENE_NECESIDADES)
           .parametro("hoy", criterio.hoy());
     }
     if (filtro.rubro() != null) {

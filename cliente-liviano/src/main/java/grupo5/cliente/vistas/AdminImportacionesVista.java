@@ -25,7 +25,7 @@ public record AdminImportacionesVista(
     List<Opcion> ordenes) {
 
   /** Las opciones del filtro Estado (ficha r11-p1-importaciones, sección 4.1). */
-  public static final List<Opcion> ESTADOS =
+  public static final List<Opcion> OPCIONES_ESTADOS =
       List.of(
           new Opcion("", "Todos"),
           new Opcion("en-curso", "En curso"),
@@ -34,7 +34,7 @@ public record AdminImportacionesVista(
           new Opcion("cortadas", "Se cortaron o no se importaron"));
 
   /** Las opciones de Ordenar. */
-  public static final List<Opcion> ORDENES =
+  public static final List<Opcion> OPCIONES_ORDENES =
       List.of(
           new Opcion("", "Más recientes primero"), new Opcion("antiguas", "Más antiguas primero"));
 
@@ -51,7 +51,13 @@ public record AdminImportacionesVista(
   public static AdminImportacionesVista de(
       long enCurso, String al, Tramo<Fila> importaciones, ConsultaImportaciones consulta) {
     return new AdminImportacionesVista(
-        enCurso, al, importaciones, consulta, ESTADOS, subidas(consulta), ORDENES);
+        enCurso,
+        al,
+        importaciones,
+        consulta,
+        OPCIONES_ESTADOS,
+        subidas(consulta),
+        OPCIONES_ORDENES);
   }
 
   /**

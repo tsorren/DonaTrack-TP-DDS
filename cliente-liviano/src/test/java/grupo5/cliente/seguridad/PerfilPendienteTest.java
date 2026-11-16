@@ -20,10 +20,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import grupo5.cliente.cuentas.PerfilService;
+import grupo5.cliente.puertos.DatosRechazados;
 import grupo5.cliente.puertos.PublicoPuerto;
 import grupo5.cliente.puertos.SolicitudEntidadPuerto;
-import grupo5.cliente.puertos.SolicitudEntidadPuerto.DatosRechazados;
-import grupo5.cliente.puertos.SolicitudEntidadPuerto.YaAprobada;
+import grupo5.cliente.puertos.YaAprobada;
 import grupo5.cliente.vistas.SolicitudEntidadVista;
 import grupo5.cliente.web.AccesoController;
 import grupo5.cliente.web.Pantallas;

@@ -46,7 +46,7 @@ import org.springframework.web.client.RestClient;
 })
 class AdminNotificacionesBandejaTest {
 
-  private static final UUID ADMINISTRACION = UUID.fromString(AvisosRest.ADMINISTRACION);
+  private static final UUID ADMINISTRACION = UUID.fromString(AvisosRest.ID_ADMINISTRACION);
   private static final String BASE =
       "http://notificaciones/api/notificaciones/persona/" + ADMINISTRACION;
 

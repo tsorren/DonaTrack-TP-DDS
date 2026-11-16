@@ -34,6 +34,8 @@ public class LoggingAutoConfiguration {
   @Configuration(proxyBeanMethods = false)
   @ConditionalOnClass(Propagation.Factory.class)
   public static class XTraceIdPropagationConfiguration {
+    private XTraceIdPropagationConfiguration() {}
+
     /** Envuelve la propagación de Brave para que el span del servidor adopte el X-Trace-Id. */
     @Bean
     public static BeanPostProcessor xTraceIdPropagationPostProcessor() {

@@ -35,8 +35,8 @@ public record AdminEntidadesVista(
    */
   public record Filtro(String ver, String pedidos, String tipo) {
 
-    private static final List<String> VER = List.of("activas", "pendientes", "inactivas");
-    private static final List<String> PEDIDOS = List.of("con", "sin");
+    private static final List<String> VALORES_VER = List.of("activas", "pendientes", "inactivas");
+    private static final List<String> VALORES_PEDIDOS = List.of("con", "sin");
 
     /** Los rubros que ofrece el menú Tipo. */
     public static final List<String> TIPOS =
@@ -47,8 +47,8 @@ public record AdminEntidadesVista(
     public static final Filtro NINGUNO = new Filtro("", "", "");
 
     public Filtro {
-      ver = ver != null && VER.contains(ver) ? ver : "";
-      pedidos = pedidos != null && PEDIDOS.contains(pedidos) ? pedidos : "";
+      ver = ver != null && VALORES_VER.contains(ver) ? ver : "";
+      pedidos = pedidos != null && VALORES_PEDIDOS.contains(pedidos) ? pedidos : "";
       tipo = tipo != null && TIPOS.contains(tipo) ? tipo : "";
     }
   }

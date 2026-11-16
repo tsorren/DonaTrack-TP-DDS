@@ -31,7 +31,7 @@ public class EvolucionAdminService {
   public static final int MESES = 12;
 
   /** Cuántas categorías van con su nombre; el resto se suma en "otras". */
-  public static final int CATEGORIAS = 8;
+  public static final int TOPE_CATEGORIAS = 8;
 
   private final IDonacionesIndependientesRepository donacionesIndependientes;
   private final ICategoriasRepository categorias;
@@ -61,7 +61,7 @@ public class EvolucionAdminService {
     LocalDateTime inicio = desde.atDay(1).atStartOfDay();
     LocalDateTime fin = hasta.plusMonths(1).atDay(1).atStartOfDay();
     List<Categoria> todas = porCategoria(inicio, fin);
-    List<Categoria> primeras = todas.stream().limit(CATEGORIAS).toList();
+    List<Categoria> primeras = todas.stream().limit(TOPE_CATEGORIAS).toList();
     return new EvolucionAdminDTO(
         desde.toString(),
         hasta.toString(),

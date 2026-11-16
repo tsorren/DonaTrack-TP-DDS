@@ -66,13 +66,16 @@ class AdminActividadRest implements AdminActividadPuerto {
   static final String CUENTA_SIN_NOMBRE = "Una cuenta de administración";
   static final String CUENTA_QUE_NO_EXISTE = "Una cuenta de administración que ya no existe";
 
+  private static final String DONACION_VENCIDA = "DONACION_VENCIDA";
+  private static final String IMPORTACION_SUBIDA = "IMPORTACION_SUBIDA";
+
   private static final Logger log = LoggerFactory.getLogger(AdminActividadRest.class);
 
   private static final Map<String, List<String>> ACCIONES =
       Map.of(
           "propuestas", List.of("PROPUESTA_APROBADA", "PROPUESTA_DESCARTADA", "ASIGNACION_CORRIDA"),
-          "donaciones", List.of("DONACION_REGISTRADA", "DONACION_VENCIDA"),
-          "donantes", List.of("DONANTE_REGISTRADO", "IMPORTACION_SUBIDA"),
+          "donaciones", List.of("DONACION_REGISTRADA", DONACION_VENCIDA),
+          "donantes", List.of("DONANTE_REGISTRADO", IMPORTACION_SUBIDA),
           "organizaciones", List.of("ORGANIZACION_APROBADA", "ORGANIZACION_REGISTRADA"),
           "cuentas", List.of("ADMINISTRADOR_DADO_DE_ALTA", "CONTRASENA_PROVISORIA_NUEVA"),
           "camiones", List.of("CAMION_AGREGADO", "CAMION_DESHABILITADO", "CAMION_HABILITADO"));
@@ -261,10 +264,10 @@ class AdminActividadRest implements AdminActividadPuerto {
           con(detalle, "Descartó una propuesta.", "Descartó la propuesta para ", ".");
       case "ASIGNACION_CORRIDA" -> asignacion(detalle);
       case "DONACION_REGISTRADA" -> "Registró una donación en el depósito.";
-      case "DONACION_VENCIDA" -> "Marcó una donación como vencida.";
+      case DONACION_VENCIDA -> "Marcó una donación como vencida.";
       case "DONANTE_REGISTRADO" ->
           con(detalle, "Registró a una persona donante.", "Registró a ", " como donante.");
-      case "IMPORTACION_SUBIDA" ->
+      case IMPORTACION_SUBIDA ->
           con(
               detalle,
               "Subió un archivo de donantes para importar.",
@@ -292,12 +295,12 @@ class AdminActividadRest implements AdminActividadPuerto {
       return SIN_ENLACE;
     }
     return switch (accion) {
-      case "DONACION_VENCIDA" ->
+      case DONACION_VENCIDA ->
           new Enlace(
               VER_LA_DONACION,
               "/admin-donaciones-detalle?donacion=" + objeto,
               "Ver la donación marcada como vencida");
-      case "IMPORTACION_SUBIDA" ->
+      case IMPORTACION_SUBIDA ->
           new Enlace(
               VER_LA_IMPORTACION,
               "/admin-donantes-importado?archivo=" + objeto,

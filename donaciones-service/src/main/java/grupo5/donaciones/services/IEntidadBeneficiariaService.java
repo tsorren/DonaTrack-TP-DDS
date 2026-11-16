@@ -19,10 +19,9 @@ public interface IEntidadBeneficiariaService {
    * no filtra), ordenadas por razón social, de a una página resuelta en la base ({@code page} desde
    * 0, por defecto 0; {@code size} entre 1 y 100, por defecto 20; R11-01: sin parámetros ya no
    * devuelve todas). El total cuenta las que cumplen el filtro.
-   */
-  /**
-   * Organizaciones del admin: por razón social y, desde R11-43, por estado, necesidades vigentes y
-   * rubro ({@code filtro}; nulo no filtra). Una página, nunca la lista completa.
+   *
+   * <p>Organizaciones del admin: por razón social y, desde R11-43, por estado, necesidades vigentes
+   * y rubro ({@code filtro}; nulo no filtra). Una página, nunca la lista completa.
    */
   Pagina<EntidadBeneficiariaOutputDTO> buscar(
       String nombre, FiltroOrganizaciones filtro, Integer page, Integer size);

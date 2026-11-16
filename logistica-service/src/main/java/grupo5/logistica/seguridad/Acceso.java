@@ -15,6 +15,8 @@ public final class Acceso {
   public static final String DONANTE_O_ENTIDAD =
       ADMIN + " or hasAnyRole('DONANTE', 'ENTIDAD') and ";
 
+  private static final String CON_VER_ENTREGAS = "hasAuthority('VER_ENTREGAS') and ";
+
   public static final String SU_DONANTE = "principal.puedeOperarSobre(#donanteId)";
   public static final String SU_BENEFICIARIA = "principal.puedeOperarSobre(#idBeneficiaria)";
   public static final String SU_ENTREGA = "principal.puedeOperarSobre(@duenioDe.entrega(#id))";
@@ -23,19 +25,18 @@ public final class Acceso {
   public static final String SU_RUTA = "@duenioDe.ruta(#id, principal)";
 
   /** Una entrega propia de la entidad: consultarla y ver su historial o su foto. */
-  public static final String VER_SU_ENTREGA =
-      ENTIDAD + "hasAuthority('VER_ENTREGAS') and " + SU_ENTREGA;
+  public static final String VER_SU_ENTREGA = ENTIDAD + CON_VER_ENTREGAS + SU_ENTREGA;
 
   /** Confirmar o rechazar la recepción y adjuntar o subir las fotos de una entrega propia. */
   public static final String CONFIRMAR_SU_ENTREGA =
       ENTIDAD + "hasAuthority('CONFIRMAR_RECEPCION') and " + SU_ENTREGA;
 
   public static final String VER_EL_SEGUIMIENTO_DE_SU_DONACION =
-      DONANTE + "hasAuthority('VER_ENTREGAS') and " + SU_DONACION;
+      DONANTE + CON_VER_ENTREGAS + SU_DONACION;
   public static final String VER_EL_SEGUIMIENTO_DE_SU_DONANTE =
-      DONANTE + "hasAuthority('VER_ENTREGAS') and " + SU_DONANTE;
+      DONANTE + CON_VER_ENTREGAS + SU_DONANTE;
   public static final String VER_EL_SEGUIMIENTO_DE_SU_BENEFICIARIA =
-      ENTIDAD + "hasAuthority('VER_ENTREGAS') and " + SU_BENEFICIARIA;
+      ENTIDAD + CON_VER_ENTREGAS + SU_BENEFICIARIA;
 
   /** Una ruta que lleva una entrega de su organización. */
   public static final String VER_SU_RUTA =

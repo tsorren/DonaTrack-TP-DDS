@@ -72,18 +72,4 @@ public interface DirectorioDeAdministradores {
    * @return false si la cuenta ya eligió su contraseña (no se cambia nada)
    */
   boolean otraContrasena(String id, String contrasena);
-
-  /** Ya hay una cuenta con ese correo. */
-  final class CorreoEnUso extends RuntimeException {
-    public CorreoEnUso() {
-      super("Ya hay una cuenta con ese correo");
-    }
-  }
-
-  /** El alta falló a mitad de camino; la cuenta creada se borró. */
-  final class AltaIncompleta extends RuntimeException {
-    public AltaIncompleta(Throwable causa) {
-      super("No se creó la cuenta de administración", causa);
-    }
-  }
 }

@@ -28,7 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Profile("!maqueta")
 public class EntidadEnviosController {
 
-  private static final String NECESIDADES = "entidad-necesidades";
+  private static final String PANTALLA_NECESIDADES = "entidad-necesidades";
 
   /** Las opciones de ¿Se repite?; "una" (una sola vez) no tiene periodicidad. */
   private static final Map<String, String> PERIODICIDADES =
@@ -69,7 +69,7 @@ public class EntidadEnviosController {
     }
     necesidades.publicar(entidad, que, cuanto, PERIODICIDADES.get(repite), hasta, motivo.strip());
     return Envios.listo(
-        NECESIDADES,
+        PANTALLA_NECESIDADES,
         "Publicamos tu necesidad. Ya la ven los donantes y el catálogo público.",
         atributos);
   }
@@ -94,13 +94,13 @@ public class EntidadEnviosController {
       necesidades.cambiar(necesidad, version, cuanto, motivo.strip());
     } catch (HttpClientErrorException.Conflict otraPersona) {
       return Envios.listo(
-          NECESIDADES + "?necesidad=" + clave + "#" + clave,
+          PANTALLA_NECESIDADES + "?necesidad=" + clave + "#" + clave,
           "Otra persona de tu organización cambió esta necesidad mientras la editabas. Revisala y, si"
               + " hace falta, guardá tus cambios de nuevo.",
           atributos);
     }
     return Envios.listo(
-        NECESIDADES + "?necesidad=" + clave + "#" + clave,
+        PANTALLA_NECESIDADES + "?necesidad=" + clave + "#" + clave,
         "Guardamos los cambios de tu necesidad.",
         atributos);
   }
@@ -113,7 +113,7 @@ public class EntidadEnviosController {
     }
     necesidades.darDeBaja(necesidad);
     return Envios.listo(
-        NECESIDADES, "Diste de baja tu necesidad. Ya no la ven los donantes.", atributos);
+        PANTALLA_NECESIDADES, "Diste de baja tu necesidad. Ya no la ven los donantes.", atributos);
   }
 
   /**
@@ -169,8 +169,11 @@ public class EntidadEnviosController {
       notificaciones.dejarSinLeer(noLeer);
       return Envios.listo(volver, "Dejaste la novedad sin leer.", atributos);
     }
-    notificaciones.marcarLeidas(
-        entidad, marcar != null ? List.of(marcar) : (elegidas == null ? List.of() : elegidas));
+    List<UUID> aMarcar = elegidas == null ? List.of() : elegidas;
+    if (marcar != null) {
+      aMarcar = List.of(marcar);
+    }
+    notificaciones.marcarLeidas(entidad, aMarcar);
     return Envios.listo(volver, "Marcaste las novedades como leídas.", atributos);
   }
 

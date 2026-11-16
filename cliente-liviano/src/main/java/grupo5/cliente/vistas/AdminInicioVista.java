@@ -88,7 +88,7 @@ public record AdminInicioVista(
       Fila totalCategorias) {
 
     /** Todavía no hay donaciones registradas. */
-    public static final Evolucion VACIA =
+    public static final Evolucion SIN_DONACIONES =
         new Evolucion(null, null, null, 0, 0, List.of(), null, null, List.of(), null);
 
     public boolean vacia() {

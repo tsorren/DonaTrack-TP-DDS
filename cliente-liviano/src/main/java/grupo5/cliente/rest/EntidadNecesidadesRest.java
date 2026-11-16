@@ -235,8 +235,7 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
     // El período en curso es el más nuevo: pasa a CUMPLIDO apenas se cumple, sin terminar.
     DonacionesApi.Periodo actual = periodos.isEmpty() ? null : periodos.getFirst();
     int pedida = n.cantidadNecesitada() == null ? 0 : n.cantidadNecesitada();
-    LocalDate hasta =
-        actual != null ? actual.fin() : (n.fechaLimite() != null ? n.fechaLimite() : n.fechaFin());
+    LocalDate hasta = vencimiento(actual, n);
     List<Entrega> entregas = new ArrayList<>();
     List<Donacion> donaron = new ArrayList<>();
     for (DonacionesApi.Donacion d : asignadas) {
@@ -304,14 +303,27 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
         recibidas);
   }
 
+  private static LocalDate vencimiento(DonacionesApi.Periodo actual, DonacionesApi.Necesidad n) {
+    if (actual != null) {
+      return actual.fin();
+    }
+    return n.fechaLimite() != null ? n.fechaLimite() : n.fechaFin();
+  }
+
+  private static String tonoDelPeriodo(String resultado, int recibido) {
+    if ("EN_CURSO".equals(resultado)) {
+      return "curso";
+    }
+    if ("CUMPLIDO".equals(resultado)) {
+      return "todo";
+    }
+    return recibido > 0 ? "parte" : "nada";
+  }
+
   private static Periodo periodo(DonacionesApi.Periodo p, String unidad) {
     int recibido = p.recibido() == null ? 0 : p.recibido();
     int objetivo = p.objetivo() == null ? 0 : p.objetivo();
-    boolean enCurso = "EN_CURSO".equals(p.resultado());
-    String tono =
-        enCurso
-            ? "curso"
-            : ("CUMPLIDO".equals(p.resultado()) ? "todo" : (recibido > 0 ? "parte" : "nada"));
+    String tono = tonoDelPeriodo(p.resultado(), recibido);
     String estado =
         switch (tono) {
           case "curso" -> "En curso";
@@ -349,7 +361,10 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
       return null;
     }
     long dias = ChronoUnit.DAYS.between(hoy, hasta);
-    return dias <= 0 ? "termina hoy" : (dias == 1 ? "falta 1 día" : "faltan " + dias + " días");
+    if (dias <= 0) {
+      return "termina hoy";
+    }
+    return dias == 1 ? "falta 1 día" : "faltan " + dias + " días";
   }
 
   /** El cartel (o la marca, con {@code marca}) del último cambio de cantidad, o null. */
@@ -390,14 +405,20 @@ class EntidadNecesidadesRest implements EntidadNecesidadesPuerto {
               Categoria categoria = s.categoria();
               String grupo =
                   categoria == null || categoria.nombre() == null ? "Otras" : categoria.nombre();
-              String unidadDeLa =
-                  s.unidad() != null ? s.unidad() : (categoria == null ? null : categoria.unidad());
+              String unidadDeLa = unidadDe(s, categoria);
               String unidad = unidad(new Categoria(null, null, unidadDeLa, null, null, null));
               grupos
                   .computeIfAbsent(grupo, g -> new ArrayList<>())
                   .add(new Opcion(s.id().toString(), s.nombre() + " (" + unidad + ")", false));
             });
     return grupos.entrySet().stream().map(e -> new Grupo(e.getKey(), e.getValue())).toList();
+  }
+
+  private static String unidadDe(Subcategoria s, Categoria categoria) {
+    if (s.unidad() != null) {
+      return s.unidad();
+    }
+    return categoria == null ? null : categoria.unidad();
   }
 
   /** La unidad sola, la de Comun ("2 kg" sin el número); sin unidad, unidades. */

@@ -1,6 +1,7 @@
 package grupo5.cliente.maqueta;
 
 import grupo5.cliente.puertos.SolicitudEntidadPuerto;
+import grupo5.cliente.puertos.YaAprobada;
 import grupo5.cliente.vistas.SolicitudEntidadVista;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

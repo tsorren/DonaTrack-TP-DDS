@@ -4,7 +4,6 @@ import static grupo5.cliente.vistas.AdminAsignacionesVista.MENOS_RECIBIERON;
 import static grupo5.cliente.vistas.AdminAsignacionesVista.PARECIDO;
 
 import grupo5.cliente.puertos.DirectorioDeAdministradores;
-import grupo5.cliente.puertos.DirectorioDeAdministradores.Administrador;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Cubre;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Cuentas;
@@ -78,7 +77,7 @@ final class AdminOperacionAsignaciones {
   }
 
   AdminAsignacionesVista vista(ConsultaAsignaciones consulta) {
-    if (ConsultaAsignaciones.DECIDIDAS.equals(consulta.pestana())) {
+    if (ConsultaAsignaciones.VISTA_DECIDIDAS.equals(consulta.pestana())) {
       ConsultaDecididas busqueda = consulta.decididas();
       Tramo<Decidida> decididas =
           mapear(
@@ -106,13 +105,13 @@ final class AdminOperacionAsignaciones {
           opcionesDeAutor(busqueda),
           sinFecha);
     }
-    Cuentas cuentas = cuentas();
+    Cuentas cuentasActuales = cuentas();
     String ultima = ultima();
     return switch (consulta.pestana()) {
       case ConsultaAsignaciones.CONFLICTOS ->
           new AdminAsignacionesVista(
               consulta,
-              cuentas,
+              cuentasActuales,
               ultima,
               pendientes(consulta, List.of("EN_CONFLICTO", SIN_STOCK)),
               List.of(),
@@ -120,11 +119,11 @@ final class AdminOperacionAsignaciones {
               List.of(),
               null,
               null);
-      case ConsultaAsignaciones.DESTINO -> destino(consulta, cuentas, ultima);
+      case ConsultaAsignaciones.DESTINO -> destino(consulta, cuentasActuales, ultima);
       default ->
           new AdminAsignacionesVista(
               consulta,
-              cuentas,
+              cuentasActuales,
               ultima,
               pendientes(consulta, List.of("LIBRE")),
               recientes(),
@@ -253,24 +252,8 @@ final class AdminOperacionAsignaciones {
   private List<Opcion> opcionesDeAutor(ConsultaDecididas busqueda) {
     List<Opcion> opciones = new ArrayList<>();
     opciones.add(new Opcion("", "Cualquiera"));
-    opciones.add(new Opcion(ConsultaDecididas.VOS, "Vos"));
-    if (cuentas != null) {
-      try {
-        long total = cuentas.total();
-        if (total <= CUENTAS_EN_EL_MENU) {
-          int paginas = (int) Math.ceil(total / (double) DirectorioDeAdministradores.POR_PAGINA);
-          for (int n = 1; n <= paginas; n++) {
-            for (Administrador a : cuentas.pagina(n)) {
-              if (!a.id().equals(busqueda.vos())) {
-                opciones.add(new Opcion(a.id(), autores.de(a.id())));
-              }
-            }
-          }
-        }
-      } catch (RestClientException noResponde) {
-        // Sin el directorio, quedan las opciones fijas
-      }
-    }
+    opciones.add(new Opcion(ConsultaDecididas.FILTRO_VOS, "Vos"));
+    agregarCuentas(opciones, busqueda.vos());
     String elegida = busqueda.decidio();
     if (!elegida.isEmpty()
         && !ConsultaDecididas.ANTES.equals(elegida)
@@ -279,6 +262,27 @@ final class AdminOperacionAsignaciones {
     }
     opciones.add(new Opcion(ConsultaDecididas.ANTES, "Antes de las cuentas"));
     return opciones;
+  }
+
+  /** Agrega cada cuenta del directorio salvo {@code vos}; sin directorio o sin respuesta, nada. */
+  private void agregarCuentas(List<Opcion> opciones, String vos) {
+    if (cuentas == null) {
+      return;
+    }
+    try {
+      long total = cuentas.total();
+      if (total > CUENTAS_EN_EL_MENU) {
+        return;
+      }
+      int paginas = (int) Math.ceil(total / (double) DirectorioDeAdministradores.POR_PAGINA);
+      for (int n = 1; n <= paginas; n++) {
+        cuentas.pagina(n).stream()
+            .filter(a -> !a.id().equals(vos))
+            .forEach(a -> opciones.add(new Opcion(a.id(), autores.de(a.id()))));
+      }
+    } catch (RestClientException noResponde) {
+      // Sin el directorio, quedan las opciones fijas
+    }
   }
 
   private Cuentas cuentas() {
@@ -469,9 +473,10 @@ final class AdminOperacionAsignaciones {
     }
     String cuando =
         Comun.DIA_Y_ANIO.format(p.fechaDecision()) + ", " + Comun.HORA.format(p.fechaDecision());
-    return autor.isEmpty()
-        ? (aprobada ? "Se aprobó" : "Se descartó") + " el " + cuando + "."
-        : verbo + " " + autor + " el " + cuando + ".";
+    if (autor.isEmpty()) {
+      return (aprobada ? "Se aprobó" : "Se descartó") + " el " + cuando + ".";
+    }
+    return verbo + " " + autor + " el " + cuando + ".";
   }
 
   private static String motivo(String motivo) {
@@ -510,7 +515,7 @@ final class AdminOperacionAsignaciones {
         resumen(propuestas, alcanza));
   }
 
-  private DonacionEnJuego elegida(DonacionesApi.Fragmento f, long propuestas) {
+  private static DonacionEnJuego elegida(DonacionesApi.Fragmento f, long propuestas) {
     DonacionesApi.Donacion d = f.donacionIndependiente();
     int pedida = numero(f.cantidadNecesaria()) + numero(f.pedidaEnOtras());
     boolean alcanza = pedida <= numero(f.disponible());
@@ -557,7 +562,8 @@ final class AdminOperacionAsignaciones {
   }
 
   /** Las decididas, con la búsqueda y los filtros de Todas las decididas (R11-35). */
-  private MultiValueMap<String, String> decididas(int numero, int tamanio, ConsultaDecididas b) {
+  private static MultiValueMap<String, String> decididas(
+      int numero, int tamanio, ConsultaDecididas b) {
     MultiValueMap<String, String> filtros = pagina(numero, tamanio);
     if (!ConsultaDecididas.DESCARTADAS.equals(b.estado())) {
       filtros.add(ESTADO, APROBADA);

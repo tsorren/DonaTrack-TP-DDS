@@ -242,13 +242,7 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
             .map(LogisticaApi.FotoSubida::url)
             .filter(Objects::nonNull)
             .toList();
-    LogisticaApi.Reporte reporte =
-        acta.motivo() == null
-            ? null
-            : new LogisticaApi.Reporte(
-                acta.motivo().toUpperCase(Locale.ROOT),
-                acta.detalle() == null || acta.detalle().isBlank() ? null : acta.detalle().strip(),
-                "incompleta".equals(acta.motivo()) ? acta.cantidadRecibida() : null);
+    LogisticaApi.Reporte reporte = reporte(acta);
     logistica.cambiarEstado(
         entrega,
         new LogisticaApi.CambioDeEntrega(
@@ -260,5 +254,15 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
             fotos.isEmpty() ? null : fotos.getFirst(),
             acta.remito().strip(),
             reporte));
+  }
+
+  private static LogisticaApi.Reporte reporte(Acta acta) {
+    if (acta.motivo() == null) {
+      return null;
+    }
+    String detalle =
+        acta.detalle() == null || acta.detalle().isBlank() ? null : acta.detalle().strip();
+    Double cantidad = "incompleta".equals(acta.motivo()) ? acta.cantidadRecibida() : null;
+    return new LogisticaApi.Reporte(acta.motivo().toUpperCase(Locale.ROOT), detalle, cantidad);
   }
 }

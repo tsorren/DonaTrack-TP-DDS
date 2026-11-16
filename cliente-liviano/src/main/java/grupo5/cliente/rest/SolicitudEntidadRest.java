@@ -1,7 +1,9 @@
 package grupo5.cliente.rest;
 
+import grupo5.cliente.puertos.DatosRechazados;
 import grupo5.cliente.puertos.PersonaNueva.Humana;
 import grupo5.cliente.puertos.SolicitudEntidadPuerto;
+import grupo5.cliente.puertos.YaAprobada;
 import grupo5.cliente.rest.DonacionesApi.DireccionDeLaSolicitud;
 import grupo5.cliente.rest.DonacionesApi.Representante;
 import grupo5.cliente.rest.DonacionesApi.SolicitudEntidad;

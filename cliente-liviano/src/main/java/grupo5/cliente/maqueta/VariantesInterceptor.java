@@ -57,16 +57,18 @@ class VariantesInterceptor implements HandlerInterceptor {
       HttpServletResponse response,
       Object handler,
       ModelAndView modelAndView) {
-    if (modelAndView == null || !(request.getAttribute(ATRIBUTO) instanceof Variante variante)) {
+    if (modelAndView == null
+        || !(request.getAttribute(ATRIBUTO)
+            instanceof Variante(String nombre, boolean estilo, boolean estructura))) {
       return;
     }
     String vista = modelAndView.getViewName();
     boolean pantalla = vista != null && !vista.startsWith("redirect:");
-    if (variante.estructura() && pantalla) {
-      modelAndView.setViewName("variantes/" + variante.nombre());
+    if (estructura && pantalla) {
+      modelAndView.setViewName("variantes/" + nombre);
     }
-    if (variante.estilo()) {
-      modelAndView.addObject("varianteCss", variante.nombre());
+    if (estilo) {
+      modelAndView.addObject("varianteCss", nombre);
     }
   }
 

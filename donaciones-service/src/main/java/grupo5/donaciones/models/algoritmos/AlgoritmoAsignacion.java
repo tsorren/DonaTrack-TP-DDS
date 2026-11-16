@@ -75,6 +75,9 @@ public abstract class AlgoritmoAsignacion {
         && Objects.equals(donacion.getSubcategoriaId(), necesidad.getSubcategoriaId());
   }
 
+  // Gancho del Template Method: el orden por defecto no usa `datos`; AlgoritmoPrioridadSubAtendidos
+  // sí (AGENTS.md §4.1: no se cambia la firma del patrón).
+  @SuppressWarnings("java:S1172")
   public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades, DatosDeAsignacion datos) {
     if (necesidades == null)
       throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDADES_NULAS);

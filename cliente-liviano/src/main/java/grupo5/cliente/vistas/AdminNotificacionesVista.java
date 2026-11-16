@@ -34,14 +34,17 @@ public record AdminNotificacionesVista(
       String vinculo,
       String destino) {
 
+    @SuppressWarnings("java:S2325") // componentes/buzon.html lo lee como propiedad de la fila
     public String boton() {
       return null;
     }
 
+    @SuppressWarnings("java:S2325") // componentes/buzon.html lo lee como propiedad de la fila
     public String que() {
       return null;
     }
 
+    @SuppressWarnings("java:S2325") // componentes/buzon.html lo lee como propiedad de la fila
     public String nota() {
       return null;
     }

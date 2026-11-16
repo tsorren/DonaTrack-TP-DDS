@@ -31,7 +31,7 @@ final class AdminInicioGraficosDeEjemplo {
       escenario = pedido.getRequest().getParameter("escenario");
     }
     if ("evolucion-vacia".equals(escenario)) {
-      return Evolucion.VACIA;
+      return Evolucion.SIN_DONACIONES;
     }
     return "evolucion-corta".equals(escenario) ? corta() : completa();
   }

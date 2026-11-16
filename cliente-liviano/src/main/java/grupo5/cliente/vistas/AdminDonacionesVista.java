@@ -82,7 +82,7 @@ public record AdminDonacionesVista(
   }
 
   /** Las opciones de la pastilla Estado: la primera es "Todas". */
-  public List<Opcion> estados() {
+  public static List<Opcion> estados() {
     return List.of(
         new Opcion("", "Todas"),
         new Opcion("deposito", "En el depósito"),
@@ -101,7 +101,7 @@ public record AdminDonacionesVista(
   }
 
   /** Las opciones de la pastilla Vence. */
-  public List<Opcion> vencimientos() {
+  public static List<Opcion> vencimientos() {
     return List.of(new Opcion("", "Cuando sea"), new Opcion("pronto", "En los próximos 7 días"));
   }
 

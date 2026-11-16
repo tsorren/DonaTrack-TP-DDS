@@ -19,7 +19,6 @@ import static grupo5.cliente.rest.Comun.icono;
 import static grupo5.cliente.rest.Comun.normalizado;
 
 import grupo5.cliente.puertos.DonacionesPuerto;
-import grupo5.cliente.puertos.DonacionesPuerto.Consulta;
 import grupo5.cliente.rest.DonacionesApi.Cambio;
 import grupo5.cliente.rest.DonacionesApi.Categoria;
 import grupo5.cliente.vistas.DetalleDonacionVista;
@@ -234,13 +233,7 @@ class DonacionesRest implements DonacionesPuerto {
     String entidad = fila.destino() == null ? "la organización" : fila.destino();
     LocalDateTime llego = ENTREGADA.equals(estado) ? desde(d, estado) : null;
     String foto = llego == null ? null : foto(d.id());
-    String pie =
-        llego == null
-            ? null
-            : mayuscula(entidad)
-                + " confirmó la entrega el "
-                + llego.format(DIA)
-                + (foto == null ? "." : " y subió esta foto.");
+    String pie = llego == null ? null : pie(entidad, llego, foto);
     return Optional.of(
         new DetalleDonacionVista(
             fila,
@@ -466,6 +459,11 @@ class DonacionesRest implements DonacionesPuerto {
   /** Empieza con mayúscula y termina con punto. */
   private static String oracion(String texto) {
     return mayuscula(conPunto(texto));
+  }
+
+  private static String pie(String entidad, LocalDateTime llego, String foto) {
+    String cierre = foto == null ? "." : " y subió esta foto.";
+    return mayuscula(entidad) + " confirmó la entrega el " + llego.format(DIA) + cierre;
   }
 
   private static String mayuscula(String texto) {

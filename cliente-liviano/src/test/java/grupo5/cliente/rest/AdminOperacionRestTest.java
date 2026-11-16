@@ -150,7 +150,8 @@ class AdminOperacionRestTest {
   private void ultima(String cuerpo) {
     donaciones
         .expect(requestTo(ULTIMA))
-        .andRespond(withSuccess(cuerpo, MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "3"));
+        .andRespond(
+            withSuccess(cuerpo, MediaType.APPLICATION_JSON).header(Paginas.CABECERA_TOTAL, "3"));
   }
 
   @Test
@@ -162,7 +163,8 @@ class AdminOperacionRestTest {
     donaciones
         .expect(
             requestTo(ASIGNACIONES + "/propuestas?page=0&size=10&estado=PENDIENTE&situacion=LIBRE"))
-        .andRespond(withSuccess(LIBRES, MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "12"));
+        .andRespond(
+            withSuccess(LIBRES, MediaType.APPLICATION_JSON).header(Paginas.CABECERA_TOTAL, "12"));
     donaciones
         .expect(requestTo(RECIENTES))
         .andRespond(
@@ -236,7 +238,8 @@ class AdminOperacionRestTest {
                 ASIGNACIONES
                     + "/propuestas?page=0&size=10&estado=PENDIENTE&situacion=LIBRE"
                     + "&algoritmo=PRIORIDAD_SUBATENDIDOS"))
-        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+        .andRespond(
+            withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.CABECERA_TOTAL, "0"));
     donaciones
         .expect(requestTo(RECIENTES))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
@@ -326,7 +329,7 @@ class AdminOperacionRestTest {
                   "alcanza": false}]"""
                         .formatted(D_ARROZ),
                     MediaType.APPLICATION_JSON)
-                .header(Paginas.TOTAL, "1"));
+                .header(Paginas.CABECERA_TOTAL, "1"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/categorias"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
@@ -356,7 +359,8 @@ class AdminOperacionRestTest {
         .expect(
             requestTo(
                 ASIGNACIONES + "/propuestas?page=0&size=20&estado=PENDIENTE&donacion=" + D_ARROZ))
-        .andRespond(withSuccess(LIBRES, MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "1"));
+        .andRespond(
+            withSuccess(LIBRES, MediaType.APPLICATION_JSON).header(Paginas.CABECERA_TOTAL, "1"));
 
     AdminAsignacionesVista elegida =
         adaptador.asignaciones(
@@ -374,7 +378,8 @@ class AdminOperacionRestTest {
     donaciones
         .expect(
             requestTo(ASIGNACIONES + "/propuestas?page=0&size=10&estado=PENDIENTE&situacion=LIBRE"))
-        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+        .andRespond(
+            withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.CABECERA_TOTAL, "0"));
 
     donaciones
         .expect(requestTo(RECIENTES))
@@ -409,7 +414,8 @@ class AdminOperacionRestTest {
                 ASIGNACIONES
                     + "/propuestas?page=1&size=20&estado=APROBADA&estado=DESCARTADA"
                     + "&orden=decision_reciente"))
-        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "25"));
+        .andRespond(
+            withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.CABECERA_TOTAL, "25"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/categorias"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
@@ -448,7 +454,7 @@ class AdminOperacionRestTest {
                                     "entidadNombre": "Comedor Ejemplo", "unidad": "KILOGRAMO"}}]"""
                         .formatted(P1, P2),
                     MediaType.APPLICATION_JSON)
-                .header(Paginas.TOTAL, "2"));
+                .header(Paginas.CABECERA_TOTAL, "2"));
     donaciones
         .expect(requestTo(RESUMEN_PROPUESTAS))
         .andRespond(
@@ -658,7 +664,8 @@ class AdminOperacionRestTest {
     donaciones
         .expect(requestTo(DONACIONES + "/donaciones-independientes?orden=recientes&page=0&size=20"))
         .andRespond(
-            withSuccess(INDEPENDIENTES, MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "43"));
+            withSuccess(INDEPENDIENTES, MediaType.APPLICATION_JSON)
+                .header(Paginas.CABECERA_TOTAL, "43"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/personas?id=" + H1 + "&size=20"))
         .andRespond(
@@ -707,7 +714,8 @@ class AdminOperacionRestTest {
                 DONACIONES
                     + "/donaciones-independientes?estado=EN_TRASLADO&estado=EN_PUERTA"
                     + "&orden=antiguas&page=1&size=20"))
-        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "21"));
+        .andRespond(
+            withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.CABECERA_TOTAL, "21"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/categorias"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
@@ -720,7 +728,8 @@ class AdminOperacionRestTest {
                 DONACIONES
                     + "/donaciones-independientes?estado=EN_DEPOSITO&orden=vence"
                     + "&venceHasta=2026-11-17&page=0&size=20"))
-        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+        .andRespond(
+            withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.CABECERA_TOTAL, "0"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/categorias"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
@@ -733,7 +742,8 @@ class AdminOperacionRestTest {
                 DONACIONES
                     + "/donaciones-independientes?estado=EN_DEPOSITO&orden=antiguas"
                     + "&venceHasta=2026-11-17&page=0&size=20"))
-        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+        .andRespond(
+            withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.CABECERA_TOTAL, "0"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/categorias"))
         .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
@@ -774,7 +784,8 @@ class AdminOperacionRestTest {
                     + "&donanteId="
                     + H1
                     + "&desde=2026-11-04&hasta=2026-11-10&page=0&size=20"))
-        .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "0"));
+        .andRespond(
+            withSuccess("[]", MediaType.APPLICATION_JSON).header(Paginas.CABECERA_TOTAL, "0"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/categorias"))
         .andRespond(
@@ -978,7 +989,8 @@ class AdminOperacionRestTest {
     donaciones
         .expect(
             requestTo(DONACIONES + "/api/donantes?q=jose&activo=true&orden=nombre&page=0&size=10"))
-        .andRespond(withSuccess(DONANTES, MediaType.APPLICATION_JSON).header(Paginas.TOTAL, "37"));
+        .andRespond(
+            withSuccess(DONANTES, MediaType.APPLICATION_JSON).header(Paginas.CABECERA_TOTAL, "37"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/donantes/" + D2))
         .andRespond(

@@ -26,7 +26,7 @@ public record ConsultaDecididas(
 
   public static final String APROBADAS = "aprobadas";
   public static final String DESCARTADAS = "descartadas";
-  public static final String VOS = "vos";
+  public static final String FILTRO_VOS = "vos";
   public static final String ANTES = "antes";
   public static final String ANTIGUAS = "antiguas";
 
@@ -78,7 +78,7 @@ public record ConsultaDecididas(
   public String autor() {
     return switch (decidio) {
       case "" -> null;
-      case VOS -> vos.isEmpty() ? null : vos;
+      case FILTRO_VOS -> vos.isEmpty() ? null : vos;
       case ANTES -> SISTEMA;
       default -> decidio;
     };

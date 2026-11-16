@@ -249,7 +249,7 @@ class AdminInicioControllerTest {
 
   @Test
   void sinDonacionesLaTarjetaLoDiceSinDibujo() throws Exception {
-    when(personas.inicio()).thenReturn(conGraficos(Evolucion.VACIA));
+    when(personas.inicio()).thenReturn(conGraficos(Evolucion.SIN_DONACIONES));
 
     mvc.perform(get("/admin-inicio"))
         .andExpect(content().string(containsString("Todavía no hay donaciones registradas.")))

@@ -139,7 +139,7 @@ final class AdminImportacionesDeEjemplo {
     return new DescargaDeFilas(
         "donantes-octubre.csv",
         salida -> {
-          salida.write('﻿');
+          salida.write('\uFEFF');
           salida.write("Fila;Qué pasó;Código\r\n");
           for (FilaConError fila : filas) {
             salida.write(

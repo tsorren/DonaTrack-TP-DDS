@@ -97,7 +97,7 @@ public class AdminDonacionesController {
             .oculto("donante", c.donante())
             .buscar("Buscar por lo que se donó", c.buscar(), "Por ejemplo: leche")
             .fecha("Registrada", c.desde(), c.hasta())
-            .estado(c.estado(), opciones(datos.estados()))
+            .estado(c.estado(), opciones(AdminDonacionesVista.estados()))
             .categoria(c.categoria(), opciones(datos.categoriasDelFiltro()));
     if (conQuien) {
       barra.quien("Donante", c.quien(), "Por ejemplo: Ana");
@@ -105,7 +105,10 @@ public class AdminDonacionesController {
     if (datos.conVence()) {
       barra.otra(
           new Listado.Eleccion(
-              "vence", "Vence", c.pronto() ? "pronto" : "", opciones(datos.vencimientos())));
+              "vence",
+              "Vence",
+              c.pronto() ? "pronto" : "",
+              opciones(AdminDonacionesVista.vencimientos())));
     }
     return barra
         .orden(c.orden(), opciones(datos.ordenes()))

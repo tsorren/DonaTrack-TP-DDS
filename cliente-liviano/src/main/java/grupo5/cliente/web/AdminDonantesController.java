@@ -185,35 +185,52 @@ public class AdminDonantesController {
     }
     String cual = importacion == null ? accion : importacion.accion();
     String vista = pantallas.mostrar(DONANTES + "-" + cual, model);
-    if (archivo != null && (importacion == null || !importacion.enCurso())) {
+    if (yaNoHaceFalta(archivo, importacion)) {
       olvidar(sesion, archivo);
     }
     if (IMPORTAR_ERROR.equals(cual)) {
       if (sondeo) {
-        // El bloque #avance no existe en la página de error: va la página entera (DTI-40, ítem 7).
-        respuesta.setHeader(
-            "HX-Redirect",
-            UriComponentsBuilder.fromPath("/" + DONANTES + "-" + IMPORTAR_ERROR)
-                .queryParam("archivo", archivo)
-                .build()
-                .toUriString());
+        redirigirAlError(archivo, respuesta);
       }
       lista(personas.donantes(ConsultaDonantes.primera()), pedido, model);
     } else {
-      model.addAttribute(
-          "paginador", Paginadores.de(pedido, "Páginas de filas con error", importacion.filas()));
-      model.addAttribute("sondeo", sondeo);
-      model.addAttribute("cambioDeEtapa", sondeo && !etapa.equals(importacion.etapa()));
-      model.addAttribute(
-          "actualizar",
-          UriComponentsBuilder.fromPath(pedido.getRequestURI())
-              .query(pedido.getQueryString())
-              .replaceQueryParam(ETAPA, importacion.etapa())
-              .build()
-              .toUriString());
+      avance(importacion, etapa, sondeo, pedido, model);
     }
     model.addAttribute("importacion", importacion);
     return vista;
+  }
+
+  private static boolean yaNoHaceFalta(UUID archivo, Importacion importacion) {
+    return archivo != null && (importacion == null || !importacion.enCurso());
+  }
+
+  /** El bloque #avance no existe en la página de error: va la página entera (DTI-40, ítem 7). */
+  private static void redirigirAlError(UUID archivo, HttpServletResponse respuesta) {
+    respuesta.setHeader(
+        "HX-Redirect",
+        UriComponentsBuilder.fromPath("/" + DONANTES + "-" + IMPORTAR_ERROR)
+            .queryParam("archivo", archivo)
+            .build()
+            .toUriString());
+  }
+
+  private static void avance(
+      Importacion importacion,
+      String etapa,
+      boolean sondeo,
+      HttpServletRequest pedido,
+      Model model) {
+    model.addAttribute(
+        "paginador", Paginadores.de(pedido, "Páginas de filas con error", importacion.filas()));
+    model.addAttribute("sondeo", sondeo);
+    model.addAttribute("cambioDeEtapa", sondeo && !etapa.equals(importacion.etapa()));
+    model.addAttribute(
+        "actualizar",
+        UriComponentsBuilder.fromPath(pedido.getRequestURI())
+            .query(pedido.getQueryString())
+            .replaceQueryParam(ETAPA, importacion.etapa())
+            .build()
+            .toUriString());
   }
 
   /**
@@ -246,7 +263,7 @@ public class AdminDonantesController {
         : nombre;
   }
 
-  private void lista(AdminDonantesVista datos, HttpServletRequest pedido, Model model) {
+  private static void lista(AdminDonantesVista datos, HttpServletRequest pedido, Model model) {
     model.addAttribute(MODELO, datos);
     model.addAttribute("listado", listado(datos));
     model.addAttribute(
@@ -285,12 +302,11 @@ public class AdminDonantesController {
    * ya no existe o Donaciones no responde, no hay franja: la lista se muestra igual.
    */
   private Importacion franja(HttpSession sesion) {
-    if (!(sesion.getAttribute(SESION) instanceof DeLaSesion guardada)) {
+    if (!(sesion.getAttribute(SESION) instanceof DeLaSesion(UUID archivo, String nombre))) {
       return null;
     }
     try {
-      Importacion importacion =
-          personas.importacion(guardada.archivo(), guardada.nombre(), "importando", 1);
+      Importacion importacion = personas.importacion(archivo, nombre, "importando", 1);
       if (importacion == null || IMPORTAR_ERROR.equals(importacion.accion())) {
         sesion.removeAttribute(SESION);
         return null;

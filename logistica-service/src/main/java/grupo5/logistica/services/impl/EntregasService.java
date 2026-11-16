@@ -452,6 +452,10 @@ public class EntregasService implements IEntregasService {
         id -> entregasRepository.findById(id).orElse(null));
   }
 
+  private static @Nullable Camion camionDe(Ruta ruta, Function<UUID, Camion> camiones) {
+    return ruta.getCamionId() != null ? camiones.apply(ruta.getCamionId()) : null;
+  }
+
   /**
    * El seguimiento de una entrega con su ruta, su camión y sus paradas buscadas en {@code rutas},
    * {@code camiones} y {@code buscarParada} (nulo si no está).
@@ -483,7 +487,7 @@ public class EntregasService implements IEntregasService {
           List.of());
     }
 
-    Camion camion = ruta.getCamionId() != null ? camiones.apply(ruta.getCamionId()) : null;
+    Camion camion = camionDe(ruta, camiones);
     String patenteCamion = camion != null ? camion.getPatente() : null;
 
     List<UUID> idsParadas = ruta.getEntregaIds();

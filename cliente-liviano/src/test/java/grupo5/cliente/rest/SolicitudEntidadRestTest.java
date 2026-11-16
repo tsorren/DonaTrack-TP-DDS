@@ -10,8 +10,8 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-import grupo5.cliente.puertos.SolicitudEntidadPuerto.DatosRechazados;
-import grupo5.cliente.puertos.SolicitudEntidadPuerto.YaAprobada;
+import grupo5.cliente.puertos.DatosRechazados;
+import grupo5.cliente.puertos.YaAprobada;
 import grupo5.cliente.vistas.SolicitudEntidadVista;
 import java.util.List;
 import java.util.UUID;

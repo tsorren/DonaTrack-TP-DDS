@@ -33,6 +33,8 @@ public record AdminAsignacionesVista(
 
   public static final String MENOS_RECIBIERON = "Quienes menos recibieron";
 
+  private static final String TODAS = "Todas";
+
   public AdminAsignacionesVista {
     recientes = recientes == null ? List.of() : List.copyOf(recientes);
     categorias = categorias == null ? List.of() : List.copyOf(categorias);
@@ -65,24 +67,24 @@ public record AdminAsignacionesVista(
   }
 
   /** Las opciones de "Estado" de Todas las decididas. */
-  public List<Opcion> estadosDecididas() {
+  public static List<Opcion> estadosDecididas() {
     return List.of(
-        new Opcion("", "Todas"),
+        new Opcion("", TODAS),
         new Opcion(ConsultaDecididas.APROBADAS, "Aprobadas"),
         new Opcion(ConsultaDecididas.DESCARTADAS, "Descartadas"));
   }
 
   /** Las opciones del orden de Todas las decididas. */
-  public List<Opcion> ordenesDecididas() {
+  public static List<Opcion> ordenesDecididas() {
     return List.of(
         new Opcion("", "Más recientes primero"),
         new Opcion(ConsultaDecididas.ANTIGUAS, "Más antiguas primero"));
   }
 
   /** Las opciones del filtro "Ver" de Propuestas: la primera es "Todas". */
-  public List<Opcion> algoritmos() {
+  public static List<Opcion> algoritmos() {
     return List.of(
-        new Opcion("", "Todas"),
+        new Opcion("", TODAS),
         new Opcion(ConsultaAsignaciones.PARECIDO, PARECIDO),
         new Opcion(ConsultaAsignaciones.MENOS_RECIBIERON, MENOS_RECIBIERON),
         new Opcion(ConsultaAsignaciones.LAS_DOS, "Las dos"));
@@ -90,7 +92,7 @@ public record AdminAsignacionesVista(
 
   /** Las opciones del filtro de categoría de Destino: la primera es "Todas". */
   public List<Opcion> categoriasDelFiltro() {
-    return Stream.concat(Stream.of(new Opcion("", "Todas")), categorias.stream()).toList();
+    return Stream.concat(Stream.of(new Opcion("", TODAS)), categorias.stream()).toList();
   }
 
   /** El nombre del algoritmo elegido en el filtro, para el vacío ("… no sugirió ninguna"). */

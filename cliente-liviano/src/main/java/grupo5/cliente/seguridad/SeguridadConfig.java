@@ -46,7 +46,7 @@ class SeguridadConfig {
   }
 
   @Bean
-  SecurityFilterChain cadena(HttpSecurity http) throws Exception {
+  SecurityFilterChain cadena(HttpSecurity http) {
     http.authorizeHttpRequests(
         rutas -> {
           rutas.requestMatchers(POST, "/publico-registro-*").authenticated();

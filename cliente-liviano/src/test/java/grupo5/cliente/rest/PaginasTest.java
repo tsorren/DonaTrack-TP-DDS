@@ -14,7 +14,7 @@ class PaginasTest {
   private static ResponseEntity<List<String>> pagina(List<String> filas, String total) {
     return total == null
         ? ResponseEntity.ok(filas)
-        : ResponseEntity.ok().header(Paginas.TOTAL, total).body(filas);
+        : ResponseEntity.ok().header(Paginas.CABECERA_TOTAL, total).body(filas);
   }
 
   @Test

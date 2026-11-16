@@ -136,14 +136,14 @@ public class AdminAsignacionesController {
             .buscar(
                 "Buscar por organización o donación", b.buscar(), "Por ejemplo: Comedor o arroz")
             .fecha("Decidida", b.desde(), b.hasta())
-            .estado(b.estado(), opciones(datos.estadosDecididas()))
+            .estado(b.estado(), opciones(AdminAsignacionesVista.estadosDecididas()))
             .categoria(b.categoria(), opciones(datos.categoriasDelFiltro()));
     if (conQuien) {
       barra.quien("Organización", b.quien(), "Por ejemplo: Comedor");
     }
     return barra
         .otra(new Listado.Eleccion("decidio", "Decidió", b.decidio(), opciones(datos.autores())))
-        .orden(b.orden(), opciones(datos.ordenesDecididas()))
+        .orden(b.orden(), opciones(AdminAsignacionesVista.ordenesDecididas()))
         .sacar("/" + LISTA + "?vista=decididas")
         .listo();
   }
@@ -152,7 +152,9 @@ public class AdminAsignacionesController {
   private static Listado propuestas(ConsultaAsignaciones c, AdminAsignacionesVista datos) {
     return Listado.en("propuestas", "/" + LISTA, "Qué algoritmo ver")
         .oculto("pestana", ConsultaAsignaciones.PROPUESTAS)
-        .otra(new Listado.Eleccion("algoritmo", "Ver", c.algoritmo(), opciones(datos.algoritmos())))
+        .otra(
+            new Listado.Eleccion(
+                "algoritmo", "Ver", c.algoritmo(), opciones(AdminAsignacionesVista.algoritmos())))
         .listo();
   }
 

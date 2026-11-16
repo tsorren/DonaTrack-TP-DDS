@@ -44,7 +44,7 @@ public record RecibidasVista(
   /** Lo que todavía no se recibió: lo que muestra Seguir entregas. */
   public static final Set<String> SIN_RECIBIR = Set.of(PUERTA, PROBLEMA, CAMINO, SALIR);
 
-  private static final DateTimeFormatter MES =
+  private static final DateTimeFormatter FORMATO_MES =
       DateTimeFormatter.ofPattern("MMMM", Locale.forLanguageTag("es-AR"));
 
   /** Todo en una página, con las cifras de la lista (la maqueta y los tests de pantalla). */
@@ -67,7 +67,7 @@ public record RecibidasVista(
       return mes;
     }
     try {
-      return LocalDate.parse(recibida.fecha()).format(MES);
+      return LocalDate.parse(recibida.fecha()).format(FORMATO_MES);
     } catch (DateTimeParseException e) {
       return mes;
     }

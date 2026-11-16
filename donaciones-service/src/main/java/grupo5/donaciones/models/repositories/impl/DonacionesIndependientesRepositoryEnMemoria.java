@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,25 +58,7 @@ public class DonacionesIndependientesRepositoryEnMemoria
   public Tramo<DonacionIndependiente> buscar(CriterioDonacionesIndependientes c) {
     Set<UUID> delDonante = c.donanteId() == null ? Set.of() : donacionesDe(c.donanteId());
     Set<UUID> deLaCategoria = c.categoriaId() == null ? Set.of() : subcategoriasDe(c.categoriaId());
-    Comparator<DonacionIndependiente> porFecha =
-        Comparator.comparing(DonacionIndependiente::getFechaRegistro);
-    if (c.orden() != OrdenDonacionesIndependientes.ANTIGUAS) {
-      porFecha = porFecha.reversed();
-    }
-    if (c.orden() == OrdenDonacionesIndependientes.VENCE) {
-      porFecha =
-          Comparator.comparing(
-                  DonacionesIndependientesRepositoryEnMemoria::primerVencimiento,
-                  Comparator.nullsLast(Comparator.<LocalDate>naturalOrder()))
-              .thenComparing(porFecha);
-    }
-    if (c.orden() == OrdenDonacionesIndependientes.ATENCION) {
-      porFecha =
-          Comparator.comparingInt(
-                  (DonacionIndependiente di) ->
-                      OrdenDonacionesIndependientes.grupoDeAtencion(tipo(di)))
-              .thenComparing(porFecha);
-    }
+    Comparator<DonacionIndependiente> porFecha = orden(c.orden());
     List<DonacionIndependiente> filtradas =
         storage.values().stream()
             .filter(di -> c.estados().isEmpty() || c.estados().contains(tipo(di)))
@@ -104,6 +87,29 @@ public class DonacionesIndependientesRepositoryEnMemoria
             .sorted(porFecha.thenComparing(DonacionIndependiente::getId))
             .toList();
     return Tramo.de(filtradas, c.paginado());
+  }
+
+  private static Comparator<DonacionIndependiente> orden(OrdenDonacionesIndependientes orden) {
+    Comparator<DonacionIndependiente> porFecha =
+        Comparator.comparing(DonacionIndependiente::getFechaRegistro);
+    if (orden != OrdenDonacionesIndependientes.ANTIGUAS) {
+      porFecha = porFecha.reversed();
+    }
+    if (orden == OrdenDonacionesIndependientes.VENCE) {
+      porFecha =
+          Comparator.comparing(
+                  DonacionesIndependientesRepositoryEnMemoria::primerVencimiento,
+                  Comparator.nullsLast(Comparator.<LocalDate>naturalOrder()))
+              .thenComparing(porFecha);
+    }
+    if (orden == OrdenDonacionesIndependientes.ATENCION) {
+      porFecha =
+          Comparator.comparingInt(
+                  (DonacionIndependiente di) ->
+                      OrdenDonacionesIndependientes.grupoDeAtencion(tipo(di)))
+              .thenComparing(porFecha);
+    }
+    return porFecha;
   }
 
   /** El vencimiento más próximo de sus bienes; null si ninguno vence (R11-34). */
@@ -284,7 +290,8 @@ public class DonacionesIndependientesRepositoryEnMemoria
         .forEach(
             di ->
                 conteo
-                    .computeIfAbsent(di.getNecesidadId(), id -> new HashMap<>())
+                    .computeIfAbsent(
+                        di.getNecesidadId(), id -> new EnumMap<>(TipoEstadoDonacion.class))
                     .merge(tipo(di), 1L, Long::sum));
     return conteo.entrySet().stream()
         .flatMap(

@@ -1,6 +1,8 @@
 package grupo5.cliente.maqueta;
 
 import grupo5.cliente.puertos.AdministradorActual;
+import grupo5.cliente.puertos.AltaIncompleta;
+import grupo5.cliente.puertos.CorreoEnUso;
 import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;

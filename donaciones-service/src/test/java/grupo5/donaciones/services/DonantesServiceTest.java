@@ -238,8 +238,8 @@ class DonantesServiceTest {
   @Test
   void buscar_pasaFiltrosOrdenYPaginaAlRepositorioYDevuelveElTotal_R1101() {
     Humana persona = personaConDonanteExistente();
-    Donante donante = new Donante(persona.getId());
-    when(donantesRepository.buscar(any())).thenReturn(new Tramo<>(List.of(donante), 41));
+    Donante donanteDelTest = new Donante(persona.getId());
+    when(donantesRepository.buscar(any())).thenReturn(new Tramo<>(List.of(donanteDelTest), 41));
     when(personasRepository.findAllById(any())).thenReturn(List.of(persona));
     UUID categoriaId = UUID.randomUUID();
 
@@ -250,7 +250,7 @@ class DonantesServiceTest {
 
     assertEquals(41, resultado.total());
     assertEquals(
-        List.of(donante.getId()),
+        List.of(donanteDelTest.getId()),
         resultado.elementos().stream().map(DonanteOutputDTO::idDonante).toList());
     ArgumentCaptor<CriterioDonantes> criterio = ArgumentCaptor.forClass(CriterioDonantes.class);
     verify(donantesRepository).buscar(criterio.capture());

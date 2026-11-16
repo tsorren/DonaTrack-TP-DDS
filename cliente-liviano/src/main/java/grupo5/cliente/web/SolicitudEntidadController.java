@@ -2,7 +2,7 @@ package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.AreaDeLaSesion;
 import grupo5.cliente.puertos.SolicitudEntidadPuerto;
-import grupo5.cliente.puertos.SolicitudEntidadPuerto.YaAprobada;
+import grupo5.cliente.puertos.YaAprobada;
 import grupo5.cliente.seguridad.UsuarioActual;
 import grupo5.cliente.vistas.SolicitudEntidadVista;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +28,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class SolicitudEntidadController {
 
   static final String ENVIADA = "publico-registro-entidad-enviada";
-  static final String CORREGIR = "publico-registro-entidad-corregir";
+  static final String RUTA_CORREGIR = "publico-registro-entidad-corregir";
+  private static final String SESION_PENDIENTE = "sesionPendiente";
 
   private static final Logger LOG = LoggerFactory.getLogger(SolicitudEntidadController.class);
 
@@ -48,7 +49,7 @@ public class SolicitudEntidadController {
       @AuthenticationPrincipal OidcUser usuario, HttpServletRequest pedido, Model model) {
     boolean pendiente = sesiones.pendiente(pedido).isPresent();
     if (usuario != null || pendiente) {
-      model.addAttribute("sesionPendiente", true);
+      model.addAttribute(SESION_PENDIENTE, true);
     }
     if (pendiente) {
       model.addAttribute("enLaSolicitud", true);
@@ -64,7 +65,7 @@ public class SolicitudEntidadController {
     return pantallas.mostrar(ENVIADA, model);
   }
 
-  @GetMapping("/" + CORREGIR)
+  @GetMapping("/" + RUTA_CORREGIR)
   String corregir(
       @AuthenticationPrincipal OidcUser usuario, HttpServletRequest pedido, Model model) {
     if (sesiones.pendiente(pedido).isEmpty()) {
@@ -78,8 +79,8 @@ public class SolicitudEntidadController {
     } catch (RuntimeException falla) {
       LOG.warn("No se pudo leer la solicitud de la entidad para corregirla", falla);
       model.addAttribute("sinDatos", true);
-      model.addAttribute("sesionPendiente", true);
-      return pantallas.mostrar(CORREGIR, model);
+      model.addAttribute(SESION_PENDIENTE, true);
+      return pantallas.mostrar(RUTA_CORREGIR, model);
     }
   }
 
@@ -96,8 +97,8 @@ public class SolicitudEntidadController {
     model.addAttribute("datos", datos);
     model.addAttribute("campos", campos);
     model.addAttribute("fallo", fallo);
-    model.addAttribute("sesionPendiente", true);
-    return pantallas.mostrar(CORREGIR, model);
+    model.addAttribute(SESION_PENDIENTE, true);
+    return pantallas.mostrar(RUTA_CORREGIR, model);
   }
 
   /** La persona de la cuenta; en la maqueta, sin token, no hay y el adaptador no la usa. */

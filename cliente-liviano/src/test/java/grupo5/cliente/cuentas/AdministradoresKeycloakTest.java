@@ -17,10 +17,10 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import grupo5.cliente.puertos.AltaIncompleta;
+import grupo5.cliente.puertos.CorreoEnUso;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.Administrador;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.Alta;
-import grupo5.cliente.puertos.DirectorioDeAdministradores.AltaIncompleta;
-import grupo5.cliente.puertos.DirectorioDeAdministradores.CorreoEnUso;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;

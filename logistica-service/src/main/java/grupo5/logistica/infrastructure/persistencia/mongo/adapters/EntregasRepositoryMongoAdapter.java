@@ -43,6 +43,8 @@ public class EntregasRepositoryMongoAdapter
     extends CrudRepositoryMongoAdapter<Entrega, EntregaDocument, SpringDataEntregaMongoRepository>
     implements IEntregasRepository {
 
+  private static final String HORA_ARRIBO = "horaArribo";
+
   private final SpringDataRutaMongoRepository rutaRepo;
   private final SpringDataCamionMongoRepository camionRepo;
   private final MongoTemplate mongoTemplate;
@@ -98,7 +100,7 @@ public class EntregasRepositoryMongoAdapter
     if (desde == null || hasta == null || limite <= 0) {
       return List.of();
     }
-    Sort orden = Sort.by(Sort.Order.desc("horaArribo"), Sort.Order.asc("id"));
+    Sort orden = Sort.by(Sort.Order.desc(HORA_ARRIBO), Sort.Order.asc("id"));
     return aDominio(
         springDataRepo.buscarParaMapa(
             EstadoEntrega.ENTREGADA, desde, hasta, PageRequest.of(0, limite, orden)));
@@ -188,7 +190,7 @@ public class EntregasRepositoryMongoAdapter
                 .addFieldWithValue(
                     "llego",
                     ConditionalOperators.when(
-                            ComparisonOperators.valueOf(DataTypeOperators.Type.typeOf("horaArribo"))
+                            ComparisonOperators.valueOf(DataTypeOperators.Type.typeOf(HORA_ARRIBO))
                                 .equalToValue("date"))
                         .then(1)
                         .otherwise(0))
@@ -203,7 +205,7 @@ public class EntregasRepositoryMongoAdapter
             Aggregation.sort(
                 Sort.by(
                     Sort.Order.asc("llego"),
-                    Sort.Order.desc("horaArribo"),
+                    Sort.Order.desc(HORA_ARRIBO),
                     Sort.Order.asc("salio"),
                     Sort.Order.desc("horaSalida"),
                     Sort.Order.asc("id"))),

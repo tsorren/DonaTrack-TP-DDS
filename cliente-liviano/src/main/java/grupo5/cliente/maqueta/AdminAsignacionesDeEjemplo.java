@@ -382,7 +382,7 @@ final class AdminAsignacionesDeEjemplo {
     String ultima = "hoy, 0:00 · generó 12 propuestas";
     int pagina = consulta.pagina();
     return switch (consulta.pestana()) {
-      case ConsultaAsignaciones.DECIDIDAS ->
+      case ConsultaAsignaciones.VISTA_DECIDIDAS ->
           new AdminAsignacionesVista(
               consulta,
               null,

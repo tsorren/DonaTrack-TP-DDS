@@ -28,7 +28,7 @@ public final class ReintentoPersonaFaltante {
 
   private static final Logger log = LoggerFactory.getLogger(ReintentoPersonaFaltante.class);
 
-  private final int intentos;
+  private final int tope;
   // Solo los mensajes que esperan a su persona: se borran al resolverse o al ir a la DLQ
   private final Map<String, Integer> fallidosPorMensaje = new ConcurrentHashMap<>();
 
@@ -36,7 +36,7 @@ public final class ReintentoPersonaFaltante {
     if (intentos < 1) {
       throw new IllegalArgumentException("Hace falta al menos un intento");
     }
-    this.intentos = intentos;
+    this.tope = intentos;
   }
 
   /** Con el tope de {@link #INTENTOS}. */
@@ -81,7 +81,7 @@ public final class ReintentoPersonaFaltante {
       return new AmqpRejectAndDontRequeueException("Persona sin copiar: " + personaId, causa);
     }
     int fallidos = fallidosPorMensaje.merge(messageId, 1, Integer::sum);
-    if (fallidos >= intentos) {
+    if (fallidos >= tope) {
       fallidosPorMensaje.remove(messageId);
       // Solo identificadores: ni nombre ni credenciales del aviso
       log.warn(
@@ -96,7 +96,7 @@ public final class ReintentoPersonaFaltante {
         personaId,
         messageId,
         fallidos,
-        intentos);
+        tope);
     return causa;
   }
 }

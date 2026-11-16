@@ -65,21 +65,24 @@ class RecibidasRest implements RecibidasPuerto {
   private static final String RECIBIDA = "recibida";
   private static final String SALIR = "salir";
   private static final String UN_DONANTE = "un donante";
+  private static final String GRUPO_PUERTA = "puerta";
+  private static final String GRUPO_PROBLEMA = "problema";
+  private static final String GRUPO_CAMINO = "camino";
 
   /** El orden de lo que hay que hacer; las recibidas, al final. */
   private static final List<String> ORDEN =
-      List.of("puerta", "problema", "camino", SALIR, RECIBIDA);
+      List.of(GRUPO_PUERTA, GRUPO_PROBLEMA, GRUPO_CAMINO, SALIR, RECIBIDA);
 
   static final int POR_PAGINA = 20;
 
   /** Los estados de Donaciones de cada grupo, en el orden de {@link #ORDEN}. */
   static final Map<String, List<String>> ESTADOS =
       Map.of(
-          "puerta",
+          GRUPO_PUERTA,
           List.of("EN_PUERTA"),
-          "problema",
+          GRUPO_PROBLEMA,
           List.of("ENTREGA_FALLIDA", "VENCIDA"),
-          "camino",
+          GRUPO_CAMINO,
           List.of("EN_TRASLADO"),
           SALIR,
           List.of("ASIGNACION_REALIZADA", "LISTA_PARA_ENTREGAR", "EN_DEPOSITO"),
@@ -221,9 +224,9 @@ class RecibidasRest implements RecibidasPuerto {
     String grupo =
         switch (estado) {
           case ENTREGADA -> RECIBIDA;
-          case PUERTA -> "puerta";
-          case FALLIDA, VENCIDA -> "problema";
-          case TRASLADO -> "camino";
+          case PUERTA -> GRUPO_PUERTA;
+          case FALLIDA, VENCIDA -> GRUPO_PROBLEMA;
+          case TRASLADO -> GRUPO_CAMINO;
           default -> SALIR;
         };
     // Una en depósito con entidad todavía no tiene su cambio a asignada: vale el registro.

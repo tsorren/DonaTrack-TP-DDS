@@ -30,6 +30,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminPerfilController {
 
   static final String PANTALLA = "admin-perfil";
+  private static final String CODIGO = "codigo";
   static final String GUARDADO = "Listo. Guardamos tus datos.";
 
   /** "12 de noviembre de 2026". */
@@ -79,7 +80,7 @@ public class AdminPerfilController {
         return Envios.listo(PANTALLA, GUARDADO, atributos);
       } catch (RestClientException noRespondio) {
         model.addAttribute("errorGuardar", true);
-        model.addAttribute("codigo", codigo(pedido));
+        model.addAttribute(CODIGO, codigo(pedido));
       }
     }
     String vista = pantallas.mostrar(PANTALLA, model);
@@ -98,14 +99,14 @@ public class AdminPerfilController {
           "creada", propio.map(Administrador::creada).map(FECHA::format).orElse(null));
       model.addAttribute("errorCarga", propio.isEmpty());
       if (propio.isEmpty()) {
-        model.addAttribute("codigo", codigo(pedido));
+        model.addAttribute(CODIGO, codigo(pedido));
       }
       return propio;
     } catch (RestClientException noRespondio) {
       model.addAttribute("miPerfil", null);
       model.addAttribute("creada", null);
       model.addAttribute("errorCarga", true);
-      model.addAttribute("codigo", codigo(pedido));
+      model.addAttribute(CODIGO, codigo(pedido));
       return Optional.empty();
     }
   }

@@ -235,7 +235,7 @@ final class AdminPersonasEntidades {
 
   private Map<UUID, List<Necesidad>> necesidadesVigentes() {
     MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
-    filtros.add("estado", "VIGENTE");
+    filtros.add(ESTADO, "VIGENTE");
     List<DonacionesApi.Necesidad> vigentes = donaciones.necesidades(filtros);
     if (vigentes.isEmpty()) {
       return Map.of();

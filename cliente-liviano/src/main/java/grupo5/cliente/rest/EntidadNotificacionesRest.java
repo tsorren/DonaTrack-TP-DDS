@@ -46,14 +46,17 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
   private static final String EN_CAMINO = "DONACION_EN_CAMINO";
   private static final String A_RECIBIDAS = "/entidad-recibidas";
   private static final String NOVEDAD = "Novedad";
+  private static final String CAMINO = "camino";
+  private static final String ASIGNADAS = "asignadas";
+  private static final String RECIBIDAS = "recibidas";
 
   /** Las categorías del menú, en su orden: siempre todas las del rol (ficha, sección 4). */
   static final List<Tema> TEMAS =
       List.of(
           new Tema("", "Todas las categorías", null),
-          new Tema("camino", "Entregas en camino", "camion"),
-          new Tema("asignadas", "Donaciones asignadas", "asigna"),
-          new Tema("recibidas", "Donaciones recibidas", "tilde"),
+          new Tema(CAMINO, "Entregas en camino", "camion"),
+          new Tema(ASIGNADAS, "Donaciones asignadas", "asigna"),
+          new Tema(RECIBIDAS, "Donaciones recibidas", "tilde"),
           new Tema("problemas", "Problemas", "problema"),
           new Tema(Bandejas.OTRAS, "Otras novedades", "reloj"));
 
@@ -89,9 +92,9 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
 
   private static Map<String, List<String>> tiposDe() {
     Map<String, List<String>> tipos = new LinkedHashMap<>();
-    tipos.put("camino", List.of(EN_CAMINO));
-    tipos.put("asignadas", List.of("DONACION_ASIGNADA"));
-    tipos.put("recibidas", List.of("DONACION_RECIBIDA"));
+    tipos.put(CAMINO, List.of(EN_CAMINO));
+    tipos.put(ASIGNADAS, List.of("DONACION_ASIGNADA"));
+    tipos.put(RECIBIDAS, List.of("DONACION_RECIBIDA"));
     tipos.put("problemas", List.of("ENTREGA_FALLIDA", "DONACION_VENCIDA"));
     return Collections.unmodifiableMap(tipos);
   }
@@ -159,9 +162,9 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
 
   static String destino(String tema) {
     return switch (tema) {
-      case "camino" -> A_RECIBIDAS + "?estado=en-camino";
-      case "asignadas" -> A_RECIBIDAS + "?estado=por-salir";
-      case "recibidas" -> A_RECIBIDAS + "?estado=recibidas";
+      case CAMINO -> A_RECIBIDAS + "?estado=en-camino";
+      case ASIGNADAS -> A_RECIBIDAS + "?estado=por-salir";
+      case RECIBIDAS -> A_RECIBIDAS + "?estado=recibidas";
       default -> A_RECIBIDAS;
     };
   }

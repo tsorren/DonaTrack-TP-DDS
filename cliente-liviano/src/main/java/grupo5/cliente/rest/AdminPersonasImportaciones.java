@@ -43,6 +43,7 @@ final class AdminPersonasImportaciones {
   private static final String ESTADO = "estado";
   private static final String PENDIENTE = "PENDIENTE";
   private static final String PROCESANDO = "PROCESANDO";
+  private static final String PROCESADO_CON_ERRORES = "PROCESADO_CON_ERRORES";
   private static final String VER_EL_AVANCE = "Ver el avance";
   private static final String VER_EL_RESULTADO = "Ver el resultado";
 
@@ -90,9 +91,9 @@ final class AdminPersonasImportaciones {
       }
       case "terminadas" -> {
         filtros.add(ESTADO, "PROCESADO");
-        filtros.add(ESTADO, "PROCESADO_CON_ERRORES");
+        filtros.add(ESTADO, PROCESADO_CON_ERRORES);
       }
-      case "con-errores" -> filtros.add(ESTADO, "PROCESADO_CON_ERRORES");
+      case "con-errores" -> filtros.add(ESTADO, PROCESADO_CON_ERRORES);
       case "cortadas" -> filtros.add(ESTADO, "ERROR");
       default -> {
         // Todos los estados.
@@ -137,7 +138,7 @@ final class AdminPersonasImportaciones {
                 VER_EL_RESULTADO,
                 resultado
               };
-          case "PROCESADO_CON_ERRORES" ->
+          case PROCESADO_CON_ERRORES ->
               new String[] {
                 "con-errores",
                 "Terminada con filas con error",
@@ -223,7 +224,7 @@ final class AdminPersonasImportaciones {
   }
 
   private void escribir(UUID id, int conError, Writer salida) throws IOException {
-    salida.write('﻿');
+    salida.write('\uFEFF');
     salida.write(ENCABEZADO + FIN);
     int tandas = (conError + TANDA - 1) / TANDA;
     for (int tanda = 0; tanda < tandas; tanda++) {

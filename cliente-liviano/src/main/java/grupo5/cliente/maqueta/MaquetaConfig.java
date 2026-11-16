@@ -50,7 +50,7 @@ public class MaquetaConfig implements WebMvcConfigurer {
   }
 
   @Bean
-  SecurityFilterChain cadenaAbierta(HttpSecurity http) throws Exception {
+  SecurityFilterChain cadenaAbierta(HttpSecurity http) {
     return http.authorizeHttpRequests(rutas -> rutas.anyRequest().permitAll())
         .csrf(AbstractHttpConfigurer::disable)
         .logout(salida -> salida.logoutSuccessUrl("/"))

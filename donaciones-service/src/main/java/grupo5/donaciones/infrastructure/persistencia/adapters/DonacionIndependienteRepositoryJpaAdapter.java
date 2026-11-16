@@ -19,7 +19,6 @@ import grupo5.donaciones.models.repositories.listados.Tramo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -45,6 +44,10 @@ public class DonacionIndependienteRepositoryJpaAdapter
         DonacionIndependienteEntity,
         SpringDataDonacionIndependienteRepository>
     implements IDonacionesIndependientesRepository {
+
+  private static final String P_DESDE = "desde";
+  private static final String P_HASTA = "hasta";
+  private static final String P_ESTADO = "estado";
 
   // Filtros del listado (R11-01): lo que mira otras tablas va en un EXISTS
   /**
@@ -292,11 +295,11 @@ public class DonacionIndependienteRepositoryJpaAdapter
             .siHay(
                 c.desde() == null ? null : c.desde().atStartOfDay(),
                 "di.fecha_registro >= :desde",
-                "desde")
+                P_DESDE)
             .siHay(
                 c.hasta() == null ? null : c.hasta().plusDays(1).atStartOfDay(),
                 "di.fecha_registro < :hasta",
-                "hasta");
+                P_HASTA);
     if (c.q() != null) {
       consulta.donde(
           "EXISTS (SELECT 1 FROM donaciones.item_donacion_independiente iq"
@@ -343,9 +346,9 @@ public class DonacionIndependienteRepositoryJpaAdapter
                     + " JOIN donaciones.estado_donacion_independiente e ON e.id = c.id_estado_nuevo"
                     + " WHERE e.tipo = :estado AND c.\"timestamp\" >= :desde"
                     + " AND c.\"timestamp\" < :hasta")
-            .setParameter("estado", estado.name())
-            .setParameter("desde", desde)
-            .setParameter("hasta", hasta)
+            .setParameter(P_ESTADO, estado.name())
+            .setParameter(P_DESDE, desde)
+            .setParameter(P_HASTA, hasta)
             .getSingleResult();
     return ((Number) total).longValue();
   }
@@ -367,9 +370,9 @@ public class DonacionIndependienteRepositoryJpaAdapter
                     + " WHERE e.tipo = :estado AND c.\"timestamp\" >= :desde"
                     + " AND c.\"timestamp\" < :hasta AND di.id_beneficiario_asignado = :entidad"
                     + (necesidadId == null ? "" : " AND di.id_necesidad = :necesidad"))
-            .setParameter("estado", estado.name())
-            .setParameter("desde", desde)
-            .setParameter("hasta", hasta)
+            .setParameter(P_ESTADO, estado.name())
+            .setParameter(P_DESDE, desde)
+            .setParameter(P_HASTA, hasta)
             .setParameter("entidad", entidadId);
     if (necesidadId != null) {
       consulta.setParameter("necesidad", necesidadId);
@@ -453,7 +456,7 @@ public class DonacionIndependienteRepositoryJpaAdapter
       consulta.setParameter("b" + i, desde.plusMonths(i).atDay(1).atStartOfDay());
     }
     if (estado != null) {
-      consulta.setParameter("estado", estado.name());
+      consulta.setParameter(P_ESTADO, estado.name());
     }
     Object resultado = consulta.getSingleResult();
     Object[] fila = resultado instanceof Object[] columnas ? columnas : new Object[] {resultado};
@@ -475,8 +478,8 @@ public class DonacionIndependienteRepositoryJpaAdapter
                     + CATEGORIA_DE_LOS_ITEMS
                     + " WHERE di.fecha_registro >= :desde AND di.fecha_registro < :hasta"
                     + " GROUP BY s.id_categoria")
-            .setParameter("desde", desde)
-            .setParameter("hasta", hasta));
+            .setParameter(P_DESDE, desde)
+            .setParameter(P_HASTA, hasta));
   }
 
   @Override
@@ -492,9 +495,9 @@ public class DonacionIndependienteRepositoryJpaAdapter
                     + " WHERE"
                     + EN_EL_TRAMO_DEL_CAMBIO
                     + " GROUP BY s.id_categoria")
-            .setParameter("estado", estado.name())
-            .setParameter("desde", desde)
-            .setParameter("hasta", hasta));
+            .setParameter(P_ESTADO, estado.name())
+            .setParameter(P_DESDE, desde)
+            .setParameter(P_HASTA, hasta));
   }
 
   private static Map<UUID, Long> porCategoria(Query consulta) {
@@ -535,16 +538,16 @@ public class DonacionIndependienteRepositoryJpaAdapter
   public PorVencer buscarPorVencer(LocalDate desde, LocalDate hasta) {
     Object cantidad =
         em.createNativeQuery("SELECT count(DISTINCT di.id)" + POR_VENCER)
-            .setParameter("desde", desde)
-            .setParameter("hasta", hasta)
+            .setParameter(P_DESDE, desde)
+            .setParameter(P_HASTA, hasta)
             .getSingleResult();
     List<?> proxima =
         em.createNativeQuery(
                 "SELECT di.id, min(n.fecha_vencimiento) AS vence"
                     + POR_VENCER
                     + " GROUP BY di.id ORDER BY vence, di.id LIMIT 1")
-            .setParameter("desde", desde)
-            .setParameter("hasta", hasta)
+            .setParameter(P_DESDE, desde)
+            .setParameter(P_HASTA, hasta)
             .getResultList();
     if (proxima.isEmpty()) {
       return PorVencer.ninguna();
@@ -555,7 +558,7 @@ public class DonacionIndependienteRepositoryJpaAdapter
   }
 
   private static LocalDate fecha(Object valor) {
-    return valor instanceof Date sql ? sql.toLocalDate() : (LocalDate) valor;
+    return valor instanceof LocalDate d ? d : LocalDate.parse(valor.toString());
   }
 
   // Las fotos son una colección lazy: se mapean a dominio con la sesión abierta

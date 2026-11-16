@@ -57,9 +57,9 @@ final class LimpiadorFotoRecepcion {
 
     @Override
     public boolean equals(Object otro) {
-      return otro instanceof FotoLimpia foto
-          && formato == foto.formato
-          && Arrays.equals(contenido, foto.contenido);
+      return otro instanceof FotoLimpia(byte[] otroContenido, Formato otroFormato)
+          && formato == otroFormato
+          && Arrays.equals(contenido, otroContenido);
     }
 
     @Override

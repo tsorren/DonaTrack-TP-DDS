@@ -122,7 +122,7 @@ final class AdminPersonasInicio {
   static Evolucion evolucion(DonacionesApi.Evolucion e, LocalDate hoy) {
     List<DonacionesApi.MesEvolucion> meses = e.meses() == null ? List.of() : e.meses();
     if (e.desde() == null || meses.isEmpty()) {
-      return Evolucion.VACIA;
+      return Evolucion.SIN_DONACIONES;
     }
     LocalDate dia =
         e.calculadoEn() == null

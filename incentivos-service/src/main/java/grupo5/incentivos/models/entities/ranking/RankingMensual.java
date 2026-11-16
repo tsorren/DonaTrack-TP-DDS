@@ -13,8 +13,8 @@ import lombok.Getter;
 @Getter
 public class RankingMensual implements AggregateRoot {
   private final UUID id;
-  private YearMonth periodo;
-  private List<EntradaRanking> entradas;
+  private final YearMonth periodo;
+  private final List<EntradaRanking> entradas;
 
   /** Cuándo se calculó; falta en los rankings guardados antes de que existiera el dato. */
   private final Instant calculadoEn;

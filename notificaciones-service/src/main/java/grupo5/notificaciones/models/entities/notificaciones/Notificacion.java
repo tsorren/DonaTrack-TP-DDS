@@ -27,10 +27,10 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
     implements Anonimizable {
   static final ZoneId ZONA_HORARIA = ZoneId.of("America/Argentina/Buenos_Aires");
 
-  private UUID id;
-  private UUID personaId;
+  private final UUID id;
+  private final UUID personaId;
   private String mensaje;
-  private LocalDateTime fechaCreacion;
+  private final LocalDateTime fechaCreacion;
   private EstadoNotificacion estadoNotificacion;
   private boolean leida;
   private LocalDateTime fechaLectura;
@@ -45,7 +45,7 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
   private UUID referenciaId;
 
   @Getter(AccessLevel.NONE)
-  private List<CambioEstadoNotificacion> historialEstado;
+  private final List<CambioEstadoNotificacion> historialEstado;
 
   public Notificacion(UUID personaId, String mensaje) {
     this(personaId, mensaje, LocalDateTime.now(ZONA_HORARIA));

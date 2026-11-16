@@ -101,13 +101,11 @@ class EntidadPerfilRest implements EntidadPerfilPuerto {
   }
 
   private static String direccion(DonacionesApi.Direccion d) {
-    return d == null
-        ? null
-        : unidos(
-            ", ",
-            unidos(" ", d.calle(), d.altura() == null ? null : d.altura().toString()),
-            d.localidad(),
-            d.provincia());
+    if (d == null) {
+      return null;
+    }
+    String altura = d.altura() == null ? null : d.altura().toString();
+    return unidos(", ", unidos(" ", d.calle(), altura), d.localidad(), d.provincia());
   }
 
   private static String legales(DonacionesApi.Legales legales) {

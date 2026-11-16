@@ -35,7 +35,7 @@ import org.springframework.web.client.RestClient;
  */
 class AdminNotificacionesRestTest {
 
-  private static final UUID ADMINISTRACION = UUID.fromString(AvisosRest.ADMINISTRACION);
+  private static final UUID ADMINISTRACION = UUID.fromString(AvisosRest.ID_ADMINISTRACION);
   private static final String IMPORTACION = "6f1c2c1e-0000-4000-8000-0000000000a1";
   private static final String CORTADA = "6f1c2c1e-0000-4000-8000-0000000000a2";
   private static final String CONTACTO = "6f1c2c1e-0000-4000-8000-0000000000a3";

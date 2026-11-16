@@ -51,13 +51,16 @@ public class Pantallas {
   public static final String NOMBRE = "(?:publico|donante|entidad|admin)-[a-z-]*[a-z]";
 
   private static final String NO_EXISTE = "No existe esa pantalla";
+  private static final String PERFIL = "perfil";
+  private static final String CUENTA = "cuenta";
+  private static final String DONACIONES = "Donaciones";
 
   /**
    * Pantallas que el layout privado enlaza fuera del menú; si no están dibujadas, muestran la
    * página de sin dibujar.
    */
   private static final Map<String, String> FUERA_DEL_MENU =
-      Map.of("perfil", "Mi perfil", "administradores", "Administradores");
+      Map.of(PERFIL, "Mi perfil", "administradores", "Administradores");
 
   /**
    * Pantallas que son parte de una sección aunque su nombre no empiece con el de ella: la pestaña
@@ -91,21 +94,21 @@ public class Pantallas {
           Area.DONANTE,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "donante-inicio"),
-              new Seccion("Mis donaciones", "Donaciones", ICONO_DONACIONES, "donante-donaciones"),
+              new Seccion("Mis donaciones", DONACIONES, ICONO_DONACIONES, "donante-donaciones"),
               new Seccion("Organizaciones", ICONO_ENTIDADES, "donante-entidades"),
               new Seccion("Seguimiento", ICONO_SEGUIMIENTO, "donante-seguimiento")),
           Area.ENTIDAD,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "entidad-inicio"),
               new Seccion("Necesidades", "necesidades", "entidad-necesidades"),
-              new Seccion("Donaciones", ICONO_DONACIONES, "entidad-recibidas"),
+              new Seccion(DONACIONES, ICONO_DONACIONES, "entidad-recibidas"),
               new Seccion("Seguir entregas", "Entregas", ICONO_SEGUIMIENTO, "entidad-seguimiento")),
           Area.ADMIN,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "admin-inicio"),
               new Seccion("Donantes", "donantes", "admin-donantes"),
               new Seccion("Organizaciones", ICONO_ENTIDADES, "admin-entidades"),
-              new Seccion("Donaciones", ICONO_DONACIONES, "admin-donaciones"),
+              new Seccion(DONACIONES, ICONO_DONACIONES, "admin-donaciones"),
               new Seccion("Asignar donaciones", "Asignar", "asignar", "admin-asignaciones"),
               new Seccion("Camiones", "camiones", "admin-camiones"),
               new Seccion("Ranking", ICONO_ESTRELLA, "admin-ranking")));
@@ -285,9 +288,9 @@ public class Pantallas {
     model.addAttribute("pasos", PASOS);
     model.addAttribute("seccion", actual == null ? fueraDelMenu : actual.texto());
     model.addAttribute("navegacion", opciones(menu, actual));
-    model.addAttribute("cuenta", cuentas.de(prefijo).orElse(null));
+    model.addAttribute(CUENTA, cuentas.de(prefijo).orElse(null));
     model.addAttribute("sinLeer", area.isPresent() ? sinLeer(prefijo) : 0L);
-    model.addAttribute("perfil", area.map(Pantallas::miPerfil).orElse(null));
+    model.addAttribute(PERFIL, area.map(Pantallas::miPerfil).orElse(null));
     if (RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes pedido) {
       if (CON_MARCO_DE_LA_CUENTA.contains(pantalla)) {
         conMarcoDeLaCuenta(pedido.getRequest(), model);
@@ -345,10 +348,10 @@ public class Pantallas {
           area == Area.DONANTE && esPersona(pedido) ? MENU_PERSONA : MENUS.get(area);
       model.addAttribute("navegacion", opciones(menu, null));
       model.addAttribute("seccion", null);
-      model.addAttribute("cuenta", cuenta);
+      model.addAttribute(CUENTA, cuenta);
       model.addAttribute("sinLeer", 0L);
-      model.addAttribute("perfil", miPerfil(area));
-      model.addAttribute("inicio", area.inicio());
+      model.addAttribute(PERFIL, miPerfil(area));
+      model.addAttribute(ICONO_INICIO, area.inicio());
       model.addAttribute("marco", MARCO_PRIVADO);
     } catch (RuntimeException noSePudoArmar) {
       // Una página de error nunca falla por su marco: "marco" es lo último que se pone, y sin él la
@@ -379,12 +382,12 @@ public class Pantallas {
         return;
       }
       if (activa.isPresent()) {
-        model.addAttribute("cuenta", cuenta);
-        model.addAttribute("perfil", miPerfil(area));
+        model.addAttribute(CUENTA, cuenta);
+        model.addAttribute(PERFIL, miPerfil(area));
         model.addAttribute(SALIDA_DE_LA_CUENTA, new SalidaDeLaCuenta(area.inicio(), false));
       } else {
         model.addAttribute(
-            "cuenta", new CuentaVista(cuenta.nombre(), EN_REVISION, cuenta.cambiarClave()));
+            CUENTA, new CuentaVista(cuenta.nombre(), EN_REVISION, cuenta.cambiarClave()));
         model.addAttribute(SALIDA_DE_LA_CUENTA, new SalidaDeLaCuenta(SOLICITUD, true));
       }
     } catch (RuntimeException noSePudoArmar) {

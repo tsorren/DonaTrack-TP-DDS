@@ -34,7 +34,7 @@ public class RecibidasController {
   private static final String NOMBRE_RECIBIDAS = "recibidas";
 
   /** Cada valor de {@code ?estado=} y su grupo; uno desconocido no filtra. */
-  static final Map<String, String> GRUPOS =
+  static final Map<String, String> GRUPOS_POR_ESTADO =
       Map.of(
           "en-tu-puerta",
           RecibidasVista.PUERTA,
@@ -186,7 +186,7 @@ public class RecibidasController {
     }
     return Arrays.stream(estados)
         .flatMap(e -> Arrays.stream(e.split(",")))
-        .map(e -> GRUPOS.get(e.strip()))
+        .map(e -> GRUPOS_POR_ESTADO.get(e.strip()))
         .filter(Objects::nonNull)
         .collect(Collectors.toUnmodifiableSet());
   }

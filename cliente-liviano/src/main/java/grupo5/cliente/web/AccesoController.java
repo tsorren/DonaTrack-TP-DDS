@@ -10,9 +10,9 @@ import grupo5.cliente.cuentas.Perfil.DonanteEmpresa;
 import grupo5.cliente.cuentas.Perfil.DonantePersona;
 import grupo5.cliente.cuentas.Perfil.Entidad;
 import grupo5.cliente.cuentas.PerfilService;
+import grupo5.cliente.puertos.DatosRechazados;
 import grupo5.cliente.puertos.SolicitudEntidadPuerto;
-import grupo5.cliente.puertos.SolicitudEntidadPuerto.DatosRechazados;
-import grupo5.cliente.puertos.SolicitudEntidadPuerto.YaAprobada;
+import grupo5.cliente.puertos.YaAprobada;
 import grupo5.cliente.seguridad.Area;
 import grupo5.cliente.seguridad.UsuarioActual;
 import grupo5.cliente.vistas.SolicitudEntidadVista;
@@ -47,6 +47,7 @@ public class AccesoController {
   private static final String INGRESAR = "redirect:/oauth2/authorization/keycloak";
   private static final String DONANTE = "publico-registro-donante";
   private static final String ENTIDAD = "publico-registro-entidad";
+  private static final String AL_INICIO = "redirect:/inicio";
   private static final String SOLICITUD = "redirect:/" + SolicitudEntidadController.ENVIADA;
 
   private final Pantallas pantallas;
@@ -84,9 +85,7 @@ public class AccesoController {
     if (usuario == null) {
       return INGRESAR + "?prompt=create";
     }
-    return sinPerfil(usuario)
-        ? completarPerfil(model, "publico-registro" + tipo)
-        : "redirect:/inicio";
+    return sinPerfil(usuario) ? completarPerfil(model, "publico-registro" + tipo) : AL_INICIO;
   }
 
   @PostMapping(path = "/" + DONANTE, params = "tipo=persona")
@@ -125,7 +124,7 @@ public class AccesoController {
    * con lo escrito; si el equipo ya la aprobó, la solicitud lo explica. El correo es el de la
    * cuenta: no viaja.
    */
-  @PostMapping("/" + SolicitudEntidadController.CORREGIR)
+  @PostMapping("/" + SolicitudEntidadController.RUTA_CORREGIR)
   String corregirSolicitud(
       @AuthenticationPrincipal OidcUser usuario,
       @ModelAttribute Entidad cambios,
@@ -133,7 +132,7 @@ public class AccesoController {
       Model model) {
     UsuarioActual cuenta = UsuarioActual.desde(usuario.getClaims());
     if (cuenta.estado() != SOLICITUD_RECIBIDA) {
-      return "redirect:/inicio";
+      return AL_INICIO;
     }
     SolicitudEntidadVista escrito =
         new SolicitudEntidadVista(
@@ -192,7 +191,7 @@ public class AccesoController {
       Model model,
       String pantalla) {
     if (!sinPerfil(usuario)) {
-      return "redirect:/inicio";
+      return AL_INICIO;
     }
     if (terminos == null) {
       throw new ResponseStatusException(BAD_REQUEST);

@@ -4,11 +4,11 @@ import grupo5.cliente.cuentas.ContrasenaProvisoria;
 import grupo5.cliente.puertos.AdminActividadPuerto;
 import grupo5.cliente.puertos.AdminActividadPuerto.AccionDelSitio;
 import grupo5.cliente.puertos.AdministradorActual;
+import grupo5.cliente.puertos.AltaIncompleta;
+import grupo5.cliente.puertos.CorreoEnUso;
 import grupo5.cliente.puertos.DirectorioDeAdministradores;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.Administrador;
 import grupo5.cliente.puertos.DirectorioDeAdministradores.Alta;
-import grupo5.cliente.puertos.DirectorioDeAdministradores.AltaIncompleta;
-import grupo5.cliente.puertos.DirectorioDeAdministradores.CorreoEnUso;
 import grupo5.cliente.sesion.CifradoDeLaSesion;
 import grupo5.cliente.vistas.Tramo;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,8 +54,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminAdministradoresController {
 
   static final String PANTALLA = "admin-administradores";
-  static final String NUEVO = PANTALLA + "-nuevo";
-  static final String ALTA = PANTALLA + "-alta";
+  static final String RUTA_NUEVO = PANTALLA + "-nuevo";
+  static final String RUTA_ALTA = PANTALLA + "-alta";
   static final String PROVISORIA = "provisoria";
 
   /** El id del formulario del alta, el mismo en la ventana y en la página aparte. */
@@ -178,10 +178,10 @@ public class AdminAdministradoresController {
     return vista;
   }
 
-  @GetMapping("/" + NUEVO)
+  @GetMapping("/" + RUTA_NUEVO)
   String nuevo(Model model, HttpServletRequest pedido) {
     cuentaDe(pedido);
-    String vista = pantallas.mostrar(NUEVO, model);
+    String vista = pantallas.mostrar(RUTA_NUEVO, model);
     model.addAttribute(ERRORES, Map.of());
     return vista;
   }
@@ -213,7 +213,7 @@ public class AdminAdministradoresController {
             cifrada(
                 new Provisoria(
                     datos.nombre() + " " + datos.apellido(), datos.correo(), contrasena, false)));
-        return "redirect:/" + ALTA;
+        return "redirect:/" + RUTA_ALTA;
       } catch (CorreoEnUso repetido) {
         errores = Map.of(DatosDeAdministrador.CORREO, DatosDeAdministrador.CORREO_EN_USO);
       } catch (AltaIncompleta | RestClientException noSeCreo) {
@@ -221,7 +221,7 @@ public class AdminAdministradoresController {
         model.addAttribute(CODIGO, AdminPerfilController.codigo(pedido));
       }
     }
-    String vista = pantallas.mostrar(NUEVO, model);
+    String vista = pantallas.mostrar(RUTA_NUEVO, model);
     model.addAttribute(ERRORES, errores);
     model.addAttribute("nombre", nombre);
     model.addAttribute("apellido", apellido);
@@ -238,7 +238,7 @@ public class AdminAdministradoresController {
     return vista;
   }
 
-  @GetMapping("/" + ALTA)
+  @GetMapping("/" + RUTA_ALTA)
   String contrasena(
       Model model,
       HttpServletRequest pedido,
@@ -262,7 +262,7 @@ public class AdminAdministradoresController {
           provisoria.nombre() + " ya puede entrar con su correo y la contraseña provisoria.");
     }
     respuesta.setHeader("Cache-Control", "no-store");
-    return pantallas.mostrar(ALTA, model);
+    return pantallas.mostrar(RUTA_ALTA, model);
   }
 
   @PostMapping("/" + PANTALLA + "-contrasena")
@@ -288,7 +288,7 @@ public class AdminAdministradoresController {
       actividad.anotar(AccionDelSitio.CONTRASENA_PROVISORIA_NUEVA, cuenta, null);
       atributos.addFlashAttribute(
           PROVISORIA, cifrada(new Provisoria(nombre, elegida.correo(), contrasena, true)));
-      return "redirect:/" + ALTA;
+      return "redirect:/" + RUTA_ALTA;
     } catch (RestClientException noRespondio) {
       String codigo = AdminPerfilController.codigo(pedido);
       return Envios.listo(

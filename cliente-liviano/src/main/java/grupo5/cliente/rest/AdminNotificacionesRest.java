@@ -60,7 +60,7 @@ class AdminNotificacionesRest implements AdminNotificacionesPuerto {
 
   AdminNotificacionesRest(
       NotificacionesApi api,
-      @Value("${cliente.notificaciones.administracion:" + AvisosRest.ADMINISTRACION + "}")
+      @Value("${cliente.notificaciones.administracion:" + AvisosRest.ID_ADMINISTRACION + "}")
           UUID administracion,
       Clock reloj) {
     this.api = api;

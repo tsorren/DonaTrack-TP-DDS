@@ -27,7 +27,7 @@ class AvisosRest implements AvisosSinLeer {
    * La persona de la Administración en Notificaciones, la misma de {@code AdminConstantes.ID_ADMIN}
    * en los servicios (la que ya recibe el aviso de contacto).
    */
-  static final String ADMINISTRACION = "00000000-0000-0000-0000-000000000001";
+  static final String ID_ADMINISTRACION = "00000000-0000-0000-0000-000000000001";
 
   private final NotificacionesApi notificaciones;
   private final CuentaActual cuentas;
@@ -36,7 +36,7 @@ class AvisosRest implements AvisosSinLeer {
   AvisosRest(
       NotificacionesApi notificaciones,
       CuentaActual cuentas,
-      @Value("${cliente.notificaciones.administracion:" + ADMINISTRACION + "}")
+      @Value("${cliente.notificaciones.administracion:" + ID_ADMINISTRACION + "}")
           UUID administracion) {
     this.notificaciones = notificaciones;
     this.cuentas = cuentas;

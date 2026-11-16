@@ -3,7 +3,6 @@ package grupo5.cliente.rest;
 import static grupo5.cliente.rest.Comun.DIA_Y_ANIO;
 
 import grupo5.cliente.puertos.DonantePerfilPuerto;
-import grupo5.cliente.puertos.DonantePerfilPuerto.Tipo;
 import grupo5.cliente.vistas.CuentaVista;
 import grupo5.cliente.vistas.DonantePerfilVista;
 import java.util.List;

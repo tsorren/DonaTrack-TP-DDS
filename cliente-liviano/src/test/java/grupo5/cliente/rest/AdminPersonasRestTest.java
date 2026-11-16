@@ -417,10 +417,10 @@ class AdminPersonasRestTest {
         .andRespond(withSuccess("[]", JSON));
     donaciones
         .expect(requestTo(DONACIONES + "/api/donantes?orden=nuevos&page=0&size=20"))
-        .andRespond(withSuccess(TRES_DONANTES, JSON).header(Paginas.TOTAL, "3"));
+        .andRespond(withSuccess(TRES_DONANTES, JSON).header(Paginas.CABECERA_TOTAL, "3"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/donantes?activo=true&size=1"))
-        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "2"));
+        .andRespond(withSuccess("[]", JSON).header(Paginas.CABECERA_TOTAL, "2"));
 
     AdminDonantesVista vista = adaptador.donantes(ConsultaDonantes.primera());
 
@@ -456,7 +456,7 @@ class AdminPersonasRestTest {
                     + "/api/donantes?q=jose&tipoJuridico=ONG&activo=false&categoriaId="
                     + alimentos
                     + "&orden=nombre&page=8&size=20"))
-        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "41"));
+        .andRespond(withSuccess("[]", JSON).header(Paginas.CABECERA_TOTAL, "41"));
     donaciones
         .expect(
             requestTo(
@@ -464,10 +464,10 @@ class AdminPersonasRestTest {
                     + "/api/donantes?q=jose&tipoJuridico=ONG&activo=false&categoriaId="
                     + alimentos
                     + "&orden=nombre&page=2&size=20"))
-        .andRespond(withSuccess(TRES_DONANTES, JSON).header(Paginas.TOTAL, "41"));
+        .andRespond(withSuccess(TRES_DONANTES, JSON).header(Paginas.CABECERA_TOTAL, "41"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/donantes?activo=true&size=1"))
-        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "2"));
+        .andRespond(withSuccess("[]", JSON).header(Paginas.CABECERA_TOTAL, "2"));
 
     AdminDonantesVista vista =
         adaptador.donantes(
@@ -492,10 +492,10 @@ class AdminPersonasRestTest {
                 DONACIONES
                     + "/api/donantes?altaDesde=2026-11-04&altaHasta=2026-11-10"
                     + "&orden=nuevos&page=0&size=20"))
-        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "0"));
+        .andRespond(withSuccess("[]", JSON).header(Paginas.CABECERA_TOTAL, "0"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/donantes?activo=true&size=1"))
-        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "0"));
+        .andRespond(withSuccess("[]", JSON).header(Paginas.CABECERA_TOTAL, "0"));
 
     AdminDonantesVista vista =
         adaptador.donantes(new ConsultaDonantes("", "", "", "", "", 1, "7-dias"));
@@ -530,10 +530,10 @@ class AdminPersonasRestTest {
         .andRespond(withSuccess("[]", JSON));
     donaciones
         .expect(requestTo(DONACIONES + "/api/donantes?orden=nuevos&page=0&size=20"))
-        .andRespond(withSuccess(conContacto, JSON).header(Paginas.TOTAL, "2"));
+        .andRespond(withSuccess(conContacto, JSON).header(Paginas.CABECERA_TOTAL, "2"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/donantes?activo=true&size=1"))
-        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "2"));
+        .andRespond(withSuccess("[]", JSON).header(Paginas.CABECERA_TOTAL, "2"));
 
     AdminDonantesVista vista = adaptador.donantes(ConsultaDonantes.primera());
 
@@ -567,7 +567,7 @@ class AdminPersonasRestTest {
                       "cantidad": 25, "items": []}]
                     """,
                     JSON)
-                .header(Paginas.TOTAL, "12"));
+                .header(Paginas.CABECERA_TOTAL, "12"));
 
     AdminDonantesVista.SusDonaciones suyas = adaptador.donacionesDe(ana.toString());
 
@@ -626,10 +626,10 @@ class AdminPersonasRestTest {
         .andRespond(withSuccess("[]", JSON));
     donaciones
         .expect(requestTo(DONACIONES + "/api/donantes?orden=nuevos&page=0&size=20"))
-        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "0"));
+        .andRespond(withSuccess("[]", JSON).header(Paginas.CABECERA_TOTAL, "0"));
     donaciones
         .expect(requestTo(DONACIONES + "/api/donantes?activo=true&size=1"))
-        .andRespond(withSuccess("[]", JSON).header(Paginas.TOTAL, "0"));
+        .andRespond(withSuccess("[]", JSON).header(Paginas.CABECERA_TOTAL, "0"));
 
     AdminDonantesVista vista =
         adaptador.donantes(new ConsultaDonantes("", "marciano", "x", "pendiente", "raro", 1));
