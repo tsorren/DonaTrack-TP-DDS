@@ -191,6 +191,7 @@ docs/
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
 * 📋 **Requerimientos de Entrega 6 (cliente liviano, autenticación y gateway):** [requerimientos/requerimientos-e6.md](requerimientos/requerimientos-e6.md)
 * 📋 **Requerimientos de Entrega 7 (observabilidad y seguridad; rondas de decisión):** [requerimientos/requerimientos-e7.md](requerimientos/requerimientos-e7.md)
+* 🧭 **ADRs de E7 (`proposed`, PR de los ADR):** [Kubernetes con kind y Kustomize](adr/20261117-despliegue-en-kubernetes-local-con-kind-y-kustomize.md) · [stack de observabilidad](adr/20261117-stack-de-observabilidad-con-prometheus-tempo-loki-y-grafana.md) · [rate limiting en el gateway](adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md) · [GraphQL de solo lectura en Donaciones](adr/donaciones-service/20261117-graphql-de-solo-lectura-en-donaciones.md)
 * 🧭 **Plan de trabajo de E6 sin autenticación ni estilos:** [requerimientos/plan-e6-trabajo-sin-auth.md](requerimientos/plan-e6-trabajo-sin-auth.md)
 * 🔌 **Plan del cliente liviano con datos reales y gateway (alternativas y fases):** [requerimientos/plan-e6-cliente-datos-reales-y-gateway.md](requerimientos/plan-e6-cliente-datos-reales-y-gateway.md) · brechas por pantalla: [requerimientos/brechas-de-datos-por-pantalla-e6.md](requerimientos/brechas-de-datos-por-pantalla-e6.md)
 * 🎨 **Proceso de diseño de la interfaz (UX, identidad visual y vistas):** [interfaz/README.md](interfaz/README.md) · reglas del módulo: [../cliente-liviano/AGENTS.md](../cliente-liviano/AGENTS.md)
