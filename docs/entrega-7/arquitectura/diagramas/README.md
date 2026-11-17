@@ -33,7 +33,7 @@ El job `render-docs-diagrams` del CI renderiza los `.puml` de `docs/entrega-*` c
 falla si alguno no compila y deja los PNG como artefacto. El PNG del repo se genera a mano y se
 commitea: la tipografía del runner no es la misma, así que no se compara byte a byte.
 
-Ancho del borrador: 1204 px (Figura 1) y 1228 px (Figura 2), pensado para leer en pantalla. Impreso a
+Ancho del borrador: 1218 px (Figura 1) y 1174 px (Figura 2), pensado para leer en pantalla. Impreso a
 17 cm de ancho, la letra de 12 px queda en unos 5 pt. La versión final tiene que quedar en 7 pt o más,
 que pide unos 800 px o menos (las figuras del entregable de E4 usaron 730 px): partir cada figura o
 sacar detalle a una tabla.

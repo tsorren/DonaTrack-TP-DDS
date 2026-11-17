@@ -26,13 +26,13 @@ title Figura 2 — Despliegue de DonaTrack en Kubernetes local (kind), borrador
 actor "Personas usuarias\n(navegador)" as usr
 
 node "Máquina del grupo · Docker" as host <<infraestructura>> {
-  node "Cluster kind · nodo único\n(puertos 80 y 443 publicados en la máquina)" as nodo <<infraestructura>> {
+  node "Cluster kind «donatrack» · nodo único (K1)\n(puertos 80 y 443 publicados en 127.0.0.1)" as nodo <<infraestructura>> {
 
     node "Ingress\n(controlador: K5)" as ing <<planificado>>
 
     frame "namespace donatrack" as nsApp {
       node "cliente-liviano" as pCli <<servicio>>
-      node "api-gateway · 2 réplicas" as pGw <<servicio>>
+      node "api-gateway\n<color:#6E6E6E>E7: 2 réplicas</color>" as pGw <<servicio>>
       node "donaciones-service" as pDon <<servicio>>
       node "logistica-service" as pLog <<servicio>>
       node "incentivos-service" as pInc <<servicio>>
@@ -46,7 +46,7 @@ node "Máquina del grupo · Docker" as host <<infraestructura>> {
       node "keycloak" as pKc <<infraestructura>>
       node "minio" as pMinio <<infraestructura>>
       node "n8n" as pN8n <<infraestructura>>
-      node "redis\n(sin persistencia)" as pRedis <<infraestructura>>
+      node "redis\n(sin persistencia)" as pRedis <<planificado>>
     }
 
     frame "namespace donatrack-observabilidad" as nsObs {
@@ -103,12 +103,15 @@ legend bottom
   |= Elemento |= Significado |
   | node «infraestructura» exterior | La máquina y el nodo de kind (un contenedor Docker) |
   | frame | Namespace de Kubernetes, uno por función |
-  |<#E6EEF8> node «servicio» | Pod de una pieza de DonaTrack |
-  |<#F2F2F2> node «infraestructura» | Pod de un producto de terceros |
-  |<#FFFFFF> node «planificado» | Decidido en los ADR de E7, sin manifiesto todavía |
+  |<#E6EEF8> node «servicio» | Pod de una pieza de DonaTrack que ya existe como imagen |
+  |<#F2F2F2> node «infraestructura» | Pod de un producto de terceros que ya usa el sistema |
+  |<#FFFFFF> node «planificado» | Pieza nueva, decidida en los ADR de E7 (proposed) |
+  | <color:#6E6E6E>E7: …</color> | Capacidad nueva de una pieza que ya existe |
   | ──> | Conexión de red, con su protocolo |
   | <color:#6E6E6E>· · ·></color> | Conexión planificada en E7 |
-  Salud: cada contenedor declara requests y limits. Liveness (/actuator/health/liveness)
+  Estado objetivo: hoy existen el cluster y los tres namespaces (K1); los pods
+  los crean K2 (infraestructura), K4 (apps), K5 (Ingress) y O1 a O4 (observabilidad).
+  Salud (ADR de Kubernetes): cada contenedor declara requests y limits. Liveness (/actuator/health/liveness)
   reinicia el pod; readiness (/actuator/health/readiness) lo saca del Service sin reiniciarlo
   cuando falta una dependencia (base, RabbitMQ). restartPolicy Always, sin tope
   (CrashLoopBackOff); la alerta de reinicios repetidos está en Grafana.
