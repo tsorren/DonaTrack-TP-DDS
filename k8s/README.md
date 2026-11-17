@@ -14,7 +14,7 @@ Compose sigue siendo el entorno de desarrollo, del CI y de la demo pública mien
 
 Namespaces, uno por función:
 
-| Namespace | Qué corre |
+| Namespace | Qué va a correr (hoy está vacío) |
 |---|---|
 | `donatrack` | Los cuatro servicios, el api-gateway (dos réplicas) y el cliente liviano (K4) |
 | `donatrack-infra` | Postgres, Mongo, RabbitMQ, Keycloak, MinIO, n8n y Redis (K2) |
@@ -25,8 +25,8 @@ Cada manifiesto nuevo va en `base/` (o en una subcarpeta por pieza) y se suma a 
 
 ## Requisitos
 
-- Docker en marcha. Para el sistema completo con observabilidad hacen falta unos 16 GB de memoria
-  (ADR); el esqueleto solo necesita el nodo.
+- Docker en marcha. Para el sistema completo con observabilidad el ADR estima unos 16 GB de memoria
+  (`[INFERRED]`); el esqueleto solo necesita el nodo.
 - [kind](https://kind.sigs.k8s.io/) v0.33.0 o posterior y `kubectl` (trae Kustomize; Docker Desktop
   lo instala).
 - Los puertos 80 y 443 de la máquina libres.
