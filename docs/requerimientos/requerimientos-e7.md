@@ -9,7 +9,7 @@
 - **Para qué sirve:** el enunciado de E7 son cuatro requerimientos y tres entregables en una página. Este documento los baja a **preguntas de decisión con opciones**, para que de las respuestas salgan los requerimientos verificables y los ADRs, como se hizo en [E6](requerimientos-e6.md).
 - **Fuentes:** [`Enunciado-TP-Anual-2026.pdf`](../entregas/Enunciado-TP-Anual-2026.pdf) (E7, pág. 28), el código de `ENTREGA_7` (igual a `main` con la Entrega 6, `f077a8b44`) y los ADRs citados.
 - **Etiquetas** (AGENTS.md §3): `[DOCUMENTED]` · `[OBSERVED]` · `[INFERRED]` · `[PROPOSED]`.
-- **Estado de cada pregunta:** ⏸️ sin responder · ✅ respondida · 🎓 para consultar a la cátedra.
+- **Estado de cada pregunta:** ⏸️ sin responder · ⏳ diferida a otra sesión · ✅ respondida · 🎓 para consultar a la cátedra.
 - **Cada pregunta** trae el punto de partida observado, las opciones y una **recomendada** (la primera, marcada con ⭐). La recomendación es una propuesta del agente `[PROPOSED]`: no es una decisión hasta que el grupo responda.
 - **Orden:** las rondas van de lo que cambia el alcance (R1) a lo que se decide dentro de cada requerimiento (R2 a R5) y a lo que se entrega (R6). Si R1 cambia, R5 y R6 se reescriben.
 
@@ -259,17 +259,33 @@ Q01 se respondió: **GraphQL en Donaciones** (Logística, abierta). La rama gRPC
 
 ### Ronda 6 — Entregables, plan y cierre
 
-**E7-Q14 — Diagrama de componentes y despliegue (E7-ENT-1) ⏸️**
-`[OBSERVED]` los diagramas existentes son anteriores al gateway, Keycloak, MinIO y el cliente liviano. Formato: ⭐ **PlantUML** en el repo (como `08-despliegue.puml`; se versiona y se revisa en el PR) · Mermaid en Markdown · draw.io. Contenido: ⭐ dos diagramas separados (componentes y despliegue) con **todos** los contenedores de `docker-compose.yml` más el stack nuevo, no solo los de E7. Dónde: ⭐ `docs/arquitectura/` con enlace desde `docs/README.md`. El enunciado pide los diagramas "de la solución actual": ⭐ se redibujan al final, con lo realmente implementado.
+**E7-Q14 — Diagrama de componentes y despliegue (E7-ENT-1) ✅ (2026-11-16): PlantUML, despliegue solo en Kubernetes, borrador temprano y versión final**
+> **Respuesta del grupo:** *Q14a A:* PlantUML con PNG renderizado en `docs/entrega-7/arquitectura/diagramas/`, con el estilo de E4 (`estilo-e4.iuml`) y el job `generate-diagrams` del CI. *Q14b C* (el grupo no siguió la recomendación del agente, que era A): el diagrama de despliegue muestra **solo Kubernetes**; Compose (demo pública y túnel) no se dibuja. Riesgo asumido `[INFERRED]`: si la cátedra pregunta por la demo pública, no está en el diagrama; se cubre en la defensa. *Q14c B:* un borrador al comienzo y la versión final al cierre; el grupo pidió que **el borrador esté lo mejor diagramado posible**, porque sirve de acuerdo del grupo y de referencia para los ADR. El de componentes es uno solo e incluye gateway, Keycloak, MinIO, cliente liviano, Redis y el stack de observabilidad. Criterio de la cátedra `[OBSERVED]` (memoria de las devoluciones): diagramas legibles impresos (7 pt o más), sin evidencia del repo, con decisiones justificadas.
 
-**E7-Q15 — ¿Cómo se parte el trabajo? ⏸️**
-⭐ **Un PR por requerimiento** contra `ENTREGA_7` (observabilidad, autorestart, rate limiting, gRPC/GraphQL, diagramas), con ramas `E7_*` (`[INFERRED]` por analogía con E4, cuyas ramas hacia `ENTREGA_4` debían llevar el prefijo `E4_`; verificar para `ENTREGA_7`) · un PR único. Con 11 días hasta el 27 de noviembre, `[PROPOSED]`: observabilidad y rate limiting primero (los dos aportan a la demo y se miden entre sí), diagramas al final.
+(Planteo original:) `[OBSERVED]` los diagramas existentes son anteriores al gateway, Keycloak, MinIO y el cliente liviano. Formato: ⭐ **PlantUML** en el repo (como `08-despliegue.puml`) · Mermaid en Markdown · draw.io. Contenido: ⭐ dos diagramas separados (componentes y despliegue). Cuándo: ⭐ se redibujan al final, con lo realmente implementado.
 
-**E7-Q16 — ¿Qué ADRs hacen falta? ⏸️**
-`[INFERRED]` aplicando Gate A + Gate B de AGENTS.md §9.1: ⭐ **ADR de stack de observabilidad** (sucesor parcial del de trazabilidad) · ⭐ **ADR de rate limiting** · ⭐ **ADR de la opción gRPC o GraphQL** · el autorestart y los diagramas no requieren ADR propio. Todos `proposed`; la aprobación es del equipo.
+**E7-Q15 — ¿Cómo se parte el trabajo? ⏳ (2026-11-16): diferida a una sesión de planificación con Opus**
+> **Respuesta del grupo:** no se decide acá. El reparto se diseña en una sesión aparte, con un modelo Opus, asignando aproximadamente **un frente a cada compañero**, y con un **diagrama de Gantt dinámico o un CPM (método del camino crítico)**, porque las estimaciones de tiempo pueden ser erróneas. Insumos para esa sesión `[PROPOSED]`, no decididos:
+>
+> | # | Rama `E7_*` | Qué lleva | Depende de |
+> |---|---|---|---|
+> | 0 | `E7_adrs` | Los cuatro ADR `proposed` (Q16b B: van primero, en su propio PR) | — |
+> | 1 | `E7_k8s_base` | kind, Kustomize, los 14 contenedores, Redis, probes de liveness y readiness, reinicio automático | — (camino crítico) |
+> | 2 | `E7_metricas` | Micrometer y Prometheus en los servicios, las 13 métricas comprometidas, endpoints de observabilidad protegidos | — |
+> | 3 | `E7_observabilidad_stack` | Prometheus, Tempo, Loki y Grafana en su namespace, tableros, alertas y el script de caos | 1 y 2 |
+> | 4 | `E7_rate_limiting` | Bucket4j con Redis, 2 réplicas, `429` completo, M24 y M25 | 1 |
+> | 5 | `E7_graphql` | Esquema B en Donaciones, límites, M08, tests de contrato y k6 | — |
+> | 6 | `E7_graphql_pantalla` | Pantalla del cliente que lo consume | 5 |
+> | 7 | `E7_seguridad` | Encabezados, cadena JWT en preprod, escaneo en el CI | — |
+> | 8 | `E7_diagramas` | Borrador temprano y versión final | 1 a 7 |
+>
+> Notas para la planificación `[INFERRED]`: el prefijo `E7_*` sale de la regla de E4 (verificarla con el primer PR); si el CI migra a Kubernetes (Q07c), AGENTS.md §11 se cambia en un PR aparte con revisión humana (AGENTS.md §13); con Q16b B el PR de ADR entra al camino crítico antes de implementar y su revisión tiene que ser rápida; el plazo es el 27 de noviembre de 2026 (11 días desde el 16 de noviembre).
 
-**E7-Q17 — ¿Qué se difiere y qué consultamos a la cátedra? ⏸️ 🎓**
-Para confirmar con docentes `[PROPOSED]`: (1) si "Seguridad" incluye algo más que rate limiting; (2) si GraphQL sin tiempo real satisface la opción 2 sin justificar casos de uso; (3) si el stack de observabilidad puede correr fuera del compose obligatorio de la cátedra; (4) si el diagrama de despliegue debe incluir infraestructura externa (tunel, demo pública).
+**E7-Q16 — ¿Qué ADRs hacen falta? ✅ (2026-11-16): los cuatro; Q16b B, primero y en un PR aparte**
+> **Respuesta del grupo:** *Q16a:* cuatro ADR `proposed`: (1) despliegue en Kubernetes (ARCHITECTURAL: kind, Kustomize, convivencia con Compose, probes y política de reinicio sin tope con alerta); (2) stack de observabilidad (sucesor parcial del [ADR de trazabilidad](../adr/20260901-sistema-unificado-de-trazabilidad-y-observabilidad-distribuida.md): Prometheus, Tempo, Loki y Grafana, catálogo de métricas, alertas en el panel, protección de endpoints y recolección de logs en el cluster); (3) rate limiting en el gateway (Bucket4j con Redis, *fail-open*, identificación y límites, `429`); (4) GraphQL en Donaciones (solo lectura, adaptador sobre los servicios de aplicación, límites, ruta, librería). Sin ADR propio: la seguridad perimetral (sigue el [ADR del pipeline de CI](../adr/20260426-pipeline-unificado-de-cicd-y-automatizacion-de-calidad.md)) y los diagramas. *Q16b B* (el grupo no siguió la recomendación del agente, que era A): los cuatro ADR se escriben **primero y en un PR aparte**, para validar la decisión antes de implementarla. Riesgo asumido: ese PR frena el arranque del camino crítico hasta que se revise. `[OBSERVED]` el ADR 2 tiene que resolver el choque con el [ADR de logs sin volúmenes del host](../adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md), pensado para Docker: en Kubernetes el recolector lee los logs de los pods desde el nodo. Solo una persona del grupo puede pasar un ADR a `accepted` (AGENTS.md §9.3).
+
+**E7-Q17 — ¿Qué consultamos a la cátedra? ✅ (2026-11-16): A, tres consultas 🎓**
+> **Respuesta del grupo:** enviar tres consultas a la cátedra. (1) ¿Se acepta **Kubernetes (kind)** como entorno de despliegue y de defensa? `[OBSERVED]` el enunciado (pág. 23) pide "Docker o similar" y no menciona Compose ni Kubernetes. (2) ¿"Seguridad" incluye algo más que rate limiting? El grupo suma encabezados, protección de observabilidad, cadena JWT y escaneo. (3) ¿GraphQL de solo lectura, sin tiempo real, cumple la opción 2 sin justificar casos de uso adicionales? La cuarta (infraestructura externa en el diagrama de despliegue) la decide el grupo: con Q14b C, el diagrama muestra solo Kubernetes. **Pendiente:** redactar y enviar las consultas, preferentemente hoy, para tener la respuesta antes del 27 de noviembre.
 
 ---
 
@@ -296,7 +312,7 @@ Para confirmar con docentes `[PROPOSED]`: (1) si "Seguridad" incluye algo más q
 | Q21 Límites de consulta | Paginación, profundidad, complejidad, timeout, introspección apagada | ✅ todos |
 | Q22 Exposición y consumo | Ruta propia detrás del gateway; API con GraphiQL, tests y k6 | ✅ exposición recomendada; consumo B (API más una pantalla del cliente) |
 | Q23 Librería | Spring for GraphQL | ✅ opción A |
-| Q14 Diagramas | PlantUML, componentes y despliegue separados | ⏸️ |
-| Q15 Partición | Un PR por requerimiento | ⏸️ |
-| Q16 ADRs | Observabilidad, rate limiting y gRPC o GraphQL | ⏸️ |
-| Q17 Cátedra | Cuatro consultas | ⏸️ |
+| Q14 Diagramas | PlantUML, componentes y despliegue separados | ✅ PlantUML; despliegue solo Kubernetes; borrador temprano muy cuidado y versión final |
+| Q15 Partición | Un PR por frente (ocho) | ⏳ diferida a una sesión de planificación con Opus (frente por compañero, Gantt o CPM) |
+| Q16 ADRs | Cuatro, junto con cada PR | ✅ los cuatro; escritos primero en un PR aparte (distinto de la recomendación) |
+| Q17 Cátedra | Tres consultas (Kubernetes, alcance de seguridad, GraphQL de solo lectura) | ✅ opción A; falta enviarlas |

@@ -126,7 +126,7 @@ docs/
 │   ├── plan-e6-trabajo-sin-auth.md        # Trabajo de E6 que avanza sin auth ni estilos (priorizado)
 │   ├── plan-e6-cliente-datos-reales-y-gateway.md # Cliente con datos reales, gateway y base para auth (alternativas y fases)
 │   ├── brechas-de-datos-por-pantalla-e6.md # Qué pantallas conectan y qué le falta al backend (insumo de F2; §10: estado tras la conexión del 2026-11-10)
-│   └── requerimientos-e7.md               # Rondas de decisión de E7 (17 preguntas más Q07b a Q07d; respondidas Q01, Q03 a Q13, Q07b a Q07d, Q11b, Q11c y Q18 a Q23; Q02 pendiente)
+│   └── requerimientos-e7.md               # Rondas de decisión de E7 (17 preguntas más Q07b a Q07d; respondidas Q01, Q03 a Q13, Q07b a Q07d, Q11b, Q11c y Q18 a Q23; Q14, Q16 y Q17 respondidas; Q15 diferida a una sesión de planificación; Q02 pendiente)
 │
 ├── entrega-4/                             # 🟢 Documentación de Entrega 4 (índice: README.md)
 │   ├── README.md                          # Índice de los .md de la entrega
