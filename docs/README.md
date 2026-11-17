@@ -93,7 +93,7 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-44) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-45) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
@@ -190,6 +190,7 @@ docs/
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
 * 📋 **Requerimientos de Entrega 6 (cliente liviano, autenticación y gateway):** [requerimientos/requerimientos-e6.md](requerimientos/requerimientos-e6.md)
+* 📋 **Requerimientos de Entrega 7 (observabilidad y seguridad; rondas de decisión):** [requerimientos/requerimientos-e7.md](requerimientos/requerimientos-e7.md)
 * 🧭 **Plan de trabajo de E6 sin autenticación ni estilos:** [requerimientos/plan-e6-trabajo-sin-auth.md](requerimientos/plan-e6-trabajo-sin-auth.md)
 * 🔌 **Plan del cliente liviano con datos reales y gateway (alternativas y fases):** [requerimientos/plan-e6-cliente-datos-reales-y-gateway.md](requerimientos/plan-e6-cliente-datos-reales-y-gateway.md) · brechas por pantalla: [requerimientos/brechas-de-datos-por-pantalla-e6.md](requerimientos/brechas-de-datos-por-pantalla-e6.md)
 * 🎨 **Proceso de diseño de la interfaz (UX, identidad visual y vistas):** [interfaz/README.md](interfaz/README.md) · reglas del módulo: [../cliente-liviano/AGENTS.md](../cliente-liviano/AGENTS.md)
@@ -241,7 +242,7 @@ docs/
 * 🔌 **Conexión de pantallas del cliente liviano a las APIs (E6, propuesta):** [SPEC-08](specs/active/SPEC-08-conexion-de-pantallas.md) · [brechas de datos por pantalla](requerimientos/brechas-de-datos-por-pantalla-e6.md)
 * 🏁 **Cierre de E6, demo punta a punta (propuesta):** [SPEC-09](specs/active/SPEC-09-cierre-e6-demo-punta-a-punta.md) · [ADR del estado `EN_PUERTA` de la entrega (`proposed`)](adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md) · [DTI-38](adr/DEUDA_TECNICA.md#dti-38)
 * 🚪 **API Gateway (etapa 1: rutas y `X-Trace-Id`, sin JWT):** [../api-gateway/README.md](../api-gateway/README.md) · [SPEC-07](specs/active/SPEC-07-api-gateway-etapa-1.md) · [ADR-E6-02](adr/20261107-api-gateway-validacion-jwt-en-doble-capa-y-rutas-publicas.md)
-* 🚦 **Rate limiting en el gateway (E7, requerimiento 3):** [ADR por cuenta o por IP (`proposed`)](adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md) · [../api-gateway/README.md](../api-gateway/README.md#rate-limiting)
+* 🚦 **Rate limiting en el gateway (E7, requerimiento 3):** [ADR por cuenta o por IP (`proposed`, en el PR de los ADR de E7)](adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md) · [../api-gateway/README.md](../api-gateway/README.md#rate-limiting)
 * 💻 **Cliente Liviano (interfaz web de E6):** [../cliente-liviano/README.md](../cliente-liviano/README.md)
 * 🗄️ **Scripts de Inicialización de Base de Datos (PostgreSQL):** [../persistencia/init-db/01-init-schemas-roles.sql](../persistencia/init-db/01-init-schemas-roles.sql) y [../persistencia/init-db/02-set-role-passwords.sh](../persistencia/init-db/02-set-role-passwords.sh) (contraseñas desde `.env`, ver [../.env.example](../.env.example))
 * 🪣 **MinIO de Donaciones (padrones CSV y fotos de bienes):** [entrega-4/donaciones/bitacora-minio.md](entrega-4/donaciones/bitacora-minio.md) · plan: [entrega-4/donaciones/plan-minio-csv-y-fotos.md](entrega-4/donaciones/plan-minio-csv-y-fotos.md) · usuarios por servicio: [../persistencia/minio/init-usuarios.sh](../persistencia/minio/init-usuarios.sh)
