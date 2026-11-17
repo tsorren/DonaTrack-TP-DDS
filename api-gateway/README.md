@@ -53,8 +53,8 @@ Requerimiento 3 de E7 ([ADR](../docs/adr/20261115-rate-limiting-en-el-api-gatewa
 - **La respuesta `429`** trae el error unificado (`ERR-CSR-429`), `Retry-After` en segundos y el `X-Trace-Id`. Las que pasan traen `X-RateLimit-Remaining`. El cliente liviano muestra su página `error/429`.
 - Cada rechazo deja un log `[GATEWAY] [RATE-LIMIT]` con el tipo de cubeta (`usuario` o `ip`), sin la IP ni el `sub`.
 - `/actuator/**` no consume fichas.
-- **Las cubetas viven en Redis** (decisión Q11): todas las réplicas del gateway cuentan contra el mismo cupo. Redis no persiste nada (los contadores son descartables) y borra cada clave cuando la cubeta ya se recargó entera.
-- **Si Redis no responde, el pedido pasa** (*fail-open*, Q11b). Cada operación espera como máximo `GATEWAY_REDIS_TIMEOUT`. El gateway arranca aunque Redis esté caído y se conecta con el primer pedido. Si no conecta, no reintenta hasta pasado `GATEWAY_REDIS_REINTENTO`, y mientras tanto los pedidos pasan sin esperar. Queda un `WARN` `[GATEWAY] [RATE-LIMIT] [REDIS-NO-DISPONIBLE]`, uno por ventana como máximo. La métrica y la alerta del panel son de las tareas R3 y O4.
+- **Las cubetas viven en Redis** (decisión Q11): todas las réplicas del gateway cuentan contra el mismo cupo. Redis no persiste nada (los contadores son descartables) y borra cada clave 10 s después de que su cubeta se recargó entera.
+- **Si Redis no responde, el pedido pasa** (*fail-open*, Q11b). Cada operación (conectar, consumir) espera como máximo `GATEWAY_REDIS_TIMEOUT`. El gateway arranca aunque Redis esté caído y se conecta con el primer pedido. Si no conecta, no reintenta hasta pasado `GATEWAY_REDIS_REINTENTO`, y mientras tanto los pedidos pasan sin esperar. Queda un `WARN` `[GATEWAY] [RATE-LIMIT] [REDIS-NO-DISPONIBLE]`, uno por ventana como máximo. La métrica y la alerta del panel son de las tareas R3 y O4.
 
 Para probarlo a mano (con los cupos por defecto, la escritura 31 de la misma IP en un minuto da `429`):
 
