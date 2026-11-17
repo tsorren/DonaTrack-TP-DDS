@@ -88,6 +88,8 @@ for i in $(seq 1 31); do curl -s -o /dev/null -w "%{http_code} " -X POST http://
 | `GATEWAY_REDIS_TIMEOUT` | `100ms` |
 | `GATEWAY_REDIS_REINTENTO` | `5s` |
 
+La ventana, los cupos y `GATEWAY_REDIS_TIMEOUT` tienen que ser positivos: con 0 o menos, el gateway no arranca. Para apagar el límite se usa `GATEWAY_LIMITE_HABILITADO=false`.
+
 ## Correr y probar
 
 ```bash
