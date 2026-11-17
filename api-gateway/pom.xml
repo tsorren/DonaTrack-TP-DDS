@@ -50,6 +50,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
         </dependency>
+        <!-- Rate limiting (E7, requerimiento 3; ADR 20261115): token bucket en memoria, una cubeta por
+             usuario o por IP. Versión en el pom raíz. -->
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk17-core</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

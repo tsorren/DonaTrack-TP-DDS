@@ -38,6 +38,29 @@ Con `GATEWAY_SEGURIDAD_HABILITADA=true` el gateway valida firma (JWKS), `exp`, `
 
 - `POST /api/contacto` (HB-21): el cliente liviano manda la IP del navegador en `X-Forwarded-For`. Si el gateway agrega otra detrás, Notificaciones igual cuenta por la primera.
 
+## Rate limiting
+
+Requerimiento 3 de E7 ([ADR](../docs/adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md)). [`LimiteDeSolicitudes`](src/main/java/grupo5/gateway/LimiteDeSolicitudes.java) va primero en cada ruta: cada pedido consume una ficha de su cubeta (token bucket de Bucket4j, en memoria). Sin fichas, el gateway contesta `429` y el pedido no llega al servicio.
+
+- **De quién es la cubeta.** De la cuenta (`sub` del JWT) si la seguridad está encendida y validó el token. Si no, de la IP de origen: la de la conexión o, si la conexión viene de un proxy confiable (`GATEWAY_LIMITE_PROXIES_CONFIABLES`, regex), la primera de `X-Forwarded-For`. El cliente liviano manda ahí la IP del navegador en todas las llamadas; sin esa regla, todos los visitantes compartirían la cubeta del cliente liviano.
+- **Cupos por minuto**, con recarga gradual. Lecturas (`GET`, `HEAD`, `OPTIONS`) y escrituras por separado:
+
+  | | Lecturas | Escrituras |
+  |---|---|---|
+  | Por cuenta | 300 | 60 |
+  | Por IP | 120 | 30 |
+
+- **La respuesta `429`** trae el error unificado (`ERR-CSR-429`), `Retry-After` en segundos y el `X-Trace-Id`. Las que pasan traen `X-RateLimit-Remaining`. El cliente liviano muestra su página `error/429`.
+- Cada rechazo deja un log `[GATEWAY] [RATE-LIMIT]` con el tipo de cubeta (`usuario` o `ip`), sin la IP ni el `sub`.
+- `/actuator/**` no consume fichas.
+- Las cubetas son de esta instancia: con dos gateways, cada uno cuenta lo suyo.
+
+Para probarlo a mano (con los cupos por defecto, la escritura 31 de la misma IP en un minuto da `429`):
+
+```bash
+for i in $(seq 1 31); do curl -s -o /dev/null -w "%{http_code} " -X POST http://localhost:8086/api/contacto; done
+```
+
 ## `X-Trace-Id`
 
 - Si el cliente lo manda con 32 hex en minúscula, el gateway lo adopta, lo manda al servicio y lo devuelve.
@@ -55,6 +78,11 @@ Con `GATEWAY_SEGURIDAD_HABILITADA=true` el gateway valida firma (JWKS), `exp`, `
 | `LOGISTICA_SERVICE_URL` | `http://localhost:8083` |
 | `GATEWAY_SEGURIDAD_HABILITADA` | `false` |
 | `GATEWAY_JWT_AUDIENCIA` | `donatrack-api` |
+| `GATEWAY_LIMITE_HABILITADO` | `true` |
+| `GATEWAY_LIMITE_VENTANA` | `1m` |
+| `GATEWAY_LIMITE_LECTURAS_USUARIO` / `GATEWAY_LIMITE_ESCRITURAS_USUARIO` | `300` / `60` |
+| `GATEWAY_LIMITE_LECTURAS_IP` / `GATEWAY_LIMITE_ESCRITURAS_IP` | `120` / `30` |
+| `GATEWAY_LIMITE_PROXIES_CONFIABLES` | vacío (en Docker Compose: las redes privadas) |
 
 ## Correr y probar
 
