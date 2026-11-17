@@ -1,0 +1,19 @@
+# Cluster local de DonaTrack (E7, tarea K1; ADR de Kubernetes con kind y Kustomize).
+# Un solo nodo. La etiqueta ingress-ready y los puertos 80 y 443 publicados en la máquina
+# son para el controlador de Ingress de K5: no se pueden agregar sin recrear el cluster.
+# La imagen del nodo va fijada por digest (la de Kubernetes 1.36 que publica kind v0.33.0).
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: donatrack
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.36.4@sha256:099e049362a1526b2db71494e1947aae99bd16290d7c895f2b7ea312e3cbfaed
+    labels:
+      ingress-ready: "true"
+    extraPortMappings:
+      - containerPort: 80
+        hostPort: 80
+        listenAddress: "127.0.0.1"
+      - containerPort: 443
+        hostPort: 443
+        listenAddress: "127.0.0.1"
