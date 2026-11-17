@@ -296,7 +296,7 @@ Q01 se respondió: **GraphQL en Donaciones** (Logística, abierta). La rama gRPC
 
 Elegida A. Cada compañero cambia sus valores en su navegador, toca "Copiar cambios" y pega el texto en el grupo; Tadeo los carga y toca "Guardar para el grupo".
 
-*Calendario.* Origen 16/11 · congelamiento de código al final del martes 2/12 (parámetro editable) · miércoles 3/12, integración final y ensayo de la defensa · viernes 4/12, defensa. Se trabaja en días corridos y no se modela la disponibilidad de cada persona.
+*Calendario.* Origen 16/11 · congelamiento de código al final del miércoles 2/12 (parámetro editable) · jueves 3/12, integración final y ensayo de la defensa · viernes 4/12, defensa. Se trabaja en días corridos y no se modela la disponibilidad de cada persona.
 
 *Reparto.* Ocho frentes para ocho compañeros, y Tadeo con los ADR, los diagramas y la integración. Respecto de los insumos de arriba: el frente 1 se parte en dos, Loki y la recolección de logs pasan del frente 3 al 1b, M18 y M21 pasan del 2 al 3 (plugin de RabbitMQ) y la pantalla del frente 6 arranca con el esquema acordado (G1), sin esperar la API entera.
 
@@ -323,7 +323,7 @@ Elegida A. Cada compañero cambia sus valores en su navegador, toca "Copiar camb
 | K1 | Ber | kind, Kustomize y namespaces (esqueleto del cluster) | 0,5 / 1 / 2 | A0 |
 | K2 | Ber | Infra en el cluster: Postgres, Mongo, RabbitMQ, Keycloak, MinIO, n8n y Redis | 1,5 / 2,5 / 5 | K1 |
 | K5 | Ber | Sistema completo arrancando en kind, con Ingress | 0,5 / 1 / 3 | K2, K4 |
-| K7 | Ber | *Condicional:* migrar el CI a Kubernetes y PR de AGENTS.md §11 (Q07c) | 1 / 1,5 / 3 | K6, O5 |
+| K7 | Ber | *Condicional:* migrar el CI a Kubernetes y el PR de AGENTS.md §11 (Q07c) | 1 / 1,5 / 3 | K6, O5 |
 | K3 | Camila Lencina | Grupos de salud liveness y readiness en los seis módulos | 0,5 / 1 / 1,5 | A0 |
 | K4 | Camila Lencina | Manifiestos de las seis apps: probes, recursos, gateway con dos réplicas | 1 / 2 / 3,5 | K1, K3 |
 | L1 | Camila Lencina | Loki y recolector de logs de los pods desde el nodo | 1 / 1,5 / 3 | K1 |
