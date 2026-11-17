@@ -225,8 +225,10 @@ Clave del límite: ⭐ por usuario autenticado (`sub`) y por IP para el tráfico
 
 Q01 se respondió: **GraphQL en Donaciones** (Logística, abierta). La rama gRPC queda descartada. La nueva interfaz es aditiva: los contratos REST no cambian (AGENTS.md §8.2).
 
-**E7-Q18 — ¿Qué se puede consultar? ⏸️**
-A. Solo donaciones · B. Donaciones, necesidades y entidades públicas · C. B más donantes y asignaciones. ⭐ B. Pendiente: el grupo pidió una explicación de B contra C.
+**E7-Q18 — ¿Qué se puede consultar? ✅ (2026-11-16): B, con una extensión opcional si sobra tiempo**
+> **Respuesta del grupo:** B (donaciones, necesidades y entidades públicas). La consulta de "quién donó" entra en B con visibilidad mínima: el donante sale con su nombre visible o su categoría, según su preferencia (ADR del nombre visible), sin documento, dirección ni medios de contacto. Como **extensión opcional si sobra tiempo**, el grupo eligió dejar una de las dos piezas de C. `[PROPOSED]` Como "quién donó" ya está dentro de B, la pieza opcional es la otra mitad de C: las asignaciones (`/api/asignaciones`, operativas, de administración) o el detalle del donante para el propio donante (`DONANTE + SU_ID`). Cuál se hace, y si se hace, se decide al implementar, con el esquema de B ya terminado y los tests de privacidad en verde; no entra en el alcance comprometido.
+
+(Planteo original:) A. Solo donaciones · B. Donaciones, necesidades y entidades públicas · C. B más donantes y asignaciones. ⭐ B.
 `[OBSERVED]` `DonacionOutputDTO.donante` devuelve la persona entera (documento, dirección, medios de contacto); `DonantesController` y `PropuestaDeAsignacionController` (`/api/asignaciones`) están reservados a administración y al propio donante (`@PreAuthorize`).
 
 **E7-Q19 — ¿Solo lectura o también mutaciones? ✅ (2026-11-16): A, solo lectura**
@@ -279,7 +281,7 @@ Para confirmar con docentes `[PROPOSED]`: (1) si "Seguridad" incluye algo más q
 | Q11 Librería | Bucket4j en memoria | ✅ B, con Redis (distinto de la recomendación); Q11b fail-open y Q11c 2 réplicas ✅ |
 | Q12 Clave y límites | Por usuario y por IP; seguimiento aparte | ✅ tal cual |
 | Q13 Respuesta | `429` con `Retry-After`, métrica y alerta | ✅ opción A |
-| Q18 Qué se consulta | Donaciones, necesidades y entidades públicas (B) | ⏸️ el grupo pidió comparar B y C |
+| Q18 Qué se consulta | Donaciones, necesidades y entidades públicas (B) | ✅ B, con una pieza de C como extensión opcional si sobra tiempo |
 | Q19 Mutaciones | Solo lectura | ✅ opción A |
 | Q20 Autorización | Adaptador sobre los servicios de aplicación | ✅ opción A |
 | Q21 Límites de consulta | Paginación, profundidad, complejidad, timeout, introspección apagada | ✅ todos |
