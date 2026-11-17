@@ -18,7 +18,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * Contra un Redis real (Testcontainers): dos gateways que comparten Redis cuentan contra el mismo
- * cupo (Q11c) y las claves vencen solas.
+ * cupo (Q11c), las claves vencen solas y, si Redis se cuelga con la conexión hecha, el pedido pasa
+ * por timeout y el límite vuelve cuando Redis vuelve.
  */
 @Testcontainers
 @DisabledIfDockerUnavailable
@@ -66,6 +67,39 @@ class CubetasEnRedisContraRedisTest {
       assertThat(ttl).isPositive();
     } finally {
       cliente.shutdown();
+    }
+  }
+
+  @Test
+  void conRedisColgadoElPedidoPasaPorTimeoutYAlVolverCuentaDeNuevo() throws Exception {
+    CubetasEnRedis almacen =
+        new CubetasEnRedis(
+            new CubetasEnRedis.Config(
+                REDIS.getHost(), REDIS.getMappedPort(6379), Duration.ofMillis(300), Duration.ZERO));
+    String ip = "203.0.113.22";
+    var docker = REDIS.getDockerClient();
+    try {
+      LimiteDeSolicitudes limite = limite(almacen);
+      assertThat(filtrar(limite, ip)).isEqualTo(HttpStatus.OK);
+
+      docker.pauseContainerCmd(REDIS.getContainerId()).exec();
+      try {
+        long inicio = System.nanoTime();
+        for (int i = 0; i < 4; i++) {
+          assertThat(filtrar(limite, ip)).isEqualTo(HttpStatus.OK);
+        }
+        // Cuatro pedidos con Redis colgado: cada uno corta en ~300 ms, no queda esperando.
+        assertThat(Duration.ofNanos(System.nanoTime() - inicio)).isLessThan(Duration.ofSeconds(4));
+      } finally {
+        docker.unpauseContainerCmd(REDIS.getContainerId()).exec();
+      }
+
+      // Redis volvió: la cubeta sigue con 2 fichas de 3 (las caídas no consumieron).
+      assertThat(filtrar(limite, ip)).isEqualTo(HttpStatus.OK);
+      assertThat(filtrar(limite, ip)).isEqualTo(HttpStatus.OK);
+      assertThat(filtrar(limite, ip)).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+    } finally {
+      almacen.destroy();
     }
   }
 

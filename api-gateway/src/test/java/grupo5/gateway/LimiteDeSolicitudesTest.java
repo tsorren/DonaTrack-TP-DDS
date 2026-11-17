@@ -168,6 +168,16 @@ class LimiteDeSolicitudesTest {
         .isInstanceOf(IllegalStateException.class);
   }
 
+  @Test
+  void unCupoNuloCortaElArranque() {
+    LimiteDeSolicitudes.Config config =
+        new LimiteDeSolicitudes.Config(true, Duration.ofMinutes(1), 1, 1, 1, 0, "");
+    CubetasEnMemoria almacen = new CubetasEnMemoria();
+
+    assertThatThrownBy(() -> new LimiteDeSolicitudes(config, almacen))
+        .isInstanceOf(IllegalStateException.class);
+  }
+
   private static LimiteDeSolicitudes limite(long cupo, String proxies) {
     return new LimiteDeSolicitudes(
         new LimiteDeSolicitudes.Config(

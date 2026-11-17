@@ -96,6 +96,12 @@ public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse
     if (config.ventana().isZero() || config.ventana().isNegative()) {
       throw new IllegalStateException("La ventana del límite de solicitudes debe ser positiva");
     }
+    if (Math.min(
+            Math.min(config.lecturasPorUsuario(), config.escriturasPorUsuario()),
+            Math.min(config.lecturasPorIp(), config.escriturasPorIp()))
+        <= 0) {
+      throw new IllegalStateException("Los cupos del límite de solicitudes deben ser positivos");
+    }
     this.config = config;
     this.almacen = almacen;
     String proxies = config.proxiesConfiables();

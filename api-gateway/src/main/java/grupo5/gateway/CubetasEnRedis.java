@@ -15,6 +15,7 @@ import io.lettuce.core.codec.RedisCodec;
 import io.lettuce.core.codec.StringCodec;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import org.springframework.beans.factory.DisposableBean;
@@ -61,9 +62,13 @@ public class CubetasEnRedis implements LimiteDeSolicitudes.Almacen, DisposableBe
   private final RedisClient cliente;
   private final ReentrantLock conectando = new ReentrantLock();
   private final AtomicLong proximoIntento = new AtomicLong(System.nanoTime());
-  private volatile ProxyManager<String> cubetas;
+  private final AtomicReference<ProxyManager<String>> cubetas = new AtomicReference<>();
 
   public CubetasEnRedis(Config config) {
+    if (config.timeout().isZero() || config.timeout().isNegative()) {
+      throw new IllegalStateException(
+          "El timeout de Redis del límite de solicitudes debe ser positivo");
+    }
     this.config = config;
     RedisURI uri =
         RedisURI.builder()
@@ -86,7 +91,7 @@ public class CubetasEnRedis implements LimiteDeSolicitudes.Almacen, DisposableBe
   }
 
   private ProxyManager<String> proxies() {
-    ProxyManager<String> actual = cubetas;
+    ProxyManager<String> actual = cubetas.get();
     if (actual != null) {
       return actual;
     }
@@ -94,10 +99,10 @@ public class CubetasEnRedis implements LimiteDeSolicitudes.Almacen, DisposableBe
       throw new IllegalStateException("Redis no disponible: se reintenta conectar más tarde");
     }
     try {
-      if (cubetas == null) {
-        cubetas = conectar();
+      if (cubetas.get() == null) {
+        cubetas.set(conectar());
       }
-      return cubetas;
+      return cubetas.get();
     } catch (RuntimeException falla) {
       proximoIntento.set(System.nanoTime() + config.reintento().toNanos());
       throw falla;

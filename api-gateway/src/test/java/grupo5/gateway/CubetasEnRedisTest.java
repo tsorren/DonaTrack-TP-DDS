@@ -34,7 +34,7 @@ class CubetasEnRedisTest {
     CubetasEnRedis cubetas = cubetas(puertoCerrado(), Duration.ofMinutes(1));
     try {
       long inicio = System.nanoTime();
-      assertThatThrownBy(() -> cubetas.cubeta("ip:x|lectura", UNA_FICHA).tryConsume(1))
+      assertThatThrownBy(() -> cubetas.cubeta("ip:x|lectura", UNA_FICHA))
           .isInstanceOf(RuntimeException.class);
       assertThat(Duration.ofNanos(System.nanoTime() - inicio)).isLessThan(Duration.ofSeconds(2));
 
@@ -69,7 +69,7 @@ class CubetasEnRedisTest {
       try {
         for (int i = 0; i < 2; i++) {
           long inicio = System.nanoTime();
-          assertThatThrownBy(() -> cubetas.cubeta("ip:y|escritura", UNA_FICHA).tryConsume(1))
+          assertThatThrownBy(() -> cubetas.cubeta("ip:y|escritura", UNA_FICHA))
               .isInstanceOf(RuntimeException.class);
           assertThat(Duration.ofNanos(System.nanoTime() - inicio))
               .isLessThan(Duration.ofSeconds(2));
@@ -97,6 +97,14 @@ class CubetasEnRedisTest {
         }
       }
     }
+  }
+
+  @Test
+  void unTimeoutNuloCortaElArranque() {
+    CubetasEnRedis.Config config =
+        new CubetasEnRedis.Config("localhost", 6379, Duration.ZERO, Duration.ZERO);
+
+    assertThatThrownBy(() -> new CubetasEnRedis(config)).isInstanceOf(IllegalStateException.class);
   }
 
   private static CubetasEnRedis cubetas(int puerto, Duration reintento) {
