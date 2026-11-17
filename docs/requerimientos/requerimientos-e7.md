@@ -2,7 +2,7 @@
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
 > **Versión 0 · 2026-11-16 · borrador de las rondas de preguntas · para responder con el equipo**
-> Fecha de entrega: 27 de noviembre de 2026, según el [mapa de entregas](../entregas/README.md) (la toma del borrador de calendario de la cátedra; el enunciado no trae fechas).
+> Fecha de entrega: **defensa el viernes 4 de diciembre de 2026**, según informó el grupo el 2026-11-17. Hasta esa fecha el documento decía 27 de noviembre, tomado del [mapa de entregas](../entregas/README.md) (borrador de calendario de la cátedra; el enunciado no trae fechas). Las rondas 1 a 6 se respondieron con el plazo de 11 días y conservan ese razonamiento.
 
 ## 0. Cómo leer este documento
 
@@ -264,7 +264,7 @@ Q01 se respondió: **GraphQL en Donaciones** (Logística, abierta). La rama gRPC
 
 (Planteo original:) `[OBSERVED]` los diagramas existentes son anteriores al gateway, Keycloak, MinIO y el cliente liviano. Formato: ⭐ **PlantUML** en el repo (como `08-despliegue.puml`) · Mermaid en Markdown · draw.io. Contenido: ⭐ dos diagramas separados (componentes y despliegue). Cuándo: ⭐ se redibujan al final, con lo realmente implementado.
 
-**E7-Q15 — ¿Cómo se parte el trabajo? ⏳ (2026-11-16): diferida a una sesión de planificación con Opus**
+**E7-Q15 — ¿Cómo se parte el trabajo? ⏳ (2026-11-16): diferida a una sesión de planificación con Opus; propuesta lista el 2026-11-17, falta el ajuste del grupo**
 > **Respuesta del grupo:** no se decide acá. El reparto se diseña en una sesión aparte, con un modelo Opus, asignando aproximadamente **un frente a cada compañero**, y con un **diagrama de Gantt dinámico o un CPM (método del camino crítico)**, porque las estimaciones de tiempo pueden ser erróneas. Insumos para esa sesión `[PROPOSED]`, no decididos:
 >
 > | # | Rama `E7_*` | Qué lleva | Depende de |
@@ -279,19 +279,98 @@ Q01 se respondió: **GraphQL en Donaciones** (Logística, abierta). La rama gRPC
 > | 7 | `E7_seguridad` | Encabezados, cadena JWT en preprod, escaneo en el CI | — |
 > | 8 | `E7_diagramas` | Borrador temprano y versión final | 1 a 7 |
 >
-> Notas para la planificación `[INFERRED]`: el prefijo `E7_*` sale de la regla de E4 (verificarla con el primer PR); si el CI migra a Kubernetes (Q07c), AGENTS.md §11 se cambia en un PR aparte con revisión humana (AGENTS.md §13); con Q16b B el PR de ADR entra al camino crítico antes de implementar y su revisión tiene que ser rápida; el plazo es el 27 de noviembre de 2026 (11 días desde el 16 de noviembre).
+> Notas para la planificación `[INFERRED]`: el prefijo `E7_*` sale de la regla de E4 (verificarla con el primer PR); si el CI migra a Kubernetes (Q07c), AGENTS.md §11 se cambia en un PR aparte con revisión humana (AGENTS.md §13); con Q16b B el PR de ADR entra al camino crítico antes de implementar y su revisión tiene que ser rápida; el plazo era el 27 de noviembre de 2026 (11 días desde el 16 de noviembre). **Corrección del 2026-11-17:** la defensa es el viernes 4 de diciembre de 2026 (18 días desde el 16 de noviembre).
+
+**Propuesta de reparto de la sesión de planificación `[PROPOSED]` (2026-11-17), pendiente de ajuste del grupo**
+
+*Plan vivo.* El reparto completo está en un artifact de Claude, "Plan E7 DonaTrack" (`https://claude.ai/artifact/WrmqZdidxaqL5Cw6cHLLfS`): calendario por persona, tabla de tareas editable, camino crítico, holguras y probabilidad de llegar al congelamiento. Se recalcula al cambiar una estimación, un avance, una predecesora o un dueño. Es privado hasta que Tadeo lo comparta desde su menú; que se pueda abrir sin cuenta de Claude está sin verificar (probarlo en una ventana privada). Esta sección es la línea base del 17 de noviembre; si difiere del artifact, vale el artifact.
+
+*Cómo se actualiza.* Matriz de la decisión (los compañeros no tienen cuenta de Claude, y en cualquier opción el único que puede escribir es Tadeo):
+
+| Criterio (peso) | ⭐ A. La página se guarda a sí misma | B. Base de datos del artifact | C. JSON en el repo |
+|---|---|---|---|
+| Se ve sin cuenta (40 %) | Sí: el estado viaja dentro de la página | No: sin sesión no carga | Sí |
+| Esfuerzo por cambio (30 %) | Tadeo edita y guarda; el resto avisa por el grupo | Igual que A, solo con cuenta | Un PR por estimación |
+| Simular escenarios (20 %) | Sí, en el navegador de cada uno, sin guardar | No | No |
+| Complejidad (10 %) | Baja | Media | Media |
+
+Elegida A. Cada compañero cambia sus valores en su navegador, toca "Copiar cambios" y pega el texto en el grupo; Tadeo los carga y toca "Guardar para el grupo".
+
+*Calendario.* Origen 16/11 · congelamiento de código al final del martes 2/12 (parámetro editable) · miércoles 3/12, integración final y ensayo de la defensa · viernes 4/12, defensa. Se trabaja en días corridos y no se modela la disponibilidad de cada persona.
+
+*Reparto.* Ocho frentes para ocho compañeros, y Tadeo con los ADR, los diagramas y la integración. Respecto de los insumos de arriba: el frente 1 se parte en dos, Loki y la recolección de logs pasan del frente 3 al 1b, M18 y M21 pasan del 2 al 3 (plugin de RabbitMQ) y la pantalla del frente 6 arranca con el esquema acordado (G1), sin esperar la API entera.
+
+| Frente | Dueño | Tareas | Carga esperada `[INFERRED]` |
+|---|---|---|---|
+| 0 ADRs · 8 diagramas e integración | Tadeo | A0, A1, D1, I2 y la revisión de PRs | 3,2 días + revisiones |
+| 1a Kubernetes: plataforma | Ber | K1, K2, K5 (+ K7 condicional) | 5,1 (+ 1,7) |
+| 1b Kubernetes: servicios y logs | Camila Lencina | K3, K4, L1, K6 | 5,3 |
+| 2 Métricas en los servicios | Martín | M1 a M4 | 6,3 |
+| 3 Stack de observabilidad | Anush | O1 a O5 | 6,6 |
+| 4 Rate limiting | Camila Suarez | R1 a R4 | 5,3 |
+| 5 GraphQL en Donaciones | Nicolás | G1 a G4 | 5,3 |
+| 6 Pantalla GraphQL | Sofía | P1 a P3 (+ P4 condicional) | 3,3 (+ 2,0) |
+| 7 Seguridad | Miranda | S1 a S4 | 4,9 |
+
+*Criterios de asignación.* (1) Las tareas del camino crítico van a quien más infraestructura tocó; (2) cada frente va a quien conoce el módulo; (3) pocos traspasos entre personas; (4) carga pareja según la duración esperada; (5) Tadeo integra. Evidencia `[OBSERVED]`: archivos tocados por persona en el historial de git (sin merges), por zona del repo. Es volumen, no experiencia: nadie tiene historial con Kubernetes, Grafana ni Bucket4j. El frente 3 se asignó por descarte y queda en el camino crítico; mitigación elegida por el grupo el 2026-11-17: mantener la asignación con revisión temprana de Tadeo y PRs chicos.
+
+*Tareas, estimaciones y dependencias* (días de trabajo de una persona; o = optimista, m = probable, p = pesimista; valores de partida del agente `[INFERRED]`, cada dueño corrige los suyos):
+
+| ID | Dueño | Tarea | o / m / p | Depende de |
+|---|---|---|---|---|
+| A0 | Tadeo | PR de los cuatro ADR revisado | 0,25 / 0,5 / 1 | — |
+| A1 | Tadeo | Borrador de los diagramas de componentes y despliegue | 0,25 / 0,5 / 1 | — |
+| K1 | Ber | kind, Kustomize y namespaces (esqueleto del cluster) | 0,5 / 1 / 2 | A0 |
+| K2 | Ber | Infra en el cluster: Postgres, Mongo, RabbitMQ, Keycloak, MinIO, n8n y Redis | 1,5 / 2,5 / 5 | K1 |
+| K5 | Ber | Sistema completo arrancando en kind, con Ingress | 0,5 / 1 / 3 | K2, K4 |
+| K7 | Ber | *Condicional:* migrar el CI a Kubernetes y PR de AGENTS.md §11 (Q07c) | 1 / 1,5 / 3 | K6, O5 |
+| K3 | Camila Lencina | Grupos de salud liveness y readiness en los seis módulos | 0,5 / 1 / 1,5 | A0 |
+| K4 | Camila Lencina | Manifiestos de las seis apps: probes, recursos, gateway con dos réplicas | 1 / 2 / 3,5 | K1, K3 |
+| L1 | Camila Lencina | Loki y recolector de logs de los pods desde el nodo | 1 / 1,5 / 3 | K1 |
+| K6 | Camila Lencina | Script de caos y prueba del autorestart | 0,5 / 0,5 / 1 | K5 |
+| M1 | Martín | Micrometer y Prometheus en common-lib; `/actuator/prometheus` protegido | 0,5 / 1 / 2 | A0 |
+| M2 | Martín | Métricas de Donaciones M01 a M05 | 1,5 / 2,5 / 4 | M1 |
+| M3 | Martín | Métricas de Logística M09, M11 y M13 | 1 / 1,5 / 2,5 | M1 |
+| M4 | Martín | Métricas de Notificaciones M16 y transversales M19 | 0,5 / 1 / 2 | M1 |
+| O1 | Anush | Prometheus y Grafana en el namespace de observabilidad | 0,5 / 1 / 2 | K1 |
+| O2 | Anush | Tempo recibiendo las trazas de Brave (formato Zipkin) | 0,5 / 1 / 2 | O1 |
+| O3 | Anush | Scrape de servicios y RabbitMQ (M18, M21); tableros general y por servicio | 1,5 / 2 / 4 | O1, M1 |
+| O4 | Anush | Alertas en el panel: reinicios M26, Redis M25, rechazos M24, colas muertas M18 | 0,5 / 1 / 2 | O3 |
+| O5 | Anush | Verificación de punta a punta en el cluster: traza, logs y métricas | 0,5 / 1 / 2 | O2, L1, O4, K5, M2, M3, M4 |
+| R1 | Camila Suarez | Bucket4j con Redis en el gateway; clave por IP y `sub`; *fail-open* | 1 / 1,5 / 3 | A0 |
+| R2 | Camila Suarez | Seis clases de límite; `429` con `Retry-After`, catálogo de errores y `traceId` | 1 / 1,5 / 2,5 | R1 |
+| R3 | Camila Suarez | Métricas M24 y M25 con tests | 0,5 / 1 / 1,5 | R2, M1 |
+| R4 | Camila Suarez | Calibración con k6 en el cluster con dos réplicas | 0,5 / 1 / 2 | R3, K5 |
+| G1 | Nicolás | Esquema GraphQL acordado (contrato B) | 0,5 / 0,5 / 1 | A0 |
+| G2 | Nicolás | Resolvers sobre los servicios de aplicación, carga por lotes y privacidad del donante | 1,5 / 2,5 / 4 | G1 |
+| G3 | Nicolás | Límites (paginación, profundidad, complejidad, *timeout*) y M08 | 0,5 / 1 / 2 | G2, M1 |
+| G4 | Nicolás | Ruta en el gateway, test de contrato y k6 | 0,5 / 1 / 2 | G3 |
+| P1 | Sofía | Elegir y diseñar la pantalla que consume GraphQL | 0,5 / 0,5 / 1 | G1 |
+| P2 | Sofía | Adaptador GraphQL del cliente y pantalla contra el esquema | 1 / 1,5 / 3 | P1 |
+| P3 | Sofía | Integración con la API real, revisión de UI y tests | 0,5 / 1 / 2 | P2, G2 |
+| P4 | Sofía | *Condicional:* métricas opcionales y extensión C de GraphQL | 1 / 2 / 3 | P3 |
+| S1 | Miranda | Encabezados de seguridad en el gateway | 0,5 / 0,5 / 1 | A0 |
+| S2 | Miranda | Escaneo de dependencias e imágenes en el CI | 0,5 / 1 / 2 | A0 |
+| S3 | Miranda | Cadena JWT encendida en el preprod con Keycloak real | 1 / 2 / 4 | A0 |
+| S4 | Miranda | Cadena JWT y encabezados en el cluster | 0,5 / 1 / 2 | S3, K5 |
+| D1 | Tadeo | Diagramas: versión final | 0,5 / 1 / 1,5 | K5, R4, G4 |
+| I2 | Tadeo | Integración final en `ENTREGA_7` y prueba de humo | 0,5 / 1 / 2 | K6, O5, R4, G4, P3, S4, M4 |
+
+*Método.* Duración esperada PERT = (o + 4m + p) / 6. Las tareas de una misma persona van una detrás de otra en el orden de la tabla (nivelación por persona); el camino crítico cuenta ese orden además de las dependencias. Las condicionales no le quitan tiempo a lo comprometido. La probabilidad sale de 600 simulaciones con distribución triangular.
+
+*Resultado de la línea base* `[INFERRED]` (con "hoy" = 17/11): camino crítico **A0 → K1 → O1 → O2 → O3 → O4 → O5 → I2**, es decir, el cuello de botella es la observabilidad, más que Kubernetes. Fin esperado el **jueves 26/11**, con 6,7 días de margen hasta el congelamiento. El 80 % de las simulaciones termina antes del sábado 28/11 y todas llegan al congelamiento; esa cifra supone estimaciones independientes, y como todo el grupo aprende Kubernetes a la vez, es optimista. Con el margen entra la migración del CI (K7) si Kubernetes pasa todas las pruebas.
 
 **E7-Q16 — ¿Qué ADRs hacen falta? ✅ (2026-11-16): los cuatro; Q16b B, primero y en un PR aparte**
 > **Respuesta del grupo:** *Q16a:* cuatro ADR `proposed`: (1) despliegue en Kubernetes (ARCHITECTURAL: kind, Kustomize, convivencia con Compose, probes y política de reinicio sin tope con alerta); (2) stack de observabilidad (sucesor parcial del [ADR de trazabilidad](../adr/20260901-sistema-unificado-de-trazabilidad-y-observabilidad-distribuida.md): Prometheus, Tempo, Loki y Grafana, catálogo de métricas, alertas en el panel, protección de endpoints y recolección de logs en el cluster); (3) rate limiting en el gateway (Bucket4j con Redis, *fail-open*, identificación y límites, `429`); (4) GraphQL en Donaciones (solo lectura, adaptador sobre los servicios de aplicación, límites, ruta, librería). Sin ADR propio: la seguridad perimetral (sigue el [ADR del pipeline de CI](../adr/20260426-pipeline-unificado-de-cicd-y-automatizacion-de-calidad.md)) y los diagramas. *Q16b B* (el grupo no siguió la recomendación del agente, que era A): los cuatro ADR se escriben **primero y en un PR aparte**, para validar la decisión antes de implementarla. Riesgo asumido: ese PR frena el arranque del camino crítico hasta que se revise. `[OBSERVED]` el ADR 2 tiene que resolver el choque con el [ADR de logs sin volúmenes del host](../adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md), pensado para Docker: en Kubernetes el recolector lee los logs de los pods desde el nodo. Solo una persona del grupo puede pasar un ADR a `accepted` (AGENTS.md §9.3).
 
 **E7-Q17 — ¿Qué consultamos a la cátedra? ✅ (2026-11-16): A, tres consultas 🎓**
-> **Respuesta del grupo:** enviar tres consultas a la cátedra. (1) ¿Se acepta **Kubernetes (kind)** como entorno de despliegue y de defensa? `[OBSERVED]` el enunciado (pág. 23) pide "Docker o similar" y no menciona Compose ni Kubernetes. (2) ¿"Seguridad" incluye algo más que rate limiting? El grupo suma encabezados, protección de observabilidad, cadena JWT y escaneo. (3) ¿GraphQL de solo lectura, sin tiempo real, cumple la opción 2 sin justificar casos de uso adicionales? La cuarta (infraestructura externa en el diagrama de despliegue) la decide el grupo: con Q14b C, el diagrama muestra solo Kubernetes. **Pendiente:** enviar las consultas (texto redactado abajo), preferentemente hoy, para tener la respuesta antes del 27 de noviembre, y anotar acá las respuestas.
+> **Respuesta del grupo:** enviar tres consultas a la cátedra. (1) ¿Se acepta **Kubernetes (kind)** como entorno de despliegue y de defensa? `[OBSERVED]` el enunciado (pág. 23) pide "Docker o similar" y no menciona Compose ni Kubernetes. (2) ¿"Seguridad" incluye algo más que rate limiting? El grupo suma encabezados, protección de observabilidad, cadena JWT y escaneo. (3) ¿GraphQL de solo lectura, sin tiempo real, cumple la opción 2 sin justificar casos de uso adicionales? La cuarta (infraestructura externa en el diagrama de despliegue) la decide el grupo: con Q14b C, el diagrama muestra solo Kubernetes. **Pendiente:** enviar las consultas (texto redactado abajo), preferentemente hoy, para tener la respuesta antes de la defensa del 4 de diciembre, y anotar acá las respuestas.
 
 **Texto de las consultas (borrador del 2026-11-16, para copiar y enviar por el canal de la cátedra)**
 
 > **Asunto:** Grupo 5 (DonaTrack): consultas sobre la Entrega 7 (Observabilidad y Seguridad)
 >
-> Hola, somos el Grupo 5. Estamos organizando la Entrega 7 y nos quedaron tres dudas de alcance. Si pueden respondernos antes de la fecha de entrega (27/11), evitamos rehacer trabajo. Alcanza con una respuesta corta a cada una.
+> Hola, somos el Grupo 5. Estamos organizando la Entrega 7 y nos quedaron tres dudas de alcance. Si pueden respondernos antes de la defensa (4/12), evitamos rehacer trabajo. Alcanza con una respuesta corta a cada una.
 >
 > **1. Entorno de despliegue (Kubernetes en lugar de Docker Compose).** El enunciado pide "generar contenedores (utilizando Docker o similar) y desplegar allí cada uno de los servicios". Para E7 queremos desplegar todo en un cluster local de Kubernetes (con kind), incluyendo el stack de observabilidad y el autorestart de los servicios. Mantendríamos también la versión con Docker Compose. *Consulta:* ¿es aceptable Kubernetes como entorno de despliegue y de defensa, o prefieren que la demo corra con Docker Compose?
 >
@@ -327,6 +406,6 @@ Q01 se respondió: **GraphQL en Donaciones** (Logística, abierta). La rama gRPC
 | Q22 Exposición y consumo | Ruta propia detrás del gateway; API con GraphiQL, tests y k6 | ✅ exposición recomendada; consumo B (API más una pantalla del cliente) |
 | Q23 Librería | Spring for GraphQL | ✅ opción A |
 | Q14 Diagramas | PlantUML, componentes y despliegue separados | ✅ PlantUML; despliegue solo Kubernetes; borrador temprano muy cuidado y versión final |
-| Q15 Partición | Un PR por frente (ocho) | ⏳ diferida a una sesión de planificación con Opus (frente por compañero, Gantt o CPM) |
+| Q15 Partición | Un PR por frente (ocho) | ⏳ propuesta de la sesión de planificación (2026-11-17): ocho frentes para ocho compañeros más Tadeo integrador, CPM vivo en un artifact; falta el ajuste del grupo |
 | Q16 ADRs | Cuatro, junto con cada PR | ✅ los cuatro; escritos primero en un PR aparte (distinto de la recomendación) |
 | Q17 Cátedra | Tres consultas (Kubernetes, alcance de seguridad, GraphQL de solo lectura) | ✅ opción A; falta enviarlas |
