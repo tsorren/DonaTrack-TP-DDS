@@ -105,19 +105,19 @@ Criterios: ajuste al enunciado, riesgo de plazo, costo de dependencias nuevas, v
 
 ⭐ **A. En un compose propio de observabilidad** (`docker-compose.observabilidad.yml`, opcional, junto al de preprod) · B. Dentro de `docker-compose.yml` · C. Solo en el preprod · D. Solo en la demo pública. `[OBSERVED]` hay siete archivos `docker-compose*.yml` en la raíz (base, demo, hybrid, preprod, publica, seed y tunel).
 
-**E7-Q06 — ¿Qué se mide y qué se alerta? ✅ en lo general (2026-11-16); falta elegir las métricas de negocio del §3.1**
-> **Respuesta del grupo:** las señales de oro, las métricas de negocio mínimas y un tablero por servicio más uno general, con alertas solo en el panel. Pidió **más métricas de negocio** que las tres mínimas: el §3.1 propone un catálogo ampliado para que el grupo lo pode.
+**E7-Q06 — ¿Qué se mide y qué se alerta? ✅ (2026-11-16): señales de oro, métricas de negocio podadas en el §3.1 y alertas solo en el panel**
+> **Respuesta del grupo:** las señales de oro, las métricas de negocio mínimas y un tablero por servicio más uno general, con alertas solo en el panel. Pidió **más métricas de negocio** que las tres mínimas: el §3.1 propone un catálogo ampliado, ya podado por el grupo (Q06a y Q06b).
 
 (Opciones originales, multiselección:)
 ⭐ Las señales de oro por servicio (latencia, tasa de error, tráfico, saturación) · ⭐ métricas de negocio mínimas (donaciones registradas, eventos AMQP procesados y fallidos, cola de RabbitMQ) · ⭐ un tablero por servicio más uno general · alertas por correo o Slack (suma un canal externo) · alertas solo en el panel (⭐ sin canal externo).
 
 ---
 
-### 3.1 Catálogo ampliado de métricas de negocio `[PROPOSED]` (para podar)
+### 3.1 Catálogo ampliado de métricas de negocio `[PROPOSED]` (podado el 2026-11-16)
 
 El grupo pidió más métricas de negocio que las tres mínimas (donaciones registradas, eventos AMQP procesados y fallidos, cola de RabbitMQ). Este catálogo sale de los estados, eventos y colas que ya existen (`docs/arquitectura/eventos-amqp.md`). **Prioridad:** **P1** = recomendada, **P2** = si alcanza el tiempo, **P3** = opcional.
 
-**Reglas para todas** (AGENTS.md §4.3): etiquetas de baja cardinalidad (tipo, estado, canal, resultado), nunca ids de donación, de persona ni datos personales; los valores salen de los eventos y servicios de aplicación, no de consultas nuevas a la base.
+**Reglas para todas** (AGENTS.md §4.3): etiquetas de baja cardinalidad (tipo, estado, canal, resultado), nunca ids de donación, de persona ni datos personales; los valores salen de los eventos y servicios de aplicación. **Excepción decidida en Q06b:** los medidores de estado actual (M02, M06, M11) pueden usar una consulta de conteo agrupado (`COUNT … GROUP BY estado`), refrescada y cacheada cada 30 s, con índice en la columna de estado; se prefiere a contar transiciones porque los contadores en memoria se reinician con cada pod y el autorestart los reinicia por diseño.
 
 | ID | Servicio | Métrica | Qué pregunta responde | Pri. |
 |---|---|---|---|---|
@@ -133,7 +133,7 @@ El grupo pidió más métricas de negocio que las tres mínimas (donaciones regi
 | M10 | Logística | Planificaciones ejecutadas: duración y rutas generadas | ¿Cuánto tarda planificar? | P2 |
 | M11 | Logística | Camiones en ruta (medidor) y escrituras de posición por minuto | ¿Cuánta carga genera el seguimiento? Alimenta el rate limiting de Q12 | P1 |
 | M12 | Logística | Fotos de recepción subidas a MinIO: correctas y fallidas | ¿Funciona el almacenamiento de objetos? | P3 |
-| M13 | Logística | Callbacks de proveedores descartados (token incorrecto o entrega ajena) | ¿Hay intentos no válidos desde afuera? Es seguridad | P2 |
+| M13 | Logística | Callbacks de proveedores descartados (token incorrecto o entrega ajena) | ¿Hay intentos no válidos desde afuera? Es seguridad | P1 (promovida de P2 en Q06a) |
 | M14 | Incentivos | Misiones cumplidas, subidas de categoría y donantes inactivos detectados | ¿Está viva la gamificación? | P2 |
 | M15 | Incentivos | Puntos otorgados (contador) | ¿Cuánto reconocimiento se reparte? | P3 |
 | M16 | Notificaciones | Notificaciones por canal y estado (enviada, fallida, pendiente) | ¿Llegan los avisos? | P1 |
@@ -145,7 +145,16 @@ El grupo pidió más métricas de negocio que las tres mínimas (donaciones regi
 | M22 | Cliente liviano | Consultas de seguimiento por segundo y páginas con error por pantalla | ¿Cómo se usa la interfaz? Alimenta Q12 | P2 |
 | M23 | Autenticación | Inicios de sesión correctos y fallidos (de Keycloak, si se habilita su endpoint de métricas) | ¿Hay intentos de abuso? | P3 |
 
-**Pendiente de decidir:** qué filas quedan. `[PROPOSED]` P1 (12) más P2 (8) son 20 métricas: alcanzan para un tablero por servicio y uno general sin sobrecargar.
+**Obligatorias por decisiones previas (no se podan):**
+
+| ID | Métrica | Viene de |
+|---|---|---|
+| M24 | Pedidos rechazados por el rate limiting, por nivel y ruta | Q13 |
+| M25 | Errores y timeouts de Redis en el gateway | Q11b (alerta del *fail-open*) |
+| M26 | Reinicios de pods | Q08b (alerta de reinicios repetidos) |
+
+**Poda ✅ (2026-11-16): Q06a = B, Q06b = A**
+> **Respuesta del grupo:** *Comprometido (13 + 3):* M01 a M05, M08, M09, M11, M13 (promovida a P1), M16, M18, M19 y M21, más M24 a M26. *Extensión opcional si sobra tiempo,* en este orden: M20, M06, M10, M07, M14, M17 y M22. *Fuera:* M12, M15 y M23 (P3). El grupo siguió la recomendación del agente, que cambió la propuesta original (P1 + P2, 20 métricas) por el plazo y porque `[OBSERVED]` hoy no hay ninguna métrica propia en el código: todas son código nuevo. `[INFERRED]` M18, M21 y parte de M19 pueden salir del plugin `rabbitmq_prometheus` de RabbitMQ (la imagen `rabbitmq:3.13-management-alpine` lo trae apagado), sin código propio; verificar al implementar. Q06b: los medidores de estado usan una consulta de conteo refrescada cada 30 s (regla ajustada arriba).
 
 ### Ronda 3 — Monitoreo proactivo y autorestart (RQ-E7-02)
 
@@ -273,7 +282,7 @@ Para confirmar con docentes `[PROPOSED]`: (1) si "Seguridad" incluye algo más q
 | Q03 Otra seguridad | Proteger observabilidad y encabezados en el gateway | ✅ las cuatro medidas |
 | Q04 Stack | Grafana LGTM liviano (Prometheus, Tempo, Loki) | ✅ opción A |
 | Q05 Dónde corre | Compose propio de observabilidad | ✅ A, reinterpretada como namespace del cluster |
-| Q06 Qué se mide | Señales de oro, métricas de negocio mínimas y alertas en el panel | ✅ en lo general, con más métricas de negocio; falta podar el §3.1 |
+| Q06 Qué se mide | Señales de oro, métricas de negocio mínimas y alertas en el panel | ✅ con 16 métricas de negocio comprometidas (13 del catálogo y 3 obligatorias) y 7 opcionales; §3.1 podado |
 | Q07 Mecanismo de restart | C1 (Kubernetes híbrido); el grupo eligió **C2, todo en Kubernetes** | ✅ C2; Q07b kind, Q07c A, Q07d Kustomize |
 | Q08 Alcance y política | Servicios e infraestructura; reinicio sin tope con alerta; liveness y readiness separados | ✅ las tres recomendaciones |
 | Q09 Demostración | Script de caos reproducible | ✅ opción A |
