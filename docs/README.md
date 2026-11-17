@@ -120,7 +120,8 @@ docs/
 │   ├── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D33 (insumo de ADRs; D1 cerrada con Keycloak)
 │   ├── plan-e6-trabajo-sin-auth.md        # Trabajo de E6 que avanza sin auth ni estilos (priorizado)
 │   ├── plan-e6-cliente-datos-reales-y-gateway.md # Cliente con datos reales, gateway y base para auth (alternativas y fases)
-│   └── brechas-de-datos-por-pantalla-e6.md # Qué pantallas conectan hoy y qué le falta al backend (insumo de F2)
+│   ├── brechas-de-datos-por-pantalla-e6.md # Qué pantallas conectan hoy y qué le falta al backend (insumo de F2)
+│   └── requerimientos-e7.md               # Rondas de decisión de E7 (observabilidad, autorestart, rate limiting, gRPC o GraphQL); Rondas 1 a 4 respondidas (GraphQL en Donaciones, stack Grafana, todo en Kubernetes con kind y Kustomize, rate limiting en el gateway con Redis), Ronda 5 (GraphQL) y Ronda 6 (diagramas, ADR y consultas a la cátedra) respondidas, con Q15 (reparto del trabajo) en su versión 2 del 2026-11-17 (reparto por tarea con dedicación por persona, sprint de cluster, parciales y punto de control del 22/11; CPM vivo; defensa el 4/12) a la espera del ajuste del resto del grupo y Q02 pendiente
 │
 ├── interfaz/                              # 🎨 Proceso de diseño de la interfaz del cliente liviano (E6)
 │   ├── README.md                          # Proceso en 6 pasos, quién decide, listo para entregar, cómo extender
