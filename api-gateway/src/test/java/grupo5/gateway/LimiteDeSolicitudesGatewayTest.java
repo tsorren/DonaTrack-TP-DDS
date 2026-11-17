@@ -14,7 +14,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
@@ -22,7 +26,8 @@ import org.springframework.test.context.DynamicPropertySource;
  * Rate limiting del gateway (E7, requerimiento 3) contra un servicio falso que cuenta los pedidos
  * que le llegan. Cupos chicos para no hacer cientos de pedidos: 5 lecturas y 3 escrituras por IP y
  * por minuto. El test es el proxy confiable, así que cada caso usa su propia IP en {@code
- * X-Forwarded-For} y no comparte cubeta con los demás.
+ * X-Forwarded-For} y no comparte cubeta con los demás. Las cubetas van en memoria: Redis se prueba
+ * en {@link CubetasEnRedisContraRedisTest}.
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -31,7 +36,17 @@ import org.springframework.test.context.DynamicPropertySource;
       "donatrack.gateway.limite-de-solicitudes.escrituras-por-ip=3",
       "donatrack.gateway.limite-de-solicitudes.proxies-confiables=127[.]0[.]0[.]1|0:0:0:0:0:0:0:1"
     })
+@Import(LimiteDeSolicitudesGatewayTest.CubetasDelTest.class)
 class LimiteDeSolicitudesGatewayTest {
+
+  @TestConfiguration
+  static class CubetasDelTest {
+    @Bean
+    @Primary
+    LimiteDeSolicitudes.Almacen cubetasEnMemoria() {
+      return new CubetasEnMemoria();
+    }
+  }
 
   private static final AtomicInteger RECIBIDOS = new AtomicInteger();
   private static final HttpServer SERVICIO = servicioQueCuenta();

@@ -58,6 +58,14 @@ donatrack:
       # cliente liviano). Vacía: el encabezado se ignora y cuenta la IP de la conexión. No abrirla a
       # redes por las que entra tráfico de afuera: quien llegue desde ahí podría inventar su IP.
       proxies-confiables: ${GATEWAY_LIMITE_PROXIES_CONFIABLES:}
+      # Dónde viven las cubetas (Q11): un Redis compartido por todas las réplicas. Si no contesta en
+      # `timeout`, el pedido pasa sin límite (fail-open, Q11b) y queda un WARN [REDIS-NO-DISPONIBLE];
+      # si no conecta, no se reintenta hasta pasado `reintento`.
+      redis:
+        host: ${GATEWAY_REDIS_HOST:localhost}
+        puerto: ${GATEWAY_REDIS_PUERTO:6379}
+        timeout: ${GATEWAY_REDIS_TIMEOUT:100ms}
+        reintento: ${GATEWAY_REDIS_REINTENTO:5s}
     # Allowlist pública (D26, RI-GW-03): con la seguridad encendida pasan sin token. Formato
     # "MÉTODO /ruta". El gateway abre la RUTA, sin distinguir método, como las `ReglasDeAcceso*` de los
     # servicios: el método lo decide el @PreAuthorize del servicio (segunda capa). Tiene que coincidir

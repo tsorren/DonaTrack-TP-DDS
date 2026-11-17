@@ -40,7 +40,7 @@ Con `GATEWAY_SEGURIDAD_HABILITADA=true` el gateway valida firma (JWKS), `exp`, `
 
 ## Rate limiting
 
-Requerimiento 3 de E7 ([ADR](../docs/adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md)). [`LimiteDeSolicitudes`](src/main/java/grupo5/gateway/LimiteDeSolicitudes.java) va primero en cada ruta: cada pedido consume una ficha de su cubeta (token bucket de Bucket4j, en memoria). Sin fichas, el gateway contesta `429` y el pedido no llega al servicio.
+Requerimiento 3 de E7 ([ADR](../docs/adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md)). [`LimiteDeSolicitudes`](src/main/java/grupo5/gateway/LimiteDeSolicitudes.java) va primero en cada ruta: cada pedido consume una ficha de su cubeta (token bucket de Bucket4j, guardada en Redis por [`CubetasEnRedis`](src/main/java/grupo5/gateway/CubetasEnRedis.java)). Sin fichas, el gateway contesta `429` y el pedido no llega al servicio.
 
 - **De quién es la cubeta.** De la cuenta (`sub` del JWT) si la seguridad está encendida y validó el token. Si no, de la IP de origen: la de la conexión o, si la conexión viene de un proxy confiable (`GATEWAY_LIMITE_PROXIES_CONFIABLES`, regex), la primera de `X-Forwarded-For`. El cliente liviano manda ahí la IP del navegador en todas las llamadas; sin esa regla, todos los visitantes compartirían la cubeta del cliente liviano.
 - **Cupos por minuto**, con recarga gradual. Lecturas (`GET`, `HEAD`, `OPTIONS`) y escrituras por separado:
@@ -53,7 +53,8 @@ Requerimiento 3 de E7 ([ADR](../docs/adr/20261115-rate-limiting-en-el-api-gatewa
 - **La respuesta `429`** trae el error unificado (`ERR-CSR-429`), `Retry-After` en segundos y el `X-Trace-Id`. Las que pasan traen `X-RateLimit-Remaining`. El cliente liviano muestra su página `error/429`.
 - Cada rechazo deja un log `[GATEWAY] [RATE-LIMIT]` con el tipo de cubeta (`usuario` o `ip`), sin la IP ni el `sub`.
 - `/actuator/**` no consume fichas.
-- Las cubetas son de esta instancia: con dos gateways, cada uno cuenta lo suyo.
+- **Las cubetas viven en Redis** (decisión Q11): todas las réplicas del gateway cuentan contra el mismo cupo. Redis no persiste nada (los contadores son descartables) y borra cada clave cuando la cubeta ya se recargó entera.
+- **Si Redis no responde, el pedido pasa** (*fail-open*, Q11b). Cada operación espera como máximo `GATEWAY_REDIS_TIMEOUT`. El gateway arranca aunque Redis esté caído y se conecta con el primer pedido. Si no conecta, no reintenta hasta pasado `GATEWAY_REDIS_REINTENTO`, y mientras tanto los pedidos pasan sin esperar. Queda un `WARN` `[GATEWAY] [RATE-LIMIT] [REDIS-NO-DISPONIBLE]`, uno por ventana como máximo. La métrica y la alerta del panel son de las tareas R3 y O4.
 
 Para probarlo a mano (con los cupos por defecto, la escritura 31 de la misma IP en un minuto da `429`):
 
@@ -83,6 +84,9 @@ for i in $(seq 1 31); do curl -s -o /dev/null -w "%{http_code} " -X POST http://
 | `GATEWAY_LIMITE_LECTURAS_USUARIO` / `GATEWAY_LIMITE_ESCRITURAS_USUARIO` | `300` / `60` |
 | `GATEWAY_LIMITE_LECTURAS_IP` / `GATEWAY_LIMITE_ESCRITURAS_IP` | `120` / `30` |
 | `GATEWAY_LIMITE_PROXIES_CONFIABLES` | vacío (en Docker Compose: las redes privadas) |
+| `GATEWAY_REDIS_HOST` / `GATEWAY_REDIS_PUERTO` | `localhost` / `6379` (en Docker Compose: `redis`) |
+| `GATEWAY_REDIS_TIMEOUT` | `100ms` |
+| `GATEWAY_REDIS_REINTENTO` | `5s` |
 
 ## Correr y probar
 
@@ -90,6 +94,10 @@ for i in $(seq 1 31); do curl -s -o /dev/null -w "%{http_code} " -X POST http://
 mvn clean test -pl api-gateway -am
 ```
 
+`CubetasEnRedisContraRedisTest` levanta un Redis con Testcontainers; sin Docker se saltea (`[DEFERRED_NO_DOCKER]`).
+
 ```bash
-docker compose up -d api-gateway
+docker compose up -d redis api-gateway
 ```
+
+El gateway no depende de Redis para arrancar: sin `redis`, deja pasar todo (*fail-open*).

@@ -3,15 +3,15 @@ package grupo5.gateway;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.responses.ErrorResponse;
 import io.github.bucket4j.Bucket;
+import io.github.bucket4j.BucketConfiguration;
 import io.github.bucket4j.ConsumptionProbe;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,12 +50,13 @@ import org.springframework.web.servlet.function.ServerResponse;
  * escrituras (el resto), cada uno con su cantidad por {@code ventana}. Se recargan de a poco
  * (greedy), sin el doble de ráfaga en el borde de la ventana que tiene una recarga de golpe.
  *
- * <p><b>Memoria.</b> Una cubeta que pasa una ventana sin uso ya se recargó entera: es igual a una
- * nueva. Por eso se borran, una vez por ventana, las que llevan más de una sin uso. Así el mapa no
- * crece con cada IP que pasó una vez.
+ * <p><b>Dónde viven las cubetas.</b> En el {@link Almacen}: en Redis ({@link CubetasEnRedis}), así
+ * todas las réplicas del gateway cuentan contra el mismo cupo (decisión Q11).
  *
- * <p>Las cubetas viven en la memoria de esta instancia: con más de un gateway, cada uno cuenta lo
- * suyo (ver ADR, consecuencias).
+ * <p><b>Fail-open (Q11b).</b> Si el almacén falla (Redis caído, lento o desconectado), el pedido
+ * pasa sin consumir ficha: Redis no puede tirar el sitio. Queda un {@code WARN} {@code
+ * [REDIS-NO-DISPONIBLE]}, uno por ventana como máximo para no inundar el log mientras dure la
+ * caída.
  */
 @Component
 public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse, ServerResponse> {
@@ -80,20 +81,26 @@ public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse
   /** Una IPv6 completa entra holgada; lo que venga más largo en el encabezado se recorta. */
   private static final int LARGO_MAXIMO_IP = 64;
 
-  private final Config config;
-  private final Pattern proxiesConfiables;
-  private final Map<String, Cubeta> cubetas = new ConcurrentHashMap<>();
-  private final AtomicLong proximaLimpieza;
+  /** Dónde viven las cubetas. Cualquier falla sale como excepción y el pedido pasa (fail-open). */
+  @FunctionalInterface
+  public interface Almacen {
+    Bucket cubeta(String clave, Supplier<BucketConfiguration> configuracion);
+  }
 
-  public LimiteDeSolicitudes(Config config) {
+  private final Config config;
+  private final Almacen almacen;
+  private final Pattern proxiesConfiables;
+  private final AtomicLong proximoAviso = new AtomicLong(System.nanoTime());
+
+  public LimiteDeSolicitudes(Config config, Almacen almacen) {
     if (config.ventana().isZero() || config.ventana().isNegative()) {
       throw new IllegalStateException("La ventana del límite de solicitudes debe ser positiva");
     }
     this.config = config;
+    this.almacen = almacen;
     String proxies = config.proxiesConfiables();
     this.proxiesConfiables =
         proxies == null || proxies.isBlank() ? null : Pattern.compile(proxies.trim());
-    this.proximaLimpieza = new AtomicLong(System.nanoTime() + config.ventana().toNanos());
   }
 
   @Override
@@ -109,7 +116,13 @@ public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse
             + (lectura ? "|lectura" : "|escritura");
     long cupo = cupo(sujeto != null, lectura);
 
-    ConsumptionProbe intento = cubeta(clave, cupo).tryConsumeAndReturnRemaining(1);
+    ConsumptionProbe intento;
+    try {
+      intento = almacen.cubeta(clave, () -> configuracion(cupo)).tryConsumeAndReturnRemaining(1);
+    } catch (RuntimeException falla) {
+      avisarQueElAlmacenFalla(falla);
+      return siguiente.handle(pedido);
+    }
     if (intento.isConsumed()) {
       ServerResponse respuesta = siguiente.handle(pedido);
       informarRestantes(respuesta, intento.getRemainingTokens());
@@ -157,37 +170,22 @@ public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse
     return lectura ? config.lecturasPorIp() : config.escriturasPorIp();
   }
 
-  private Bucket cubeta(String clave, long cupo) {
-    long ahora = System.nanoTime();
-    limpiarSiCorresponde(ahora);
-    Cubeta cubeta = cubetas.computeIfAbsent(clave, k -> new Cubeta(nueva(cupo), new AtomicLong()));
-    cubeta.ultimoUso().set(ahora);
-    return cubeta.bucket();
-  }
-
-  private Bucket nueva(long cupo) {
-    return Bucket.builder()
+  private BucketConfiguration configuracion(long cupo) {
+    return BucketConfiguration.builder()
         .addLimit(limite -> limite.capacity(cupo).refillGreedy(cupo, config.ventana()))
         .build();
   }
 
-  /** Una vez por ventana, y uno solo de los hilos que llegan a la vez. */
-  private void limpiarSiCorresponde(long ahora) {
-    long prevista = proximaLimpieza.get();
-    if (ahora - prevista >= 0
-        && proximaLimpieza.compareAndSet(prevista, ahora + config.ventana().toNanos())) {
-      limpiar(ahora);
+  /** Una línea por ventana como máximo, y la escribe uno solo de los hilos que llegan a la vez. */
+  private void avisarQueElAlmacenFalla(RuntimeException falla) {
+    long ahora = System.nanoTime();
+    long previsto = proximoAviso.get();
+    if (ahora - previsto >= 0
+        && proximoAviso.compareAndSet(previsto, ahora + config.ventana().toNanos())) {
+      log.warn(
+          "[GATEWAY] [RATE-LIMIT] [REDIS-NO-DISPONIBLE] Los pedidos pasan sin límite (fail-open): {}",
+          falla.toString());
     }
-  }
-
-  /** Borra las cubetas que pasaron más de una ventana sin uso: ya están llenas otra vez. */
-  void limpiar(long ahora) {
-    long ventana = config.ventana().toNanos();
-    cubetas.values().removeIf(c -> ahora - c.ultimoUso().get() > ventana);
-  }
-
-  int cubetasActivas() {
-    return cubetas.size();
   }
 
   /** {@code Retry-After} va en segundos enteros: se redondea para arriba y nunca es 0. */
@@ -236,6 +234,4 @@ public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse
     }
     return primera.length() > LARGO_MAXIMO_IP ? primera.substring(0, LARGO_MAXIMO_IP) : primera;
   }
-
-  private record Cubeta(Bucket bucket, AtomicLong ultimoUso) {}
 }

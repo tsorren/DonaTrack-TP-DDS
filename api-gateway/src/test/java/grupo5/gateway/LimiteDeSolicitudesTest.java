@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -19,7 +20,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
 
-/** De quién es cada cubeta, qué IP cuenta y cuándo se borra una cubeta sin uso. */
+/** De quién es cada cubeta, qué IP cuenta y qué pasa si el almacén de cubetas falla. */
 class LimiteDeSolicitudesTest {
 
   private static final String PROXY = "10.0.0.5";
@@ -100,29 +101,53 @@ class LimiteDeSolicitudesTest {
   }
 
   @Test
-  void deshabilitadoDejaPasarTodo() throws Exception {
+  void deshabilitadoDejaPasarTodoSinTocarElAlmacen() throws Exception {
+    CubetasEnMemoria almacen = new CubetasEnMemoria();
     LimiteDeSolicitudes limite =
         new LimiteDeSolicitudes(
-            new LimiteDeSolicitudes.Config(false, Duration.ofMinutes(1), 1, 1, 1, 1, ""));
+            new LimiteDeSolicitudes.Config(false, Duration.ofMinutes(1), 1, 1, 1, 1, ""), almacen);
 
     for (int i = 0; i < 5; i++) {
       assertThat(filtrar(limite, "POST", PROXY)).isEqualTo(HttpStatus.OK);
     }
-    assertThat(limite.cubetasActivas()).isZero();
+    assertThat(almacen.cantidad()).isZero();
   }
 
   @Test
-  void unaCubetaQuePasaUnaVentanaSinUsoSeBorra() throws Exception {
-    LimiteDeSolicitudes limite = limite(2, "");
+  void lecturasYEscriturasVanACubetasDistintas() throws Exception {
+    CubetasEnMemoria almacen = new CubetasEnMemoria();
+    LimiteDeSolicitudes limite =
+        new LimiteDeSolicitudes(
+            new LimiteDeSolicitudes.Config(true, Duration.ofMinutes(1), 2, 2, 2, 2, ""), almacen);
+
     filtrar(limite, "GET", PROXY);
     filtrar(limite, "POST", PROXY);
-    assertThat(limite.cubetasActivas()).isEqualTo(2);
 
-    limite.limpiar(System.nanoTime());
-    assertThat(limite.cubetasActivas()).isEqualTo(2);
+    assertThat(almacen.cantidad()).isEqualTo(2);
+  }
 
-    limite.limpiar(System.nanoTime() + Duration.ofMinutes(1).toNanos() + 1);
-    assertThat(limite.cubetasActivas()).isZero();
+  @Test
+  void siElAlmacenFallaElPedidoPasa() throws Exception {
+    AtomicInteger llegaron = new AtomicInteger();
+    LimiteDeSolicitudes limite =
+        new LimiteDeSolicitudes(
+            new LimiteDeSolicitudes.Config(true, Duration.ofMinutes(1), 1, 1, 1, 1, ""),
+            (clave, configuracion) -> {
+              throw new IllegalStateException("Redis caído");
+            });
+
+    for (int i = 0; i < 3; i++) {
+      ServerRequest pedido = ServerRequest.create(servlet("POST", PROXY), List.of());
+      ServerResponse respuesta =
+          limite.filter(
+              pedido,
+              p -> {
+                llegaron.incrementAndGet();
+                return ServerResponse.ok().build();
+              });
+      assertThat(respuesta.statusCode().value()).isEqualTo(200);
+    }
+    assertThat(llegaron).hasValue(3);
   }
 
   @Test
@@ -138,23 +163,29 @@ class LimiteDeSolicitudesTest {
     LimiteDeSolicitudes.Config config =
         new LimiteDeSolicitudes.Config(true, Duration.ZERO, 1, 1, 1, 1, "");
 
-    assertThatThrownBy(() -> new LimiteDeSolicitudes(config))
+    CubetasEnMemoria almacen = new CubetasEnMemoria();
+    assertThatThrownBy(() -> new LimiteDeSolicitudes(config, almacen))
         .isInstanceOf(IllegalStateException.class);
   }
 
   private static LimiteDeSolicitudes limite(long cupo, String proxies) {
     return new LimiteDeSolicitudes(
         new LimiteDeSolicitudes.Config(
-            true, Duration.ofMinutes(1), cupo, cupo, cupo, cupo, proxies));
+            true, Duration.ofMinutes(1), cupo, cupo, cupo, cupo, proxies),
+        new CubetasEnMemoria());
   }
 
   private static HttpStatus filtrar(LimiteDeSolicitudes limite, String metodo, String ip)
       throws Exception {
-    MockHttpServletRequest servlet = new MockHttpServletRequest(metodo, "/api/donaciones");
-    servlet.setRemoteAddr(ip);
-    ServerRequest pedido = ServerRequest.create(servlet, List.of());
+    ServerRequest pedido = ServerRequest.create(servlet(metodo, ip), List.of());
     ServerResponse respuesta = limite.filter(pedido, p -> ServerResponse.ok().build());
     return HttpStatus.valueOf(respuesta.statusCode().value());
+  }
+
+  private static MockHttpServletRequest servlet(String metodo, String ip) {
+    MockHttpServletRequest servlet = new MockHttpServletRequest(metodo, "/api/donaciones");
+    servlet.setRemoteAddr(ip);
+    return servlet;
   }
 
   private static MockHttpServletRequest pedido(String conexion, String xForwardedFor) {
