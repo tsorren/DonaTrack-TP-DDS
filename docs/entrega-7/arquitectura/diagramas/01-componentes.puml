@@ -1,0 +1,110 @@
+@startuml 01-componentes
+' ============================================================
+' Figura 1 (E7, borrador) — Componentes del sistema en la Entrega 7.
+' Pregunta: ¿qué piezas tiene DonaTrack y cómo se hablan, con lo que suma E7?
+' Estado objetivo de E7: lo marcado «planificado» está decidido en los ADR de E7
+' (PR 987) y todavía no existe en ENTREGA_7.
+' Fuentes:
+'   ADR rate limiting (20261115), ADR Kubernetes (20261117), ADR observabilidad (20261117),
+'   ADR GraphQL de Donaciones (donaciones-service/20261117).
+'   Conexiones actuales: docker-compose.preprod.yml (URLs, JDBC, Mongo, MinIO, JWK set),
+'   incentivos-service NotificacionesFeignClient y N8nClientAdapter,
+'   donaciones-service LogisticaProveedoresConfig (proveedores HTTP solo si se configuran;
+'   Logística DonaTrack habla por AMQP).
+' Simplificaciones de dibujo (dichas en la leyenda):
+'   - las flechas comunes a los cuatro servicios (AMQP, MinIO, métricas, trazas y logs)
+'     salen del recuadro «Servicios DonaTrack»;
+'   - la validación del JWT de los cuatro servicios contra Keycloak va en la leyenda.
+' Layout: smetana, como E4. Direcciones explícitas y recuadros por capa para que el
+' diagrama crezca hacia abajo; «a <-- b» deja a «a» arriba.
+' ============================================================
+!pragma layout smetana
+!include ../../../entrega-4/arquitectura/diagramas/estilo-e4.iuml
+
+title Figura 1 — Componentes de DonaTrack en E7 (borrador)
+
+actor "Personas usuarias\n(navegador)" as usr
+
+rectangle "Entrada y seguridad" as capaEntrada {
+  component "Ingress" as ing <<planificado>>
+  component "Cliente liviano\n(páginas en el servidor)" as cli <<servicio>>
+  component "Keycloak\n(OIDC, emite el JWT)" as kc <<infraestructura>>
+  component "API Gateway · 2 réplicas\nJWT · rate limiting · traceId" as gw <<servicio>>
+  component "Redis\ncupos del rate limiting\n(fail-open)" as redis <<planificado>>
+}
+
+rectangle "Servicios DonaTrack" as svcs {
+  component "Donaciones\n+ broker de integración\n+ GraphQL de solo lectura (E7)" as don <<servicio>>
+  component "Logística" as log <<servicio>>
+  component "Incentivos" as inc <<servicio>>
+  component "Notificaciones" as not <<servicio>>
+}
+
+rectangle "Datos y mensajería" as capaDatos {
+  database "PostgreSQL\n(un schema por dueño)" as pg
+  database "MongoDB" as mongo
+  queue "RabbitMQ" as rmq
+  component "MinIO\n(imágenes)" as minio <<infraestructura>>
+  component "n8n\n(webhooks)" as n8n <<infraestructura>>
+}
+
+rectangle "Observabilidad" as obs {
+  component "Prometheus\n(métricas)" as prom <<planificado>>
+  component "Tempo\n(trazas)" as tempo <<planificado>>
+  component "Alloy → Loki\n(logs)" as loki <<planificado>>
+  component "Grafana\n(panel y alertas)" as graf <<planificado>>
+}
+
+' ---------- Solo layout ----------
+don -[hidden]right- log
+inc -[hidden]right- not
+don -[hidden]down- inc
+capaDatos -[hidden]down- obs
+
+' ---------- Entrada ----------
+usr -[#9A9A9A,dotted]down-> ing : HTTPS
+usr -down-> kc : login OIDC
+ing -[#9A9A9A,dotted]down-> cli
+ing -[#9A9A9A,dotted]down-> gw : /api
+cli -right-> kc : OIDC
+cli -down-> gw : REST +\nIP del navegador
+gw -right-> kc : claves del JWT
+gw -[#9A9A9A,dotted]down-> redis : cupos
+
+' ---------- Servicios ----------
+gw -down-> svcs : HTTP\n(incluye /api/donaciones/graphql)
+inc -right-> not : HTTP
+svcs -[#5E4B8B,dashed]down-> rmq
+kc -[#5E4B8B,dashed]down-> rmq : correos
+don -down-> pg : JDBC
+inc -down-> pg : JDBC
+not -down-> pg : JDBC
+log -down-> mongo
+svcs -down-> minio : S3
+inc -down-> n8n : HTTP
+kc -down-> pg : JDBC
+cli -down-> pg : JDBC (sesiones)
+
+' ---------- Observabilidad (dentro del cluster) ----------
+svcs <-[#9A9A9A,dotted]- prom : /actuator/prometheus
+svcs -[#9A9A9A,dotted]-> tempo : trazas (Zipkin)
+svcs <-[#9A9A9A,dotted]- loki : stdout de los pods
+prom <-[#9A9A9A,dotted]- graf
+tempo <-[#9A9A9A,dotted]- graf
+loki <-[#9A9A9A,dotted]- graf
+
+legend bottom
+  |= Elemento |= Significado |
+  |<#E6EEF8> «servicio» | Pieza de DonaTrack que existe hoy |
+  |<#FFFFFF> «planificado» | Decidida en los ADR de E7, todavía no existe |
+  |<#F2F2F2> «infraestructura» | Producto de terceros que corre con el sistema |
+  | ── | Llamada sincrónica (HTTP, JDBC, S3, OIDC) |
+  | <color:#5E4B8B>- - -</color> | Mensajería AMQP |
+  | <color:#6E6E6E>· · ·</color> | Conexión planificada en E7 |
+  Flechas al recuadro «Servicios DonaTrack»: valen para los cuatro. MinIO lo usan
+  Donaciones, Incentivos y Logística. El gateway y el cliente también exponen métricas
+  y trazas. Los cuatro servicios validan el JWT con las claves de Keycloak, como el gateway.
+  Prometheus lee las métricas dentro del cluster: no pasan por el gateway ni por el Ingress.
+  Grafana pide usuario y contraseña.
+endlegend
+@enduml
