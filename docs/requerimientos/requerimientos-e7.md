@@ -195,12 +195,17 @@ Alcance: ⭐ los cuatro servicios, el gateway y el cliente; ⭐ la infraestructu
 **E7-Q11 — ¿Qué librería y dónde viven los contadores? ✅ (2026-11-16): B, Bucket4j con Redis**
 > **Respuesta del grupo:** Bucket4j con los contadores en un Redis compartido (la recomendación del agente era A, en memoria con una réplica). Consecuencias `[PROPOSED]`: un workload nuevo de Redis en el cluster (sin persistencia, sus contadores son descartables) y dos o más dependencias nuevas en el gateway (Bucket4j y su integración con Redis); se toma la elección de B como aprobación de esas dependencias y de la imagen de Redis (AGENTS.md §6), a confirmar con el grupo; el gateway puede escalar a varias réplicas con un límite único y exacto; Redis entra en las probes y en el panel de observabilidad. Abiertas Q11b y Q11c.
 
-**E7-Q11b — Si Redis no responde, ¿el gateway deja pasar o rechaza? ⏸️**
-⭐ **Deja pasar (*fail-open*) con una alerta:** prioriza que el sistema siga disponible; durante la caída no hay límite. · Rechaza todo (*fail-closed*): protege contra el abuso pero convierte a Redis en un punto único de falla de todo el sitio. · Cae a un contador local en memoria por réplica: se pierde exactitud pero se conserva algo de protección. `[OBSERVED]` el filtro del gateway tiene un *timeout* configurable.
+(Planteo original de Q11:) ⭐ **A. Bucket4j con contadores en memoria** (una sola instancia del gateway; sin infraestructura nueva) · B. Bucket4j con Redis (necesario si el gateway se replica; suma un contenedor y una dependencia) · C. Filtro propio sin librería. `[OBSERVED]` hoy hay una sola instancia del gateway.
 
-**E7-Q11c — ¿Cuántas réplicas del gateway? ⏸️**
-⭐ **2 réplicas:** muestra el beneficio de Redis (el límite se cuenta en conjunto) y la tolerancia a fallos de Kubernetes; consume más recursos en un entorno local ya inestable. · 1 réplica: más liviano, pero Redis no aporta nada que la memoria no diera.
-⭐ **A. Bucket4j con contadores en memoria** (una sola instancia del gateway; sin infraestructura nueva) · B. Bucket4j con Redis (necesario si el gateway se replica; suma un contenedor y una dependencia) · C. Filtro propio sin librería. `[OBSERVED]` hoy hay una sola instancia del gateway.
+**E7-Q11b — Si Redis no responde, ¿el gateway deja pasar o rechaza? ✅ (2026-11-16): A, deja pasar con alerta**
+> **Respuesta del grupo:** *fail-open*. Si Redis no responde dentro del *timeout* configurado en el filtro, el gateway deja pasar el pedido y se dispara una alerta en el panel; el autorestart de Kubernetes levanta Redis. Riesgo aceptado `[PROPOSED]`: durante la caída no hay protección contra abuso. Hay que fijar el *timeout* corto, para que esperar a Redis no degrade el sitio.
+
+(Planteo original:) ⭐ **Deja pasar (*fail-open*) con una alerta:** prioriza que el sistema siga disponible; durante la caída no hay límite. · Rechaza todo (*fail-closed*): protege contra el abuso pero convierte a Redis en un punto único de falla de todo el sitio. · Cae a un contador local en memoria por réplica: se pierde exactitud pero se conserva algo de protección. `[OBSERVED]` el filtro del gateway tiene un *timeout* configurable.
+
+**E7-Q11c — ¿Cuántas réplicas del gateway? ✅ (2026-11-16): A, 2 réplicas**
+> **Respuesta del grupo:** dos réplicas del gateway detrás de un Service de Kubernetes, con el límite contado en conjunto en Redis. Riesgo `[INFERRED]`: más consumo en el entorno local con antecedentes de inestabilidad; el manifiesto debe fijar requests y limits de recursos.
+
+(Planteo original:) ⭐ **2 réplicas:** muestra el beneficio de Redis (el límite se cuenta en conjunto) y la tolerancia a fallos de Kubernetes; consume más recursos en un entorno local ya inestable. · 1 réplica: más liviano, pero Redis no aporta nada que la memoria no diera.
 
 **E7-Q12 — ¿A quién y con qué límites? ✅ (2026-11-16): identificación en dos niveles y límites iniciales**
 > **Respuesta del grupo:** por IP para el tráfico público y por `sub` del token cuando hay usuario. Límites iniciales `[PROPOSED]`, a calibrar con k6 (`tests/performance/`): público 60 por minuto por IP; autenticado en lectura 300 por minuto por usuario; escrituras (POST, PUT, DELETE) 30 por minuto; subidas pesadas (fotos, importaciones) 10 por minuto; seguimiento del camión **aparte**, 120 por minuto por usuario (el ADR-E6-07 pide contarlo o excluirlo); endpoint GraphQL 60 por minuto por usuario **más un tope de profundidad y complejidad dentro del servicio**, porque todas las consultas entran por una sola URL. `[INFERRED]` Con un Ingress delante, el gateway ve la IP del Ingress: hay que leer `X-Forwarded-For` y confiar solo en el proxy propio, o la IP se puede falsificar.
@@ -218,10 +223,26 @@ Clave del límite: ⭐ por usuario autenticado (`sub`) y por IP para el tráfico
 
 ### Ronda 5 — Detalle de la opción elegida en E7-Q01 (RQ-E7-04)
 
-Q01 se respondió: **GraphQL en Donaciones** (Logística, abierta). La rama gRPC queda descartada. Preguntas previstas:
+Q01 se respondió: **GraphQL en Donaciones** (Logística, abierta). La rama gRPC queda descartada. La nueva interfaz es aditiva: los contratos REST no cambian (AGENTS.md §8.2).
 
-- **GraphQL (Donaciones; Logística si se confirma):** ¿qué consultas entran (donaciones, necesidades, entregas)? ¿Solo lectura o también mutaciones? ⭐ solo lectura · ¿paginación y tope de profundidad y complejidad? ⭐ sí, con límites fijos · ¿cómo se autoriza por campo y por rol? ⭐ con la misma cadena de seguridad que REST · ¿pasa por el gateway? ⭐ sí, bajo `/api/…/graphql` · ¿se documenta el esquema como contrato (equivalente al OpenAPI)? ⭐ sí.
-- **Siempre:** ¿se mantiene la compatibilidad hacia atrás de los contratos REST (AGENTS.md §8.2)? ⭐ sí, la nueva interfaz es aditiva.
+**E7-Q18 — ¿Qué se puede consultar? ⏸️**
+A. Solo donaciones · B. Donaciones, necesidades y entidades públicas · C. B más donantes y asignaciones. ⭐ B. Pendiente: el grupo pidió una explicación de B contra C.
+`[OBSERVED]` `DonacionOutputDTO.donante` devuelve la persona entera (documento, dirección, medios de contacto); `DonantesController` y `PropuestaDeAsignacionController` (`/api/asignaciones`) están reservados a administración y al propio donante (`@PreAuthorize`).
+
+**E7-Q19 — ¿Solo lectura o también mutaciones? ✅ (2026-11-16): A, solo lectura**
+> **Respuesta del grupo:** solo consultas (*queries*). Las escrituras siguen por REST, con su Outbox, su idempotencia y sus contratos.
+
+**E7-Q20 — ¿Cómo se autoriza y se protege la privacidad? ✅ (2026-11-16): A, adaptador sobre los servicios de aplicación**
+> **Respuesta del grupo:** los resolvers de GraphQL son adaptadores de entrada, como los controladores REST (AGENTS.md §4.2): delegan en los servicios de aplicación existentes y heredan la misma autorización y las mismas reglas de privacidad. No hay acceso directo a repositorios. El problema de las consultas N+1 en relaciones anidadas se mitiga con carga por lotes en los resolvers.
+
+**E7-Q21 — ¿Cómo se evitan las consultas costosas? ✅ (2026-11-16): todos los límites**
+> **Respuesta del grupo:** `[PROPOSED]` paginación obligatoria con tope (por ejemplo, 50), profundidad máxima (por ejemplo, 5), tope de complejidad por consulta, *timeout* por consulta, e introspección y GraphiQL apagados por defecto y encendidos solo en preprod y demo. Se suman al límite por minuto del gateway (Q12), que cuenta pedidos y no su costo. Valores a calibrar al implementar.
+
+**E7-Q22 — ¿Cómo se expone y quién lo consume? ✅ (2026-11-16): exposición recomendada; consumo B**
+> **Respuesta del grupo:** *Exposición:* ruta `/api/donaciones/graphql` detrás del gateway (JWT, rate limiting y `traceId` aplican solos; `/api/logistica/graphql` si Logística se confirma); el esquema `.graphqls` vive en el repo, se documenta junto a los contratos de `docs/arquitectura/contratos/` y un test de contrato lo vigila. *Consumo:* **B**, la API más una pantalla del cliente liviano que la use, con tests y scripts de k6. El grupo eligió B y no A, que era la recomendación del agente. Riesgos `[INFERRED]`: la pantalla debe respetar el sistema visual cerrado del cliente liviano (skills `construir-ui` y `revisar-ui`); el cliente renderiza en el servidor y llama a las APIs desde adaptadores en `cliente/rest/`, así que la pantalla consume GraphQL desde un adaptador nuevo, y hay que elegir cuál (pantalla a definir al implementar, con el grupo).
+
+**E7-Q23 — ¿Qué librería de GraphQL? ✅ (2026-11-16): A, Spring for GraphQL**
+> **Respuesta del grupo:** Spring for GraphQL (integración oficial del ecosistema Spring). Se toma la elección como aprobación de la dependencia nueva (AGENTS.md §6), a confirmar con el grupo. `[INFERRED]` verificar la compatibilidad con la versión de Spring Boot del repo antes de implementar.
 
 ---
 
@@ -255,9 +276,15 @@ Para confirmar con docentes `[PROPOSED]`: (1) si "Seguridad" incluye algo más q
 | Q08 Alcance y política | Servicios e infraestructura; reinicio sin tope con alerta; liveness y readiness separados | ✅ las tres recomendaciones |
 | Q09 Demostración | Script de caos reproducible | ✅ opción A |
 | Q10 Dónde se limita | En el gateway | ✅ opción A |
-| Q11 Librería | Bucket4j en memoria | ✅ B, con Redis (distinto de la recomendación); Q11b y Q11c sin responder |
+| Q11 Librería | Bucket4j en memoria | ✅ B, con Redis (distinto de la recomendación); Q11b fail-open y Q11c 2 réplicas ✅ |
 | Q12 Clave y límites | Por usuario y por IP; seguimiento aparte | ✅ tal cual |
 | Q13 Respuesta | `429` con `Retry-After`, métrica y alerta | ✅ opción A |
+| Q18 Qué se consulta | Donaciones, necesidades y entidades públicas (B) | ⏸️ el grupo pidió comparar B y C |
+| Q19 Mutaciones | Solo lectura | ✅ opción A |
+| Q20 Autorización | Adaptador sobre los servicios de aplicación | ✅ opción A |
+| Q21 Límites de consulta | Paginación, profundidad, complejidad, timeout, introspección apagada | ✅ todos |
+| Q22 Exposición y consumo | Ruta propia detrás del gateway; API con GraphiQL, tests y k6 | ✅ exposición recomendada; consumo B (API más una pantalla del cliente) |
+| Q23 Librería | Spring for GraphQL | ✅ opción A |
 | Q14 Diagramas | PlantUML, componentes y despliegue separados | ⏸️ |
 | Q15 Partición | Un PR por requerimiento | ⏸️ |
 | Q16 ADRs | Observabilidad, rate limiting y gRPC o GraphQL | ⏸️ |
