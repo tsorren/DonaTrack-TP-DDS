@@ -27,7 +27,7 @@ Cada manifiesto nuevo va en `base/` (o en una subcarpeta por pieza) y se suma a 
 
 - Docker en marcha. Para el sistema completo con observabilidad el ADR estima unos 16 GB de memoria
   (`[INFERRED]`); el esqueleto solo necesita el nodo.
-- [kind](https://kind.sigs.k8s.io/) v0.33.0 o posterior y `kubectl` (trae Kustomize; Docker Desktop
+- [kind](https://kind.sigs.k8s.io/) v0.33.0 (la versión probada con la imagen fijada) y `kubectl` (trae Kustomize; Docker Desktop
   lo instala).
 - Los puertos 80 y 443 de la máquina libres.
 

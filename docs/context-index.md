@@ -45,6 +45,7 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | Creación de ADR | [`adr/README.md`](adr/README.md) + [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) + ADRs previos del mismo servicio |
 | Testing / integración / QA | [`testing/integration-tests.md`](testing/integration-tests.md) + [`testing/testing-performance.md`](testing/testing-performance.md) + [`testing/auditoria-arquitectura-testing.md`](testing/auditoria-arquitectura-testing.md) + [`testing/auditoria/README.md`](testing/auditoria/README.md) |
 | CI/CD / pipeline / Docker | [`cicd/DonaTrack-CICD.md`](cicd/DonaTrack-CICD.md) |
+| Kubernetes / kind / Kustomize (E7) | [`../k8s/README.md`](../k8s/README.md) · [ADR de Kubernetes](adr/20261117-despliegue-en-kubernetes-local-con-kind-y-kustomize.md) |
 | Code quality / SonarCloud | [`IA/07-errores-frecuentes-sonarcloud-ia.md`](IA/07-errores-frecuentes-sonarcloud-ia.md) |
 | Revisión adversarial (Fase 6) | [`auditoria/plan-revisor-critico.md`](auditoria/plan-revisor-critico.md) |
 | Trazabilidad / RabbitMQ / Feign | [`arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) |
