@@ -29,7 +29,9 @@ layout `smetana`, así que no necesitan Graphviz. Con PlantUML 1.2024.7, la vers
 java -jar plantuml.jar -failfast2 -tpng docs/entrega-7/arquitectura/diagramas/*.puml
 ```
 
-El job `render-docs-diagrams` del CI renderiza los `.puml` de `docs/entrega-*` cuando un PR los cambia,
+Q14a pedía usar el job `generate-diagrams`, pero ese job está apagado (`enable-diagrams`) y solo
+dibuja el modelo de clases que genera Maven por servicio. En su lugar, el job hermano
+`render-docs-diagrams` del CI renderiza los `.puml` de `docs/entrega-*` cuando un PR los cambia,
 falla si alguno no compila y deja los PNG como artefacto. El PNG del repo se genera a mano y se
 commitea: la tipografía del runner no es la misma, así que no se compara byte a byte.
 

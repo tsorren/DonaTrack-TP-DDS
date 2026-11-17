@@ -692,12 +692,14 @@ jobs:
       - name: Descargar PlantUML si no está en caché
         if: steps.cache-plantuml.outputs.cache-hit != 'true'
         run: |
-          curl --proto '=https' --proto-redir =https -L -s -o plantuml.jar             https://github.com/plantuml/plantuml/releases/download/v1.2024.7/plantuml-1.2024.7.jar
+          curl --proto '=https' --proto-redir =https -L -s -o plantuml.jar \
+            https://github.com/plantuml/plantuml/releases/download/v1.2024.7/plantuml-1.2024.7.jar
 
       # Renderiza en su lugar (pisa el PNG del checkout): hay nombres repetidos entre carpetas.
       - name: Renderizar los .puml de docs/entrega-*
         run: |
-          find docs -path 'docs/entrega-*' -name '*.puml' -print0             | xargs -0 -r java -jar plantuml.jar -failfast2 -tpng
+          find docs -path 'docs/entrega-*' -name '*.puml' -print0 \
+            | xargs -0 -r java -jar plantuml.jar -failfast2 -tpng
 
       - name: Subir los PNG renderizados
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

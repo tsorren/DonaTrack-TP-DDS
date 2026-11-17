@@ -12,7 +12,7 @@
 '   ADR rate limiting (20261115): gateway con dos réplicas y Redis compartido sin persistencia.
 '   ADR observabilidad (20261117): Prometheus, Tempo, Loki y Grafana en su namespace;
 '     Alloy como DaemonSet lee /var/log/pods del nodo.
-'   Nombres de los namespaces: fijados en K1 (k8s/base/namespaces.yaml).
+'   Nombres de los namespaces: fijados en K1 (k8s/base/namespaces.yaml, rama E7_k8s_esqueleto).
 ' Notación UML 2: node para el nodo y los pods (entornos de ejecución), artifact para la
 ' imagen desplegada; los namespaces van como frame. Mismos estereotipos que la Figura 1.
 ' Lo que el ADR no fija (Deployment o StatefulSet de cada pieza de infraestructura,
@@ -88,7 +88,7 @@ pGw -down-> pDon : HTTP
 pGw -[hidden]down- pLog
 
 ' ---------- Hacia la infraestructura (por namespace) ----------
-nsApp -down-> nsInfra : JDBC · Mongo · AMQP · S3 · OIDC/JWKS · Redis\n(Service DNS entre namespaces)
+nsApp -down-> nsInfra : JDBC · Mongo · AMQP · S3 · OIDC/JWKS\n(E7: + Redis; Service DNS entre namespaces)
 
 ' ---------- Observabilidad ----------
 pProm -[#9A9A9A,dotted]up-> nsApp : lee /actuator/prometheus
@@ -109,12 +109,12 @@ legend bottom
   | <color:#6E6E6E>E7: …</color> | Capacidad nueva de una pieza que ya existe |
   | ──> | Conexión de red, con su protocolo |
   | <color:#6E6E6E>· · ·></color> | Conexión planificada en E7 |
-  Estado objetivo: hoy existen el cluster y los tres namespaces (K1); los pods
+  Estado objetivo: el cluster y los tres namespaces los crea K1 (rama E7_k8s_esqueleto); los pods
   los crean K2 (infraestructura), K4 (apps), K5 (Ingress) y O1 a O4 (observabilidad).
   Salud (ADR de Kubernetes): cada contenedor declara requests y limits. Liveness (/actuator/health/liveness)
   reinicia el pod; readiness (/actuator/health/readiness) lo saca del Service sin reiniciarlo
   cuando falta una dependencia (base, RabbitMQ). restartPolicy Always, sin tope
-  (CrashLoopBackOff); la alerta de reinicios repetidos está en Grafana.
+  (CrashLoopBackOff); la alerta de reinicios repetidos va a estar en Grafana.
   El gateway llega a los cuatro servicios; se dibuja una flecha para no cruzar el diagrama.
   Prometheus y Alloy no pasan por el Ingress ni por el gateway.
   Grafana pide usuario y contraseña (Secret).
