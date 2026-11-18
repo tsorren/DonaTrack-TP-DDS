@@ -3,6 +3,7 @@
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
 > **Versión 0 · 2026-11-16 · borrador de las rondas de preguntas · para responder con el equipo**
 > Fecha de entrega: **defensa el viernes 4 de diciembre de 2026**, según informó Tadeo el 2026-11-17. Hasta esa fecha el documento decía 27 de noviembre, tomado del [mapa de entregas](../entregas/README.md) (borrador de calendario de la cátedra; el enunciado no trae fechas). Las rondas 1 a 6 se respondieron con el plazo de 11 días y conservan ese razonamiento.
+> **Revisión de simplificación (2026-11-18), en curso:** el grupo vuelve a analizar las decisiones para simplificar la arquitectura, en rondas S1 a S5 (§5). Las respuestas ✅ de las rondas 1 a 6 no se reescriben: las preguntas más afectadas llevan una nota que apunta a la revisión, y ante cualquier diferencia (también con la tabla del §4) vale la respuesta más reciente, la del §5. Para no confundirlas con las tareas S1 a S4 de Q15, las rondas se nombran siempre "Ronda S1" a "Ronda S5".
 
 ## 0. Cómo leer este documento
 
@@ -102,6 +103,7 @@ Criterios: ajuste al enunciado, riesgo de plazo, costo de dependencias nuevas, v
 `[INFERRED]` la opción A es la que cubre los tres tipos de señal con menos piezas, pero **requiere superar el ADR de trazabilidad** (que descartó los trazadores de terceros) con un ADR sucesor `proposed`, y agrega imágenes de Docker (AGENTS.md §6: pide aprobación previa).
 
 **E7-Q05 — ¿Dónde corre el stack? ✅ (2026-11-16): A, compose propio `docker-compose.observabilidad.yml`; reinterpretada tras Q07 (C2) y confirmada por el grupo: namespace propio del cluster de Kubernetes**
+> **Revisada el 2026-11-18 (§5, E7-S01):** sin Kubernetes, el stack de observabilidad vuelve a correr con Docker (como servicios del stack de Swarm o en un compose propio, a decidir en la Ronda S3).
 
 ⭐ **A. En un compose propio de observabilidad** (`docker-compose.observabilidad.yml`, opcional, junto al de preprod) · B. Dentro de `docker-compose.yml` · C. Solo en el preprod · D. Solo en la demo pública. `[OBSERVED]` hay siete archivos `docker-compose*.yml` en la raíz (base, demo, hybrid, preprod, publica, seed y tunel).
 
@@ -159,6 +161,7 @@ El grupo pidió más métricas de negocio que las tres mínimas (donaciones regi
 ### Ronda 3 — Monitoreo proactivo y autorestart (RQ-E7-02)
 
 **E7-Q07 — ¿Qué mecanismo reinicia los servicios? ✅ (2026-11-16): C2, todo en Kubernetes**
+> **Revisada el 2026-11-18 (§5, E7-S01 a E7-S01d):** Kubernetes sale de E7. El despliegue pasa a Docker Swarm de un nodo, que replica los seis módulos propios y `[INFERRED]` (según la documentación de Docker, a verificar en la prueba) reinicia los contenedores caídos y los que quedan *unhealthy*. Q07b a Q07d (kind, convivencia con Compose, Kustomize) dejan de aplicar.
 > **Respuesta del grupo:** opción C2, desplegar todo en Kubernetes, por el valor de aprender la herramienta. La recomendación del agente era C1 (Compose para desarrollo y CI, Kubernetes como segundo destino, con vuelta a la opción A si el cluster no estaba estable el 21 de noviembre `[PROPOSED]`). **Riesgos que el grupo toma con C2** `[INFERRED]`: son 14 contenedores a migrar (varias decenas de YAML, sin medir) en 11 días, junto con GraphQL, observabilidad, rate limiting y las cuatro medidas de seguridad; el CI de Gate 4 y los scripts de preprod hoy usan Compose; el entorno local ya tuvo inestabilidad con Docker (RabbitMQ `eacces`). **Consecuencias:** ADR ARCHITECTURAL de despliegue en Kubernetes (`proposed`); `autoheal` y el socket de Docker dejan de hacer falta; **Q05 se reinterpreta** (el stack de observabilidad corre en un namespace propio del cluster, no en un `docker-compose.observabilidad.yml`); AGENTS.md §11 y `docs/testing/` mencionan Compose, y AGENTS.md solo se modifica en un PR aparte con revisión humana (§13). Quedan abiertas Q07b a Q07d, más abajo.
 
 (Opciones originales:)
@@ -185,6 +188,7 @@ El grupo pidió más métricas de negocio que las tres mínimas (donaciones regi
 Alcance: ⭐ los cuatro servicios, el gateway y el cliente; ⭐ la infraestructura (Postgres, Mongo, RabbitMQ, Keycloak, MinIO). Política: ⭐ reinicio con espera creciente y tope de intentos, y visibilidad de cada reinicio en el panel; reinicio siempre y sin tope. `[OBSERVED]` hoy `/actuator/health` no distingue *liveness* de *readiness*: ⭐ habilitar los grupos de salud de Spring Boot (liveness y readiness) y usarlos en los `healthcheck`.
 
 **E7-Q09 — ¿Cómo se demuestra el autorestart? ✅ (2026-11-16): A, script de caos reproducible** (con Kubernetes: `kubectl delete pod` y espera de la recuperación)
+> **Revisada el 2026-11-18 (§5, E7-S01c):** `[PROPOSED]` el script mata un contenedor de una réplica (`docker kill`) y espera a que Swarm lo reemplace.
 ⭐ Un script de caos (`docker kill` de un servicio y espera de recuperación) que se corre en la defensa y queda en el CI como prueba de preprod · solo una demostración manual · sin demostración automática.
 
 ---
@@ -212,6 +216,7 @@ Alcance: ⭐ los cuatro servicios, el gateway y el cliente; ⭐ la infraestructu
 (Planteo original:) ⭐ **Deja pasar (*fail-open*) con una alerta:** prioriza que el sistema siga disponible; durante la caída no hay límite. · Rechaza todo (*fail-closed*): protege contra el abuso pero convierte a Redis en un punto único de falla de todo el sitio. · Cae a un contador local en memoria por réplica: se pierde exactitud pero se conserva algo de protección. `[OBSERVED]` el filtro del gateway tiene un *timeout* configurable.
 
 **E7-Q11c — ¿Cuántas réplicas del gateway? ✅ (2026-11-16): A, 2 réplicas**
+> **Revisada el 2026-11-18 (§5, E7-S01c y E7-S01d):** se mantienen Redis y las dos réplicas del gateway, ahora detrás del *routing mesh* de Swarm; la cantidad de réplicas sale de una variable (1 en desarrollo, 2 en la defensa).
 > **Respuesta del grupo:** dos réplicas del gateway detrás de un Service de Kubernetes, con el límite contado en conjunto en Redis. Riesgo `[INFERRED]`: más consumo en el entorno local con antecedentes de inestabilidad; el manifiesto debe fijar requests y limits de recursos.
 
 (Planteo original:) ⭐ **2 réplicas:** muestra el beneficio de Redis (el límite se cuenta en conjunto) y la tolerancia a fallos de Kubernetes; consume más recursos en un entorno local ya inestable. · 1 réplica: más liviano, pero Redis no aporta nada que la memoria no diera.
@@ -260,6 +265,7 @@ Q01 se respondió: **GraphQL en Donaciones** (Logística, abierta). La rama gRPC
 ### Ronda 6 — Entregables, plan y cierre
 
 **E7-Q14 — Diagrama de componentes y despliegue (E7-ENT-1) ✅ (2026-11-16): PlantUML, despliegue solo en Kubernetes, borrador temprano y versión final**
+> **Revisada el 2026-11-18 (§5, E7-S01):** el diagrama de despliegue se redibuja con Docker Swarm de un nodo en lugar de Kubernetes; el alcance del dibujo se revisa en la Ronda S5.
 > **Respuesta del grupo:** *Q14a A:* PlantUML con PNG renderizado en `docs/entrega-7/arquitectura/diagramas/`, con el estilo de E4 (`estilo-e4.iuml`) y el job `generate-diagrams` del CI. *Q14b C* (el grupo no siguió la recomendación del agente, que era A): el diagrama de despliegue muestra **solo Kubernetes**; Compose (demo pública y túnel) no se dibuja. Riesgo asumido `[INFERRED]`: si la cátedra pregunta por la demo pública, no está en el diagrama; se cubre en la defensa. *Q14c B:* un borrador al comienzo y la versión final al cierre; el grupo pidió que **el borrador esté lo mejor diagramado posible**, porque sirve de acuerdo del grupo y de referencia para los ADR. El de componentes es uno solo e incluye gateway, Keycloak, MinIO, cliente liviano, Redis y el stack de observabilidad. Criterio de la cátedra `[OBSERVED]` (memoria de las devoluciones): diagramas legibles impresos (7 pt o más), sin evidencia del repo, con decisiones justificadas.
 
 (Planteo original:) `[OBSERVED]` los diagramas existentes son anteriores al gateway, Keycloak, MinIO y el cliente liviano. Formato: ⭐ **PlantUML** en el repo (como `08-despliegue.puml`) · Mermaid en Markdown · draw.io. Contenido: ⭐ dos diagramas separados (componentes y despliegue). Cuándo: ⭐ se redibujan al final, con lo realmente implementado.
@@ -312,6 +318,7 @@ Elegida A. Cada compañero cambia sus valores en su navegador, toca "Copiar camb
 - **Cierre de Tadeo.** Dedicación completa del 28/11 al 2/12, para la verificación final, los diagramas y la integración.
 
 *Punto de control del 22/11.* Al cierre del sprint, si el cluster no levanta todos los servicios (K5), la integración y la demo pasan a Docker Compose y Kubernetes queda como segundo destino (la opción C1 de Q07, que el agente había recomendado). La decisión es del grupo; la versión 2 la deja como hito.
+> **Revisado el 2026-11-18 (§5, E7-S01):** el grupo adelantó la salida de Kubernetes. `[PROPOSED]` El sprint de cluster y este punto de control se reemplazarían por una prueba de Swarm de media jornada; se decide al recalcular el reparto en la Ronda S5.
 
 *Workflow de agentes (W1).* Tadeo prepara y lanza un workflow de agentes, como en E6, que escribe las tareas de código bien acotadas: S1, S2, M2 a M4, R3, O3, O4 y G3. El dueño de cada una revisa y prueba lo que sale; su estimación baja al 40 % de la original `[INFERRED]`. W1 arranca después del esqueleto del cluster (K1).
 
@@ -385,6 +392,7 @@ Elegida A. Cada compañero cambia sus valores en su navegador, toca "Copiar camb
 > **Respuesta del grupo:** *Q16a:* cuatro ADR `proposed`: (1) despliegue en Kubernetes (ARCHITECTURAL: kind, Kustomize, convivencia con Compose, probes y política de reinicio sin tope con alerta); (2) stack de observabilidad (sucesor parcial del [ADR de trazabilidad](../adr/20260901-sistema-unificado-de-trazabilidad-y-observabilidad-distribuida.md): Prometheus, Tempo, Loki y Grafana, catálogo de métricas, alertas en el panel, protección de endpoints y recolección de logs en el cluster); (3) rate limiting en el gateway (Bucket4j con Redis, *fail-open*, identificación y límites, `429`); (4) GraphQL en Donaciones (solo lectura, adaptador sobre los servicios de aplicación, límites, ruta, librería). Sin ADR propio: la seguridad perimetral (sigue el [ADR del pipeline de CI](../adr/20260426-pipeline-unificado-de-cicd-y-automatizacion-de-calidad.md)) y los diagramas. *Q16b B* (el grupo no siguió la recomendación del agente, que era A): los cuatro ADR se escriben **primero y en un PR aparte**, para validar la decisión antes de implementarla. Riesgo asumido: ese PR frena el arranque del camino crítico hasta que se revise. `[OBSERVED]` el ADR 2 tiene que resolver el choque con el [ADR de logs sin volúmenes del host](../adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md), pensado para Docker: en Kubernetes el recolector lee los logs de los pods desde el nodo. Solo una persona del grupo puede pasar un ADR a `accepted` (AGENTS.md §9.3).
 
 **E7-Q17 — ¿Qué consultamos a la cátedra? ✅ (2026-11-16): A, tres consultas 🎓**
+> **Revisada el 2026-11-18 (§5, E7-S01):** la consulta 1 (Kubernetes) ya no aplica; Swarm es parte de Docker, que el enunciado nombra. El texto se ajusta en la Ronda S5, antes de enviarlo.
 > **Respuesta del grupo:** enviar tres consultas a la cátedra. (1) ¿Se acepta **Kubernetes (kind)** como entorno de despliegue y de defensa? `[OBSERVED]` el enunciado (pág. 23) pide "Docker o similar" y no menciona Compose ni Kubernetes. (2) ¿"Seguridad" incluye algo más que rate limiting? El grupo suma encabezados, protección de observabilidad, cadena JWT y escaneo. (3) ¿GraphQL de solo lectura, sin tiempo real, cumple la opción 2 sin justificar casos de uso adicionales? La cuarta (infraestructura externa en el diagrama de despliegue) la decide el grupo: con Q14b C, el diagrama muestra solo Kubernetes. **Pendiente:** enviar las consultas (texto redactado abajo), preferentemente hoy, para tener la respuesta antes de la defensa del 4 de diciembre, y anotar acá las respuestas.
 
 **Texto de las consultas (borrador del 2026-11-16, para copiar y enviar por el canal de la cátedra)**
@@ -430,3 +438,54 @@ Elegida A. Cada compañero cambia sus valores en su navegador, toca "Copiar camb
 | Q15 Partición | Un PR por frente (ocho) | ⏳ propuesta de la sesión de planificación, versión 2 (2026-11-17): reparto por tarea con dedicación por persona, sprint de cluster, parciales, punto de control del 22/11 y workflow de agentes; CPM vivo en un artifact; Redis dentro del PR 986; falta el ajuste del resto del grupo |
 | Q16 ADRs | Cuatro, junto con cada PR | ✅ los cuatro; escritos primero en un PR aparte (distinto de la recomendación) |
 | Q17 Cátedra | Tres consultas (Kubernetes, alcance de seguridad, GraphQL de solo lectura) | ✅ opción A; falta enviarlas |
+
+---
+
+## 5. Revisión de simplificación (2026-11-18)
+
+**Por qué.** `[INFERRED]` La línea base de Q15 (versión 2) llegaba al congelamiento del 2 de diciembre en el 13 % de las simulaciones. El grupo revisa las decisiones para simplificar la arquitectura, empezando por la que más arrastra. Las preguntas se presentaron en texto, con contexto, matriz de alternativas y recomendación.
+
+**Cómo.** Cinco rondas: S1 despliegue, S2 rate limiting, S3 observabilidad, S4 seguridad y GraphQL, S5 proceso (ADR, diagramas, workflow W1, reparto y consultas a la cátedra). Lo que nunca se recorta, porque lo pide el enunciado: métricas, trazas y logs visibles; autorestart; rate limiting con `429`; GraphQL con filtros y selección de campos; diagramas de componentes y despliegue.
+
+**Mapa de palancas** `[INFERRED]` (días-persona con la estimación probable de la tabla de Q15; demanda total del plan, unos 38):
+
+| # | Decisión revisada | ¿La pide el enunciado? | Qué saca | Días-persona que libera | Ronda |
+|---|---|---|---|---|---|
+| 1 | Todo en Kubernetes (Q07 C2) | No: pide "Docker o similar" y autorestart | kind, Kustomize, Ingress, manifiestos, migración del CI | ≈ 6, más 1,5 condicional | S1 ✅ |
+| 2 | Redis, réplicas y *fail-open* (Q11, Q11b, Q11c) | No | Depende de S1 | ≈ 0,3 | S1 ✅ (se mantiene) |
+| 3 | Seis clases de límite (Q12) | No | Dos clases | ≈ 0,75 | S2 |
+| 4 | Cadena JWT con Keycloak real (tareas S3 y S4 de la tabla de Q15) | No (Q03) | Keycloak real en el preprod | ≈ 3 | S4 |
+| 5 | Pantalla del cliente que consume GraphQL (Q22 B) | No | P1 a P3 de Q15 | ≈ 3 | S4 |
+
+### Ronda S1 — Despliegue
+
+**E7-S01 — ¿Dónde corre todo? ✅ (2026-11-18): A, volver a Docker (Kubernetes sale de E7)**
+> **Respuesta del grupo:** opción A. Las opciones fueron A (volver a Docker), B (Kubernetes recortado, con el punto de control del 22/11) y C (seguir como está). Matriz: plazo y riesgo 35 %, lo que corrige la cátedra 25 %, cantidad de piezas 20 %, aprendizaje 20 %; totales A 3,95, B 3,45, C 2,55. `[INFERRED]` Si el aprendizaje pesaba 40 % o más, ganaba B. Se pierden el esqueleto del cluster (K1, PR 989), el ADR de Kubernetes del PR 987 (`proposed`, sin mergear) y el despliegue del borrador de diagramas (PR 988).
+
+**E7-S01b — Redis y réplicas del gateway ✅ (2026-11-18): se mantienen, como consecuencia de E7-S01c**
+> Redis, el *fail-open* (R1b, PR 986) y las dos réplicas del gateway siguen como en Q11, Q11b y Q11c. Con réplicas, el contador compartido en Redis se justifica.
+
+**E7-S01c — ¿Docker Swarm para escalar en horizontal? ✅ (2026-11-18): C, Swarm de un nodo replicando los seis módulos propios**
+> **Respuesta del grupo:** opción C. Las opciones fueron A (Swarm con el gateway ×2), B (Compose con un contenedor autoheal y una réplica en memoria) y C (Swarm replicando todo). Matriz: plazo 35 %, cátedra 25 %, piezas 20 %, aprendizaje y escalabilidad 20 %; totales A 3,85, B 3,75, C 3,15. El grupo eligió C, distinta de la recomendación (A). Se replican el gateway, el cliente liviano y los cuatro servicios. Postgres, Mongo, RabbitMQ, Keycloak, MinIO y Redis quedan con una réplica porque guardan estado.
+> `[OBSERVED]` El cliente liviano declara `spring-session-jdbc`, pero la sesión en la base está apagada por defecto (`CLIENTE_SESIONES_JDBC_HABILITADO`, `false` si no se define): con dos réplicas hay que encenderla. Donaciones, Incentivos y Logística tienen 11 tareas `@Scheduled` (5, 4 y 2; una de Logística mueve la posición simulada de los camiones y está encendida por defecto) y ningún `pom.xml` declara ShedLock. Hay 8 clases con `@RabbitListener` (1 en Donaciones, 2 en Incentivos, 1 en Logística y 4 en Notificaciones). `[INFERRED]` Por eso el cliente se puede replicar sin cambios de código (solo con esa variable) y los servicios con tareas programadas no.
+> `[INFERRED]` A verificar en la prueba de Swarm: que funcione en Docker Desktop para Windows; que el *routing mesh* reparta entre réplicas; que `docker stack deploy` no construye imágenes, ignora `depends_on` y quizá no lee el `.env`; y que el *routing mesh* oculta la IP real del cliente, lo que obliga a un proxy delante que agregue `X-Forwarded-For` (detalle en la Ronda S2).
+
+**E7-S01d — Lo que pide replicar los servicios ✅ (2026-11-18): A, A, A**
+> **Respuesta del grupo:** A en las tres. Cada opción elegida, tal como se presentó:
+> - **S01d-1, tareas programadas: A, ShedLock con JDBC.** Una tabla por servicio, creada con una migración de Flyway, y `@SchedulerLock` en cada método. Retoma el [ADR de ShedLock en Incentivos](../adr/incentivos-service/20260901-coordinacion-distribuida-de-schedulers-con-shedlock.md) (`proposed`, sin implementar) y lo extiende a los tres servicios. `[PROPOSED]` Suma dos dependencias y la elección se toma como su aprobación (AGENTS.md §6), a confirmar con el grupo; si va en `common-lib`, es un cambio estructural (AGENTS.md §7.0). Descartadas: partir cada servicio en *api* y *worker*, y locks propios con `pg_advisory_lock`.
+> - **S01d-2, orden de los eventos: A, *single active consumer* de RabbitMQ** en las colas donde importa el orden. Una réplica consume y la otra queda de reserva. Las colas existentes se vuelven a declarar. Descartadas: confiar solo en la máquina de estados y la idempotencia, e ignorarlo.
+> - **S01d-3, memoria: A, réplicas por variable:** 1 en desarrollo y 2 en la defensa y la prueba final, con límites de memoria por servicio. Descartada: siempre dos réplicas, que solo se podrían levantar con 16 GB.
+
+**Consecuencias de la Ronda S1** `[PROPOSED]`. Se bajan a tareas y ADR en la Ronda S5.
+
+| Qué | Cambio |
+|---|---|
+| ADR | El de Kubernetes (PR 987) se reescribe como despliegue en Docker Swarm de un nodo: autorestart, réplicas, ShedLock y *single active consumer* |
+| PRs | El PR 989 (K1) se cierra; la rama queda. El despliegue del PR 988 se redibuja |
+| Tareas de Q15 que salen | K1 (hecha), K2, K4, K5, K7 y la tarea S4 (cadena JWT en el cluster) |
+| Tareas de Q15 que siguen | K3 (grupos de salud: el `healthcheck` de Swarm usa liveness), K6 (script de caos, con Docker) y L1 (recolección de logs, se revisa en la Ronda S3) |
+| Tareas nuevas | Prueba de Swarm (≤ 0,5), override de Swarm sobre los compose (0,5), proxy con la IP real (0,5), ShedLock en tres servicios (1 a 1,5), *single active consumer* (0,5), réplicas por variable |
+| Calendario | El sprint de cluster y el punto de control del 22/11 se reemplazarían por la prueba de Swarm (se decide en la Ronda S5) |
+| Balance | Unos 3,5 días-persona nuevos contra unos 6 liberados (más 1,5 condicional): saldo de 2,5 a 4 a favor |
+
+**Rondas pendientes:** Ronda S2 (rate limiting: clases de límite, proxy e IP real), Ronda S3 (observabilidad: métricas, recolección de logs, imagen del stack), Ronda S4 (seguridad extra, pantalla de GraphQL, Q02) y Ronda S5 (ADR, diagramas, W1, reparto, tareas O1, O5 y R4 que suponían el cluster, y consultas a la cátedra).
