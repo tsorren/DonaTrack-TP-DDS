@@ -14,7 +14,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[INFERRED] deferred` — requiere integración de capa de persistencia |
 | Target | donaciones-service · Entrega de persistencia (prioridad alta) |
-| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** (vencida; reprogramación pendiente del equipo) para surrogate keys en JPA; **Entrega 7: Observabilidad y Seguridad** para crypto-shredding definitivo con el Key Broker (diferido desde E6 por la decisión D29 de [requerimientos-e6](../requerimientos/requerimientos-e6.md)) |
+| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** (vencida; reprogramación pendiente del equipo) para surrogate keys en JPA; **Entrega 7: Observabilidad y Seguridad** para crypto-shredding definitivo con el Key Broker (diferido desde E6 por la decisión D29 de [requerimientos-e6](../requerimientos/requerimientos-e6.md)) · **Reprogramado el 2026-11-18:** el Key Broker no entra en E7 (decisión E7-S04d de [requerimientos-e7](../requerimientos/requerimientos-e7.md), §5); el crypto-shredding definitivo queda para después de E7, sin fecha |
 
 ---
 
@@ -88,7 +88,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[INFERRED] deferred` — requiere el servicio del Key Broker (desde el 2026-11-04, aparte de `auth-service`, que es Keycloak) |
 | Target | notificaciones-service · auth-service (prioridad alta) |
-| Cuándo se saldará | **Entrega 7: Observabilidad y Seguridad** — diferido desde E6 por la decisión D29 de [requerimientos-e6](../requerimientos/requerimientos-e6.md): E6 construye el IdP y el gateway, y el Key Broker queda para el hito de Seguridad; se cancelará en simultáneo con la construcción de `auth-service`, la emisión de `ClaveUsuarioDestruidaEvent` en RabbitMQ y la adopción de `RemoteAuthKeyBrokerClient`. Desde el [ADR del proveedor de identidad](./auth-service/20261104-proveedor-de-identidad-keycloak.md) (`proposed`, 2026-11-04) el IdP es Keycloak, así que el Key Broker será un **servicio aparte** y no parte de `auth-service` |
+| Cuándo se saldará | **Entrega 7: Observabilidad y Seguridad** — diferido desde E6 por la decisión D29 de [requerimientos-e6](../requerimientos/requerimientos-e6.md): E6 construye el IdP y el gateway, y el Key Broker queda para el hito de Seguridad; se cancelará en simultáneo con la construcción de `auth-service`, la emisión de `ClaveUsuarioDestruidaEvent` en RabbitMQ y la adopción de `RemoteAuthKeyBrokerClient`. Desde el [ADR del proveedor de identidad](./auth-service/20261104-proveedor-de-identidad-keycloak.md) (`proposed`, 2026-11-04) el IdP es Keycloak, así que el Key Broker será un **servicio aparte** y no parte de `auth-service` · **Reprogramado el 2026-11-18:** no entra en E7 (decisión E7-S04d de [requerimientos-e7](../requerimientos/requerimientos-e7.md), §5); queda para después de E7, sin fecha |
 
 ---
 
