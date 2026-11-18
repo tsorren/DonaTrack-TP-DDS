@@ -2,7 +2,7 @@
 
 - Status: proposed
 - Date: 2026-11-15
-- Actualizado: 2026-11-17 (contadores en Redis y *fail-open*, decisiones Q11 a Q11c del grupo)
+- Actualizado: 2026-11-17 (contadores en Redis y *fail-open*, decisiones Q11 a Q11c del grupo); 2026-11-18 (revisión de simplificación: los cuatro cupos quedan, E7-S02; detrás del *routing mesh* de Swarm, sin proxy, E7-S02b; un escenario de k6, E7-S02c)
 - Deciders: pendiente de aprobación del equipo en el PR (propuesta y construcción asistidas por agente)
 - Tags: api-gateway, seguridad, rate-limiting, cliente-liviano, entrega-7
 
@@ -93,10 +93,27 @@ Elegida la alternativa 1, con Bucket4j (`com.bucket4j:bucket4j_jdk17-core` y
   un `sub` distinto por pedido.
 - **La IP de origen.** La de la conexión, salvo que venga de un proxy confiable
   (`donatrack.gateway.limite-de-solicitudes.proxies-confiables`, una regex): ahí es la primera de
-  `X-Forwarded-For`, recortada a 64 caracteres. Vacía por defecto: el encabezado se ignora. En Docker
-  Compose se confía en las redes privadas, de donde llega el cliente liviano. **Pendiente para el
-  cluster** (Q12): con un Ingress delante, `proxies-confiables` tiene que aceptar solo al Ingress y
-  al cliente liviano, o la IP se puede falsificar; lo resuelven las tareas K5 y S4.
+  `X-Forwarded-For`, recortada a 64 caracteres. Vacía por defecto en `application.yml`: el
+  encabezado se ignora. Los compose del PR 986 la llenan con las redes privadas, de donde llega el
+  cliente liviano.
+- **Detrás de Swarm (E7-S02b A).** El cliente liviano se publica en el *routing mesh*, sin proxy
+  delante; si el gateway también se publica queda abierto (ver "Riesgo de falsificación" y el
+  [ADR de despliegue en Docker Swarm](./20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md)).
+  - `[VERIFIED]` En la prueba de Swarm, el mesh presentó todos los pedidos al gateway con la IP de
+    su `ingress-endpoint` (`10.0.0.2`). `[INFERRED]` El cliente liviano, publicado igual, recibe esa
+    misma IP y la reenvía (no se probó con el cliente), así que **todos los visitantes sin cuenta
+    comparten la cubeta por IP**: 120 lecturas y 30 escrituras por minuto en
+    total, o sea unas 12 pantallas por minuto si cada una hace ~10 lecturas. Las cuentas con token
+    validado no se ven afectadas: cada una tiene su cubeta. Para los visitantes anónimos, en Swarm,
+    la alternativa elegida se comporta como la 2 (solo por IP), que se descartó por eso; el grupo lo
+    aceptó en E7-S02b A a cambio de no sumar un proxy que, en Docker Desktop, tampoco daba la IP
+    real.
+  - **Riesgo de falsificación.** `[OBSERVED]` La regex que ponen los compose del PR 986
+    (`GATEWAY_LIMITE_PROXIES_CONFIABLES`) confía en `10.*`. `[INFERRED]` Eso incluye la dirección
+    del mesh: quien llegue al puerto publicado del gateway puede elegir su cubeta con
+    `X-Forwarded-For`. `[PROPOSED]` En el stack de Swarm, no publicar el gateway (el cliente liviano
+    le habla por la red interna) o limitar `proxies-confiables` a la subred de la red de la
+    aplicación, que excluye la del mesh. Lo decide la tarea del override de Swarm.
 - **El cliente liviano manda la IP del navegador** en `X-Forwarded-For` en todas las llamadas
   (`ClientesHttp`), sin pisar la que ya pone el contacto.
 - **Cupos.** Lecturas (`GET`, `HEAD`, `OPTIONS`) y escrituras por separado, por ventana de 1 minuto,
@@ -124,10 +141,13 @@ Elegida la alternativa 1, con Bucket4j (`com.bucket4j:bucket4j_jdk17-core` y
 ## Análisis por alternativa
 
 **1. Por cuenta o por IP, en el gateway (elegida)**
-- A favor: separa a los visitantes aunque todos lleguen por el cliente liviano; un solo punto,
+- A favor: separa a los visitantes aunque todos lleguen por el cliente liviano, siempre que la IP
+  real llegue al cliente (`[INFERRED]` en un Linux con Docker nativo sí; en Docker Desktop la
+  prueba de Swarm vio una sola IP para todos los pedidos de la PC; detrás del *routing mesh*, no); un solo punto,
   antes de los servicios; la cuenta solo cuenta con un token validado, así que no se puede inventar.
 - En contra: depende de que el cliente liviano informe la IP y de configurar bien los proxies
-  confiables; con la validación del JWT apagada, todo se cuenta por IP.
+  confiables; con la validación del JWT apagada, todo se cuenta por IP; en Swarm, los anónimos
+  comparten una cubeta.
 
 **2. Solo por IP de la conexión**
 - A favor: lo más simple; no confía en ningún encabezado.
@@ -163,14 +183,18 @@ almacenamiento no toca el filtro (inversión de dependencias).
 
 ## Consecuencias
 
-- **Positivas.** Un visitante o una cuenta que abusa recibe `429` sin afectar a los demás, aunque
-  todos lleguen por el cliente liviano. Los servicios no ven los pedidos rechazados. Los valores se
+- **Positivas.** Una cuenta que abusa recibe `429` sin afectar a las demás, aunque todas lleguen
+  por el cliente liviano. Con la IP real (`[INFERRED]` un Linux con Docker nativo sin mesh), lo
+  mismo vale para un visitante anónimo; detrás del *routing mesh* de Swarm, no (ver "Negativas"). Los servicios no ven los pedidos
+  rechazados. Los valores se
   ajustan sin recompilar.
 - **Negativas.**
   - Mientras Redis está caído no hay límite: un abuso en ese lapso llega a los servicios (riesgo
     aceptado en Q11b). La alerta del panel (métrica M25) es de las tareas R3 y O4.
   - Cada pedido limitado suma un viaje a Redis (hasta el *timeout* si Redis está lento).
-  - Un contenedor más (Redis) en Compose y, más adelante, en el cluster.
+  - Un contenedor más (Redis) en Compose y en el stack de Swarm.
+  - Detrás del *routing mesh*, el límite por IP es uno solo para todos los visitantes sin cuenta
+    (ver "Detrás de Swarm").
   - Con la validación del JWT apagada (el valor por defecto), las cuentas con sesión se cuentan por la
     IP del navegador y no por cuenta.
   - En una máquina de desarrollo, Docker puede presentar las conexiones desde el host (Postman a
@@ -179,23 +203,30 @@ almacenamiento no toca el filtro (inversión de dependencias).
     `proxies-confiables` debería apuntar solo a la IP del cliente liviano.
   - Dependencias nuevas: Bucket4j y su módulo de Lettuce; `lettuce-core` lo versiona el BOM de
     Spring Boot.
-- **Divergencia con Q12** `[OBSERVED]`. El grupo fijó seis clases de límite (público por IP,
-  lectura y escritura autenticadas, subidas pesadas, seguimiento del camión aparte y GraphQL). Este
-  PR 986 implementa cuatro cupos (lecturas y escrituras, por cuenta y por IP), con otros valores:
-  por IP, 120 lecturas y 30 escrituras por minuto contra 60 pedidos públicos de Q12; por cuenta, 60
-  escrituras contra 30. Además cuenta por cuenta solo con el token **validado**, una condición de
-  seguridad que Q12 no nombraba. Los tiempos de Redis (100 ms, 5 s y el vencimiento de 10 s) son
-  valores de la implementación; Q11b solo pidió un *timeout* corto. Las clases de subidas,
-  seguimiento y GraphQL quedan para la tarea R2 y la calibración con k6 (R4); si cambian la
-  identificación o la respuesta, este ADR se actualiza en el mismo PR.
+- **Divergencia con Q12, resuelta en E7-S02 A** `[DOCUMENTED]`. El grupo había fijado seis clases
+  de límite (público por IP, lectura y escritura autenticadas, subidas pesadas, seguimiento del
+  camión aparte y GraphQL). La revisión de simplificación se quedó con los cuatro cupos de este PR
+  y con sus valores:
+  - el seguimiento del camión (2 consultas por minuto) entra en el cupo de lectura, así que queda
+    contado, como pide el ADR-E6-07;
+  - las subidas pesadas entran en escrituras;
+  - GraphQL entra en lecturas, y su costo lo frenan los límites dentro del servicio (ver el
+    [ADR de GraphQL](./donaciones-service/20261117-graphql-de-solo-lectura-en-donaciones.md)).
+
+  Cuenta por cuenta solo con el token **validado**, una condición de seguridad que Q12 no
+  nombraba. Los tiempos de Redis (100 ms, 5 s y el vencimiento de 10 s) son valores de la
+  implementación; Q11b solo pidió un *timeout* corto.
+- **Prueba con k6 (E7-S02c A).** Un solo escenario que muestra tres cosas: el tráfico normal pasa,
+  una ráfaga recibe `429`, y el cupo se cuenta entre las dos réplicas del gateway (Redis). Los
+  valores no se calibran.
 - **A vigilar.** Los cupos son una estimación (una pantalla hace hasta ~10 lecturas). Con las métricas
-  de E7 (requerimiento 1) conviene mirar cuántos `429` hay y ajustarlos.
+  de E7 (M24, requerimiento 1) conviene mirar cuántos `429` hay y ajustarlos.
 
 ## Referencias
 
 - [ADR-E6-02: api-gateway](./20261107-api-gateway-validacion-jwt-en-doble-capa-y-rutas-publicas.md)
-- [Requerimientos de E7](../requerimientos/requerimientos-e7.md), E7-Q11 a Q11c
+- [Requerimientos de E7](../requerimientos/requerimientos-e7.md), E7-Q11 a Q11c y §5 (E7-S02 a E7-S02c)
 - [Catálogo de errores](../arquitectura/catalogo-errores.md) (`ERR-CSR-429`, que suma el PR 986)
 - [api-gateway/README.md](../../api-gateway/README.md), sección "Rate limiting" (llega con el PR 986)
-- [ADR de Kubernetes](./20261117-despliegue-en-kubernetes-local-con-kind-y-kustomize.md) (dos réplicas del gateway) y [ADR del stack de observabilidad](./20261117-stack-de-observabilidad-con-prometheus-tempo-loki-y-grafana.md) (M24 y M25)
+- [ADR de despliegue en Docker Swarm](./20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md) (dos réplicas del gateway y la IP detrás del mesh) y [ADR de observabilidad](./20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm.md) (M24 y M25)
 - Inspiración: el rate limiting por IP con Bucket4j de MetaMapa (TP 2025), adaptado al cliente liviano.
