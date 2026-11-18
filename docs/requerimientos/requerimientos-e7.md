@@ -81,7 +81,7 @@ Criterios: ajuste al enunciado, riesgo de plazo, costo de dependencias nuevas, v
 | C. Se implementa en E7 | Es "Seguridad" en serio, pero suma un servicio y una base de claves a una entrega que ya trae cuatro frentes. |
 
 **E7-Q03 — ¿Qué otras medidas de seguridad entran, si alguna? ✅ (2026-11-16): entran las cuatro**
-> **Revisada el 2026-11-18 (§5, E7-S03b y E7-S04):** siguen las cuatro, más livianas. La observabilidad se protege con Grafana con usuario y clave detrás del nginx, porque no se expone `/actuator/prometheus`. La cadena JWT se valida con una prueba de humo en el stack de Swarm.
+> **Revisada el 2026-11-18 (§5, E7-S03b y E7-S04):** siguen las cuatro, más livianas. La observabilidad se protege con Grafana con usuario y clave (sin nginx delante desde la revisión de E7-S02b), porque no se expone `/actuator/prometheus`. La cadena JWT se valida con una prueba de humo en el stack de Swarm.
 > **Respuesta del grupo:** proteger los endpoints de observabilidad, encabezados de seguridad en el gateway, validar la cadena JWT encendida en el preprod y escaneo de dependencias o imágenes en el CI. Las dos últimas no estaban recomendadas: suman trabajo (un Keycloak real en el preprod y un paso nuevo del pipeline) y el plan de PRs de Q15 las tiene que contar.
 
 (Opciones originales, multiselección:)
@@ -226,7 +226,7 @@ Alcance: ⭐ los cuatro servicios, el gateway y el cliente; ⭐ la infraestructu
 (Planteo original:) ⭐ **2 réplicas:** muestra el beneficio de Redis (el límite se cuenta en conjunto) y la tolerancia a fallos de Kubernetes; consume más recursos en un entorno local ya inestable. · 1 réplica: más liviano, pero Redis no aporta nada que la memoria no diera.
 
 **E7-Q12 — ¿A quién y con qué límites? ✅ (2026-11-16): identificación en dos niveles y límites iniciales**
-> **Revisada el 2026-11-18 (§5, E7-S02 y E7-S02b):** quedan los cuatro cupos del PR 986, con sus valores; la IP real llega a través de un nginx delante, en lugar de un Ingress.
+> **Revisada el 2026-11-18 (§5, E7-S02 y E7-S02b):** quedan los cuatro cupos del PR 986, con sus valores; la IP real iba a llegar a través de un nginx delante, en lugar de un Ingress. Después de la prueba de Swarm, E7-S02b se revisó: sin proxy delante, la IP queda aproximada y los visitantes sin cuenta comparten la cubeta por IP.
 > **Respuesta del grupo:** por IP para el tráfico público y por `sub` del token cuando hay usuario. Límites iniciales `[PROPOSED]`, a calibrar con k6 (`tests/performance/`): público 60 por minuto por IP; autenticado en lectura 300 por minuto por usuario; escrituras (POST, PUT, DELETE) 30 por minuto; subidas pesadas (fotos, importaciones) 10 por minuto; seguimiento del camión **aparte**, 120 por minuto por usuario (el ADR-E6-07 pide contarlo o excluirlo); endpoint GraphQL 60 por minuto por usuario **más un tope de profundidad y complejidad dentro del servicio**, porque todas las consultas entran por una sola URL. `[INFERRED]` Con un Ingress delante, el gateway ve la IP del Ingress: hay que leer `X-Forwarded-For` y confiar solo en el proxy propio, o la IP se puede falsificar.
 
 (Planteo original:)
@@ -396,7 +396,7 @@ Elegida A. Cada compañero cambia sus valores en su navegador, toca "Copiar camb
 *Cambios respecto de la versión 1.* Rate limiting: de Camila Suarez a Miranda (con Ber), más R1b para Tadeo. Seguridad: S1 y S2 a Anush, S3 y S4 a Miranda. Stack de observabilidad: de Anush a Camila Suarez (O1, O3, O4), con Tempo (O2) para Sofía y la verificación final (O5) para Tadeo. Kubernetes: K1 y K5 a Tadeo; Ber se queda con K2 y suma R3 y R4. Tareas nuevas W1 y R1b. D1 ya no espera a R4. Línea base anterior: fin jueves 26/11, margen 6,7 días, sin dedicación ni parciales.
 
 **E7-Q16 — ¿Qué ADRs hacen falta? ✅ (2026-11-16): los cuatro; Q16b B, primero y en un PR aparte**
-> **Respuesta del grupo:** *Q16a:* cuatro ADR `proposed`: (1) despliegue en Kubernetes (ARCHITECTURAL: kind, Kustomize, convivencia con Compose, probes y política de reinicio sin tope con alerta); (2) stack de observabilidad (sucesor parcial del [ADR de trazabilidad](../adr/20260901-sistema-unificado-de-trazabilidad-y-observabilidad-distribuida.md): Prometheus, Tempo, Loki y Grafana, catálogo de métricas, alertas en el panel, protección de endpoints y recolección de logs en el cluster); (3) rate limiting en el gateway (Bucket4j con Redis, *fail-open*, identificación y límites, `429`); (4) GraphQL en Donaciones (solo lectura, adaptador sobre los servicios de aplicación, límites, ruta, librería). Sin ADR propio: la seguridad perimetral (sigue el [ADR del pipeline de CI](../adr/20260426-pipeline-unificado-de-cicd-y-automatizacion-de-calidad.md)) y los diagramas. *Q16b B* (el grupo no siguió la recomendación del agente, que era A): los cuatro ADR se escriben **primero y en un PR aparte**, para validar la decisión antes de implementarla. Riesgo asumido: ese PR frena el arranque del camino crítico hasta que se revise. `[OBSERVED]` el ADR 2 tiene que resolver el choque con el [ADR de logs sin volúmenes del host](../adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md), pensado para Docker: en Kubernetes el recolector lee los logs de los pods desde el nodo. Solo una persona del grupo puede pasar un ADR a `accepted` (AGENTS.md §9.3). **Escritos (A0, 2026-11-17):** [Kubernetes](../adr/20261117-despliegue-en-kubernetes-local-con-kind-y-kustomize.md), [observabilidad](../adr/20261117-stack-de-observabilidad-con-prometheus-tempo-loki-y-grafana.md), [rate limiting](../adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md) (movido desde el PR 986) y [GraphQL](../adr/donaciones-service/20261117-graphql-de-solo-lectura-en-donaciones.md), en el PR de la rama `E7_adrs`.
+> **Respuesta del grupo:** *Q16a:* cuatro ADR `proposed`: (1) despliegue en Kubernetes (ARCHITECTURAL: kind, Kustomize, convivencia con Compose, probes y política de reinicio sin tope con alerta); (2) stack de observabilidad (sucesor parcial del [ADR de trazabilidad](../adr/20260901-sistema-unificado-de-trazabilidad-y-observabilidad-distribuida.md): Prometheus, Tempo, Loki y Grafana, catálogo de métricas, alertas en el panel, protección de endpoints y recolección de logs en el cluster); (3) rate limiting en el gateway (Bucket4j con Redis, *fail-open*, identificación y límites, `429`); (4) GraphQL en Donaciones (solo lectura, adaptador sobre los servicios de aplicación, límites, ruta, librería). Sin ADR propio: la seguridad perimetral (sigue el [ADR del pipeline de CI](../adr/20260426-pipeline-unificado-de-cicd-y-automatizacion-de-calidad.md)) y los diagramas. *Q16b B* (el grupo no siguió la recomendación del agente, que era A): los cuatro ADR se escriben **primero y en un PR aparte**, para validar la decisión antes de implementarla. Riesgo asumido: ese PR frena el arranque del camino crítico hasta que se revise. `[OBSERVED]` el ADR 2 tiene que resolver el choque con el [ADR de logs sin volúmenes del host](../adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md), pensado para Docker: en Kubernetes el recolector lee los logs de los pods desde el nodo. Solo una persona del grupo puede pasar un ADR a `accepted` (AGENTS.md §9.3). **Escritos (A0, 2026-11-17):** Kubernetes y observabilidad, reescritos el 2026-11-18 por la revisión de simplificación (E7-S05) como [despliegue en Docker Swarm](../adr/20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md) y [observabilidad con OpenTelemetry y `otel-lgtm`](../adr/20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm.md), [rate limiting](../adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md) (movido desde el PR 986) y [GraphQL](../adr/donaciones-service/20261117-graphql-de-solo-lectura-en-donaciones.md), en el PR de la rama `E7_adrs`.
 
 **E7-Q17 — ¿Qué consultamos a la cátedra? ✅ (2026-11-16): A, tres consultas 🎓**
 > **Revisada el 2026-11-18 (§5, E7-S01 y E7-S05e):** la consulta 1 (Kubernetes) ya no aplica; Swarm es parte de Docker, que el enunciado nombra. Se mandan las otras dos con el texto ajustado de E7-S05e, que reemplaza al borrador de abajo.
@@ -476,6 +476,7 @@ Elegida A. Cada compañero cambia sus valores en su navegador, toca "Copiar camb
 > **Respuesta del grupo:** opción C. Las opciones fueron A (Swarm con el gateway ×2), B (Compose con un contenedor autoheal y una réplica en memoria) y C (Swarm replicando todo). Matriz: plazo 35 %, cátedra 25 %, piezas 20 %, aprendizaje y escalabilidad 20 %; totales A 3,85, B 3,75, C 3,15. El grupo eligió C, distinta de la recomendación (A). Se replican el gateway, el cliente liviano y los cuatro servicios. Postgres, Mongo, RabbitMQ, Keycloak, MinIO y Redis quedan con una réplica porque guardan estado.
 > `[OBSERVED]` El cliente liviano declara `spring-session-jdbc`, pero la sesión en la base está apagada por defecto (`CLIENTE_SESIONES_JDBC_HABILITADO`, `false` si no se define): con dos réplicas hay que encenderla. Donaciones, Incentivos y Logística tienen 11 tareas `@Scheduled` (5, 4 y 2; una de Logística mueve la posición simulada de los camiones y está encendida por defecto) y ningún `pom.xml` declara ShedLock. Hay 8 clases con `@RabbitListener` (1 en Donaciones, 2 en Incentivos, 1 en Logística y 4 en Notificaciones). `[INFERRED]` Por eso el cliente se puede replicar sin cambios de código (solo con esa variable) y los servicios con tareas programadas no.
 > `[INFERRED]` A verificar en la prueba de Swarm: que funcione en Docker Desktop para Windows; que el *routing mesh* reparta entre réplicas; que `docker stack deploy` no construye imágenes, ignora `depends_on` y quizá no lee el `.env`; y que el *routing mesh* oculta la IP real del cliente, lo que obliga a un proxy delante que agregue `X-Forwarded-For` (detalle en la Ronda S2).
+> **Resultado de la prueba de Swarm (2026-11-18)** `[VERIFIED]`: Swarm sirve y no se pasa a la opción B. En Docker Desktop para Windows, reinicia las tareas *unhealthy* sin *autoheal* y el *routing mesh* reparte 10 y 10 entre dos réplicas del gateway. `docker stack` no lee el `.env` y además rechaza el compose: la forma larga de `depends_on` no se ignora, se rechaza, y también `published` como texto, `start_interval` y `host_ip`. Hace falta un paso que arme el archivo del stack. Sin `depends_on`, el stack converge con reintentos, salvo mongodb, que necesita `hostname: mongodb`. Detrás del mesh, el gateway ve `10.0.0.2` para todos, y un nginx en modo host ve `172.19.0.1` para todos (ver la revisión de E7-S02b). Resumen y límites de la prueba en el [ADR de despliegue en Docker Swarm](../adr/20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md).
 
 **E7-S01d — Lo que pide replicar los servicios ✅ (2026-11-18): A, A, A**
 > **Respuesta del grupo:** A en las tres. Cada opción elegida, tal como se presentó:
@@ -491,7 +492,7 @@ Elegida A. Cada compañero cambia sus valores en su navegador, toca "Copiar camb
 | PRs | El PR 989 (K1) se cierra; la rama queda. El despliegue del PR 988 se redibuja |
 | Tareas de Q15 que salen | K1 (hecha), K2, K4, K5, K7 y la tarea S4 (cadena JWT en el cluster) |
 | Tareas de Q15 que siguen | K3 (grupos de salud: el `healthcheck` de Swarm usa liveness), K6 (script de caos, con Docker) y L1 (recolección de logs; según E7-S03 y E7-S03b, la absorbe `otel-lgtm` con los logs por OTLP) |
-| Tareas nuevas | Prueba de Swarm (≤ 0,5), override de Swarm sobre los compose (0,5), proxy con la IP real (0,5), ShedLock en tres servicios (1 a 1,5), *single active consumer* (0,5), réplicas por variable |
+| Tareas nuevas | Prueba de Swarm (≤ 0,5), override de Swarm sobre los compose (0,5), proxy con la IP real (0,5; sale con la revisión de E7-S02b), ShedLock en tres servicios (1 a 1,5), *single active consumer* (0,5), réplicas por variable |
 | Calendario | El sprint de cluster y el punto de control del 22/11 se reemplazan por la prueba de Swarm (decidido en E7-S05d) |
 | Balance | Unos 3,5 días-persona nuevos contra unos 6 liberados (más 1,5 condicional): saldo de 2,5 a 4 a favor |
 
@@ -511,7 +512,7 @@ Elegida A. Cada compañero cambia sus valores en su navegador, toca "Copiar camb
 > - Los valores iniciales son los del PR, no los de Q12.
 > - `[INFERRED]` Libera unos 0,75 días-persona: lo que faltaba de R2.
 
-**E7-S02b — ¿Cómo se conserva la IP real detrás de Swarm? ✅ (2026-11-18): B, un nginx delante como única entrada**
+**E7-S02b — ¿Cómo se conserva la IP real detrás de Swarm? ✅ (2026-11-18): B, un nginx delante como única entrada; revisada a A el mismo día (ver abajo)**
 > **Respuesta del grupo:** opción B, distinta de la recomendación (A, aceptar la IP aproximada y documentarla). Las opciones fueron A (aceptarla y documentarla), B (un nginx delante como única entrada) y C (publicar cliente y gateway en modo host, que contradice E7-S01c). Matriz: plazo 35 %, cátedra 25 %, piezas 20 %, exactitud del límite por IP 20 %; totales A 3,9 y B 3,65.
 > `[INFERRED]` El *routing mesh* de Swarm reescribe la IP de origen; con réplicas, el cupo por IP lo compartirían todos los visitantes.
 > `[PROPOSED]` Cómo queda:
@@ -520,6 +521,15 @@ Elegida A. Cada compañero cambia sus valores en su navegador, toca "Copiar camb
 > - **Aprobación de la imagen:** la elección se toma como aprobación de la imagen nueva (AGENTS.md §6), a confirmar con el grupo.
 > - **A verificar al implementar:** que el cliente tome la IP del navegador del encabezado de nginx (por ejemplo, con `server.forward-headers-strategy`) antes de reenviarla al gateway.
 > - **Costo:** unos 0,5 a 1 día-persona.
+>
+> **Revisada el 2026-11-18, después de la prueba de Swarm: pasa a A, sin nginx** (a confirmar con el grupo). `[VERIFIED]` En Docker Desktop para Windows, nginx en modo host tampoco ve la IP del visitante: ve `172.19.0.1` en todos los pedidos de la PC, y el gateway detrás del mesh ve `10.0.0.2`. Desde otra máquina, sin probar. `[INFERRED]` Con la evidencia, la matriz con los mismos pesos da A 3,70, B 2,85 y C' 2,75 (C' es defender en un Linux con Docker nativo, donde el modo host sí vería la IP). Cómo queda:
+> - el cliente liviano se publica en el *routing mesh*, sin proxy delante;
+> - todos los visitantes **sin cuenta** comparten la cubeta por IP (120 lecturas y 30 escrituras por minuto en total). Las cuentas con token validado tienen su propia cubeta;
+> - Grafana se publica con su propio usuario y clave;
+> - `[PROPOSED]` el gateway no se publica en el stack de Swarm, o `GATEWAY_LIMITE_PROXIES_CONFIABLES` se limita a la red de la aplicación, porque la regex por defecto confía en `10.*`, que incluye al mesh;
+> - libera los 0,5 a 1 día-persona del proxy y la imagen de nginx.
+>
+> Detalle en el [ADR de despliegue en Docker Swarm](../adr/20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md) y en el [ADR de rate limiting](../adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md).
 
 **E7-S02c — ¿Cuánto k6? ✅ (2026-11-18): A, un escenario que demuestra**
 > **Respuesta del grupo:** opción A. Las opciones fueron A (un escenario que demuestra), B (calibración completa por clase) y C (sin k6, solo tests de integración). El escenario muestra tres cosas: el tráfico normal pasa, una ráfaga recibe `429`, y el cupo se cuenta entre las dos réplicas del gateway (Redis). Los valores quedan como están, sin calibrar. `[INFERRED]` La tarea R4 de Q15 baja de unos 1 a unos 0,5 días-persona.
@@ -544,7 +554,7 @@ El enunciado pide las tres señales (métricas, trazas y logs): lo que se simpli
 > `[PROPOSED]` Consecuencias:
 > - **Configuración en un solo lugar:** se configura en `common-lib`, donde reemplaza a Brave; es un cambio estructural (AGENTS.md §7.0).
 > - **Sin recolector de logs ni socket de Docker:** desaparece el choque con el ADR de logs sin volúmenes del host.
-> - **Endpoint protegido sin trabajo extra:** `/actuator/prometheus` no se expone, y la medida de Q03 de proteger la observabilidad se reduce a Grafana con usuario y clave detrás del nginx de E7-S02b.
+> - **Endpoint protegido sin trabajo extra:** `/actuator/prometheus` no se expone, y la medida de Q03 de proteger la observabilidad se reduce a Grafana con usuario y clave detrás del nginx de E7-S02b. Con la revisión de E7-S02b no hay nginx: Grafana se publica con su propio usuario y clave.
 > - **Logs:** el NDJSON a la salida estándar sigue igual.
 > - **RabbitMQ:** se lee con un *scrape* de su plugin, configurado en el Prometheus de la imagen.
 >
@@ -602,9 +612,9 @@ Siguen sin preguntarse: los encabezados de seguridad en el gateway (tarea S1 de 
 **E7-S05 — ¿Qué se hace con los ADR? ✅ (2026-11-18): A, reescribir los cuatro dentro del PR 987, antes del merge**
 > **Respuesta del grupo:** opción A. Las opciones fueron A (reescribirlos en el PR 987), B (dejar el de Kubernetes y escribir un sucesor) y C (un ADR por cada decisión nueva).
 > `[PROPOSED]` Qué cambia en cada uno:
-> - **Kubernetes:** pasa a "Despliegue en Docker Swarm de un nodo con réplicas", que incluye ShedLock, el *single active consumer* y nginx.
+> - **Kubernetes:** pasa a "Despliegue en Docker Swarm de un nodo con réplicas", que incluye ShedLock, el *single active consumer* y nginx (nginx salió con la revisión de E7-S02b).
 > - **Observabilidad:** se actualiza a `otel-lgtm` y OTLP.
-> - **Rate limiting:** se actualiza a los cuatro cupos detrás de nginx.
+> - **Rate limiting:** se actualiza a los cuatro cupos detrás de nginx (con la revisión de E7-S02b, detrás del *routing mesh*).
 > - **GraphQL:** se actualiza al alcance sin el donante y al consumo desde una pantalla existente.
 > - **ShedLock en Incentivos:** al ADR existente se le propone la relación "superado por" el de Swarm. La aprobación es humana (AGENTS.md §9.3).
 >
@@ -615,6 +625,7 @@ Siguen sin preguntarse: los encabezados de seguridad en el gateway (tarea S1 de 
 > `[PROPOSED]` Qué muestra cada diagrama:
 > - **Despliegue:** un nodo de Swarm con nginx, las réplicas, `otel-lgtm`, Redis y la infraestructura.
 > - **Componentes:** nginx en lugar del Ingress, y la imagen todo en uno en lugar de los cuatro contenedores.
+> - Con la revisión de E7-S02b, sin nginx: el cliente liviano se publica en el *routing mesh*; si el gateway también se publica queda abierto (ver el ADR de despliegue en Docker Swarm).
 >
 > La versión final queda para el cierre. El PR 989 (esqueleto de Kubernetes) se cierra por E7-S01; la rama queda.
 
@@ -631,7 +642,7 @@ Siguen sin preguntarse: los encabezados de seguridad en el gateway (tarea S1 de 
 > | Persona | Tareas |
 > |---|---|
 > | Tadeo | Prueba de Swarm (media jornada, primera, en lugar del punto de control del 22/11), OTLP en `common-lib`, ADR y diagramas |
-> | Ber | Override de Swarm, réplicas por variable, nginx, el escenario de k6 (R4) y R3 |
+> | Ber | Override de Swarm, réplicas por variable, nginx (sale con la revisión de E7-S02b), el escenario de k6 (R4) y R3 |
 > | Camila Lencina | ShedLock en tres servicios, *single active consumer*, K3 y K6 |
 > | Camila Suarez | `otel-lgtm`, tableros y alertas |
 > | Martín | Las seis métricas propias |
@@ -661,10 +672,10 @@ Siguen sin preguntarse: los encabezados de seguridad en el gateway (tarea S1 de 
 
 ### Cierre de la revisión
 
-**Balance** `[INFERRED]`. Ahorro neto de unos 9 días-persona: de los ~38 del plan quedan unos 29. La revisión libera unos 15: Kubernetes, el stack de observabilidad, las métricas, R2, R4, la tarea S3, la pantalla y el donante en GraphQL. A cambio suma unos 6 de trabajo nuevo: Swarm, ShedLock, el consumidor único, nginx, OTLP en `common-lib` y W1. Es una estimación gruesa; la cifra real sale de la versión 3 del plan (E7-S05d).
+**Balance** `[INFERRED]`. Ahorro neto de unos 9 días-persona: de los ~38 del plan quedan unos 29. La revisión libera unos 15: Kubernetes, el stack de observabilidad, las métricas, R2, R4, la tarea S3, la pantalla y el donante en GraphQL. A cambio suma unos 6 de trabajo nuevo: Swarm, ShedLock, el consumidor único, nginx, OTLP en `common-lib` y W1. Es una estimación gruesa; la cifra real sale de la versión 3 del plan (E7-S05d). Con la revisión de E7-S02b, nginx sale y libera otros 0,5 a 1.
 
 **Qué sigue** `[PROPOSED]`, en orden:
-1. Prueba de Swarm. Si falla, se vuelve a E7-S01c B (Compose con autoheal).
+1. Prueba de Swarm. Si falla, se vuelve a E7-S01c B (Compose con autoheal). ✅ Hecha el 2026-11-18: Swarm sirve (ver el resultado en E7-S01c y la revisión de E7-S02b).
 2. ADR reescritos (PR 987) y borrador de diagramas (PR 988).
 3. Versión 3 del plan.
 4. Rediseño de W1.
