@@ -1,0 +1,5 @@
+# Entorno local (cluster kind). Las diferencias de entorno van acá, no en copias de la base.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base

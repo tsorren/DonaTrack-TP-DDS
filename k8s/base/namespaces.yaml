@@ -1,0 +1,15 @@
+# Un namespace por función (ADR de Kubernetes con kind y Kustomize; nombres fijados en K1).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: donatrack # servicios, api-gateway y cliente liviano (K4)
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: donatrack-infra # Postgres, Mongo, RabbitMQ, Keycloak, MinIO, n8n y Redis (K2)
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: donatrack-observabilidad # Prometheus, Tempo, Loki, Alloy y Grafana (O1 a O4)
