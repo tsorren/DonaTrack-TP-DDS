@@ -3,18 +3,26 @@
 ' Figura 1 (E7, borrador) — Componentes del sistema en la Entrega 7.
 ' Pregunta: ¿qué piezas tiene DonaTrack y cómo se hablan, con lo que suma E7?
 ' Estado objetivo de E7: lo marcado «planificado» está decidido en los ADR de E7
-' (PR 987) y todavía no existe en ENTREGA_7.
+' (PR 987, reescritos por la revisión de simplificación E7-S05) y todavía no existe
+' en ENTREGA_7.
 ' Fuentes:
-'   ADR rate limiting (20261115), ADR Kubernetes (20261117), ADR observabilidad (20261117),
+'   ADR rate limiting (20261115): Redis compartido por las réplicas, fail-open,
+'     el cliente manda la IP del navegador en X-Forwarded-For.
+'   ADR despliegue en Docker Swarm (20261118): sin proxy delante; el cliente se
+'     publica en el routing mesh; publicar el gateway queda abierto.
+'   ADR observabilidad (20261118): imagen grafana/otel-lgtm (colector OTel,
+'     Prometheus, Tempo, Loki, Grafana); los módulos empujan métricas, trazas y logs
+'     por OTLP; el plugin de RabbitMQ se lee con un scrape (a verificar en O3).
 '   ADR GraphQL de Donaciones (donaciones-service/20261117).
 '   Conexiones actuales: docker-compose.preprod.yml (URLs, JDBC, Mongo, MinIO, JWK set),
 '   incentivos-service NotificacionesFeignClient y N8nClientAdapter,
 '   donaciones-service LogisticaProveedoresConfig (proveedores HTTP solo si se configuran;
 '   Logística DonaTrack habla por AMQP).
 ' Simplificaciones de dibujo (dichas en la leyenda):
-'   - las flechas comunes a los cuatro servicios (AMQP, MinIO, métricas, trazas y logs)
-'     salen del recuadro «Servicios DonaTrack»;
-'   - la validación del JWT de los cuatro servicios contra Keycloak va en la leyenda.
+'   - las flechas comunes a los cuatro servicios (AMQP, MinIO, OTLP) salen del
+'     recuadro «Servicios DonaTrack»;
+'   - la validación del JWT de los cuatro servicios contra Keycloak va en la leyenda;
+'   - las réplicas son de despliegue: se dibujan en la Figura 2.
 ' Layout: smetana, como E4. Direcciones explícitas y recuadros por capa para que el
 ' diagrama crezca hacia abajo; «a <-- b» deja a «a» arriba.
 ' ============================================================
@@ -26,11 +34,10 @@ title Figura 1 — Componentes de DonaTrack en E7 (borrador)
 actor "Personas usuarias\n(navegador)" as usr
 
 rectangle "Entrada y seguridad" as capaEntrada {
-  component "Ingress" as ing <<planificado>>
   component "Cliente liviano\n(páginas en el servidor)" as cli <<servicio>>
   component "Keycloak\n(OIDC, emite el JWT)" as kc <<infraestructura>>
-  component "API Gateway\nJWT · traceId\n<color:#6E6E6E>E7: 2 réplicas · rate limiting</color>" as gw <<servicio>>
-  component "Redis\ncupos del rate limiting\n(fail-open)" as redis <<planificado>>
+  component "API Gateway\nJWT · traceId\n<color:#6E6E6E>E7: rate limiting</color>" as gw <<servicio>>
+  component "Redis\ncupos del rate limiting,\ncompartidos por las réplicas\n(fail-open)" as redis <<planificado>>
 }
 
 rectangle "Servicios DonaTrack" as svcs {
@@ -48,24 +55,28 @@ rectangle "Datos y mensajería" as capaDatos {
   component "n8n\n(webhooks)" as n8n <<infraestructura>>
 }
 
-rectangle "Observabilidad" as obs {
+rectangle "Observabilidad · imagen todo en uno grafana/otel-lgtm" as lgtm <<planificado>> {
+  component "Colector\nOpenTelemetry\n(OTLP)" as col <<planificado>>
   component "Prometheus\n(métricas)" as prom <<planificado>>
   component "Tempo\n(trazas)" as tempo <<planificado>>
-  component "Alloy → Loki\n(logs)" as loki <<planificado>>
-  component "Grafana\n(panel y alertas)" as graf <<planificado>>
+  component "Loki\n(logs)" as loki <<planificado>>
+  component "Grafana\n(paneles y alertas)" as graf <<planificado>>
 }
 
 ' ---------- Solo layout ----------
 don -[hidden]right- log
 inc -[hidden]right- not
 don -[hidden]down- inc
-capaDatos -[hidden]down- obs
+capaDatos -[hidden]down- lgtm
+col -[hidden]down- tempo
+prom -[hidden]right- tempo
+tempo -[hidden]right- loki
+tempo -[hidden]down- graf
 
 ' ---------- Entrada ----------
-usr -[#9A9A9A,dotted]down-> ing : HTTPS
+usr -down-> cli : HTTP
 usr -down-> kc : login OIDC
-ing -[#9A9A9A,dotted]down-> cli
-ing -[#9A9A9A,dotted]down-> gw : /api
+usr -[#9A9A9A,dotted]down-> gw : /api directo\n(abierto: ADR de Swarm)
 cli -right-> kc : OIDC
 cli -down-> gw : REST\n(E7: + IP del navegador)
 gw -right-> kc : claves del JWT
@@ -85,11 +96,12 @@ inc -down-> n8n : HTTP
 kc -down-> pg : JDBC
 cli -down-> pg : JDBC (sesiones)
 
-' ---------- Observabilidad (dentro del cluster) ----------
-svcs <-[#9A9A9A,dotted]- prom : /actuator/prometheus
-rmq <-[#9A9A9A,dotted]- prom : plugin de métricas
-svcs -[#9A9A9A,dotted]-> tempo : trazas (Zipkin)
-svcs <-[#9A9A9A,dotted]- loki : stdout de los pods
+' ---------- Observabilidad ----------
+svcs -[#9A9A9A,dotted]down-> col : OTLP: métricas,\ntrazas y logs
+rmq <-[#9A9A9A,dotted]- prom : plugin de métricas\n(a verificar)
+col -[#9A9A9A,dotted]down-> prom
+col -[#9A9A9A,dotted]down-> tempo
+col -[#9A9A9A,dotted]down-> loki
 prom <-[#9A9A9A,dotted]- graf
 tempo <-[#9A9A9A,dotted]- graf
 loki <-[#9A9A9A,dotted]- graf
@@ -102,12 +114,15 @@ legend bottom
   |<#F2F2F2> «infraestructura» | Producto de terceros que corre con el sistema |
   | ── | Llamada sincrónica (HTTP, JDBC, S3, OIDC) |
   | <color:#5E4B8B>- - -</color> | Mensajería AMQP |
-  | <color:#6E6E6E>· · ·</color> | Conexión planificada en E7 |
+  | <color:#6E6E6E>· · ·</color> | Conexión planificada en E7, o abierta |
   Flechas al recuadro «Servicios DonaTrack»: valen para los cuatro. MinIO lo usan
-  Donaciones, Incentivos y Logística. El gateway y el cliente también exponen métricas
-  y trazas. Los cuatro servicios también validan el JWT con las claves de Keycloak
+  Donaciones, Incentivos y Logística. El gateway y el cliente también mandan sus señales
+  por OTLP. Los cuatro servicios también validan el JWT con las claves de Keycloak
   (en el preprod de Compose, solo con PREPROD_SEGURIDAD=true).
-  Prometheus lee las métricas dentro del cluster: no pasan por el gateway ni por el Ingress.
-  Grafana pide usuario y contraseña.
+  Sin proxy delante: el navegador llega al cliente y a Keycloak por los puertos publicados
+  (Figura 2). Publicar también el gateway (para Postman y k6) es una decisión abierta.
+  Las métricas salen por OTLP: /actuator/prometheus no se expone y el colector no se
+  publica fuera de la red del stack. Grafana pide usuario y clave propios.
+  Las réplicas de cada módulo propio se ven en la Figura 2.
 endlegend
 @enduml

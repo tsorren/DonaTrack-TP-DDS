@@ -149,7 +149,7 @@ docs/
 │       └── rabbit/                        # Topología RabbitMQ por flujo (exchanges, colas, DLQ)
 │
 ├── entrega-7/
-│   └── arquitectura/diagramas/            # Borrador de componentes y despliegue en Kubernetes (PlantUML + PNG)
+│   └── arquitectura/diagramas/            # Borrador de componentes y despliegue en Docker Swarm (PlantUML + PNG)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── README.md                          # 🎓 Matriz curricular e índice de entregas 1 a 7
@@ -195,7 +195,7 @@ docs/
 * 📋 **Requerimientos de Entrega 6 (cliente liviano, autenticación y gateway):** [requerimientos/requerimientos-e6.md](requerimientos/requerimientos-e6.md)
 * 📋 **Requerimientos de Entrega 7 (observabilidad y seguridad; rondas de decisión):** [requerimientos/requerimientos-e7.md](requerimientos/requerimientos-e7.md)
 * 🧭 **ADRs de E7 (`proposed`, PR de los ADR):** [despliegue en Docker Swarm de un nodo, con réplicas](adr/20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md) · [observabilidad con OpenTelemetry y `otel-lgtm`](adr/20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm.md) · [rate limiting en el gateway](adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md) · [GraphQL de solo lectura en Donaciones](adr/donaciones-service/20261117-graphql-de-solo-lectura-en-donaciones.md)
-* 🗺️ **Diagramas de E7 (borrador de componentes y de despliegue en Kubernetes):** [entrega-7/arquitectura/diagramas/](entrega-7/arquitectura/diagramas/README.md)
+* 🗺️ **Diagramas de E7 (borrador de componentes y de despliegue en Docker Swarm):** [entrega-7/arquitectura/diagramas/](entrega-7/arquitectura/diagramas/README.md)
 * 🧭 **Plan de trabajo de E6 sin autenticación ni estilos:** [requerimientos/plan-e6-trabajo-sin-auth.md](requerimientos/plan-e6-trabajo-sin-auth.md)
 * 🔌 **Plan del cliente liviano con datos reales y gateway (alternativas y fases):** [requerimientos/plan-e6-cliente-datos-reales-y-gateway.md](requerimientos/plan-e6-cliente-datos-reales-y-gateway.md) · brechas por pantalla: [requerimientos/brechas-de-datos-por-pantalla-e6.md](requerimientos/brechas-de-datos-por-pantalla-e6.md)
 * 🎨 **Proceso de diseño de la interfaz (UX, identidad visual y vistas):** [interfaz/README.md](interfaz/README.md) · reglas del módulo: [../cliente-liviano/AGENTS.md](../cliente-liviano/AGENTS.md)
