@@ -3,6 +3,7 @@ package grupo5.cliente.maqueta;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
 
 import grupo5.cliente.web.Pantallas;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,13 +15,22 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
  * Las páginas de error propias (RF-CL-08, docs/interfaz/flujos/raices-paginas-de-error.md): {@code
- * ?respuesta=404}, {@code 403} o {@code 500} en cualquier pantalla responde con ese código, y
- * Spring Boot muestra templates/error/404, 403 o 5xx, antes de que el controller llame a una API.
+ * ?respuesta=404}, {@code 403}, {@code 429} o {@code 500} en cualquier pantalla responde con ese
+ * código, y Spring Boot muestra templates/error/404, 403, 429 o 5xx, antes de que el controller
+ * llame a una API.
  */
 final class RespuestaDeEjemplo implements HandlerInterceptor {
 
   private static final Map<String, HttpStatus> RESPUESTAS =
-      Map.of("404", NOT_FOUND, "403", FORBIDDEN, "500", INTERNAL_SERVER_ERROR);
+      Map.of(
+          "404",
+          NOT_FOUND,
+          "403",
+          FORBIDDEN,
+          "429",
+          TOO_MANY_REQUESTS,
+          "500",
+          INTERNAL_SERVER_ERROR);
 
   @Override
   public boolean preHandle(

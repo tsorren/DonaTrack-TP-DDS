@@ -50,6 +50,29 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
         </dependency>
+        <!-- Rate limiting (E7, requerimiento 3; ADR 20261115): token bucket, una cubeta por usuario o
+             por IP, guardada en Redis (decisión Q11) con Lettuce. Versión en el pom raíz; la de
+             lettuce-core la fija el BOM de Spring Boot. -->
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk17-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk17-lettuce</artifactId>
+        </dependency>
+        <!-- bucket4j_jdk17-lettuce la declara provided: hay que traerla. -->
+        <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+        </dependency>
+        <!-- Redis real para CubetasEnRedisContraRedisTest; sin Docker el test se saltea
+             (@DisabledIfDockerUnavailable, [DEFERRED_NO_DOCKER]). -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
