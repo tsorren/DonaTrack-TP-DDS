@@ -395,6 +395,19 @@ Elegida A. Cada compañero cambia sus valores en su navegador, toca "Copiar camb
 
 *Cambios respecto de la versión 1.* Rate limiting: de Camila Suarez a Miranda (con Ber), más R1b para Tadeo. Seguridad: S1 y S2 a Anush, S3 y S4 a Miranda. Stack de observabilidad: de Anush a Camila Suarez (O1, O3, O4), con Tempo (O2) para Sofía y la verificación final (O5) para Tadeo. Kubernetes: K1 y K5 a Tadeo; Ber se queda con K2 y suma R3 y R4. Tareas nuevas W1 y R1b. D1 ya no espera a R4. Línea base anterior: fin jueves 26/11, margen 6,7 días, sin dedicación ni parciales.
 
+*Versión 3 (2026-11-18, E7-S05d A)* `[INFERRED]`, publicada en el artifact con "hoy" = 18/11. Aplica la revisión de simplificación (§5):
+- **Kubernetes sale.** Se reemplaza por SW1 (archivo del stack de Swarm) y SW2 (stack completo con dos réplicas), de Ber, más SW0 (la prueba de Swarm, hecha).
+- **Tareas de Camila Lencina:** K3 (grupo *liveness*), SL1 (ShedLock), SL2 (*single active consumer*) y K6 (caos).
+- **Observabilidad:** O1, O3 y O4 de Camila Suarez sobre `otel-lgtm`; O2 (OTLP en `common-lib`) y O5 de Tadeo.
+- **Métricas:** M2 (M01, M04, M13 y M16) de Martín, y R3 (M24 y M25) de Ber.
+- **Rate limiting:** R1, R1b y R2 hechos en el PR 986.
+- **Otras tareas:** R4 queda en un escenario de k6, P1 a P3 bajan a un adaptador de una pantalla existente, sale P4 y S3 queda con prueba de humo.
+- **Calendario:** sin el sprint de cluster ni el punto de control del 22/11.
+- **Sin nginx:** E7-S02b se revisó a A después de la prueba de Swarm (en el ADR de despliegue en Docker Swarm, PR 987), así que Ber no tiene tarea de nginx.
+- **Workflow W1:** propuesta de tareas que escribe, a confirmar al rediseñarlo (E7-S05c): S1, S2, R3, G3, M2, SL1, SL2, O3 y O4. Reemplaza la lista del párrafo "Workflow de agentes (W1)" de la versión 2, y W1 ya no espera a K1.
+
+Resultado: críticas **A0, SW1, SW2, O5, R3, D1 e I2**. Fin esperado el **martes 1/12**, con 1,1 días de margen hasta el congelamiento. Llega el 56 % de las simulaciones (en la versión 2, el 13 %), y el 80 % termina a más tardar el viernes 4/12, el día de la defensa. Lo que falta suma unos 23 días-persona comprometidos. Las tareas que escribe W1 se confirman al rediseñarlo (E7-S05c).
+
 **E7-Q16 — ¿Qué ADRs hacen falta? ✅ (2026-11-16): los cuatro; Q16b B, primero y en un PR aparte**
 > **Respuesta del grupo:** *Q16a:* cuatro ADR `proposed`: (1) despliegue en Kubernetes (ARCHITECTURAL: kind, Kustomize, convivencia con Compose, probes y política de reinicio sin tope con alerta); (2) stack de observabilidad (sucesor parcial del [ADR de trazabilidad](../adr/20260901-sistema-unificado-de-trazabilidad-y-observabilidad-distribuida.md): Prometheus, Tempo, Loki y Grafana, catálogo de métricas, alertas en el panel, protección de endpoints y recolección de logs en el cluster); (3) rate limiting en el gateway (Bucket4j con Redis, *fail-open*, identificación y límites, `429`); (4) GraphQL en Donaciones (solo lectura, adaptador sobre los servicios de aplicación, límites, ruta, librería). Sin ADR propio: la seguridad perimetral (sigue el [ADR del pipeline de CI](../adr/20260426-pipeline-unificado-de-cicd-y-automatizacion-de-calidad.md)) y los diagramas. *Q16b B* (el grupo no siguió la recomendación del agente, que era A): los cuatro ADR se escriben **primero y en un PR aparte**, para validar la decisión antes de implementarla. Riesgo asumido: ese PR frena el arranque del camino crítico hasta que se revise. `[OBSERVED]` el ADR 2 tiene que resolver el choque con el [ADR de logs sin volúmenes del host](../adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md), pensado para Docker: en Kubernetes el recolector lee los logs de los pods desde el nodo. Solo una persona del grupo puede pasar un ADR a `accepted` (AGENTS.md §9.3).
 
@@ -666,7 +679,7 @@ Siguen sin preguntarse: los encabezados de seguridad en el gateway (tarea S1 de 
 **Qué sigue** `[PROPOSED]`, en orden:
 1. Prueba de Swarm. Si falla, se vuelve a E7-S01c B (Compose con autoheal).
 2. ADR reescritos (PR 987) y borrador de diagramas (PR 988).
-3. Versión 3 del plan.
+3. Versión 3 del plan. ✅ Publicada el 2026-11-18 (resultado en la Q15).
 4. Rediseño de W1.
 5. Envío de las dos consultas.
 6. Cierre del PR 989.
