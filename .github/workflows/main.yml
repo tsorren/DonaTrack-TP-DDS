@@ -152,6 +152,8 @@ jobs:
               - '.dockerignore'
               - 'n8n/**'
               - 'integration-tests/**'
+              # Un cambio del pipeline reconstruye y escanea todas las imágenes (E7, S2).
+              - '.github/workflows/main.yml'
 
       - name: Descubrir servicios y generar matrices dinámicas
         id: generate-matrices
@@ -224,6 +226,54 @@ jobs:
 
           echo "📦 Módulos a compilar: ${SERVICES[*]:-ninguno}"
           echo "🐳 Módulos para Docker: ${DOCKER_SERVICES[*]:-ninguno}"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 2b: Escaneo de dependencias con Trivy (E7, S2)
+  # ──────────────────────────────────────────────────────────────────────────
+  # trivy fs sobre el repo: lee los pom.xml (y cualquier otro manifiesto de dependencias).
+  # SARIF completo a la pestaña de seguridad; corta solo con CRITICAL que tenga arreglo.
+  # Corre en todo PR: una vulnerabilidad nueva aparece aunque nadie toque el pom.
+  # Detalle: docs/testing/escaneo-seguridad-ci.md.
+  # ──────────────────────────────────────────────────────────────────────────
+  dependency-scan:
+    needs: validate-git-flow
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write # SARIF de Trivy
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Escanear dependencias con Trivy (SARIF)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln
+          format: sarif
+          output: trivy-dependencias.sarif
+          exit-code: '0'
+          timeout: 10m0s
+
+      - name: Publicar SARIF de dependencias
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: trivy-dependencias.sarif
+          category: trivy-dependencias
+
+      - name: Corte de Trivy en dependencias (CRITICAL con arreglo)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln
+          severity: CRITICAL
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'
+          timeout: 10m0s
+          skip-setup-trivy: true
 
   # ──────────────────────────────────────────────────────────────────────────
   # Job 3: Lint y Formato (Spotless)
@@ -402,10 +452,11 @@ jobs:
     needs: [detect-changes, build-and-test]
     if: ${{ needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     permissions:
       contents: read
       packages: write
+      security-events: write # SARIF de Trivy (S2)
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.detect-changes.outputs.docker-matrix) }}
@@ -469,6 +520,39 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }},ignore-error=true
 
+      # Escaneo de la imagen recién publicada (E7, S2; docs/testing/escaneo-seguridad-ci.md).
+      # Primero el SARIF completo a la pestaña de seguridad; después el corte: falla solo con
+      # CRITICAL que tenga arreglo, salvo lo aceptado en .trivyignore.
+      - name: "Escanear imagen con Trivy (SARIF): ${{ matrix.service }}"
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: ${{ steps.meta.outputs.image_tag }}
+          scanners: vuln
+          format: sarif
+          output: trivy-imagen.sarif
+          exit-code: '0'
+          timeout: 10m0s
+
+      - name: "Publicar SARIF de la imagen: ${{ matrix.service }}"
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: trivy-imagen.sarif
+          category: trivy-imagen-${{ matrix.service }}
+
+      - name: "Corte de Trivy (CRITICAL con arreglo): ${{ matrix.service }}"
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: ${{ steps.meta.outputs.image_tag }}
+          scanners: vuln
+          severity: CRITICAL
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'
+          timeout: 10m0s
+          skip-setup-trivy: true
+
   # ──────────────────────────────────────────────────────────────────────────
   # Job 6b: auth-service (Keycloak) — contrato del realm e imagen (SPEC-06 E2-12)
   # ──────────────────────────────────────────────────────────────────────────
@@ -483,10 +567,11 @@ jobs:
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.auth-changed == 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     permissions:
       contents: read
       packages: write
+      security-events: write # SARIF de Trivy (S2)
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -545,6 +630,39 @@ jobs:
           tags: ${{ steps.meta.outputs.image_tag }}
           cache-from: type=gha,scope=auth-service
           cache-to: type=gha,mode=max,scope=auth-service,ignore-error=true
+
+      # Escaneo de la imagen recién publicada (E7, S2; docs/testing/escaneo-seguridad-ci.md).
+      # Primero el SARIF completo a la pestaña de seguridad; después el corte: falla solo con
+      # CRITICAL que tenga arreglo, salvo lo aceptado en .trivyignore.
+      - name: "Escanear imagen con Trivy (SARIF): auth-service"
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: ${{ steps.meta.outputs.image_tag }}
+          scanners: vuln
+          format: sarif
+          output: trivy-imagen.sarif
+          exit-code: '0'
+          timeout: 10m0s
+
+      - name: "Publicar SARIF de la imagen: auth-service"
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: trivy-imagen.sarif
+          category: trivy-imagen-auth-service
+
+      - name: "Corte de Trivy (CRITICAL con arreglo): auth-service"
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: ${{ steps.meta.outputs.image_tag }}
+          scanners: vuln
+          severity: CRITICAL
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'
+          timeout: 10m0s
+          skip-setup-trivy: true
 
   # ──────────────────────────────────────────────────────────────────────────
   # Job 7: Generar Diagramas
@@ -839,7 +957,7 @@ jobs:
   # Job 10: Quality Gate (Consolidador Final)
   # ──────────────────────────────────────────────────────────────────────────
   quality-gate:
-    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, auth-service, generate-diagrams, semantic-uml-diff, preprod-validation]
+    needs: [validate-git-flow, detect-changes, dependency-scan, lint-and-format, build-and-test, sonar-analysis, docker-build, auth-service, generate-diagrams, semantic-uml-diff, preprod-validation]
     if: always() && (github.event.action != 'edited' || github.event.changes.base != null)
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -925,6 +1043,8 @@ jobs:
           # Jobs siempre requeridos
           check_job "validate-git-flow"   "${{ needs.validate-git-flow.result }}"   "always"
           check_job "detect-changes"      "${{ needs.detect-changes.result }}"      "always"
+          # Escaneo de dependencias con Trivy (E7, S2): corre en todo PR
+          check_job "dependency-scan"     "${{ needs.dependency-scan.result }}"     "always"
 
           # Jobs requeridos si hay servicios con código modificado
           check_job "lint-and-format"     "${{ needs.lint-and-format.result }}"     "any-service"

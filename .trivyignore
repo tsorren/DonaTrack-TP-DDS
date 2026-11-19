@@ -1,0 +1,10 @@
+# Vulnerabilidades aceptadas por el corte de Trivy en el CI (E7, S2).
+# Detalle: docs/testing/escaneo-seguridad-ci.md.
+#
+# Una entrada por vulnerabilidad, con un comentario arriba que diga la fecha y el motivo:
+#
+#   # 2026-11-19 · <motivo> · deuda <DTI-NN en docs/adr/DEUDA_TECNICA.md>
+#   CVE-AAAA-NNNNN
+#
+# Solo entran críticos que ya estaban antes del escaneo o que no se pueden arreglar en el PR.
+# Cada entrada tiene su deuda registrada. Sin entradas al 2026-11-19.
