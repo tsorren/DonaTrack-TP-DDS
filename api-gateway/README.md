@@ -53,7 +53,7 @@ Con `GATEWAY_SEGURIDAD_HABILITADA=true` el gateway valida firma (JWKS), `exp`, `
 | `Strict-Transport-Security` | `max-age=31536000`. En http el navegador lo ignora; vale cuando haya TLS |
 
 - Es un filtro que corre antes que la cadena de Spring Security, así que el `401` también los lleva.
-- Cada uno sale una sola vez y con este valor: el filtro ignora el que trae el servicio en una ruta enrutada y el que pone la cadena de `common-lib` (su `nosniff`, su `DENY` y su `Cache-Control`).
+- Cada uno sale una sola vez y con este valor: el filtro ignora el que trae el servicio en una ruta enrutada y el que pone la cadena de `common-lib` (su `nosniff`, su `DENY` y, solo en `/api/**`, su `Cache-Control`). Fuera de `/api/**` el `Cache-Control` de la cadena pasa tal cual.
 - Los valores son constantes de la clase, sin propiedades.
 
 ## `X-Trace-Id`

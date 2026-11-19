@@ -20,9 +20,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * <p>Corre antes que la cadena de Spring Security para que también el 401 los lleve. Los fija antes
  * de seguir y después ignora cualquier otro valor para esos nombres: el que trae el servicio en una
  * ruta enrutada (los servicios tienen su propia cadena) y el que pone la cadena de {@code
- * common-lib} ({@code nosniff}, {@code DENY} y su {@code Cache-Control}). Así cada uno sale una
- * sola vez y con este valor. {@code Strict-Transport-Security} sale también en http, donde el
- * navegador lo ignora; vale cuando haya TLS.
+ * common-lib} ({@code nosniff}, {@code DENY} y, solo en {@code /api/**}, su {@code Cache-Control}).
+ * Así cada uno sale una sola vez y con este valor. Fuera de {@code /api/**} el {@code
+ * Cache-Control} de la cadena pasa tal cual. {@code Strict-Transport-Security} sale también en
+ * http, donde el navegador lo ignora; vale cuando haya TLS.
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
