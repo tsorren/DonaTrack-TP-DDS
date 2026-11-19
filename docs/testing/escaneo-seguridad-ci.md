@@ -1,7 +1,9 @@
 # Escaneo de dependencias e imágenes con Trivy en el CI
 
 > E7, tarea S2 (E7-S05d). Decisión D4 del plan de W1, aprobada el 2026-11-18: Trivy.
-> Sin ADR propio: sigue el [ADR del pipeline unificado](../adr/20260426-pipeline-unificado-de-cicd-y-automatizacion-de-calidad.md).
+> Sin ADR propio, por decisión del plan (D4): los pasos se suman al pipeline del
+> [ADR del pipeline unificado](../adr/20260426-pipeline-unificado-de-cicd-y-automatizacion-de-calidad.md),
+> que no nombra Trivy ni el escaneo de vulnerabilidades. La base de la herramienta nueva es la aprobación de D4.
 > Archivo: [`.github/workflows/main.yml`](../../.github/workflows/main.yml). Excepciones: [`.trivyignore`](../../.trivyignore).
 
 ## 1. Qué se escanea
@@ -24,7 +26,9 @@ Cada escaneo corre dos veces Trivy:
 2. **Corte.** Solo `CRITICAL` que tenga arreglo publicado (`ignore-unfixed: true`), menos lo aceptado en
    `.trivyignore`. Si encuentra uno, el paso falla (`exit-code: 1`).
 
-El reporte va antes del corte: el SARIF se publica aunque el corte falle.
+El reporte va antes del corte: el SARIF se publica aunque el corte falle. En `docker-build` y `auth-service`
+el escaneo corre después del push, así que la imagen `pr-<n>` queda publicada en GHCR aunque el corte falle;
+lo que se frena es el resto del pipeline (ver abajo).
 
 Dónde se ve `[INFERRED]`, a confirmar en el primer CI: `main.yml` corre solo en PRs, así que los
 resultados quedan asociados a la referencia del PR. Se ven en la pestaña de seguridad filtrando por
@@ -56,8 +60,9 @@ largo que antes. Por los pasos de Trivy, el tope de `docker-build` sube de 15 a 
 Un crítico que ya estaba, o que no se puede arreglar en el PR, entra a `.trivyignore`: una línea con el
 identificador y un comentario arriba con fecha, motivo y la deuda en
 [`DEUDA_TECNICA.md`](../adr/DEUDA_TECNICA.md). No se apaga el paso. El corte lo pide explícito
-(`trivyignores`); el reporte también lo aplica, porque Trivy lee `.trivyignore` de la raíz por defecto,
-así que lo aceptado no aparece en la pestaña de seguridad.
+(`trivyignores`). `[INFERRED]`, por la documentación de Trivy y a confirmar en el primer CI: el reporte
+también lo aplica, porque Trivy lee `.trivyignore` de la raíz por defecto, así que lo aceptado no aparece
+en la pestaña de seguridad.
 
 Al 2026-11-19 no hay entradas: el primer escaneo real es el CI del PR de S2.
 
@@ -73,9 +78,12 @@ Desvío del pedido, que decía "último release": en `github/codeql-action`, `re
 último tag `v4.*`.
 
 Los dos commits salen del tag (desreferenciado si es anotado) y pertenecen a la rama por defecto de la
-acción (`gh api repos/<acción>/compare/<rama>...<sha>` da `behind`). trivy-action instala Trivy v0.70.0
-con `aquasecurity/setup-trivy`, fijado por SHA dentro de la acción. El segundo uso de cada job no la
-reinstala (`skip-setup-trivy: true`) y reusa la base de vulnerabilidades en caché.
+acción (`gh api repos/<acción>/compare/<rama>...<sha>` da `behind`). Leído en el `action.yaml`
+de trivy-action en el commit fijado (se confirma en el primer CI): los inputs usados existen
+(`trivyignores`, `skip-setup-trivy`, `ignore-unfixed`, `timeout`, entre otros) y la acción instala
+Trivy v0.70.0 (valor por defecto de `version`) con `aquasecurity/setup-trivy` fijado por SHA. El segundo
+uso de cada job no la reinstala (`skip-setup-trivy: true`). `[INFERRED]`: reusa la base de
+vulnerabilidades del primero, porque los dos usan el mismo `cache-dir` por defecto.
 
 ## 6. Cómo correrlo local
 
