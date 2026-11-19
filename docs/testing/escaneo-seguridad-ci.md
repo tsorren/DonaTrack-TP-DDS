@@ -26,6 +26,12 @@ Cada escaneo corre dos veces Trivy:
 
 El reporte va antes del corte: el SARIF se publica aunque el corte falle.
 
+Dónde se ve `[INFERRED]`, a confirmar en el primer CI: `main.yml` corre solo en PRs, así que los
+resultados quedan asociados a la referencia del PR. Se ven en la pestaña de seguridad filtrando por
+`pr:<n>` y en los checks del PR, no en la vista por defecto de la rama principal. GitHub puede agregar al
+PR su propio check de *code scanning*, con un umbral que se configura en el repo y no es el corte de
+Trivy. Ese check no entra al `quality-gate`.
+
 Qué pasa si corta:
 
 - `dependency-scan` falla y el `quality-gate` lo marca: es obligatorio en todo PR (`always`).
