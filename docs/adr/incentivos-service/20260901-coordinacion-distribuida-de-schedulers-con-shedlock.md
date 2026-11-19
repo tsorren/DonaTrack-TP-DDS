@@ -5,6 +5,11 @@
 - Deciders: Decisión Grupal
 - Tags: concurrencia, schedulers, shedlock, alta-disponibilidad, incentivos
 
+> **Relación propuesta el 2026-11-18: superado por** el
+> [ADR de despliegue en Docker Swarm](../20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md),
+> que extiende ShedLock con JDBC a Donaciones, Incentivos y Logística (E7-S01d-1). La relación la
+> aprueba un revisor humano (AGENTS.md §9.3); hasta entonces, el estado de este ADR no cambia.
+
 ## Contexto y Problema
 
 En `incentivos-service`, existen tres tareas programadas críticas gobernadas por `@Scheduled`:
