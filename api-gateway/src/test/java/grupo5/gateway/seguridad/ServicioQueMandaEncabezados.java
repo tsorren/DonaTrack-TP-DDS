@@ -17,15 +17,24 @@ import org.springframework.test.context.DynamicPropertyRegistry;
  */
 final class ServicioQueMandaEncabezados {
 
+  private static final String CACHE_CONTROL = "Cache-Control";
+
   static final Map<String, String> ESPERADOS =
       Map.of(
-          "X-Content-Type-Options", "nosniff",
-          "X-Frame-Options", "DENY",
-          "Referrer-Policy", "no-referrer",
-          "Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'",
-          "Permissions-Policy", "camera=(), microphone=(), geolocation=()",
-          "Cache-Control", "no-store",
-          "Strict-Transport-Security", "max-age=31536000");
+          "X-Content-Type-Options",
+          "nosniff",
+          "X-Frame-Options",
+          "DENY",
+          "Referrer-Policy",
+          "no-referrer",
+          "Content-Security-Policy",
+          "default-src 'none'; frame-ancestors 'none'",
+          "Permissions-Policy",
+          "camera=(), microphone=(), geolocation=()",
+          CACHE_CONTROL,
+          "no-store",
+          "Strict-Transport-Security",
+          "max-age=31536000");
 
   private ServicioQueMandaEncabezados() {}
 
@@ -67,11 +76,11 @@ final class ServicioQueMandaEncabezados {
   static void tieneLosSeisSinCacheControl(HttpResponse<?> respuesta) {
     ESPERADOS.forEach(
         (nombre, valor) -> {
-          if (!"Cache-Control".equals(nombre)) {
+          if (!CACHE_CONTROL.equals(nombre)) {
             tieneUnaSolaVez(respuesta, nombre, valor);
           }
         });
-    assertThat(respuesta.headers().allValues("Cache-Control")).doesNotContain("no-store");
+    assertThat(respuesta.headers().allValues(CACHE_CONTROL)).doesNotContain("no-store");
   }
 
   private static void tieneUnaSolaVez(HttpResponse<?> respuesta, String nombre, String valor) {
