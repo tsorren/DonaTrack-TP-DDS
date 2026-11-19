@@ -5,6 +5,7 @@
 # [PROPOSED] Réplicas: DONATRACK_REPLICAS (1 por defecto, 2 en la defensa) en los seis módulos propios.
 # [PROPOSED] Límites de memoria: lo medido en la prueba del 2026-11-18 más margen sobre -Xmx o
 #   MaxRAMPercentage=75 (cliente liviano). Son techos, sin reservas: no frenan la planificación en un nodo.
+#   minio-init no se midió (tarea de una vez): su límite es un valor a ojo.
 # [PROPOSED] Healthcheck de los replicados: interval 5s, timeout 3s, retries 3 (una réplica colgada saldría
 #   en unos 15 a 25 s, [INFERRED]; con retries 20 tardó 160 s). start_period 120s porque con retries 3 un arranque lento
 #   con 14 contenedores a la vez no puede contar como falla. El test sigue siendo /actuator/health
@@ -79,6 +80,7 @@ services:
           memory: 512M
 
   # Tarea de una vez: con la política por defecto (any) Swarm la relanzaría para siempre.
+  # [PROPOSED] 128M sin medición: la prueba no midió minio-init.
   minio-init:
     deploy:
       restart_policy:

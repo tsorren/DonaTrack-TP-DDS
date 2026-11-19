@@ -3,9 +3,11 @@
 // Uso: docker compose -f docker-compose.preprod.yml config --format json | node scripts/swarm/generar-stack.js > stack.json
 // Lo que borra va a la salida de error. Ver scripts/swarm/README.md.
 
-// Puertos que quedan publicados en Swarm (todas las interfaces: Swarm no admite 127.0.0.1).
-// El resto se despublica: el gateway por la regex 10.* de GATEWAY_LIMITE_PROXIES_CONFIABLES, los
-// servicios para que nadie esquive el gateway y la infraestructura porque nadie de afuera la usa.
+// [PROPOSED] Puertos que quedan publicados en Swarm. Swarm rechaza 127.0.0.1 (prueba, [VERIFIED]); que
+// queden en todas las interfaces es [INFERRED]. El resto se despublica: el gateway porque, según el ADR,
+// los compose del PR 986 confían en X-Forwarded-For desde 10.* y el mesh llega desde 10.0.0.2 ([INFERRED]:
+// cualquiera elegiría su cubeta de rate limiting), los servicios para que nadie esquive el gateway y la
+// infraestructura porque nadie de afuera la usa.
 // RabbitMQ (5672), solo con DONATRACK_PUBLICAR_RABBITMQ=true (pruebas desde el host, RM-08).
 const PUERTOS_PUBLICADOS = { 'cliente-liviano': [8090], keycloak: [8180] };
 const PUERTOS_RABBITMQ = { rabbitmq: [5672] };

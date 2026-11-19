@@ -6,7 +6,10 @@ const path = require('node:path');
 const { generarStack } = require('./generar-stack.js');
 
 const ejemplo = JSON.parse(fs.readFileSync(path.join(__dirname, 'ejemplo-compose.json'), 'utf8'));
+const copiaEntrada = structuredClone(ejemplo);
 const { stack } = generarStack(ejemplo);
+generarStack(ejemplo, { publicarRabbitmq: true });
+const override = fs.readFileSync(path.join(__dirname, '..', '..', 'docker-stack.override.yml'), 'utf8');
 const s = stack.services;
 
 test('borra name y pone version 3.9', () => {
@@ -64,12 +67,19 @@ test('el cliente liviano conserva la sesión en la base (E7-S01c)', () => {
 });
 
 test('no cambia la entrada', () => {
-  assert.equal(ejemplo.name, 'donatrack-tp-dds');
-  assert.ok(ejemplo.services.k6);
+  assert.deepStrictEqual(ejemplo, copiaEntrada);
 });
 
 test('el override fija hostname de mongodb y la restart_policy de minio-init', () => {
-  const override = fs.readFileSync(path.join(__dirname, '..', '..', 'docker-stack.override.yml'), 'utf8');
   assert.match(override, /\n {2}mongodb:\n {4}hostname: mongodb\n/);
   assert.match(override, /\n {2}minio-init:\n {4}deploy:\n {6}restart_policy:\n {8}condition: on-failure\n/);
+});
+
+test('el override pone el healthcheck corto en los seis replicados', () => {
+  assert.match(override, /&salud-replicado\n {2}interval: 5s\n {2}timeout: 3s\n {2}retries: 3\n {2}start_period: 120s\n/);
+  const conSalud = [...override.matchAll(/\n {2}([a-z-]+):\n(?: {4}.*\n)*? {4}healthcheck: \*salud-replicado\n/g)].map((m) => m[1]);
+  assert.deepEqual(conSalud, [
+    'api-gateway', 'cliente-liviano', 'donaciones-service',
+    'incentivos-service', 'logistica-service', 'notificaciones-service',
+  ]);
 });

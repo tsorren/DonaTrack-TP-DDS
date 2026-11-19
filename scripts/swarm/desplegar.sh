@@ -4,7 +4,8 @@
 #   ENV_FILE           .env a usar (por defecto, el de la raíz del repo)
 #   DONATRACK_REPLICAS réplicas de los seis módulos propios (1 por defecto, 2 en la defensa)
 #   DONATRACK_PUBLICAR_RABBITMQ=true publica el 5672 (pruebas desde el host)
-#   DONATRACK_BORRAR_COLAS_SAC=true  borra las colas con single active consumer antes de desplegar
+#   DONATRACK_BORRAR_COLAS_SAC=true  lugar del paso que borra las colas con single active consumer;
+#                                    hoy solo avisa y corta (el paso lo documenta SL2)
 # El stack generado tiene los secretos del .env interpolados: queda en target/swarm/ (ignorado por git).
 set -euo pipefail
 
@@ -42,5 +43,6 @@ if [ "${DONATRACK_BORRAR_COLAS_SAC:-false}" = "true" ]; then
 fi
 
 # Las imágenes de infraestructura tienen que estar locales: sin ellas el deploy falló con
-# "context deadline exceeded". Antes del primer despliegue: docker compose -f docker-compose.preprod.yml pull
+# "context deadline exceeded". Antes del primer despliegue:
+#   docker compose -f docker-compose.preprod.yml pull --ignore-buildable
 docker stack deploy --resolve-image never -c "$salida" -c docker-stack.override.yml "$stack_nombre"
