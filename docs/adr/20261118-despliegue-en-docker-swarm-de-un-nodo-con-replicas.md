@@ -126,21 +126,21 @@ Elegidas **Docker** (E7-S01), **Swarm de un nodo con los seis módulos propios r
     esperada de la tarea;
   - dos dependencias nuevas (`shedlock-spring` y `shedlock-provider-jdbc-template`), aprobadas por
     el grupo al elegir la opción (AGENTS.md §6, a confirmar en el PR).
-  - **Configuración común en `common-lib` (decidido el 2026-11-18, D7 B del plan de W1).**
+  - **Configuración común en `common-lib` (decidido por el grupo el 2026-11-18, al planificar las tareas).**
     `@EnableSchedulerLock` y el `LockProvider` van en una autoconfiguración de `common-lib` que se
     activa solo si hay un `DataSource`. Es un cambio estructural de `common-lib` (AGENTS.md §7.0),
     con el reactor completo como gate. Se descartó la opción de cada servicio (A), que era la
-    recomendada porque no choca con la tarea O2, que también cambia `common-lib`: se eligió no
-    repetir el código.
+    recomendada porque no choca con la tarea de OpenTelemetry (O2), que también cambia
+    `common-lib`: se eligió no repetir el código.
 - **Orden de los eventos: *single active consumer* (E7-S01d-2).** `[PROPOSED]` Las colas donde importa
   el orden se van a declarar con `x-single-active-consumer: true`: una réplica consume y la otra
-  queda de reserva. Candidatas:
+  queda de reserva. Son siete:
   - las seis del ciclo de vida de una entrega que consume Donaciones (ruta asignada, ruta
     iniciada, en puerta, exitosa, fallida y cancelada);
   - la del ciclo de vida del donante en Incentivos.
 
-  Las demás se apoyan en la idempotencia que ya tienen. **Lista decidida el 2026-11-18 (D8 A del
-  plan de W1):** las siete candidatas, con el mismo nombre. Un paso de despliegue documentado borra
+  Las demás se apoyan en la idempotencia que ya tienen. **Lista decidida por el grupo el
+  2026-11-18:** las siete, con el mismo nombre. Un paso de despliegue documentado borra
   esas colas antes de la versión nueva; en un stack nuevo no hace falta. Se descartaron los nombres
   nuevos (`.v2`) porque tocan tests de integración y otros consumidores.
   - **Alcance del orden.** `[INFERRED]` El *single active consumer* ordena los mensajes **dentro
@@ -152,7 +152,7 @@ Elegidas **Docker** (E7-S01), **Swarm de un nodo con los seis módulos propios r
     de evento, la alternativa es una sola cola por entidad; queda **abierta** para la tarea.
 
   `[INFERRED]` RabbitMQ no deja redeclarar una cola existente con otros argumentos
-  (`PRECONDITION_FAILED`): por eso el despliegue borra esas colas antes de la versión nueva (D8 A).
+  (`PRECONDITION_FAILED`): por eso el despliegue borra esas colas antes de la versión nueva (decisión del 2026-11-18).
 - **Sesiones del cliente liviano.** Con dos réplicas, la sesión vive en la base
   (`CLIENTE_SESIONES_JDBC_HABILITADO=true`, como en el preprod), así que no hace falta afinidad.
 - **Entrada y la IP del visitante (E7-S02b A).** Sin proxy delante: el cliente liviano (8090) se
