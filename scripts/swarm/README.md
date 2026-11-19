@@ -24,6 +24,7 @@ Compose sigue siendo el entorno de desarrollo, del CI y de la demo pública.
 - pone las redes como `overlay` y `attachable`.
 
 Un override no puede sacar puertos ni campos del archivo base: por eso lo hace la transformación.
+Tests: `node --test scripts/swarm/*.test.js`.
 
 ## Uso
 
@@ -80,7 +81,7 @@ notificaciones, donaciones e incentivos, keycloak, cliente liviano, y al final m
   logística no arrancan.
 - `minio-init` es una tarea de una vez (`restart_policy: on-failure`): que figure `0/1` y `Complete` es lo esperado.
 - Los replicados usan `interval: 5s`, `timeout: 3s`, `retries: 3` y `start_period: 120s`: una réplica
-  colgada sale en unos 15 s (con `retries: 20` tardaba 160 s y la mitad de los pedidos caía en *timeout*).
+  colgada saldría en unos 15 a 25 s (`[INFERRED]`, sin medir; con `retries: 20` tardaba 160 s y la mitad de los pedidos caía en *timeout*).
   El `start_period` es largo porque con tres reintentos un arranque lento contaría como falla.
 - Los límites de memoria son techos, sin reservas. Con 2 réplicas suman más que los 8,7 GiB de la VM, pero
   lo medido con el gateway ×2 fue 3,6 GiB.

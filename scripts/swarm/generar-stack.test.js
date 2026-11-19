@@ -1,4 +1,4 @@
-// node --test scripts/swarm/
+// node --test scripts/swarm/*.test.js   (Node 24 no acepta un directorio)
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
