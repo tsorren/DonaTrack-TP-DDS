@@ -126,7 +126,7 @@ Elegidas **Docker** (E7-S01), **Swarm de un nodo con los seis módulos propios r
     esperada de la tarea;
   - dos dependencias nuevas (`shedlock-spring` y `shedlock-provider-jdbc-template`), aprobadas por
     el grupo al elegir la opción (AGENTS.md §6, a confirmar en el PR).
-  - **Configuración común en `common-lib` (decidido por el grupo el 2026-11-18, al planificar las tareas).**
+  - **Configuración común en `common-lib` (elegido por Tadeo el 2026-11-18, a confirmar en el PR).**
     `@EnableSchedulerLock` y el `LockProvider` van en una autoconfiguración de `common-lib` que se
     activa solo si hay un `DataSource`. Es un cambio estructural de `common-lib` (AGENTS.md §7.0),
     con el reactor completo como gate. Se descartó la opción de cada servicio (A), que era la
@@ -139,8 +139,8 @@ Elegidas **Docker** (E7-S01), **Swarm de un nodo con los seis módulos propios r
     iniciada, en puerta, exitosa, fallida y cancelada);
   - la del ciclo de vida del donante en Incentivos.
 
-  Las demás se apoyan en la idempotencia que ya tienen. **Lista decidida por el grupo el
-  2026-11-18:** las siete, con el mismo nombre. Un paso de despliegue documentado borra
+  Las demás se apoyan en la idempotencia que ya tienen. **Lista elegida por Tadeo el
+  2026-11-18, a confirmar en el PR:** las siete, con el mismo nombre. Un paso de despliegue documentado borra
   esas colas antes de la versión nueva; en un stack nuevo no hace falta. Se descartaron los nombres
   nuevos (`.v2`) porque tocan tests de integración y otros consumidores.
   - **Alcance del orden.** `[INFERRED]` El *single active consumer* ordena los mensajes **dentro
@@ -263,7 +263,7 @@ active consumer*) es infraestructura y queda en adaptadores y configuración, si
     paso que arma una a partir de la otra si se elige generarla.
   - El límite por IP es uno solo para todos los visitantes sin cuenta.
   - Keycloak queda publicado en todas las interfaces.
-  - Dos dependencias nuevas (ShedLock), una tabla por servicio y colas redeclaradas.
+  - Dos dependencias nuevas (ShedLock), una tabla por servicio y colas redeclaradas: al actualizar un stack que ya corre, hay que vaciar esas colas antes de borrarlas o se pierden los eventos pendientes.
   - Sin separación entre *liveness* y *readiness*: una réplica con una dependencia caída sigue
     recibiendo tráfico.
   - `[INFERRED]` Con dos réplicas de todo, el stack usa casi toda la memoria de una máquina de
