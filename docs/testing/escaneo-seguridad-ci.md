@@ -47,6 +47,10 @@ reconstruye y escanea todas las imágenes, y además enciende `any-service` y `a
 build, tests, Sonar (si corresponde) y el preprod completos. Antes, un PR que tocaba solo `.github/**`
 dejaba la matriz Docker vacía. Los otros workflows (`merge.yml` y el resto) no entran al filtro.
 
+**Cambio de comportamiento del CI (desde S2).** Un PR que toca `main.yml` corre el pipeline completo, más
+largo que antes. Por los pasos de Trivy, el tope de `docker-build` sube de 15 a 25 minutos y el de
+`auth-service`, de 25 a 35.
+
 ## 4. Excepciones en `.trivyignore`
 
 Un crítico que ya estaba, o que no se puede arreglar en el PR, entra a `.trivyignore`: una línea con el
@@ -63,6 +67,10 @@ Al 2026-11-19 no hay entradas: el primer escaneo real es el CI del PR de S2.
 |---|---|---|
 | `aquasecurity/trivy-action` | v0.36.0 (último release al 2026-11-19) | `ed142fd0673e97e23eac54620cfb913e5ce36c25` |
 | `github/codeql-action/upload-sarif` | v4.39.3 (último tag `v4.*` al 2026-11-19) | `33d7b85da1a04171e211befe2c739303b9a4c066` |
+
+Desvío del pedido, que decía "último release": en `github/codeql-action`, `releases/latest` devuelve
+`codeql-bundle-v2.27.5`, que es el paquete de CodeQL y no una versión de la acción. Por eso se fijó el
+último tag `v4.*`.
 
 Los dos commits salen del tag (desreferenciado si es anotado) y pertenecen a la rama por defecto de la
 acción (`gh api repos/<acción>/compare/<rama>...<sha>` da `behind`). trivy-action instala Trivy v0.70.0
