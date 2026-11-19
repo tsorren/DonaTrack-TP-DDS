@@ -38,6 +38,24 @@ Con `GATEWAY_SEGURIDAD_HABILITADA=true` el gateway valida firma (JWKS), `exp`, `
 
 - `POST /api/contacto` (HB-21): el cliente liviano manda la IP del navegador en `X-Forwarded-For`. Si el gateway agrega otra detrás, Notificaciones igual cuenta por la primera.
 
+## Encabezados de seguridad
+
+[`EncabezadosDeSeguridad`](src/main/java/grupo5/gateway/seguridad/EncabezadosDeSeguridad.java) (Q03 de E7) pone en todas las respuestas, con la seguridad encendida o apagada:
+
+| Encabezado | Valor |
+|---|---|
+| `X-Content-Type-Options` | `nosniff` |
+| `X-Frame-Options` | `DENY` |
+| `Referrer-Policy` | `no-referrer` |
+| `Content-Security-Policy` | `default-src 'none'; frame-ancestors 'none'` (el gateway solo devuelve JSON) |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` |
+| `Cache-Control` | `no-store`, solo en `/api/**` |
+| `Strict-Transport-Security` | `max-age=31536000`. En http el navegador lo ignora; vale cuando haya TLS |
+
+- Es un filtro que corre antes que la cadena de Spring Security, así que el `401` también los lleva.
+- Cada uno sale una sola vez y con este valor: el filtro ignora el que trae el servicio en una ruta enrutada y el que pone la cadena de `common-lib` (su `nosniff`, su `DENY` y su `Cache-Control`).
+- Los valores son constantes de la clase, sin propiedades.
+
 ## `X-Trace-Id`
 
 - Si el cliente lo manda con 32 hex en minúscula, el gateway lo adopta, lo manda al servicio y lo devuelve.
