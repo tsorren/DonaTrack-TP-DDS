@@ -56,6 +56,8 @@
         <testcontainers.version>1.20.4</testcontainers.version>
         <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
         <archunit.version>1.3.0</archunit.version>
+        <!-- ShedLock (E7-S01d-1): una sola replica corre cada tarea programada; lo arma common-lib. -->
+        <shedlock.version>7.11.0</shedlock.version>
         <pitest.version>1.16.1</pitest.version>
         <pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
         <argLine></argLine>
@@ -88,6 +90,16 @@
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
                 <version>${logstash-logback-encoder.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-spring</artifactId>
+                <version>${shedlock.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-jdbc-template</artifactId>
+                <version>${shedlock.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.tngtech.archunit</groupId>

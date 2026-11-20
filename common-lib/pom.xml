@@ -70,6 +70,17 @@
             <artifactId>logstash-logback-encoder</artifactId>
         </dependency>
 
+        <!-- ShedLock con JDBC (E7-S01d-1): ShedLockAutoConfiguration lo enciende solo en los
+             servicios con base y tareas programadas. -->
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-spring</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-jpa</artifactId>
