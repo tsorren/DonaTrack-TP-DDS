@@ -134,7 +134,7 @@ class ComposeYRunnerTests(unittest.TestCase):
 
     def test_el_preprod_tiene_healthcheck_y_la_seguridad_es_una_opcion_apagada_por_defecto(self):
         b = self.bloque("docker-compose.preprod.yml", "api-gateway")
-        self.assertIn("http://localhost:8086/actuator/health", b)
+        self.assertIn("http://localhost:8086/actuator/health/liveness", b)
         # Solo las líneas de entorno: los comentarios del bloque nombran la variable para explicarla.
         entorno = [l.strip() for l in b.splitlines() if l.strip().startswith("- ")]
         self.assertIn("- GATEWAY_SEGURIDAD_HABILITADA=${PREPROD_SEGURIDAD:-false}", entorno)
