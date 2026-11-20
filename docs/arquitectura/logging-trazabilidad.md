@@ -59,13 +59,13 @@ Configurado en `common-lib/src/main/resources/logback-spring.xml` con formato de
 ### D. Cómo se elige el `traceId` de un pedido HTTP
 El span del servidor lo abre Micrometer Tracing (puente OpenTelemetry) antes de `TraceResponseHeaderFilter`, y su `Slf4JEventListener` carga el `traceId` y el `spanId` en el MDC. Por eso el `traceId` sale de OpenTelemetry, en este orden:
 
-1. Contexto W3C (`traceparent`) del pedido, si viene. B3 ya no se lee: nada en el repo lo emite (E7, tarea O2).
+1. Contexto W3C (`traceparent`) del pedido, si viene. B3 ya no se lee: `OtlpValoresPorDefecto` fija `management.tracing.propagation.consume=W3C` (Boot 4 leería también B3, que nada en el repo emite).
 2. `X-Trace-Id`, si tiene el formato de `common-lib`: 32 caracteres hexadecimales en minúscula, con las dos mitades de 16 caracteres distintas de cero (la misma regla que con Brave). OpenTelemetry no deja fijar un `traceId` sin padre: se arma un padre remoto con un `spanId` nuevo y **muestreado**, así que `[INFERRED]` en Tempo la raíz aparece con un padre desconocido.
 3. Uno nuevo, generado por OpenTelemetry.
 
 `TraceResponseHeaderFilter` devuelve en `X-Trace-Id` el mismo valor del MDC. Sin tracing en el classpath, el filtro usa el header tal como llega (o `X-Request-Id`, o un UUID).
 
-[VERIFIED] 2026-11-19 (E7, tarea O2): con `api-gateway` levantado, un pedido sin header recibe un id nuevo de 32 hex; con `X-Trace-Id: 0123456789abcdef0123456789abcdef` lo adopta en la respuesta y en el log (la línea del WARN del proxy lo muestra); con uno inválido genera otro; con `traceparent` gana el de W3C. Es el mismo resultado que con Brave antes del cambio. `XTraceIdPropagatorTest` levanta la autoconfiguración de OpenTelemetry de Spring Boot y comprueba que la propagación queda envuelta y que el `traceId` llega al MDC.
+[VERIFIED] 2026-11-19 (E7, tarea O2): con `api-gateway` levantado, un pedido sin header recibe un id nuevo de 32 hex; con `X-Trace-Id: 0123456789abcdef0123456789abcdef` lo adopta en la respuesta y en el log (la línea del WARN del proxy lo muestra); con uno inválido genera otro; con `traceparent` gana el de W3C; con `b3` y `X-Trace-Id`, gana el `X-Trace-Id` (B3 no se lee). Es el mismo resultado que con Brave antes del cambio. `XTraceIdPropagatorTest` levanta la autoconfiguración de OpenTelemetry de Spring Boot y comprueba que la propagación queda envuelta y que el `traceId` llega al MDC.
 
 [VERIFIED] 2026-11-07, con Brave: el mismo `curl` contra `donaciones-service` devolvía ese id y los logs del controller y del service lo mostraban.
 
@@ -74,7 +74,7 @@ El span del servidor lo abre Micrometer Tracing (puente OpenTelemetry) antes de 
 **Con el gateway (SPEC-07).** `api-gateway` toma la misma autoconfiguración, así que elige el `traceId` con este mismo orden. Después lo copia en el `X-Trace-Id` del pedido que manda al servicio, y el servicio lo adopta por el paso 2. A la respuesta le saca el `X-Trace-Id` del servicio para que el header no quede duplicado. [VERIFIED] 2026-11-07 con `RutasGatewayTest` y servicios falsos: el header enviado y el generado llegan al servicio y vuelven una sola vez.
 
 ### E. Exportación por OTLP (E7)
-`spring-boot-starter-opentelemetry` (en `common-lib`) reemplaza a Brave ([ADR de observabilidad con otel-lgtm](https://github.com/tsorren/DonaTrack-TP-DDS/pull/987), `proposed`, en el PR 987). Las señales salen solo si se configuran. `[VERIFIED]` 2026-11-19: `api-gateway` corrió 2 minutos sin colector y sin avisos de OTLP.
+`spring-boot-starter-opentelemetry` (en `common-lib`) reemplaza a Brave ([ADR de observabilidad con otel-lgtm](https://github.com/tsorren/DonaTrack-TP-DDS/pull/987), `proposed`, en el PR 987). Las señales salen solo si se configuran. `[VERIFIED]` 2026-11-19: `api-gateway` corrió hasta el corte de un `timeout` de 150 s (exit 124), sin colector, y su log no tiene avisos de OTLP; esa corrida fue con el emisor de okhttp, antes de pasar al de la JDK.
 
 | Señal | Se prende con | Por defecto |
 |---|---|---|

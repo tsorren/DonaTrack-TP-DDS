@@ -16,6 +16,8 @@ import org.springframework.core.env.MapPropertySource;
  *   <li>Métricas por OTLP apagadas: sin colector, Micrometer avisaría cada minuto. Se prenden con
  *       {@code MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED=true} y {@code
  *       MANAGEMENT_OTLP_METRICS_EXPORT_URL}.
+ *   <li>Solo se lee el contexto W3C ({@code traceparent}): Boot también leería B3, que nada en el
+ *       repo emite, y un B3 le ganaría al {@code X-Trace-Id}.
  * </ul>
  *
  * <p>Trazas y logs no necesitan valor por defecto: Boot solo los exporta si hay endpoint ({@code
@@ -29,7 +31,8 @@ public class OtlpValoresPorDefecto implements EnvironmentPostProcessor {
   static final Map<String, Object> VALORES =
       Map.of(
           "management.tracing.sampling.probability", "1.0",
-          "management.otlp.metrics.export.enabled", "false");
+          "management.otlp.metrics.export.enabled", "false",
+          "management.tracing.propagation.consume", "W3C");
 
   @Override
   public void postProcessEnvironment(

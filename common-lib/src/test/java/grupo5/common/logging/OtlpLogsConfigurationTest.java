@@ -19,7 +19,7 @@ class OtlpLogsConfigurationTest {
               AutoConfigurations.of(LoggingAutoConfiguration.OtlpLogsConfiguration.class));
 
   @Test
-  void conElSdkDeOpenTelemetry_deberiaInstalarElAppenderAlArrancar() {
+  void conElSdkDeOpenTelemetry_deberiaRegistrarElInstaladorDelAppender() {
     runner
         .withConfiguration(AutoConfigurations.of(OpenTelemetrySdkAutoConfiguration.class))
         .run(

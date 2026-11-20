@@ -12,6 +12,7 @@ class OtlpValoresPorDefectoTest {
 
   private static final String MUESTREO = "management.tracing.sampling.probability";
   private static final String METRICAS = "management.otlp.metrics.export.enabled";
+  private static final String CONSUMO = "management.tracing.propagation.consume";
 
   @Test
   void sinConfiguracion_deberiaMuestrearTodoYApagarLasMetricasOtlp() {
@@ -21,6 +22,7 @@ class OtlpValoresPorDefectoTest {
 
     assertEquals("1.0", entorno.getProperty(MUESTREO));
     assertEquals("false", entorno.getProperty(METRICAS));
+    assertEquals("W3C", entorno.getProperty(CONSUMO));
   }
 
   @Test
