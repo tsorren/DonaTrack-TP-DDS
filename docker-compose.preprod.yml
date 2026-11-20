@@ -308,8 +308,11 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=donatrack
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS:?ver .env.example}
+    # El chequeo corre como root con HOME=/var/lib/rabbitmq: si llegara antes que el servidor, crearía
+    # .erlang.cookie como root y el servidor se caería con "eacces" (pasó en las corridas de SW2 en Swarm).
+    # Hasta que el servidor cree la cookie, el chequeo falla sin crearla.
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: ["CMD-SHELL", "[ -f /var/lib/rabbitmq/.erlang.cookie ] && rabbitmq-diagnostics -q ping"]
       interval: 5s
       timeout: 5s
       retries: 20
