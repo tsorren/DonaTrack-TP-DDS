@@ -138,6 +138,8 @@ services:
       - DONACIONES_SEGURIDAD_HABILITADA=${PREPROD_SEGURIDAD:-false}
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
+      # Introspección y GraphiQL de GraphQL: encendidos solo en el preprod (SPEC-11, G3)
+      - DONACIONES_GRAPHQL_EXPLORAR=true
     depends_on:
       postgres:
         condition: service_healthy
