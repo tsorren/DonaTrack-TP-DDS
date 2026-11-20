@@ -155,6 +155,21 @@ class SeguridadGatewayTest {
     assertThat(pedir("POST", "/api/contacto", null).statusCode()).isEqualTo(200);
     assertThat(pedir("/api/contacto/4821", null).statusCode()).isEqualTo(401);
     assertThat(pedir("POST", "/api/contacto/4821/respuesta", null).statusCode()).isEqualTo(401);
+    assertThat(pedir("POST", "/api/donaciones/graphql", null).statusCode()).isEqualTo(200);
+    assertThat(pedir("POST", "/api/donaciones/graphql/otra", null).statusCode()).isEqualTo(401);
+  }
+
+  @Test
+  void graphqlPasaSinTokenYConTokenLlegaConElBearerIntacto_SPEC11() throws Exception {
+    HttpResponse<String> sinToken = pedir("POST", "/api/donaciones/graphql", null);
+    assertThat(sinToken.statusCode()).isEqualTo(200);
+    assertThat(sinToken.body()).isEqualTo("donaciones /api/donaciones/graphql");
+    assertThat(sinToken.headers().firstValue(AUTH_RECIBIDO)).isEmpty();
+
+    // La consulta donaciones pide rol en el servicio: el gateway no puede perder el token
+    HttpResponse<String> conToken = pedir("POST", "/api/donaciones/graphql", BEARER);
+    assertThat(conToken.statusCode()).isEqualTo(200);
+    assertThat(conToken.headers().firstValue(AUTH_RECIBIDO)).contains(BEARER);
   }
 
   @Test

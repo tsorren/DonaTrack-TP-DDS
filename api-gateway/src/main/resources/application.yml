@@ -53,3 +53,6 @@ donatrack:
       - GET /api/necesidades/publicas
       - GET /api/entregas/mapa
       - POST /api/contacto
+      # GraphQL de solo lectura (SPEC-11): necesidades y entidades son públicas; donaciones pide
+      # rol y lo decide el @PreAuthorize del resolver con el Bearer que el gateway reenvía intacto.
+      - POST /api/donaciones/graphql
