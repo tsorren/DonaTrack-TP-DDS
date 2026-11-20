@@ -1197,6 +1197,11 @@ const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '', omite = '', ex
   const disenoAbreviado = await construirCon({}, { disenoAprobado: SHA_A.slice(0, 10) });
   assert('20.31 an abbreviated SHA still matches: the PR opens and the design is not audited again',
     prAbreviado.resultado.pr === 'https://pr' && !disenoAbreviado.llamadas.includes('auditoría G1 r1'));
+  const todos = [...disenar.agentes, ...construir.agentes];
+  const enWorktree = todos.filter((a) => a.isolation === 'worktree');
+  assert('20.32 every agent in a worktree checks that it starts on the base, and no prompt asks for git reset --hard',
+    enWorktree.length >= 8 && enWorktree.every((a) => /git rev-parse HEAD tiene que dar [0-9a-f]{7,40} /.test(a.prompt)) &&
+    todos.every((a) => !/reset --hard/.test(a.prompt)));
 
   resumen();
 })().catch((e) => { console.error(e); failed++; resumen(); });

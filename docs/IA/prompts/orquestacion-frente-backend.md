@@ -1,6 +1,6 @@
 # Orquestación de un frente de backend
 
-> **Versión 0.4.0 · 2026-11-20 · `[PROPOSED]`**
+> **Versión 0.4.1 · 2026-11-20 · `[PROPOSED]`**
 > Guía del workflow `frente-backend`, que implementa un frente de backend a partir de un manifiesto
 > `frente-backend/1`. El script es `.claude/workflows/frente-backend.js` y esta guía es su contrato.
 > **Todavía no corrió con agentes reales:** lo cubren los tests de la sección 20 de
@@ -71,6 +71,13 @@ El control de dependencias de `AGENTS.md` §6 **no** es flexible: una dependenci
    la corrida se toleran: ningún agente los comitea.
 7. `gh` responde. `docker` también, si se quiere correr el Gate 3 o los tests con Testcontainers.
 8. **El usuario dio el opt-in** para correr un workflow: lanza agentes en paralelo.
+9. **Los worktrees de los agentes nacen del HEAD local:** `worktree.baseRef` vale `"head"` en la
+   configuración de Claude Code de quien lanza (por ejemplo, en `.claude/settings.local.json`). Con
+   el valor por defecto nacen de la rama por defecto del remoto, sin los commits de la rama de
+   trabajo, y cada lote frena (ver "Cuando algo falla").
+10. **No quedan worktrees de una corrida anterior** en `.claude/worktrees/`: `agent-check` los
+    recorre como si fueran del repo y falla. Se quitan con `git worktree remove` y
+    `git worktree prune`, después de confirmar que sus commits ya están en la rama.
 
 ## Lanzar
 
@@ -192,6 +199,7 @@ la hace auditar de nuevo, y uno sin prefijo de tarea va a la auditoría de cierr
 | Los gates de una tanda integrada dan rojo | Un agente de arreglos, una vez, y los gates corren de nuevo. Si siguen rojos, se revierten los lotes que los causan y se corren otra vez sobre lo que queda |
 | No se sabe qué lote causa el rojo | Se revierten todos los lotes de la tanda. Es el único caso en que una tarea arrastra a otra de su misma tanda |
 | La reversión no se confirma, o los gates siguen rojos después | La corrida frena y pide revisar la rama a mano. No sigue sobre un árbol en rojo |
+| El worktree de un agente no nació en la base (falta el punto 9 de "Antes de lanzar") | El agente no mueve el worktree a la fuerza ni usa `git reset --hard`: devuelve `hecho=false` sin comitear, y su lote queda sin integrar |
 | El estado no se puede guardar o leer entero | La corrida frena (ver "El estado entre corridas") |
 | Un lote no se integró | No corren las tandas siguientes de esa tarea, ni las tareas que vienen después |
 | Una tarea agota las rondas sin `PASS` | No corren las tandas de las tareas siguientes. La corrida pasa al cierre con lo que hay |
@@ -290,7 +298,10 @@ se usa si tiene forma de SHA.
 
 ## Pendiente
 
-- La primera corrida real: hasta ahora el script solo corrió con agentes falsos.
+- La primera corrida real de `construir` y de `pr`: la de `disenar` se hizo el 2026-11-20.
+- Los worktrees de los agentes que comitearon quedan en `.claude/worktrees/` y `agent-check`, que
+  es un gate de cierre, los recorre. Hoy se quitan a mano; si hacen fallar el cierre, se limpian y
+  se vuelve a lanzar `construir`, que retoma desde el estado guardado.
 - Un check de `agent-check` para los manifiestos `frente-backend/1`: hoy la regla vive solo en el
   script, que la aplica al arrancar.
 - Formalizar el régimen de precedencia con el grupo (ver "Límite de esta decisión").
@@ -304,3 +315,4 @@ se usa si tiene forma de SHA.
 | 0.2.0 | 2026-11-20 | Auditoría de la primera versión: estado entre corridas, aprobación del diseño por SHA, reglas de falla, auditoría por commits de la tarea y auditoría de cierre. | `frente-backend/1` |
 | 0.3.0 | 2026-11-20 | Con el script escrito: campos reales de `estado.json`, commits de una tarea por su asunto, arreglos de la auditoría en el checkout y reversión de lotes con gates en rojo. | `frente-backend/1` |
 | 0.4.0 | 2026-11-20 | Auditoría del script: el estado se verifica al guardar y al leer, los gates de cierre corren al final, los gates en rojo se vuelven a correr después del arreglo y de la reversión, y un commit del dueño sobre una tarea la hace auditar de nuevo. | `frente-backend/1` |
+| 0.4.1 | 2026-11-20 | Primera corrida real de `disenar`: el agente en worktree ya no recibe `git reset --hard`; verifica que nació en la base y, si no, frena. Dos puntos nuevos en "Antes de lanzar": `worktree.baseRef` en `"head"` y sin worktrees sobrantes. | `frente-backend/1` |

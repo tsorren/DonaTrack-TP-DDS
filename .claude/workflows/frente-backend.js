@@ -524,6 +524,12 @@ Devolvé url, rama y nota (lo que el dueño tiene que saber antes de pedir revis
   return terminar('')
 }
 
+// El worktree de cada agente tiene que nacer en la base: lo da el ajuste worktree.baseRef = "head"
+// de Claude Code. No se le pide git reset --hard, que un hook de comandos destructivos puede
+// bloquear, ni que mueva el worktree a mano: el sandbox no deja escribir .claude/ adentro y el
+// árbol queda a medias.
+const enLaBase = (sha) => `Primero: git rev-parse HEAD tiene que dar ${sha} (este worktree es tuyo). Si da otra cosa, probá git merge --ff-only ${sha}. Si eso falla o deja el árbol a medias, no lo fuerces ni sigas: sin comitear nada, hecho=false, en sha el HEAD que tengas y en pendientes "el worktree no nació en la base", con el error.`
+
 // ── Fase "disenar": los lotes de diseño, su auditoría y el freno para el primer control ───────
 if (A.fase === 'disenar') {
   phase('Diseñar')
@@ -533,7 +539,7 @@ if (A.fase === 'disenar') {
 
 Sos el diseñador del lote. No escribís código de producción: solo lo que el dueño aprueba antes de construir.
 ${ficha(l)}
-Primero: git reset --hard ${base} (este worktree es tuyo).
+${enLaBase(base)}
 Comiteá "${prefijoDe(l.tarea)}${l.id}" nombrando tus archivos. Si no pudiste terminar algo, hecho=false y contalo en pendientes. En resumen, lo que el dueño tiene que mirar, en tres líneas y sin jerga; cada pregunta abierta, en decisiones, con la opción que elegiste y la que descartaste. Devolvé los campos de siempre.`, { label: `diseño ${l.id}`, phase: 'Diseñar', isolation: 'worktree', schema: ENTREGA, ...modelo(l) }).then((e) => e && { ...e, lote: l.id })))).filter(Boolean)
   if (!disenios.length) return terminar('Detenida en Diseñar: ningún diseñador respondió.')
   for (const e of disenios) anotar(e.lote, e)
@@ -635,7 +641,7 @@ for (const tanda of tandas) {
 Sos el constructor del lote.
 ${ficha(l)}
 En paralelo trabajan otros lotes; no toques sus zonas: ${otros || '(ninguno)'}.
-Primero: git reset --hard ${base} (este worktree es tuyo).${BASELINE}
+${enLaBase(base)}${BASELINE}
 Test primero, después el código. Gates antes de comitear: ${gatesDe([l]) || '(ninguno)'}
 Comiteá "${prefijoDe(l.tarea)}${l.id}" nombrando tus archivos. Si no pudiste terminar algo, hecho=false y contalo en pendientes; igual comiteá lo que quedó bien y en verde.
 Devolvé sha, hecho, resumen, archivos, gates (cuáles corriste y cómo dieron), tocaCitasOCifras, decisiones, conflictos, fueraDeZona y pendientes.`, { label: `${l.id}`, phase: 'Construir', isolation: 'worktree', schema: ENTREGA, ...modelo(l) }).then((e) => e && { ...e, lote: l.id })
