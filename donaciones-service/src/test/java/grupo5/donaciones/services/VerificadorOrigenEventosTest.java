@@ -70,10 +70,19 @@ class VerificadorOrigenEventosTest {
       })
   void eventoDescartado_avisaUnaVezConSuMotivo(
       String proveedorId, String token, String asignadaA, MotivoDescarteEvento motivo) {
-    verificador.esOrigenValido(proveedorId, token, List.of(donacionAsignadaA(asignadaA)));
+    UUID donacionId = donacionAsignadaA(asignadaA);
+
+    assertFalse(verificador.esOrigenValido(proveedorId, token, List.of(donacionId)));
 
     verify(metricas).eventoDeProveedorDescartado(motivo);
     verifyNoMoreInteractions(metricas);
+  }
+
+  @Test
+  void tokenIncorrecto_seRechazaSinConsultarLasSolicitudes() {
+    assertFalse(verificador.esOrigenValido("externo", "otro-token", List.of(UUID.randomUUID())));
+
+    verifyNoInteractions(solicitudes);
   }
 
   @Test

@@ -27,27 +27,27 @@ public class NotificacionSenderConMetricas implements NotificacionSender {
 
   @Override
   public boolean enviarA(Correo correo, String mensaje) {
-    return contar("correo", () -> router.enviarA(correo, mensaje));
+    return enviarContando("correo", () -> router.enviarA(correo, mensaje));
   }
 
   @Override
   public boolean enviarA(Telefono telefono, String mensaje) {
     String canal = telefono.getTipo().name().toLowerCase(Locale.ROOT);
-    return contar(canal, () -> router.enviarA(telefono, mensaje));
+    return enviarContando(canal, () -> router.enviarA(telefono, mensaje));
   }
 
-  private boolean contar(String canal, BooleanSupplier envio) {
+  private boolean enviarContando(String canal, BooleanSupplier envio) {
     try {
       boolean enviado = envio.getAsBoolean();
-      registrar(canal, enviado ? "enviado" : "fallido");
+      contar(canal, enviado ? "enviado" : "fallido");
       return enviado;
     } catch (RuntimeException e) {
-      registrar(canal, "fallido");
+      contar(canal, "fallido");
       throw e;
     }
   }
 
-  private void registrar(String canal, String resultado) {
+  private void contar(String canal, String resultado) {
     registro.counter(ENVIOS, "canal", canal, "resultado", resultado).increment();
   }
 }

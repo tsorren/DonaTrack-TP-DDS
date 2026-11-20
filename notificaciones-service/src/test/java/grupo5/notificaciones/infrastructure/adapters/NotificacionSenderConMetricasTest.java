@@ -38,7 +38,7 @@ class NotificacionSenderConMetricasTest {
     return busqueda.tags("canal", canal, "resultado", resultado).counter().count();
   }
 
-  private Telefono telefono(TipoTelefono tipo) {
+  private static Telefono telefono(TipoTelefono tipo) {
     Telefono telefono = new Telefono();
     telefono.setTipo(tipo);
     return telefono;

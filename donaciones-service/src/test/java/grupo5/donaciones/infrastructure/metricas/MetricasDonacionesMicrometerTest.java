@@ -17,7 +17,7 @@ class MetricasDonacionesMicrometerTest {
   private final MetricasDonacionesMicrometer metricas = new MetricasDonacionesMicrometer(registro);
 
   @Test
-  void donacionRegistrada_conBienPerecedero_cuentaConPerecedaraSi() {
+  void donacionRegistrada_conBienPerecedero_cuentaConPerecederaSi() {
     var donacion =
         DonacionMother.conItem(UUID.randomUUID(), BienMother.alimentoPerecedero("Leche"), 1);
 
@@ -28,7 +28,7 @@ class MetricasDonacionesMicrometerTest {
   }
 
   @Test
-  void donacionRegistrada_sinBienPerecedero_cuentaConPerecedaraNo() {
+  void donacionRegistrada_sinBienPerecedero_cuentaConPerecederaNo() {
     var donacion = DonacionMother.conItem(UUID.randomUUID(), BienMother.mueble("Mesa"), 1);
 
     metricas.donacionRegistrada(donacion);
