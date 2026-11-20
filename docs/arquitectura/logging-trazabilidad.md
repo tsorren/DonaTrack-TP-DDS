@@ -74,7 +74,7 @@ El span del servidor lo abre Micrometer Tracing (puente OpenTelemetry) antes de 
 **Con el gateway (SPEC-07).** `api-gateway` toma la misma autoconfiguración, así que elige el `traceId` con este mismo orden. Después lo copia en el `X-Trace-Id` del pedido que manda al servicio, y el servicio lo adopta por el paso 2. A la respuesta le saca el `X-Trace-Id` del servicio para que el header no quede duplicado. [VERIFIED] 2026-11-07 con `RutasGatewayTest` y servicios falsos: el header enviado y el generado llegan al servicio y vuelven una sola vez.
 
 ### E. Exportación por OTLP (E7)
-`spring-boot-starter-opentelemetry` (en `common-lib`) reemplaza a Brave ([ADR de observabilidad con otel-lgtm](https://github.com/tsorren/DonaTrack-TP-DDS/pull/987), `proposed`, en el PR 987). Las señales salen solo si se configuran. `[VERIFIED]` 2026-11-19: `api-gateway` corrió hasta el corte de un `timeout` de 150 s (exit 124), sin colector, y su log no tiene avisos de OTLP; esa corrida fue con el emisor de okhttp, antes de pasar al de la JDK.
+`spring-boot-starter-opentelemetry` (en `common-lib`) reemplaza a Brave ([ADR de observabilidad con otel-lgtm](https://github.com/tsorren/DonaTrack-TP-DDS/pull/987), `proposed`, en el PR 987). Las señales salen solo si se configuran. `[VERIFIED]` 2026-11-19: el log de `api-gateway` levantado sin colector no tiene avisos de OTLP. `[INFERRED]` La corrida duró unos 150 s (la cortó un `timeout`), así que pasó el minuto en que Micrometer avisaría; fue con el emisor de okhttp, antes de pasar al de la JDK.
 
 | Señal | Se prende con | Por defecto |
 |---|---|---|
