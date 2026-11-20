@@ -28,6 +28,7 @@ import grupo5.donaciones.models.repositories.listados.Tramo;
 import grupo5.donaciones.services.INecesidadesService;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -191,6 +192,14 @@ public class NecesidadesService implements INecesidadesService {
     return new Pagina<>(
         tramo.elementos().stream().map(NecesidadesService::publica).toList(),
         Math.toIntExact(tramo.total()));
+  }
+
+  @Override
+  public List<NecesidadPublicaDTO> buscarPublicasPorIds(Collection<UUID> ids) {
+    if (ids.isEmpty()) {
+      return List.of();
+    }
+    return necesidadRepository.findAllById(ids).stream().map(NecesidadesService::publica).toList();
   }
 
   private static NecesidadPublicaDTO publica(Necesidad n) {

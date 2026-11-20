@@ -24,6 +24,7 @@ import grupo5.donaciones.services.ResultadoRegistro;
 import grupo5.donaciones.services.mappers.EntidadBeneficiariaMapper;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -146,9 +147,22 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
         (int) tramo.total());
   }
 
+  @Override
+  public List<EntidadPublicaDTO> buscarPublicasPorIds(Collection<UUID> ids) {
+    if (ids.isEmpty()) {
+      return List.of();
+    }
+    return publicas(repository.findAllById(ids));
+  }
+
   /** Las de la página con su jurídica, en el DTO público (D26). */
   private List<EntidadPublicaDTO> publicas(Tramo<EntidadBeneficiaria> tramo) {
-    return mapper.toOutputDTOs(tramo.elementos()).stream()
+    return publicas(tramo.elementos());
+  }
+
+  /** Las que tienen jurídica, leídas todas juntas, en el DTO público (D26). */
+  private List<EntidadPublicaDTO> publicas(List<EntidadBeneficiaria> entidades) {
+    return mapper.toOutputDTOs(entidades).stream()
         .filter(e -> e.juridica() != null)
         .map(e -> new EntidadPublicaDTO(e.id(), e.juridica().razonSocial(), e.juridica().rubro()))
         .toList();
