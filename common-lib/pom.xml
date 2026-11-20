@@ -29,6 +29,21 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-opentelemetry</artifactId>
+            <exclusions>
+                <!-- Trae okhttp 5 y choca con el okhttp 4 de MinIO (NoSuchMethodError en okio). -->
+                <exclusion>
+                    <groupId>io.opentelemetry</groupId>
+                    <artifactId>opentelemetry-exporter-sender-okhttp</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Emisor OTLP con el HttpClient de la JDK, en lugar del de okhttp. Versión del BOM de
+             OpenTelemetry que importa el de Boot. -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-sender-jdk</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Logs por OTLP: el starter no trae el appender de Logback ni el BOM de Boot lo gestiona.
