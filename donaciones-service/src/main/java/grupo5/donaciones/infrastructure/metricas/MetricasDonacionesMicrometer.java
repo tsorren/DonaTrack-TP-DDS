@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 public class MetricasDonacionesMicrometer implements IMetricasDonaciones {
 
   private static final String DONACIONES_REGISTRADAS = "donatrack.donaciones.registradas";
+  private static final String ENTREGAS_FALLIDAS = "donatrack.donaciones.entregas.fallidas";
 
   private final MeterRegistry registro;
 
@@ -18,9 +19,16 @@ public class MetricasDonacionesMicrometer implements IMetricasDonaciones {
 
   @Override
   public void donacionRegistrada(Donacion donacion) {
-    registro
-        .counter(DONACIONES_REGISTRADAS, "perecedera", siONo(donacion.esPerecedera()))
-        .increment();
+    contar(DONACIONES_REGISTRADAS, "perecedera", siONo(donacion.esPerecedera()));
+  }
+
+  @Override
+  public void entregaFallida(boolean replanificable) {
+    contar(ENTREGAS_FALLIDAS, "replanificable", siONo(replanificable));
+  }
+
+  private void contar(String metrica, String etiqueta, String valor) {
+    registro.counter(metrica, etiqueta, valor).increment();
   }
 
   private static String siONo(boolean valor) {

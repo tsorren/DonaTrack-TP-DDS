@@ -34,9 +34,32 @@ class MetricasDonacionesMicrometerTest {
     assertEquals(1, registradas("no"));
   }
 
+  @Test
+  void entregaFallida_replanificable_cuentaConReplanificableSi() {
+    metricas.entregaFallida(true);
+
+    assertEquals(1, fallidas("si"));
+    assertEquals(0, fallidas("no"));
+  }
+
+  @Test
+  void entregaFallida_noReplanificable_cuentaConReplanificableNo() {
+    metricas.entregaFallida(false);
+
+    assertEquals(0, fallidas("si"));
+    assertEquals(1, fallidas("no"));
+  }
+
   private double registradas(String perecedera) {
-    var contador =
-        registro.find("donatrack.donaciones.registradas").tag("perecedera", perecedera).counter();
+    return contados("donatrack.donaciones.registradas", "perecedera", perecedera);
+  }
+
+  private double fallidas(String replanificable) {
+    return contados("donatrack.donaciones.entregas.fallidas", "replanificable", replanificable);
+  }
+
+  private double contados(String metrica, String etiqueta, String valor) {
+    var contador = registro.find(metrica).tag(etiqueta, valor).counter();
     return contador == null ? 0 : contador.count();
   }
 }

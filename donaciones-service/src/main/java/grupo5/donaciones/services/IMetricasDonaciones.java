@@ -9,4 +9,6 @@ import grupo5.donaciones.models.entities.donaciones.Donacion;
 public interface IMetricasDonaciones {
 
   void donacionRegistrada(Donacion donacion);
+
+  void entregaFallida(boolean replanificable);
 }
