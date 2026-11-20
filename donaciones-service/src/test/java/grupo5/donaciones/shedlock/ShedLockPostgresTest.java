@@ -67,6 +67,7 @@ class ShedLockPostgresTest {
 
     new ApplicationContextRunner()
         .withConfiguration(AutoConfigurations.of(ShedLockAutoConfiguration.class))
+        .withPropertyValues("spring.flyway.schemas=" + ESQUEMA)
         .withUserConfiguration(Base.class)
         .withBean(IDonacionesIndependientesService.class, () -> servicio)
         .withBean(VencimientoDonacionesScheduler.class)
@@ -89,7 +90,7 @@ class ShedLockPostgresTest {
                   contexto
                       .getBean(JdbcTemplate.class)
                       .queryForObject(
-                          "SELECT count(*) FROM shedlock WHERE name = ?",
+                          "SELECT count(*) FROM " + ESQUEMA + ".shedlock WHERE name = ?",
                           Integer.class,
                           "donaciones.vencimiento-donaciones");
               assertThat(filas).isEqualTo(1);
@@ -101,11 +102,10 @@ class ShedLockPostgresTest {
   static class Base {
     @Bean
     DataSource dataSource() {
-      DriverManagerDataSource dataSource =
-          new DriverManagerDataSource(
-              postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
-      dataSource.setSchema(ESQUEMA);
-      return dataSource;
+      // Sin currentSchema, como la URL de @ServiceConnection: la tabla se encuentra por el esquema
+      // de Flyway.
+      return new DriverManagerDataSource(
+          postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
     }
 
     @Bean

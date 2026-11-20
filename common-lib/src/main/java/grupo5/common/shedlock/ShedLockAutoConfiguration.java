@@ -9,8 +9,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.config.TaskManagementConfigUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Una sola réplica corre cada tarea programada (E7-S01d-1, ADR de despliegue en Docker Swarm): los
@@ -30,13 +32,30 @@ import org.springframework.scheduling.config.TaskManagementConfigUtils;
 @EnableSchedulerLock(defaultLockAtMostFor = "PT30M")
 public class ShedLockAutoConfiguration {
 
+  private static final String TABLA = "shedlock";
+
   @Bean
   @ConditionalOnMissingBean(LockProvider.class)
-  public LockProvider lockProvider(DataSource dataSource) {
+  public LockProvider lockProvider(DataSource dataSource, Environment entorno) {
     return new JdbcTemplateLockProvider(
         JdbcTemplateLockProvider.Configuration.builder()
             .withJdbcTemplate(new JdbcTemplate(dataSource))
+            .withTableName(tabla(entorno))
             .usingDbTime()
             .build());
+  }
+
+  /**
+   * La tabla en el esquema donde la crea Flyway (el {@code default-schema} o el primero de {@code
+   * schemas}), para no depender de que la URL traiga {@code currentSchema}. Sin esquema de Flyway,
+   * queda sin calificar.
+   */
+  static String tabla(Environment entorno) {
+    String esquema = entorno.getProperty("spring.flyway.default-schema");
+    if (!StringUtils.hasText(esquema)) {
+      String[] esquemas = entorno.getProperty("spring.flyway.schemas", String[].class);
+      esquema = esquemas != null && esquemas.length > 0 ? esquemas[0].trim() : null;
+    }
+    return StringUtils.hasText(esquema) ? esquema + "." + TABLA : TABLA;
   }
 }
