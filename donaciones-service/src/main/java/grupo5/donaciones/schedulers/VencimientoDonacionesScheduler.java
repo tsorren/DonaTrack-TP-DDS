@@ -15,6 +15,8 @@ public class VencimientoDonacionesScheduler {
   }
 
   // Público: @SchedulerLock actúa por el proxy de Spring, que no intercepta métodos privados.
+  // Como los otros @Scheduled, ahora también lo envuelve ScheduledJobLoggingAspect (span propio y
+  // la excepción reempaquetada en RuntimeException).
   @SchedulerLock(
       name = "donaciones.vencimiento-donaciones",
       lockAtMostFor = "PT30M",
