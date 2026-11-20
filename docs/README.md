@@ -38,7 +38,7 @@ docs/
 │   ├── contratos-rest.md                  # Contratos REST consolidados, OpenAPI 3.0 y Swagger UI
 │   ├── eventos-amqp.md                    # Topología RabbitMQ y contratos de eventos asíncronos
 │   ├── seguridad/matriz-permisos.md       # Matriz de permisos E6: rol, permiso y pertenencia por endpoint (borrador)
-│   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML), Schemas JSON y guía de migración E4
+│   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML), esquema y contrato GraphQL de Donaciones (SPEC-11), Schemas JSON y guía de migración E4
 │   └── diseno/                            # Bitácoras de refactor por oleadas, diagramas PUML y anexos
 │       ├── README.md                      # 🟢 Portal de diseño y anexos técnicos
 │       ├── donaciones/                # Diagrama de clases, DER implementado (V1-V12), cambios al DER y componentes de persistencia
@@ -93,7 +93,7 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-45) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-46) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
@@ -191,7 +191,7 @@ docs/
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
 * 📋 **Requerimientos de Entrega 6 (cliente liviano, autenticación y gateway):** [requerimientos/requerimientos-e6.md](requerimientos/requerimientos-e6.md)
 * 📋 **Requerimientos de Entrega 7 (observabilidad y seguridad; rondas de decisión):** [requerimientos/requerimientos-e7.md](requerimientos/requerimientos-e7.md)
-* 🔎 **GraphQL de solo lectura en Donaciones (E7, tareas G1 a G4, spec aprobada, sin código todavía):** [SPEC-11](specs/active/SPEC-11-graphql-de-solo-lectura-en-donaciones.md) · [manifiesto del frente](specs/active/SPEC-11-graphql.manifiesto.json) · [guía del workflow `frente-backend`](IA/prompts/orquestacion-frente-backend.md) (sin corridas reales todavía)
+* 🔎 **GraphQL de solo lectura en Donaciones (E7, tareas G1 a G4, implementadas en la rama `E7_graphql`, PR pendiente):** [SPEC-11](specs/active/SPEC-11-graphql-de-solo-lectura-en-donaciones.md) · [contrato](arquitectura/contratos/donaciones-graphql.md) · [esquema](arquitectura/contratos/donaciones.graphqls) · [manifiesto del frente](specs/active/SPEC-11-graphql.manifiesto.json) · [guía del workflow `frente-backend`](IA/prompts/orquestacion-frente-backend.md) (primera corrida real: este frente) · lo que queda: [DTI-46](adr/DEUDA_TECNICA.md#dti-46)
 * 🧭 **Plan de trabajo de E6 sin autenticación ni estilos:** [requerimientos/plan-e6-trabajo-sin-auth.md](requerimientos/plan-e6-trabajo-sin-auth.md)
 * 🔌 **Plan del cliente liviano con datos reales y gateway (alternativas y fases):** [requerimientos/plan-e6-cliente-datos-reales-y-gateway.md](requerimientos/plan-e6-cliente-datos-reales-y-gateway.md) · brechas por pantalla: [requerimientos/brechas-de-datos-por-pantalla-e6.md](requerimientos/brechas-de-datos-por-pantalla-e6.md)
 * 🎨 **Proceso de diseño de la interfaz (UX, identidad visual y vistas):** [interfaz/README.md](interfaz/README.md) · reglas del módulo: [../cliente-liviano/AGENTS.md](../cliente-liviano/AGENTS.md)

@@ -86,9 +86,12 @@ Sin token, en cada servicio (las declara su `ReglasDeAcceso`):
 | Notificaciones | `POST /api/contacto` | Formulario de contacto (HB-21); la regla es por ruta, así que leer los mensajes queda en el ADMIN por `@PreAuthorize` |
 | Donaciones | `GET /api/donaciones/destacadas` | Destacadas de la landing (HB-01, D26) |
 | Donaciones | `GET /api/donaciones/contadores` | Contadores de la landing (HB-02, D26) |
+| Donaciones | `POST /api/donaciones/graphql` | GraphQL de solo lectura (E7, SPEC-11, D08): se abre la ruta; qué se puede leer sin token lo decide el `@PreAuthorize` de cada resolver (ver §5) |
 | Todos | `/actuator/health`, `/swagger-ui/**`, `/v3/api-docs/**` | Healthcheck del compose y documentación en desarrollo |
 
 `[OBSERVED]` (2026-11-11) La allowlist del gateway (`donatrack.gateway.rutas-publicas`) es exactamente esta tabla sin la última fila: las seis rutas de las cuatro primeras filas. Un test estático (`scripts/tests/test_gateway_seguridad.py`) lo exige. El gateway abre la ruta sin distinguir método, así que `GET /api/contacto` pasa el gateway sin token y lo rechaza Notificaciones.
+
+`[OBSERVED]` (2026-11-20, rama `E7_graphql`) La allowlist suma `POST /api/donaciones/graphql` y `ReglasDeAccesoDonaciones` abre la misma ruta: son siete rutas. A diferencia de las otras, detrás no hay un endpoint REST con `@PreAuthorize(PUBLICO)`, sino seis métodos de resolver, cada uno con su constante de `Acceso` (una regla de ArchUnit lo exige). Como la ruta se abre sin distinguir método, `GET /api/donaciones/graphql` también pasa el gateway sin token. `[VERIFIED]` Hoy `scripts/tests/test_gateway_seguridad.py` falla (`test_las_rutas_abiertas_por_el_gateway_son_las_que_abren_los_servicios`): la entrada de GraphQL viene después de un comentario en `application.yml` y el test no la lee; y la igualdad con los endpoints `PUBLICO` no contempla resolvers. Queda en [DTI-46](../../adr/DEUDA_TECNICA.md#dti-46), ítem 1.
 
 En el cliente liviano son públicas la portada y las pantallas `publico-*` (donaciones, mapa, entidades, contacto, legales y registro). Ingresar y recuperar la contraseña son pantallas de Keycloak.
 
@@ -99,6 +102,9 @@ En el cliente liviano son públicas la portada y las pantallas `publico-*` (dona
 | `POST` | `/api/donaciones` | `DONANTE` | `REGISTRAR_DONACIONES` | cuerpo:`donanteId` | Donante (cargar donación) |
 | `GET` | `/api/donaciones` | ADMIN | — | — | |
 | `GET` | `/api/donaciones/{id}` | `DONANTE` | `VER_DONACIONES` | dueño (`donanteId`) | Donante (detalle) |
+| `POST` | `/api/donaciones/graphql`, raíces `necesidades` y `entidades` y relación `Necesidad.entidad` | público (`Acceso.PUBLICO`) | — | — | Todavía ninguna: la pantalla son las tareas P1 a P3 (SPEC-11) |
+| `POST` | `/api/donaciones/graphql`, raíz `donaciones` | ADMIN, `DONANTE`, `ENTIDAD` (`Acceso.LISTAR_DONACIONES_INDEPENDIENTES`, la misma regla de `GET /donaciones-independientes`, D15) | `VER_DONACIONES` | `filtro.donanteId` (donante) o `filtro.entidadId` (entidad) | Todavía ninguna |
+| `POST` | `/api/donaciones/graphql`, relaciones `Donacion.necesidad` y `Donacion.entidad` | con sesión (`Acceso.CON_SESION`); solo se llega desde la raíz `donaciones` | — | — | Todavía ninguna |
 | `POST` | `/api/donaciones/fotos` | `DONANTE` | `REGISTRAR_DONACIONES` | — (URL prefirmada, sin recurso) | Donante |
 | `GET` | `/donaciones-independientes` | `DONANTE`, `ENTIDAD` | `VER_DONACIONES` | param:`donanteId` (donante) o param:`entidadId` (entidad) | Donante (mis donaciones), entidad (recibidas) |
 | `GET` | `/donaciones-independientes/{id}` | `DONANTE` (ver §10) | `VER_DONACIONES` | dueño (donante de la donación original) | Donante (detalle) |
