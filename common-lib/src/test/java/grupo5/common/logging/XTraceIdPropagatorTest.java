@@ -129,6 +129,7 @@ class XTraceIdPropagatorTest {
 
     SpanContext span = spanDelServidor(Map.of(HEADER, mitadAltaEnCero));
 
+    assertNotEquals("0123456789abcdef", span.getTraceId());
     assertNotEquals(mitadAltaEnCero, span.getTraceId());
     assertEquals(32, span.getTraceId().length());
   }

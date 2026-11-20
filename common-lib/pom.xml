@@ -24,7 +24,8 @@
             <artifactId>aspectjweaver</artifactId>
         </dependency>
 
-        <!-- Trazas, métricas y logs por OTLP (ADR de observabilidad con otel-lgtm, E7-S03b). -->
+        <!-- Trazas, métricas y logs por OTLP (ADR de observabilidad con otel-lgtm, E7-S03b).
+             La versión la fija el BOM de Spring Boot 4.0.7, como las demás de Boot. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-opentelemetry</artifactId>
