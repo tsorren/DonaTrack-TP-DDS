@@ -288,7 +288,7 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
       UUID businessId,
       Runnable ademas) {
     try {
-      return conReintentoPorConflicto(
+      return aplicadoConReintentoPorConflicto(
           () ->
               aplicarSiNoFueConsumido(donacionId, request, eventType, origen, businessId, ademas));
     } catch (Exception e) {
@@ -308,7 +308,7 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
    * y la transacción se deshace. Como el mensaje se consume igual, se vuelve a intentar con la
    * donación recién leída en vez de perder el evento.
    */
-  private boolean conReintentoPorConflicto(BooleanSupplier operacion) {
+  private boolean aplicadoConReintentoPorConflicto(BooleanSupplier operacion) {
     for (int intento = 1; ; intento++) {
       try {
         return enTransaccion(operacion);
@@ -323,7 +323,7 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
   }
 
   private void conReintentoPorConflicto(Runnable operacion) {
-    conReintentoPorConflicto(
+    aplicadoConReintentoPorConflicto(
         () -> {
           operacion.run();
           return true;
