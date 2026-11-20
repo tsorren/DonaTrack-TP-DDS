@@ -5,7 +5,8 @@
 Corren sin Java ni Docker (stdlib solamente). La garantía principal es que las dos capas coincidan: la
 allowlist pública del gateway tiene que ser exactamente el conjunto de endpoints `@PreAuthorize(PUBLICO)`
 de los servicios, porque el gateway abre la ruta sin distinguir método y confía en que el servicio
-rechace el resto. Lo que NO cubren —que la cadena responda 401 y que el Authorization llegue al
+rechace el resto. La ruta de GraphQL (SPEC-11) es el único caso propio: detrás tiene resolvers y no un
+endpoint REST. Lo que NO cubren —que la cadena responda 401 y que el Authorization llegue al
 servicio— lo prueban `SeguridadGatewayTest` y `ReglasDeAccesoGatewayTest` con
 `mvn clean test -pl api-gateway -am`.
 """
@@ -20,6 +21,7 @@ GATEWAY = os.path.join(RAIZ, "api-gateway")
 GW_JAVA = os.path.join(GATEWAY, "src", "main", "java", "grupo5", "gateway")
 SERVICIOS = ("donaciones-service", "incentivos-service", "logistica-service", "notificaciones-service")
 METODOS = ("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+ACCESO_PUBLICO = ("PUBLICO", "Acceso.PUBLICO")
 
 
 def leer(*partes):
@@ -30,8 +32,10 @@ def leer(*partes):
 def allowlist():
     """[(método, ruta)] de donatrack.gateway.rutas-publicas, tal como están escritas en application.yml."""
     yml = leer(GATEWAY, "src", "main", "resources", "application.yml")
-    bloque = re.search(r"^    rutas-publicas:\n((?:      - .*\n)+)", yml, re.M)
-    return [tuple(l.strip()[2:].split(" ", 1)) for l in bloque.group(1).splitlines()]
+    # La lista puede llevar comentarios entre sus entradas: no la cortan ni cuentan como entrada.
+    bloque = re.search(r"^    rutas-publicas:\n((?:      (?:- |#).*\n)+)", yml, re.M)
+    entradas = [l.strip() for l in bloque.group(1).splitlines() if l.strip().startswith("- ")]
+    return [tuple(l[2:].split(" ", 1)) for l in entradas]
 
 
 def endpoints_publicos():
@@ -51,6 +55,36 @@ def endpoints_publicos():
                 if mapeo and "@PreAuthorize(PUBLICO)" in anotaciones:
                     for sufijo in re.findall(r'"([^"]*)"', mapeo.group(2) or "") or [""]:
                         salida.add((mapeo.group(1).upper(), base + sufijo))
+    return salida
+
+
+def accesos_de_los_resolvers(servicio):
+    """La expresión del @PreAuthorize de cada método de resolver GraphQL del servicio (None si no lo lleva)."""
+    accesos = []
+    patron = re.compile(r"((?:  @\w+(?:\([^)]*\))?\n)+)  public ")
+    for ruta in glob.glob(os.path.join(RAIZ, servicio, "src", "main", "java", "**", "*.java"), recursive=True):
+        for m in patron.finditer(leer(ruta)):
+            anotaciones = m.group(1)
+            if re.search(r"@(Query|Batch|Schema)Mapping\b", anotaciones):
+                acceso = re.search(r"@PreAuthorize\(([^)]*)\)", anotaciones)
+                accesos.append(acceso.group(1) if acceso else None)
+    return accesos
+
+
+def rutas_graphql_publicas():
+    """{("POST", ruta)} de los servicios que atienden GraphQL con al menos un resolver público (SPEC-11).
+
+    Detrás de esa ruta no hay un endpoint REST: la atiende Spring for GraphQL (`spring.graphql.http.path`)
+    y cada resolver decide con su @PreAuthorize. Entra sin token porque alguno es PUBLICO.
+    """
+    salida = set()
+    for servicio in SERVICIOS:
+        ruta = re.search(
+            r"(?m)^spring\.graphql\.http\.path=(\S+)$",
+            leer(RAIZ, servicio, "src", "main", "resources", "application.properties"),
+        )
+        if ruta and any(a in ACCESO_PUBLICO for a in accesos_de_los_resolvers(servicio) if a):
+            salida.add(("POST", ruta.group(1)))
     return salida
 
 
@@ -161,7 +195,20 @@ class AllowlistTests(unittest.TestCase):
 
     def test_la_allowlist_es_exactamente_lo_que_los_servicios_marcan_como_publico(self):
         # Las dos capas coinciden: lo que el gateway abre sin token es lo que el servicio acepta sin token.
-        self.assertEqual(set(allowlist()), endpoints_publicos())
+        # La ruta de GraphQL es la única que no es un endpoint REST: entra si tiene un resolver público.
+        self.assertEqual(set(allowlist()), endpoints_publicos() | rutas_graphql_publicas())
+
+    def test_la_ruta_de_graphql_esta_abierta_y_cada_resolver_declara_su_acceso(self):
+        # El gateway y el servicio dejan pasar la ruta sin token: lo seguro depende de que ningún
+        # resolver quede sin @PreAuthorize (SPEC-11, D08). La regla de ArchUnit del servicio lo exige
+        # también; acá corre sin Java.
+        rutas = rutas_graphql_publicas()
+        self.assertEqual(rutas, {("POST", "/api/donaciones/graphql")})
+        self.assertTrue(rutas <= set(allowlist()))
+        accesos = accesos_de_los_resolvers("donaciones-service")
+        self.assertTrue(accesos)
+        self.assertNotIn(None, accesos, "hay un resolver sin @PreAuthorize")
+        self.assertTrue(any(a not in ACCESO_PUBLICO for a in accesos), "el listado de donaciones pide rol")
 
     def test_las_rutas_abiertas_por_el_gateway_son_las_que_abren_los_servicios(self):
         self.assertEqual({r for _, r in allowlist()}, rutas_publicas_de_los_servicios())
