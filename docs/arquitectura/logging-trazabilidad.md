@@ -84,6 +84,8 @@ El span del servidor lo abre Micrometer Tracing (puente OpenTelemetry) antes de 
 
 El muestreo queda en 1.0 por defecto (entorno de demostración); se baja con `MANAGEMENT_TRACING_SAMPLING_PROBABILITY`, salvo en los pedidos con `X-Trace-Id` adoptado, que se muestrean siempre (el padre remoto llega muestreado). Cualquier `application.properties` o variable de entorno pisa estos valores.
 
+El envío usa el emisor con el `HttpClient` de la JDK (`opentelemetry-exporter-sender-jdk`): el de okhttp que trae el starter arrastra okhttp 5 y rompe el cliente de MinIO, que usa okhttp 4. `[VERIFIED]` 2026-11-19: con los dos endpoints apuntando a un receptor de prueba, `api-gateway` mandó `POST /v1/traces` y `POST /v1/logs`.
+
 **Por RabbitMQ** no cambia nada: el `traceId` viaja solo en el header `X-Trace-Id` que ponen a mano los publicadores. `[OBSERVED]` Incentivos no lo manda y el `LogisticaEventListener` de Donaciones no lo restaura; la observación de Spring AMQP (`traceparent` en los mensajes) queda fuera de O2.
 
 ---
