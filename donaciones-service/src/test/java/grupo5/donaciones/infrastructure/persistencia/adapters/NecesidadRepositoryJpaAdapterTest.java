@@ -18,11 +18,16 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.entities.necesidades.PeriodoNecesidad;
+import grupo5.donaciones.models.entities.necesidades.TipoNecesidad;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.impl.DonacionesIndependientesRepositoryEnMemoria;
+import grupo5.donaciones.models.repositories.listados.CriterioNecesidades;
+import grupo5.donaciones.models.repositories.listados.Paginado;
+import grupo5.donaciones.models.repositories.listados.Tramo;
 import grupo5.donaciones.services.impl.AcumuladosDeAsignacion;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +62,9 @@ class NecesidadRepositoryJpaAdapterTest {
   @Container @ServiceConnection
   static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
+  private static final LocalDate HOY = LocalDate.now(ZoneId.systemDefault());
+  private static final Paginado PRIMERA = new Paginado(0, 20);
+
   @Autowired private INecesidadesRepository repository;
   @Autowired private JdbcTemplate jdbc;
 
@@ -66,6 +74,13 @@ class NecesidadRepositoryJpaAdapterTest {
 
   @BeforeEach
   void limpiar() {
+    // Las donaciones asignadas de las búsquedas de vigentes apuntan a la necesidad (RESTRICT)
+    jdbc.update("DELETE FROM donaciones.item_donacion_independiente");
+    jdbc.update("DELETE FROM donaciones.donacion_independiente");
+    jdbc.update("DELETE FROM donaciones.item_donacion_normalizado");
+    jdbc.update("DELETE FROM donaciones.donacion");
+    jdbc.update("DELETE FROM donaciones.donante");
+    jdbc.update("DELETE FROM donaciones.humana");
     repository.deleteAll();
     jdbc.update("DELETE FROM donaciones.subcategoria");
     jdbc.update("DELETE FROM donaciones.categoria");
@@ -413,5 +428,183 @@ class NecesidadRepositoryJpaAdapterTest {
         List.of(40, 45),
         releida.getPeriodos().stream().map(PeriodoNecesidad::cantidadObjetivo).toList());
     assertEquals(40, releida.getCantidadAnterior());
+  }
+
+  // ===================== SPEC-11, G2: buscarVigentes =====================
+
+  private NecesidadExtraordinaria extraordinaria(String descripcion, UUID subcategoria, int pide) {
+    NecesidadExtraordinaria necesidad =
+        new NecesidadExtraordinaria(subcategoria, pide, descripcion, NecesidadMother.FECHA_LIMITE);
+    necesidad.asociarAEntidad(entidadId);
+    repository.save(necesidad);
+    return necesidad;
+  }
+
+  private UUID categoriaDe(UUID subcategoria) {
+    return jdbc.queryForObject(
+        "SELECT id_categoria FROM donaciones.subcategoria WHERE id = ?", UUID.class, subcategoria);
+  }
+
+  /**
+   * Una donación asignada a la necesidad por SQL, con las filas que exigen las FK; {@code periodo}
+   * nulo en una extraordinaria. {@code noRecibido} nulo si llegó todo.
+   */
+  private void asignar(Necesidad necesidad, UUID periodo, int cantidad, Integer noRecibido) {
+    UUID donante = UUID.randomUUID();
+    jdbc.update("INSERT INTO donaciones.persona (id, tipo_persona) VALUES (?, 'HUMANA')", donante);
+    jdbc.update(
+        "INSERT INTO donaciones.humana (id, nombre, apellido) VALUES (?, 'Ana', 'Prueba')",
+        donante);
+    jdbc.update("INSERT INTO donaciones.donante (id, activo) VALUES (?, true)", donante);
+    UUID donacion = UUID.randomUUID();
+    jdbc.update(
+        "INSERT INTO donaciones.donacion (id, id_donante, descripcion, fecha, estado_donacion)"
+            + " VALUES (?, ?, 'Donación de prueba', now(), 'SEGMENTADA')",
+        donacion,
+        donante);
+    UUID normalizado = UUID.randomUUID();
+    jdbc.update(
+        "INSERT INTO donaciones.item_donacion_normalizado (id, id_donacion, cantidad,"
+            + " bien_descripcion, peso_unitario, volumen_unitario, id_subcategoria,"
+            + " confianza_normalizacion, estado_normalizacion)"
+            + " VALUES (?, ?, ?, 'Fideos', 1, 1, ?, 1.0, 'ACEPTADO')",
+        normalizado,
+        donacion,
+        cantidad,
+        necesidad.getSubcategoriaId());
+    UUID independiente = UUID.randomUUID();
+    String columnas =
+        "INSERT INTO donaciones.donacion_independiente (id, id_donacion, estado_actual,"
+            + " fecha_registro, id_necesidad, id_beneficiario_asignado";
+    if (periodo == null) {
+      jdbc.update(
+          columnas + ") VALUES (?, ?, 'ASIGNACION_REALIZADA', now(), ?, ?)",
+          independiente,
+          donacion,
+          necesidad.getId(),
+          entidadId);
+    } else {
+      jdbc.update(
+          columnas + ", id_periodo) VALUES (?, ?, 'ASIGNACION_REALIZADA', now(), ?, ?, ?)",
+          independiente,
+          donacion,
+          necesidad.getId(),
+          entidadId,
+          periodo);
+    }
+    if (noRecibido != null) {
+      jdbc.update(
+          "UPDATE donaciones.donacion_independiente SET cantidad_no_recibida = ? WHERE id = ?",
+          noRecibido,
+          independiente);
+    }
+    jdbc.update(
+        "INSERT INTO donaciones.item_donacion_independiente (id, id_donacion_independiente,"
+            + " id_item_normalizado, cantidad, bien_descripcion, orden)"
+            + " VALUES (?, ?, ?, ?, 'Fideos', 0)",
+        UUID.randomUUID(),
+        independiente,
+        normalizado,
+        cantidad);
+  }
+
+  private List<UUID> vigentes(CriterioNecesidades criterio) {
+    return repository.buscarVigentes(criterio).elementos().stream().map(Necesidad::getId).toList();
+  }
+
+  private static CriterioNecesidades sinFiltros(Paginado paginado) {
+    return new CriterioNecesidades(null, null, null, null, HOY, paginado);
+  }
+
+  @Test
+  void buscarVigentes_dejaAfueraLasInactivasLasVencidasYLasSatisfechas() {
+    NecesidadExtraordinaria vigente = extraordinaria("Arroz", subcategoriaId, 10);
+    NecesidadExtraordinaria inactiva = extraordinaria("Arroz de baja", subcategoriaId, 10);
+    inactiva.desactivar();
+    repository.save(inactiva);
+    NecesidadExtraordinaria vencida = extraordinaria("Arroz vencido", subcategoriaId, 10);
+    jdbc.update(
+        "UPDATE donaciones.necesidad SET fecha_limite = ? WHERE id = ?",
+        HOY.minusDays(1),
+        vencida.getId());
+    NecesidadExtraordinaria satisfecha = extraordinaria("Arroz cubierto", subcategoriaId, 3);
+    asignar(satisfecha, null, 3, null);
+    // Asignó 3 pero no llegó 1: cuenta 2 y sigue pidiendo
+    NecesidadExtraordinaria incompleta = extraordinaria("Arroz incompleto", subcategoriaId, 3);
+    asignar(incompleta, null, 3, 1);
+
+    Tramo<Necesidad> tramo = repository.buscarVigentes(sinFiltros(PRIMERA));
+
+    assertEquals(
+        List.of(vigente.getId(), incompleta.getId()),
+        tramo.elementos().stream().map(Necesidad::getId).toList());
+    assertEquals(2, tramo.total());
+  }
+
+  @Test
+  void buscarVigentes_unaRecurrenteSeSatisfaceSoloConLoDeSuPeriodoActual() {
+    NecesidadRecurrente cubierta = NecesidadMother.recurrenteSemanal(entidadId, subcategoriaId, 4);
+    repository.save(cubierta);
+    asignar(cubierta, cubierta.periodoActualId(), 4, null);
+    NecesidadRecurrente renovada = NecesidadMother.recurrenteSemanal(entidadId, subcategoriaId, 4);
+    UUID periodoAnterior = renovada.periodoActualId();
+    renovada.generarNuevoPeriodo();
+    repository.save(renovada);
+    // Lo del período que ya cerró no cuenta para el actual
+    asignar(renovada, periodoAnterior, 4, null);
+
+    assertEquals(List.of(renovada.getId()), vigentes(sinFiltros(PRIMERA)));
+  }
+
+  @Test
+  void buscarVigentes_filtraPorEntidadSubcategoriaCategoriaYTipo() {
+    UUID otraSubcategoria = crearSubcategoria();
+    NecesidadExtraordinaria deFideos = extraordinaria("Fideos", subcategoriaId, 10);
+    NecesidadExtraordinaria deLaOtra = extraordinaria("Otra", otraSubcategoria, 10);
+    NecesidadRecurrente recurrente =
+        NecesidadMother.recurrenteSemanal(entidadId, subcategoriaId, 10);
+    repository.save(recurrente);
+    UUID otraEntidad = crearEntidad();
+    NecesidadExtraordinaria ajena =
+        new NecesidadExtraordinaria(
+            subcategoriaId, 10, "Fideos ajenos", NecesidadMother.FECHA_LIMITE);
+    ajena.asociarAEntidad(otraEntidad);
+    repository.save(ajena);
+
+    assertEquals(
+        List.of(deFideos.getId(), ajena.getId(), recurrente.getId(), deLaOtra.getId()),
+        vigentes(sinFiltros(PRIMERA)));
+    assertEquals(
+        List.of(deFideos.getId(), recurrente.getId(), deLaOtra.getId()),
+        vigentes(new CriterioNecesidades(entidadId, null, null, null, HOY, PRIMERA)));
+    assertEquals(
+        List.of(deLaOtra.getId()),
+        vigentes(new CriterioNecesidades(null, null, otraSubcategoria, null, HOY, PRIMERA)));
+    assertEquals(
+        List.of(deLaOtra.getId()),
+        vigentes(
+            new CriterioNecesidades(
+                null, categoriaDe(otraSubcategoria), null, null, HOY, PRIMERA)));
+    assertEquals(
+        List.of(recurrente.getId()),
+        vigentes(
+            new CriterioNecesidades(null, null, null, TipoNecesidad.RECURRENTE, HOY, PRIMERA)));
+  }
+
+  @Test
+  void buscarVigentes_cortaLaPaginaEnLaBaseYCuentaTodas() {
+    extraordinaria("A", subcategoriaId, 10);
+    NecesidadExtraordinaria b = extraordinaria("B", subcategoriaId, 10);
+    NecesidadExtraordinaria c = extraordinaria("C", subcategoriaId, 10);
+    extraordinaria("D", subcategoriaId, 10);
+
+    Tramo<Necesidad> segunda = repository.buscarVigentes(sinFiltros(new Paginado(1, 2)));
+
+    assertEquals(
+        List.of(c.getId()), segunda.elementos().stream().map(Necesidad::getId).limit(1).toList());
+    assertEquals(2, segunda.elementos().size());
+    assertEquals(4, segunda.total());
+    assertEquals(List.of(b.getId()), vigentes(sinFiltros(new Paginado(1, 1))));
+    assertTrue(repository.buscarVigentes(sinFiltros(new Paginado(9, 2))).elementos().isEmpty());
   }
 }

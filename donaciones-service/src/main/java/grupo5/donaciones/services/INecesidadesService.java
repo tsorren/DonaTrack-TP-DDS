@@ -1,9 +1,11 @@
 package grupo5.donaciones.services;
 
 import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.PeriodoNecesidadDTO;
 import grupo5.donaciones.dto.publico.NecesidadPublicaDTO;
 import grupo5.donaciones.models.entities.necesidades.EstadoNecesidad;
+import grupo5.donaciones.models.entities.necesidades.TipoNecesidad;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,6 +21,20 @@ public interface INecesidadesService {
    * entidad si se indica. La baja de una entidad desactiva sus necesidades, así que no aparecen.
    */
   List<NecesidadPublicaDTO> listarPublicas(UUID entidadId);
+
+  /**
+   * Una página de las mismas necesidades vigentes que {@link #listarPublicas}, paginada en el
+   * repositorio (SPEC-11, G2: la consulta {@code necesidades} de GraphQL). Un filtro nulo no
+   * filtra; {@code categoriaId}: las de alguna subcategoría de esa categoría. Orden fijo por
+   * descripción e id. {@code pagina} desde 0 y {@code tamanio} desde 1; si no, {@code ERR-CSR-003}.
+   */
+  Pagina<NecesidadPublicaDTO> buscarPublicas(
+      UUID entidadId,
+      UUID categoriaId,
+      UUID subcategoriaId,
+      TipoNecesidad tipo,
+      int pagina,
+      int tamanio);
 
   NecesidadDTO obtenerPorId(UUID id);
 
