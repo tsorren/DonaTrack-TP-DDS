@@ -13,9 +13,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BooleanSupplier;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueInformation;
@@ -61,9 +64,20 @@ class ConsumidorUnicoActivoRabbitTest {
     connectionFactory.destroy();
   }
 
-  @Test
-  void conDosReplicasSoloUnaRecibeYLaOtraTomaLaColaCuandoLaPrimeraSeVa() {
-    Queue cola = new RabbitMQConfig().queueRutaAsignada();
+  static Stream<Queue> colasConOrden() {
+    RabbitMQConfig config = new RabbitMQConfig();
+    return Stream.of(
+        config.queueRutaAsignada(),
+        config.queueRutaIniciada(),
+        config.queueEntregaEnPuerta(),
+        config.queueEntregaExitosa(),
+        config.queueEntregaFallida(),
+        config.queueEntregaCancelada());
+  }
+
+  @ParameterizedTest
+  @MethodSource("colasConOrden")
+  void conDosReplicasSoloUnaRecibeYLaOtraTomaLaColaCuandoLaPrimeraSeVa(Queue cola) {
     admin.declareQueue(cola);
     List<String> recibidosA = new CopyOnWriteArrayList<>();
     List<String> recibidosB = new CopyOnWriteArrayList<>();
@@ -85,6 +99,7 @@ class ConsumidorUnicoActivoRabbitTest {
       assertTrue(reserva.isEmpty(), "la réplica de reserva no recibe");
 
       (activaA ? replicaA : replicaB).stop();
+      esperar(() -> consumidores(cola.getName()) == 1, "la réplica activa se fue");
       template.convertAndSend(cola.getName(), "despues-de-la-caida");
       esperar(() -> reserva.contains("despues-de-la-caida"), "la reserva toma la cola");
     } finally {
@@ -95,12 +110,18 @@ class ConsumidorUnicoActivoRabbitTest {
 
   @Test
   void unaColaDeclaradaSinElArgumentoNoSePuedeRedeclararConEl() {
-    admin.declareQueue(new Queue(RabbitMQConfig.QUEUE_RUTA_INICIADA, true));
-    Queue nueva = new RabbitMQConfig().queueRutaIniciada();
+    // La prueba parametrizada puede haberla dejado declarada con el argumento.
+    admin.deleteQueue(RabbitMQConfig.QUEUE_RUTA_INICIADA);
+    try {
+      admin.declareQueue(new Queue(RabbitMQConfig.QUEUE_RUTA_INICIADA, true));
+      Queue nueva = new RabbitMQConfig().queueRutaIniciada();
 
-    AmqpException error = assertThrows(AmqpException.class, () -> admin.declareQueue(nueva));
+      AmqpException error = assertThrows(AmqpException.class, () -> admin.declareQueue(nueva));
 
-    assertTrue(causas(error).contains("PRECONDITION_FAILED"), causas(error));
+      assertTrue(causas(error).contains("PRECONDITION_FAILED"), causas(error));
+    } finally {
+      admin.deleteQueue(RabbitMQConfig.QUEUE_RUTA_INICIADA);
+    }
   }
 
   private static SimpleMessageListenerContainer replica(String cola, List<String> recibidos) {

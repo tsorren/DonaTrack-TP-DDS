@@ -182,7 +182,7 @@ curl -u "$RABBITMQ_USER:$RABBITMQ_PASS" -X DELETE \
   "http://localhost:15672/api/queues/%2F/donaciones.ruta.asignada?if-empty=true"
 ```
 
-El paso es uno solo por RabbitMQ: una vez que las colas tienen el argumento, los despliegues siguientes no lo repiten. El script de despliegue de Swarm puede automatizarlo: solo si alguna de las siete existe sin el argumento, hace los pasos 1 a 4.
+El paso es uno solo por RabbitMQ: una vez que las colas tienen el argumento, los despliegues siguientes no lo repiten.
 
 ---
 
