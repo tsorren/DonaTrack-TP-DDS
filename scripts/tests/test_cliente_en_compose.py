@@ -108,9 +108,10 @@ class ComposeTests(unittest.TestCase):
         # Sin esto el contenedor nunca quedaría healthy: el cliente exige ingreso en todo lo demás.
         seguridad = leer("cliente-liviano", "src", "main", "java", "grupo5", "cliente", "seguridad", "SeguridadConfig.java")
         publicas = re.search(r"PUBLICAS = \{(.*?)\};", seguridad, re.S).group(1)
-        self.assertIn('"/actuator/health"', publicas)
+        self.assertIn('"/actuator/health/liveness"', publicas)
         for compose in COMPOSES:
-            self.assertIn("http://localhost:8090/actuator/health", bloque(compose, "cliente-liviano"), compose)
+            # K3: el healthcheck (y el de Swarm, que sale del preprod) mira liveness
+            self.assertIn("http://localhost:8090/actuator/health/liveness", bloque(compose, "cliente-liviano"), compose)
 
     def test_el_preprod_usa_su_imagen_y_su_jar_y_el_local_construye(self):
         pre = bloque("docker-compose.preprod.yml", "cliente-liviano")
