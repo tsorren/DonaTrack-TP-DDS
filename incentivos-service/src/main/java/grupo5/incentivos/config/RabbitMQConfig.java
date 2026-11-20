@@ -106,9 +106,8 @@ public class RabbitMQConfig {
   }
 
   // Un solo consumidor activo entre réplicas: con dos réplicas, una consume y la otra queda de
-  // reserva, y el orden de alta y baja se mantiene (ADR de Swarm, E7-S01d-2). Agregar el argumento
-  // a
-  // una cola que ya existe da PRECONDITION_FAILED: el despliegue la borra antes
+  // reserva, y el orden de alta y baja se mantiene (ADR de Swarm, E7-S01d-2). Agregar el
+  // argumento a una cola que ya existe da PRECONDITION_FAILED: el despliegue la borra antes
   // (docs/arquitectura/eventos-amqp.md, "Consumidor único activo"). Su DLQ no cambia.
   @Bean
   public Queue queueIncentivosDonanteCicloDeVida() {
