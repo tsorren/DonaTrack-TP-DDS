@@ -137,6 +137,53 @@ Todo proveedor de logística informa el avance de una entrega publicando en `log
 | `notificaciones.incentivos` | `x-dead-letter-exchange` | `notificaciones.dlx` | `notificaciones.incentivos.dlq` | `notificaciones.incentivos.dlq` |
 | `notificaciones.auth` | `x-dead-letter-exchange` | `notificaciones.dlx` | `notificaciones.auth.dlq` | `notificaciones.auth.dlq` |
 
+#### D. Consumidor único activo (orden dentro de una cola, E7)
+
+Con dos réplicas de un servicio, RabbitMQ reparte los mensajes de una cola entre las dos y el orden se pierde. Las colas donde el orden importa se declaran con `x-single-active-consumer: true`: una réplica consume y la otra queda de reserva hasta que la primera se va ([ADR de Swarm](../adr/20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md), E7-S01d-2). Dentro de cada réplica, el oyente de esas colas corre con `concurrency = "1"`.
+
+| Cola | Consumidor | Declarada en |
+|---|---|---|
+| `donaciones.ruta.asignada` | `LogisticaEventListener` | `RabbitMQConfig` de `donaciones-service` |
+| `donaciones.ruta.iniciada` | `LogisticaEventListener` | `RabbitMQConfig` de `donaciones-service` |
+| `donaciones.entrega.en-puerta` | `LogisticaEventListener` | `RabbitMQConfig` de `donaciones-service` |
+| `donaciones.entrega.exitosa` | `LogisticaEventListener` | `RabbitMQConfig` de `donaciones-service` |
+| `donaciones.entrega.fallida` | `LogisticaEventListener` | `RabbitMQConfig` de `donaciones-service` |
+| `donaciones.entrega.cancelada` | `LogisticaEventListener` | `RabbitMQConfig` de `donaciones-service` |
+| `incentivos.donante-ciclo-de-vida` (alta y baja del donante) | `DonanteCicloDeVidaListener` | `RabbitMQConfig` de `incentivos-service` (conserva su DLX; su `.dlq` no lleva el argumento) |
+
+Las demás colas se apoyan en la idempotencia de sus receptores (sección 4). Logística solo publica en `logistica.exchange` y no declara estas colas.
+
+**Alcance.** El orden se garantiza **dentro de una cola**. Los eventos de una entrega viajan por seis colas distintas, y el orden entre ellas (asignada, iniciada, en puerta, exitosa) no queda garantizado: cada cola puede tener su consumidor activo en otra réplica. Queda como estaba antes de E7, cubierto en parte por la máquina de estados.
+
+**Paso de despliegue: borrar las siete colas una vez.** RabbitMQ no deja redeclarar una cola existente con otros argumentos: el servicio nuevo no puede declarar la cola y RabbitMQ le cierra el canal con `PRECONDITION_FAILED - inequivalent arg 'x-single-active-consumer'` (verificado en `ConsumidorUnicoActivoRabbitTest`). Por eso, la primera vez que esta versión se despliega sobre un RabbitMQ que ya tiene las colas viejas, se borran antes de levantarla. En un stack nuevo, o con un RabbitMQ sin datos (el de los tests y el de un compose recreado sin su volumen), no hace falta: las colas nacen con el argumento.
+
+Se borran vacías, para no perder eventos. El orden evita que una réplica vieja las vuelva a declarar sin el argumento y que se publique en una cola que no existe (un evento publicado sin cola enlazada se pierde):
+
+1. Bajar a 0 `logistica-service` (y pedir a los proveedores externos que pausen): deja de publicar en las seis colas de Donaciones. Esperar a que esas seis estén en 0 mensajes.
+2. Bajar a 0 `donaciones-service`: deja de publicar alta y baja del donante. Esperar a que `incentivos.donante-ciclo-de-vida` esté en 0.
+3. Bajar a 0 `incentivos-service`.
+4. Borrar las siete colas con `--if-empty` (si alguna tiene mensajes, el borrado falla y se vuelve al paso que la vacía).
+5. Desplegar la versión nueva (`docker stack deploy`): cada servicio declara sus colas con el argumento y Logística vuelve a publicar.
+
+Con `rabbitmqctl` dentro del contenedor de RabbitMQ (vhost `/`, el de los compose; con otro, `--vhost <vhost>`):
+
+```bash
+# ver mensajes, consumidores y argumentos
+rabbitmqctl list_queues name messages consumers arguments
+# borrar, solo si está vacía (repetir con las siete)
+rabbitmqctl delete_queue donaciones.ruta.asignada --if-empty
+rabbitmqctl delete_queue incentivos.donante-ciclo-de-vida --if-empty
+```
+
+Con la API de gestión, desde el nodo donde corre RabbitMQ (puerto 15672; `%2F` es el vhost `/`):
+
+```bash
+curl -u "$RABBITMQ_USER:$RABBITMQ_PASS" -X DELETE \
+  "http://localhost:15672/api/queues/%2F/donaciones.ruta.asignada?if-empty=true"
+```
+
+El paso es uno solo por RabbitMQ: una vez que las colas tienen el argumento, los despliegues siguientes no lo repiten. El script de despliegue de Swarm puede automatizarlo: solo si alguna de las siete existe sin el argumento, hace los pasos 1 a 4.
+
 ---
 
 ## 3. Envelope Nativo de Protocolo y Payloads JSON
