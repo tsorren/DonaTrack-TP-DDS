@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -51,6 +52,7 @@ public class OutboxIncentivosRelay {
     this.arrendamiento = Duration.ofSeconds(arrendamientoSegundos);
   }
 
+  @SchedulerLock(name = "incentivos.relay-outbox", lockAtMostFor = "PT5M", lockAtLeastFor = "PT1S")
   @Scheduled(fixedDelayString = "${incentivos.outbox.intervalo-ms:5000}")
   public void publicarPendientes() {
     List<EntradaOutbox> pendientes =

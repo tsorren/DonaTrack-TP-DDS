@@ -1,5 +1,6 @@
 package grupo5.donaciones.infrastructure.outbox;
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,6 +17,9 @@ public class OutboxRetryScheduler {
     this.outboxStore = outboxStore;
   }
 
+  // OutboxStore vive en la memoria de cada réplica: sin lockAtLeastFor, el lock solo saltea un
+  // tick si otra réplica está procesando en ese momento (ver la nota de SL1 en el PR).
+  @SchedulerLock(name = "donaciones.reintentos-outbox-en-memoria", lockAtMostFor = "PT5M")
   @Scheduled(fixedDelay = 10_000)
   public void procesarPendientes() {
     var pendientes = outboxStore.obtenerListosParaReintentar();

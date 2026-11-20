@@ -4,6 +4,7 @@ import grupo5.incentivos.services.IMisionesDonacionService;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.UUID;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,10 @@ public class RachaJob {
   }
 
   // Se ejecuta el primer día de cada mes a las 00:05 AM
+  @SchedulerLock(
+      name = "incentivos.rachas-vencidas",
+      lockAtMostFor = "PT30M",
+      lockAtLeastFor = "PT30S")
   @Scheduled(cron = "0 5 0 1 * *")
   public void verificarRachasVencidas() {
     try {
