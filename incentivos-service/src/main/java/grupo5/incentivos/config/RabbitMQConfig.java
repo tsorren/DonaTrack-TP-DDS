@@ -105,9 +105,15 @@ public class RabbitMQConfig {
     return colaConDlq(QUEUE_INCENTIVOS_PERSONA_SINCRONIZADA);
   }
 
+  // Un solo consumidor activo entre réplicas: con dos réplicas, una consume y la otra queda de
+  // reserva, y el orden de alta y baja se mantiene (ADR de Swarm, E7-S01d-2). Agregar el
+  // argumento a una cola que ya existe da PRECONDITION_FAILED: el despliegue la borra antes
+  // (docs/arquitectura/eventos-amqp.md, "Consumidor único activo"). Su DLQ no cambia.
   @Bean
   public Queue queueIncentivosDonanteCicloDeVida() {
-    return colaConDlq(QUEUE_INCENTIVOS_DONANTE_CICLO_DE_VIDA);
+    Queue cola = colaConDlq(QUEUE_INCENTIVOS_DONANTE_CICLO_DE_VIDA);
+    cola.addArgument("x-single-active-consumer", true);
+    return cola;
   }
 
   // --- Colas Dead Letter y sus bindings al DLX ---
