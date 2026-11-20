@@ -52,7 +52,10 @@ public class OutboxIncentivosRelay {
     this.arrendamiento = Duration.ofSeconds(arrendamientoSegundos);
   }
 
-  @SchedulerLock(name = "incentivos.relay-outbox", lockAtMostFor = "PT5M", lockAtLeastFor = "PT1S")
+  @SchedulerLock(
+      name = "incentivos.relay-outbox",
+      lockAtMostFor = "PT5M",
+      lockAtLeastFor = "PT0.5S")
   @Scheduled(fixedDelayString = "${incentivos.outbox.intervalo-ms:5000}")
   public void publicarPendientes() {
     List<EntradaOutbox> pendientes =

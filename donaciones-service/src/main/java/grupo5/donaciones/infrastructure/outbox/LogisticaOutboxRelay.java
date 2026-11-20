@@ -49,7 +49,7 @@ public class LogisticaOutboxRelay {
   @SchedulerLock(
       name = "donaciones.relay-outbox-logistica",
       lockAtMostFor = "PT5M",
-      lockAtLeastFor = "PT1S")
+      lockAtLeastFor = "PT0.5S")
   @Scheduled(fixedDelayString = "${donatrack.logistica.outbox.intervalo-ms:10000}")
   public void procesarPendientes() {
     for (EntradaOutboxLogistica entrada : outbox.pendientesListas(LocalDateTime.now(clock))) {
