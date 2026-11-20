@@ -2,6 +2,7 @@ package grupo5.donaciones.schedulers;
 
 import grupo5.donaciones.services.impl.PropuestaDeAsignacionService;
 import lombok.Getter;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,10 @@ public class PlanificadorDeAlgoritmos {
     this.propuestaDeAsignacionService = propuestaDeAsignacionService;
   }
 
+  @SchedulerLock(
+      name = "donaciones.ejecucion-algoritmos",
+      lockAtMostFor = "PT30M",
+      lockAtLeastFor = "PT30S")
   @Scheduled(cron = "${planificador.algoritmos.cron.expression}")
   public void ejecutarAlgoritmos() {
     propuestaDeAsignacionService.ejecutarAsignacion();

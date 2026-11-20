@@ -11,6 +11,7 @@ import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.services.FuentePosicionCamion;
 import grupo5.logistica.services.IEntregasService;
 import java.util.UUID;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -56,6 +57,10 @@ public class ActualizadorPosicionCamiones {
     this.entregasService = entregasService;
   }
 
+  @SchedulerLock(
+      name = "logistica.posicion-camiones",
+      lockAtMostFor = "PT5M",
+      lockAtLeastFor = "PT5S")
   @Scheduled(
       fixedDelayString = "${logistica.posicion.intervalo-ms:30000}",
       initialDelayString = "${logistica.posicion.intervalo-ms:30000}")
