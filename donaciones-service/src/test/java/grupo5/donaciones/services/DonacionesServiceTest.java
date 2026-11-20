@@ -62,6 +62,7 @@ class DonacionesServiceTest {
   @Mock private IDonantesService donantesService;
   @Mock private ProcesadorDeDonaciones procesadorDonaciones;
   @Mock private ApplicationEventPublisher eventPublisher;
+  @Mock private IMetricasDonaciones metricas;
 
   private DonacionMapper mapper;
   private DonacionesService service;
@@ -88,7 +89,8 @@ class DonacionesServiceTest {
             mapper,
             procesadorDonaciones,
             eventPublisher,
-            AlmacenamientoFixtures.fotosBienes());
+            AlmacenamientoFixtures.fotosBienes(),
+            metricas);
 
     Humana persona = PersonaMother.juanPerez();
     donante = DonanteMother.paraPersona(persona);
@@ -109,6 +111,7 @@ class DonacionesServiceTest {
     verify(donacionesRepository).save(any(Donacion.class));
     verify(eventPublisher, times(1)).publishEvent(any(DonacionCargada.class));
     verify(procesadorDonaciones).procesar(any(Donacion.class));
+    verify(metricas, times(1)).donacionRegistrada(any(Donacion.class));
   }
 
   @Test
@@ -137,6 +140,7 @@ class DonacionesServiceTest {
     assertEquals(ErrorCatalog.FOTO_BIEN_NO_ENCONTRADA, ex.getError());
     verify(donacionesRepository, never()).save(any());
     verify(procesadorDonaciones, never()).procesar(any());
+    verify(metricas, never()).donacionRegistrada(any());
   }
 
   @Test
@@ -160,6 +164,7 @@ class DonacionesServiceTest {
     assertThrows(RecursoNoEncontradoException.class, () -> service.cargarDonacion(inputDTO));
     verify(donacionesRepository, never()).save(any());
     verify(eventPublisher, never()).publishEvent(any());
+    verify(metricas, never()).donacionRegistrada(any());
   }
 
   @Test
