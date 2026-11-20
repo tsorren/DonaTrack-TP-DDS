@@ -38,6 +38,10 @@
         </encoder>
     </appender>
 
+    <!-- Logs por OTLP (ADR de observabilidad con otel-lgtm). LoggingAutoConfiguration lo conecta
+         con el SDK; sin endpoint de logs no exporta nada. -->
+    <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
+
     <!-- Actual File Appender (Overwritten per run - local dev only) -->
     <appender name="FILE_ACTUAL" class="ch.qos.logback.core.FileAppender">
         <file>${ACTUAL_FILE}</file>
@@ -68,6 +72,7 @@
     <springProfile name="preprod,prod,json">
         <root level="${rootLogLevel}">
             <appender-ref ref="CONSOLE_JSON"/>
+            <appender-ref ref="OTEL"/>
         </root>
     </springProfile>
 
@@ -77,6 +82,7 @@
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE_ACTUAL"/>
             <appender-ref ref="FILE_REGISTRO"/>
+            <appender-ref ref="OTEL"/>
         </root>
     </springProfile>
 </configuration>
