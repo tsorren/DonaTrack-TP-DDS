@@ -145,6 +145,11 @@ Los prompts se encuentran en [`prompts/`](./prompts/).
 - [`prompts/orquestacion-backlog-r11.md`](./prompts/orquestacion-backlog-r11.md)  
   Histórico: la orquestación del backlog de la revisión del 2026-11-11, con el workflow `backlog-r11`, ya archivado.
 
+### Orquestación de backend
+
+- [`prompts/orquestacion-frente-backend.md`](./prompts/orquestacion-frente-backend.md)  
+  Para correr un frente de backend con el workflow `frente-backend`, desde un manifiesto `frente-backend/1`, con dos controles humanos y auditoría por tarea. Sin corridas reales todavía. Primer uso: GraphQL en Donaciones (SPEC-11).
+
 ---
 
 ## Reglas rápidas
