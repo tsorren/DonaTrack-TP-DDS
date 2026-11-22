@@ -93,7 +93,7 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-45) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-46) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
@@ -194,7 +194,7 @@ docs/
 * 🧭 **Plan de trabajo de E6 sin autenticación ni estilos:** [requerimientos/plan-e6-trabajo-sin-auth.md](requerimientos/plan-e6-trabajo-sin-auth.md)
 * 🔌 **Plan del cliente liviano con datos reales y gateway (alternativas y fases):** [requerimientos/plan-e6-cliente-datos-reales-y-gateway.md](requerimientos/plan-e6-cliente-datos-reales-y-gateway.md) · brechas por pantalla: [requerimientos/brechas-de-datos-por-pantalla-e6.md](requerimientos/brechas-de-datos-por-pantalla-e6.md)
 * 🎨 **Proceso de diseño de la interfaz (UX, identidad visual y vistas):** [interfaz/README.md](interfaz/README.md) · reglas del módulo: [../cliente-liviano/AGENTS.md](../cliente-liviano/AGENTS.md)
-* 🌱 **Guía «Huerta y galpón» al código (E7):** [la guía versionada](interfaz/guia/guia-y-pantallas.html) · [backlog por olas](interfaz/backlog-guia-al-codigo.md) · [manifiesto de C0](interfaz/backlog-guia-al-codigo.c0.manifiesto.json) · [ADR `proposed` «Huerta y galpón»](adr/cliente-liviano/20261122-huerta-y-galpon-la-guia-como-sistema-visual-y-un-esqueleto-por-rol.md)
+* 🌱 **Guía «Huerta y galpón» al código (E7):** [la guía versionada](interfaz/guia/guia-y-pantallas.html) · [backlog por olas](interfaz/backlog-guia-al-codigo.md) · [manifiesto de C0](interfaz/backlog-guia-al-codigo.c0.manifiesto.json) · [ADR `proposed` «Huerta y galpón»](adr/cliente-liviano/20261122-huerta-y-galpon-la-guia-como-sistema-visual-y-un-esqueleto-por-rol.md) · deuda de C0: [DTI-46](adr/DEUDA_TECNICA.md#dti-46)
 * 📚 **Índice de documentación de Entrega 4:** [entrega-4/README.md](entrega-4/README.md)
 * 📜 **Principios Arquitectónicos de Entrega 4:** [entrega-4/arquitectura/principios.md](entrega-4/arquitectura/principios.md)
 * 🏗️ **Documento de Arquitectura del Sistema (Entrega 4, entregable 5):** [entrega-4/arquitectura/entregable-5/](entrega-4/arquitectura/entregable-5/README.md) · respaldo técnico: [arquitectura-sistema.md](entrega-4/arquitectura/arquitectura-sistema.md) · topología RabbitMQ: [diagramas/rabbit/](entrega-4/arquitectura/diagramas/rabbit/README.md)

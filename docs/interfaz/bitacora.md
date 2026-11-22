@@ -33,20 +33,95 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ### 2026-11-22 · proceso · Las casillas de la demo de la bandeja en /estilos son una excepción conocida del gate visual
 
-- **Decisión:** `VerificacionVisualTest` deja afuera del piso las dos fallas de toque de las casillas
+- **Decisión:** `VerificacionVisualTest` deja afuera del piso las fallas de toque de las casillas
   de 12 × 12 px de la demo de la bandeja en `/estilos` (`EXCEPCIONES_CONOCIDAS`: ruta, tipo y detalle
-  exactos). No cuentan en `reporte.json` y quedan a la vista en `excepciones.json`.
+  exactos). No cuentan en `reporte.json` y quedan a la vista en `excepciones.json` (`e7ba71c36`).
 - **Alternativas:** que la medición de toque cuente cada casilla por su etiqueta de 48 px (también
-  limpiaba las tres pantallas de notificaciones); quedó descartada con esa lectura.
+  limpiaba las tres pantallas de notificaciones); dejar el gate de `/estilos` en rojo hasta que el
+  usuario decida.
 - **Por qué:** la casilla chica es decisión del usuario del 2026-11-12 (`buzon.css`) y la falla ya
-  estaba antes de la oleada C0 (igual en `093aed884`); el gate de `/estilos` no puede quedar en rojo
-  por algo decidido.
+  estaba antes de la oleada C0 (igual en `093aed884`).
 - **Costo:** `/admin-notificaciones`, `/donante-notificaciones` y `/entidad-notificaciones` siguen
-  fallando por la misma casilla en la corrida completa.
-- **Quién decidió:** usuario, que respondió «Opción B» el 2026-11-22. Esta corrida no vio cómo
-  estaban rotuladas las opciones y la leyó como la alternativa que el cierre lista en segundo lugar;
-  falta que el usuario lo confirme.
+  fallando por la misma casilla en la corrida completa. El ADR de la verificación visual
+  (`20261030`) no prevé esta excepción ([DTI-46](../adr/DEUDA_TECNICA.md#dti-46), ítem 2).
+- **Quién decidió:** agente (cierre de C0), sin consultar. El agente la tomó como la respuesta
+  «Opción B» del usuario, pero esa respuesta es la de la corrección de DA-14a (backlog §2.2, escrita
+  en `8a2b0e646`, antes del cierre), que lanzó la segunda corrida. La excepción no tiene decisión del
+  usuario: él decide si queda, se revierte o se cambia la medición.
 - **Evidencia:** `guia-r2/C0/cierre.md`, sección 6, fuera del repo.
+
+### 2026-11-22 · tokens · En /estilos, las listas de alias y valores ocupan la fila entera y cada nombre va en un renglón
+
+- **Decisión:** las listas `data-tipo="valor"` de `.muestra-tokens` van en una columna, con cada `li`
+  en bloque y su `code` sin cortes, y su ficha ocupa la fila entera de la grilla (también
+  «Movimiento»). En el celular usan `--tamano-micro` y relleno `--espacio-1`, y vuelven a
+  `--tamano-chico` y `--espacio-2` desde 37,5 em. En Movimiento, número y unidad van con `&nbsp;`.
+- **Alternativas:** `overflow-wrap: anywhere` (partía cada nombre); dejar la ficha angosta (un alias
+  de unos 55 caracteres no entra en 16 rem); bajar el nombre de la guía a su renglón; achicar el
+  relleno de toda la ficha `.muestra`.
+- **Por qué:** la revisión de la primera corrida pidió que cada alias se lea entero.
+- **Costo:** otra letra para la misma pieza en el celular; huecos en la grilla a 1280 y 1920 px.
+- **Quién decidió:** agente (lote `c0-tokens`).
+- **Evidencia:** `ebce607ad` y `7d413d1b2`; captura `estilos-360` de la corrida del cierre.
+
+### 2026-11-22 · tokens · La grilla de las fichas de token pasa a columnas de 22 rem
+
+- **Decisión:** en la sección Tokens de `/estilos`, la grilla de fichas usa `--medida-grilla: 22rem`
+  (con `:has`, solo en esa sección).
+- **Alternativas:** las columnas de antes (los nombres de color se partían en 2 o 3 renglones a
+  1280 px); columnas de 23 rem (dejaban solo 2 columnas).
+- **Por qué:** el mismo defecto de la tarjeta de alias, en las fichas de color.
+- **Costo:** `22rem` es una medida literal que el cerco no cuenta; a 1280 px
+  `--color-accion-secundaria-activa` todavía baja de renglón en un guion.
+- **Quién decidió:** agente (lote `c0-tokens`), por su cuenta, más allá de lo que pidió la revisión.
+- **Evidencia:** `ebce607ad`, `componentes/muestra.css`.
+
+### 2026-11-22 · tokens · Salen también tres valores base sin uso
+
+- **Decisión:** además de los 3 tokens de DA-14a, salen `--p-nodo`, `--p-destacado` y
+  `--p-suelo-hondo`, que solo alimentaban a tokens retirados o pasados a alias.
+- **Alternativas:** dejarlos (valores base sin ninguna referencia).
+- **Por qué:** no son tokens de uso; G-01 y el conteo de 73 conservados no cambian, ni ningún color
+  calculado.
+- **Costo:** DA-14a no los nombra.
+- **Quién decidió:** agente (lote `c0-tokens`, primera corrida).
+- **Evidencia:** `9e995ec42`, `tokens.css`.
+
+### 2026-11-22 · tokens · Se retiran 3 tokens y no 4: `--medida-quiebre-medio` se conserva (DA-14a, corregida)
+
+- **Decisión:** los 10 nombres de color de hoy que la guía no trae pasan a ser alias del token de la
+  guía del mismo valor; se retiran `--color-nodo`, `--color-estrato` y `--medida-estrato`;
+  `--medida-quiebre-medio` queda; los otros 30 de los 44 no se tocan en C0.
+- **Alternativas:** retirar los 4 que pedía la primera versión de DA-14a.
+- **Por qué:** 39 media queries usan el valor de `--medida-quiebre-medio` (53,75 em) y
+  `InterfazFitnessTest` exige que cada media query use un quiebre declarado en `tokens.css`. La
+  primera corrida lo encontró y se paró.
+- **Costo:** queda un quiebre que la guía no trae.
+- **Quién decidió:** usuario (DA-14a: «todas las recomendadas», ronda 1; corregida con «Opción B»).
+- **Evidencia:** backlog §2.2 y §3.2; `9e995ec42`.
+
+### 2026-11-22 · tokens · Los tokens de la guía se suman sin renombrar ninguno de antes (G-01)
+
+- **Decisión:** `tokens.css` suma los 46 tokens nuevos de «Huerta y galpón» y toma el valor de la
+  guía en los 6 que cambian; ningún token que ya existía cambia de nombre. La guía mide en `cqi` y el
+  sitio en `vw`.
+- **Alternativas:** renombrar los tokens de hoy a los de la guía en todas las hojas.
+- **Por qué:** cambiar el sistema sin tocar las pantallas que no son de la ola.
+- **Costo:** conviven dos nombres para un mismo color hasta la ola Z (DA-14b).
+- **Quién decidió:** usuario (G-01, cierre de la fase 3 de la guía).
+- **Evidencia:** `9e995ec42`; `docs/interfaz/componentes.md`, sección Tokens.
+
+### 2026-11-22 · identidad · La identidad pasa a «Huerta y galpón», con un esqueleto por rol (G-02)
+
+- **Decisión:** la guía de `docs/interfaz/guia/` es el sistema visual: un esqueleto aireado para lo
+  público, quien dona y la organización, y uno denso para el admin (mezcla C). `direccion-de-arte.md`
+  deja de nombrar a Pico como base.
+- **Alternativas:** Poda, Acta, Recorrido y Remito solas; las mezclas A (Cuaderno) y B (Herbario).
+- **Por qué:** de las tres mezclas, la que más calidez pone.
+- **Costo:** la piel Huerta de antes queda reemplazada en parte; la relación `superseded` espera la
+  aprobación del grupo.
+- **Quién decidió:** usuario (G-02, 2026-11-20).
+- **Evidencia:** [ADR `proposed`](../adr/cliente-liviano/20261122-huerta-y-galpon-la-guia-como-sistema-visual-y-un-esqueleto-por-rol.md); `34cf87ae7`.
 
 ### 2026-11-15 · proceso · Las oleadas de interfaz rinden cada decisión del usuario y no abren PR sin la revisión de pantallas (paso 4 de la opción A)
 
