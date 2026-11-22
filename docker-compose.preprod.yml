@@ -531,6 +531,7 @@ services:
       - ./observabilidad/prometheus/prometheus.yaml:/otel-lgtm/prometheus.yaml:ro
       - ./observabilidad/grafana/provisioning/dashboards/donatrack-dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/donatrack-dashboards.yaml:ro
       - ./observabilidad/grafana/dashboards:/otel-lgtm/dashboards:ro
+      - ./observabilidad/grafana/provisioning/alerting/donatrack-alertas.yaml:/otel-lgtm/grafana/conf/provisioning/alerting/donatrack-alertas.yaml:ro
     healthcheck:
       test: ["CMD-SHELL", "[ -f /tmp/ready ] && curl -f -s http://localhost:3000/api/health > /dev/null || exit 1"]
       interval: 10s
