@@ -126,7 +126,13 @@
 /* Las muestras de token de la sección «Tokens» de /estilos (C0-05): una lista `.muestra-tokens` por
    grupo, con `data-tipo` (color, espacio, radio, borde, sombra, letra o valor) y un `li` por token con
    `data-token` (el nombre sin los dos guiones). El cuadro de cada muestra es el ::before del `li`: la
-   página no lleva `style` sueltos. */
+   página no lleva `style` sueltos. La grilla de las fichas de token tiene columnas más anchas que la
+   de los componentes, así en la computadora casi todos los nombres entran enteros al lado de su
+   cuadro. */
+.grilla:has(> .muestra > .muestra-tokens) {
+  --medida-grilla: 22rem;
+}
+
 .muestra-tokens {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--medida-cajon)), 1fr));
@@ -173,6 +179,7 @@
 }
 
 .muestra-tokens[data-tipo="sombra"] > li::before {
+  border: var(--borde-fino);
   border-radius: var(--radio-lamina);
   background: var(--color-fondo-pagina);
 }
@@ -212,12 +219,23 @@
   line-height: var(--tamano-interlinea-titulo);
 }
 
-.muestra-tokens[data-tipo="sombra"] > li::before {
-  border: var(--borde-fino);
+/* Un valor o un alias se lee como una oración, un renglón por `li`: la ficha ocupa la fila entera de
+   la grilla y cada nombre de token queda entero (baja de renglón entre nombres, nunca adentro). */
+.muestra:has(> .muestra-tokens[data-tipo="valor"]) {
+  grid-column: 1 / -1;
+}
+
+.muestra-tokens[data-tipo="valor"] {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .muestra-tokens[data-tipo="valor"] > li {
-  flex-wrap: wrap;
+  display: block;
+}
+
+.muestra-tokens[data-tipo="valor"] code {
+  overflow-wrap: normal;
+  white-space: nowrap;
 }
 
 /* Un token por regla: el espaciado, el radio, el borde y la elevación. */
