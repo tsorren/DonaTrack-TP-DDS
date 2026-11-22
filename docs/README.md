@@ -194,6 +194,7 @@ docs/
 * 🧭 **Plan de trabajo de E6 sin autenticación ni estilos:** [requerimientos/plan-e6-trabajo-sin-auth.md](requerimientos/plan-e6-trabajo-sin-auth.md)
 * 🔌 **Plan del cliente liviano con datos reales y gateway (alternativas y fases):** [requerimientos/plan-e6-cliente-datos-reales-y-gateway.md](requerimientos/plan-e6-cliente-datos-reales-y-gateway.md) · brechas por pantalla: [requerimientos/brechas-de-datos-por-pantalla-e6.md](requerimientos/brechas-de-datos-por-pantalla-e6.md)
 * 🎨 **Proceso de diseño de la interfaz (UX, identidad visual y vistas):** [interfaz/README.md](interfaz/README.md) · reglas del módulo: [../cliente-liviano/AGENTS.md](../cliente-liviano/AGENTS.md)
+* 🌱 **Guía «Huerta y galpón» al código (E7):** [la guía versionada](interfaz/guia/guia-y-pantallas.html) · [backlog por olas](interfaz/backlog-guia-al-codigo.md) · [manifiesto de C0](interfaz/backlog-guia-al-codigo.c0.manifiesto.json)
 * 📚 **Índice de documentación de Entrega 4:** [entrega-4/README.md](entrega-4/README.md)
 * 📜 **Principios Arquitectónicos de Entrega 4:** [entrega-4/arquitectura/principios.md](entrega-4/arquitectura/principios.md)
 * 🏗️ **Documento de Arquitectura del Sistema (Entrega 4, entregable 5):** [entrega-4/arquitectura/entregable-5/](entrega-4/arquitectura/entregable-5/README.md) · respaldo técnico: [arquitectura-sistema.md](entrega-4/arquitectura/arquitectura-sistema.md) · topología RabbitMQ: [diagramas/rabbit/](entrega-4/arquitectura/diagramas/rabbit/README.md)

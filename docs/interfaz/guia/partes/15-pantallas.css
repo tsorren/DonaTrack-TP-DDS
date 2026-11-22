@@ -1,0 +1,205 @@
+/* ===== Producto: el armazón de cada pantalla. =====
+   En esta maqueta cada pantalla vive en un marco, así que los quiebres son consultas de contenedor.
+   En el producto pasan a @media con los mismos valores (--medida-quiebre-menu: 56em). */
+.dt.pantalla { container-type: inline-size; container-name: pantalla; }
+.dt .pagina { --borde-pagina: var(--espacio-3); position: relative; display: flex; flex-direction: column; min-height: 100%; }
+.dt .contenido {
+  flex: 1; display: flex; flex-direction: column; gap: var(--espacio-4);
+  width: 100%; max-width: calc(var(--medida-pagina) + 2 * var(--borde-pagina)); margin-inline: auto;
+  padding: var(--espacio-4) var(--borde-pagina) var(--espacio-5);
+}
+.dt .menu-celular { margin-top: auto; }
+.dt .solo-ancho { display: none; }
+.dt .grilla-2, .dt .grilla-3 { display: grid; gap: var(--espacio-3); }
+.dt .cabecera-pantalla { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: var(--espacio-2) var(--espacio-4); }
+
+/* El galpón: papel claro, tierra en el cajón y texto más apretado. Reasigna dos tokens de uso. */
+.dt.galpon { --color-fondo-pagina: var(--color-galpon-fondo); --color-superficie: var(--color-campo); background: var(--color-fondo-pagina); }
+.dt.galpon h1 { font-size: var(--tamano-titulo-2); }
+.dt.galpon h2 { font-size: var(--tamano-titulo-3); }
+.dt.galpon .contenido { gap: var(--espacio-3); padding-top: var(--espacio-3); max-width: none; }
+.dt .elegidas { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--espacio-2); padding: var(--espacio-2) var(--espacio-3); border: var(--borde-tinta); border-radius: var(--radio-boton); background: var(--color-fila-elegida); }
+.dt .resumen-galpon { display: grid; gap: var(--espacio-3); }
+.dt .resumen-galpon dl { display: grid; gap: var(--espacio-2); }
+.dt .resumen-galpon dt { font-weight: 700; }
+.dt .calle .lista-fila { grid-template-columns: minmax(0, 1fr); }
+
+/* Portada */
+.dt .portada-arriba { display: grid; gap: var(--espacio-4); }
+.dt .portada-texto { display: grid; gap: var(--espacio-3); align-content: start; }
+.dt .portada-titulo { padding: var(--espacio-3) var(--espacio-2); margin-inline: calc(-1 * var(--espacio-2)); border-radius: var(--radio-estampa); }
+.dt .portada-titulo h1 { font-size: var(--tamano-titulo-portada); font-stretch: var(--fuente-ancho-portada); line-height: 1.12; letter-spacing: -0.015em; text-wrap: wrap; }
+.dt .portada-titulo h1 span { padding: 0 0.12em; background: var(--color-fondo-pagina); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.dt .portada-bajada { font-size: var(--tamano-grande); max-width: var(--medida-texto); }
+.dt .portada-dibujo svg { width: 100%; height: auto; }
+.dt .portada-dibujo figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espacio-1) var(--espacio-2); margin-top: var(--espacio-2); }
+.dt .portada-prueba { display: grid; gap: var(--espacio-4); align-items: start; }
+.dt .portada-cifras { display: grid; gap: var(--espacio-2); max-width: var(--medida-texto); }
+.dt .portada-cifras .grande { font-size: var(--tamano-grande); }
+.dt .raiz--numerada .raiz-nudo { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; margin-top: -0.0625rem; font: 700 var(--tamano-chico) / 1 var(--fuente-texto); }
+.dt .raiz--numerada .raiz-paso::before { left: 0.5625rem; }
+
+/* Seguimiento */
+.dt .seguimiento-cuerpo { display: grid; gap: var(--espacio-4); align-items: start; }
+.dt .mapa { position: relative; }
+.dt .mapa-lienzo { position: relative; overflow: hidden; aspect-ratio: 4 / 3; border: var(--borde-tinta); border-radius: var(--radio-lamina); }
+.dt .mapa-lienzo svg { width: 100%; height: 100%; }
+.dt .mapa-rotulo { position: absolute; padding: 0 0.375rem; border: 1px solid var(--color-tinta); border-radius: var(--radio-estampa); background: var(--color-superficie); font: 600 var(--tamano-micro) / 1.5 var(--fuente-texto); white-space: nowrap; }
+.dt .mapa-rotulo--deposito { left: 4%; top: 68%; }
+.dt .mapa-rotulo--camion { left: 38%; top: 14%; }
+.dt .mapa-rotulo--destino { right: 3%; top: 26%; }
+.dt .mapa figcaption { margin-top: var(--espacio-1); }
+.dt .etiqueta--espera { border-style: dashed; background: none; padding: var(--espacio-3); padding-right: var(--espacio-5); gap: var(--espacio-0); }
+.dt .etiqueta--espera::before { border-style: dashed; }
+
+/* Formulario */
+.dt .formulario { display: flex; flex-direction: column; gap: var(--espacio-4); width: 100%; max-width: var(--medida-formulario); }
+.dt .formulario form { display: flex; flex-direction: column; gap: var(--espacio-4); }
+.dt .fotos-cargadas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--espacio-2); }
+.dt .fotos-cargadas .foto { border: var(--borde-tinta); border-radius: var(--radio-estampa); }
+.dt .subir { display: grid; gap: var(--espacio-2); padding: var(--espacio-3); border: var(--borde-punteado); border-radius: var(--radio-lamina); }
+.dt .opciones { display: grid; gap: var(--espacio-1); }
+.dt .acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espacio-2); }
+/* En el celular, la acción principal queda fija encima del menú (decisión del sitio, FRM-6). */
+.dt .acciones--fijas { position: sticky; bottom: var(--medida-menu-celular); z-index: var(--capa-fijo-pantalla); margin-inline: calc(-1 * var(--borde-pagina)); padding: var(--espacio-2) var(--borde-pagina); border-top: var(--borde-fino); background: var(--color-fondo-pagina); }
+.dt .acciones--fijas .boton--lleno { flex: 1 1 12rem; }
+/* El estado de error es un estado de la misma pantalla. */
+.vista:not(:has(#confirmar-error:target)) [data-estado="normal"] .solo-error { display: none; }
+.dt [data-estado="error"] .solo-normal, .vista:has(#confirmar-error:target) .dt .solo-normal { display: none; }
+.dt [data-estado="error"] .foto--pesada, .vista:has(#confirmar-error:target) .dt .foto--pesada { border: 3px solid var(--color-error-borde); }
+
+@container pantalla (min-width: 37.5em) {
+  .dt .grilla-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dt .grilla-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .dt .opciones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dt .resumen-galpon dl { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .dt .calle .lista-fila { grid-template-columns: minmax(0, 1fr) auto; }
+}
+
+@container pantalla (min-width: 56em) {
+  .dt .pagina { --borde-pagina: var(--espacio-5); }
+  .dt .barra-secciones { display: flex; }
+  .dt .menu-celular { display: none; }
+  .dt .cuenta-datos { display: block; }
+  .dt .solo-ancho { display: revert; }
+  .dt .solo-angosto { display: none; }
+  .dt .tabla .col-ancha { display: table-cell; }
+  .dt .contenido { gap: var(--espacio-5); padding-top: var(--espacio-5); padding-bottom: var(--espacio-6); }
+  .dt .portada-arriba { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--espacio-5); align-items: start; }
+  .dt .portada-prueba { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--espacio-5); }
+  .dt .seguimiento-cuerpo { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--espacio-5); }
+  .dt .acciones--fijas { position: static; margin-inline: 0; padding: 0; border-top: 0; background: none; }
+  .dt .acciones--fijas .boton--lleno { flex: none; }
+  /* La raíz tendida: los cinco pasos en una línea, cada uno con su texto */
+  .dt .raiz--tendida { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--espacio-3); }
+  .dt .raiz--tendida .raiz-paso { grid-template-columns: minmax(0, 1fr); align-content: start; padding-bottom: 0; }
+  .dt .raiz--tendida .raiz-nudo { justify-self: start; }
+  .dt .raiz--tendida .raiz-paso::before { left: 0.875rem; right: calc(-1 * var(--espacio-3) - 0.875rem); top: 0.5rem; bottom: auto; width: auto; height: 0.625rem; border-inline: 0; border-block: 2px solid var(--color-tinta); }
+  /* El galpón en escritorio: el cajón siempre abierto y la barra superior afuera */
+  .dt .pagina--galpon { display: grid; grid-template-columns: var(--medida-cajon) minmax(0, 1fr); }
+  .dt .pagina--galpon > .barra { display: none; }
+  .dt .pagina--galpon > .cajon { display: flex; position: sticky; top: 0; align-self: start; min-height: min(100vh, 46rem); height: 100%; }
+  .dt.galpon .contenido { padding: var(--espacio-4) var(--espacio-4) var(--espacio-5); gap: var(--espacio-3); }
+}
+
+/* Ajustes después de la primera ronda de capturas */
+.dt .protagonista-cuerpo { display: grid; gap: var(--espacio-3); }
+.dt .lista-fila .sello { justify-self: start; }
+.dt .tabla th:last-child, .dt .tabla td:last-child { white-space: nowrap; }
+.dt .mapa-rotulo--camion { left: 46%; top: 41%; }
+.dt .mapa-rotulo--destino { right: 2%; top: 4%; }
+@container pantalla (min-width: 56em) {
+  .dt .boton.solo-ancho { display: inline-flex; }
+  .dt .protagonista-cuerpo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--espacio-5); align-items: start; }
+  .dt .tabla td:nth-child(2) { min-width: 15rem; }
+}
+.dt .portada-titulo h3 span { padding: 0 0.12em; background: var(--color-fondo-pagina); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.dt .portada-titulo h3 { line-height: 1.3; }
+.dt .volver { margin-top: calc(-1 * var(--espacio-3)); }
+
+/* Ajustes después de medir el piso */
+@container pantalla (max-width: 21.9em) {
+  .dt .etiqueta--costado { grid-template-columns: minmax(0, 1fr); }
+  .dt .etiqueta--costado > .foto { height: auto; aspect-ratio: 4 / 3; min-height: 0; border-right: 0; border-bottom: var(--borde-tinta); }
+}
+@container pantalla (min-width: 37.5em) {
+  .dt .pestanas { flex-wrap: nowrap; gap: var(--espacio-0); border-bottom: var(--borde-tinta); }
+  .dt .pestanas a { margin-bottom: -1.5px; padding: 0 var(--espacio-3); border: 1.5px solid transparent; border-bottom: 0; border-radius: var(--radio-boton) var(--radio-boton) 0 0; }
+  .dt .pestanas a[aria-current="page"] { border-color: var(--color-tinta); background: var(--color-fondo-pagina); color: var(--color-texto); }
+  .dt .pestanas a:focus-visible, .dt .pestanas a.es-foco { outline-offset: -4px; box-shadow: none; }
+}
+.dt .foto-aviso { position: absolute; top: var(--espacio-0); left: var(--espacio-0); display: inline-flex; align-items: center; gap: var(--espacio-0); padding: 0 0.375rem; border: 1.5px solid var(--color-error-borde); border-radius: var(--radio-estampa); background: var(--color-error-fondo); color: var(--color-error-texto); font: 700 var(--tamano-micro) / 1.5 var(--fuente-texto); white-space: nowrap; }
+.dt .tabla .tabla-vacia { white-space: normal; }
+
+/* Inicio de quien dona */
+/* El saludo lleva la razón social, que puede ser larga: en el celular baja un escalón para que el aviso y la acción llena entren en la primera pantalla. */
+.dt .saludo { font-size: var(--tamano-titulo-2); }
+@container pantalla (min-width: 37.5em) { .dt .saludo { font-size: var(--tamano-titulo-1); } }
+/* El mapa adentro de la lámina: más apaisado que en Seguimiento, donde es la pieza principal. */
+.dt .lamina .mapa-lienzo { aspect-ratio: 16 / 10; }
+.dt .inicio-octubre { display: grid; gap: var(--espacio-4); align-items: start; }
+@container pantalla (min-width: 56em) {
+  .dt .inicio-octubre { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--espacio-5); }
+}
+
+/* Ajustes al dibujar los títulos con sus tokens (peso 850 y ancho 116 % o 122 %), sin las reglas de la lámina */
+@container pantalla (min-width: 56em) {
+  /* La columna del título de la portada es algo más ancha que la del dibujo: «Seguí tu donación» entra en un renglón. */
+  .dt .portada-arriba, .dt .portada-prueba { grid-template-columns: minmax(0, 13fr) minmax(0, 11fr); }
+}
+/* El título de un paso es un rótulo corto dentro de una pieza chica, como el de la etiqueta. */
+.dt .raiz--numerada h3 { font-size: var(--tamano-grande); }
+
+/* Inicio de la organización y Recepción confirmada */
+/* Dos columnas desde el quiebre del menú, como en el inicio de quien dona. */
+.dt .inicio-columnas { display: grid; gap: var(--espacio-4); align-items: start; }
+@container pantalla (min-width: 56em) {
+  .dt .inicio-columnas { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--espacio-5); }
+}
+/* El dibujo de la puerta: el final del recorrido, visto desde la organización. Los frutos van también al pie, con su cifra. */
+.dt .puerta-dibujo svg { width: 100%; height: auto; }
+.dt .puerta-dibujo figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espacio-1) var(--espacio-2); margin-top: var(--espacio-2); }
+/* El inicio de la organización tiene dos estados en la misma pantalla. Sin JavaScript los elige :target. */
+/* Entregas y Necesidades tienen los mismos dos estados, y la entrega con problema, dos horas: el ancla del estado
+   posterior lleva la clase ancla-despues. */
+.vista:not(:has(.ancla-despues:target)) .dt[data-estado="puerta"] .solo-despues { display: none; }
+.dt[data-estado="despues"] .solo-puerta, .vista:has(.ancla-despues:target) .dt .solo-puerta { display: none; }
+/* Sin nada para confirmar, la lámina de la puerta deja de ser la protagonista: pierde la sombra de paja. */
+.dt[data-estado="despues"] .puerta, .vista:has(.ancla-despues:target) .dt .puerta { border: var(--borde-fino); box-shadow: var(--sombra-ninguna); }
+/* La fila de una necesidad: el nombre, cuánto llegó y su barra de avance a todo el ancho. */
+.dt .lista-fila--avance .avance, .dt .lista-fila--avance .suave { grid-column: 1 / -1; }
+.dt .lista-fila--avance .avance { margin-block: var(--espacio-0); }
+/* Lista de datos: lo que quedó asentado. El rótulo a la izquierda y el dato a la derecha. */
+.dt .datos { border-top: var(--borde-fino); }
+.dt .datos > div { display: grid; grid-template-columns: minmax(5.5rem, 28%) minmax(0, 1fr); gap: var(--espacio-2); padding: var(--espacio-2) var(--espacio-1); border-bottom: var(--borde-fino); }
+.dt .datos dt { color: var(--color-texto-suave); }
+.dt .datos dd { font-weight: 600; }
+/* El único trazo del producto: al llegar desde el formulario, el último tramo de la raíz se dibuja una vez,
+   después se llena el quinto nudo y brota el fruto. El estado de base es el dibujo completo. */
+.dt.recien .pta-tramo { stroke-dasharray: 1; animation: dt-trazo var(--movimiento-duracion-trazo) var(--movimiento-curva-entrada) backwards; }
+.dt.recien .pta-nudo-5 { animation: dt-asoma var(--movimiento-duracion-media) var(--movimiento-curva-salida) var(--movimiento-duracion-trazo) backwards; }
+.dt.recien .pta-fruto-nuevo { transform-box: fill-box; transform-origin: center; animation: dt-brota var(--movimiento-duracion-media) var(--movimiento-curva-entrada) calc(var(--movimiento-duracion-trazo) + var(--movimiento-duracion-corta)) backwards; }
+@keyframes dt-trazo { from { stroke-dashoffset: 1; } }
+@keyframes dt-asoma { from { opacity: 0; } }
+@keyframes dt-brota { from { scale: 0; } }
+
+/* Donaciones de quien dona, Donación con problema y Entregas */
+/* La última columna de esta tabla es texto: baja de renglón (la del galpón no). */
+.dt .tabla--apilable th:last-child, .dt .tabla--apilable td:last-child { white-space: normal; }
+/* La tabla, en escritorio: cuatro columnas con su ancho; la segunda no hereda el mínimo de la tabla del galpón. */
+@container pantalla (min-width: 56em) {
+  .dt .tabla--apilable td:nth-child(2) { min-width: 0; }
+  .dt .tabla--apilable th:nth-child(1) { width: 27%; }
+  .dt .tabla--apilable th:nth-child(2) { width: 20%; }
+  .dt .tabla--apilable th:nth-child(3) { width: 25%; }
+}
+/* En una lista de entregas confirmadas, la etiqueta no se apila en el celular: la foto queda al costado, chica y
+   entera (4:3, sin recorte). Así cinco entregas no ocupan seis pantallas. */
+@container pantalla (max-width: 37.49em) {
+  .dt .etiqueta--fila { grid-template-columns: 7.5rem minmax(0, 1fr); }
+  .dt .etiqueta--fila > .foto { align-self: start; height: auto; aspect-ratio: auto; min-height: 0; overflow: visible; background: none; border-bottom: 0; border-right: 0; }
+  .dt .etiqueta--fila > .foto > svg { height: auto; aspect-ratio: 4 / 3; border-right: var(--borde-tinta); border-bottom: var(--borde-tinta); background: var(--color-salvia); }
+  /* El rótulo «Foto de ejemplo» va debajo de la miniatura, como texto: encima taparía un tercio de la foto. */
+  .dt .etiqueta--fila .foto-rotulo { position: static; display: block; margin: var(--espacio-0) var(--espacio-1) 0; padding: 0; border: 0; background: none; color: var(--color-texto-suave); white-space: normal; }
+  .dt .etiqueta--fila .etiqueta-cuerpo { padding-inline: var(--espacio-2); }
+}

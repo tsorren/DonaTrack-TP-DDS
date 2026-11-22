@@ -122,6 +122,8 @@ los textos):
 | [tono-y-comunicacion.md](tono-y-comunicacion.md) | Voz, tono por pantalla, estados, cifras y el filtro de 7 preguntas; sale del [brief de tono del equipo](identidad/brief-tono-y-comunicacion-v1.0.pdf) |
 | [componentes.md](componentes.md) | Catálogo de capas CUBE y componentes, con el kit de listas; se consulta por búsqueda |
 | [backlog-migracion-componentes.md](backlog-migracion-componentes.md) | Migración de las hojas heredadas a componentes, con su línea de base y su tope |
+| [guia/](guia/guia-y-pantallas.html) | La guía de estilo «Huerta y galpón» (fase 3, versión 10): tokens, 27 piezas y 13 pantallas dibujadas. Fuentes en `guia/partes/`; se arma con `node guia/armar.js`. Es la fuente de verdad del rediseño mientras dura el backlog de abajo |
+| [backlog-guia-al-codigo.md](backlog-guia-al-codigo.md) y sus manifiestos | La guía al código, por olas (C0 a Z): decisiones del usuario, pantalla → arquetipo, pieza → componente y huecos de backend |
 | [criterios-catedra-ux-ui.md](criterios-catedra-ux-ui.md) | Los criterios de UX/UI de la cátedra: factores, patrones, arquitectura de la información y las 10 heurísticas |
 | [direccion-de-arte.md](direccion-de-arte.md) | Cómo apuntar alto en lo gráfico sin perder el piso |
 | [patrones-y-microcopy.md](patrones-y-microcopy.md) | Patrones de estados, avisos y textos |

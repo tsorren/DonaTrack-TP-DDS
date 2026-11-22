@@ -1,0 +1,27 @@
+/* Colores de los dibujos: cada clase toma un token. */
+.simbolos { position: absolute; }
+.f-nada { fill: none; }
+.f-papel { fill: var(--color-fondo-pagina); }
+.f-claro { fill: var(--color-superficie); }
+.f-salvia, .f-acento-claro { fill: var(--color-salvia); }
+.f-acento { fill: var(--color-accion-primaria); }
+.f-hondo { fill: var(--color-accion-primaria-activa); }
+.f-hoja { fill: var(--color-hoja); }
+.f-agua { fill: var(--color-agua); }
+.f-suelo { fill: var(--color-suelo); }
+.f-suelo-medio { fill: var(--color-suelo-medio); }
+.f-tinta { fill: var(--color-tinta); }
+.f-suave { fill: var(--color-texto-suave); }
+.f-raiz { fill: var(--color-raiz); }
+.f-fruto { fill: var(--color-fruto); }
+.f-carton { fill: var(--color-pendiente-fondo); }
+.f-ambar { fill: var(--color-en-camino-fondo); }
+.s-tinta { stroke: var(--color-tinta); }
+.s-suave { stroke: var(--color-texto-suave); }
+.s-raiz { stroke: var(--color-raiz); }
+.s-acento { stroke: var(--color-tallo); }
+.s-filete { stroke: var(--color-filete); }
+.s-fruto-hondo { stroke: var(--color-fruto-hondo); }
+.nudo-numero text { fill: var(--color-tinta); font: 700 15px var(--fuente-texto); text-anchor: middle; }
+.s-papel { stroke: var(--color-texto-suelo); }
+.nudo-numero--falta text { fill: var(--color-texto-suelo); }

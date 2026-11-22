@@ -1,0 +1,23 @@
+/* ===== La lámina de presentación (no es parte del producto). Sigue el tema de quien la mira.
+   Sus colores van acá, en un bloque aparte de los tokens del producto. ===== */
+:root {
+  --lam-fondo: #e7e9e1; --lam-superficie: #f5f6f1; --lam-texto: #1f211c; --lam-suave: #54584d;
+  --lam-filete: #1f211c2b; --lam-acento: #23602c; --lam-marca: #f4c844; --lam-sobre-marca: #1f211c;
+  --lam-codigo-fondo: #1f211c; --lam-codigo-texto: #edefe5; --lam-marco: #1f211c;
+  --lam-letra-titulo: Archivo, "Arial Narrow", system-ui, sans-serif;
+  --lam-letra-texto: "DM Sans", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --lam-fondo: #171814; --lam-superficie: #22241e; --lam-texto: #eceee4; --lam-suave: #a9ad9f;
+    --lam-filete: #eceee433; --lam-acento: #9fd67a; --lam-marca: #f4c844; --lam-sobre-marca: #1f211c;
+    --lam-codigo-fondo: #0e0f0c; --lam-codigo-texto: #edefe5; --lam-marco: #55584c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --lam-fondo: #171814; --lam-superficie: #22241e; --lam-texto: #eceee4; --lam-suave: #a9ad9f;
+  --lam-filete: #eceee433; --lam-acento: #9fd67a; --lam-marca: #f4c844; --lam-sobre-marca: #1f211c;
+  --lam-codigo-fondo: #0e0f0c; --lam-codigo-texto: #edefe5; --lam-marco: #55584c;
+  color-scheme: dark;
+}
