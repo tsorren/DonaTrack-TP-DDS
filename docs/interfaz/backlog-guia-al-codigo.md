@@ -2,7 +2,9 @@
 
 > Versión 1 · 2026-11-22 · rama de integración `E7_guia_ui` (sale de `ENTREGA_7`).
 > Fuente de verdad visual: la guía versionada en [`guia/`](guia/) (fase 3, versión 10; SHA-256 de
-> `guia/guia-y-pantallas.html`: `b3a7ccc0…`). Valores: [`guia/partes/05-tokens.css`](guia/partes/05-tokens.css).
+> `guia/guia-y-pantallas.html`: `b3a7ccc0…`, el de la copia del 2026-11-22). Valores: [`guia/partes/05-tokens.css`](guia/partes/05-tokens.css).
+> `guia/armar.js` compara la guía con el `tokens.css` vivo: después de C0, volver a armarla da otro
+> HTML y otro SHA. El HTML versionado no se vuelve a armar.
 > Un manifiesto `oleada-ui/1` por ola, junto a este archivo: `backlog-guia-al-codigo.<ola>.manifiesto.json`.
 > Este archivo es lo que leen los agentes del workflow `oleada-ui`: todo lo que necesitan está acá
 > o en un archivo versionado que se cita con `archivo:línea`.
@@ -35,6 +37,24 @@
 Las tres constan en notas de sesión que no están en el repo. Esta tabla las registra para los
 agentes: lo que necesitan es la decisión, que está acá.
 
+**G-02, las alternativas que no se eligieron** (para el ADR de C0). Fase 2, 2026-11-20: cuatro
+direcciones en baja fidelidad, las mismas 7 pantallas a 360 y 1280 px, sin ranking.
+
+| Alternativa | Qué era | Por qué no |
+|---|---|---|
+| Poda | Evoluciona Raíces, densidad media: una sola metáfora y la tarea primero | No sola: el usuario pidió mezclarla con Acta, «con un poco más de calidez» y «detalles de diseño gráfico para embellecer» |
+| Acta | Evoluciona Raíces, densidad alta, escritorio primero: cada registro con su prueba | No sola: el mismo pedido de mezcla |
+| Recorrido | Evoluciona Raíces, densidad baja, celular primero: la línea como columna vertebral | El usuario eligió mezclar Poda y Acta |
+| Remito | Rompe con Raíces: otra identidad, la donación como comprobante | El usuario eligió mezclar Poda y Acta |
+| Mezcla A · Cuaderno | Esqueleto de Poda; cada fila con la prueba de Acta (foto, quién recibió, cuándo); densidad media | El usuario eligió C |
+| Mezcla B · Herbario | Esqueleto de Acta (cajón, tablas, lista con detalle) con «para mirar hoy» de Poda; densidad alta | El usuario eligió C |
+| **Mezcla C · Huerta y galpón (elegida)** | Un esqueleto por rol: Poda con más aire para lo público, quien dona y la organización; Acta para el admin | De las tres mezclas, la que más calidez pone |
+
+En la fase 2b, la calidez se tradujo a estructura: la foto de la entrega, las personas con nombre,
+la voz y el agradecimiento solo por un hecho confirmado. Los detalles gráficos D1 a D7 (sello, raíz
+de 5 pasos, etiqueta, frutos, trama, folio y sombra de paja) se dibujaron en la fase 3. Fuente:
+notas de la sesión de la guía, «Fase 2: el plan que se siguió» y «Fase 2b».
+
 ### 2.2 Ronda de decisiones de la fase B
 
 Una decisión por pregunta, de a 3 por vuelta (`cliente-liviano/AGENTS.md:11`). La recomendación
@@ -59,7 +79,7 @@ Ronda 1 (2026-11-22): DA-11, DA-14a y DA-15. Respuesta del usuario: «todas las 
 | DA-12 | ¿Los huecos de backend van como PRs sueltos a `ENTREGA_7`? | Sí | Pendiente | | Z |
 | DA-13 | Las 6 plantillas de `persona/` que solo sirve la maqueta: ¿se migran con su gemela o se borran? | Se migran; borrarlas es otra decisión | Pendiente | | DON |
 | DA-14a | En C0: ¿los 10 nombres de color de hoy pasan a ser alias del token de la guía del mismo valor (sin cambiar ningún píxel) y se borran los 4 tokens que nadie usa? | Sí | Sí («todas las recomendadas», ronda 1) | 2026-11-22 | C0 |
-| DA-14b | En Z: ¿se borran los alias que quedaron sin usos y los 11 tokens que solo nombra el cerco de contraste, cambiando su lista de pares por la de la guía? | Sí | Pendiente | | Z |
+| DA-14b | En Z: ¿se borran los alias que quedaron sin usos y los 11 tokens que no usa ninguna hoja ni plantilla y solo nombra `InterfazFitnessTest`, cambiando su lista de pares por la de la guía? | Sí | Pendiente | | Z |
 | DA-15 | Si el 30/11 no llegó todo: ¿corte por área con la regla G2, o todo o nada? | Corte por área | Corte por área («todas las recomendadas», ronda 1) | 2026-11-22 | Z |
 
 ## 3. Ola C0: los tokens (piloto)
@@ -74,8 +94,8 @@ mide cuánto tarda y cuánto gasta una ola (§3.4).
 | C0-01 | `c0-adr` | ADR `proposed` «Huerta y galpón»: la guía de `docs/interfaz/guia/` como sistema visual y un esqueleto por rol. Dice su relación con el ADR de la piel Huerta, sin promover nada. `direccion-de-arte.md` deja de nombrar a Pico como base y apunta a la guía | Cambiar la identidad pide un ADR: `docs/interfaz/README.md:102`. ADR previo: `docs/adr/cliente-liviano/20261110-piel-huerta-con-abejas-como-identidad-del-cliente-liviano.md`. Pico: `docs/interfaz/direccion-de-arte.md:137-138` frente a `cliente-liviano/AGENTS.md:25-26` | Pendiente |
 | C0-02 | `c0-tokens` | `tokens.css` suma los 46 tokens nuevos de la guía y cambia el valor de los 6 que cambian (§3.2) | Guía: `docs/interfaz/guia/partes/05-tokens.css`. Tokens de uso de hoy: `cliente-liviano/src/main/resources/static/css/tokens.css:169-314` | Pendiente |
 | C0-03 | `c0-tokens` | Los 10 nombres de color en uso que la guía no trae pasan a ser alias del token de la guía del mismo valor; se retiran los 4 tokens sin ninguna referencia (§3.2) | Tablas de §3.2, `[VERIFIED]` | Pendiente |
-| C0-04 | `c0-tokens` | Los pares de contraste de los tokens nuevos entran en la lista del cerco; ningún par se quita | Lista: `cliente-liviano/src/test/java/grupo5/cliente/InterfazFitnessTest.java:57-90`; prueba: `:204` | Pendiente |
-| C0-05 | `c0-tokens` | `/estilos` gana una sección «Tokens» (color, letra, espaciado, radio, borde, elevación y movimiento), antes de «Componentes» | Hoy tiene Composición, Utilidades y Movimiento, sin sección de tokens: `cliente-liviano/src/main/resources/templates/estilos.html:21-147` | Pendiente |
+| C0-04 | `c0-tokens` | Los pares de contraste de los tokens nuevos entran en la lista del cerco; ningún par se quita | Lista: `cliente-liviano/src/test/java/grupo5/cliente/InterfazFitnessTest.java:57-90`; prueba: `:204`. Pares de la guía: `docs/interfaz/guia/partes/90-script.html:216-248` | Pendiente |
+| C0-05 | `c0-tokens` | `/estilos` gana una sección «Tokens» (color, letra, espaciado, radio, borde, elevación y movimiento), antes de «Componentes». `/estilos` no tiene hoja propia y el cerco prohíbe `style` sueltos: las muestras de token van en `componentes/muestra.css`. `componentes.md` suma una sección de tokens, nueva | Hoy tiene Composición, Utilidades y Movimiento, sin sección de tokens: `cliente-liviano/src/main/resources/templates/estilos.html:21-147`. Encabezados de `docs/interfaz/componentes.md`: no hay ninguno de tokens | Pendiente |
 | C0-06 | `c0-tokens` | La copia de `tokens.css` del tema de Keycloak se vuelve a copiar con el script, y su prueba de contraste pasa | El tema lleva una copia idéntica: `auth-service/README.md:126`. Script: `scripts/sincronizar_tema.py`. Prueba: `scripts/tests/test_auth_theme.py`, en el CI: `.github/workflows/agent-governance.yml:67`. Hoy las dos copias son iguales `[VERIFIED]` | Pendiente |
 
 ### 3.2 Datos de los tokens `[VERIFIED]`
@@ -88,7 +108,7 @@ Medido con `node docs/interfaz/guia/armar.js` y una comparación de valores base
 | Tokens de uso de hoy | 117 | |
 | Tokens de uso de la guía | 119 | |
 | Se conservan con su nombre | 73 | 6 cambian de valor (tabla de abajo) |
-| Nuevos | 46 | Se suman |
+| Nuevos | 46 | Se suman, con los valores base nuevos que piden (por ejemplo, `--color-velo` usa `--p-velo: #2a2a2266`, `guia/partes/05-tokens.css:33, 51`) |
 | De hoy que la guía no trae | 44 | 10 de color pasan a alias; 4 se retiran; el resto no se toca en C0 |
 
 **Los 6 que cambian de valor** (el valor nuevo es el de la guía):
@@ -129,17 +149,22 @@ historia: `docs/interfaz/bitacora.md:1505` nombra a `--color-estrato` y a `--med
 | `--color-estrato` | `tokens.css:292` |
 | `--medida-estrato` | `tokens.css:294` |
 
-**No se tocan en C0:** los otros 30 de los 44. De ellos, 19 (movimiento, capas, medidas y dos de
-letra) siguen en el sistema, y 11 los nombra el cerco de contraste: se retiran en Z, cuando la lista
-de pares del cerco pase a los pares de la guía (DA-14b).
+**No se tocan en C0:** los otros 30 de los 44. De ellos, 19 se usan en hojas (movimiento, capas,
+medidas y dos de letra) y siguen en el sistema. Los otros 11 no los usa ninguna hoja ni plantilla y
+solo los nombra `InterfazFitnessTest`: 10 en su lista de pares de contraste (`:57-90`) y
+`--movimiento-retraso-ninguno` en la prueba del movimiento (`:651`). Se retiran en Z, cuando la
+lista de pares pase a los pares de la guía (DA-14b). Aparte, el test también nombra a 3 tokens que
+sí se usan en hojas: `--color-titulo` (`:61, 67`; pasa a alias y el test lo sigue midiendo, con el
+mismo valor), `--movimiento-curva-base` (`:644`) y `--movimiento-retraso-sello` (`:646`).
 
 ### 3.3 Muestra para G1
 
 Siete pantallas de hoy, sin rehacer, solo para mirar cómo quedan con los tokens nuevos: `/publico-portada`,
 `/donante-inicio`, `/donante-donaciones`, `/entidad-inicio`, `/entidad-seguimiento-confirmar`,
 `/admin-asignaciones` y `/admin-donaciones`. Sus capturas salen de la corrida completa de
-`-Pvisual` (las 320 rutas de `cliente-liviano/src/test/resources/verificacion/paginas.txt`). No
-entran en la revisión de pantallas ni en la hoja de contacto de la ola.
+`-Pvisual` (las 320 rutas de `cliente-liviano/src/test/resources/verificacion/paginas.txt`), que
+corre el cierre de la ola y guarda fuera del repo, junto a su `cierre.md` (regla del manifiesto).
+No entran en la revisión de pantallas ni en la hoja de contacto de la ola.
 
 ### 3.4 Qué mide el piloto
 
@@ -151,6 +176,10 @@ entran en la revisión de pantallas ni en la hoja de contacto de la ola.
 | `-Pvisual` sobre las 320 rutas con los tokens nuevos | El piso: contraste AA, desbordes y toque de 48 px |
 | Las capturas de la muestra de §3.3 | Primera señal para G1 |
 | Si el stack del cierre levantó | Saber si el recorrido con login real es viable en esta máquina |
+
+La duración y los tokens los mide la sesión que lanza el workflow (hora de inicio y de fin, y el
+uso del plan antes y después). Los agentes no tienen ese dato. El cierre anota la hora de cada
+commit de la ola, sacada de `git log`.
 
 ## 4. Arquetipos: las 13 pantallas dibujadas
 
@@ -169,96 +198,98 @@ existen `[VERIFIED]`).
 
 ## 5. Pantalla → arquetipo
 
-Rutas bajo `cliente-liviano/src/main/resources/templates/`. «Directo»: la guía la dibuja.
-«Deriva»: no está dibujada y sigue la plantilla del arquetipo. «Sin arquetipo»: la guía no la
-resuelve (DA-08). Los estados se abrevian con su sufijo: en la fila de `publico-ingresar`, `-error`
-es `publico-ingresar-error`. Hoy hay 27 plantillas `publico-`, 10 `donante-`, 18 `entidad-` y 40
-`admin-` `[VERIFIED]`, más 9 pantallas en `persona/` y 3 en `error/`. `persona/datos-persona.html`
-no es una pantalla: son los datos de ejemplo de la persona (lo dice su comentario de cabecera).
+Rutas bajo `cliente-liviano/src/main/resources/templates/`, con el nombre completo de cada
+plantilla (sin `.html`). «Directo»: la guía la dibuja. «Deriva»: no está dibujada y sigue la
+plantilla del arquetipo. «Sin arquetipo»: la guía no la resuelve (DA-08). Hoy hay 27 plantillas
+`publico-`, 10 `donante-`, 18 `entidad-` y 40 `admin-` `[VERIFIED]`, más 9 pantallas en `persona/`
+y 3 en `error/`. `persona/datos-persona.html` no es una pantalla: son los datos de ejemplo de la
+persona (lo dice su comentario de cabecera).
 
 **ORG (18)**
 
-| Plantilla (y sus estados) | Arquetipo | Nota |
+| Plantillas | Arquetipo | Nota |
 |---|---|---|
 | `entidad-inicio` | A09 directo | Dos estados que decide el servidor |
 | `entidad-necesidades` | A02 directo | |
-| `entidad-necesidades-publicada`, `-cambiada`, `-baja` | Aviso breve | DA-06 |
+| `entidad-necesidades-publicada`, `entidad-necesidades-cambiada`, `entidad-necesidades-baja` | Aviso breve | DA-06 |
 | `entidad-necesidades-publicar-error` | Deriva de A12 | El error es un estado del formulario |
 | `entidad-recibidas`, `entidad-seguimiento` | A10 directo | Se funden en «Entregas» (DA-02) |
-| `entidad-seguimiento-confirmar`, `-confirmar-error` | A12 directo | |
+| `entidad-seguimiento-confirmar`, `entidad-seguimiento-confirmar-error` | A12 directo | |
 | `entidad-seguimiento-problema` | Deriva de A12 | El reporte «llegó con un problema», un formulario |
-| `entidad-seguimiento-sellada`, `-sellada-lentejas`, `-sellada-ropa` | A13 directo | |
-| `entidad-notificaciones`, `-leidas` | Sin arquetipo | El buzón |
-| `entidad-perfil`, `-guardado` | Deriva de A12 | |
+| `entidad-seguimiento-sellada`, `entidad-seguimiento-sellada-lentejas`, `entidad-seguimiento-sellada-ropa` | A13 directo | |
+| `entidad-notificaciones`, `entidad-notificaciones-leidas` | Sin arquetipo | El buzón |
+| `entidad-perfil`, `entidad-perfil-guardado` | Deriva de A12 | |
 | Página nueva: Entrega con problema | A11 directo | El detalle de una entrega que no pudo llegar |
 | Página nueva: Ayuda | Sin arquetipo | DA-05 |
 
 **DON (19: 10 de la empresa y 9 de la persona)**
 
 Las 9 de `persona/` se sirven en la maqueta con `?cuenta=persona`
-(`cliente-liviano/src/main/java/grupo5/cliente/maqueta/CuentaDeEjemplo.java:30-40`) y `-Pvisual`
-las recorre (`paginas.txt:307-319`). En el perfil real solo se usan 3
+(`cliente-liviano/src/main/java/grupo5/cliente/maqueta/CuentaDeEjemplo.java:30-40`). `-Pvisual`
+recorre hoy 4 de ellas con esa cuenta: donaciones, entidades, inicio y perfil
+(`cliente-liviano/src/test/resources/verificacion/paginas.txt:307-319`); la ola DON suma las otras
+5 a `paginas.txt`. En el perfil real solo se usan 3
 (`cliente-liviano/src/main/java/grupo5/cliente/web/Pantallas.java:129-130`). Las otras 6 siguen a
 su gemela de la empresa (DA-13).
 
-| Plantilla (y sus estados) | Arquetipo | Nota |
+| Plantillas | Arquetipo | Nota |
 |---|---|---|
 | `donante-inicio` | A04 directo | |
 | `persona/donante-inicio` | Sin arquetipo | La guía dibuja solo a la empresa (DA-03) |
-| `donante-donaciones` y `persona/donante-donaciones` | A05 directo | |
-| `donante-donaciones-detalle` y `persona/donante-donaciones-detalle` | A06, A07 o A08 | Una plantilla; el estado elige la variante |
-| `donante-seguimiento` y `persona/donante-seguimiento` | A07 directo | Deja de ser sección del menú (DA-03) |
-| `donante-entidades` y `persona/donante-entidades` | Deriva de A02 | Tarjetas con `componentes/listado` |
+| `donante-donaciones`, `persona/donante-donaciones` | A05 directo | |
+| `donante-donaciones-detalle`, `persona/donante-donaciones-detalle` | A06, A07 o A08 | Una plantilla; el estado elige la variante |
+| `donante-seguimiento`, `persona/donante-seguimiento` | A07 directo | Deja de ser sección del menú (DA-03) |
+| `donante-entidades`, `persona/donante-entidades` | Deriva de A02 | Tarjetas con `componentes/listado` |
 | `donante-misiones` | Sin arquetipo | DA-03 |
-| `donante-perfil`, `-guardado` y los 2 de `persona/` | Deriva de A12 | |
-| `donante-notificaciones`, `-leidas` y las 2 de `persona/` | Sin arquetipo | El buzón |
+| `donante-perfil`, `donante-perfil-guardado`, `persona/donante-perfil`, `persona/donante-perfil-guardado` | Deriva de A12 | |
+| `donante-notificaciones`, `donante-notificaciones-leidas`, `persona/donante-notificaciones`, `persona/donante-notificaciones-leidas` | Sin arquetipo | El buzón |
 | Página nueva: Cómo donar | Sin arquetipo | DA-05 |
 
 **PUB1 (13)**
 
-| Plantilla (y sus estados) | Arquetipo | Nota |
+| Plantillas | Arquetipo | Nota |
 |---|---|---|
 | `publico-portada` | A01 directo | |
-| `publico-ingresar`, `-error` | Deriva de A12 | La puerta de la demo |
+| `publico-ingresar`, `publico-ingresar-error` | Deriva de A12 | La puerta de la demo |
 | `publico-donaciones` | Deriva de A10 | Las etiquetas de entregas confirmadas |
 | `publico-entidades` | Deriva de A02 | Tarjetas con `componentes/listado` |
 | `publico-mapa` | Deriva de A07 | Mapa con su lista; sale del menú (DA-01) |
-| `publico-nosotros`, `-para-donantes`, `-para-entidades` | Deriva de A01 | «Cómo funciona» (DA-05) |
+| `publico-nosotros`, `publico-para-donantes`, `publico-para-entidades` | Deriva de A01 | «Cómo funciona» (DA-05) |
 | `publico-legales` | Sin arquetipo | Página de lectura |
-| `publico-contacto`, `-enviado`, `-error` | Deriva de A12 | La respuesta, aviso breve (DA-06) |
+| `publico-contacto`, `publico-contacto-enviado`, `publico-contacto-error` | Deriva de A12 | La respuesta, aviso breve (DA-06) |
 
 **PUB2 (14 y 5 comunes)**
 
-| Plantilla (y sus estados) | Arquetipo | Nota |
+| Plantillas | Arquetipo | Nota |
 |---|---|---|
-| `publico-recuperar`, `-enviado` | Deriva de A12 | |
-| `publico-activar` y sus 4 estados | Deriva de A12 | |
-| `publico-registro`, `-registro-donante`, `-registro-donante-error` | Deriva de A12 | |
-| `publico-registro-entidad`, `-corregir`, `-enviada`, `-error` | Sin arquetipo | El formulario en pasos |
+| `publico-recuperar`, `publico-recuperar-enviado` | Deriva de A12 | |
+| `publico-activar`, `publico-activar-pedir`, `publico-activar-pedido`, `publico-activar-lista`, `publico-activar-error` | Deriva de A12 | |
+| `publico-registro`, `publico-registro-donante`, `publico-registro-donante-error` | Deriva de A12 | |
+| `publico-registro-entidad`, `publico-registro-entidad-corregir`, `publico-registro-entidad-enviada`, `publico-registro-entidad-error` | Sin arquetipo | El formulario en pasos |
 | `error/403`, `error/404`, `error/5xx`, `sin-dibujar`, `aviso-persona` | Sin arquetipo | Páginas de estado |
 
 **ADM1 (18)**
 
-| Plantilla (y sus estados) | Arquetipo | Nota |
+| Plantillas | Arquetipo | Nota |
 |---|---|---|
 | `admin-inicio` | A03 directo | Pasa a ser «Por decidir» (DA-04); sus gráficos, sin arquetipo |
-| `admin-asignaciones` y sus 4 estados | A03 directo | |
-| `admin-donaciones`, `-detalle`, `-detalle-vencida` | Deriva de A03 | «Vencida» no tiene sello en la guía (DA-07) |
-| `admin-donaciones-registrar`, `-registrar-error`, `-registrada` | Deriva de A12 | En el galpón |
-| `admin-camiones` y sus 4 estados | Deriva de A03 | El dibujo de la flota, sin arquetipo |
+| `admin-asignaciones`, `admin-asignaciones-aprobada`, `admin-asignaciones-corrida`, `admin-asignaciones-descartada`, `admin-asignaciones-error` | A03 directo | |
+| `admin-donaciones`, `admin-donaciones-detalle`, `admin-donaciones-detalle-vencida` | Deriva de A03 | «Vencida» no tiene sello en la guía (DA-07) |
+| `admin-donaciones-registrar`, `admin-donaciones-registrar-error`, `admin-donaciones-registrada` | Deriva de A12 | En el galpón |
+| `admin-camiones`, `admin-camiones-agregado`, `admin-camiones-agregar-error`, `admin-camiones-deshabilitado`, `admin-camiones-habilitado` | Deriva de A03 | El dibujo de la flota, sin arquetipo |
 | `admin-ranking` | Sin arquetipo | |
 
 **ADM2 (22)**
 
-| Plantilla (y sus estados) | Arquetipo | Nota |
+| Plantillas | Arquetipo | Nota |
 |---|---|---|
-| `admin-donantes`, `-importando`, `-importado`, `-importar-error` | Deriva de A03 | |
-| `admin-donantes-registrar`, `-registrado`, `-registrar-error` | Deriva de A12 | |
+| `admin-donantes`, `admin-donantes-importando`, `admin-donantes-importado`, `admin-donantes-importar-error` | Deriva de A03 | |
+| `admin-donantes-registrar`, `admin-donantes-registrado`, `admin-donantes-registrar-error` | Deriva de A12 | |
 | `admin-importaciones` | Deriva de A03 | |
-| `admin-entidades`, `-aprobada`, `-correccion`, `-rechazada` | Deriva de A03 | |
-| `admin-entidades-registrar`, `-registrada`, `-registrar-error` | Deriva de A12 | |
-| `admin-administradores`, `-nuevo`, `-alta`, `admin-actividad` | Deriva de A03 | |
-| `admin-notificaciones`, `-leidas` | Sin arquetipo | El buzón |
+| `admin-entidades`, `admin-entidades-aprobada`, `admin-entidades-correccion`, `admin-entidades-rechazada` | Deriva de A03 | |
+| `admin-entidades-registrar`, `admin-entidades-registrada`, `admin-entidades-registrar-error` | Deriva de A12 | |
+| `admin-administradores`, `admin-administradores-nuevo`, `admin-administradores-alta`, `admin-actividad` | Deriva de A03 | |
+| `admin-notificaciones`, `admin-notificaciones-leidas` | Sin arquetipo | El buzón |
 | `admin-perfil` | Deriva de A12 | |
 
 **Sin arquetipo, en resumen:** el buzón de avisos de los tres roles, Misiones e insignias, el inicio

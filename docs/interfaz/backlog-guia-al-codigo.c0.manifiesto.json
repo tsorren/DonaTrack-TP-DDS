@@ -25,10 +25,11 @@
     "En el producto no hay consultas de contenedor para los quiebres: los valores de la guía en cqi pasan a vw y los quiebres siguen la regla de --medida-quiebre-* de cliente-liviano/AGENTS.md.",
     "Ningún tope de InterfazFitnessTest sube. Si un par de tokens nuevo no llega al contraste AA, se informa como bloqueante: no se cambia el valor de la guía por cuenta propia.",
     "auth-service/themes/donatrack/login/resources/css/tokens.css es una copia idéntica de tokens.css (auth-service/README.md): no se edita a mano. Después de cambiar tokens.css, corré python scripts/sincronizar_tema.py y después python -m unittest scripts/tests/test_auth_theme.py; los dos tienen que terminar sin error.",
-    "Antes de comitear el lote de tokens, corré -Pvisual sin -Dverificacion.paginas (las 320 rutas de cliente-liviano/src/test/resources/verificacion/paginas.txt) y dejá en tu resumen cuántas rutas pasan y cuáles no.",
+    "Antes de comitear el lote de tokens, corré -Pvisual sin -Dverificacion.paginas (las 320 rutas de cliente-liviano/src/test/resources/verificacion/paginas.txt) y anotá en pendiente cuántas rutas pasan y cuáles no.",
+    "Quien cierra la ola, después de los gates y antes de bajar el stack, corre otra vez -Pvisual sin -Dverificacion.paginas (rm -rf cliente-liviano/target/capturas; mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false). Que falle una pantalla que no es de la ola no es un bloqueante. Copiá cliente-liviano/target/capturas/reporte.json y las capturas a 360 y 1280 px de las 7 rutas de la muestra para G1 a una carpeta muestra-g1/ junto a cierre.md, fuera del repo, y escribí en cierre.md cuántas rutas pasan, cuáles no y por qué.",
     "Una pantalla que no es de esta ola no se rediseña ni se arregla, aunque se vea inconsistente con los tokens nuevos: quien construye y quien revisa la anotan como menor, nunca como bloqueante. Esta regla vale también para la revisión de pantallas. Es un dato para la decisión G1 (backlog, sección 9).",
     "Muestra para G1, solo para mirar: publico-portada, donante-inicio, donante-donaciones, entidad-inicio, entidad-seguimiento-confirmar, admin-asignaciones y admin-donaciones (backlog, sección 3.3). Sus capturas salen de la corrida completa de -Pvisual; no entran en la revisión de pantallas ni en la hoja de contacto de la ola.",
-    "Al cerrar la ola, el informe del cierre lleva la duración de cada paso y los tokens gastados por lote, si los podés saber: es la medida del piloto (backlog, sección 3.4)."
+    "Al cerrar la ola, cierre.md lleva la hora de cada commit de la ola (git log) y las rondas de reparación de cada lote: es parte de la medida del piloto (backlog, sección 3.4). La duración total y los tokens los mide la sesión que lanza el workflow."
   ],
   "decisiones": [
     {
@@ -45,11 +46,11 @@
       "quien": "usuario",
       "ok": "Elección de la mezcla C, 2026-11-20 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.1)",
       "lote": "c0-adr",
-      "criterio": "Existe un ADR en docs/adr/cliente-liviano/ con Status proposed que registra la decisión, las alternativas descartadas (Poda, Acta, Recorrido, Remito y las mezclas A y B) y su relación con el ADR 20261110 de la piel Huerta; no está promovido a accepted."
+      "criterio": "Existe un ADR en docs/adr/cliente-liviano/ con Status proposed que registra la decisión, las alternativas descartadas con su motivo, tal como están en la sección 2.1 del backlog (Poda, Acta, Recorrido, Remito y las mezclas A y B), y su relación con el ADR 20261110 de la piel Huerta; no está promovido a accepted."
     },
     {
       "id": "DA-14a",
-      "texto": "Los 10 nombres de color de hoy que la guía no trae y siguen en uso quedan como alias del token de la guía del mismo valor (backlog, sección 3.2); se retiran solo los 4 tokens sin ninguna referencia (--medida-quiebre-medio, --medida-estrato, --color-nodo y --color-estrato); los 11 que nombra el cerco de contraste y los de movimiento, capas, medidas y letra no se tocan.",
+      "texto": "Los 10 nombres de color de hoy que la guía no trae y siguen en uso quedan como alias del token de la guía del mismo valor (backlog, sección 3.2); se retiran solo los 4 tokens sin ninguna referencia (--medida-quiebre-medio, --medida-estrato, --color-nodo y --color-estrato); los otros 30 de los 44 que la guía no trae (los 11 que solo nombra InterfazFitnessTest y los 19 de movimiento, capas, medidas y letra) no se tocan.",
       "quien": "usuario",
       "ok": "Respuesta del usuario en la ronda 1, 2026-11-22: «todas las recomendadas» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2)",
       "lote": "c0-tokens",
@@ -81,9 +82,9 @@
       "ruta": "STANDARD",
       "disenio": "ninguno",
       "modulos": ["cliente-liviano"],
-      "archivos": "cliente-liviano/src/main/resources/static/css/tokens.css; cliente-liviano/src/main/resources/templates/estilos.html; cliente-liviano/src/test/java/grupo5/cliente/InterfazFitnessTest.java (solo los pares de contraste); auth-service/themes/donatrack/login/resources/css/tokens.css (solo con scripts/sincronizar_tema.py); docs/interfaz/componentes.md (solo la sección de tokens)",
+      "archivos": "cliente-liviano/src/main/resources/static/css/tokens.css; cliente-liviano/src/main/resources/templates/estilos.html; cliente-liviano/src/test/java/grupo5/cliente/InterfazFitnessTest.java (solo los pares de contraste); cliente-liviano/src/main/resources/static/css/componentes/muestra.css (solo las muestras de token de /estilos); auth-service/themes/donatrack/login/resources/css/tokens.css (solo con scripts/sincronizar_tema.py); docs/interfaz/componentes.md (una sección de tokens, nueva)",
       "rutasVisuales": ["estilos"],
-      "que": "tokens.css suma los 46 tokens nuevos de la guía, cambia el valor de los 6 que cambian y deja los alias y los retiros de la decisión DA-14a. /estilos gana una sección «Tokens» que muestra color, letra, espaciado, radio, borde, elevación y movimiento. La copia del tema de Keycloak se vuelve a copiar con el script. Ninguna otra pantalla se toca."
+      "que": "tokens.css suma los 46 tokens nuevos de la guía, cambia el valor de los 6 que cambian y deja los alias y los retiros de la decisión DA-14a. /estilos gana una sección «Tokens» que muestra color, letra, espaciado, radio, borde, elevación y movimiento, con sus muestras en componentes/muestra.css (sin style sueltos). La copia del tema de Keycloak se vuelve a copiar con el script. Ninguna otra pantalla se toca."
     }
   ]
 }
