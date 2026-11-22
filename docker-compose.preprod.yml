@@ -505,6 +505,36 @@ services:
     networks:
       - preprod-network
 
+  otel-lgtm:
+    # Stack unificado de observabilidad: OpenTelemetry Collector, Prometheus, Tempo, Loki y Grafana
+    # (ADR 20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm.md, E7-S03).
+    # Recibe OTLP por 4317 (gRPC) y 4318 (HTTP). Grafana corre en el puerto 3000 con autenticación obligatoria.
+    image: grafana/otel-lgtm:0.8.2
+    entrypoint:
+      - bash
+      - -c
+      - |
+        sed -i 's/GF_AUTH_ANONYMOUS_ENABLED=true/GF_AUTH_ANONYMOUS_ENABLED=false/' /otel-lgtm/run-grafana.sh
+        exec /otel-lgtm/run-all.sh
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?ver .env.example}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - otel_lgtm_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f /tmp/ready ] && curl -f -s http://localhost:3000/api/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      - preprod-network
+
   k6:
     image: grafana/k6:latest
     profiles: ["perf"]
@@ -519,3 +549,4 @@ networks:
 
 volumes:
   n8n_data:
+  otel_lgtm_data:

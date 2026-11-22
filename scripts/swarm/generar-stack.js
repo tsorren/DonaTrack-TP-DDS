@@ -9,7 +9,7 @@
 // cualquiera elegiría su cubeta de rate limiting), los servicios para que nadie esquive el gateway y la
 // infraestructura porque nadie de afuera la usa.
 // RabbitMQ (5672), solo con DONATRACK_PUBLICAR_RABBITMQ=true (pruebas desde el host, RM-08).
-const PUERTOS_PUBLICADOS = { 'cliente-liviano': [8090], keycloak: [8180] };
+const PUERTOS_PUBLICADOS = { 'cliente-liviano': [8090], keycloak: [8180], 'otel-lgtm': [3000] };
 const PUERTOS_RABBITMQ = { rabbitmq: [5672] };
 
 const CAMPOS_QUE_SWARM_RECHAZA = ['build', 'depends_on', 'container_name', 'pull_policy'];

@@ -62,6 +62,26 @@ test('RabbitMQ se publica solo si se pide', () => {
   assert.equal(conRabbit.services['api-gateway'].ports, undefined);
 });
 
+test('otel-lgtm conserva solo el puerto 3000 de Grafana y despublica OTLP', () => {
+  const composeConOtel = {
+    ...ejemplo,
+    services: {
+      ...ejemplo.services,
+      'otel-lgtm': {
+        ports: [
+          { mode: 'ingress', target: 3000, published: '3000', protocol: 'tcp' },
+          { mode: 'ingress', target: 4317, published: '4317', protocol: 'tcp' },
+          { mode: 'ingress', target: 4318, published: '4318', protocol: 'tcp' },
+        ],
+      },
+    },
+  };
+  const { stack } = generarStack(composeConOtel);
+  assert.deepEqual(stack.services['otel-lgtm'].ports, [
+    { mode: 'ingress', target: 3000, published: 3000, protocol: 'tcp' },
+  ]);
+});
+
 test('el cliente liviano conserva la sesión en la base (E7-S01c)', () => {
   assert.equal(s['cliente-liviano'].environment.CLIENTE_SESIONES_JDBC_HABILITADO, 'true');
 });

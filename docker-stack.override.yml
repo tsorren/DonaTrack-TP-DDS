@@ -121,3 +121,10 @@ services:
       resources:
         limits:
           memory: 640M
+
+  # Stack de observabilidad unificado (ADR observabilidad E7): 1 sola réplica, guarda estado en /data.
+  otel-lgtm:
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
