@@ -1,8 +1,8 @@
 # Dirección de arte
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión 4 · 2026-11-06 (la libertad creativa rige en toda exploración, con bocetos sin piso
-> entre vueltas) · parte del [proceso de diseño](README.md)**
+> **Versión 5 · 2026-11-22 (la base es la guía «Huerta y galpón», no Pico) · parte del
+> [proceso de diseño](README.md)**
 
 La meta es una interfaz **con carácter propio**: que alguien la vea y no pueda confundirla con una
 plantilla. La ambición tiene reglas, y debajo hay un piso que no se negocia.
@@ -58,7 +58,7 @@ Rasgos de interfaz genérica que se ven en todas partes:
 - flechas en todos los enlaces y efectos de hover en todas las tarjetas;
 - un número gigante con una etiqueta chica como recurso por defecto;
 - emojis en lugar de íconos;
-- Pico.css sin tematizar: si se nota que es Pico, falta trabajo.
+- una pantalla que se ve como un kit genérico de CSS: si se nota la plantilla, falta trabajo.
 
 Si el usuario pide algo de esta lista, se respeta: es su decisión. Mientras se explora, la lista es
 un aviso, no un veto: una opción puede rozarla si tiene un motivo propio, lo dice en su descripción
@@ -90,7 +90,7 @@ el código, nunca la idea. Lo que es libre y lo que no:
 |---|---|
 | La composición de cada pantalla: qué va dónde, con qué forma y tamaño | Los datos y las acciones: los mismos, con el mismo nombre y el mismo destino |
 | La navegación: barra, cajones, índice, pestañas o lo que pida el concepto | El piso de arriba |
-| Los materiales, los dibujos propios y el movimiento que explica algo | El stack: Thymeleaf, HTMX, Pico tematizado y tokens; JavaScript solo como mejora |
+| Los materiales, los dibujos propios y el movimiento que explica algo | El stack: Thymeleaf, HTMX, CSS propio y tokens; JavaScript solo como mejora |
 | La voz en títulos y rótulos | Las pantallas que el encargo deja fuera: no se tocan |
 | La metáfora y el mundo visual | El mensaje y el [tono común](tono-y-comunicacion.md): estados, cifras, acciones y errores dicen lo mismo en todas |
 | La tipografía y la paleta, con contraste AA | Lo que el usuario fijó en el encargo creativo |
@@ -134,8 +134,15 @@ diseño:
 
 ## Cómo se lleva a código
 
-- **Pico.css es la base** (D19) y se tematiza por sus variables `--pico-*`. El CSS propio queda
-  para los componentes y para la audacia de cada pantalla.
+- **La base es la guía «Huerta y galpón»**, versionada en [`guia/`](guia/guia-y-pantallas.html),
+  con sus valores en [`guia/partes/05-tokens.css`](guia/partes/05-tokens.css). Donde la guía y el
+  catálogo de hoy difieren, manda la guía. Tiene un esqueleto por rol: la huerta, aireada, para lo
+  público, quien dona y la organización; el galpón, denso, para el admin
+  ([ADR `proposed`](../adr/cliente-liviano/20261122-huerta-y-galpon-la-guia-como-sistema-visual-y-un-esqueleto-por-rol.md)).
+  Se lleva al código por olas, según el [backlog](backlog-guia-al-codigo.md).
+- **CSS propio con tokens, sin Pico.css**
+  ([ADR `proposed`](../adr/cliente-liviano/20261114-sin-pico-css-en-el-cliente-liviano.md)). Los
+  componentes y la audacia de cada pantalla van en las hojas propias.
 - **`tokens.css` tiene dos niveles** (D20):
   - **Valores base**, con prefijo `--p-` (por ejemplo, `--p-verde-500`). Solo se usan dentro de
     `tokens.css`.
@@ -143,10 +150,10 @@ diseño:
     `--color-`, `--fuente-`, `--tamano-`, `--espacio-`, `--radio-`, `--borde-`, `--sombra-`,
     `--movimiento-`, `--capa-` y `--medida-`. Por ejemplo, `--color-accion-primaria` o
     `--medida-toque-minimo`.
-- Las variables `--pico-*` se asignan solo en `tokens.css`, a partir de los usos.
+- Los tokens de la guía se suman a `tokens.css`: ningún nombre que ya existe cambia.
 - El sitio tiene una sola identidad, con un `tokens.css` y un `app.css`
   ([ADR aceptado](../adr/cliente-liviano/20261103-una-sola-identidad-en-el-cliente-liviano.md)).
 - Los puntos de quiebre se declaran una vez en `tokens.css` como `--medida-quiebre-*`. Las media
   queries usan solo esos valores.
-- Si una dirección elegida pide dejar Pico, eso es otra decisión de arquitectura: requiere un ADR
-  sucesor de ADR-E6-06.
+- Una dirección elegida que cambia la identidad o la guía es otra decisión de arquitectura:
+  requiere un ADR.
