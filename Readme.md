@@ -49,7 +49,7 @@ La plataforma se organiza bajo una arquitectura modular de servicios independien
 * **Modulo de Logistica:** Gestiona de forma reactiva y transaccional la flota de camiones, choferes, planificacion de rutas y ciclo de vida de entregas, publicando eventos asincronos.
 * **Modulo de Incentivos:** Registra las metricas historicas de ayuda, procesa el cumplimiento de misiones y administra los rankings y fidelizacion.
 * **Modulo de Notificaciones:** Sistema no bloqueante para el despacho multicanal de alertas (Email, SMS, WhatsApp) que mantiene replicas locales ligeras de los perfiles para garantizar autonomia.
-* **Broker de Mensajeria (RabbitMQ):** Desacopla la comunicacion de transporte y eventos de entrega entre logistica y donaciones (`logistica.exchange` hacia colas `donaciones.ruta.*` y `donaciones.entrega.*`). Los servicios publican eventos con el patron transactional outbox y los consumen con reintentos e idempotencia para tolerar fallas.
+* **Broker de Mensajeria (RabbitMQ):** Desacopla la comunicacion de transporte y eventos de entrega entre logistica y donaciones (`logistica.exchange` hacia colas `donaciones.ruta.*` y `donaciones.entrega.*`). Donaciones e incentivos publican eventos con el patron transactional outbox (con reintentos) y los consumidores aplican idempotencia para tolerar fallas.
 * **Kernel Compartido (common-lib):** Biblioteca que centraliza persistencia generica en memoria (`CrudRepository`), jerarquia de excepciones, observabilidad (MDC/TraceId) y configuraciones transversales.
 
 ---
