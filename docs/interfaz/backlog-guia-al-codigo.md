@@ -62,12 +62,16 @@ iba primero. El texto del usuario se copia tal cual. DA-14 se partió en dos (a 
 pregunta tuviera una sola decisión.
 
 Ronda 1 (2026-11-22): DA-11, DA-14a y DA-15. Respuesta del usuario: «todas las recomendadas».
+Ronda 2 (2026-11-22): DA-01, DA-02 y DA-03a. DA-03 se partió en tres (a, b y c). Respuesta del
+usuario: «3 si», junto con el sí al push y al lanzamiento de C0 («1 si, 2 si, 3 si»).
 
 | ID | Pregunta | Recomendación | Respuesta del usuario | Fecha | Ola |
 |---|---|---|---|---|---|
-| DA-01 | Público: ¿el Mapa sale del menú y queda dentro de Entregas? | Sí, como dibuja la guía | Pendiente | | C1 |
-| DA-02 | Organización: ¿«Donaciones recibidas» y «Seguir entregas» se funden en «Entregas»? | Sí | Pendiente | | C1 |
-| DA-03 | Quien dona: ¿«Seguimiento» deja de ser sección? ¿Dónde van Misiones y el inicio de la persona? | Sí; Misiones, como cuarta entrada de la persona | Pendiente | | C1 |
+| DA-01 | Público: ¿el Mapa sale del menú y queda dentro de Entregas? | Sí, como dibuja la guía | Sí («3 si», ronda 2) | 2026-11-22 | C1 |
+| DA-02 | Organización: ¿«Donaciones recibidas» y «Seguir entregas» se funden en «Entregas»? | Sí | Sí («3 si», ronda 2) | 2026-11-22 | C1 |
+| DA-03a | Quien dona: ¿«Seguimiento» deja de ser una sección del menú? (el seguimiento de cada donación se abre desde su detalle) | Sí | Sí («3 si», ronda 2) | 2026-11-22 | C1 |
+| DA-03b | Quien dona, la persona: ¿dónde va Misiones? | Como cuarta entrada del menú de la persona | Pendiente | | C1 |
+| DA-03c | Quien dona, la persona: ¿cómo es su inicio, que la guía no dibuja? | Pendiente de proponer | Pendiente | | C1 |
 | DA-04 | Admin: ¿«Por decidir» reemplaza a Inicio y a Asignar? | Sí | Pendiente | | C1 |
 | DA-05 | «Cómo funciona», «Cómo donar» y «Ayuda»: ¿páginas nuevas o las de hoy con otro nombre? | Las de hoy (Nosotros, Para donantes, Para organizaciones) | Pendiente | | C1 |
 | DA-06 | ¿Página propia de respuesta solo al confirmar una recepción, y aviso breve en el resto? | Sí, es la regla de la guía | Pendiente | | Roles |
