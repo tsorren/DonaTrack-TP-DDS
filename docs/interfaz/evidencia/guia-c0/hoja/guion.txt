@@ -1,0 +1,5 @@
+# Hoja de contacto, oleada guia-c0
+Las capturas de la página completa de /estilos miden 25167 px (1280) y 52851 px (360) de alto y no entran en 400 KB; cada imagen es el recorte de los primeros 1800 px.
+## /estilos
+img estilos-360.jpg | 360 px
+img estilos-1280.jpg | 1280 px
