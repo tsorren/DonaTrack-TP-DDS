@@ -1,13 +1,5 @@
 # DonaTrack
 
-[![Java 21](https://img.shields.io/badge/Java-21-orange?style=flat-square&logo=openjdk)](https://openjdk.org/)
-[![Spring Boot 4.0.7](https://img.shields.io/badge/Spring_Boot-4.0.7-brightgreen?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
-[![Maven](https://img.shields.io/badge/Maven-build-blue?style=flat-square&logo=apachemaven)](https://maven.apache.org/)
-[![Docker](https://img.shields.io/badge/Docker-compose-blue?style=flat-square&logo=docker)](https://www.docker.com/)
-[![SonarCloud](https://img.shields.io/badge/SonarCloud-quality_gate-green?style=flat-square&logo=sonarcloud)](https://sonarcloud.io/)
-[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-blue?style=flat-square&logo=githubactions)](https://github.com/features/actions)
-[![n8n](https://img.shields.io/badge/n8n-workflow-red?style=flat-square&logo=n8n)](https://n8n.io/)
-
 Optimizacion logistica, trazabilidad transparente y fidelizacion de donantes para potenciar el impacto de las organizaciones sociales mediante una plataforma de software robusta, moderna y escalable.
 
 > 📖 **Documentación y Gobernanza:** [Portal de Documentación](docs/README.md) · [Panel de Estado y Vigencia](docs/ESTADO_DOCUMENTACION.md) · [Router de Contexto para Agentes](docs/context-index.md) · [Reglas de Ingeniería AGENTS.md](AGENTS.md)
@@ -57,7 +49,7 @@ La plataforma se organiza bajo una arquitectura modular de servicios independien
 * **Modulo de Logistica:** Gestiona de forma reactiva y transaccional la flota de camiones, choferes, planificacion de rutas y ciclo de vida de entregas, publicando eventos asincronos.
 * **Modulo de Incentivos:** Registra las metricas historicas de ayuda, procesa el cumplimiento de misiones y administra los rankings y fidelizacion.
 * **Modulo de Notificaciones:** Sistema no bloqueante para el despacho multicanal de alertas (Email, SMS, WhatsApp) que mantiene replicas locales ligeras de los perfiles para garantizar autonomia.
-* **Broker de Mensajeria (RabbitMQ):** Desacopla la comunicacion de transporte y eventos de entrega entre logistica y donaciones (`logistica.exchange` hacia colas `donaciones.ruta.*` y `donaciones.entrega.*`).
+* **Broker de Mensajeria (RabbitMQ):** Desacopla la comunicacion de transporte y eventos de entrega entre logistica y donaciones (`logistica.exchange` hacia colas `donaciones.ruta.*` y `donaciones.entrega.*`). Los servicios publican eventos con el patron transactional outbox y los consumen con reintentos e idempotencia para tolerar fallas.
 * **Kernel Compartido (common-lib):** Biblioteca que centraliza persistencia generica en memoria (`CrudRepository`), jerarquia de excepciones, observabilidad (MDC/TraceId) y configuraciones transversales.
 
 ---
@@ -98,10 +90,13 @@ La seleccion de tecnologias responde a la necesidad de construir un producto con
 
 * **Java 21 y Spring Boot 4.0.7:** Plataforma robusta y tipada que ofrece un rendimiento estable y una infraestructura segura para el desarrollo de servicios web transaccionales.
 * **RabbitMQ (AMQP 3.13):** Broker de mensajeria asincrono para desacoplar eventos logisticos de alto volumen.
+* **PostgreSQL, Flyway y MongoDB:** Persistencia relacional con migraciones versionadas (Flyway); `logistica-service` tambien cuenta con adaptadores para MongoDB.
+* **Keycloak:** Proveedor de identidad (OAuth2/JWT) del sistema, en el modulo `auth-service`; la validacion del token en los servicios esta apagada por defecto.
 * **Spring Cloud OpenFeign:** Cliente HTTP declarativo; hoy lo usa solo `incentivos-service` para invocar a `notificaciones-service` (el resto de la comunicacion inter-servicios es por RabbitMQ).
 * **Docker y Docker Compose:** Virtualizacion de entornos que garantiza la portabilidad absoluta del sistema en preproduccion y desarrollo local.
 * **n8n Workflow Engine:** Agilidad logica para automatizar integraciones mediante flujos de trabajo independientes, liberando a los microservicios de dependencias de APIs de terceros.
 * **Spotless & SonarCloud:** Estandarizacion de formato y analisis estatico continuo de calidad de codigo.
+* **ArchUnit y Pitest:** Reglas de capas de Clean Architecture verificadas como tests (ArchUnit) y pruebas de mutacion (Pitest) como fitness functions arquitectonicas.
 * **Maven Reactor:** Reactor de compilacion unificado que simplifica la compilacion incremental y la administracion de dependencias.
 
 ---
@@ -113,6 +108,7 @@ La integridad y estabilidad de DonaTrack se respalda en procesos de ingenieria r
 * **Integracion Continua (CI/CD):** Flujos de ejecucion en GitHub Actions que compilan, formatean (Spotless) y validan de manera automatica el codigo en cada actualizacion, optimizando tiempos mediante la deteccion de cambios por modulos.
 * **Monitoreo de Deuda Tecnica:** Integracion con SonarCloud para evaluar de forma automatica la salud del codigo, previniendo vulnerabilidades y asegurando una cobertura robusta de pruebas.
 * **Suite de Pruebas Automatizadas E2E:** Verificacion automatica de extremo a extremo que simula solicitudes HTTP reales y tolera retrasos de red temporales, asegurando la robustez de las integraciones antes de promover cambios a produccion.
+* **Pruebas por niveles:** Unitarias (JUnit, Mockito), de integracion con Testcontainers, de contrato (OpenAPI), de humo (smoke) y de mutacion (Pitest), ademas de la suite E2E.
 * **Politica de Desarrollo Ordenado:** Uso de convenciones de ramas estrictas y hooks locales que previenen el registro de codigo que no cumpla con los estandares de formato y calidad exigidos.
 
 ---
