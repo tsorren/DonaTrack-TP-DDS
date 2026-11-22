@@ -227,15 +227,30 @@
 
 .muestra-tokens[data-tipo="valor"] {
   grid-template-columns: minmax(0, 1fr);
+  padding: var(--espacio-1);
 }
 
 .muestra-tokens[data-tipo="valor"] > li {
   display: block;
+  font-size: var(--tamano-micro);
 }
 
 .muestra-tokens[data-tipo="valor"] code {
   overflow-wrap: normal;
   white-space: nowrap;
+}
+
+/* En el celular el nombre más largo (--color-accion-primaria-activa) no entra entero en la caja con la
+   letra chica: la lista usa la letra mínima y menos relleno (arriba). Desde la tableta vuelve a la letra y
+   el relleno de las otras fichas. */
+@media (min-width: 37.5em) {
+  .muestra-tokens[data-tipo="valor"] {
+    padding: var(--espacio-2);
+  }
+
+  .muestra-tokens[data-tipo="valor"] > li {
+    font-size: var(--tamano-chico);
+  }
 }
 
 /* Un token por regla: el espaciado, el radio, el borde y la elevación. */
