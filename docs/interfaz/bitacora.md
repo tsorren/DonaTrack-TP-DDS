@@ -31,6 +31,23 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-22 · proceso · Las casillas de la demo de la bandeja en /estilos son una excepción conocida del gate visual
+
+- **Decisión:** `VerificacionVisualTest` deja afuera del piso las dos fallas de toque de las casillas
+  de 12 × 12 px de la demo de la bandeja en `/estilos` (`EXCEPCIONES_CONOCIDAS`: ruta, tipo y detalle
+  exactos). No cuentan en `reporte.json` y quedan a la vista en `excepciones.json`.
+- **Alternativas:** que la medición de toque cuente cada casilla por su etiqueta de 48 px (también
+  limpiaba las tres pantallas de notificaciones); quedó descartada con esa lectura.
+- **Por qué:** la casilla chica es decisión del usuario del 2026-11-12 (`buzon.css`) y la falla ya
+  estaba antes de la oleada C0 (igual en `093aed884`); el gate de `/estilos` no puede quedar en rojo
+  por algo decidido.
+- **Costo:** `/admin-notificaciones`, `/donante-notificaciones` y `/entidad-notificaciones` siguen
+  fallando por la misma casilla en la corrida completa.
+- **Quién decidió:** usuario, que respondió «Opción B» el 2026-11-22. Esta corrida no vio cómo
+  estaban rotuladas las opciones y la leyó como la alternativa que el cierre lista en segundo lugar;
+  falta que el usuario lo confirme.
+- **Evidencia:** `guia-r2/C0/cierre.md`, sección 6, fuera del repo.
+
 ### 2026-11-15 · proceso · Las oleadas de interfaz rinden cada decisión del usuario y no abren PR sin la revisión de pantallas (paso 4 de la opción A)
 
 - **Decisión:** el workflow `oleada-ui` reemplaza a `backlog-r11`. Arranca solo si cada decisión
