@@ -141,6 +141,50 @@ custom properties: son `@keyframes` para las líneas de tiempo del scroll
 pantalla, que es disposición, o en el bloque que la usa: `mov-asiento` la pide `.libreta`). Esas reglas dejan `animation-delay: var(--movimiento-retraso-ninguno)`
 para anular la espera de la animación del tiempo: es un reset, no una duración.
 
+## Tokens
+
+Hoja: `static/css/tokens.css`, capa `tokens`. Desde la ola C0 (2026-11-22) trae los 119 tokens de uso
+de la guía «Huerta y galpón» con sus valores ([`guia/partes/05-tokens.css`](guia/partes/05-tokens.css);
+la guía mide en `cqi` y el sitio en `vw`). Las hojas y las plantillas usan solo tokens de uso; los
+valores de base (`--p-*`) viven en `tokens.css` y en las variantes A/B. La muestra visual es la sección
+«Tokens» de `/estilos`, con `.muestra-tokens` (ver `.muestra`). La copia del tema de Keycloak
+(`auth-service/themes/donatrack/login/resources/css/tokens.css`) se vuelve a copiar con
+`python scripts/sincronizar_tema.py`; no se edita a mano.
+
+| Grupo | Tokens de la guía | Cuándo |
+|---|---|---|
+| Superficies y texto | `--color-fondo-pagina`, `--color-superficie`, `--color-campo`, `--color-salvia`, `--color-texto`, `--color-texto-suave`, `--color-tinta`, `--color-filete`, `--color-velo` | El papel, las láminas, los campos, una fila u opción elegida, el texto y el velo detrás de un diálogo |
+| Acción, enlace y foco | `--color-accion-primaria` y `-activa`, `--color-texto-sobre-accion`, `--color-accion-secundaria` y `-activa`, `--color-texto-sobre-secundaria`, `--color-enlace`, `--color-borde-control`, `--color-foco`, `--color-foco-separador`, `--color-foco-sobre-suelo`, `--color-deshabilitado-fondo` y `-texto` | El botón lleno (verde) y el secundario (papel claro, salvia con el cursor), el enlace en verde hondo, el aro de foco en tinta con un separador de papel (en paja sobre la tierra) |
+| La tierra | `--color-suelo`, `--color-suelo-medio`, `--color-texto-suelo`, `--color-horizonte` | El pie de la huerta y el cajón del galpón |
+| Los dibujos | `--color-raiz`, `--color-tallo`, `--color-hoja`, `--color-fruto`, `--color-fruto-hondo`, `--color-agua`, `--color-trama` | La raíz, la hoja, los frutos, el agua del mapa y la trama |
+| Estados de una donación | `--color-pendiente-*`, `--color-en-camino-*`, `--color-entregada-*` y `--color-problema-*` (`-fondo`, `-texto` y `-sello`); `--color-espera-fondo` y `-texto` | Cada sello, siempre con su texto y su signo. «Espera tu confirmación» es un pedido a quien mira, no un estado |
+| Avisos | `--color-exito-*`, `--color-advertencia-*`, `--color-info-*` (`-fondo` y `-texto`) y `--color-error-fondo`, `-texto` y `-borde` | Comparten los pares de los estados |
+| El galpón | `--color-galpon-fondo`, `--color-galpon-cabecera`, `--color-fila-elegida`, `--color-fila-cursor` | El armazón denso del admin |
+| Letra | `--fuente-titulo`, `--fuente-texto`, `--fuente-peso-titulo`, `--fuente-ancho-titulo`, `-portada` y `-menu`; `--tamano-micro`, `-chico`, `-denso`, `-base`, `-grande`, `-titulo-3`, `-titulo-2`, `-titulo-1` y `-titulo-portada`; `--tamano-interlinea-texto`, `-denso` y `-titulo` | Archivo en los títulos, DM Sans en el texto; escala de razón 1,2 desde el texto base |
+| Espaciado | `--espacio-0` a `--espacio-6` | Una escala de 4 px |
+| Radio | `--radio-lamina`, `--radio-boton`, `--radio-campo`, `--radio-estampa`, `--radio-pastilla` | Lo que se toca es redondeado; lo que se estampa o se rotula, recto |
+| Borde | `--borde-fino`, `--borde-control`, `--borde-tinta`, `--borde-punteado`, `--borde-ancho-sello`, `--borde-ancho-foco` | El filete, el control, la tinta, el punteado y los anchos del sello y del foco |
+| Elevación | `--sombra-ninguna`, `--sombra-papel`, `--sombra-paja` | Tres escalones y nada más |
+| Movimiento | `--movimiento-duracion-corta`, `-media` y `-trazo`, `--movimiento-curva-entrada` y `-salida`, `--movimiento-distancia-corta` | Solo para explicar un cambio; el resto, en [Movimiento](#movimiento) |
+| Medidas y capas | `--medida-toque-minimo`, `--medida-texto` y `-texto-chico`, `--medida-pagina`, `--medida-formulario`, `--medida-cajon`, `--medida-menu-celular`, `--medida-quiebre-chico`, `-menu` y `-ancho`; `--capa-fijo-pantalla`, `--capa-menu-celular`, `--capa-encabezado-fijo`, `--capa-saltar` | El toque de 48 px, los anchos, los quiebres y lo que queda encima |
+
+**Los nombres de antes** (DA-14a). Siguen en uso y son alias del token de la guía del mismo valor:
+`--color-papel` (`--color-fondo-pagina`), `--color-tinta-suave` (`--color-texto-suave`),
+`--color-acento` y `--color-titulo` (`--color-accion-primaria`), `--color-acento-hondo`
+(`--color-accion-primaria-activa`), `--color-acento-claro` (`--color-salvia`), `--color-suelo-hondo` y
+`--color-sombra-grano` (`--color-tinta`), `--color-sombra` (`--color-hoja`) y `--color-destacado`
+(`--color-raiz`). Una hoja nueva usa el nombre de la guía. Quedan también, sin cambios, los tokens de
+antes que la guía no trae: el resto del movimiento, `--medida-boton-fijo`, `--medida-cabecera-fija`,
+`--medida-filtros-fijos`, `--capa-filtros-fijos`, `--capa-carga`, `--tamano-bajada-portada`,
+`--fuente-cifra` y los que solo nombra la lista de pares de `InterfazFitnessTest` (su retiro es DA-14b,
+en la ola Z). `--medida-quiebre-medio` (53,75 em) también queda: ningún `var()` lo nombra, pero las
+media queries escriben su valor y solo valen los quiebres declarados en `tokens.css`. Se retiraron
+`--color-nodo`, `--color-estrato` y `--medida-estrato`, que nadie usaba.
+
+**Contraste.** Los pares de la guía (`guia/partes/90-script.html`) están en la lista de pares de
+`InterfazFitnessTest`, que falla si uno baja de 4,5 a 1 (texto) o de 3 a 1 (bordes y foco). Un par de
+colores nuevo se agrega ahí.
+
 ## Componentes (bloques)
 
 Hoja: `static/css/componentes/<componente>.css`, capa `bloques`, cargada desde `app.css`. Fragmento
@@ -149,7 +193,7 @@ variantes van por atributo (`data-estado`, `data-tono`, `data-tamano`), en la mi
 
 | Componente | Fragmento | Parámetros | Slots | Estados y excepciones | Movimiento | Patrón |
 |---|---|---|---|---|---|---|
-| `.muestra` (la ficha de una pieza en `/estilos`) | `componentes/muestra :: muestra(nombre, cuando, cuerpo)` | `nombre`, `cuando` | `cuerpo` | `data-celda` (un hijo que se ve como una caja), `data-ventana` (una caja que contiene lo que va fijo a la pantalla, como la barra de navegación, y lleva la tierra honda de la cabecera; en el celular se desplaza de costado) y `data-fondo="suelo"` o `"suelo-hondo"` (una caja del color de la tierra o de la tierra honda, para los ejemplos que en el sitio van sobre ese plano); `data-ancho="pantalla"` (un ejemplo que necesita el ancho de una pantalla, como la rama de frutos o la libreta: la ficha se desplaza de costado) | — | Tarjeta de documentación (Material: card) |
+| `.muestra` (la ficha de una pieza en `/estilos`) | `componentes/muestra :: muestra(nombre, cuando, cuerpo)` | `nombre`, `cuando` | `cuerpo` | `data-celda` (un hijo que se ve como una caja), `data-ventana` (una caja que contiene lo que va fijo a la pantalla, como la barra de navegación, y lleva la tierra honda de la cabecera; en el celular se desplaza de costado) y `data-fondo="suelo"` o `"suelo-hondo"` (una caja del color de la tierra o de la tierra honda, para los ejemplos que en el sitio van sobre ese plano); `data-ancho="pantalla"` (un ejemplo que necesita el ancho de una pantalla, como la rama de frutos o la libreta: la ficha se desplaza de costado). `.muestra-tokens` (desde el 2026-11-22, C0-05): la lista de muestras de la sección «Tokens», con `data-tipo` (`color`, `espacio`, `radio`, `borde`, `sombra`, `letra` o `valor`) y un `li` por token con `data-token` (el nombre sin los dos guiones); el cuadro de cada token es el `::before` del `li`, con una regla por token en `muestra.css` | — | Tarjeta de documentación (Material: card) |
 | `.boton` | Sin fragmento: el elemento nativo, `<button class="boton">` o `<a class="boton" href>` | — | El texto del botón | `data-tono`: `principal` (la acción de la pantalla o de una parte de ella, como la tierra de la portada), `secundario` o `quitar` (dar de baja). `data-tamano="chico"`: más bajo, en contorno; con `data-tono="principal"` queda lleno y solo más angosto. `data-forma="foto"` (con el tamaño chico): una miniatura arriba y la leyenda debajo, a la izquierda (la foto de una entrega en la portada). `data-zona="suelo"` o `"suelo-hondo"`: sobre el plano de la tierra o de la tierra honda, contorno de paja, letra clara y el fondo liso del color del plano (al pasar, el de la tierra); con `data-tono="principal"` y `data-zona="suelo"`, lleno de paja («Sumar mi entidad»). `hidden` lo oculta. Sin tono o secundario, en contorno de tinta (por dentro, sin sumar alto) y el texto en tinta; el principal, lleno de verde con la sombra plana de hoja (`--color-sombra`, piel Huerta desde el 2026-11-08). El principal, al apretar, se hunde sobre su sombra | `:active` | Material: Buttons (filled, outlined, text) |
 | `.campo` y `.campo-error` | Sin fragmento: `<div class="campo">` con `label`, el control nativo (`input`, `select` o `textarea`), una ayuda `small` opcional y, si falla, `<p class="campo-error">` | — | La etiqueta, el control, la ayuda y el error | `data-estado="error"` (borde del control en el color del problema; el mensaje va en `.campo-error` y se enlaza con `aria-describedby`). `input[type="number"]` es angosto; `textarea` se estira en vertical | — | Material: Text fields |
 | `.estado` y `.estado-sello` | `componentes/sello :: sello(estado)` (el dibujo) dentro de `<span class="estado" data-estado="…">` con la palabra al lado | `estado` | — | `data-estado`: donante `pendiente`, `en-camino`, `entregada`, `con-problema`; entidad `puerta`, `camino`, `salir`, `recibida`, `problema`. El fragmento dibuja además `hecho` y `falta` (etapas de un recorrido) y cualquier otro valor lo dibuja como problema. El color solo acompaña: el estado va siempre en palabras. `data-forma="punto"` en el `span.estado` (desde el 2026-11-09, tarde): sin pastilla, una bolita del color del estado (un círculo con su anillo y un punto al medio) y la palabra al lado; `data-estado="inactiva"`, en la tinta suave (Entidades del admin) | — | Material: Chips / badges |

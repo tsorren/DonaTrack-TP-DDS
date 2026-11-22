@@ -144,6 +144,233 @@
       </ul>
     </section>
 
+    <section class="pila" data-espacio="3" aria-labelledby="tokens">
+      <h2 id="tokens">Tokens</h2>
+      <p data-tono="suave">Los valores de la guía «Huerta y galpón», en <code>tokens.css</code>. Las hojas usan solo
+        estos nombres: ningún color, tamaño ni espacio se escribe a mano. Los valores de base
+        (<code>--p-*</code>) quedan dentro de <code>tokens.css</code>.</p>
+      <div class="grilla">
+        <section class="muestra">
+          <h3 class="muestra-nombre">Color: superficies y texto</h3>
+          <p class="muestra-cuando">El papel de la página, las láminas, los campos y el texto.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="color">
+            <li data-token="color-fondo-pagina"><code>--color-fondo-pagina</code></li>
+            <li data-token="color-superficie"><code>--color-superficie</code></li>
+            <li data-token="color-campo"><code>--color-campo</code></li>
+            <li data-token="color-salvia"><code>--color-salvia</code></li>
+            <li data-token="color-texto"><code>--color-texto</code></li>
+            <li data-token="color-texto-suave"><code>--color-texto-suave</code></li>
+            <li data-token="color-tinta"><code>--color-tinta</code></li>
+            <li data-token="color-filete"><code>--color-filete</code></li>
+            <li data-token="color-velo"><code>--color-velo</code></li>
+          </ul>
+        </section>
+        <section class="muestra">
+          <h3 class="muestra-nombre">Color: acción, enlace y foco</h3>
+          <p class="muestra-cuando">Los botones, los enlaces, el borde de un control, el aro de foco y lo deshabilitado.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="color">
+            <li data-token="color-accion-primaria"><code>--color-accion-primaria</code></li>
+            <li data-token="color-accion-primaria-activa"><code>--color-accion-primaria-activa</code></li>
+            <li data-token="color-texto-sobre-accion"><code>--color-texto-sobre-accion</code></li>
+            <li data-token="color-accion-secundaria"><code>--color-accion-secundaria</code></li>
+            <li data-token="color-accion-secundaria-activa"><code>--color-accion-secundaria-activa</code></li>
+            <li data-token="color-texto-sobre-secundaria"><code>--color-texto-sobre-secundaria</code></li>
+            <li data-token="color-enlace"><code>--color-enlace</code></li>
+            <li data-token="color-borde-control"><code>--color-borde-control</code></li>
+            <li data-token="color-foco"><code>--color-foco</code></li>
+            <li data-token="color-foco-separador"><code>--color-foco-separador</code></li>
+            <li data-token="color-foco-sobre-suelo"><code>--color-foco-sobre-suelo</code></li>
+            <li data-token="color-deshabilitado-fondo"><code>--color-deshabilitado-fondo</code></li>
+            <li data-token="color-deshabilitado-texto"><code>--color-deshabilitado-texto</code></li>
+          </ul>
+        </section>
+        <section class="muestra">
+          <h3 class="muestra-nombre">Color: la tierra</h3>
+          <p class="muestra-cuando">El pie de la huerta y el cajón del galpón, con su texto y la línea de paja.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="color">
+            <li data-token="color-suelo"><code>--color-suelo</code></li>
+            <li data-token="color-suelo-medio"><code>--color-suelo-medio</code></li>
+            <li data-token="color-texto-suelo"><code>--color-texto-suelo</code></li>
+            <li data-token="color-horizonte"><code>--color-horizonte</code></li>
+          </ul>
+        </section>
+        <section class="muestra">
+          <h3 class="muestra-nombre">Color: los dibujos</h3>
+          <p class="muestra-cuando">La raíz, la hoja, los frutos, el agua del mapa y la trama.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="color">
+            <li data-token="color-raiz"><code>--color-raiz</code></li>
+            <li data-token="color-tallo"><code>--color-tallo</code></li>
+            <li data-token="color-hoja"><code>--color-hoja</code></li>
+            <li data-token="color-fruto"><code>--color-fruto</code></li>
+            <li data-token="color-fruto-hondo"><code>--color-fruto-hondo</code></li>
+            <li data-token="color-agua"><code>--color-agua</code></li>
+            <li data-token="color-trama"><code>--color-trama</code></li>
+          </ul>
+        </section>
+        <section class="muestra">
+          <h3 class="muestra-nombre">Color: estados de una donación</h3>
+          <p class="muestra-cuando">Siempre con su texto y su signo, nunca solo con el color. «Espera tu confirmación» es un pedido a quien mira, no un estado.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="color">
+            <li data-token="color-pendiente-fondo"><code>--color-pendiente-fondo</code></li>
+            <li data-token="color-pendiente-texto"><code>--color-pendiente-texto</code></li>
+            <li data-token="color-pendiente-sello"><code>--color-pendiente-sello</code></li>
+            <li data-token="color-en-camino-fondo"><code>--color-en-camino-fondo</code></li>
+            <li data-token="color-en-camino-texto"><code>--color-en-camino-texto</code></li>
+            <li data-token="color-en-camino-sello"><code>--color-en-camino-sello</code></li>
+            <li data-token="color-entregada-fondo"><code>--color-entregada-fondo</code></li>
+            <li data-token="color-entregada-texto"><code>--color-entregada-texto</code></li>
+            <li data-token="color-entregada-sello"><code>--color-entregada-sello</code></li>
+            <li data-token="color-problema-fondo"><code>--color-problema-fondo</code></li>
+            <li data-token="color-problema-texto"><code>--color-problema-texto</code></li>
+            <li data-token="color-problema-sello"><code>--color-problema-sello</code></li>
+            <li data-token="color-espera-fondo"><code>--color-espera-fondo</code></li>
+            <li data-token="color-espera-texto"><code>--color-espera-texto</code></li>
+          </ul>
+        </section>
+        <section class="muestra">
+          <h3 class="muestra-nombre">Color: avisos</h3>
+          <p class="muestra-cuando">Los avisos comparten los pares de los estados.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="color">
+            <li data-token="color-exito-fondo"><code>--color-exito-fondo</code></li>
+            <li data-token="color-exito-texto"><code>--color-exito-texto</code></li>
+            <li data-token="color-advertencia-fondo"><code>--color-advertencia-fondo</code></li>
+            <li data-token="color-advertencia-texto"><code>--color-advertencia-texto</code></li>
+            <li data-token="color-error-fondo"><code>--color-error-fondo</code></li>
+            <li data-token="color-error-texto"><code>--color-error-texto</code></li>
+            <li data-token="color-error-borde"><code>--color-error-borde</code></li>
+            <li data-token="color-info-fondo"><code>--color-info-fondo</code></li>
+            <li data-token="color-info-texto"><code>--color-info-texto</code></li>
+          </ul>
+        </section>
+        <section class="muestra">
+          <h3 class="muestra-nombre">Color: el galpón</h3>
+          <p class="muestra-cuando">El armazón denso del admin: el fondo, la cabecera de una tabla y la fila elegida o con el cursor.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="color">
+            <li data-token="color-galpon-fondo"><code>--color-galpon-fondo</code></li>
+            <li data-token="color-galpon-cabecera"><code>--color-galpon-cabecera</code></li>
+            <li data-token="color-fila-elegida"><code>--color-fila-elegida</code></li>
+            <li data-token="color-fila-cursor"><code>--color-fila-cursor</code></li>
+          </ul>
+        </section>
+        <section class="muestra">
+          <h3 class="muestra-nombre">Color: los nombres de antes</h3>
+          <p class="muestra-cuando">Siguen andando con el mismo color: cada uno es otro nombre del token de la guía. Una
+            hoja nueva usa el nombre de la guía.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="valor">
+            <li><code>--color-papel</code> es <code>--color-fondo-pagina</code></li>
+            <li><code>--color-tinta-suave</code> es <code>--color-texto-suave</code></li>
+            <li><code>--color-acento</code> y <code>--color-titulo</code> son <code>--color-accion-primaria</code></li>
+            <li><code>--color-acento-hondo</code> es <code>--color-accion-primaria-activa</code></li>
+            <li><code>--color-acento-claro</code> es <code>--color-salvia</code></li>
+            <li><code>--color-suelo-hondo</code> y <code>--color-sombra-grano</code> son <code>--color-tinta</code></li>
+            <li><code>--color-sombra</code> es <code>--color-hoja</code></li>
+            <li><code>--color-destacado</code> es <code>--color-raiz</code></li>
+          </ul>
+        </section>
+      </div>
+      <section class="muestra">
+        <h3 class="muestra-nombre">Letra</h3>
+        <p class="muestra-cuando">Archivo en los títulos y DM Sans en el texto. La escala crece de a 1,2 desde el texto
+          base; el título de la portada y el título 1 crecen con el ancho de la pantalla.</p>
+        <ul class="muestra-tokens muestra-demo" role="list" data-tipo="letra">
+          <li data-token="fuente-titulo"><span data-muestra="titulo">Archivo, en los títulos</span>
+            <code>--fuente-titulo, --fuente-peso-titulo (850) y --fuente-ancho-titulo (116 %)</code></li>
+          <li data-token="fuente-ancho-portada"><span data-muestra="titulo">El título de la portada</span>
+            <code>--fuente-ancho-portada (122 %)</code></li>
+          <li data-token="fuente-ancho-menu"><span data-muestra="titulo">El menú</span>
+            <code>--fuente-ancho-menu (80 %)</code></li>
+          <li data-token="fuente-texto"><span data-muestra="texto">DM Sans, en el texto</span>
+            <code>--fuente-texto</code></li>
+          <li data-token="tamano-titulo-portada"><span data-muestra="titulo">Portada</span>
+            <code>--tamano-titulo-portada (de 34 a 52 px)</code></li>
+          <li data-token="tamano-titulo-1"><span data-muestra="titulo">Título 1</span>
+            <code>--tamano-titulo-1 (de 30 a 42 px)</code></li>
+          <li data-token="tamano-titulo-2"><span data-muestra="titulo">Título 2</span>
+            <code>--tamano-titulo-2 (24 px)</code></li>
+          <li data-token="tamano-titulo-3"><span data-muestra="titulo">Título 3</span>
+            <code>--tamano-titulo-3 (20 px)</code></li>
+          <li data-token="tamano-grande"><span data-muestra="texto">Texto grande</span>
+            <code>--tamano-grande (18 px)</code></li>
+          <li data-token="tamano-base"><span data-muestra="texto">Texto base</span>
+            <code>--tamano-base (17 px)</code></li>
+          <li data-token="tamano-denso"><span data-muestra="texto">Texto de una tabla del admin</span>
+            <code>--tamano-denso (15 px)</code></li>
+          <li data-token="tamano-chico"><span data-muestra="texto">Texto chico</span>
+            <code>--tamano-chico (14 px)</code></li>
+          <li data-token="tamano-micro"><span data-muestra="texto">Rótulo de un sello</span>
+            <code>--tamano-micro (13 px)</code></li>
+          <li data-token="tamano-interlinea-texto"><span data-muestra="texto">Un párrafo con el alto de renglón del
+            texto, para leer de corrido.</span> <code>--tamano-interlinea-texto (1,5)</code></li>
+          <li data-token="tamano-interlinea-denso"><span data-muestra="texto">Una fila de tabla con el alto de renglón
+            denso del admin.</span> <code>--tamano-interlinea-denso (1,35)</code></li>
+          <li data-token="tamano-interlinea-titulo"><span data-muestra="titulo">Un título de dos renglones</span>
+            <code>--tamano-interlinea-titulo (1,08)</code></li>
+        </ul>
+      </section>
+      <div class="grilla">
+        <section class="muestra">
+          <h3 class="muestra-nombre">Espaciado</h3>
+          <p class="muestra-cuando">Una escala de 4 px. El espacio entre los hijos de una composición se pide con
+            <code>data-espacio</code>.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="espacio">
+            <li data-token="espacio-0"><code>--espacio-0 (4 px)</code></li>
+            <li data-token="espacio-1"><code>--espacio-1 (8 px)</code></li>
+            <li data-token="espacio-2"><code>--espacio-2 (12 px)</code></li>
+            <li data-token="espacio-3"><code>--espacio-3 (16 px)</code></li>
+            <li data-token="espacio-4"><code>--espacio-4 (24 px)</code></li>
+            <li data-token="espacio-5"><code>--espacio-5 (40 px)</code></li>
+            <li data-token="espacio-6"><code>--espacio-6 (64 px)</code></li>
+          </ul>
+        </section>
+        <section class="muestra">
+          <h3 class="muestra-nombre">Radio</h3>
+          <p class="muestra-cuando">Lo que se toca es redondeado; lo que se estampa o se rotula, recto.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="radio">
+            <li data-token="radio-lamina"><code>--radio-lamina (16 px)</code></li>
+            <li data-token="radio-boton"><code>--radio-boton (10 px)</code></li>
+            <li data-token="radio-campo"><code>--radio-campo (10 px)</code></li>
+            <li data-token="radio-estampa"><code>--radio-estampa (3 px)</code></li>
+            <li data-token="radio-pastilla"><code>--radio-pastilla (redondo del todo)</code></li>
+          </ul>
+        </section>
+        <section class="muestra">
+          <h3 class="muestra-nombre">Borde</h3>
+          <p class="muestra-cuando">El filete que separa, el borde de un control, el de tinta, el punteado y los anchos del
+            sello y del aro de foco.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="borde">
+            <li data-token="borde-fino"><code>--borde-fino (1 px)</code></li>
+            <li data-token="borde-control"><code>--borde-control (1,5 px)</code></li>
+            <li data-token="borde-tinta"><code>--borde-tinta (1,5 px)</code></li>
+            <li data-token="borde-punteado"><code>--borde-punteado (1,5 px)</code></li>
+            <li data-token="borde-ancho-sello"><code>--borde-ancho-sello (2 px)</code></li>
+            <li data-token="borde-ancho-foco"><code>--borde-ancho-foco (3 px)</code></li>
+          </ul>
+        </section>
+        <section class="muestra">
+          <h3 class="muestra-nombre">Elevación</h3>
+          <p class="muestra-cuando">Tres escalones y nada más: sin sombra, la del papel y la plana de paja.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="sombra">
+            <li data-token="sombra-ninguna"><code>--sombra-ninguna</code></li>
+            <li data-token="sombra-papel"><code>--sombra-papel</code></li>
+            <li data-token="sombra-paja"><code>--sombra-paja</code></li>
+          </ul>
+        </section>
+        <section class="muestra">
+          <h3 class="muestra-nombre">Movimiento</h3>
+          <p class="muestra-cuando">Solo para explicar un cambio. Los de la guía; el resto de las duraciones, esperas,
+            curvas y distancias está en «Movimiento», más arriba.</p>
+          <ul class="muestra-tokens muestra-demo" role="list" data-tipo="valor">
+            <li><code>--movimiento-duracion-corta</code> 0,2 s</li>
+            <li><code>--movimiento-duracion-media</code> 0,4 s</li>
+            <li><code>--movimiento-duracion-trazo</code> 1,1 s</li>
+            <li><code>--movimiento-curva-entrada</code> entra rápido y frena</li>
+            <li><code>--movimiento-curva-salida</code> frena al final</li>
+            <li><code>--movimiento-distancia-corta</code> 8 px</li>
+          </ul>
+        </section>
+      </div>
+    </section>
+
     <section class="pila" data-espacio="3" aria-labelledby="componentes">
       <h2 id="componentes">Componentes</h2>
       <p data-tono="suave">Cada uno con su hoja en <code>static/css/componentes/</code>. Las variantes van por atributo.</p>
