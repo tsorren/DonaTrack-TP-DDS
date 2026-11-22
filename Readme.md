@@ -163,7 +163,7 @@ El repositorio cuenta con dos scripts orquestadores en Bash diseñados para auto
 
 ## Equipo de Ingenieria
 
-### UTN-FRBA - Diseñó de Sistemas (2026) - Grupo 5
+### UTN-FRBA - Diseño de Sistemas (2026) - Grupo 5
 
 | Nombre | Legajo | Correo |
 | :--- | :---: | :--- |
