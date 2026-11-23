@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240">
+<!-- Foto de ejemplo: una caja y siete latas de leche en polvo sobre una mesa, junto a una ventana. Dibujo de la guía (docs/interfaz/guia/partes/20-simbolos.html), con los colores de tokens.css escritos adentro, como los demás de esta carpeta. Se usa entero (img) o por símbolo (use href="…/escena-latas.svg#escena-latas"). -->
+<symbol id="escena-latas" viewBox="0 0 320 240" preserveAspectRatio="xMidYMid slice">
+      <rect fill="#fbf2d3" width="320" height="240"/>
+      <rect fill="#cfe1d4" stroke="#2a2a22" x="22" y="24" width="96" height="70" stroke-width="3"/><path fill="none" stroke="#2a2a22" d="M70 24v70M22 59h96" stroke-width="2.5"/>
+      <rect fill="#ebe3c4" y="170" width="320" height="70"/><rect fill="#3b3527" y="158" width="320" height="14"/>
+      <rect fill="#fde3a6" stroke="#2a2a22" x="30" y="96" width="92" height="62" stroke-width="3"/><rect fill="#23602c" x="71" y="96" width="10" height="62"/>
+      <g stroke="#2a2a22" stroke-width="2.5"><rect fill="#fffaea" x="140" y="104" width="36" height="54" rx="4"/><rect fill="#fffaea" x="182" y="104" width="36" height="54" rx="4"/><rect fill="#fffaea" x="224" y="104" width="36" height="54" rx="4"/><rect fill="#fffaea" x="266" y="104" width="36" height="54" rx="4"/><rect fill="#fffaea" x="161" y="52" width="36" height="52" rx="4"/><rect fill="#fffaea" x="203" y="52" width="36" height="52" rx="4"/><rect fill="#fffaea" x="245" y="52" width="36" height="52" rx="4"/></g>
+      <g fill="#2a7035"><rect x="141.5" y="120" width="33" height="20"/><rect x="183.5" y="120" width="33" height="20"/><rect x="225.5" y="120" width="33" height="20"/><rect x="267.5" y="120" width="33" height="20"/><rect x="162.5" y="68" width="33" height="20"/><rect x="204.5" y="68" width="33" height="20"/><rect x="246.5" y="68" width="33" height="20"/></g>
+    </symbol>
+<use href="#escena-latas"/>
+</svg>

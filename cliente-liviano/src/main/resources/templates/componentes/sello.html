@@ -1,24 +1,32 @@
 <!DOCTYPE html>
-<!--/* El sello de un estado (D33, B2-03): el dibujo, uno por estado, para poner al lado de su palabra
-       (el estado va siempre en texto: el sello es decorativo). Una sola pieza para el donante y la
-       entidad; antes, cuatro copias con vocabularios distintos. Su hoja es
-       static/css/componentes/sello.css.
-       Uso: <th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>
-       estado (la palabra y el dibujo):
-       - pendiente (o salir): círculo punteado, todavía sin salir.
-       - en-camino (o camino): círculo con la mitad ámbar.
-       - entregada: el disco paja con su sombra y el tilde calado.
-       - hecho (o recibida): el disco paja con el tilde calado, una etapa cumplida.
-       - puerta: el disco paja liso, lo que llegó a la puerta.
-       - falta: círculo hueco, una etapa que no se imprimió todavía.
-       - cualquier otro (con-problema, problema): el disco rojo vivo con "!".
-       El renglón con el color va aparte: <span class="estado" data-estado="en-camino">sello +
-       palabra</span> (la clase .estado de sello.css). No es una pantalla: SitioController solo sirve
-       nombres con rol. */-->
+<!--/* El sello de un estado (D33, B2-03; C1-14 lo lleva a la guía): para poner al lado de su palabra
+       (el estado va siempre en texto: el dibujo y el signo son decorativos). Una sola pieza para el
+       donante, la entidad y el admin. Su hoja es static/css/componentes/sello.css.
+       Uso: <span class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En camino</span>
+       sello(estado) deja dos cosas, y la hoja muestra la que va según dónde esté:
+       - el dibujo de hoy (svg.estado-sello), que se ve suelto o en un p.estado, y
+       - el signo de la guía (span.sello-signo), que se ve dentro de la chapa (span.estado).
+       estado (el signo de la guía, entre paréntesis):
+       - registrada, pendiente o salir (e-registrada): todavía no salió. En el dibujo, el círculo punteado.
+       - asignada (e-asignada) y preparada (e-preparada): el disco se va llenando. Dibujo punteado.
+       - en-camino o camino (e-en-camino): el círculo con la mitad ámbar.
+       - confirmada o entregada (e-confirmada): el disco paja con su sombra y el tilde calado.
+       - hecho o recibida (e-confirmada): el disco paja con el tilde calado, una etapa cumplida.
+       - puerta (e-espera): el disco paja liso, lo que llegó a la puerta.
+       - falta (e-registrada): círculo hueco, una etapa que no se imprimió todavía.
+       - vencida, cancelada o en-revision (e-info): la guía no les dibuja signo (DA-07); van con el
+         par neutro, el de pendiente, y en el dibujo, el círculo punteado.
+       - cualquier otro (con-problema, problema) (e-problema): el disco rojo vivo con "!".
+       signo(nombre): el signo de la guía solo, dibujado acá y no con <use>, porque las pantallas no
+       traen iconos :: signos. La misma geometría que iconos :: signos; nombre sin el "e-":
+       registrada, asignada, preparada, en-camino, confirmada, problema, info, atencion o espera.
+       pedido(): la chapa «Espera tu confirmación», que no es un estado: un pedido a quien mira.
+       No es una pantalla: SitioController solo sirve nombres con rol. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="sello(estado)"
-          th:with="forma=${estado == 'salir' ? 'pendiente' : (estado == 'camino' ? 'en-camino' : (estado == 'recibida' ? 'hecho' : estado))}">
+          th:with="forma=${ {'salir': 'pendiente', 'camino': 'en-camino', 'recibida': 'hecho', 'registrada': 'pendiente', 'asignada': 'pendiente', 'preparada': 'pendiente', 'vencida': 'pendiente', 'cancelada': 'pendiente', 'en-revision': 'pendiente', 'confirmada': 'entregada'}.get(estado) ?: estado },
+                   signo=${ {'registrada': 'registrada', 'pendiente': 'registrada', 'salir': 'registrada', 'falta': 'registrada', 'asignada': 'asignada', 'preparada': 'preparada', 'en-camino': 'en-camino', 'camino': 'en-camino', 'confirmada': 'confirmada', 'entregada': 'confirmada', 'hecho': 'confirmada', 'recibida': 'confirmada', 'puerta': 'espera', 'vencida': 'info', 'cancelada': 'info', 'en-revision': 'info'}.get(estado) ?: 'problema' }">
 <svg th:switch="${forma}" class="estado-sello" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
   <circle th:case="'pendiente'" class="sello-contorno sello-contorno--punteado" cx="11" cy="11" r="8.5"/>
   <g th:case="'en-camino'"><circle class="sello-contorno" cx="11" cy="11" r="8.5"/><path class="sello-medio" d="M11 2.5A8.5 8.5 0 0 0 11 19.5Z"/></g>
@@ -27,7 +35,23 @@
   <g th:case="'puerta'"><circle class="sello-hecho" cx="11" cy="11" r="9"/></g>
   <circle th:case="'falta'" class="sello-falta" cx="11" cy="11" r="8"/>
   <g th:case="*"><circle class="sello-problema" cx="11" cy="11" r="9"/><path class="sello-calado" d="M11 6V12.5M11 15.5V16"/></g>
+</svg><span class="sello-signo"><svg th:replace="~{componentes/sello :: signo(${signo})}"></svg></span>
+</th:block>
+
+<th:block th:fragment="signo(nombre)">
+<svg th:switch="${nombre}" class="icono" data-forma="signo" th:data-signo="|e-${nombre}|" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+  <circle th:case="'registrada'" cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="2.6 2.11"/>
+  <th:block th:case="'asignada'"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path fill="currentColor" d="M8 8V2a6 6 0 0 1 6 6z"/></th:block>
+  <th:block th:case="'preparada'"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path fill="currentColor" d="M8 2a6 6 0 0 1 0 12z"/></th:block>
+  <th:block th:case="'en-camino'"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path fill="currentColor" d="M8 8V2a6 6 0 1 1-6 6z"/></th:block>
+  <path th:case="'confirmada'" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M2.8 8.6l3.5 3.6 6.9-7.9"/>
+  <th:block th:case="'info'"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M8 7.4v4"/><circle cx="8" cy="4.6" r="1.2" fill="currentColor"/></th:block>
+  <th:block th:case="'atencion'"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M8 1.8l6.6 11.8H1.4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M8 6.2v3.4"/><circle cx="8" cy="11.6" r="1" fill="currentColor"/></th:block>
+  <path th:case="'espera'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M8 1.8v7M5 6.2l3 3 3-3M2.5 10v3.7h11V10"/>
+  <th:block th:case="*"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M8 2.6v6.6"/><circle cx="8" cy="13" r="1.5" fill="currentColor"/></th:block>
 </svg>
 </th:block>
+
+<span th:fragment="pedido()" class="sello-pedido"><svg th:replace="~{componentes/sello :: signo('espera')}"></svg>Espera tu confirmación</span>
 </body>
 </html>

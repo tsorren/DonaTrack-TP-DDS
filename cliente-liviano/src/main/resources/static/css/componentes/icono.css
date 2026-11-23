@@ -1,0 +1,34 @@
+/* icono: el tamaño y el trazo de un ícono o de un signo de estado de la guía (iconos :: comunes y
+   iconos :: signos, C1-05). Se usa con <svg class="icono"><use href="#i-…"/></svg>; siempre
+   decorativo (aria-hidden), junto a la palabra que dice lo mismo. Catálogo:
+   docs/interfaz/componentes.md y /estilos. */
+
+/* De línea, 24 px, con el color del texto (en la guía, 1,5 rem: --espacio-4). */
+.icono {
+  flex: none;
+  inline-size: var(--espacio-4);
+  block-size: var(--espacio-4);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* El signo de estado: 14 px (en la guía, 0,875 rem: --tamano-chico), con sus trazos propios. */
+.icono[data-forma="signo"] {
+  inline-size: var(--tamano-chico);
+  block-size: var(--tamano-chico);
+  fill: currentColor;
+  stroke: none;
+  /* Las puntas rectas de la guía: redondas, las rayas de e-registrada tapan sus huecos. */
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
+}
+
+/* La marca, llena: el cuerpo en el verde de la acción y la hoja en el verde de hoja. */
+.icono[data-forma="marca"] {
+  color: var(--color-accion-primaria);
+  fill: var(--color-hoja);
+  stroke: none;
+}

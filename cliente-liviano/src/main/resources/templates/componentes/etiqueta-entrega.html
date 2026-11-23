@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<!--/* La etiqueta de una entrega (C1-18, D3 de la guía): esto se recibió. La foto, qué es, dónde y
+       quién lo recibió, con el sello de la entrega confirmada. Su hoja es
+       static/css/componentes/etiqueta-entrega.css.
+       Uso: <article th:replace="~{componentes/etiqueta-entrega :: etiqueta-entrega(foto=${e.foto},
+            descripcion=${e.descripcionFoto}, rotulo=null, titulo=${e.titulo}, lugar=${e.lugar},
+            pie=${e.recibio}, sello=${'Entrega confirmada'}, costado=false)}"></article>
+       - foto: la dirección de la imagen (una foto real o una escena de /img/ilustraciones).
+       - descripcion: el texto alternativo de la foto.
+       - rotulo: el rótulo sobre la foto («Foto de ejemplo» en los datos de ejemplo); null, ninguno.
+       - titulo: qué se entregó, con su cantidad («Fideos secos, 8 kg»). Va en un h3.
+       - lugar: dónde se recibió; null, nada.
+       - pie: quién lo recibió y cuándo («Recibió Marta el 5 de octubre»); null, nada.
+       - sello: la palabra del sello de la entrega confirmada; null, sin sello.
+       - costado: true, la foto al costado del texto (se apila sola si no entran los dos).
+       No es una pantalla: SitioController solo sirve nombres con rol. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<article th:fragment="etiqueta-entrega(foto, descripcion, rotulo, titulo, lugar, pie, sello, costado)"
+         class="etiqueta-entrega" th:classappend="${costado} ? 'etiqueta-entrega--costado'">
+  <figure class="etiqueta-entrega-foto">
+    <img th:src="${foto}" th:alt="${descripcion}" src="" alt="" decoding="async">
+    <figcaption class="etiqueta-entrega-rotulo" th:if="${rotulo != null}" th:text="${rotulo}">Foto de ejemplo</figcaption>
+  </figure>
+  <div class="etiqueta-entrega-cuerpo">
+    <h3 th:text="${titulo}">Lo que se entregó</h3>
+    <p th:if="${lugar != null}" th:text="${lugar}">Dónde se recibió</p>
+    <p class="etiqueta-entrega-pie" th:if="${pie != null}" th:text="${pie}">Quién lo recibió</p>
+    <span class="estado" data-estado="entregada" th:if="${sello != null}"><th:block th:replace="~{componentes/sello :: sello('entregada')}"></th:block><th:block th:text="${sello}">Entrega confirmada</th:block></span>
+  </div>
+</article>
+</body>
+</html>

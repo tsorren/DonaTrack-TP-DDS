@@ -2,8 +2,12 @@
    desde app.css. Espacio entre hijos de una composición (data-espacio), tamaño del texto y tono del
    texto. El movimiento (data-movimiento) está en movimiento.css, en la misma capa. */
 
-/* data-espacio="1" a "5": el espacio entre los hijos de una pila, un racimo, una barra lateral o
-   una grilla. */
+/* data-espacio="0" a "5": el espacio entre los hijos de una pila, un racimo, una barra lateral o
+   una grilla. El 0 es el más chico de la escala (4 px, la .g0 de la guía, C1-02), no la nada. */
+[data-espacio="0"] {
+  --espacio-entre: var(--espacio-0);
+}
+
 [data-espacio="1"] {
   --espacio-entre: var(--espacio-1);
 }

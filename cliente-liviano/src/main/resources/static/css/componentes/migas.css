@@ -1,0 +1,34 @@
+/* Bloque migas (C1-10; guía «Huerta y galpón», 10-componentes.css:369-373): las migas de pan. Una
+   lista ordenada en una fila que baja de renglón, en letra chica: cada paso de antes es un enlace de
+   48 px de alto seguido de la flecha (.icono, de 16 px); la pantalla actual va al final, en el texto
+   suave y sin enlace (aria-current="page"). Fragmento: templates/componentes/migas.html. Se carga en
+   la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+.migas ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-0);
+  font-size: var(--tamano-chico);
+}
+
+.migas li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-0);
+  color: var(--color-texto-suave);
+}
+
+.migas a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--medida-toque-minimo);
+  min-height: var(--medida-toque-minimo);
+  font-weight: 600;
+}
+
+/* La flecha entre dos pasos: 16 px (en la guía, 1 rem). */
+.migas .icono {
+  inline-size: var(--espacio-3);
+  block-size: var(--espacio-3);
+}

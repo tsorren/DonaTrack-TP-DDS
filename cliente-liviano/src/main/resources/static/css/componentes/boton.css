@@ -1,86 +1,75 @@
-/* Bloque botón (D33, B2-01): el botón y el enlace con forma de botón (`<button class="boton">`,
-   `<a class="boton">`). Se carga en la capa `bloques` desde app.css. Las variantes van por atributo,
-   después de la base y en el mismo bloque: `data-tono` ("principal", "secundario", "quitar"),
-   `data-tamano` ("chico"), `data-forma` ("foto") y `data-zona` ("suelo", "suelo-hondo").
-   Catálogo: docs/interfaz/componentes.md. */
+/* Bloque botón (D33, B2-01; guía «Huerta y galpón», C1-11): el botón y el enlace con forma de botón
+   (`<button class="boton">`, `<a class="boton">`). Se carga en la capa `bloques` desde app.css. Las
+   variantes van por atributo, después de la base y en el mismo bloque: `data-tono` ("principal",
+   "secundario", "quitar"), `data-tamano` ("chico"), `data-forma` ("foto") y `data-zona` ("suelo",
+   "suelo-hondo"). Los estados: deshabilitado (`disabled` o `aria-disabled="true"`) y cargando
+   (`aria-busy="true"`). Catálogo: docs/interfaz/componentes.md. */
 .boton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: var(--espacio-1);
+  min-width: var(--medida-toque-minimo);
   min-height: var(--medida-toque-minimo);
-  padding: 0.75rem 1.5rem;
-  border: 0;
-  /* Esquinas de 10 px (piel Huerta, 2026-11-08). */
+  padding: 0 var(--espacio-4);
+  /* Sin tono o secundario: claro, con el borde de tinta (guía, 72-114). */
+  border: var(--borde-tinta);
   border-radius: var(--radio-boton);
-  /* Sin tono, en contorno de tinta (piel Huerta): el contorno va por dentro, sin sumar alto. */
-  box-shadow: inset 0 0 0 2px var(--color-tinta);
-  /* Liso: el botón tapa la textura del fondo (usuario, A/B de textura, 2026-11-02). */
-  background: var(--color-papel);
-  color: var(--color-tinta);
-  font: inherit;
-  font-weight: 700;
+  background: var(--color-accion-secundaria);
+  color: var(--color-texto-sobre-secundaria);
+  font: 700 var(--tamano-base) / 1.2 var(--fuente-texto);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--movimiento-duracion-corta) var(--movimiento-curva-salida);
+}
+
+.boton:hover,
+.boton:active {
+  background: var(--color-accion-secundaria-activa);
   text-decoration: none;
 }
 
-.boton:hover {
-  background: var(--color-acento-claro);
+/* Al apretar, baja un poco, como un sello. */
+.boton:active {
+  translate: 0 2px;
 }
 
 .boton[hidden] {
   display: none;
 }
 
-/* Los `<button>` se tocan con la mano. */
-:where(button).boton {
-  cursor: pointer;
-}
-
-/* El principal, lleno de verde con la sombra plana de hoja (piel Huerta). */
+/* El principal, lleno de verde. */
 .boton[data-tono="principal"] {
-  box-shadow: 0.25rem 0.25rem 0 var(--color-sombra);
-  background: var(--color-acento);
-  color: var(--color-papel);
+  border-color: var(--color-accion-primaria);
+  background: var(--color-accion-primaria);
+  color: var(--color-texto-sobre-accion);
 }
 
-.boton[data-tono="principal"]:hover {
-  background: var(--color-acento-hondo);
+.boton[data-tono="principal"]:is(:hover, :active) {
+  border-color: var(--color-accion-primaria-activa);
+  background: var(--color-accion-primaria-activa);
 }
 
-.boton[data-tono="secundario"]:hover {
-  background: var(--color-acento-claro);
-}
-
-/* Quitar o dar de baja: el contorno de tinta y la sombra, en el color del problema. */
+/* Quitar o dar de baja: el borde y la letra en el color del problema. */
 .boton[data-tono="quitar"] {
-  background: var(--color-papel);
-  box-shadow: inset 0 0 0 2px var(--color-problema-texto), 0.25rem 0.25rem 0 var(--color-problema-fondo);
-  color: var(--color-problema-texto);
+  border-color: var(--color-error-borde);
+  color: var(--color-error-texto);
 }
 
-.boton[data-tono="quitar"]:hover {
-  background: var(--color-problema-fondo);
+.boton[data-tono="quitar"]:is(:hover, :active) {
+  background: var(--color-error-fondo);
 }
 
-/* Chico: más bajo, en contorno, para no competir con la acción principal (la foto, el mapa, "Volver a
-   cargar"). Con el tono principal es el botón lleno, solo más angosto ("Confirmar recepción" en una
-   fila de la lista). */
+/* Chico: más angosto y con la letra densa, para acciones dentro de una lista; conserva los 48 px de
+   alto para el dedo. Con el tono principal es el botón lleno, solo más angosto. */
 .boton[data-tamano="chico"] {
-  padding: 0.5rem 0.875rem;
+  padding-inline: var(--espacio-3);
+  font-size: var(--tamano-denso);
 }
 
 .boton[data-tamano="chico"]:not([data-tono="principal"]) {
   justify-self: start;
-  gap: 0.5rem;
-  box-shadow: inset 0 0 0 1.5px var(--color-tinta);
-  font-size: 0.875rem;
-}
-
-.boton[data-tamano="chico"]:not([data-tono="principal"]):hover {
-  background: var(--color-acento-claro);
-}
-
-.boton[data-tamano="chico"][data-tono="principal"] {
-  font-size: 0.9375rem;
 }
 
 .boton[data-tamano="chico"] svg {
@@ -96,17 +85,17 @@
 .boton[data-tamano="chico"][data-forma="foto"] {
   display: grid;
   justify-items: start;
-  gap: 0.375rem;
-  padding: 0.375rem 0.375rem 0.5rem;
-  font-size: 0.8125rem;
+  gap: var(--espacio-0);
+  padding: var(--espacio-0) var(--espacio-0) var(--espacio-1);
+  font-size: var(--tamano-micro);
   text-align: left;
 }
 
 /* Sobre la tierra (B3-01): `data-zona="suelo"` en el plano de la tierra y `"suelo-hondo"` en el de la
-   tierra honda. El contorno es paja y la letra, clara; el fondo, liso, del color de su plano, tapa la
+   tierra honda. El borde es paja y la letra, clara; el fondo, liso, del color de su plano, tapa la
    textura. La acción principal, llena de paja. */
 .boton:is([data-zona="suelo"], [data-zona="suelo-hondo"]):not([data-tono="principal"]) {
-  box-shadow: inset 0 0 0 2px var(--color-raiz);
+  border-color: var(--color-raiz);
   background: var(--color-suelo);
   color: var(--color-texto-suelo);
 }
@@ -115,22 +104,43 @@
   background: var(--color-suelo-hondo);
 }
 
-.boton:is([data-zona="suelo"], [data-zona="suelo-hondo"]):not([data-tono="principal"]):hover {
-  background: var(--color-suelo);
-}
-
 .boton[data-zona="suelo"][data-tono="principal"] {
+  border-color: var(--color-raiz);
   background: var(--color-raiz);
   color: var(--color-suelo-hondo);
 }
 
-.boton[data-zona="suelo"][data-tono="principal"]:hover {
+.boton[data-zona="suelo"][data-tono="principal"]:is(:hover, :active) {
+  border-color: var(--color-texto-suelo);
   background: var(--color-texto-suelo);
 }
 
-/* El principal, al apretar, se hunde sobre su sombra, como un sello (ronda de formas, 2026-11-01).
-   Va al final para ganarle a la sombra de cada variante. Los de contorno no tienen sombra. */
-.boton[data-tono="principal"]:active {
-  box-shadow: none;
-  translate: 0.25rem 0.25rem;
+/* Deshabilitado: sin borde, en el gris de lo que no se puede usar todavía. Va después de los tonos
+   y repite sus atributos para ganarles también al pasar el cursor. */
+.boton:is(:disabled, [aria-disabled="true"]),
+.boton:is([data-tono], [data-zona]):is(:disabled, [aria-disabled="true"]),
+.boton[data-tono][data-zona]:is(:disabled, [aria-disabled="true"]) {
+  border-color: transparent;
+  background: var(--color-deshabilitado-fondo);
+  color: var(--color-deshabilitado-texto);
+  cursor: not-allowed;
+  translate: none;
+}
+
+/* Cargando: el botón conserva su ancho, dice qué está haciendo y suma una ruedita que gira (la
+   animación con nombre de movimiento.css; con «reducir movimiento» queda quieta). La guía la dibuja
+   de 1 rem, con un trazo de 2,5 px. */
+.boton[aria-busy="true"] {
+  cursor: progress;
+}
+
+.boton[aria-busy="true"]::before {
+  content: "";
+  flex: none;
+  width: var(--espacio-3);
+  height: var(--espacio-3);
+  border: 2.5px solid currentcolor;
+  border-right-color: transparent;
+  border-radius: var(--radio-pastilla);
+  animation: var(--movimiento-animacion-gira);
 }

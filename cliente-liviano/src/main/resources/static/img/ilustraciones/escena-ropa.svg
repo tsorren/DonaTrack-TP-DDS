@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240">
+<!-- Foto de ejemplo: dos pilas de ropa doblada sobre una mesa. Dibujo de la guía (docs/interfaz/guia/partes/20-simbolos.html), con los colores de tokens.css escritos adentro, como los demás de esta carpeta. Se usa entero (img) o por símbolo (use href="…/escena-ropa.svg#escena-ropa"). -->
+<symbol id="escena-ropa" viewBox="0 0 320 240" preserveAspectRatio="xMidYMid slice">
+      <rect fill="#fde3a6" width="320" height="240"/><rect fill="#3b3527" y="178" width="320" height="62"/>
+      <path fill="none" stroke="#2a2a22" d="M230 20v22M210 62l20-20 20 20" stroke-width="3"/><path fill="#fffaea" stroke="#2a2a22" d="M196 62h68l10 30h-88z" stroke-width="3"/>
+      <g stroke="#2a2a22" stroke-width="3"><rect fill="#2a7035" x="34" y="150" width="118" height="28" rx="11"/><rect fill="#f4c844" x="40" y="124" width="106" height="26" rx="10"/><rect fill="#cfe1d4" x="34" y="98" width="118" height="26" rx="10"/><rect fill="#23602c" x="44" y="74" width="98" height="24" rx="9"/>
+      <rect fill="#fffaea" x="176" y="150" width="110" height="28" rx="11"/><rect fill="#2a7035" x="182" y="124" width="98" height="26" rx="10"/><rect fill="#f4c844" x="176" y="100" width="110" height="24" rx="9"/></g>
+    </symbol>
+<use href="#escena-ropa"/>
+</svg>

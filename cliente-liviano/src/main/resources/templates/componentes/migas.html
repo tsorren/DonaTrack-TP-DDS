@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<!--/* Las migas de pan (C1-10, guía «Huerta y galpón», 10-componentes.css:369-373): dónde está la
+       pantalla dentro de su sección, de lo más general a lo actual. Cada paso de antes es un enlace
+       real, seguido de la flecha; la pantalla actual va al final, sin enlace y con
+       aria-current="page". Ninguna pantalla las usa todavía: entran en las olas de rol.
+       Componente: static/css/componentes/migas.css. Catálogo: docs/interfaz/componentes.md.
+       Uso: <nav th:replace="~{componentes/migas :: migas(pasos=${pasos}, actual='Lentejas secas, 15 kg')}"></nav>
+       Fragmento:
+       - migas(pasos, actual): pasos es la lista de los pasos de antes, cada uno con texto y ruta
+         (una dirección del sitio, como '/donante-donaciones'); actual, el nombre de la pantalla. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="migas(pasos, actual)" class="migas" aria-label="Dónde estás">
+  <ol role="list">
+    <li th:each="paso : ${pasos}"><a href="/donante-donaciones" th:href="@{${paso.ruta}}" th:text="${paso.texto}">Mis donaciones</a><svg
+        class="icono" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 5.5l6.5 6.5L9 18.5"/></svg></li>
+    <li aria-current="page" th:text="${actual}">Lentejas secas, 15 kg</li>
+  </ol>
+</nav>
+</body>
+</html>

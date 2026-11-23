@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240">
+<!-- Foto de ejemplo: doce latas de leche en polvo en su caja, vistas desde arriba. Dibujo de la guía (docs/interfaz/guia/partes/20-simbolos.html), con los colores de tokens.css escritos adentro, como los demás de esta carpeta. Se usa entero (img) o por símbolo (use href="…/escena-caja-latas.svg#escena-caja-latas"). -->
+<symbol id="escena-caja-latas" viewBox="0 0 320 240" preserveAspectRatio="xMidYMid slice">
+      <rect fill="#e4efc9" width="320" height="240"/>
+      <path fill="#ebe3c4" stroke="#2a2a22" d="M14 26h44v188H14zM262 26h44v188h-44z" stroke-width="3"/>
+      <rect fill="#fde3a6" stroke="#2a2a22" x="58" y="26" width="204" height="188" stroke-width="3"/>
+      <g fill="#fffaea" stroke="#2a2a22" stroke-width="3"><circle cx="88" cy="62" r="21"/><circle cx="136" cy="62" r="21"/><circle cx="184" cy="62" r="21"/><circle cx="232" cy="62" r="21"/><circle cx="88" cy="120" r="21"/><circle cx="136" cy="120" r="21"/><circle cx="184" cy="120" r="21"/><circle cx="232" cy="120" r="21"/><circle cx="88" cy="178" r="21"/><circle cx="136" cy="178" r="21"/><circle cx="184" cy="178" r="21"/><circle cx="232" cy="178" r="21"/></g>
+      <g fill="#2a7035"><circle cx="88" cy="62" r="9"/><circle cx="136" cy="62" r="9"/><circle cx="184" cy="62" r="9"/><circle cx="232" cy="62" r="9"/><circle cx="88" cy="120" r="9"/><circle cx="136" cy="120" r="9"/><circle cx="184" cy="120" r="9"/><circle cx="232" cy="120" r="9"/><circle cx="88" cy="178" r="9"/><circle cx="136" cy="178" r="9"/><circle cx="184" cy="178" r="9"/><circle cx="232" cy="178" r="9"/></g>
+    </symbol>
+<use href="#escena-caja-latas"/>
+</svg>

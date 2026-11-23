@@ -1,17 +1,21 @@
-/* Bloque de navegación (D33, B2-06): la barra de secciones de cada rol y la de las páginas públicas.
-   En el celular es una barra fija abajo, oscura (tinta; usuario, 2026-11-12), con la sección actual en
-   una pastilla verde clara (el patrón para 3 a 5 destinos de primer nivel, al alcance del pulgar; piel
-   Huerta, 2026-11-08). La pública (`data-zona="publica"`) lleva un ícono sobre cada nombre
-   (`.navegacion-barra`, `.navegacion-icono`) y deja Ingresar y Crear cuenta arriba, en la cabecera
-   (`.navegacion-acceso`); la de cada rol también lleva su ícono. Desde la tableta es horizontal, sin
-   íconos, y se acomoda en la cabecera de papel. Con más de 5 secciones (la administración,
-   `data-forma="panel"`), no hay barra: un botón de menú (`.navegacion-abrir`, la hamburguesa) abre
-   todas las secciones en un panel de pantalla completa (`.navegacion-hoja`, un popover: anda sin
-   JavaScript; usuario, 2026-11-12). Se carga en la capa `bloques` desde app.css. Dónde va dentro de la cabecera (el orden y
-   el ancho de la fila) lo dice la hoja de la pantalla. Catálogo: docs/interfaz/componentes.md. */
+/* Bloque de navegación (D33, B2-06; armazón de la huerta, C1-08, guía «Huerta y galpón»,
+   10-componentes.css:314-356 y 445): la barra de secciones de cada rol y la de las páginas públicas.
+   En el celular y la tableta es el menú del celular: fijo abajo, en la tierra (--color-suelo) con la
+   línea de paja arriba, un ícono sobre cada nombre y la sección actual en papel. La pública
+   (`data-zona="publica"`) lleva así solo su lista de secciones (`.navegacion-barra`, con
+   `.navegacion-icono`) y deja Ingresar y Crear cuenta arriba, en la cabecera (`.navegacion-acceso`).
+   Desde --medida-quiebre-menu (56 em) las secciones pasan a la barra superior, sin íconos: cada una
+   con el fondo salvia bajo el cursor y la actual en tinta. Con más de 5 secciones (la
+   administración, `data-forma="panel"`), no hay barra: un botón de menú (`.navegacion-abrir`, la
+   hamburguesa) abre todas las secciones en un panel de pantalla completa (`.navegacion-hoja`, un
+   popover: anda sin JavaScript; usuario, 2026-11-12). Se carga en la capa `bloques` desde app.css.
+   Dónde va dentro de la cabecera (el orden y el ancho de la fila) lo dice la hoja de la pantalla.
+   Catálogo: docs/interfaz/componentes.md. */
 
-/* --- El celular: una barra fija abajo, oscura ------------------------------------------------- */
-/* La barra es el menú entero en las privadas y, en las públicas, solo la lista de las secciones. */
+/* --- El menú del celular: una barra fija abajo, en la tierra ------------------------------------ */
+/* La barra es el menú entero en las privadas y, en las públicas, solo la lista de las secciones. En
+   la guía es `position: sticky` al pie de la pantalla; acá el menú vive dentro de la cabecera, así
+   que queda fijo. Mide --medida-menu-celular con la línea de paja incluida. */
 .navegacion:not([data-zona="publica"], [data-forma="panel"]),
 .navegacion-barra {
   position: fixed;
@@ -19,7 +23,8 @@
   /* Encima de la barra de filtros y del botón fijos (R11-33) y de lo que se mueve o flota en la
      página (la pausa y las abejas del hero, hasta 4): se ve siempre. */
   z-index: var(--capa-menu-celular);
-  background: var(--color-tinta);
+  border-top: var(--espacio-0) solid var(--color-horizonte);
+  background: var(--color-suelo);
 }
 
 /* Los íconos de la barra (iconos :: navegacion) se definen una vez y no ocupan lugar. */
@@ -49,52 +54,68 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 3.75rem;
-  padding: 0.5rem 0.25rem;
-  color: var(--color-papel);
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.15;
   text-align: center;
   text-decoration: none;
-  /* "Organizaciones" (R11-45) no entra entera en una celda de la barra del celular: se corta en
-     sílabas (el sitio está en es-AR) y, si el navegador no sabe cortar, en cualquier letra. */
+}
+
+/* Cada celda: el ícono sobre el nombre, en Archivo angosta, para que «Organizaciones» entre a 320 px
+   sin achicar la letra (guía, 10-componentes.css:445). Si igual no entra, se corta en sílabas (el
+   sitio está en es-AR) y, si el navegador no sabe cortar, en cualquier letra. */
+.navegacion-barra a,
+.navegacion:not([data-zona="publica"], [data-forma="panel"]) a {
+  flex-direction: column;
+  gap: 0.125rem;
+  min-height: calc(var(--medida-menu-celular) - var(--espacio-0));
+  padding: var(--espacio-1) 0.125rem;
+  color: var(--color-texto-suelo);
+  font: 600 0.75rem / 1.2 var(--fuente-titulo);
+  font-stretch: var(--fuente-ancho-menu);
+  letter-spacing: 0.01em;
   hyphens: auto;
   overflow-wrap: anywhere;
 }
 
-.navegacion:where([data-zona="publica"]) a {
-  padding-inline: 0.125rem;
-  font-stretch: 90%;
+/* Con 5 celdas (las 5 de la persona que dona), a 360 px cada una mide 72 px y «Mis donaciones» y
+   «Organizaciones» bajaban a un segundo renglón y estiraban la barra (C1, medido): en esa barra la
+   letra va todavía más angosta y más junta, el mismo tamaño. Desde 56 em lo pisa la regla de 5
+   secciones de la barra superior. */
+.navegacion:not([data-zona="publica"], [data-forma="panel"]) ul:has(> li:nth-child(5)) a {
+  padding-inline: 0;
+  font-stretch: 75%;
+  letter-spacing: -0.02em;
 }
 
-.navegacion a:hover {
+.navegacion-barra a:hover,
+.navegacion:not([data-zona="publica"], [data-forma="panel"]) a:hover {
   text-decoration: underline;
   text-underline-offset: 0.3em;
 }
 
-/* La sección actual se destaca (criterios de la cátedra: pestañas). */
-.navegacion a[aria-current="page"] {
-  background: var(--color-acento-claro);
-  color: var(--color-acento-hondo);
+/* La sección actual, en papel (criterios de la cátedra: pestañas). */
+.navegacion-barra a[aria-current="page"],
+.navegacion:not([data-zona="publica"], [data-forma="panel"]) a[aria-current="page"] {
+  background: var(--color-fondo-pagina);
+  color: var(--color-texto);
+  font-weight: 750;
 }
 
-.navegacion :focus-visible {
-  outline-color: var(--color-papel);
+/* Sobre la tierra, el aro es de paja y va por dentro de la celda; en la actual, de tinta. */
+.navegacion-barra a:focus-visible,
+.navegacion:not([data-zona="publica"], [data-forma="panel"]) a:focus-visible {
+  outline-color: var(--color-foco-sobre-suelo);
   outline-offset: -5px;
+  box-shadow: none;
 }
 
-/* En la barra, el ícono sobre el nombre. */
-.navegacion-barra a,
-.navegacion:not([data-zona="publica"], [data-forma="panel"]) a {
-  flex-direction: column;
-  gap: 0.25rem;
+.navegacion-barra a[aria-current="page"]:focus-visible,
+.navegacion:not([data-zona="publica"], [data-forma="panel"]) a[aria-current="page"]:focus-visible {
+  outline-color: var(--color-foco);
 }
 
 .navegacion-icono {
   flex: none;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: var(--espacio-4);
+  height: var(--espacio-4);
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;
@@ -102,41 +123,47 @@
   stroke-linejoin: round;
 }
 
-/* Ingresar y Crear cuenta, arriba, en la cabecera de papel. */
+/* Ingresar y Crear cuenta, arriba, en la barra superior: Ingresar como un botón de texto y Crear
+   cuenta como el botón lleno (guía, 10-componentes.css:85-101). */
 .navegacion .navegacion-acceso {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--espacio-0);
 }
 
 .navegacion .navegacion-acceso a {
   min-height: var(--medida-toque-minimo);
-  padding: 0.5rem 0.625rem;
-  color: var(--color-tinta);
-  font-stretch: 100%;
+  padding: 0 var(--espacio-1);
+  border: var(--borde-tinta);
+  border-color: transparent;
+  border-radius: var(--radio-boton);
+  color: var(--color-enlace);
+  font: 700 var(--tamano-base) / 1.2 var(--fuente-texto);
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.navegacion .navegacion-acceso a:hover {
+  background: var(--color-accion-secundaria-activa);
 }
 
 .navegacion .navegacion-acceso a[aria-current="page"] {
-  border-radius: 0.5rem;
-}
-
-.navegacion .navegacion-acceso :focus-visible {
-  outline-color: var(--color-acento);
-  outline-offset: 3px;
+  background: var(--color-salvia);
 }
 
 /* Crear cuenta, como el botón principal. */
 .navegacion .navegacion-destacado a,
 .navegacion .navegacion-destacado a[aria-current="page"] {
-  border-radius: var(--radio-boton);
-  box-shadow: 0.25rem 0.25rem 0 var(--color-sombra);
-  background: var(--color-acento);
+  padding-inline: var(--espacio-3);
+  border-color: var(--color-accion-primaria);
+  background: var(--color-accion-primaria);
   color: var(--color-texto-sobre-accion);
-  font-weight: 700;
+  text-decoration: none;
 }
 
 .navegacion .navegacion-destacado a:hover {
-  background: var(--color-acento-hondo);
+  border-color: var(--color-accion-primaria-activa);
+  background: var(--color-accion-primaria-activa);
   color: var(--color-texto-sobre-accion);
 }
 
@@ -150,18 +177,6 @@
   white-space: nowrap;
 }
 
-/* Con 5 celdas (las 5 de la persona que dona), a 360 px cada una mide 72 px y "Donaciones" o
-   "Seguimiento" no entraban: en esa barra la letra va angosta, el mismo tamaño. La letra de la piel
-   Huerta no tiene ancho variable y seguía sin entrar (80 px en 75 a 375 px, PR 959): va además a
-   12 px. Con :where, pesa lo mismo que ".navegacion a" y la tableta lo pisa. */
-.navegacion :where(ul:has(> li:nth-child(5)) > li) > a {
-  padding-inline: 0;
-  font-size: 0.75rem;
-  font-stretch: 75%;
-  /* "Seguimiento" medía 73 px en una celda de 72: un poco más juntas, entra. */
-  letter-spacing: -0.02em;
-}
-
 /* --- Con más de 5 secciones: el botón de menú y el panel de pantalla completa ------------------ */
 .navegacion-abrir {
   display: grid;
@@ -171,28 +186,23 @@
   margin: 0;
   padding: 0;
   border: 0;
-  border-radius: 50%;
+  border-radius: var(--radio-boton);
   background: none;
-  color: var(--color-tinta);
+  color: var(--color-texto);
   cursor: pointer;
 }
 
 .navegacion-abrir:hover {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 .navegacion-abrir svg {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: var(--espacio-4);
+  height: var(--espacio-4);
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
   stroke-linecap: round;
-}
-
-.navegacion-abrir:focus-visible {
-  outline-color: var(--color-acento);
-  outline-offset: 2px;
 }
 
 /* El panel: la pantalla entera, lisa, de papel; arriba la marca y Cerrar, debajo las secciones. */
@@ -300,114 +310,85 @@
   }
 }
 
-/* --- En la cabecera, horizontal ---------------------------------------------------------------- */
-/* Las privadas, desde la tableta (la hoja de la pantalla las acomoda en una o dos filas). */
-@media (min-width: 37.5em) {
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) {
+/* --- Desde 56 em, las secciones en la barra superior (guía, 15-pantallas.css:79-84) ------------ */
+/* Las privadas y las públicas cortan en el mismo ancho: el menú del celular deja de verse y las
+   secciones van en la cabecera, después de la marca, sin íconos ni Inicio en las públicas (la marca
+   lleva a la portada). */
+@media (min-width: 56em) {
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]),
+  .navegacion[data-zona="publica"] .navegacion-barra {
     position: static;
+    border-top: 0;
     background: none;
   }
 
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul {
-    display: flex;
+  .navegacion[data-zona="publica"] {
     flex-wrap: wrap;
-    gap: 0.375rem;
+    gap: var(--espacio-3);
   }
 
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul,
+  .navegacion[data-zona="publica"] ul {
+    display: flex;
+    /* En la barra entran en una fila (C1, medido: la persona con 5 secciones a 896, 1000 y 1100 px,
+       la pública a 896 px y las capturas a 1280 y 1920 px); en una caja más angosta, como las del
+       catálogo, bajan de renglón en lugar de salirse. */
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-0);
+  }
+
+  .navegacion-barra a,
   .navegacion:not([data-zona="publica"], [data-forma="panel"]) a {
+    flex-direction: row;
     min-height: var(--medida-toque-minimo);
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    color: var(--color-tinta-suave);
-    font-size: 0.95rem;
+    padding: 0 var(--espacio-2);
+    border-radius: var(--radio-boton);
+    color: var(--color-texto);
+    font: 600 var(--tamano-base) / 1.2 var(--fuente-texto);
+    letter-spacing: normal;
+    white-space: nowrap;
     hyphens: manual;
     overflow-wrap: normal;
   }
 
+  .navegacion-barra a:hover,
   .navegacion:not([data-zona="publica"], [data-forma="panel"]) a:hover {
-    background: var(--color-acento-claro);
-    color: var(--color-tinta);
+    background: var(--color-salvia);
     text-decoration: none;
   }
 
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) .navegacion-largo {
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    clip-path: none;
-    white-space: normal;
+  .navegacion-barra a[aria-current="page"],
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) a[aria-current="page"] {
+    background: var(--color-tinta);
+    color: var(--color-fondo-pagina);
+    font-weight: 600;
   }
 
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) :focus-visible {
-    outline-color: var(--color-acento);
-    outline-offset: 3px;
+  /* Sobre el papel, el aro de siempre: tinta, afuera, con el filete de papel (app.css). */
+  .navegacion-barra a:focus-visible,
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) a:focus-visible,
+  .navegacion-barra a[aria-current="page"]:focus-visible,
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) a[aria-current="page"]:focus-visible {
+    outline-color: var(--color-foco);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-foco-separador);
   }
 
-  /* En la cabecera, el nombre solo, sin el ícono. */
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) a {
-    flex-direction: row;
-  }
-
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) .navegacion-icono {
-    display: none;
-  }
-}
-
-/* Las públicas, recién cuando la marca, las secciones, Ingresar y Crear una cuenta entran en una
-   sola línea (unos 880 px; usuario, 2026-11-12: "romper a mobile apenas dejan de caber"). Antes,
-   la barra de abajo y, arriba, Ingresar y Crear cuenta. */
-@media (min-width: 56em) {
-  .navegacion[data-zona="publica"] {
-    gap: 0.375rem;
-  }
-
-  .navegacion[data-zona="publica"] .navegacion-barra {
-    position: static;
-    background: none;
-  }
-
-  /* En la cabecera, sin íconos ni Inicio (la marca lleva a la portada). */
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) .navegacion-icono,
   .navegacion[data-zona="publica"] .navegacion-icono,
   .navegacion[data-zona="publica"] .navegacion-inicio {
     display: none;
   }
 
-  .navegacion[data-zona="publica"] ul {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    gap: 0.375rem;
-  }
-
-  .navegacion[data-zona="publica"] .navegacion-barra a {
-    flex-direction: row;
-    min-height: var(--medida-toque-minimo);
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    color: var(--color-tinta-suave);
-    font-size: 0.95rem;
-    white-space: nowrap;
-  }
-
-  .navegacion[data-zona="publica"] .navegacion-barra a:hover {
-    background: var(--color-acento-claro);
-    color: var(--color-tinta);
-    text-decoration: none;
-  }
-
-  .navegacion[data-zona="publica"] .navegacion-largo {
+  /* Los nombres largos, enteros, como los lee el lector. */
+  .navegacion-largo {
     position: static;
     width: auto;
     height: auto;
     overflow: visible;
     clip-path: none;
     white-space: normal;
-  }
-
-  .navegacion[data-zona="publica"] :focus-visible {
-    outline-color: var(--color-acento);
-    outline-offset: 3px;
   }
 
   /* Ingresar y Crear una cuenta, aparte, a la derecha. */
@@ -415,17 +396,38 @@
     margin-left: auto;
   }
 
-  .navegacion[data-zona="publica"] .navegacion-acceso a {
-    padding-inline: 0.75rem;
-    font-size: 0.95rem;
-    white-space: nowrap;
+  /* Con 5 secciones (la persona que dona, con Misiones), en la guía no hay un menú tan largo: a 56 em
+     la fila medía 609 px y no entraba con la marca y las acciones (C1, medido a 900 px). Hasta
+     --medida-quiebre-ancho, las secciones van más juntas y en la letra densa. */
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul:has(> li:nth-child(5)) {
+    gap: 0;
+  }
+
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul:has(> li:nth-child(5)) a {
+    padding-inline: var(--espacio-1);
+    font-size: var(--tamano-denso);
+    font-stretch: normal;
+    letter-spacing: normal;
+  }
+}
+
+@media (min-width: 68.75em) {
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul:has(> li:nth-child(5)) {
+    gap: var(--espacio-0);
+  }
+
+  .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul:has(> li:nth-child(5)) a {
+    padding-inline: var(--espacio-2);
+    font-size: var(--tamano-base);
   }
 }
 
 /* --- La cuenta: la foto de perfil y su menú desplegable (usuario, 2026-11-08) ------------------- */
 /* `<details class="navegacion-cuenta">`: la foto (`summary.navegacion-cuenta-foto`, una planta por
    defecto) abre el menú (`.navegacion-cuenta-menu`) con el nombre y el rol, Mi perfil y Salir. Anda
-   sin JavaScript. */
+   sin JavaScript. Como la cuenta de la guía (10-componentes.css:329-331): la foto en un círculo
+   salvia con el borde de tinta, de 48 px para el toque (en la guía, 2,25 rem dentro de un botón de
+   48 px), y el menú con el borde de tinta y la esquina del botón. */
 .navegacion-cuenta {
   position: relative;
 }
@@ -433,12 +435,12 @@
 .navegacion-cuenta-foto {
   display: grid;
   place-items: center;
-  width: 3rem;
-  height: 3rem;
+  width: var(--medida-toque-minimo);
+  height: var(--medida-toque-minimo);
   overflow: hidden;
-  border-radius: 50%;
-  background: var(--color-acento-claro);
-  box-shadow: inset 0 0 0 2px var(--color-acento);
+  border: var(--borde-tinta);
+  border-radius: var(--radio-pastilla);
+  background: var(--color-salvia);
   list-style: none;
   cursor: pointer;
 }
@@ -468,9 +470,10 @@
   gap: 0.25rem;
   min-width: 14rem;
   padding: 0.75rem;
-  border-radius: var(--radio-lamina);
+  border: var(--borde-tinta);
+  border-radius: var(--radio-boton);
   background: var(--color-superficie);
-  box-shadow: var(--sombra-papel), 0 0 0 1px var(--color-filete);
+  box-shadow: var(--sombra-papel);
   color: var(--color-tinta);
 }
 

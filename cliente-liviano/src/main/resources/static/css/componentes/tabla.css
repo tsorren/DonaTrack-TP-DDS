@@ -1,13 +1,29 @@
-/* Bloque de tabla adaptable (D33, F2 del roadmap de vistas): una tabla de datos (`table` con
-   `caption` y `th scope`) que en pantalla grande es una tabla y en el celular, una tarjeta por fila
-   que repite el rótulo de cada dato (`data-rotulo` en cada `td`). La primera celda de la fila
-   (`th scope="row"`) es el título de la tarjeta. Se carga en la capa `bloques` desde app.css.
-   Catálogo: docs/interfaz/componentes.md. */
+/* Bloque de tabla adaptable (D33, F2 del roadmap de vistas; guía al código C1-25): una tabla de datos
+   (`table` con `caption` y `th scope`) que en pantalla grande es una tabla y en el celular se apila:
+   cada fila es un bloque entre filetes y cada dato lleva su rótulo a la vista (`data-rotulo` en cada
+   `td`), sin esconder ninguna columna. La primera celda de la fila (`th scope="row"`) es el título del
+   bloque; si lleva al detalle, su enlace es la parte que se toca. Se carga en la capa `bloques` desde
+   app.css. Catálogo: docs/interfaz/componentes.md.
+
+   Es la tabla de la huerta de la guía (10-componentes.css, `tabla--apilable`): se lee con aire, en la
+   letra de siempre. Se apila por debajo de 56 em (--medida-quiebre-menu, el corte de la guía). La
+   tabla densa del galpón, con selección de filas, no es esta pieza.
+
+   Diferencias con la guía: (1) la guía pone la tabla dentro de una caja (`.tabla-caja`: borde fino,
+   radio de botón y fondo de superficie); la caja pide un envoltorio en las plantillas de pantalla, que
+   esta ola no edita, así que la tabla va sin caja. (2) En el celular, la guía hace de cada celda con
+   rótulo una grilla de dos columnas; acá el rótulo flota en el margen izquierdo de la celda: ocupa
+   lugar como en la guía (la celda crece si el rótulo pasa a dos renglones) sin partir en pedazos una
+   celda con texto y etiquetas mezclados. */
 
 .tabla {
+  display: block;
   width: 100%;
   margin: 0;
   border-collapse: collapse;
+  font-size: var(--tamano-base);
+  line-height: var(--tamano-interlinea-texto);
+  font-variant-numeric: tabular-nums;
 }
 
 .tabla caption {
@@ -26,32 +42,73 @@
   white-space: nowrap;
 }
 
-.tabla tr {
+.tabla tbody {
+  display: block;
+  border-top: var(--borde-fino);
+}
+
+.tabla tbody tr {
   display: grid;
   gap: var(--espacio-1);
-  margin: 0 0 var(--espacio-3);
-  padding: var(--espacio-3);
-  border: 2px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  background: var(--color-papel);
+  padding: var(--espacio-1) var(--espacio-3) var(--espacio-3);
+  border-bottom: var(--borde-fino);
 }
 
 .tabla :is(th, td) {
   display: block;
   padding: 0;
+  font-weight: 400;
   text-align: left;
+  vertical-align: top;
 }
 
-.tabla tbody th {
-  font-size: var(--tamano-grande);
+/* El dato con su rótulo adelante, en dos columnas: el rótulo, en una columna fija a la izquierda, y
+   lo de la celda (texto suelto, un sello, un botón) a la derecha, tal como viene. Sin encabezados a
+   la vista, el lector oye el rótulo, como antes. Una celda sin rótulo (`data-rotulo=""`, la de las
+   acciones) ocupa todo el ancho. */
+.tabla td[data-rotulo] {
+  padding-inline-start: calc(5rem + var(--espacio-2));
 }
 
+/* El rótulo flota en el margen de la celda (un margen negativo lo lleva ahí) y la celda, que es un
+   elemento de la grilla de la fila, lo contiene: si el rótulo ocupa dos renglones, la celda crece y
+   no se monta sobre la siguiente. */
 .tabla td[data-rotulo]::before {
-  content: attr(data-rotulo) ": ";
+  content: attr(data-rotulo);
+  float: inline-start;
+  margin-inline-start: calc(-5rem - var(--espacio-2));
+  width: 5rem;
   color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 600;
+  line-height: var(--tamano-interlinea-texto);
 }
 
-@media (min-width: 53.75em) {
+.tabla td[data-rotulo=""] {
+  padding-inline-start: 0;
+}
+
+/* El enlace al detalle, en el título de la fila: de 48 px de alto, en negrita. */
+.tabla tbody th > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  font-weight: 700;
+}
+
+/* Lo secundario de una celda (un número de donación, el paso): debajo, chico y suave. */
+.tabla small {
+  display: block;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 400;
+}
+
+@media (min-width: 56em) {
+  .tabla {
+    display: table;
+  }
+
   .tabla thead {
     position: static;
     width: auto;
@@ -60,43 +117,51 @@
     clip-path: none;
   }
 
-  .tabla tr {
-    display: table-row;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: none;
+  .tabla tbody {
+    display: table-row-group;
+    border-top: 0;
   }
 
-  .tabla :is(th, td) {
+  .tabla tbody tr {
+    display: table-row;
+    padding: 0;
+  }
+
+  .tabla tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .tabla :is(th, td),
+  .tabla td[data-rotulo] {
     display: table-cell;
-    padding: var(--espacio-2) var(--espacio-3) var(--espacio-2) 0;
-    border-bottom: 1px solid var(--color-tinta);
-    vertical-align: top;
+    padding: var(--espacio-2) var(--espacio-3);
   }
 
   .tabla thead th {
-    border-bottom-width: 2px;
-    color: var(--color-texto-suave);
+    padding-block: var(--espacio-1);
+    border-bottom: var(--borde-tinta);
+    background: var(--color-galpon-cabecera);
     font-size: var(--tamano-chico);
-  }
-
-  .tabla tbody th {
-    font-size: var(--tamano-base);
+    font-weight: 700;
+    white-space: nowrap;
   }
 
   .tabla td[data-rotulo]::before {
     content: none;
   }
+
+  /* La fila bajo el cursor, como en la guía. */
+  .tabla tbody tr:hover {
+    background: var(--color-fila-cursor);
+  }
 }
 
 /* Una fila apagada (`tr data-atenuada="si"`; agente admin, ronda 2026-11-09: un camión
    deshabilitado): sobre un papel gris, sin el color de su sello y con el texto en la tinta suave
-   (5:1 sobre ese gris, AA); en el celular, la tarjeta con borde punteado; en la tabla, la fila es una
-   franja de esquinas redondeadas. La última celda (sus acciones, como "Volver a habilitar") conserva
-   su color. El estado va siempre también en palabras. */
+   (5:1 sobre ese gris, AA); en la tabla, la fila es una franja de esquinas redondeadas. La última
+   celda (sus acciones, como "Volver a habilitar") conserva su color. El estado va siempre también en
+   palabras. */
 .tabla tr[data-atenuada] {
-  border-style: dashed;
   background: var(--color-pendiente-fondo);
 }
 
@@ -108,7 +173,7 @@
   filter: grayscale(1);
 }
 
-@media (min-width: 53.75em) {
+@media (min-width: 56em) {
   .tabla tr[data-atenuada] {
     background: none;
   }
@@ -118,7 +183,6 @@
   }
 
   .tabla tr[data-atenuada] > :first-child {
-    padding-inline-start: var(--espacio-3);
     border-start-start-radius: var(--radio-boton);
     border-end-start-radius: var(--radio-boton);
   }
