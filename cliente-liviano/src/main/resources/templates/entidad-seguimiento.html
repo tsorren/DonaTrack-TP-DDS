@@ -7,7 +7,8 @@
        acción llena; sin ella, la lámina no está y la bajada lo dice. Debajo, tarjetas de un solo tema
        en un orden fijo: por llegar (primero la que tiene un problema, que lleva a su página,
        /entidad-entrega-problema; la nueva salida no llega: HG-01) y las confirmadas, con los frutos
-       del mes y quién recibió (HG-03: el nombre de la organización). La búsqueda y los filtros son
+       del mes y la etiqueta de cada entrega (componentes/etiqueta-entrega: la foto, quién recibió,
+       HG-03: el nombre de la organización, y el vínculo a Recepción confirmada). La búsqueda y los filtros son
        el componente listado (lo arma EntidadSeguimientoController): la fecha de registro, el estado
        (?estado=en-tu-puerta, con-problema, en-camino, por-salir o recibidas, repetido o separado por
        coma), la categoría, quien donó (si la fuente lo filtra) y el orden. Las donaciones salen de
@@ -157,27 +158,43 @@
             th:if="${conProblema and porLlegar > 1}"> Primero va la que tiene un problema.</th:block></p>
       </section>
 
-      <!--/* Las confirmadas: los frutos del mes (D4) y una fila por entrega, de la última a la primera.
-             Quién recibió no llega del backend (HG-03): va el nombre de la organización. */-->
+      <!--/* Las confirmadas: los frutos del mes (D4) y la etiqueta de cada entrega (D3), de la última
+             a la primera, con su foto y el vínculo a lo que quedó asentado (Recepción confirmada).
+             Una foto de verdad es una dirección web; la maqueta trae el nombre de su escena de
+             ejemplo, con el rótulo «Foto de ejemplo». Sin foto (los datos reales: la guarda
+             Logística), la misma tarjeta sin la imagen, como en Recepción confirmada. Quién recibió
+             no llega del backend (HG-03): va el nombre de la organización. */-->
       <section th:unless="${#lists.isEmpty(confirmadas)}" class="pila" data-espacio="3"
                aria-labelledby="confirmadas-titulo">
         <h2 id="confirmadas-titulo"
             th:text="${paginada} ? 'Confirmadas' : |Confirmadas en ${recibidas.mes}|">Confirmadas en
           octubre</h2>
         <div th:replace="~{componentes/huerta :: frutos(${frutos}, |por tu organización en ${recibidas.mes}|, false)}"></div>
-        <ul class="lista" data-forma="filas" role="list">
-          <li th:each="d : ${confirmadas}" th:id="|entrega-${d.clave}|">
-            <div>
-              <strong th:text="|${d.nombre}, ${d.cuanto}|">Lentejas secas, 10 kg</strong>
-              <span class="estado" data-estado="confirmada"><th:block
-                  th:replace="~{componentes/sello :: sello('confirmada')}"></th:block>Entrega confirmada</span>
-              <span data-tono="suave" class="texto-chico"
-                    th:text="|De ${d.dono}.${d.pedidoNombre != null ? ' Para tu necesidad de ' + d.pedidoNombre + '.' : ''}|">De
-                Almacén Ejemplo SRL. Para tu necesidad de lentejas secas.</span>
-              <span data-tono="suave" class="texto-chico"
-                    th:text="${d.dia != null} ? |Recibió: ${cuenta.nombre}, el ${d.dia} de ${recibidas.mesDe(d)}.| : |Recibió: ${cuenta.nombre}. ${d.paso}|">Recibió:
-                Comedor Barrio Ejemplo, el 10 de octubre.</span>
-            </div>
+        <ul class="lista" role="list">
+          <li th:each="d : ${confirmadas}" th:id="|entrega-${d.clave}|" class="pila" data-espacio="1"
+              th:with="titulo=|${d.nombre}, ${d.cuanto}|,
+                       de=|De ${d.dono}.${d.pedidoNombre != null ? ' Para tu necesidad de ' + d.pedidoNombre + '.' : ''}|,
+                       pie=${d.dia != null} ? |Recibió: ${cuenta.nombre}, el ${d.dia} de ${recibidas.mesDe(d)}.| : |Recibió: ${cuenta.nombre}. ${d.paso}|,
+                       real=${d.foto != null and (#strings.startsWith(d.foto, 'https://') or #strings.startsWith(d.foto, 'http://'))}">
+            <th:block th:if="${real}"><article th:replace="~{componentes/etiqueta-entrega :: etiqueta-entrega(foto=${d.foto},
+                  descripcion=|Foto de ${d.nombre} que subió ${cuenta.nombre}|, rotulo=null, titulo=${titulo},
+                  lugar=${de}, pie=${pie}, sello='Entrega confirmada', costado=true)}"></article></th:block>
+            <th:block th:if="${d.foto != null and not real}"><article th:replace="~{componentes/etiqueta-entrega :: etiqueta-entrega(foto=@{|/img/ilustraciones/${d.foto}.svg|},
+                  descripcion=|Foto de ejemplo de ${d.nombre}|, rotulo='Foto de ejemplo', titulo=${titulo},
+                  lugar=${de}, pie=${pie}, sello='Entrega confirmada', costado=true)}"></article></th:block>
+            <article th:if="${d.foto == null}" class="tarjeta pila" data-espacio="1">
+              <h3 th:text="${titulo}">Lentejas secas, 10 kg</h3>
+              <p data-tono="suave" class="texto-chico" th:text="${de}">De Almacén Ejemplo SRL. Para tu
+                necesidad de lentejas secas.</p>
+              <p class="texto-chico" th:text="${pie}">Recibió: Comedor Barrio Ejemplo, el 10 de
+                octubre.</p>
+              <span class="estado" data-estado="entregada"><th:block
+                  th:replace="~{componentes/sello :: sello('entregada')}"></th:block>Entrega confirmada</span>
+            </article>
+            <a href="/entidad-seguimiento-sellada?entrega=r10"
+               th:href="@{/entidad-seguimiento-sellada(entrega=${d.clave})}">Ver lo que quedó
+              asentado<span class="solo-lectores" th:text="| de ${titulo}|"> de Lentejas secas, 10
+                kg</span></a>
           </li>
         </ul>
         <p data-tono="suave" class="texto-chico"

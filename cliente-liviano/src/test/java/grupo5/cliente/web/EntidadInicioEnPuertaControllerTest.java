@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.cliente.maqueta.MaquetaConfig;
 import grupo5.cliente.puertos.EntidadInicioPuerto;
+import grupo5.cliente.puertos.EntidadNecesidadesPuerto;
 import grupo5.cliente.puertos.EntidadSeguimientoPuerto;
 import grupo5.cliente.puertos.RecibidasPuerto;
 import grupo5.cliente.vistas.EntidadInicioVista;
@@ -26,6 +27,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -52,6 +54,9 @@ class EntidadInicioEnPuertaControllerTest {
 
   private static final String ENTIDAD = "6f1c2c1e-0000-4000-8000-0000000000e1";
   private static final String DONACION = "6f1c2c1e-0000-4000-8000-000000000009";
+
+  /** Entregas la pide para la entrega con problema, que acá no se abre. */
+  @MockitoBean private EntidadNecesidadesPuerto necesidades;
 
   @TestConfiguration
   static class UnaEnLaPuerta {

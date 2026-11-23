@@ -79,7 +79,9 @@ public record RecibidasVista(
    * pedido} y {@code pedidoNombre}, la necesidad que cubre, o null (HB-17). {@code dia} y {@code
    * fecha} (ISO), solo en las recibidas. {@code llego}, cuándo y de dónde llegó, solo en las que
    * esperan en la puerta; {@code breve}, el paso en pocas palabras ("llega mañana"), en las que
-   * todavía no llegaron. Los usan Inicio y Seguir entregas.
+   * todavía no llegaron. {@code foto}, solo en las recibidas: la foto de la recepción (una
+   * dirección web) o, en la maqueta, el nombre de su escena de ejemplo ("escena-bolsas"); null si
+   * no se sabe. Los usan Inicio y Entregas.
    */
   public record Recibida(
       String clave,
@@ -95,5 +97,42 @@ public record RecibidasVista(
       String dia,
       String fecha,
       String llego,
-      String breve) {}
+      String breve,
+      String foto) {
+
+    /** Sin foto: lo que arman Donaciones (la foto la guarda Logística) y los tests de pantalla. */
+    @SuppressWarnings("java:S107") // Es la forma corta del record: los mismos campos que ya tenía.
+    public Recibida(
+        String clave,
+        String nombre,
+        String categoria,
+        String categoriaNombre,
+        String cuanto,
+        String dono,
+        String pedido,
+        String pedidoNombre,
+        String grupo,
+        String paso,
+        String dia,
+        String fecha,
+        String llego,
+        String breve) {
+      this(
+          clave,
+          nombre,
+          categoria,
+          categoriaNombre,
+          cuanto,
+          dono,
+          pedido,
+          pedidoNombre,
+          grupo,
+          paso,
+          dia,
+          fecha,
+          llego,
+          breve,
+          null);
+    }
+  }
 }

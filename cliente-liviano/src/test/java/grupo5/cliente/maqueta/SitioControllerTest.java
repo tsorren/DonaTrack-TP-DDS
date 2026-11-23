@@ -1457,6 +1457,15 @@ class SitioControllerTest {
             .andExpect(content().string(containsString("Confirmadas en octubre")))
             .andExpect(
                 content().string(containsString("Recibió: Comedor Barrio Ejemplo, el 10 de")))
+            // A10 (D3): cada confirmada es su etiqueta, con la foto y el vínculo a lo asentado
+            .andExpect(
+                content()
+                    .string(containsString("class=\"etiqueta-entrega etiqueta-entrega--costado\"")))
+            .andExpect(content().string(containsString("/img/ilustraciones/escena-puerta.svg")))
+            .andExpect(content().string(containsString("Foto de ejemplo")))
+            .andExpect(
+                content()
+                    .string(containsString("href=\"/entidad-seguimiento-sellada?entrega=r10\"")))
             .andExpect(content().string(not(containsString("entidad-recibidas"))))
             .andReturn()
             .getResponse()
@@ -1511,6 +1520,13 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("<dd>Todavía sin fecha de nueva salida</dd>")))
         .andExpect(content().string(containsString("<dd>14 de octubre, 16:40.</dd>")))
         .andExpect(content().string(containsString("Tu necesidad de aceite de girasol")))
+        // A11: el avance de la necesidad, con la cuenta de Necesidades (HG-04)
+        .andExpect(content().string(containsString("Una sola vez · Hasta el 20 de octubre")))
+        .andExpect(content().string(containsString("aria-label=\"Llegaron 0 de 20 litros\"")))
+        .andExpect(
+            content()
+                .string(containsString("Llegaron 0 de 20 litros. Esta entrega trae 10 litros.")))
+        .andExpect(content().string(containsString("Al 15 de octubre de 2026.")))
         .andExpect(content().string(containsString("Tu foto de la entrega")))
         .andExpect(content().string(containsString("Volver a")))
         .andExpect(content().string(not(containsString("17 de octubre"))));

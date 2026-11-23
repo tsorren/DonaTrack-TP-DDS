@@ -11,8 +11,10 @@
   --espacio-relleno: var(--espacio-4);
 }
 
-/* Por llegar: una tarjeta por entrega, de a dos cuando entran (la guía: grilla de 2). */
-[aria-labelledby="llegar-titulo"] > .lista {
+/* Por llegar y las confirmadas: una tarjeta o una etiqueta por entrega, de a dos cuando entran
+   (la guía: grilla de 2). */
+[aria-labelledby="llegar-titulo"] > .lista,
+[aria-labelledby="confirmadas-titulo"] > .lista {
   --medida-columna: 19rem;
 
   gap: var(--espacio-3);
@@ -24,9 +26,11 @@
   height: 100%;
 }
 
-/* El enlace suelto de una tarjeta («Ver el detalle», «Para tu necesidad de…», «Ver tu
-   necesidad»): el color y el subrayado son los de la base; acá, solo su lugar para el dedo. */
-.tarjeta > a:not(.boton) {
+/* El enlace suelto de una tarjeta o de una etiqueta («Ver el detalle», «Para tu necesidad de…»,
+   «Ver tu necesidad», «Ver lo que quedó asentado»): el color y el subrayado son los de la base;
+   acá, solo su lugar para el dedo. */
+.tarjeta > a:not(.boton),
+[aria-labelledby="confirmadas-titulo"] li > a {
   display: inline-flex;
   align-items: center;
   align-self: start;

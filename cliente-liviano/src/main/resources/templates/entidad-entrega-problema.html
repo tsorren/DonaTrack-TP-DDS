@@ -4,7 +4,9 @@
        catálogo (docs/interfaz/componentes.md). El detalle de una entrega que no pudo llegar, dicho
        para quien recibe: qué pasó (el aviso), cuándo sale de nuevo y qué le toca hacer (la lista de
        datos), para qué necesidad es y el recorrido (la raíz, con el paso que no pudo ser). Cada cosa
-       va una sola vez; no hay sombra de paja ni acción llena: no hay nada que hacer hoy. La nueva
+       va una sola vez; no hay sombra de paja ni acción llena: no hay nada que hacer hoy. La
+       necesidad lleva su avance, el de Necesidades (la cuenta de hoy, HG-04), si se sabe cuál es
+       (con los datos reales todavía no: HB-17). La nueva
        salida no llega del backend (HG-01): «Todavía sin fecha de nueva salida». Del recorrido solo
        se sabe el estado, no las horas de cada paso: la raíz va sin horas. La entrega sale de lo
        asignado (la pedida en ?entrega=, o la primera con problema) y la última noticia, de
@@ -65,15 +67,30 @@
               a ver acá.</p>
           </section>
 
+          <!--/* La necesidad que cubre y su avance, con la cuenta de Necesidades (la de hoy, HG-04):
+                 el período, la barra con la cifra en palabras y la fecha de la lectura. */-->
           <section th:if="${d.pedido != null}" class="pila" data-espacio="2"
                    aria-labelledby="necesidad-titulo">
             <h2 id="necesidad-titulo" th:text="|Tu necesidad de ${d.pedidoNombre}|">Tu necesidad de
               aceite de girasol</h2>
-            <div class="tarjeta pila" data-espacio="1">
-              <p th:text="|Esta entrega es para tu necesidad de ${d.pedidoNombre}: ${d.cuanto}.|">Esta
+            <div class="tarjeta pila" data-espacio="1" th:with="n=${necesidad}">
+              <th:block th:if="${n != null}">
+                <p data-tono="suave" class="texto-chico"
+                   th:text="${n.plazo != null} ? |${n.repite} · ${n.plazo}| : ${n.repite}">Una sola
+                  vez · Hasta el 20 de octubre</p>
+                <progress th:if="${n.valor != null}" class="progreso" th:value="${n.valor}"
+                          th:max="${n.max}" th:aria-label="|Llegaron ${n.valor} de ${n.max} ${n.unidad}|"
+                          value="0" max="20" aria-label="Llegaron 0 de 20 litros"></progress>
+                <p th:text="${n.valor != null} ? |Llegaron ${n.valor} de ${n.max} ${n.unidad}. Esta entrega trae ${d.cuanto}.| : |Pedís ${n.max} ${n.unidad}. Esta entrega trae ${d.cuanto}.|">Llegaron
+                  0 de 20 litros. Esta entrega trae 10 litros.</p>
+                <p data-tono="suave" class="texto-chico" th:text="|Al ${necesidadAl}.|">Al 15 de
+                  octubre de 2026.</p>
+              </th:block>
+              <p th:if="${n == null}" th:text="|Esta entrega es para tu necesidad de ${d.pedidoNombre}: ${d.cuanto}.|">Esta
                 entrega es para tu necesidad de aceite de girasol: 10 litros.</p>
               <a href="/entidad-necesidades?necesidad=aceite"
-                 th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu necesidad</a>
+                 th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu necesidad<span
+                  class="solo-lectores" th:text="| de ${d.pedidoNombre}|"> de aceite de girasol</span></a>
             </div>
           </section>
         </div>

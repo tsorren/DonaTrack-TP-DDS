@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.cliente.puertos.DonacionesPuerto;
 import grupo5.cliente.puertos.DonacionesPuerto.Consulta;
+import grupo5.cliente.puertos.EntidadNecesidadesPuerto;
 import grupo5.cliente.puertos.EntidadSeguimientoPuerto;
 import grupo5.cliente.puertos.RecibidasPuerto;
 import grupo5.cliente.vistas.MisDonacionesVista;
@@ -56,6 +57,7 @@ class CuentaDelTokenTest {
   @MockitoBean private DonacionesPuerto donaciones;
   @MockitoBean private RecibidasPuerto recibidas;
   @MockitoBean private EntidadSeguimientoPuerto seguimientos;
+  @MockitoBean private EntidadNecesidadesPuerto necesidades;
   @Autowired private MockMvc mvc;
   @Autowired private ClientRegistrationRepository clientes;
 

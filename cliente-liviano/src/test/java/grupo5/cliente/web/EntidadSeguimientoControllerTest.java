@@ -2,6 +2,8 @@ package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -9,10 +11,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import grupo5.cliente.maqueta.MaquetaConfig;
+import grupo5.cliente.puertos.EntidadNecesidadesPuerto;
 import grupo5.cliente.puertos.EntidadSeguimientoPuerto;
 import grupo5.cliente.puertos.RecibidasPuerto;
+import grupo5.cliente.vistas.EntidadNecesidadesVista;
+import grupo5.cliente.vistas.EntidadNecesidadesVista.Necesidad;
 import grupo5.cliente.vistas.RecibidasVista;
 import grupo5.cliente.vistas.RecibidasVista.Recibida;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -105,10 +111,90 @@ class EntidadSeguimientoControllerTest {
                           "5",
                           "2026-11-05",
                           null,
-                          null)),
+                          null),
+                      new Recibida(
+                          "c",
+                          "Arroz",
+                          "cat-alimentos",
+                          "Alimentos",
+                          "5 kg",
+                          "Martina Ruiz",
+                          null,
+                          null,
+                          "recibida",
+                          "Confirmaste la recepción el 3 de noviembre.",
+                          "3",
+                          "2026-11-03",
+                          null,
+                          null,
+                          "https://fotos.ejemplo/arroz.jpg")),
               "noviembre",
               "8 de noviembre de 2026, 18:30",
               null);
+    }
+
+    /** La necesidad del aceite, con la cuenta de Necesidades (HG-04). */
+    @Bean
+    EntidadNecesidadesPuerto necesidades() {
+      return new EntidadNecesidadesPuerto() {
+        @Override
+        public EntidadNecesidadesVista necesidades(UUID entidad, String accion) {
+          return new EntidadNecesidadesVista(
+              "8 de noviembre de 2026",
+              "2026-11-08",
+              "8 de noviembre",
+              List.of(
+                  new Necesidad(
+                      "n1",
+                      null,
+                      null,
+                      "Aceite de girasol",
+                      "cat-alimentos",
+                      "alimentos",
+                      "litros",
+                      "Hasta el 30 de noviembre",
+                      null,
+                      "Una sola vez",
+                      3,
+                      40,
+                      null,
+                      null,
+                      null,
+                      0,
+                      0,
+                      1,
+                      List.of(),
+                      List.of(),
+                      null,
+                      List.of())),
+              List.of(),
+              List.of(),
+              List.of(),
+              null,
+              "n1");
+        }
+
+        @Override
+        public void publicar(
+            UUID entidad,
+            UUID subcategoria,
+            int cantidad,
+            String periodicidad,
+            LocalDate hasta,
+            String motivo) {
+          throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void cambiar(UUID necesidad, long version, int cantidad, String motivo) {
+          throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void darDeBaja(UUID necesidad) {
+          throw new UnsupportedOperationException();
+        }
+      };
     }
 
     @Bean
@@ -209,6 +295,50 @@ class EntidadSeguimientoControllerTest {
     // Sin ?entrega=, la primera con problema
     mvc.perform(get(PROBLEMA).param("entidad", ENTIDAD))
         .andExpect(content().string(containsString("<h1>Aceite de girasol, 20 litros</h1>")));
+  }
+
+  // A10 (D3): cada confirmada es una etiqueta con su foto y el vínculo a lo asentado; sin foto,
+  // la misma tarjeta sin imagen, nunca una escena inventada.
+  @Test
+  void cadaConfirmadaLlevaSuEtiquetaYElVinculoALoAsentado() throws Exception {
+    String pagina =
+        mvc.perform(get(PANTALLA).param("entidad", ENTIDAD))
+            .andExpect(status().isOk())
+            .andExpect(
+                content().string(containsString("href=\"/entidad-seguimiento-sellada?entrega=b\"")))
+            .andExpect(
+                content().string(containsString("href=\"/entidad-seguimiento-sellada?entrega=c\"")))
+            .andExpect(content().string(containsString("Ver lo que quedó")))
+            .andExpect(
+                content().string(containsString("class=\"solo-lectores\"> de Fideos secos, 8 kg")))
+            .andExpect(
+                content()
+                    .string(containsString("class=\"etiqueta-entrega etiqueta-entrega--costado\"")))
+            .andExpect(content().string(containsString("src=\"https://fotos.ejemplo/arroz.jpg\"")))
+            .andExpect(content().string(not(containsString("Foto de ejemplo"))))
+            .andExpect(content().string(not(containsString("img/ilustraciones/escena"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    // Los fideos no tienen foto: la tarjeta va sin imagen, con el mismo sello.
+    String fideos =
+        pagina.substring(pagina.indexOf("id=\"entrega-b\""), pagina.indexOf("id=\"entrega-c\""));
+    assertFalse(fideos.contains("<img"), fideos);
+    assertTrue(fideos.contains("Entrega confirmada"), fideos);
+  }
+
+  // A11: la necesidad que cubre, con su avance de Necesidades (la cuenta de hoy, HG-04).
+  @Test
+  void laEntregaConProblemaMuestraElAvanceDeSuNecesidad() throws Exception {
+    mvc.perform(get(PROBLEMA).param("entidad", ENTIDAD).param("entrega", "p1"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Una sola vez · Hasta el 30 de noviembre")))
+        .andExpect(content().string(containsString("class=\"progreso\" value=\"3\" max=\"40\"")))
+        .andExpect(content().string(containsString("aria-label=\"Llegaron 3 de 40 litros\"")))
+        .andExpect(
+            content()
+                .string(containsString("Llegaron 3 de 40 litros. Esta entrega trae 20 litros.")))
+        .andExpect(content().string(containsString("Al 8 de noviembre de 2026.")));
   }
 
   @Test

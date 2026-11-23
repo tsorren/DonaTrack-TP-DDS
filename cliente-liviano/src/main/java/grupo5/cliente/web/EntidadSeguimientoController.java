@@ -1,8 +1,10 @@
 package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.CuentaActual;
+import grupo5.cliente.puertos.EntidadNecesidadesPuerto;
 import grupo5.cliente.puertos.EntidadSeguimientoPuerto;
 import grupo5.cliente.puertos.RecibidasPuerto;
+import grupo5.cliente.vistas.EntidadNecesidadesVista;
 import grupo5.cliente.vistas.Listado;
 import grupo5.cliente.vistas.RecibidasVista;
 import grupo5.cliente.vistas.RecibidasVista.Recibida;
@@ -75,16 +77,19 @@ public class EntidadSeguimientoController {
 
   private final RecibidasPuerto recibidas;
   private final EntidadSeguimientoPuerto seguimientos;
+  private final EntidadNecesidadesPuerto necesidades;
   private final CuentaActual cuentas;
   private final Pantallas pantallas;
 
   EntidadSeguimientoController(
       RecibidasPuerto recibidas,
       EntidadSeguimientoPuerto seguimientos,
+      EntidadNecesidadesPuerto necesidades,
       CuentaActual cuentas,
       Pantallas pantallas) {
     this.recibidas = recibidas;
     this.seguimientos = seguimientos;
+    this.necesidades = necesidades;
     this.cuentas = cuentas;
     this.pantallas = pantallas;
   }
@@ -136,7 +141,8 @@ public class EntidadSeguimientoController {
   /**
    * La entrega que no pudo llegar (ORG-08, arquetipo A11): la pedida en {@code ?entrega=}, o la
    * primera con problema si no se pide ninguna. Sin una entrega con problema con esa clave, la
-   * plantilla lo dice y vuelve a Entregas. La nueva salida no llega del backend (HG-01).
+   * plantilla lo dice y vuelve a Entregas. La nueva salida no llega del backend (HG-01). Si se sabe
+   * qué necesidad cubre (HB-17: con los datos reales todavía no), su avance, de Necesidades.
    */
   @GetMapping("/entidad-entrega-problema")
   String problema(Model model, HttpServletRequest pedido) {
@@ -157,12 +163,28 @@ public class EntidadSeguimientoController {
             .orElse(null);
     model.addAttribute(NOMBRE_RECIBIDAS, datos);
     model.addAttribute("entrega", entrega);
+    EntidadNecesidadesVista deNecesidades =
+        entrega == null || entrega.pedido() == null
+            ? null
+            : necesidades.necesidades(entidad.get(), "");
+    model.addAttribute(
+        "necesidad", deNecesidades == null ? null : necesidad(deNecesidades, entrega.pedido()));
+    model.addAttribute("necesidadAl", deNecesidades == null ? null : deNecesidades.al());
     model.addAttribute(
         "noticia",
         entrega == null
             ? null
             : seguimientos.noticias(entidad.get(), List.of(entrega.clave())).get(entrega.clave()));
     return vista;
+  }
+
+  /** La necesidad vigente que cubre la entrega ({@code pedida}: su clave o su id), o null. */
+  private static EntidadNecesidadesVista.Necesidad necesidad(
+      EntidadNecesidadesVista vista, String pedida) {
+    return vista.todas().stream()
+        .filter(n -> pedida.equals(n.clave()) || pedida.equals(n.id()))
+        .findFirst()
+        .orElse(null);
   }
 
   /**
