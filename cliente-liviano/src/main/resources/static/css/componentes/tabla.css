@@ -55,25 +55,29 @@
   vertical-align: top;
 }
 
-/* El dato con su rótulo adelante, en dos columnas. El rótulo no se lee dos veces: el lector ya
-   oye el encabezado de la columna. */
+/* El dato con su rótulo adelante, en dos columnas: el rótulo, en una columna fija a la izquierda, y
+   lo de la celda (texto suelto, un sello, un botón) a la derecha, tal como viene. Sin encabezados a
+   la vista, el lector oye el rótulo, como antes. Una celda sin rótulo (`data-rotulo=""`, la de las
+   acciones) ocupa todo el ancho. */
 .tabla td[data-rotulo] {
-  display: grid;
-  grid-template-columns: 5rem minmax(0, 1fr);
-  gap: var(--espacio-2);
-}
-
-/* Lo que hay adentro (un sello y su small, por ejemplo), siempre en la columna del dato. */
-.tabla td[data-rotulo] > * {
-  grid-column: 2;
+  position: relative;
+  padding-inline-start: calc(5rem + var(--espacio-2));
 }
 
 .tabla td[data-rotulo]::before {
   content: attr(data-rotulo);
-  content: attr(data-rotulo) / "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: 5rem;
   color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
   font-weight: 600;
+  line-height: var(--tamano-interlinea-texto);
+}
+
+.tabla td[data-rotulo=""] {
+  padding-inline-start: 0;
 }
 
 /* El enlace al detalle, en el título de la fila: de 48 px de alto, en negrita. */
@@ -119,7 +123,8 @@
     border-bottom: 0;
   }
 
-  .tabla :is(th, td) {
+  .tabla :is(th, td),
+  .tabla td[data-rotulo] {
     display: table-cell;
     padding: var(--espacio-2) var(--espacio-3);
   }
@@ -130,10 +135,6 @@
     font-size: var(--tamano-chico);
     font-weight: 700;
     white-space: nowrap;
-  }
-
-  .tabla td[data-rotulo] {
-    display: table-cell;
   }
 
   .tabla td[data-rotulo]::before {
