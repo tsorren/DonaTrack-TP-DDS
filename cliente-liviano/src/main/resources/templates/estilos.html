@@ -1018,42 +1018,44 @@
                              pasoAPaso=${ { {nombre: 'Registrada', avance: 'hecho', cuando: '8 de octubre, 10:15', detalle: 'En el Depósito Central, a tu nombre.'}, {nombre: 'Asignada', avance: 'hecho', cuando: '9 de octubre, 9:00', detalle: 'Al Comedor Barrio Ejemplo, que pidió lentejas.'}, {nombre: 'Preparada', avance: 'hecho', cuando: '9 de octubre, 16:30', detalle: 'En el Depósito Central.'}, {nombre: 'En camino', avance: 'actual', cuando: 'Desde las 14:30', detalle: 'Sale en el camión de hoy.'}, {nombre: 'Falta confirmar la entrega', avance: 'falta', detalle: 'La confirma la organización con la foto.'} } },
                              conTropiezo=${ { {nombre: 'Preparada', avance: 'hecho', cuando: '9 de octubre, 16:30', detalle: 'En el Depósito Central.'}, {nombre: 'Salió y no pudo llegar', avance: 'problema', cuando: '11 de octubre', detalle: 'El camino estaba cortado. Sale de nuevo el 17 de octubre.'}, {nombre: 'Falta confirmar la entrega', avance: 'falta', detalle: 'La confirma la organización con la foto.'} } },
                              comoFunciona=${ { {nombre: 'Llevás tu donación', avance: 'hecho', detalle: 'Al depósito. El equipo la registra a tu nombre.'}, {nombre: 'Se asigna', avance: 'hecho', detalle: 'A una organización que pidió eso mismo.'}, {nombre: 'Se prepara', avance: 'hecho', detalle: 'En el depósito, para salir en el próximo viaje.'}, {nombre: 'Viaja', avance: 'hecho', detalle: 'Ves en el mapa por dónde anda el camión.'}, {nombre: 'La confirman', avance: 'hecho', detalle: 'La organización sube la foto y vos la ves.'} } }">
-            <div class="grilla">
-              <div class="pila" data-espacio="2">
-                <h4>Paso a paso</h4>
-                <ol th:replace="~{componentes/huerta :: raiz-pasos(${pasoAPaso}, null, null, false)}"></ol>
+            <div class="pila" data-espacio="4">
+              <div class="grilla">
+                <div class="pila" data-espacio="2">
+                  <h4>Paso a paso</h4>
+                  <ol th:replace="~{componentes/huerta :: raiz-pasos(${pasoAPaso}, null, null, false)}"></ol>
+                </div>
+                <div class="pila" data-espacio="2">
+                  <h4>Un paso que no pudo ser</h4>
+                  <ol th:replace="~{componentes/huerta :: raiz-pasos(${conTropiezo}, null, null, false)}"></ol>
+                </div>
               </div>
               <div class="pila" data-espacio="2">
-                <h4>Un paso que no pudo ser</h4>
-                <ol th:replace="~{componentes/huerta :: raiz-pasos(${conTropiezo}, null, null, false)}"></ol>
+                <h4>Acostada: en camino, confirmada y con problema</h4>
+                <ol th:replace="~{componentes/huerta :: raiz-pasos(${enCamino}, 'acostada', 'Paso 4 de 5', false)}"></ol>
+                <p>Paso 4 de 5: en camino.</p>
+                <ol th:replace="~{componentes/huerta :: raiz-pasos(${confirmada}, 'acostada', 'Paso 5 de 5', false)}"></ol>
+                <p>Paso 5 de 5: entrega confirmada.</p>
+                <ol th:replace="~{componentes/huerta :: raiz-pasos(${conProblema}, 'acostada', 'Cumplió 3 de 5 pasos y el cuarto no pudo llegar', false)}"></ol>
+                <p>Cumplió 3 de 5 pasos y el cuarto no pudo llegar.</p>
               </div>
-            </div>
-            <div class="pila" data-espacio="2">
-              <h4>Acostada: en camino, confirmada y con problema</h4>
-              <ol th:replace="~{componentes/huerta :: raiz-pasos(${enCamino}, 'acostada', 'Paso 4 de 5', false)}"></ol>
-              <p>Paso 4 de 5: en camino.</p>
-              <ol th:replace="~{componentes/huerta :: raiz-pasos(${confirmada}, 'acostada', 'Paso 5 de 5', false)}"></ol>
-              <p>Paso 5 de 5: entrega confirmada.</p>
-              <ol th:replace="~{componentes/huerta :: raiz-pasos(${conProblema}, 'acostada', 'Cumplió 3 de 5 pasos y el cuarto no pudo llegar', false)}"></ol>
-              <p>Cumplió 3 de 5 pasos y el cuarto no pudo llegar.</p>
-            </div>
-            <div class="grilla">
-              <div class="pila" data-espacio="2">
-                <h4>Numerada</h4>
-                <ol th:replace="~{componentes/huerta :: raiz-pasos(${enCamino}, 'numerada', null, false)}"></ol>
+              <div class="grilla">
+                <div class="pila" data-espacio="2">
+                  <h4>Numerada</h4>
+                  <ol th:replace="~{componentes/huerta :: raiz-pasos(${enCamino}, 'numerada', null, false)}"></ol>
+                </div>
+                <div class="pila" data-espacio="2">
+                  <h4>Recién llegada: el trazo</h4>
+                  <ol th:replace="~{componentes/huerta :: raiz-pasos(${enCamino}, 'acostada', 'Paso 4 de 5, recién llegada', true)}"></ol>
+                  <p>El tramo al cuarto nudo se dibuja una vez al cargar la página.</p>
+                </div>
               </div>
-              <div class="pila" data-espacio="2">
-                <h4>Recién llegada: el trazo</h4>
-                <ol th:replace="~{componentes/huerta :: raiz-pasos(${enCamino}, 'acostada', 'Paso 4 de 5, recién llegada', true)}"></ol>
-                <p>El tramo al cuarto nudo se dibuja una vez al cargar la página.</p>
+              <!--/* Con el ancho de una pantalla: tendida, cada paso necesita su columna. La ficha se
+                     desplaza de costado; el ejemplo toma el foco para desplazarla con el teclado. */-->
+              <div class="pila" data-espacio="2" data-ancho="pantalla" tabindex="0" role="group"
+                   aria-label="Ejemplo de la raíz numerada y tendida">
+                <h4>Numerada y tendida</h4>
+                <ol th:replace="~{componentes/huerta :: raiz-pasos(${comoFunciona}, 'numerada tendida', null, false)}"></ol>
               </div>
-            </div>
-            <!--/* Con el ancho de una pantalla: tendida, cada paso necesita su columna. La ficha se
-                   desplaza de costado; el ejemplo toma el foco para desplazarla con el teclado. */-->
-            <div class="pila" data-espacio="2" data-ancho="pantalla" tabindex="0" role="group"
-                 aria-label="Ejemplo de la raíz numerada y tendida">
-              <h4>Numerada y tendida</h4>
-              <ol th:replace="~{componentes/huerta :: raiz-pasos(${comoFunciona}, 'numerada tendida', null, false)}"></ol>
             </div>
           </th:block>
         </div>
