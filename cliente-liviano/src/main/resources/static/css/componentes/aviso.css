@@ -251,6 +251,12 @@
   color: var(--color-info-texto);
 }
 
+/* El signo del aviso breve mide lo mismo que el del aviso en la página (20 px), sin el margen de arriba. */
+.aviso-breve > .icono[data-forma] {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+}
+
 /* Una acción que salió bien: el signo en el color del éxito. */
 .aviso-breve[data-estado="hecho"] > .icono {
   color: var(--color-exito-texto);
