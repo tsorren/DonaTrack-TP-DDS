@@ -531,6 +531,15 @@ la arma la sesión que cierra C1.
   `VerificacionVisualTest`. Los corre `c1-armazon` antes de comitear y el cierre de la ola. Nadie
   edita un test de `visual/`: si uno afirma algo que la guía cambia, se informa y lo decide el
   usuario.
+- **Línea de base de esos cinco tests** `[VERIFIED]` (2026-11-22; `mvn test -pl cliente-liviano -am
+  -Pvisual -Dtest=…`, 31 tests). Fallan 4, igual sobre `397896a79` que sobre `093aed884`, antes de
+  C0: `ArmazonFijoTest.laCabeceraYLaBarraQuedanFijasSinHuecoEntreEllas`,
+  `ArmazonFijoTest.enElCelularConTabYShiftTabElFocoNoQuedaTapado`,
+  `ArmazonFijoTest.enElCelularElBotonDeConfirmarQuedaEncimaDelMenuHastaElFinal` y
+  `AbejasYRenglonesTest.lasAbejasCambianDeCapaSoloCuandoNoSeVen`. Además,
+  `MenusQueSeCierranTest.lasPastillasDeFiltroSeCierranTocandoAfueraYConEsc` falló en 1 de 3
+  corridas: es inestable. Ninguna de las cinco es de C1; si `c1-armazon` arregla alguna de las de
+  `ArmazonFijoTest` al rehacer el armazón, lo anota.
 - **El stack real con login no se levanta en C1.** `/estilos` es de la maqueta y C1 no toca ningún
   adaptador `rest`. El recorrido real se hace en ORG y en Z.
 - **Los topes no se tocan.** Clases de un solo uso, 159 (`InterfazFitnessTest.java:253`); medidas
