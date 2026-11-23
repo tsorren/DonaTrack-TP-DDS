@@ -31,6 +31,25 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-23 · proceso · Ronda 4: lo que necesitan los manifiestos de rol (DA-03b, DA-03c, DA-04, DA-05, DA-06, DA-08, DA-13 y DA-21)
+
+- **Decisión:** el admin entra por «Por decidir», que reemplaza a Inicio y a Asignar, y los
+  gráficos de hoy van a una ficha de ADM1 (DA-04). La persona suma Misiones como cuarta entrada de
+  su menú (DA-03b) y su inicio deriva del de quien dona, con la tarjeta de la huerta (DA-03c).
+  «Cómo funciona», «Cómo donar» y «Ayuda» son Nosotros, Para donantes y Para organizaciones con
+  otro nombre (DA-05). Solo confirmar una recepción tiene página de respuesta; el resto, aviso
+  breve (DA-06). Llevan ficha Misiones, Ranking, el inicio de la persona y el buzón; lo demás sin
+  arquetipo se deriva (DA-08). Las 6 plantillas de `persona/` se migran con su gemela (DA-13). La
+  casilla del buzón pasa el toque midiendo 48 px de verdad, con el patrón de C1-12 (DA-21).
+- **Alternativas:** las de cada fila del backlog §2.2. Para la casilla: extender la excepción de
+  DA-16 a las rutas del buzón, o que el test mida la etiqueta.
+- **Por qué:** cada una usa lo que ya existe (páginas, plantillas, el patrón de la opción de C1) y
+  no suma pantallas ni cambia tests antes del 30/11.
+- **Costo:** cuatro fichas para escribir en sesión (DA-19) y la persona con una entrada de menú más
+  que la guía.
+- **Quién decidió:** usuario («Todas las recomendadas», ronda 4 del 2026-11-23).
+- **Evidencia:** backlog §2.2.
+
 ### 2026-11-23 · proceso · Los menús de cada rol no cambian en C1 (DA-17; DA-01, DA-02 y DA-03a diferidas)
 
 - **Decisión:** C1 no cambia ninguna entrada de ningún menú. El menú de cada rol cambia en la ola de

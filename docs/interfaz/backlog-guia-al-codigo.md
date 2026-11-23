@@ -69,28 +69,32 @@ Ronda 3 (2026-11-22, con la medida de C0): G0, DA-07 y DA-17 a DA-20. Respuestas
 el alcance, «Quiero todo el sitio, y me gustaría reducir los tests o verificaciones innecesarias /
 que generen demasiada fricción»; para el modo, la verificación y DA-07, «Todas las recomendadas».
 Con DA-17, las decisiones de los menús pasan de C1 a la ola de cada rol (columna «Ola»).
+Ronda 4 (2026-11-23, después del merge de C1): DA-04, DA-03b, DA-03c, DA-05, DA-06, DA-08, DA-13
+y la casilla del buzón, que pasa a ser DA-21. Respuesta del usuario: «Todas las recomendadas».
+G1 no entra en esta ronda: se responde por área, mirando la hoja.
 
 | ID | Pregunta | Recomendación | Respuesta del usuario | Fecha | Ola |
 |---|---|---|---|---|---|
 | DA-01 | Público: ¿el Mapa sale del menú y queda dentro de Entregas? | Sí, como dibuja la guía | Sí («3 si», ronda 2) | 2026-11-22 | PUB1 |
 | DA-02 | Organización: ¿«Donaciones recibidas» y «Seguir entregas» se funden en «Entregas»? | Sí | Sí («3 si», ronda 2) | 2026-11-22 | ORG |
 | DA-03a | Quien dona: ¿«Seguimiento» deja de ser una sección del menú? (el seguimiento de cada donación se abre desde su detalle) | Sí | Sí («3 si», ronda 2) | 2026-11-22 | DON |
-| DA-03b | Quien dona, la persona: ¿dónde va Misiones? | Como cuarta entrada del menú de la persona | Pendiente | | DON |
-| DA-03c | Quien dona, la persona: ¿cómo es su inicio, que la guía no dibuja? | Pendiente de proponer | Pendiente | | DON |
-| DA-04 | Admin: ¿«Por decidir» reemplaza a Inicio y a Asignar? | Sí | Pendiente | | ADM1 |
-| DA-05 | «Cómo funciona», «Cómo donar» y «Ayuda»: ¿páginas nuevas o las de hoy con otro nombre? | Las de hoy (Nosotros, Para donantes, Para organizaciones) | Pendiente | | PUB1, DON y ORG |
-| DA-06 | ¿Página propia de respuesta solo al confirmar una recepción, y aviso breve en el resto? | Sí, es la regla de la guía | Pendiente | | Roles |
+| DA-03b | Quien dona, la persona: ¿dónde va Misiones? | Como cuarta entrada del menú de la persona: Inicio, Donaciones, Organizaciones, Misiones y Cómo donar | Como cuarta entrada («Todas las recomendadas», ronda 4) | 2026-11-23 | DON |
+| DA-03c | Quien dona, la persona: ¿cómo es su inicio, que la guía no dibuja? | Deriva de A04 (`#inicio-donante`): saludo, aviso de problema, «En camino ahora» y noticias, más la tarjeta de acceso a la huerta de hoy y sin lo que es solo de la empresa. Con ficha (DA-08) | Deriva de A04, con ficha («Todas las recomendadas», ronda 4) | 2026-11-23 | DON |
+| DA-04 | Admin: ¿«Por decidir» reemplaza a Inicio y a Asignar? | Sí; los gráficos de «Cómo está todo» de `admin-inicio` van a una ficha de ADM1, debajo de la bandeja | Sí («Todas las recomendadas», ronda 4) | 2026-11-23 | ADM1 |
+| DA-05 | «Cómo funciona», «Cómo donar» y «Ayuda»: ¿páginas nuevas o las de hoy con otro nombre? | Las de hoy (Nosotros, Para donantes, Para organizaciones) | Las de hoy: Nosotros pasa a «Cómo funciona», Para donantes a «Cómo donar» y Para organizaciones a «Ayuda» («Todas las recomendadas», ronda 4) | 2026-11-23 | PUB1, DON y ORG |
+| DA-06 | ¿Página propia de respuesta solo al confirmar una recepción, y aviso breve en el resto? | Sí, es la regla de la guía | Sí («Todas las recomendadas», ronda 4) | 2026-11-23 | Roles |
 | DA-07 | Sello para «vencida», «cancelada» y «en revisión» | El par neutro, con su texto | El par neutro, con su texto («Todas las recomendadas», ronda 3) | 2026-11-22 | C1 |
-| DA-08 | Pantallas sin arquetipo: ¿ficha aprobada por el usuario o derivación del agente? | Ficha para Misiones, Ranking, inicio de la persona y buzón; el resto, derivación | Pendiente | | Roles |
+| DA-08 | Pantallas sin arquetipo: ¿ficha aprobada por el usuario o derivación del agente? | Ficha para Misiones, Ranking, inicio de la persona y buzón; el resto, derivación | Ficha para esas cuatro; el resto, derivación («Todas las recomendadas», ronda 4) | 2026-11-23 | Roles |
 | DA-09 | HG-01, la nueva salida: ¿función nueva o texto sin fecha? | Texto sin fecha; la función, después de la defensa | Pendiente | | Z |
 | DA-10 | HG-03: ¿el nombre de quien recibió se muestra en lo público? | En lo privado sí; en lo público, la organización | Pendiente | | Z |
 | DA-11 | ¿Se acepta Opus high en los lotes con pantallas, como fija el workflow? | Sí | Sí («todas las recomendadas», ronda 1) | 2026-11-22 | Todas |
 | DA-12 | ¿Los huecos de backend van como PRs sueltos a `ENTREGA_7`? | Sí | Pendiente | | Z |
-| DA-13 | Las 6 plantillas de `persona/` que solo sirve la maqueta: ¿se migran con su gemela o se borran? | Se migran; borrarlas es otra decisión | Pendiente | | DON |
+| DA-13 | Las 6 plantillas de `persona/` que solo sirve la maqueta: ¿se migran con su gemela o se borran? | Se migran; borrarlas es otra decisión | Se migran («Todas las recomendadas», ronda 4) | 2026-11-23 | DON |
 | DA-14a | En C0: ¿los 10 nombres de color de hoy pasan a ser alias del token de la guía del mismo valor (sin cambiar ningún píxel) y se borran los 3 tokens que nadie usa? | Sí | Sí («todas las recomendadas», ronda 1). Corregida el 2026-11-22: se borran 3 y no 4, porque `--medida-quiebre-medio` sí se usa (ver §3.2). El usuario lo aceptó al elegir, entre tres caminos para la corrida de C0, «parar, corregir la decisión y relanzar» (su respuesta: «Opción B»). Esa «B» no tiene relación con ninguna otra lista de opciones | 2026-11-22 | C0 |
 | DA-14b | En Z: ¿se borran los alias que quedaron sin usos y los 11 tokens que no usa ninguna hoja ni plantilla y solo nombra `InterfazFitnessTest`, cambiando su lista de pares por la de la guía? | Sí | Pendiente | | Z |
 | DA-15 | Si el 30/11 no llegó todo: ¿corte por área con la regla G2, o todo o nada? | Corte por área | Corte por área («todas las recomendadas», ronda 1) | 2026-11-22 | Z |
 | DA-16 | La excepción de toque que el cierre de C0 agregó a `VerificacionVisualTest` para la casilla del buzón en `/estilos` (`e7ba71c36`), sin consultar: ¿se mantiene o se revierte? | Ninguna: se presentaron las dos | Se mantiene («Mantenerla»). Queda en el [ADR de la excepción de toque](../adr/cliente-liviano/20261122-excepcion-de-toque-para-la-casilla-del-buzon-en-estilos.md) (`proposed`) y en [DTI-46](../adr/DEUDA_TECNICA.md#dti-46) | 2026-11-22 | C0 |
+| DA-21 | La casilla del buzón: `VerificacionVisualTest` mide el `input` de 12 px y no su etiqueta de 48 px, y ORG, DON y ADM2 rehacen el buzón. ¿Cómo pasa el toque? | Que la casilla mida 48 px de verdad, con el patrón de C1-12 (el control nativo transparente encima de todo el bloque): no cambia el test ni pide ADR. Las otras: extender la excepción de DA-16 a las rutas del buzón, o que el test mida la etiqueta (las dos cambian el test y piden ADR) | La casilla de 48 px («Todas las recomendadas», ronda 4) | 2026-11-23 | ORG, DON y ADM2 |
 | G0 | Con la medida de C0 (§3.4): ¿el plan sigue con todo el sitio o se recorta al recorrido de la demo? | Recorte al recorrido de la demo (ORG, DON y PUB1), con ADM1 por decidir en G1 | Todo el sitio («Quiero todo el sitio», ronda 3). Quedan 8 corridas: C1, ORG, DON, PUB1, ADM1, PUB2, ADM2 y Z | 2026-11-22 | Todas |
 | DA-17 | ¿El menú de cada rol cambia en la ola de ese rol, y no todos juntos en C1? | Sí: si una ola no llega, su área queda con el menú de hoy | Sí («Todas las recomendadas», ronda 3) | 2026-11-22 | PUB1, DON, ORG y ADM1 |
 | DA-18 | ¿Las piezas del galpón (la tabla con selección, P21; el cajón, P22; y el armazón del galpón, la mitad de P26) pasan de C1 a ADM1? | Sí | Sí («Todas las recomendadas», ronda 3) | 2026-11-22 | ADM1 |
