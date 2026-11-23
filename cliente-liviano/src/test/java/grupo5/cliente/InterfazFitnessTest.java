@@ -87,7 +87,29 @@ class InterfazFitnessTest {
           new Par("--color-error-texto", "--color-fondo", 4.5),
           new Par("--color-borde-control", "--color-fondo", 3),
           new Par("--color-foco", "--color-fondo", 3),
-          new Par("--color-foco", "--color-superficie", 3));
+          new Par("--color-foco", "--color-superficie", 3),
+          // Los pares de la guía «Huerta y galpón» (docs/interfaz/guia/partes/90-script.html,
+          // C0-04) que no estaban arriba. Los dos sin piso de la guía (deshabilitado y el borde del
+          // sello «En camino») no entran: un mínimo de 0 no comprueba nada.
+          new Par("--color-texto-suave", "--color-pendiente-fondo", 4.5),
+          new Par("--color-texto-suave", "--color-fila-elegida", 4.5),
+          new Par("--color-texto", "--color-salvia", 4.5),
+          new Par("--color-pendiente-texto", "--color-pendiente-fondo", 4.5),
+          new Par("--color-en-camino-texto", "--color-en-camino-fondo", 4.5),
+          new Par("--color-entregada-texto", "--color-entregada-fondo", 4.5),
+          new Par("--color-problema-texto", "--color-problema-fondo", 4.5),
+          new Par("--color-espera-texto", "--color-espera-fondo", 4.5),
+          new Par("--color-error-texto", "--color-fondo-pagina", 4.5),
+          new Par("--color-texto-suelo", "--color-suelo", 4.5),
+          new Par("--color-texto-suelo", "--color-suelo-medio", 4.5),
+          new Par("--color-borde-control", "--color-campo", 3),
+          new Par("--color-error-borde", "--color-campo", 3),
+          new Par("--color-foco", "--color-fondo-pagina", 3),
+          new Par("--color-foco-sobre-suelo", "--color-suelo", 3),
+          new Par("--color-accion-primaria", "--color-campo", 3),
+          new Par("--color-accion-primaria", "--color-fondo-pagina", 3),
+          new Par("--color-tinta", "--color-raiz", 3),
+          new Par("--color-problema-texto", "--color-fondo-pagina", 3));
 
   private static final Pattern COLOR_LITERAL =
       Pattern.compile(

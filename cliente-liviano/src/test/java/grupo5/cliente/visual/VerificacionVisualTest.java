@@ -43,9 +43,10 @@ import tools.jackson.databind.json.JsonMapper;
  * variante y las compara. Con {@code -Dverificacion.paginas=/a,/b} recorre esas rutas en lugar de
  * las de paginas.txt. Con {@code -Dverificacion.boceto=true}, solo capturas a 1280 px, sin
  * comprobar el piso (las vueltas de una exploración A/B). Resultado en {@code target/capturas/}:
- * PNG, index.html, comparacion.html y reporte.json. Las capturas congelan las animaciones de la
- * página, no las que van dentro de una imagen (el spinner de Pico): para comparar dos corridas,
- * {@code scripts/visual/Imagenes.java comparar} con carpeta de ruido.
+ * PNG, index.html, comparacion.html, reporte.json y excepciones.json (las fallas conocidas, que no
+ * cuentan: {@code EXCEPCIONES_CONOCIDAS}). Las capturas congelan las animaciones de la página, no
+ * las que van dentro de una imagen (el spinner de Pico): para comparar dos corridas, {@code
+ * scripts/visual/Imagenes.java comparar} con carpeta de ruido.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("maqueta")
@@ -73,6 +74,18 @@ class VerificacionVisualTest {
 
   private static final List<Integer> ANCHOS =
       BOCETO ? List.of(1280) : AnchosDeReferencia.REFERENCIA;
+
+  /**
+   * Fallas conocidas (ruta, tipo y detalle exactos, en cualquier variante y ancho): no cuentan para
+   * el piso y van aparte, a {@code excepciones.json}. Las casillas de la demo de la bandeja en
+   * /estilos miden un cuarto de 48 px por decisión del usuario del 2026-11-12 (buzon.css): lo que
+   * se toca es su etiqueta de 48 px, que {@link #CONTROLES_CHICOS} no mira. Solo /estilos (cierre
+   * de C0, 2026-11-22): las pantallas de notificaciones siguen contando.
+   */
+  private static final List<Falla> EXCEPCIONES_CONOCIDAS =
+      List.of(
+          new Falla("/estilos", "", 0, "toque", "menos de 48x48 px: input \"\" 12x12"),
+          new Falla("/estilos", "", 0, "toque", "menos de 48x48 px: input \"elegidas\" 12x12"));
 
   /** Controles visibles de menos de 48 × 48 px; los enlaces dentro de un texto no cuentan. */
   private static final String CONTROLES_CHICOS =
@@ -404,12 +417,36 @@ class VerificacionVisualTest {
       Files.writeString(
           CAPTURAS.resolve("comparacion.html"), visor(capturas, opciones), StandardCharsets.UTF_8);
     }
-    JsonMapper.builder()
-        .build()
-        .writerWithDefaultPrettyPrinter()
-        .writeValue(CAPTURAS.resolve("reporte.json"), fallas);
+    List<Falla> conocidas = fallas.stream().filter(VerificacionVisualTest::esConocida).toList();
+    fallas.removeAll(conocidas);
+    var escritor = JsonMapper.builder().build().writerWithDefaultPrettyPrinter();
+    escritor.writeValue(CAPTURAS.resolve("reporte.json"), fallas);
+    escritor.writeValue(CAPTURAS.resolve("excepciones.json"), conocidas);
 
     assertThat(fallas).as("Detalle en %s", CAPTURAS.resolve("reporte.json")).isEmpty();
+  }
+
+  @Test
+  void soloLasCasillasDeLaDemoDeLaBandejaEnEstilosSonExcepcion() {
+    String casilla = "menos de 48x48 px: input \"elegidas\" 12x12";
+    assertThat(esConocida(new Falla("/estilos", SITIO, 360, "toque", casilla))).isTrue();
+    assertThat(esConocida(new Falla("/estilos", SITIO, 1920, "toque", casilla))).isTrue();
+    assertThat(esConocida(new Falla("/admin-notificaciones", SITIO, 360, "toque", casilla)))
+        .isFalse();
+    assertThat(
+            esConocida(
+                new Falla("/estilos", SITIO, 360, "toque", "menos de 48x48 px: a \"Ver\" 40x22")))
+        .isFalse();
+    assertThat(esConocida(new Falla("/estilos", SITIO, 360, "axe", casilla))).isFalse();
+  }
+
+  private static boolean esConocida(Falla falla) {
+    return EXCEPCIONES_CONOCIDAS.stream()
+        .anyMatch(
+            conocida ->
+                conocida.ruta().equals(falla.ruta())
+                    && conocida.tipo().equals(falla.tipo())
+                    && conocida.detalle().equals(falla.detalle()));
   }
 
   /**

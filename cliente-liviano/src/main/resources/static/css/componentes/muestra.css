@@ -122,3 +122,526 @@
   width: auto;
   max-width: 22rem;
 }
+
+/* Las muestras de token de la sección «Tokens» de /estilos (C0-05): una lista `.muestra-tokens` por
+   grupo, con `data-tipo` (color, espacio, radio, borde, sombra, letra o valor) y un `li` por token con
+   `data-token` (el nombre sin los dos guiones). El cuadro de cada muestra es el ::before del `li`: la
+   página no lleva `style` sueltos. La grilla de las fichas de token tiene columnas más anchas que la
+   de los componentes, así en la computadora casi todos los nombres entran enteros al lado de su
+   cuadro. */
+.grilla:has(> .muestra > .muestra-tokens) {
+  --medida-grilla: 22rem;
+}
+
+.muestra-tokens {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--medida-cajon)), 1fr));
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: var(--espacio-2);
+  list-style: none;
+}
+
+.muestra-tokens > li {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-width: 0;
+  font-size: var(--tamano-chico);
+}
+
+.muestra-tokens code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.muestra-tokens:is([data-tipo="color"], [data-tipo="radio"], [data-tipo="borde"], [data-tipo="sombra"])
+  > li::before {
+  flex: none;
+  box-sizing: border-box;
+  inline-size: var(--medida-toque-minimo);
+  block-size: var(--medida-toque-minimo);
+  content: "";
+}
+
+.muestra-tokens[data-tipo="color"] > li::before {
+  border: var(--borde-fino);
+  border-radius: var(--radio-estampa);
+}
+
+.muestra-tokens[data-tipo="radio"] > li::before {
+  border: var(--borde-tinta);
+  background: var(--color-salvia);
+}
+
+.muestra-tokens[data-tipo="borde"] > li::before {
+  background: var(--color-campo);
+}
+
+.muestra-tokens[data-tipo="sombra"] > li::before {
+  border: var(--borde-fino);
+  border-radius: var(--radio-lamina);
+  background: var(--color-fondo-pagina);
+}
+
+/* El espaciado: una barra tan ancha como el token. */
+.muestra-tokens[data-tipo="espacio"] > li::before {
+  flex: none;
+  block-size: var(--espacio-3);
+  border-radius: var(--radio-estampa);
+  background: var(--color-accion-primaria);
+  content: "";
+}
+
+/* La letra: el `li` es el ejemplo y su `code` dice el token, en la letra del texto. */
+.muestra-tokens[data-tipo="letra"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.muestra-tokens[data-tipo="letra"] > li {
+  flex-wrap: wrap;
+  align-items: baseline;
+  font-size: var(--tamano-base);
+}
+
+.muestra-tokens[data-tipo="letra"] code {
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 400;
+  font-stretch: 100%;
+  line-height: var(--tamano-interlinea-texto);
+}
+
+.muestra-tokens[data-tipo="letra"] [data-muestra="titulo"] {
+  font-family: var(--fuente-titulo);
+  font-weight: var(--fuente-peso-titulo);
+  font-stretch: var(--fuente-ancho-titulo);
+  line-height: var(--tamano-interlinea-titulo);
+}
+
+/* Un valor o un alias se lee como una oración, un renglón por `li`: la ficha ocupa la fila entera de
+   la grilla y cada nombre de token queda entero (baja de renglón entre nombres, nunca adentro). */
+.muestra:has(> .muestra-tokens[data-tipo="valor"]) {
+  grid-column: 1 / -1;
+}
+
+.muestra-tokens[data-tipo="valor"] {
+  grid-template-columns: minmax(0, 1fr);
+  padding: var(--espacio-1);
+}
+
+.muestra-tokens[data-tipo="valor"] > li {
+  display: block;
+  font-size: var(--tamano-micro);
+}
+
+.muestra-tokens[data-tipo="valor"] code {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+/* En el celular el nombre más largo (--color-accion-primaria-activa) no entra entero en la caja con la
+   letra chica: la lista usa la letra mínima y menos relleno (arriba). Desde la tableta vuelve a la letra y
+   el relleno de las otras fichas. */
+@media (min-width: 37.5em) {
+  .muestra-tokens[data-tipo="valor"] {
+    padding: var(--espacio-2);
+  }
+
+  .muestra-tokens[data-tipo="valor"] > li {
+    font-size: var(--tamano-chico);
+  }
+}
+
+/* Un token por regla: el espaciado, el radio, el borde y la elevación. */
+.muestra-tokens [data-token="espacio-0"]::before {
+  inline-size: var(--espacio-0);
+}
+
+.muestra-tokens [data-token="espacio-1"]::before {
+  inline-size: var(--espacio-1);
+}
+
+.muestra-tokens [data-token="espacio-2"]::before {
+  inline-size: var(--espacio-2);
+}
+
+.muestra-tokens [data-token="espacio-3"]::before {
+  inline-size: var(--espacio-3);
+}
+
+.muestra-tokens [data-token="espacio-4"]::before {
+  inline-size: var(--espacio-4);
+}
+
+.muestra-tokens [data-token="espacio-5"]::before {
+  inline-size: var(--espacio-5);
+}
+
+.muestra-tokens [data-token="espacio-6"]::before {
+  inline-size: var(--espacio-6);
+}
+
+.muestra-tokens [data-token="radio-lamina"]::before {
+  border-radius: var(--radio-lamina);
+}
+
+.muestra-tokens [data-token="radio-boton"]::before {
+  border-radius: var(--radio-boton);
+}
+
+.muestra-tokens [data-token="radio-campo"]::before {
+  border-radius: var(--radio-campo);
+}
+
+.muestra-tokens [data-token="radio-estampa"]::before {
+  border-radius: var(--radio-estampa);
+}
+
+.muestra-tokens [data-token="radio-pastilla"]::before {
+  border-radius: var(--radio-pastilla);
+}
+
+.muestra-tokens [data-token="borde-fino"]::before {
+  border: var(--borde-fino);
+}
+
+.muestra-tokens [data-token="borde-control"]::before {
+  border: var(--borde-control);
+}
+
+.muestra-tokens [data-token="borde-tinta"]::before {
+  border: var(--borde-tinta);
+}
+
+.muestra-tokens [data-token="borde-punteado"]::before {
+  border: var(--borde-punteado);
+}
+
+.muestra-tokens [data-token="borde-ancho-sello"]::before {
+  border: var(--borde-ancho-sello) solid var(--color-tinta);
+}
+
+.muestra-tokens [data-token="borde-ancho-foco"]::before {
+  border: var(--borde-ancho-foco) solid var(--color-foco);
+}
+
+.muestra-tokens [data-token="sombra-ninguna"]::before {
+  box-shadow: var(--sombra-ninguna);
+}
+
+.muestra-tokens [data-token="sombra-papel"]::before {
+  box-shadow: var(--sombra-papel);
+}
+
+.muestra-tokens [data-token="sombra-paja"]::before {
+  box-shadow: var(--sombra-paja);
+}
+
+/* La letra: un token por regla. */
+.muestra-tokens [data-token="fuente-ancho-portada"] > [data-muestra] {
+  font-stretch: var(--fuente-ancho-portada);
+}
+
+.muestra-tokens [data-token="fuente-ancho-menu"] > [data-muestra] {
+  font-stretch: var(--fuente-ancho-menu);
+}
+
+.muestra-tokens [data-token="fuente-texto"] > [data-muestra] {
+  font-family: var(--fuente-texto);
+}
+
+.muestra-tokens [data-token="tamano-titulo-portada"] > [data-muestra] {
+  font-size: var(--tamano-titulo-portada);
+  font-stretch: var(--fuente-ancho-portada);
+}
+
+.muestra-tokens [data-token="tamano-titulo-1"] > [data-muestra] {
+  font-size: var(--tamano-titulo-1);
+}
+
+.muestra-tokens [data-token="tamano-titulo-2"] > [data-muestra] {
+  font-size: var(--tamano-titulo-2);
+}
+
+.muestra-tokens [data-token="tamano-titulo-3"] > [data-muestra] {
+  font-size: var(--tamano-titulo-3);
+}
+
+.muestra-tokens [data-token="tamano-grande"] > [data-muestra] {
+  font-size: var(--tamano-grande);
+}
+
+.muestra-tokens [data-token="tamano-base"] > [data-muestra] {
+  font-size: var(--tamano-base);
+}
+
+.muestra-tokens [data-token="tamano-denso"] > [data-muestra] {
+  font-size: var(--tamano-denso);
+}
+
+.muestra-tokens [data-token="tamano-chico"] > [data-muestra] {
+  font-size: var(--tamano-chico);
+}
+
+.muestra-tokens [data-token="tamano-micro"] > [data-muestra] {
+  font-size: var(--tamano-micro);
+}
+
+.muestra-tokens [data-token^="tamano-interlinea"] > [data-muestra] {
+  max-inline-size: var(--medida-cajon);
+}
+
+.muestra-tokens [data-token="tamano-interlinea-texto"] > [data-muestra] {
+  line-height: var(--tamano-interlinea-texto);
+}
+
+.muestra-tokens [data-token="tamano-interlinea-denso"] > [data-muestra] {
+  line-height: var(--tamano-interlinea-denso);
+}
+
+.muestra-tokens [data-token="tamano-interlinea-titulo"] > [data-muestra] {
+  line-height: var(--tamano-interlinea-titulo);
+}
+
+/* El color: un token por regla. */
+
+.muestra-tokens [data-token="color-fondo-pagina"]::before {
+  background: var(--color-fondo-pagina);
+}
+
+.muestra-tokens [data-token="color-superficie"]::before {
+  background: var(--color-superficie);
+}
+
+.muestra-tokens [data-token="color-campo"]::before {
+  background: var(--color-campo);
+}
+
+.muestra-tokens [data-token="color-salvia"]::before {
+  background: var(--color-salvia);
+}
+
+.muestra-tokens [data-token="color-texto"]::before {
+  background: var(--color-texto);
+}
+
+.muestra-tokens [data-token="color-texto-suave"]::before {
+  background: var(--color-texto-suave);
+}
+
+.muestra-tokens [data-token="color-tinta"]::before {
+  background: var(--color-tinta);
+}
+
+.muestra-tokens [data-token="color-filete"]::before {
+  background: var(--color-filete);
+}
+
+.muestra-tokens [data-token="color-velo"]::before {
+  background: var(--color-velo);
+}
+
+.muestra-tokens [data-token="color-accion-primaria"]::before {
+  background: var(--color-accion-primaria);
+}
+
+.muestra-tokens [data-token="color-accion-primaria-activa"]::before {
+  background: var(--color-accion-primaria-activa);
+}
+
+.muestra-tokens [data-token="color-texto-sobre-accion"]::before {
+  background: var(--color-texto-sobre-accion);
+}
+
+.muestra-tokens [data-token="color-accion-secundaria"]::before {
+  background: var(--color-accion-secundaria);
+}
+
+.muestra-tokens [data-token="color-accion-secundaria-activa"]::before {
+  background: var(--color-accion-secundaria-activa);
+}
+
+.muestra-tokens [data-token="color-texto-sobre-secundaria"]::before {
+  background: var(--color-texto-sobre-secundaria);
+}
+
+.muestra-tokens [data-token="color-enlace"]::before {
+  background: var(--color-enlace);
+}
+
+.muestra-tokens [data-token="color-borde-control"]::before {
+  background: var(--color-borde-control);
+}
+
+.muestra-tokens [data-token="color-foco"]::before {
+  background: var(--color-foco);
+}
+
+.muestra-tokens [data-token="color-foco-separador"]::before {
+  background: var(--color-foco-separador);
+}
+
+.muestra-tokens [data-token="color-foco-sobre-suelo"]::before {
+  background: var(--color-foco-sobre-suelo);
+}
+
+.muestra-tokens [data-token="color-deshabilitado-fondo"]::before {
+  background: var(--color-deshabilitado-fondo);
+}
+
+.muestra-tokens [data-token="color-deshabilitado-texto"]::before {
+  background: var(--color-deshabilitado-texto);
+}
+
+.muestra-tokens [data-token="color-suelo"]::before {
+  background: var(--color-suelo);
+}
+
+.muestra-tokens [data-token="color-suelo-medio"]::before {
+  background: var(--color-suelo-medio);
+}
+
+.muestra-tokens [data-token="color-texto-suelo"]::before {
+  background: var(--color-texto-suelo);
+}
+
+.muestra-tokens [data-token="color-horizonte"]::before {
+  background: var(--color-horizonte);
+}
+
+.muestra-tokens [data-token="color-raiz"]::before {
+  background: var(--color-raiz);
+}
+
+.muestra-tokens [data-token="color-tallo"]::before {
+  background: var(--color-tallo);
+}
+
+.muestra-tokens [data-token="color-hoja"]::before {
+  background: var(--color-hoja);
+}
+
+.muestra-tokens [data-token="color-fruto"]::before {
+  background: var(--color-fruto);
+}
+
+.muestra-tokens [data-token="color-fruto-hondo"]::before {
+  background: var(--color-fruto-hondo);
+}
+
+.muestra-tokens [data-token="color-agua"]::before {
+  background: var(--color-agua);
+}
+
+.muestra-tokens [data-token="color-trama"]::before {
+  background: var(--color-trama);
+}
+
+.muestra-tokens [data-token="color-pendiente-fondo"]::before {
+  background: var(--color-pendiente-fondo);
+}
+
+.muestra-tokens [data-token="color-pendiente-texto"]::before {
+  background: var(--color-pendiente-texto);
+}
+
+.muestra-tokens [data-token="color-pendiente-sello"]::before {
+  background: var(--color-pendiente-sello);
+}
+
+.muestra-tokens [data-token="color-en-camino-fondo"]::before {
+  background: var(--color-en-camino-fondo);
+}
+
+.muestra-tokens [data-token="color-en-camino-texto"]::before {
+  background: var(--color-en-camino-texto);
+}
+
+.muestra-tokens [data-token="color-en-camino-sello"]::before {
+  background: var(--color-en-camino-sello);
+}
+
+.muestra-tokens [data-token="color-entregada-fondo"]::before {
+  background: var(--color-entregada-fondo);
+}
+
+.muestra-tokens [data-token="color-entregada-texto"]::before {
+  background: var(--color-entregada-texto);
+}
+
+.muestra-tokens [data-token="color-entregada-sello"]::before {
+  background: var(--color-entregada-sello);
+}
+
+.muestra-tokens [data-token="color-problema-fondo"]::before {
+  background: var(--color-problema-fondo);
+}
+
+.muestra-tokens [data-token="color-problema-texto"]::before {
+  background: var(--color-problema-texto);
+}
+
+.muestra-tokens [data-token="color-problema-sello"]::before {
+  background: var(--color-problema-sello);
+}
+
+.muestra-tokens [data-token="color-espera-fondo"]::before {
+  background: var(--color-espera-fondo);
+}
+
+.muestra-tokens [data-token="color-espera-texto"]::before {
+  background: var(--color-espera-texto);
+}
+
+.muestra-tokens [data-token="color-exito-fondo"]::before {
+  background: var(--color-exito-fondo);
+}
+
+.muestra-tokens [data-token="color-exito-texto"]::before {
+  background: var(--color-exito-texto);
+}
+
+.muestra-tokens [data-token="color-advertencia-fondo"]::before {
+  background: var(--color-advertencia-fondo);
+}
+
+.muestra-tokens [data-token="color-advertencia-texto"]::before {
+  background: var(--color-advertencia-texto);
+}
+
+.muestra-tokens [data-token="color-error-fondo"]::before {
+  background: var(--color-error-fondo);
+}
+
+.muestra-tokens [data-token="color-error-texto"]::before {
+  background: var(--color-error-texto);
+}
+
+.muestra-tokens [data-token="color-error-borde"]::before {
+  background: var(--color-error-borde);
+}
+
+.muestra-tokens [data-token="color-info-fondo"]::before {
+  background: var(--color-info-fondo);
+}
+
+.muestra-tokens [data-token="color-info-texto"]::before {
+  background: var(--color-info-texto);
+}
+
+.muestra-tokens [data-token="color-galpon-fondo"]::before {
+  background: var(--color-galpon-fondo);
+}
+
+.muestra-tokens [data-token="color-galpon-cabecera"]::before {
+  background: var(--color-galpon-cabecera);
+}
+
+.muestra-tokens [data-token="color-fila-elegida"]::before {
+  background: var(--color-fila-elegida);
+}
+
+.muestra-tokens [data-token="color-fila-cursor"]::before {
+  background: var(--color-fila-cursor);
+}

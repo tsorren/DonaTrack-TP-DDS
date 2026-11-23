@@ -21,6 +21,7 @@
   },
   "olas": ["C0"],
   "reglas": [
+    "Segunda corrida de C0: la primera se paró el 2026-11-22 porque la decisión DA-14a pedía retirar --medida-quiebre-medio, que sí se usa; la decisión ya está corregida. La rama E7_guia_ui_c0 ya tiene el trabajo de la primera: c0-adr (34cf87ae7, aprobado por su revisión) y c0-tokens (9e995ec42). Cada constructor parte de ahí: verifica su lote contra el backlog, completa lo que falte y no rehace lo que ya está. En c0-tokens, la revisión de la primera corrida pidió: (1) en /estilos, la tarjeta «Color: los nombres de antes» se desarma (cada palabra cae en su propio renglón): cada alias tiene que leerse entero en su renglón; (2) el selector .muestra-tokens[data-tipo=\"sombra\"] > li::before está duplicado en componentes/muestra.css (Sonar css:S4666): una sola regla; (3) la corrida de -Pvisual sobre las 320 rutas no quedó registrada. Si un lote no tiene nada que cambiar, su constructor igual comitea con git commit --allow-empty y el mensaje del lote, y el integrador lo trae con git cherry-pick --allow-empty.",
     "Esta ola cambia el sistema visual. La fuente de verdad es la guía versionada en docs/interfaz/guia/ (partes/05-tokens.css para los valores): donde la guía y el catálogo de hoy difieren, manda la guía.",
     "En el producto no hay consultas de contenedor para los quiebres: los valores de la guía en cqi pasan a vw y los quiebres siguen la regla de --medida-quiebre-* de cliente-liviano/AGENTS.md.",
     "Ningún tope de InterfazFitnessTest sube. Si un par de tokens nuevo no llega al contraste AA, se informa como bloqueante: no se cambia el valor de la guía por cuenta propia.",
@@ -50,11 +51,11 @@
     },
     {
       "id": "DA-14a",
-      "texto": "Los 10 nombres de color de hoy que la guía no trae y siguen en uso quedan como alias del token de la guía del mismo valor (backlog, sección 3.2); se retiran solo los 4 tokens sin ninguna referencia (--medida-quiebre-medio, --medida-estrato, --color-nodo y --color-estrato); los otros 30 de los 44 que la guía no trae (los 11 que solo nombra InterfazFitnessTest y los 19 de movimiento, capas, medidas y letra) no se tocan.",
+      "texto": "Los 10 nombres de color de hoy que la guía no trae y siguen en uso quedan como alias del token de la guía del mismo valor (backlog, sección 3.2); se retiran solo los 3 tokens sin ninguna referencia, ni por nombre ni por valor (--medida-estrato, --color-nodo y --color-estrato); --medida-quiebre-medio se conserva, porque 39 media queries usan su valor (53.75em) y InterfazFitnessTest exige que cada media query use un quiebre declarado en tokens.css; los otros 30 de los 44 que la guía no trae (los 11 que solo nombra InterfazFitnessTest y los 19 de movimiento, capas, medidas y letra) no se tocan.",
       "quien": "usuario",
-      "ok": "Respuesta del usuario en la ronda 1, 2026-11-22: «todas las recomendadas» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2)",
+      "ok": "Respuesta del usuario en la ronda 1, 2026-11-22: «todas las recomendadas»; corregida el mismo día: se retiran 3 tokens y no 4 (el usuario eligió «parar, corregir la decisión y relanzar», su respuesta «Opción B»; esa «B» no se refiere a ninguna otra lista de opciones) (docs/interfaz/backlog-guia-al-codigo.md, secciones 2.2 y 3.2)",
       "lote": "c0-tokens",
-      "criterio": "En tokens.css, cada uno de los 10 nombres de color en uso se define con var() del token de la guía del mismo valor, sin cambiar ningún color calculado; los 4 tokens sin referencias ya no están en tokens.css ni en su copia del tema de Keycloak; ningún par de contraste de InterfazFitnessTest se quita y el test pasa."
+      "criterio": "En tokens.css, cada uno de los 10 nombres de color en uso se define con var() del token de la guía del mismo valor, sin cambiar ningún color calculado; los 3 tokens sin referencias ya no están en tokens.css ni en su copia del tema de Keycloak; --medida-quiebre-medio sigue declarado con 53.75em; ningún par de contraste de InterfazFitnessTest se quita y el test pasa."
     }
   ],
   "lotes": [

@@ -82,9 +82,10 @@ usuario: «3 si», junto con el sí al push y al lanzamiento de C0 («1 si, 2 si
 | DA-11 | ¿Se acepta Opus high en los lotes con pantallas, como fija el workflow? | Sí | Sí («todas las recomendadas», ronda 1) | 2026-11-22 | Todas |
 | DA-12 | ¿Los huecos de backend van como PRs sueltos a `ENTREGA_7`? | Sí | Pendiente | | Z |
 | DA-13 | Las 6 plantillas de `persona/` que solo sirve la maqueta: ¿se migran con su gemela o se borran? | Se migran; borrarlas es otra decisión | Pendiente | | DON |
-| DA-14a | En C0: ¿los 10 nombres de color de hoy pasan a ser alias del token de la guía del mismo valor (sin cambiar ningún píxel) y se borran los 4 tokens que nadie usa? | Sí | Sí («todas las recomendadas», ronda 1) | 2026-11-22 | C0 |
+| DA-14a | En C0: ¿los 10 nombres de color de hoy pasan a ser alias del token de la guía del mismo valor (sin cambiar ningún píxel) y se borran los 3 tokens que nadie usa? | Sí | Sí («todas las recomendadas», ronda 1). Corregida el 2026-11-22: se borran 3 y no 4, porque `--medida-quiebre-medio` sí se usa (ver §3.2). El usuario lo aceptó al elegir, entre tres caminos para la corrida de C0, «parar, corregir la decisión y relanzar» (su respuesta: «Opción B»). Esa «B» no tiene relación con ninguna otra lista de opciones | 2026-11-22 | C0 |
 | DA-14b | En Z: ¿se borran los alias que quedaron sin usos y los 11 tokens que no usa ninguna hoja ni plantilla y solo nombra `InterfazFitnessTest`, cambiando su lista de pares por la de la guía? | Sí | Pendiente | | Z |
 | DA-15 | Si el 30/11 no llegó todo: ¿corte por área con la regla G2, o todo o nada? | Corte por área | Corte por área («todas las recomendadas», ronda 1) | 2026-11-22 | Z |
+| DA-16 | La excepción de toque que el cierre de C0 agregó a `VerificacionVisualTest` para la casilla del buzón en `/estilos` (`e7ba71c36`), sin consultar: ¿se mantiene o se revierte? | Ninguna: se presentaron las dos | Se mantiene («Mantenerla»). Queda en el [ADR de la excepción de toque](../adr/cliente-liviano/20261122-excepcion-de-toque-para-la-casilla-del-buzon-en-estilos.md) (`proposed`) y en [DTI-46](../adr/DEUDA_TECNICA.md#dti-46) | 2026-11-22 | C0 |
 
 ## 3. Ola C0: los tokens (piloto)
 
@@ -95,12 +96,12 @@ mide cuánto tarda y cuánto gasta una ola (§3.4).
 
 | Ítem | Lote | Qué | Evidencia | Estado |
 |---|---|---|---|---|
-| C0-01 | `c0-adr` | ADR `proposed` «Huerta y galpón»: la guía de `docs/interfaz/guia/` como sistema visual y un esqueleto por rol. Dice su relación con el ADR de la piel Huerta, sin promover nada. `direccion-de-arte.md` deja de nombrar a Pico como base y apunta a la guía | Cambiar la identidad pide un ADR: `docs/interfaz/README.md:102`. ADR previo: `docs/adr/cliente-liviano/20261110-piel-huerta-con-abejas-como-identidad-del-cliente-liviano.md`. Pico: `docs/interfaz/direccion-de-arte.md:137-138` frente a `cliente-liviano/AGENTS.md:25-26` | Pendiente |
-| C0-02 | `c0-tokens` | `tokens.css` suma los 46 tokens nuevos de la guía y cambia el valor de los 6 que cambian (§3.2) | Guía: `docs/interfaz/guia/partes/05-tokens.css`. Tokens de uso de hoy: `cliente-liviano/src/main/resources/static/css/tokens.css:169-314` | Pendiente |
-| C0-03 | `c0-tokens` | Los 10 nombres de color en uso que la guía no trae pasan a ser alias del token de la guía del mismo valor; se retiran los 4 tokens sin ninguna referencia (§3.2) | Tablas de §3.2, `[VERIFIED]` | Pendiente |
-| C0-04 | `c0-tokens` | Los pares de contraste de los tokens nuevos entran en la lista del cerco; ningún par se quita | Lista: `cliente-liviano/src/test/java/grupo5/cliente/InterfazFitnessTest.java:57-90`; prueba: `:204`. Pares de la guía: `docs/interfaz/guia/partes/90-script.html:216-248` | Pendiente |
-| C0-05 | `c0-tokens` | `/estilos` gana una sección «Tokens» (color, letra, espaciado, radio, borde, elevación y movimiento), antes de «Componentes». `/estilos` no tiene hoja propia y el cerco prohíbe `style` sueltos: las muestras de token van en `componentes/muestra.css`. `componentes.md` suma una sección de tokens, nueva | Hoy tiene Composición, Utilidades y Movimiento, sin sección de tokens: `cliente-liviano/src/main/resources/templates/estilos.html:21-147`. Encabezados de `docs/interfaz/componentes.md`: no hay ninguno de tokens | Pendiente |
-| C0-06 | `c0-tokens` | La copia de `tokens.css` del tema de Keycloak se vuelve a copiar con el script, y su prueba de contraste pasa | El tema lleva una copia idéntica: `auth-service/README.md:126`. Script: `scripts/sincronizar_tema.py`. Prueba: `scripts/tests/test_auth_theme.py`, en el CI: `.github/workflows/agent-governance.yml:67`. Hoy las dos copias son iguales `[VERIFIED]` | Pendiente |
+| C0-01 | `c0-adr` | ADR `proposed` «Huerta y galpón»: la guía de `docs/interfaz/guia/` como sistema visual y un esqueleto por rol. Dice su relación con el ADR de la piel Huerta, sin promover nada. `direccion-de-arte.md` deja de nombrar a Pico como base y apunta a la guía | Cambiar la identidad pide un ADR: `docs/interfaz/README.md:102`. ADR previo: `docs/adr/cliente-liviano/20261110-piel-huerta-con-abejas-como-identidad-del-cliente-liviano.md`. Pico: `docs/interfaz/direccion-de-arte.md:137-138` frente a `cliente-liviano/AGENTS.md:25-26` | Hecho (`34cf87ae7`, aprobado por su revisión en la primera corrida). La revisión de la segunda corrida quedó sin PASS por un trámite: el commit vacío del lote (`5b0eb78b4`) no se integró ([DTI-46](../adr/DEUDA_TECNICA.md#dti-46), ítem 6) |
+| C0-02 | `c0-tokens` | `tokens.css` suma los 46 tokens nuevos de la guía y cambia el valor de los 6 que cambian (§3.2) | Guía: `docs/interfaz/guia/partes/05-tokens.css`. Tokens de uso de hoy: `cliente-liviano/src/main/resources/static/css/tokens.css:169-314` | Hecho (`9e995ec42`): 46 tokens de uso nuevos, con su valor base nuevo (`--p-velo`), y los 6 con su valor nuevo `[VERIFIED]`. El lote quedó sin PASS de su revisión por C0-05 |
+| C0-03 | `c0-tokens` | Los 10 nombres de color en uso que la guía no trae pasan a ser alias del token de la guía del mismo valor; se retiran los 3 tokens sin ninguna referencia y se conserva `--medida-quiebre-medio` (§3.2) | Tablas de §3.2, `[VERIFIED]` | Hecho (`9e995ec42`): los 10 alias con `var()`; salen `--color-nodo`, `--color-estrato` y `--medida-estrato`; `--medida-quiebre-medio` queda `[VERIFIED]`. Salen también 3 valores base sin uso (`--p-nodo`, `--p-destacado` y `--p-suelo-hondo`), que DA-14a no nombra |
+| C0-04 | `c0-tokens` | Los pares de contraste de los tokens nuevos entran en la lista del cerco; ningún par se quita | Lista: `cliente-liviano/src/test/java/grupo5/cliente/InterfazFitnessTest.java:57-90`; prueba: `:204`. Pares de la guía: `docs/interfaz/guia/partes/90-script.html:216-248` | Hecho (`9e995ec42`): 22 pares nuevos en la lista; ninguno se quitó y ningún tope subió `[OBSERVED]` |
+| C0-05 | `c0-tokens` | `/estilos` gana una sección «Tokens» (color, letra, espaciado, radio, borde, elevación y movimiento), antes de «Componentes». `/estilos` no tiene hoja propia y el cerco prohíbe `style` sueltos: las muestras de token van en `componentes/muestra.css`. `componentes.md` suma una sección de tokens, nueva | Hoy tiene Composición, Utilidades y Movimiento, sin sección de tokens: `cliente-liviano/src/main/resources/templates/estilos.html:21-147`. Encabezados de `docs/interfaz/componentes.md`: no hay ninguno de tokens | Parcial (`9e995ec42`, `ebce607ad` y `7d413d1b2`). Está la sección «Tokens» con 14 fichas y la sección de `componentes.md`. Falta: las 14 fichas están escritas a mano y no usan el fragmento `componentes/muestra :: muestra` (bloqueante de la revisión tras 3 rondas); `/estilos` pasa el gate visual solo por la excepción de `e7ba71c36`, que no decidió el usuario ([DTI-46](../adr/DEUDA_TECNICA.md#dti-46), ítems 1 y 2) |
+| C0-06 | `c0-tokens` | La copia de `tokens.css` del tema de Keycloak se vuelve a copiar con el script, y su prueba de contraste pasa | El tema lleva una copia idéntica: `auth-service/README.md:126`. Script: `scripts/sincronizar_tema.py`. Prueba: `scripts/tests/test_auth_theme.py`, en el CI: `.github/workflows/agent-governance.yml:67`. Hoy las dos copias son iguales `[VERIFIED]` | Hecho (`9e995ec42`): la copia del tema es idéntica (`cmp`) y `test_auth_theme.py` pasa (45 OK) `[VERIFIED]` en el cierre |
 
 ### 3.2 Datos de los tokens `[VERIFIED]`
 
@@ -113,7 +114,7 @@ Medido con `node docs/interfaz/guia/armar.js` y una comparación de valores base
 | Tokens de uso de la guía | 119 | |
 | Se conservan con su nombre | 73 | 6 cambian de valor (tabla de abajo) |
 | Nuevos | 46 | Se suman, con los valores base nuevos que piden (por ejemplo, `--color-velo` usa `--p-velo: #2a2a2266`, `guia/partes/05-tokens.css:33, 51`) |
-| De hoy que la guía no trae | 44 | 10 de color pasan a alias; 4 se retiran; el resto no se toca en C0 |
+| De hoy que la guía no trae | 44 | 10 de color pasan a alias; 3 se retiran; el resto no se toca en C0 |
 
 **Los 6 que cambian de valor** (el valor nuevo es el de la guía):
 
@@ -142,18 +143,25 @@ no cambia (los dos valores son iguales hoy):
 | `--color-titulo` | 1 | `var(--color-accion-primaria)` | `#2a7035` |
 | `--color-sombra-grano` | 1 | `var(--color-tinta)` | `#2a2a22` |
 
-**Los 4 que se retiran:** solo se definen en `tokens.css` (y en su copia del tema de Keycloak); no
-los usa ninguna hoja, plantilla ni test (`git grep`, 2026-11-22). La bitácora los menciona como
-historia: `docs/interfaz/bitacora.md:1505` nombra a `--color-estrato` y a `--medida-estrato`.
+**Los 3 que se retiran:** solo se definen en `tokens.css` (y en su copia del tema de Keycloak); no
+los usa ninguna hoja, plantilla ni test, ni por nombre ni por valor (`git grep`, 2026-11-22). La
+bitácora los menciona como historia: `docs/interfaz/bitacora.md:1505` nombra a `--color-estrato` y
+a `--medida-estrato`.
 
 | Token | Definición |
 |---|---|
 | `--color-nodo` | `tokens.css:188` |
-| `--medida-quiebre-medio` | `tokens.css:285` |
 | `--color-estrato` | `tokens.css:292` |
 | `--medida-estrato` | `tokens.css:294` |
 
-**No se tocan en C0:** los otros 30 de los 44. De ellos, 19 se usan en hojas (movimiento, capas,
+**`--medida-quiebre-medio` se conserva** (corrección de DA-14a, 2026-11-22). Nadie lo nombra, pero su
+valor, `53.75em`, está en 39 media queries de las hojas, y `InterfazFitnessTest` exige que cada
+media query use un quiebre declarado en `tokens.css` (`mediaQueriesUsanSoloLosQuiebresDeTokens`,
+`InterfazFitnessTest.java:155`). La guía no trae otro quiebre con ese valor
+(`guia/partes/05-tokens.css:184-186`). La primera corrida de C0, del 2026-11-22, lo encontró: la
+búsqueda original miró los nombres y no los valores.
+
+**No se tocan en C0:** los otros 31 de los 44: `--medida-quiebre-medio` y 30 más. De esos 30, 19 se usan en hojas (movimiento, capas,
 medidas y dos de letra) y siguen en el sistema. Los otros 11 no los usa ninguna hoja ni plantilla y
 solo los nombra `InterfazFitnessTest`: 10 en su lista de pares de contraste (`:57-90`) y
 `--movimiento-retraso-ninguno` en la prueba del movimiento (`:651`). Se retiran en Z, cuando la
@@ -184,6 +192,15 @@ No entran en la revisión de pantallas ni en la hoja de contacto de la ola.
 La duración y los tokens los mide la sesión que lanza el workflow (hora de inicio y de fin, y el
 uso del plan antes y después). Los agentes no tienen ese dato. El cierre anota la hora de cada
 commit de la ola, sacada de `git log`.
+
+**Resultado de C0** (2026-11-22, rama `E7_guia_ui_c0`; detalle en `guia-r2/C0/cierre.md`, fuera del
+repo). `[VERIFIED]` `mvn clean test -pl cliente-liviano -am` pasa (802 tests); el tema de Keycloak
+pasa (45 OK). `-Pvisual` sobre las 320 rutas: pasan 308 y fallan 12, todas por área de toque, ninguna
+por contraste; las 7 rutas de la muestra de §3.3 pasan. El stack del cierre levantó en la segunda
+subida y se entró con login real. Los dos lotes quedaron sin PASS de su revisión tras 3 rondas
+(C0-01 por un trámite, C0-05 por las fichas a mano). Después del cierre, `e7ba71c36` sumó una excepción
+del gate para `/estilos` que el usuario no decidió. Lo que queda, en
+[DTI-46](../adr/DEUDA_TECNICA.md#dti-46).
 
 ## 4. Arquetipos: las 13 pantallas dibujadas
 
