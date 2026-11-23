@@ -27,6 +27,8 @@
 @import url("componentes/navegacion.css") layer(bloques);
 @import url("componentes/migas.css") layer(bloques);
 @import url("componentes/tarjeta.css") layer(bloques);
+@import url("componentes/etiqueta-entrega.css") layer(bloques);
+@import url("componentes/trama.css") layer(bloques);
 @import url("componentes/lista.css") layer(bloques);
 @import url("componentes/tabla.css") layer(bloques);
 @import url("componentes/noticias.css") layer(bloques);

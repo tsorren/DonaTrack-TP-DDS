@@ -1,0 +1,119 @@
+/* La etiqueta de una entrega (C1-18, D3 de la guía): esto se recibió. La foto, qué es, dónde y quién
+   lo recibió, recta y con su agujero, como un rótulo de herbario. Fragmento:
+   templates/componentes/etiqueta-entrega.html. La foto va arriba, en 4:3; con
+   `etiqueta-entrega--costado`, al costado del texto, y se apila sola cuando no hay lugar para los dos
+   (sin media query: el texto pide 13,5 rem y la foto lo que sobre, desde 7,75 rem o el 38 %). Se carga
+   en la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
+
+.etiqueta-entrega {
+  position: relative;
+  display: grid;
+  align-content: start;
+  min-width: 0;
+  border: var(--borde-tinta);
+  border-radius: var(--radio-estampa);
+  background: var(--color-superficie);
+}
+
+/* El agujero del rótulo, arriba a la derecha. */
+.etiqueta-entrega::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: var(--espacio-2);
+  right: var(--espacio-2);
+  width: 0.875rem;
+  aspect-ratio: 1;
+  border: var(--borde-tinta);
+  border-radius: var(--radio-pastilla);
+  background: var(--color-fondo-pagina);
+}
+
+/* La foto de la entrega: una imagen que llena su marco, recortada, sobre salvia mientras carga. */
+.etiqueta-entrega-foto {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  max-width: 100%;
+  margin: 0;
+  border-bottom: var(--borde-tinta);
+  background: var(--color-salvia);
+}
+
+.etiqueta-entrega-foto > :is(img, svg) {
+  position: absolute;
+  inset: 0;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* «Foto de ejemplo»: el rótulo de los datos de ejemplo, abajo a la izquierda. */
+.etiqueta-entrega-rotulo {
+  position: absolute;
+  left: var(--espacio-0);
+  bottom: var(--espacio-0);
+  padding: 0 var(--espacio-0);
+  border: 1px solid var(--color-tinta);
+  border-radius: var(--radio-estampa);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: 600 var(--tamano-micro) / 1.5 var(--fuente-texto);
+  white-space: nowrap;
+}
+
+.etiqueta-entrega-cuerpo {
+  position: relative;
+  display: grid;
+  gap: var(--espacio-0);
+  min-width: 0;
+  padding: var(--espacio-2) var(--espacio-3) var(--espacio-3);
+}
+
+.etiqueta-entrega-cuerpo > * {
+  margin: 0;
+}
+
+/* El título deja libre el lugar del agujero. */
+.etiqueta-entrega-cuerpo h3 {
+  padding-right: var(--espacio-5);
+  font-size: var(--tamano-grande);
+}
+
+/* Quién lo recibió y cuándo, sobre un filete punteado, en el renglón del texto chico. */
+.etiqueta-entrega-pie {
+  max-width: var(--medida-texto-chico);
+  margin-top: var(--espacio-1);
+  padding-top: var(--espacio-1);
+  border-top: 1px dashed var(--color-borde-control);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+/* El sello del estado, a la izquierda y sin pasarse del cuerpo: baja de renglón si no entra. */
+.etiqueta-entrega-cuerpo .estado {
+  justify-self: start;
+  max-width: 100%;
+  margin-top: var(--espacio-1);
+  white-space: normal;
+}
+
+/* La foto al costado. El filete entre la foto y el texto es la sombra del cuerpo, arriba y a la
+   izquierda: con los dos en una fila, el de arriba cae sobre el borde de la etiqueta y se ve el de la
+   izquierda; apilados, al revés. Así la misma regla sirve en los dos casos. */
+.etiqueta-entrega--costado {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.etiqueta-entrega--costado > .etiqueta-entrega-foto {
+  flex: 1 1 max(7.75rem, 38%);
+  min-height: 7.5rem;
+  border-bottom: 0;
+}
+
+.etiqueta-entrega--costado > .etiqueta-entrega-cuerpo {
+  flex: 999 1 13.5rem;
+  box-shadow: -1.5px -1.5px 0 var(--color-tinta);
+}

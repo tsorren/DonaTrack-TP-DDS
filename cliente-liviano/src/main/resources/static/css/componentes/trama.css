@@ -1,0 +1,13 @@
+/* La trama (C1-19, D5 de la guía): textura de imprenta, una grilla de puntos en el verde de los
+   dibujos. No dice nada: va solo en fondos (detrás del título de la portada, en una lista vacía),
+   nunca debajo de un texto corrido. Se suma como clase a la caja que hace de fondo y no toca su
+   color: solo pinta la imagen de fondo. Se carga en la capa `bloques` desde app.css. Catálogo:
+   docs/interfaz/componentes.md. */
+
+.trama {
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--color-trama) 30%, transparent) 1.4px,
+    transparent 1.7px
+  );
+  background-size: 9px 9px;
+}
