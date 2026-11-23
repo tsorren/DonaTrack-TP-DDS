@@ -29,7 +29,7 @@
 
 .tarjeta[data-papel="hueco"] {
   border: var(--borde-punteado);
-  background: none;
+  background-color: transparent;
 }
 
 .tarjeta[data-papel="tierra"] {
