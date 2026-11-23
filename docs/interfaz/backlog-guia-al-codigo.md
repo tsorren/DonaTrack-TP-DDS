@@ -582,3 +582,38 @@ Rama `E7_guia_ui_c1`, `d641c4b60`; 21 commits sobre `713608650`. Estado de cada 
   sobre `E7_guia_ui` en `ab79d7551`, después del merge (`-Pvisual` sobre las 16, exit 0). La hoja
   quedó fuera del repo, en `guia-c1/G1/hoja-g1.html`. G1, el 2026-11-23: las cuatro áreas se
   pueden mostrar así (§2.2).
+
+## 11. Ola ORG: la organización
+
+Rehace las 18 plantillas de la organización de §5 y el buzón, que es una pieza compartida con
+quien dona y el admin. Manifiesto: [`backlog-guia-al-codigo.org.manifiesto.json`](backlog-guia-al-codigo.org.manifiesto.json).
+Reparto en 6 lotes y 2 tandas, aprobado por el usuario el 2026-11-23 («OK al reparto»). Ficha del
+buzón: [`flujos/guia-org-buzon.md`](flujos/guia-org-buzon.md), aprobada el mismo día (DA-08, DA-19).
+
+### 11.1 Ítems
+
+| ID | Lote | Qué | Arquetipo y decisiones |
+|---|---|---|---|
+| ORG-01 | `org-buzon` | El buzón de los tres roles con la fila de la campana de la guía, según su ficha | Sin arquetipo: ficha (DA-08) |
+| ORG-02 | `org-buzon` | La casilla de cada fila y la de elegir todas con un control de 48 × 48 px | DA-21 |
+| ORG-03 | `org-inicio` | Inicio de la organización, con los dos estados que decide el servidor. El avance de una necesidad, con la cuenta de donaciones de hoy (HG-04) | A09 |
+| ORG-04 | `org-necesidades` | Necesidades y su error al publicar | A02; el error deriva de A12 |
+| ORG-05 | `org-necesidades` | Publicada, cambiada y dada de baja pasan a aviso breve en Necesidades | DA-06 |
+| ORG-06 | `org-perfil` | El perfil, y «guardado» pasa a aviso breve | Deriva de A12; DA-06 |
+| ORG-07 | `org-entregas` | Entregas: las donaciones recibidas y el seguimiento en una sola pantalla | A10; DA-02 |
+| ORG-08 | `org-entregas` | Página nueva: entrega con problema (`/entidad-entrega-problema`). La nueva salida, con «Todavía sin fecha de nueva salida» (HG-01) | A11 |
+| ORG-09 | `org-entregas` | El menú de la organización: Inicio, Necesidades, Entregas y Ayuda, que lleva a Para organizaciones | DA-02, DA-05 y DA-17 |
+| ORG-10 | `org-confirmar` | Confirmar recepción y su error; «llegó con un problema» | A12; el problema deriva de A12 |
+| ORG-11 | `org-confirmar` | Recepción confirmada, en sus tres variantes. Quién recibió, con «Recibió: <la organización>» (HG-03) | A13 |
+| ORG-12 | `org-confirmar` | El adaptador real arma la vista de una entrega con el remito, la foto y quién confirmó, con lo que Logística ya entrega (§7) | — |
+
+Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5).
+
+### 11.2 Qué se verifica (DA-20)
+
+- **En cada lote:** los gates y `-Pvisual` sobre sus `rutasVisuales`, una por plantilla.
+- **Al cierre:** el stack con el seed y el recorrido con login, porque ORG toca un adaptador `rest`
+  (`EntidadConfirmarRest`); `-Pvisual` sobre todas las rutas, con la línea de base de §10.4; y los
+  otros cinco tests visuales, con la línea de base de §10.5.
+- **Lo que cambia en la línea de base:** con DA-21, las tres rutas `/…-notificaciones` tendrían que
+  pasar `[INFERRED]`; si pasan, se anota. Las otras 8 siguen siendo heredadas.
