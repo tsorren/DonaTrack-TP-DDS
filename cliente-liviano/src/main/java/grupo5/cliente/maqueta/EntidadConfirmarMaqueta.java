@@ -9,8 +9,10 @@ import org.springframework.stereotype.Component;
 
 /**
  * Las dos entregas que esperan en la puerta del Comedor Barrio Ejemplo: las lentejas (hoy) y la
- * ropa (ayer, de quien ocultó su nombre: figura como Donante Sostenedor). Confirmar no guarda nada:
- * en la maqueta el formulario lo atiende SitioController.
+ * ropa (ayer, de quien ocultó su nombre: figura como Donante Sostenedor). {@code foto} es el nombre
+ * de la foto de ejemplo, no una dirección: Recepción confirmada muestra en su lugar una escena
+ * «Foto de ejemplo». Confirmar no guarda nada: en la maqueta el formulario lo atiende
+ * SitioController.
  */
 @Component
 @ConditionalOnProperty(
@@ -40,7 +42,7 @@ class EntidadConfirmarMaqueta implements EntidadConfirmarPuerto {
               null,
               null,
               "lentejas-1",
-              "18:45",
+              "15 de octubre de 2026, 18:45",
               15,
               "kg",
               true,
@@ -66,7 +68,7 @@ class EntidadConfirmarMaqueta implements EntidadConfirmarPuerto {
               "Sostenedor",
               null,
               "ropa-1",
-              "18:50",
+              "15 de octubre de 2026, 18:50",
               10,
               "unidades",
               false,
@@ -76,6 +78,15 @@ class EntidadConfirmarMaqueta implements EntidadConfirmarPuerto {
   @Override
   public List<EntidadEntregaVista> entregas(UUID entidad, String pedida) {
     return ENTREGAS;
+  }
+
+  /**
+   * Recepción confirmada: en el ejemplo se confirman las lentejas primero, y queda la ropa en la
+   * puerta; después de la ropa, ninguna.
+   */
+  @Override
+  public List<EntidadEntregaVista> confirmada(UUID entidad, String pedida) {
+    return "ropa".equals(pedida) ? List.of(ENTREGAS.getLast()) : ENTREGAS;
   }
 
   @Override

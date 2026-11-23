@@ -15,6 +15,16 @@ public interface EntidadConfirmarPuerto {
    */
   List<EntidadEntregaVista> entregas(UUID entidad, String pedida);
 
+  /**
+   * Recepción confirmada (ORG-12): la entrega {@code pedida} ya confirmada, con lo que quedó
+   * asentado (el remito, la primera foto, cuándo y, si lo hubo, el problema) y, como mucho, otra
+   * que espera la confirmación, para ofrecerla después. Sin una entrega confirmada con esa clave,
+   * vacía. Por defecto, las mismas de {@link #entregas}.
+   */
+  default List<EntidadEntregaVista> confirmada(UUID entidad, String pedida) {
+    return entregas(entidad, pedida);
+  }
+
   /** El día de hoy, para la firma del acta ("15 de octubre de 2026"). */
   String hoy();
 

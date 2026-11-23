@@ -1,5 +1,6 @@
 package grupo5.cliente.web;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -98,8 +99,9 @@ class EntidadEnviosControllerTest {
         .andExpect(flash().attribute(Envios.AVISO, aviso));
   }
 
+  /** DA-06: confirmar termina en su página propia, Recepción confirmada, sin aviso breve. */
   @Test
-  void elActaConfirmaConLasFotosYElProblemaYVuelveASeguirEntregas() throws Exception {
+  void elActaConfirmaConLasFotosYElProblemaYTerminaEnRecepcionConfirmada() throws Exception {
     MockMultipartFile foto =
         new MockMultipartFile("fotos", "acta.jpg", "image/jpeg", new byte[] {1, 2, 3});
     mvc.perform(
@@ -109,12 +111,10 @@ class EntidadEnviosControllerTest {
                 .param("motivo", "incompleta")
                 .param("cantidadRecibida", "12.5")
                 .param("detalle", "Dos bolsas rotas."))
-        .andExpect(redirectedUrl("/entidad-seguimiento"))
         .andExpect(
-            flash()
-                .attribute(
-                    Envios.AVISO,
-                    "Confirmaste la recepción y contaste el problema. Le avisamos a quien donó."));
+            redirectedUrl("/entidad-seguimiento-sellada?entrega=" + UNA + "&problema=incompleta"))
+        .andExpect(flash().attribute("recien", true))
+        .andExpect(flash().attribute(Envios.AVISO, nullValue()));
     ArgumentCaptor<Acta> acta = ArgumentCaptor.forClass(Acta.class);
     verify(confirmar).confirmar(eq(ENTIDAD), eq(UNA.toString()), acta.capture());
     assertEquals("0001-00004521", acta.getValue().remito());
@@ -125,9 +125,10 @@ class EntidadEnviosControllerTest {
     mvc.perform(
             multipart("/entidad-seguimiento-sellada-" + UNA)
                 .file(foto)
-                .param("remito", "0001-00004522"))
-        .andExpect(
-            flash().attribute(Envios.AVISO, "Confirmaste la recepción. Le avisamos a quien donó."));
+                .param("remito", "0001-00004522")
+                .param("motivo", "cualquiera"))
+        .andExpect(redirectedUrl("/entidad-seguimiento-sellada?entrega=" + UNA))
+        .andExpect(flash().attribute("recien", true));
   }
 
   /** DA-06: publicar termina en Necesidades con el aviso breve de cómo salió. */

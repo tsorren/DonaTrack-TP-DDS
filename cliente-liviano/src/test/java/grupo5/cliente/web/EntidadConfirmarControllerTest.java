@@ -76,6 +76,37 @@ class EntidadConfirmarControllerTest {
                   null));
         }
 
+        /** La silla ya confirmada, con lo que Logística guardó de ella. */
+        @Override
+        public List<EntidadEntregaVista> confirmada(UUID entidad, String pedida) {
+          return List.of(
+              new EntidadEntregaVista(
+                  ENTREGA,
+                  "silla plegable",
+                  "Silla plegable, 1 unidad",
+                  "1 unidad",
+                  "8 de noviembre, 14:30",
+                  "8 de noviembre, 18:20",
+                  "Llegó a tu puerta el 8 de noviembre a las 18:20.",
+                  "Llegó a tu puerta el 8 de noviembre a las 18:20.",
+                  "0001-00009999",
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  "https://fotos.ejemplo/1.jpg",
+                  "8 de noviembre de 2026, 18:45",
+                  1,
+                  "unidades",
+                  false,
+                  null,
+                  null));
+        }
+
         @Override
         public String hoy() {
           return "8 de noviembre de 2026";
@@ -108,14 +139,17 @@ class EntidadConfirmarControllerTest {
         .andExpect(status().isOk())
         .andExpect(
             content()
-                .string(containsString("Silla plegable, 1 unidad. Salió del depósito el 8 de")))
+                .string(
+                    containsString(
+                        "<strong>Silla plegable, 1 unidad</strong>, de un donante. Salió del"
+                            + " depósito el 8 de")))
         .andExpect(
             content().string(containsString("action=\"/entidad-seguimiento-sellada-" + ENTREGA)))
         .andExpect(
             content()
                 .string(containsString("hx-indicator=\"#enviando-entidad-seguimiento-confirmar\"")))
         .andExpect(content().string(containsString(", el 8 de noviembre de 2026</p>")))
-        .andExpect(content().string(containsString("Un donante")))
+        .andExpect(content().string(containsString(", de un donante.")))
         .andExpect(content().string(not(containsString("null"))))
         .andExpect(content().string(not(containsString("15 de octubre"))));
 
@@ -126,5 +160,33 @@ class EntidadConfirmarControllerTest {
     mvc.perform(get("/entidad-seguimiento-confirmar").param("entrega", "otra").session(sesion))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("No encontramos esa entrega")));
+  }
+
+  /**
+   * ORG-11 y ORG-12: Recepción confirmada con lo que asentó Logística (el remito, la foto y
+   * cuándo); quién recibió es la organización (HG-03), sin un dato de la maqueta ni de la guía.
+   */
+  @Test
+  void laRecepcionConfirmadaDeUnaEntregaDeLasApis() throws Exception {
+    mvc.perform(
+            get("/entidad-seguimiento-sellada")
+                .param("entidad", "6f1c2c1e-0000-4000-8000-0000000000e1")
+                .param("entrega", ENTREGA))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Confirmaste la recepción de <strong>Silla plegable, 1 unidad</strong>.")))
+        .andExpect(content().string(containsString("<dd>0001-00009999</dd>")))
+        .andExpect(content().string(containsString("<dd>8 de noviembre de 2026, 18:45</dd>")))
+        .andExpect(content().string(containsString("src=\"https://fotos.ejemplo/1.jpg\"")))
+        .andExpect(content().string(containsString("Recibió: ")))
+        .andExpect(content().string(containsString("No te quedan entregas para confirmar.")))
+        .andExpect(content().string(not(containsString("Foto de ejemplo"))))
+        .andExpect(content().string(not(containsString("huerta-raiz-trazo"))))
+        .andExpect(content().string(not(containsString("Marta"))))
+        .andExpect(content().string(not(containsString("15 de octubre"))))
+        .andExpect(content().string(not(containsString("null"))));
   }
 }

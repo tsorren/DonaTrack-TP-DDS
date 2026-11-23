@@ -49,6 +49,17 @@ class EntidadConfirmarRestTest {
           + ENTIDAD
           + "&estado=EN_PUERTA&estado=EN_TRASLADO&orden=ATENCION&size=2";
 
+  /**
+   * ORG-12: la confirmada, en Donaciones, ENTREGADA o, si todavía no se enteró, en la puerta o en
+   * traslado.
+   */
+  private static final String LA_CONFIRMADA =
+      "http://donaciones/donaciones-independientes?entidadId="
+          + ENTIDAD
+          + "&id="
+          + DONACION
+          + "&estado=ENTREGADA&estado=EN_PUERTA&estado=EN_TRASLADO&orden=ATENCION&size=1";
+
   /** R11-43: de Logística, solo las entregas de esas donaciones. */
   private static String esperando(String... donaciones) {
     return deLaDonacion(donaciones) + "&estado=EN_PUERTA&estado=EN_TRASLADO";
@@ -261,5 +272,129 @@ class EntidadConfirmarRestTest {
     assertEquals("Llegó a tu puerta el 8 de noviembre a las 18:20.", enLaPuerta.llegoFrase());
     assertNull(entregas.get(1).llego());
     assertEquals("Salió del depósito el 8 de noviembre a las 14:30.", entregas.get(1).llegoFrase());
+  }
+
+  @Test
+  void laConfirmadaTraeElRemitoLaFotoCuandoYElProblemaDeLogistica() {
+    donaciones
+        .expect(requestTo(LA_CONFIRMADA))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "%s", "descripcion": "Lentejas secas", "estadoActual": "ENTREGADA",
+                  "items": [{"bien": {"categoria": {"id": "%s", "nombre": "Alimentos", "unidad": "KILOGRAMO"}}}],
+                  "cantidad": 15,
+                  "historial": [{"estadoNuevo": "EnPuerta", "timestamp": "2026-11-08T18:20:00"}]}]
+                """
+                    .formatted(DONACION, NECESIDAD),
+                MediaType.APPLICATION_JSON));
+    // Ninguna otra espera: no hay nada para ofrecer después
+    donaciones.expect(requestTo(LA_OTRA)).andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(deLaDonacion(DONACION)))
+        .andRespond(
+            withSuccess(
+                """
+                [{"idEntrega": "%s", "idDonacion": "%s", "estadoEntrega": "ENTREGADA",
+                  "horaSalida": "2026-11-08T17:30:00Z"}]
+                """
+                    .formatted(ENTREGA, DONACION),
+                MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(LOGISTICA + ENTREGA))
+        .andExpect(method(HttpMethod.GET))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%s", "estadoActual": "ENTREGADA", "numeroRemito": " 0001-00004521 ",
+                 "fotosRecepcion": ["https://fotos.ejemplo/1.jpg", "https://fotos.ejemplo/2.jpg"],
+                 "historialEstado": [
+                   {"estadoAnterior": "EN_TRASLADO", "estadoNuevo": "EN_PUERTA",
+                    "timestamp": "2026-11-08T21:20:00Z"},
+                   {"estadoAnterior": "EN_PUERTA", "estadoNuevo": "ENTREGADA",
+                    "timestamp": "2026-11-08T21:45:00Z"}],
+                 "reporte": {"motivo": "INCOMPLETA", "detalle": " Dos bolsas rotas. ",
+                             "cantidadRecibida": 12.5}}
+                """
+                    .formatted(ENTREGA),
+                MediaType.APPLICATION_JSON));
+
+    List<EntidadEntregaVista> vistas = adaptador.confirmada(ENTIDAD, DONACION);
+
+    donaciones.verify();
+    logistica.verify();
+    assertEquals(1, vistas.size());
+    EntidadEntregaVista e = vistas.getFirst();
+    assertEquals(DONACION, e.clave());
+    assertEquals("Lentejas secas, 15 kg", e.titulo());
+    assertEquals("0001-00004521", e.remito());
+    assertEquals("https://fotos.ejemplo/1.jpg", e.foto());
+    assertEquals("8 de noviembre de 2026, 18:45", e.confirmo());
+    assertEquals("Llegó a tu puerta el 8 de noviembre a las 18:20.", e.llegoFrase());
+    assertEquals("12,5 de 15 kg", e.llegoMenos());
+    assertEquals("Dos bolsas rotas.", e.detalle());
+  }
+
+  @Test
+  void unaFotoQueNoEsUnaDireccionWebNoLlegaALaPantalla() {
+    donaciones
+        .expect(requestTo(LA_CONFIRMADA))
+        .andRespond(
+            withSuccess(
+                "[{\"id\": \"" + DONACION + "\", \"descripcion\": \"Arroz\", \"cantidad\": 5}]",
+                MediaType.APPLICATION_JSON));
+    donaciones.expect(requestTo(LA_OTRA)).andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(deLaDonacion(DONACION)))
+        .andRespond(
+            withSuccess(
+                """
+                [{"idEntrega": "%s", "idDonacion": "%s", "estadoEntrega": "ENTREGADA"}]
+                """
+                    .formatted(ENTREGA, DONACION),
+                MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(LOGISTICA + ENTREGA))
+        .andRespond(
+            withSuccess(
+                "{\"fotoRecepcionUrl\": \"javascript:alert(1)\"}", MediaType.APPLICATION_JSON));
+
+    EntidadEntregaVista e = adaptador.confirmada(ENTIDAD, DONACION).getFirst();
+
+    assertNull(e.foto());
+    assertNull(e.remito());
+    assertNull(e.confirmo());
+    assertNull(e.llegoMenos());
+  }
+
+  @Test
+  void siLaPedidaTodaviaNoEstaEntregadaNoHayNadaAsentado() {
+    donaciones
+        .expect(requestTo(LA_CONFIRMADA))
+        .andRespond(
+            withSuccess(
+                "[{\"id\": \"" + DONACION + "\", \"descripcion\": \"Arroz\", \"cantidad\": 5}]",
+                MediaType.APPLICATION_JSON));
+    donaciones.expect(requestTo(LA_OTRA)).andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(deLaDonacion(DONACION)))
+        .andRespond(
+            withSuccess(
+                """
+                [{"idEntrega": "%s", "idDonacion": "%s", "estadoEntrega": "EN_PUERTA"}]
+                """
+                    .formatted(ENTREGA, DONACION),
+                MediaType.APPLICATION_JSON));
+
+    assertFalse(adaptador.confirmada(ENTIDAD, DONACION).iterator().hasNext());
+    donaciones.verify();
+    logistica.verify();
+  }
+
+  @Test
+  void laConfirmadaSinUnaClaveQueSeaUnIdNoLlamaANingunServicio() {
+    assertFalse(adaptador.confirmada(ENTIDAD, "lentejas").iterator().hasNext());
+    donaciones.verify();
+    logistica.verify();
   }
 }
