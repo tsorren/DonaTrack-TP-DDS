@@ -613,19 +613,15 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.vacio', 'Una lista o una parte sin datos todavía: dice qué va a aparecer e invita a la acción posible. Ocupa el lugar de la lista, con un contorno punteado sobre el papel de la página, sin sombra ni dibujo. Título con id enlazado por aria-labelledby, un texto y, si hay, un botón. Con error, la lista muestra el banner de error en su lugar: qué pasó y cómo seguir. data-forma=&quot;filetes&quot;: sin papel, un renglón entre dos filetes finos en el lugar de los datos (la portada); con data-zona=&quot;suelo&quot;, sobre la tierra: filetes de paja, letra clara y al centro.', ~{::demo-vacio})}">
+        <div th:replace="~{componentes/muestra :: muestra('.vacio', 'Una lista o una parte sin datos todavía: dice qué va a aparecer e invita a la acción posible. Ocupa el lugar de la lista, con un contorno punteado sobre el papel de la página, sin sombra ni dibujo. Título con id enlazado por aria-labelledby, un texto y, si hay, un botón. Lleva la trama (.trama) detrás, con cada texto sobre su papel. Con error, la lista muestra en su lugar el aviso de error (.aviso con data-tipo=&quot;error&quot;): qué pasó y cómo seguir. data-forma=&quot;filetes&quot;: sin papel, un renglón entre dos filetes finos en el lugar de los datos (la portada); con data-zona=&quot;suelo&quot;, sobre la tierra: filetes de paja, letra clara y al centro.', ~{::demo-vacio})}">
           <th:block th:fragment="demo-vacio">
             <div class="pila" data-espacio="3">
-              <section class="vacio" aria-labelledby="muestra-vacio-titulo">
+              <section class="vacio trama" aria-labelledby="muestra-vacio-titulo">
                 <h2 id="muestra-vacio-titulo">Todavía no tenés donaciones asignadas.</h2>
                 <p>Empezá por publicar lo que necesita tu organización. Cuando se te asigne una donación, aparece acá.</p>
                 <a class="boton" data-tono="principal" href="#vacio">Publicar una necesidad</a>
               </section>
-              <section class="banner" data-estado="error" role="alert" aria-labelledby="muestra-vacio-error">
-                <h2 id="muestra-vacio-error">No pudimos traer las entregas.</h2>
-                <p>El servicio no respondió. Lo que ya confirmaste está guardado. Probá de nuevo en un rato.</p>
-                <a class="boton" data-tono="secundario" href="#vacio">Volver a intentar</a>
-              </section>
+              <div class="aviso" data-tipo="error" role="alert"><svg th:replace="~{componentes/sello :: signo('problema')}"></svg><p class="aviso-titulo">No pudimos traer las entregas</p><p>El servicio no respondió. Lo que ya confirmaste está guardado. Probá de nuevo en un rato.</p><p><a href="#vacio">Volver a intentar</a></p></div>
               <p class="vacio" data-forma="filetes">Todavía no hay entregas confirmadas este mes.</p>
               <div data-fondo="suelo">
                 <div class="vacio" data-forma="filetes" data-zona="suelo">
@@ -981,7 +977,7 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.lista', 'Una lista sin viñetas cuyos elementos, casi siempre tarjetas, se reparten en tantas columnas como entren, cada una de al menos --medida-columna (sin esa medida, una sola columna). A diferencia de .grilla, no estira los pocos elementos para llenar la fila. data-forma=&quot;filas&quot;: la lista de la huerta, una fila por elemento entre filetes finos; la fila entera es el enlace al detalle (o un div si no lleva a ningún lado), con lo principal a la izquierda, el estado a la derecha y, debajo, el texto suave; se pinta al pasar y se hunde al tocarla. Sus estados (vacía, cargando y con error) son .vacio, .cargando con .esqueleto y el banner de error. Para datos en columnas, .tabla.', ~{::demo-lista})}">
+        <div th:replace="~{componentes/muestra :: muestra('.lista', 'Una lista sin viñetas cuyos elementos, casi siempre tarjetas, se reparten en tantas columnas como entren, cada una de al menos --medida-columna (sin esa medida, una sola columna). A diferencia de .grilla, no estira los pocos elementos para llenar la fila. data-forma=&quot;filas&quot;: la lista de la huerta, una fila por elemento entre filetes finos; la fila entera es el enlace al detalle (o un div si no lleva a ningún lado), con lo principal a la izquierda, el estado a la derecha y, debajo, el texto suave; se pinta al pasar y se hunde al tocarla. Sus estados (vacía, cargando y con error) son .vacio, .cargando con .esqueleto y el aviso de error. Para datos en columnas, .tabla.', ~{::demo-lista})}">
           <th:block th:fragment="demo-lista">
             <div class="pila" data-espacio="4">
               <!--/* Cada lista en su caja: .lista anula el margen que pone la pila. */-->
@@ -1113,32 +1109,6 @@
                 </template>
               </ul>
             </div>
-            </div>
-          </th:block>
-        </div>
-        <div th:replace="~{componentes/muestra :: muestra('.pestanas', 'Varias secciones de una misma pantalla, de a una por vez. En el celular cada pestaña es un botón y bajan de renglón (ninguna queda escondida); la elegida va llena de tinta. Desde 37,5 em, solapas sobre un filete de tinta, y la elegida, del papel de la página. Se pintan al pasar. Sin JavaScript cada pestaña es un enlace a su sección; con JavaScript se cambia sin recargar y se recorre con las flechas, Inicio y Fin. Cada pestaña lleva el id y el href de su panel (.pestanas-panel).', ~{::demo-pestanas})}">
-          <th:block th:fragment="demo-pestanas">
-            <div class="pestanas" x-data="pestanas" x-on:hashchange.window="desdeLaDireccion">
-              <nav class="pestanas-lista" aria-label="Secciones de la muestra" x-on:keydown="teclear">
-                <a class="pestana" id="pestana-muestra-uno" href="#muestra-panel-uno" x-on:click="elegir">Primera</a>
-                <a class="pestana" id="pestana-muestra-dos" href="#muestra-panel-dos" x-on:click="elegir">Segunda</a>
-                <a class="pestana" id="pestana-muestra-tres" href="#muestra-panel-tres" x-on:click="elegir">Tercera</a>
-              </nav>
-              <div class="pestanas-panel" id="muestra-panel-uno">
-                <article class="tarjeta">
-                  <p>El contenido de la primera pestaña.</p>
-                </article>
-              </div>
-              <div class="pestanas-panel" id="muestra-panel-dos">
-                <article class="tarjeta">
-                  <p>El contenido de la segunda pestaña.</p>
-                </article>
-              </div>
-              <div class="pestanas-panel" id="muestra-panel-tres">
-                <article class="tarjeta">
-                  <p>El contenido de la tercera pestaña.</p>
-                </article>
-              </div>
             </div>
           </th:block>
         </div>
@@ -1624,6 +1594,33 @@
       <div th:replace="~{componentes/muestra :: muestra('.datos', 'La lista de datos: lo que quedó asentado (un remito, quién recibió, cuándo). El rótulo a la izquierda, en la tinta suave, y el dato a la derecha, entre filetes finos. No se toca: no tiene estados. componentes/datos :: datos(filas), con filas una lista de rótulo y valor ya formateados; un dato sin valor no se dibuja.', ~{::demo-datos})}">
         <th:block th:fragment="demo-datos">
           <dl th:replace="~{componentes/datos :: datos(${ { {rotulo: 'Remito', valor: '0001-00004521'}, {rotulo: 'Recibió', valor: 'Marta, por Comedor Barrio Ejemplo'}, {rotulo: 'Cuándo', valor: '15 de octubre de 2026, 18:45'} } })}"></dl>
+        </th:block>
+      </div>
+      <!--/* Fuera de la grilla, a todo el ancho: desde 37,5 em las solapas van en un renglón y, en una columna de la grilla, la tercera quedaba escondida. */-->
+      <div th:replace="~{componentes/muestra :: muestra('.pestanas', 'Varias secciones de una misma pantalla, de a una por vez. En el celular cada pestaña es un botón y bajan de renglón (ninguna queda escondida); la elegida va llena de tinta. Desde 37,5 em, solapas sobre un filete de tinta, y la elegida, del papel de la página. Se pintan al pasar. Sin JavaScript cada pestaña es un enlace a su sección; con JavaScript se cambia sin recargar y se recorre con las flechas, Inicio y Fin. Cada pestaña lleva el id y el href de su panel (.pestanas-panel).', ~{::demo-pestanas})}">
+        <th:block th:fragment="demo-pestanas">
+          <div class="pestanas" x-data="pestanas" x-on:hashchange.window="desdeLaDireccion">
+            <nav class="pestanas-lista" aria-label="Secciones de la muestra" x-on:keydown="teclear">
+              <a class="pestana" id="pestana-muestra-uno" href="#muestra-panel-uno" x-on:click="elegir">Primera</a>
+              <a class="pestana" id="pestana-muestra-dos" href="#muestra-panel-dos" x-on:click="elegir">Segunda</a>
+              <a class="pestana" id="pestana-muestra-tres" href="#muestra-panel-tres" x-on:click="elegir">Tercera</a>
+            </nav>
+            <div class="pestanas-panel" id="muestra-panel-uno">
+              <article class="tarjeta">
+                <p>El contenido de la primera pestaña.</p>
+              </article>
+            </div>
+            <div class="pestanas-panel" id="muestra-panel-dos">
+              <article class="tarjeta">
+                <p>El contenido de la segunda pestaña.</p>
+              </article>
+            </div>
+            <div class="pestanas-panel" id="muestra-panel-tres">
+              <article class="tarjeta">
+                <p>El contenido de la tercera pestaña.</p>
+              </article>
+            </div>
+          </div>
         </th:block>
       </div>
       <!--/* Fuera de la grilla, a todo el ancho: desde la tableta grande la tabla necesita el ancho de una lista. */-->

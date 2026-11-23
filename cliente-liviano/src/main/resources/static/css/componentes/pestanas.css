@@ -3,7 +3,9 @@
    Como en la guía (docs/interfaz/guia/partes/10-componentes.css, «Pestañas», y su ajuste en
    15-pantallas.css): en el celular cada pestaña es un botón y bajan de renglón, así ninguna queda
    escondida; la elegida va llena de tinta. Desde 37,5 em (--medida-quiebre-chico), solapas sobre un
-   filete de tinta, y la elegida, del papel de la página, pegada al filete.
+   filete de tinta, y la elegida, del papel de la página, pegada al filete. Ahí van en un renglón y, si
+   no entran, la lista se desplaza de costado: el lugar tiene que alcanzar para todas (en /estilos, la
+   ficha va a todo el ancho por eso).
 
    Dos modos, el mismo aspecto:
    - Sin JavaScript, cada pestaña (`.pestana`) es un enlace a su sección (`.pestanas-panel`, con un id) y

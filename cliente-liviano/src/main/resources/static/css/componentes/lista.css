@@ -71,12 +71,21 @@
   padding: var(--espacio-4);
   border: var(--borde-punteado);
   border-radius: var(--radio-lamina);
-  background: var(--color-fondo-pagina);
+  background-color: var(--color-fondo-pagina);
   box-shadow: none;
 }
 
+/* Con `.trama` (la lista vacía de la guía lleva la textura), cada hijo va enmascarado con el papel para
+   leerse sobre los puntos; el botón conserva su relleno y su fondo. La guía usa 0,125 rem arriba y
+   abajo; acá, el token más cercano (--espacio-0). */
 .vacio:not([data-forma="filetes"]) > * {
   margin: 0;
+}
+
+.vacio:not([data-forma="filetes"]) > :not(.boton) {
+  margin-left: calc(-1 * var(--espacio-1));
+  padding: var(--espacio-0) var(--espacio-1);
+  background: var(--color-fondo-pagina);
 }
 
 .vacio:not([data-forma="filetes"])::before {
