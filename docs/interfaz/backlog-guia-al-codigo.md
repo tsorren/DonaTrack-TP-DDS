@@ -21,8 +21,9 @@
 - **Regla común a todas las olas:** una pantalla que no es de la ola no se rediseña ni se arregla,
   aunque se vea inconsistente con el sistema nuevo. Quien construye y quien revisa la anotan como
   menor, nunca como bloqueante. Ese dato va a la decisión G1 (§9).
-- Orden de las olas: C0 (piloto, tokens), C1 (piezas, armazones y menús), ORG, DON, PUB1, ADM1,
+- Orden de las olas: C0 (piloto, tokens), C1 (piezas y armazón de la huerta), ORG, DON, PUB1, ADM1,
   PUB2, ADM2 y Z (cierre). Si hay que cortar, la prioridad es ORG, DON, PUB1, ADM1, PUB2, ADM2.
+  El menú de cada rol cambia en la ola de ese rol (DA-17) y el galpón entra en ADM1 (DA-18).
 
 ## 2. Decisiones
 
@@ -64,18 +65,22 @@ pregunta tuviera una sola decisión.
 Ronda 1 (2026-11-22): DA-11, DA-14a y DA-15. Respuesta del usuario: «todas las recomendadas».
 Ronda 2 (2026-11-22): DA-01, DA-02 y DA-03a. DA-03 se partió en tres (a, b y c). Respuesta del
 usuario: «3 si», junto con el sí al push y al lanzamiento de C0 («1 si, 2 si, 3 si»).
+Ronda 3 (2026-11-22, con la medida de C0): G0, DA-07 y DA-17 a DA-20. Respuestas del usuario: para
+el alcance, «Quiero todo el sitio, y me gustaría reducir los tests o verificaciones innecesarias /
+que generen demasiada fricción»; para el modo, la verificación y DA-07, «Todas las recomendadas».
+Con DA-17, las decisiones de los menús pasan de C1 a la ola de cada rol (columna «Ola»).
 
 | ID | Pregunta | Recomendación | Respuesta del usuario | Fecha | Ola |
 |---|---|---|---|---|---|
-| DA-01 | Público: ¿el Mapa sale del menú y queda dentro de Entregas? | Sí, como dibuja la guía | Sí («3 si», ronda 2) | 2026-11-22 | C1 |
-| DA-02 | Organización: ¿«Donaciones recibidas» y «Seguir entregas» se funden en «Entregas»? | Sí | Sí («3 si», ronda 2) | 2026-11-22 | C1 |
-| DA-03a | Quien dona: ¿«Seguimiento» deja de ser una sección del menú? (el seguimiento de cada donación se abre desde su detalle) | Sí | Sí («3 si», ronda 2) | 2026-11-22 | C1 |
-| DA-03b | Quien dona, la persona: ¿dónde va Misiones? | Como cuarta entrada del menú de la persona | Pendiente | | C1 |
-| DA-03c | Quien dona, la persona: ¿cómo es su inicio, que la guía no dibuja? | Pendiente de proponer | Pendiente | | C1 |
-| DA-04 | Admin: ¿«Por decidir» reemplaza a Inicio y a Asignar? | Sí | Pendiente | | C1 |
-| DA-05 | «Cómo funciona», «Cómo donar» y «Ayuda»: ¿páginas nuevas o las de hoy con otro nombre? | Las de hoy (Nosotros, Para donantes, Para organizaciones) | Pendiente | | C1 |
+| DA-01 | Público: ¿el Mapa sale del menú y queda dentro de Entregas? | Sí, como dibuja la guía | Sí («3 si», ronda 2) | 2026-11-22 | PUB1 |
+| DA-02 | Organización: ¿«Donaciones recibidas» y «Seguir entregas» se funden en «Entregas»? | Sí | Sí («3 si», ronda 2) | 2026-11-22 | ORG |
+| DA-03a | Quien dona: ¿«Seguimiento» deja de ser una sección del menú? (el seguimiento de cada donación se abre desde su detalle) | Sí | Sí («3 si», ronda 2) | 2026-11-22 | DON |
+| DA-03b | Quien dona, la persona: ¿dónde va Misiones? | Como cuarta entrada del menú de la persona | Pendiente | | DON |
+| DA-03c | Quien dona, la persona: ¿cómo es su inicio, que la guía no dibuja? | Pendiente de proponer | Pendiente | | DON |
+| DA-04 | Admin: ¿«Por decidir» reemplaza a Inicio y a Asignar? | Sí | Pendiente | | ADM1 |
+| DA-05 | «Cómo funciona», «Cómo donar» y «Ayuda»: ¿páginas nuevas o las de hoy con otro nombre? | Las de hoy (Nosotros, Para donantes, Para organizaciones) | Pendiente | | PUB1, DON y ORG |
 | DA-06 | ¿Página propia de respuesta solo al confirmar una recepción, y aviso breve en el resto? | Sí, es la regla de la guía | Pendiente | | Roles |
-| DA-07 | Sello para «vencida», «cancelada» y «en revisión» | El par neutro, con su texto | Pendiente | | C1 |
+| DA-07 | Sello para «vencida», «cancelada» y «en revisión» | El par neutro, con su texto | El par neutro, con su texto («Todas las recomendadas», ronda 3) | 2026-11-22 | C1 |
 | DA-08 | Pantallas sin arquetipo: ¿ficha aprobada por el usuario o derivación del agente? | Ficha para Misiones, Ranking, inicio de la persona y buzón; el resto, derivación | Pendiente | | Roles |
 | DA-09 | HG-01, la nueva salida: ¿función nueva o texto sin fecha? | Texto sin fecha; la función, después de la defensa | Pendiente | | Z |
 | DA-10 | HG-03: ¿el nombre de quien recibió se muestra en lo público? | En lo privado sí; en lo público, la organización | Pendiente | | Z |
@@ -86,6 +91,11 @@ usuario: «3 si», junto con el sí al push y al lanzamiento de C0 («1 si, 2 si
 | DA-14b | En Z: ¿se borran los alias que quedaron sin usos y los 11 tokens que no usa ninguna hoja ni plantilla y solo nombra `InterfazFitnessTest`, cambiando su lista de pares por la de la guía? | Sí | Pendiente | | Z |
 | DA-15 | Si el 30/11 no llegó todo: ¿corte por área con la regla G2, o todo o nada? | Corte por área | Corte por área («todas las recomendadas», ronda 1) | 2026-11-22 | Z |
 | DA-16 | La excepción de toque que el cierre de C0 agregó a `VerificacionVisualTest` para la casilla del buzón en `/estilos` (`e7ba71c36`), sin consultar: ¿se mantiene o se revierte? | Ninguna: se presentaron las dos | Se mantiene («Mantenerla»). Queda en el [ADR de la excepción de toque](../adr/cliente-liviano/20261122-excepcion-de-toque-para-la-casilla-del-buzon-en-estilos.md) (`proposed`) y en [DTI-46](../adr/DEUDA_TECNICA.md#dti-46) | 2026-11-22 | C0 |
+| G0 | Con la medida de C0 (§3.4): ¿el plan sigue con todo el sitio o se recorta al recorrido de la demo? | Recorte al recorrido de la demo (ORG, DON y PUB1), con ADM1 por decidir en G1 | Todo el sitio («Quiero todo el sitio», ronda 3). Quedan 8 corridas: C1, ORG, DON, PUB1, ADM1, PUB2, ADM2 y Z | 2026-11-22 | Todas |
+| DA-17 | ¿El menú de cada rol cambia en la ola de ese rol, y no todos juntos en C1? | Sí: si una ola no llega, su área queda con el menú de hoy | Sí («Todas las recomendadas», ronda 3) | 2026-11-22 | PUB1, DON, ORG y ADM1 |
+| DA-18 | ¿Las piezas del galpón (la tabla con selección, P21; el cajón, P22; y el armazón del galpón, la mitad de P26) pasan de C1 a ADM1? | Sí | Sí («Todas las recomendadas», ronda 3) | 2026-11-22 | ADM1 |
+| DA-19 | ¿Las fichas de las pantallas sin arquetipo se escriben en una sesión con el usuario, sin corridas `disenar` del workflow? | Sí | Sí («Todas las recomendadas», ronda 3) | 2026-11-22 | Roles |
+| DA-20 | ¿Se reduce la verificación de cada corrida sin cambiar el workflow ni ningún test? (1) La pasada de `-Pvisual` por las 320 rutas corre una vez al cierre de C1 y otra en Z. (2) El stack real con login se levanta solo en las olas que tocan un adaptador `rest` y en Z. (3) Cada manifiesto lleva 5 reglas o menos, solo criterios de producto; la excepción es la regla que le dice al cierre qué saltear y qué pasada correr, porque el cierre no tiene otra forma de recibirla. (4) En `rutasVisuales` va una ruta por plantilla; el piso automático sobre todas las rutas del área corre una vez, al cierre de cada ola. (5) Ningún lote de solo documentos lleva una decisión | Sí | Sí («Todas las recomendadas», ronda 3) | 2026-11-22 | Todas |
 
 ## 3. Ola C0: los tokens (piloto)
 
@@ -317,7 +327,7 @@ su gemela de la empresa (DA-13).
 de la persona, Ranking, la flota, los gráficos del inicio del admin, el registro en pasos, las
 páginas de estado, Legales y los estados fuera de los seis de la guía.
 
-### 5.1 Los menús (cambian una sola vez, en C1)
+### 5.1 Los menús (cada uno cambia en la ola de su rol, DA-17)
 
 Los menús de quien dona, la organización y el admin están en
 `cliente-liviano/src/main/java/grupo5/cliente/web/Pantallas.java:92-126`; en la maqueta, la
@@ -335,7 +345,8 @@ Fuente de los menús nuevos: `docs/interfaz/guia/partes/50-pantallas.html`.
 
 Línea de la guía en `docs/interfaz/guia/partes/10-componentes.css`, salvo que diga otra hoja (cada
 línea citada abre el bloque de esa pieza `[VERIFIED]`). Destino bajo
-`cliente-liviano/src/main/resources/static/css/` o `templates/`. Todas entran en C1.
+`cliente-liviano/src/main/resources/static/css/` o `templates/`. Entran en C1, salvo P21, P22 y el
+armazón del galpón (la mitad de P26), que pasan a ADM1 (DA-18).
 
 | ID | Pieza | Guía | Destino | Qué se hace |
 |---|---|---|---|---|
@@ -343,16 +354,16 @@ línea citada abre el bloque de esa pieza `[VERIFIED]`). Destino bajo
 | P02 | Composición y medida del texto | 44-71, 452 | `composicion.css` | Se retoca |
 | P03 | Botones, con «cargando» | 72-114 | `componentes/boton.css` | Se retoca |
 | P04 | Campos, opción y casilla | 115-156 | `componentes/campo.css`, `formularios.css` | Se extiende |
-| P05 | Subir fotos | 456-461 | `componentes/subida.css` | Se retoca |
+| P05 | Subir fotos | 456-461; `15-pantallas.css:60` | `componentes/subida.css` | Se retoca |
 | P06 | Sello (D1) y «Espera tu confirmación» | 157-178 | `componentes/sello.css`, `sellos.css` | Se extiende |
 | P07 | Lámina y sombra de paja (D7) | 179-190 | `componentes/tarjeta.css` | Se retoca |
-| P08 | Foto de una entrega y etiqueta (D3) | 191-223 | `componentes/etiqueta.css` y `componentes/etiqueta.html` `[PROPOSED]` | Componente nuevo; reemplaza al acta de `entidad-comun.css` |
-| P09 | Raíz (D2), tres formas y «no pudo llegar» | 224-263, 490-502 | `componentes/huerta.css` y `componentes/huerta.html` | Se extiende |
+| P08 | Foto de una entrega y etiqueta (D3) | 191-223; `15-pantallas.css:121` | `componentes/etiqueta-entrega.css` y `componentes/etiqueta-entrega.html` `[PROPOSED]` | Componente nuevo, con otro nombre: `.etiqueta` ya es una clase heredada (`entidad-seguimiento-confirmar.css:47`). Reemplaza al acta de `entidad-comun.css` en la ola ORG |
+| P09 | Raíz (D2), cuatro formas y «no pudo llegar» | 224-263, 490-502; `15-pantallas.css:39-40, 94-97` | `componentes/huerta.css` y `componentes/huerta.html` | Se extiende |
 | P10 | Frutos (D4) | 264-267, 483 | `componentes/huerta.html` (fragmento `cifras`) | Se extiende: un fruto por entrega confirmada |
 | P11 | Trama (D5) | 268-273 | `componentes/trama.css` `[PROPOSED]` | Componente nuevo |
 | P12 | Avance de una necesidad | 274-279 | `componentes/progreso.css` | Se retoca |
-| P13 | Avisos: en la página, breve y campanita | 280-313, 480 | `componentes/aviso.css`, `componentes/campanita.css` | Se extiende |
-| P14 | Barra superior e inferior | 317-356, 444 | `componentes/navegacion.css` | Se retoca |
+| P13 | Avisos: en la página y breve | 280-313, 480 | `componentes/aviso.css` | Se extiende. La lista de novedades de ese bloque es del buzón: va con su ficha, en las olas de rol |
+| P14 | Barra superior e inferior, con el salto al contenido y la campana | 315-356 (la campana, 340-341), 444 | `componentes/navegacion.css`, `componentes/campanita.css` | Se retoca |
 | P15 | Pestañas | 357-368, 447 | `componentes/pestanas.css` | Se retoca |
 | P16 | Migas de pan | 369-373 | `componentes/migas.css` `[PROPOSED]` | Componente nuevo |
 | P17 | Paginador | 374-379 | `componentes/paginas.css` | Se retoca |
@@ -361,11 +372,11 @@ línea citada abre el bloque de esa pieza `[VERIFIED]`). Destino bajo
 | P20 | Tabla que se apila | 503-520 | `componentes/tabla.css` | Se retoca |
 | P21 | Tabla del galpón, con selección | 395-405 | `componentes/tabla.css` | Se extiende |
 | P22 | Cajón del galpón | 417-427 | `componentes/navegacion.css` | Componente nuevo |
-| P23 | Lista de datos | `15-pantallas.css:172` | `componentes/datos.css` `[PROPOSED]` | Componente nuevo |
+| P23 | Lista de datos | `15-pantallas.css:172-176` | `componentes/datos.css` `[PROPOSED]` | Componente nuevo |
 | P24 | Dibujos: recorrido, puerta, mapa y 7 escenas | `20-simbolos.html` | `static/img/` | Nuevos |
 | P25 | 17 íconos y 9 signos de estado | `20-simbolos.html` | `iconos.html` | Se extiende |
-| P26 | Armazones de la huerta y del galpón | `15-pantallas.css:1-26, 98-104` | `layout-publico.html`, `layout-privado.html` | Se extiende |
-| P27 | Movimiento reducido y el trazo | 428-432; `15-pantallas.css:177` | `movimiento.css` | Se extiende |
+| P26 | Armazones de la huerta y del galpón | `15-pantallas.css:1-14` (común); `16-25` y `98-104` (galpón) | `layout-publico.html`, `layout-privado.html` | Se extiende |
+| P27 | Movimiento reducido y el trazo | 428-431; `15-pantallas.css:177-184` | `movimiento.css` | Se extiende |
 
 Las hojas heredadas, sin capa, le ganan a los componentes
 (`cliente-liviano/src/main/resources/static/css/app.css:3-8`): redibujar una pieza no alcanza a
@@ -419,8 +430,106 @@ guía (DA-07).
 ## 9. Cortes
 
 - **G0, después de C0:** con la medida de §3.4, el usuario decide si las olas siguen en serie o en
-  dos pistas, y si el plazo alcanza.
+  dos pistas, y si el plazo alcanza. **Resultado (2026-11-22):** todo el sitio, en 8 corridas (C1,
+  ORG, DON, PUB1, ADM1, PUB2, ADM2 y Z). Las decisiones están en §2.2: G0 y DA-17 a DA-20. Las olas
+  siguen en serie; una segunda pista, si el plazo la pide después del reinicio de la cuota del
+  27/11, sigue lo que ya decía el plan (decisión M4).
 - **G1, después de C1:** el usuario mira 16 pantallas de hoy sin rehacer (4 por área: lo público,
   quien dona, la organización y el admin) y responde, por área, «se puede mostrar así» o «no se
-  puede mostrar así». La lista de las 16 va en el manifiesto de C1.
+  puede mostrar así». La lista de las 16 está en §10.3.
 - **G2, el 30/11:** el corte del PR final a `ENTREGA_7`, con la respuesta a DA-15.
+
+## 10. Ola C1: las piezas
+
+C1 lleva al catálogo y a `/estilos` 25 de las 27 piezas de §6 y el armazón de la huerta. No cambia
+ninguna pantalla: ni entradas de menú (DA-17), ni rutas, ni plantillas de pantalla. Manifiesto:
+[`backlog-guia-al-codigo.c1.manifiesto.json`](backlog-guia-al-codigo.c1.manifiesto.json).
+
+Abreviaturas de esta sección: «guía» es `docs/interfaz/guia/partes/10-componentes.css`; «15» es
+`docs/interfaz/guia/partes/15-pantallas.css`; «20» es `docs/interfaz/guia/partes/20-simbolos.html`;
+`estilos.html` es `cliente-liviano/src/main/resources/templates/estilos.html`; «catálogo» es
+`docs/interfaz/componentes.md`; las hojas van bajo `cliente-liviano/src/main/resources/static/css/`
+y los fragmentos bajo `cliente-liviano/src/main/resources/templates/`. Las líneas se releyeron el
+2026-11-22 sobre `397896a79` `[VERIFIED]`.
+
+### 10.1 Ítems
+
+| Ítem | Lote | Pieza y qué se hace | Evidencia | Estado |
+|---|---|---|---|---|
+| C1-01 | `c1-base` | P01 · La base y el aro de foco de la guía. El aro queda de un solo color (hoy usa dos, [DTI-46](../adr/DEUDA_TECNICA.md#dti-46), ítem 5). El catálogo deja de nombrar a `pico` como primera capa | Guía 1-43. Hoy: `app.css`, desde el principio hasta antes de `.raices-cabecera` (`app.css:114`); capas en `app.css:8`; catálogo `:36` | Sin empezar |
+| C1-02 | `c1-base` | P02 · La composición y la medida del texto | Guía 44-71 y 453-454. Hoy: `composicion.css`; muestras en `estilos.html:21-87`; catálogo `:40-86` | Sin empezar |
+| C1-03 | `c1-base` | P27 · El movimiento reducido y el trazo, más las animaciones con nombre que piden otras piezas: el giro del botón que carga, el latido del esqueleto y el trazo de la raíz, con su asomo y su brote. Llevan el prefijo `mov-` de `movimiento.css`, no el `dt-` de la guía; `mov-traza` ya existe. Las demás piezas solo las nombran | Guía 428-431, 108-113 y 411-415; 15, 177-184. Hoy: `movimiento.css` (el prefijo, `:4-5`; `mov-traza`, `:131`); muestras en `estilos.html:89-145`; catálogo `:87-142`. Los `@keyframes` van solo en `movimiento.css` y cada `data-movimiento` va en el catálogo y en las muestras (`InterfazFitnessTest.java:433, 365-379`) | Sin empezar |
+| C1-04 | `c1-base` | Las 14 fichas de la sección «Tokens» de `/estilos` pasan al fragmento `componentes/muestra :: muestra(nombre, cuando, cuerpo)` | Fichas a mano en `estilos.html:147-372`; fragmento en `componentes/muestra.html:11`; [DTI-46](../adr/DEUDA_TECNICA.md#dti-46), ítem 1 | Sin empezar |
+| C1-05 | `c1-simbolos` | P25 · Los 17 íconos y los 9 signos de estado de la guía entran en `iconos.html`. Los `id` de hoy (`nav-*` y los de categorías) se conservan | 20, 6-24 (íconos) y 27-35 (signos). Hoy: `iconos.html`, 20 símbolos y ningún signo de estado | Sin empezar |
+| C1-06 | `c1-simbolos` | P24 · Los dibujos de la guía: el recorrido, la puerta, el mapa y las 7 escenas | 20, 91 (recorrido), 131 y 151 (puerta), 157 (mapa) y 38-81 (escenas). Hoy: `static/img/`, con `ilustraciones/` y `huerta/` | Sin empezar |
+| C1-07 | `c1-armazon` | P26 · El armazón de la huerta en los dos layouts. El del galpón no entra (DA-18) | 15, 1-14 (común). Fuera: 15, 16-25 y 98-104 (galpón). Hoy: `layout-publico.html` (`header.raices-cabecera`, `:31`), `layout-privado.html` (`header.armazon`, `:26`), `app.css:114` y `privado.css` | Sin empezar |
+| C1-08 | `c1-armazon` | P14 · La barra superior, el menú del celular, el salto al contenido y la campana. Las entradas de cada menú quedan como están (DA-17). El cajón no entra (DA-18) | Guía 315-356 (la campana, 340-341) y 445. Fuera: guía 417-427 (cajón). Hoy: `componentes/navegacion.css`, `componentes/campanita.css`, `componentes/campanita.html`, `publico-navegacion.css` y `privado.css`; muestras en `estilos.html:581` y `:669`; catálogo `:208` y `:210` | Sin empezar |
+| C1-09 | `c1-armazon` | P18 · El pie de la huerta | Guía 380-384. Hoy: `pie.html:9` (`footer.raices-pie`) y `app.css:360`; sin muestra en `/estilos` ni fila en el catálogo | Sin empezar |
+| C1-10 | `c1-armazon` | P16 · Las migas de pan, componente nuevo | Guía 369-373. Hoy no existe: ni `componentes/migas.css` ni ninguna clase `migas` | Sin empezar |
+| C1-11 | `c1-formularios` | P03 · Los botones, con su estado «cargando» (`aria-busy`) | Guía 72-114 (el estado, 107-112). Hoy: `componentes/boton.css`; muestra en `estilos.html:378`; catálogo `:197` | Sin empezar |
+| C1-12 | `c1-formularios` | P04 · Los campos, la opción y la casilla. La casilla del buzón no se toca: su demo en `/estilos` tiene una excepción de toque decidida por el usuario (DA-16) | Guía 115-156. Hoy: `componentes/campo.css` y `formularios.css`; muestra en `estilos.html:401`; catálogo `:198`. Sin ficha de opción ni de casilla | Sin empezar |
+| C1-13 | `c1-formularios` | P05 · Subir fotos | Guía 456-461; 15, 60. Hoy: `componentes/subida.css`; muestra en `estilos.html:803`; catálogo `:219` | Sin empezar |
+| C1-14 | `c1-estados` | P06 · El sello de los seis estados de la guía, cada uno con su signo y su palabra, y la chapa «Espera tu confirmación». Además, «vencida», «cancelada» y «en revisión» con el par neutro (DA-07). La guía no dibuja un signo para esos tres: el lote usa uno de los nueve de la guía y lo anota | Guía 157-178 (el par neutro, 159; los estados, 167-170; la chapa, 172). Hoy: `componentes/sello.css`, `componentes/sello.html:20` y `sellos.css`; muestras en `estilos.html:416` y `:430`; catálogo `:199-200` | Sin empezar |
+| C1-15 | `c1-estados` | P13 · Los avisos: en la página y breve. La lista de novedades del mismo bloque no entra: es del buzón | Guía 280-313 y 481. Hoy: `componentes/aviso.css`; muestra en `estilos.html:439`; catálogo `:201` | Sin empezar |
+| C1-16 | `c1-estados` | P12 · El avance de una necesidad | Guía 274-279. Hoy: `componentes/progreso.css`; muestra en `estilos.html:962`; catálogo `:225` | Sin empezar |
+| C1-17 | `c1-entrega` | P07 · La lámina y la sombra de paja | Guía 179-190. Hoy: `componentes/tarjeta.css`; muestra en `estilos.html:751`; catálogo `:212` | Sin empezar |
+| C1-18 | `c1-entrega` | P08 · La foto de una entrega y su etiqueta, componente nuevo con el nombre `etiqueta-entrega`. `.etiqueta` ya es una clase heredada y esa pantalla no es de la ola | Guía 191-223; 15, 121. Heredada: `entidad-seguimiento-confirmar.css:47` y `cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt:99-101` | Sin empezar |
+| C1-19 | `c1-entrega` | P11 · La trama, componente nuevo. Solo en fondos | Guía 268-273. Hoy no existe `componentes/trama.css` | Sin empezar |
+| C1-20 | `c1-raiz` | P09 · La raíz de los 5 pasos, con sus cuatro formas (la base, acostada, numerada y tendida) y el paso «no pudo llegar» | Guía 224-263 (acostada, 250) y 492-502; 15, 39-40 (numerada) y 94-97 (tendida). Hoy: `componentes/huerta.css` y `componentes/huerta.html`; muestras en `estilos.html:785` y `:798`; catálogo `:216` | Sin empezar |
+| C1-21 | `c1-raiz` | P10 · Los frutos: un fruto por entrega confirmada | Guía 264-267 y 484. Hoy: fragmento `cifras(estado, valores)` en `componentes/huerta.html:314` | Sin empezar |
+| C1-22 | `c1-listas` | P15 · Las pestañas | Guía 357-367 y 448. Hoy: `componentes/pestanas.css`; muestra en `estilos.html:830`; catálogo `:220` | Sin empezar |
+| C1-23 | `c1-listas` | P17 · El paginador | Guía 374-379. Hoy: `componentes/paginas.css` y `componentes/paginas.html:20-24`; muestra en `estilos.html:1250`; catálogo `:234` | Sin empezar |
+| C1-24 | `c1-listas` | P19 · Las listas y sus estados: vacía, cargando (con el esqueleto) y con error | Guía 385-394 y 406-416. Hoy: `componentes/lista.css` y `componentes/carga.css`; muestras en `estilos.html:776`, `:469` y `:487`; catálogo `:217`, `:203` y `:204` | Sin empezar |
+| C1-25 | `c1-listas` | P20 · La tabla que se apila en el celular. La tabla del galpón, con selección, no entra (DA-18) | Guía 503-520; 15, 187-195. Fuera: guía 395-405. Hoy: `componentes/tabla.css`; muestra en `estilos.html:1235`; catálogo `:218` | Sin empezar |
+| C1-26 | `c1-listas` | P23 · La lista de datos, componente nuevo | 15, 172-176. Hoy no existe `componentes/datos.css`; `datos-figura` es una clase heredada de otra cosa (`clases-heredadas.txt:58`) | Sin empezar |
+
+### 10.2 Qué queda fuera de C1
+
+| Qué | Adónde va | Por qué |
+|---|---|---|
+| Las entradas de los cuatro menús (DA-01, DA-02, DA-03a, DA-03b, DA-04 y DA-05) | PUB1, ORG, DON y ADM1 | DA-17 |
+| La tabla con selección (P21), el cajón (P22) y el armazón del galpón (la mitad de P26) | ADM1 | DA-18 |
+| La lista de novedades y el buzón | Las olas de rol, con su ficha | Es una pantalla sin arquetipo (DA-08) |
+| Bajar los topes de `InterfazFitnessTest` | Z | Dos lotes que bajan la misma línea chocan al integrar |
+| `tokens.css` | No se toca | Los tokens entraron en C0. Si falta uno, se informa como bloqueante |
+
+### 10.3 Muestra para G1
+
+Dieciséis pantallas de hoy, sin rehacer, 4 por área. Están tal cual en
+`cliente-liviano/src/test/resources/verificacion/paginas.txt`. No entran en `rutasVisuales`: sus
+capturas salen de la pasada completa de `-Pvisual` que corre el cierre de la ola, y la hoja de G1
+la arma la sesión que cierra C1.
+
+| Área | Rutas |
+|---|---|
+| Lo público | `/publico-portada`, `/publico-donaciones`, `/publico-entidades`, `/publico-registro-donante` |
+| Quien dona | `/donante-inicio`, `/donante-donaciones`, `/donante-donaciones-detalle`, `/donante-entidades` |
+| La organización | `/entidad-inicio`, `/entidad-necesidades`, `/entidad-seguimiento`, `/entidad-seguimiento-confirmar` |
+| El admin | `/admin-inicio`, `/admin-asignaciones`, `/admin-donaciones`, `/admin-entidades` |
+
+### 10.4 Qué se verifica y cuándo (DA-20)
+
+- **En cada lote:** `mvn clean test -pl cliente-liviano -am` y `-Pvisual` sobre sus `rutasVisuales`,
+  a 360, 1280 y 1920 px. Todos los lotes llevan solo `/estilos`: una pantalla real con el armazón
+  nuevo y el contenido de hoy le daría bloqueantes falsos a la revisión, que trata como bloqueante
+  toda inconsistencia entre pantallas (`.claude/workflows/oleada-ui.js:407, 510`). `c1-armazon`
+  comprueba además el armazón en `/publico-portada`, `/entidad-inicio` y `/admin-inicio` antes de
+  comitear; esas tres no entran en la revisión ni en la hoja de contacto.
+- **Al cierre de la ola, una vez:** `-Pvisual` sobre las 320 rutas. Es el piso de G1.
+- **Línea de base de esa pasada.** `[OBSERVED]` El cierre de C0 midió 12 rutas en rojo, todas por
+  área de toque y ninguna por contraste (§3.4; [DTI-46](../adr/DEUDA_TECNICA.md#dti-46), ítems 3 y
+  4). `[INFERRED]` Quedan 11, porque `/estilos` pasa desde la excepción de DA-16: `/admin-notificaciones`, `/donante-notificaciones`, `/entidad-notificaciones`,
+  `/admin-camiones`, `/admin-camiones-agregar-error`, `/donante-seguimiento`,
+  `/donante-misiones?cuenta=persona` (con y sin `escenario=vacio`), `/admin-donantes?donante=juan` y
+  `/publico-mapa?escenario=muchas` (con y sin la página 2). Una ruta que falle y no esté en esta
+  lista es de una pieza de C1.
+- **Los otros tests visuales.** `ArmazonFijoTest`, `MenusQueSeCierranTest`, `BajoTierraRotulosTest`,
+  `AbejasYRenglonesTest` y `DonanteDetallesTest` solo se compilan y corren con `-Pvisual`
+  (`cliente-liviano/pom.xml:41-47`), y el gate visual del workflow corre solo
+  `VerificacionVisualTest`. Los corre `c1-armazon` antes de comitear y el cierre de la ola. Nadie
+  edita un test de `visual/`: si uno afirma algo que la guía cambia, se informa y lo decide el
+  usuario.
+- **El stack real con login no se levanta en C1.** `/estilos` es de la maqueta y C1 no toca ningún
+  adaptador `rest`. El recorrido real se hace en ORG y en Z.
+- **Los topes no se tocan.** Clases de un solo uso, 159 (`InterfazFitnessTest.java:253`); medidas
+  literales, 1192 (`:567`). El test acepta un valor igual o menor (`:392-393, 613-615`).
