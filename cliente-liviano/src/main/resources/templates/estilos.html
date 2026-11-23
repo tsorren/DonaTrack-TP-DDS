@@ -610,7 +610,7 @@
                 '/publico-para-donantes', 'Ver todo para donantes')}"></span></p>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.navegacion', 'La barra de secciones: en el celular, fija abajo y oscura (en las públicas, .navegacion-barra con un .navegacion-icono por sección y .navegacion-inicio, que solo va en el celular, y .navegacion-acceso arriba, en la cabecera); desde la tableta, horizontal en la cabecera (acá, dentro de una caja). La sección actual lleva aria-current=&quot;page&quot;. data-zona=&quot;publica&quot; para las páginas públicas, con .navegacion-largo (lo que solo se lee en la barra del celular) y .navegacion-destacado (el botón principal); las públicas pasan a la cabecera recién desde 56 em, cuando entran en una línea. Con más de 5 secciones (la administración, data-forma=&quot;panel&quot;), el botón de menú .navegacion-abrir abre .navegacion-hoja (un popover) con todas, en un panel de pantalla completa con la marca. Tocalo.', ~{::demo-navegacion})}">
+        <div th:replace="~{componentes/muestra :: muestra('.navegacion', 'La barra de secciones del armazón de la huerta. Hasta 56 em es el menú del celular: fijo abajo, en la tierra con la línea de paja, un ícono sobre cada nombre y la sección actual en papel (en las públicas, .navegacion-barra con un .navegacion-icono por sección y .navegacion-inicio, que solo va ahí, y .navegacion-acceso arriba, en la barra superior: Ingresar como botón de texto y Crear cuenta lleno). Desde 56 em las secciones van en la barra superior, sin íconos: el fondo salvia bajo el cursor y la actual en tinta (acá, cada menú dentro de una caja). La sección actual lleva aria-current=&quot;page&quot;. data-zona=&quot;publica&quot; para las páginas públicas, con .navegacion-largo (lo que solo se lee en el menú del celular) y .navegacion-destacado (el botón principal). Con más de 5 secciones (la administración, data-forma=&quot;panel&quot;), el botón de menú .navegacion-abrir abre .navegacion-hoja (un popover) con todas, en un panel de pantalla completa con la marca. Tocalo.', ~{::demo-navegacion})}">
           <th:block th:fragment="demo-navegacion">
             <div class="pila" data-espacio="3">
               <div data-ventana>
@@ -698,9 +698,14 @@
             </details>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.campanita', 'La campanita de la cabecera privada de los tres roles (componentes/campanita :: campana(area, sinLeer), R11-29 y R11-30): la campana con el número de sin leer es el summary de un details y abre un desplegable (.campanita-panel) con la cabecera (.campanita-cabeza), hasta 5 sin leer (.campanita-filas: cada fila, un botón .campanita-fila con el título y hace cuánto) y siempre «Ver todas» (.campanita-todas). La lista la trae HTMX al abrir (componentes/campanita :: lista); acá se ve abierta con la lista de ejemplo, sin ninguna sin leer y con el error. En la cabecera, el desplegable cuelga de la campana (22 rem) y en el celular ocupa el ancho con 16 px de margen; acá queda debajo de la campana.', ~{::demo-campanita})}">
+        <div th:replace="~{componentes/muestra :: muestra('.campanita', 'La campanita de la cabecera privada de los tres roles (componentes/campanita :: campana(area, sinLeer), R11-29 y R11-30): la campana (.armazon-avisos) es un botón de ícono de 48 px, con el fondo salvia bajo el cursor y mientras está abierta, y el número de sin leer en una pastilla de tinta (.armazon-avisos-cuenta). Es el summary de un details y abre un desplegable (.campanita-panel) con la cabecera (.campanita-cabeza), hasta 5 sin leer (.campanita-filas: cada fila, un botón .campanita-fila con el título y hace cuánto) y siempre «Ver todas» (.campanita-todas). La lista la trae HTMX al abrir (componentes/campanita :: lista); acá se ve abierta con la lista de ejemplo, sin ninguna sin leer y con el error. En la cabecera, el desplegable cuelga de la campana (22 rem) y en el celular ocupa el ancho con 16 px de margen; acá queda debajo de la campana.', ~{::demo-campanita})}">
           <th:block th:fragment="demo-campanita">
             <div class="pila" data-espacio="3">
+              <!--/* Cerrada, como va en la barra: con 4 sin leer y sin ninguna. */-->
+              <div class="racimo" data-espacio="2">
+                <details th:replace="~{componentes/campanita :: campana('donante', 4)}"></details>
+                <details th:replace="~{componentes/campanita :: campana('entidad', 0)}"></details>
+              </div>
               <th:block th:each="caso : ${ {
                   {clave: 'lista', titulo: 'Con sin leer', sinLeer: 12, campanita: {ahora: '2026-10-15T16:25', sinLeer: 12, filas: {
                       {id: 'd1', titulo: 'Donación en camino', fecha: '2026-10-15T14:20'},
@@ -714,7 +719,7 @@
                   <summary class="armazon-avisos"
                            th:aria-label="${caso.sinLeer > 0} ? |Notificaciones, ${caso.sinLeer} sin leer (muestra: ${caso.titulo})| : |Notificaciones (muestra: ${caso.titulo})|">
                     <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-                      <path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>
+                      <path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15zM10 21h4"/>
                     </svg>
                     <b th:if="${caso.sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${caso.sinLeer}">12</b>
                   </summary>
@@ -731,6 +736,19 @@
                   </div>
                 </details>
               </th:block>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.raices-pie', 'El pie de la huerta, el de todas las páginas (pie :: pie, C1-09): el corte de suelo, una franja lisa de tierra con la línea de paja arriba, las secciones (Nosotros, Para donantes, Para organizaciones, Términos y privacidad y Contacto) en una fila que baja de renglón y la firma debajo. Los enlaces van subrayados, de 48 px de alto; el aro de foco, en paja. Acá, el mismo pie que cierra esta página.', ~{::demo-pie})}">
+          <th:block th:fragment="demo-pie">
+            <footer th:replace="~{pie :: pie}"></footer>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.migas', 'Las migas de pan (componentes/migas :: migas(pasos, actual), C1-10): dónde está la pantalla dentro de su sección. Cada paso de antes es un enlace de 48 px de alto, seguido de la flecha; la pantalla actual va al final, en el texto suave, sin enlace y con aria-current=&quot;page&quot;. Es un nav con aria-label=&quot;Dónde estás&quot; y una lista ordenada que baja de renglón. Arriba, un paso antes de la actual; abajo, dos. Todavía no la usa ninguna pantalla.', ~{::demo-migas})}">
+          <th:block th:fragment="demo-migas">
+            <div class="pila" data-espacio="2">
+              <nav th:replace="~{componentes/migas :: migas(pasos=${ { {texto: 'Mis donaciones', ruta: '/donante-donaciones'} } }, actual='Lentejas secas, 15 kg')}"></nav>
+              <nav th:replace="~{componentes/migas :: migas(pasos=${ { {texto: 'Mis donaciones', ruta: '/donante-donaciones'}, {texto: 'Lentejas secas, 15 kg', ruta: '/donante-donaciones-detalle'} } }, actual='Seguimiento de la entrega')}"></nav>
             </div>
           </th:block>
         </div>

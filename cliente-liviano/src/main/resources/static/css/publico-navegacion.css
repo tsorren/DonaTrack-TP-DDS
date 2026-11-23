@@ -1,26 +1,19 @@
-/* Raíces, sitio A: dónde va la navegación pública (navegacion-publica.html) dentro de la cabecera de
-   las públicas y de la portada. La barra es el bloque `navegacion` (componentes/navegacion.css, con
-   data-zona="publica"): en el celular, fija abajo, en la tierra, con la sección actual en paja; desde
-   la tableta, en la cabecera de tierra honda (usuario, 2026-11-03). Va después de la hoja de la
-   pantalla, que ya trae los tokens. */
+/* Raíces, sitio A: dónde va la navegación pública (navegacion-publica.html) dentro de la barra
+   superior de las públicas y de la portada (la barra de la huerta, app.css; C1-07). La barra es el
+   bloque `navegacion` (componentes/navegacion.css, con data-zona="publica"): hasta
+   --medida-quiebre-menu, el menú del celular, fijo abajo, en la tierra; desde ahí, en la barra
+   superior, después de la marca. Va después de la hoja de la pantalla, que ya trae los tokens. */
 
-/* La barra no tapa el pie. */
+/* El menú del celular no tapa el pie. */
 body {
-  padding-bottom: 5rem;
+  padding-bottom: calc(var(--medida-menu-celular) + var(--espacio-3));
 }
 
 /* La marca a la izquierda y el menú a la derecha: en el celular, de él se ven Ingresar y Crear
    cuenta (las secciones van en la barra de abajo). Con la sesión iniciada (ficha r11-p1-portada.md),
    "Mi inicio" y, a la derecha, la foto de la cuenta, como en el área privada. */
-.raices-cabecera {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-}
 
-/* Desde que el menú entra en una línea (--medida-quiebre-menu), arriba, en la cabecera. */
+/* Desde que el menú entra en una línea (--medida-quiebre-menu), arriba, en la barra. */
 @media (min-width: 56em) {
   /* "Ir a mi inicio" con su nombre largo, como los demás nombres largos desde este ancho: el corto
      es solo del celular y la tableta. */
@@ -34,7 +27,6 @@ body {
 
   .raices-cabecera {
     justify-content: flex-start;
-    gap: 0.5rem 2rem;
   }
 
   .raices-cabecera .navegacion {

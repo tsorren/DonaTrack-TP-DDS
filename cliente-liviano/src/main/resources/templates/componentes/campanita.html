@@ -23,7 +23,7 @@
            th:aria-label="${sinLeer > 0} ? |Notificaciones, ${sinLeer} sin leer| : 'Notificaciones'"
            aria-label="Notificaciones, 4 sin leer">
     <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-      <path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>
+      <path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15zM10 21h4"/>
     </svg>
     <span class="armazon-avisos-texto">Notificaciones</span>
     <b th:if="${sinLeer > 0}" class="armazon-avisos-cuenta" th:text="${sinLeer}">4</b>
