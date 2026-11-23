@@ -3,6 +3,8 @@
    (tarjeta, sello, lista, lista en filas, frutos, listado, paginador, migas, aviso, datos y la raíz
    de la huerta); esta hoja solo dice dónde va cada una: sin colores, fuentes ni filetes. */
 @import url("privado.css");
+/* sellos.css: los pictogramas (.iconos) no ocupan lugar, como en las demás de la organización. */
+@import url("sellos.css");
 
 /* La lámina «Para confirmar»: el relleno de la tarjeta, como la de la puerta del inicio. */
 .tarjeta[data-papel="protagonista"] {
