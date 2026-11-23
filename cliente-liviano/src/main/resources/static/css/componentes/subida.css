@@ -45,8 +45,8 @@
 
 /* El control nativo, con su botón como el botón secundario: claro, con el borde de tinta y 48 px de
    alto para el dedo. El aro de foco es el de la base (app.css), alrededor del control. Ocupa todo el
-   ancho del recuadro, para que el texto de estado nativo (qué archivo se eligió) se lea entero: sin
-   JavaScript es lo único que lo dice. Diferencia con la guía: su `.subir-boton` tapa el control con un
+   ancho del recuadro y el botón va arriba, solo en su renglón, para que el texto de estado nativo (qué
+   archivo se eligió) se lea entero debajo: sin JavaScript es lo único que lo dice. Diferencia con la guía: su `.subir-boton` tapa el control con un
    botón propio, pero eso pide otro marcado en las pantallas. */
 .subida input[type="file"] {
   width: 100%;
@@ -65,8 +65,9 @@
 }
 
 .subida input[type="file"]::file-selector-button {
+  display: block;
   min-height: var(--medida-toque-minimo);
-  margin-right: var(--espacio-2);
+  margin-bottom: var(--espacio-1);
   padding: 0 var(--espacio-3);
   border: var(--borde-tinta);
   border-radius: var(--radio-boton);
