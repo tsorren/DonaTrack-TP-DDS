@@ -59,7 +59,8 @@
 
 /* --- La lista vacía ---------------------------------------------------------------------------- */
 /* Como en la guía (`lista-estado--vacia`): el lugar de la lista, con un contorno punteado sobre el
-   papel de la página, sin sombra ni dibujo; dice qué va a aparecer y qué hacer. Las reglas del papel
+   papel de la página, sin sombra ni dibujo, y la `.trama` si la lleva; dice qué va a aparecer y qué
+   hacer. Las reglas del papel
    compartido con el banner siguen en aviso.css; acá se pisan todas las de la caja (con un selector
    más fuerte), así el estado vacío no depende de ellas. La variante de filetes queda como está. */
 .vacio:not([data-forma="filetes"]) {
