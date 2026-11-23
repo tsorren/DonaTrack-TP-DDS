@@ -330,8 +330,9 @@
   .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul,
   .navegacion[data-zona="publica"] ul {
     display: flex;
-    /* En la barra entran en una fila (medido de 56 em a 120 em); en una caja más angosta, como las
-       del catálogo, bajan de renglón en lugar de salirse. */
+    /* En la barra entran en una fila (C1, medido: la persona con 5 secciones a 896, 1000 y 1100 px,
+       la pública a 896 px y las capturas a 1280 y 1920 px); en una caja más angosta, como las del
+       catálogo, bajan de renglón en lugar de salirse. */
     flex-wrap: wrap;
     align-items: center;
     gap: var(--espacio-0);
