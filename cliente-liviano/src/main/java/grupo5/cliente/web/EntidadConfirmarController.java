@@ -2,7 +2,9 @@ package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.CuentaActual;
 import grupo5.cliente.puertos.EntidadConfirmarPuerto;
+import grupo5.cliente.puertos.RecibidasPuerto;
 import grupo5.cliente.vistas.EntidadEntregaVista;
+import grupo5.cliente.vistas.RecibidasVista;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
@@ -16,8 +18,8 @@ import org.springframework.web.bind.annotation.GetMapping;
  * Confirmar recepción (RF-12) y las pantallas que usan su fragmento de entregas: el acta con
  * errores y Llegó con un problema, con las que esperan la confirmación; Recepción confirmada
  * (DA-06, la única respuesta con página propia), con la entrega ya confirmada y lo que quedó
- * asentado (las {@code -sellada-<clave>} son las respuestas de la maqueta). Sin entidad, manda a
- * ingresar.
+ * asentado (las {@code -sellada-<clave>} son las respuestas de la maqueta) y los frutos del mes,
+ * contados como en Inicio. Sin entidad, manda a ingresar.
  */
 @Controller
 public class EntidadConfirmarController {
@@ -25,12 +27,17 @@ public class EntidadConfirmarController {
   private static final String SELLADA = "entidad-seguimiento-sellada-";
 
   private final EntidadConfirmarPuerto confirmar;
+  private final RecibidasPuerto recibidas;
   private final CuentaActual cuentas;
   private final Pantallas pantallas;
 
   EntidadConfirmarController(
-      EntidadConfirmarPuerto confirmar, CuentaActual cuentas, Pantallas pantallas) {
+      EntidadConfirmarPuerto confirmar,
+      RecibidasPuerto recibidas,
+      CuentaActual cuentas,
+      Pantallas pantallas) {
     this.confirmar = confirmar;
+    this.recibidas = recibidas;
     this.cuentas = cuentas;
     this.pantallas = pantallas;
   }
@@ -46,7 +53,8 @@ public class EntidadConfirmarController {
 
   /**
    * La entrega es la de {@code ?entrega=} o, en las respuestas de la maqueta, la de la dirección
-   * ({@code -sellada-ropa}).
+   * ({@code -sellada-ropa}). Los frutos (D4) son las recibidas del mes en curso, de la misma
+   * lectura que Inicio: {@code frutos}, cuántas, y {@code mesFrutos}, el mes ("octubre").
    */
   @GetMapping({
     "/entidad-seguimiento-sellada",
@@ -59,7 +67,21 @@ public class EntidadConfirmarController {
     if (pedida == null && pantalla.startsWith(SELLADA)) {
       pedida = pantalla.substring(SELLADA.length());
     }
-    return mostrar(model, pedido, pedida, confirmar::confirmada);
+    String vista = mostrar(model, pedido, pedida, confirmar::confirmada);
+    cuentas
+        .entidad(pedido)
+        .ifPresent(
+            entidad -> {
+              RecibidasVista delMes = recibidas.recibidas(entidad);
+              model.addAttribute(
+                  "frutos",
+                  Math.toIntExact(
+                      delMes.asignadas().stream()
+                          .filter(r -> RecibidasVista.RECIBIDA.equals(r.grupo()))
+                          .count()));
+              model.addAttribute("mesFrutos", delMes.mes());
+            });
+    return vista;
   }
 
   private String mostrar(

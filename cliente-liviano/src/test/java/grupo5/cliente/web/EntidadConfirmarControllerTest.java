@@ -9,7 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.cliente.maqueta.MaquetaConfig;
 import grupo5.cliente.puertos.EntidadConfirmarPuerto;
+import grupo5.cliente.puertos.RecibidasPuerto;
 import grupo5.cliente.vistas.EntidadEntregaVista;
+import grupo5.cliente.vistas.RecibidasVista;
+import grupo5.cliente.vistas.RecibidasVista.Recibida;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -43,6 +46,36 @@ class EntidadConfirmarControllerTest {
   @TestConfiguration
   static class UnaEntrega {
 
+    /** Dos recibidas en noviembre y una en camino: los frutos son las dos recibidas. */
+    @Bean
+    RecibidasPuerto recibidas() {
+      return entidad ->
+          new RecibidasVista(
+              List.of(
+                  recibida("a", "camino"), recibida("b", "recibida"), recibida("c", "recibida")),
+              "noviembre",
+              "8 de noviembre de 2026, 18:50",
+              null);
+    }
+
+    private static Recibida recibida(String clave, String grupo) {
+      return new Recibida(
+          clave,
+          "Silla plegable",
+          null,
+          null,
+          "1",
+          "un donante",
+          null,
+          null,
+          grupo,
+          null,
+          null,
+          null,
+          null,
+          null);
+    }
+
     @Bean
     EntidadConfirmarPuerto confirmar() {
       return new EntidadConfirmarPuerto() {
@@ -72,6 +105,9 @@ class EntidadConfirmarControllerTest {
                   1,
                   "unidades",
                   false,
+                  null,
+                  null,
+                  null,
                   null,
                   null));
         }
@@ -104,6 +140,9 @@ class EntidadConfirmarControllerTest {
                   "unidades",
                   false,
                   null,
+                  null,
+                  "6 de noviembre, 10:00",
+                  "7 de noviembre, 11:00",
                   null));
         }
 
@@ -182,6 +221,16 @@ class EntidadConfirmarControllerTest {
         .andExpect(content().string(containsString("<dd>8 de noviembre de 2026, 18:45</dd>")))
         .andExpect(content().string(containsString("src=\"https://fotos.ejemplo/1.jpg\"")))
         .andExpect(content().string(containsString("Recibió: ")))
+        // D4: los frutos del mes, en el dibujo y con su cifra; D2: cada paso con su fecha
+        .andExpect(content().string(containsString("data-dibujo=\"frutos\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "2 entregas confirmadas</strong> por tu organización en noviembre.")))
+        .andExpect(content().string(containsString(">6 de noviembre, 10:00</span>")))
+        .andExpect(content().string(containsString(">7 de noviembre, 11:00</span>")))
+        .andExpect(content().string(containsString(">8 de noviembre, 14:30</span>")))
         .andExpect(content().string(containsString("No te quedan entregas para confirmar.")))
         .andExpect(content().string(not(containsString("Foto de ejemplo"))))
         .andExpect(content().string(not(containsString("huerta-raiz-trazo"))))

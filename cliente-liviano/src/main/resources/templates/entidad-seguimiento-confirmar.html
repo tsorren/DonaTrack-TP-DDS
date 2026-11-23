@@ -213,7 +213,7 @@
             <p th:if="${revisar}" id="cantidad-error" class="campo-error"
                th:text="|Escribí cuánto llegó, en ${e.unidad}.|">Escribí cuánto llegó, en kg.</p>
             <input id="cantidad" name="cantidadRecibida" type="number"
-                   th:attr="inputmode=${e.decimales} ? 'decimal' : 'numeric',step=${e.decimales} ? 'any' : '1',min=${e.decimales} ? '0.01' : '1',aria-describedby=${revisar} ? 'cantidad-error cantidad-ayuda' : 'cantidad-ayuda',aria-invalid=${revisar} ? 'true' : null" placeholder="Por ejemplo: 10">
+                   th:attr="inputmode=${e.decimales} ? 'decimal' : 'numeric',step=${e.decimales} ? 'any' : '1',min=${e.decimales} ? '0.01' : '1',aria-describedby=${revisar} ? 'cantidad-error cantidad-ayuda' : 'cantidad-ayuda',aria-invalid=${revisar} ? 'true' : null">
           </div>
           <div class="campo">
             <label for="detalle">Contanos más</label>

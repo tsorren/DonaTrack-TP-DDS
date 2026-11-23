@@ -58,8 +58,8 @@ main > .pila > .grilla {
   }
 }
 
-/* --- El dibujo de la puerta (D2): la raíz llega al quinto nudo, con los colores de la guía
-   (08-dibujo.css) en sus tokens de uso. ---------------------------------------------------------- */
+/* --- El dibujo de la puerta (D2, D4): la raíz llega al quinto nudo y el árbol da los frutos del
+   mes, con los colores de la guía (08-dibujo.css) en sus tokens de uso. ------------------------- */
 main figure > svg {
   width: 100%;
   height: auto;
@@ -80,4 +80,9 @@ main figure > svg {
 
 [data-dibujo="nudo"] text {
   fill: var(--color-tinta);
+}
+
+[data-dibujo="frutos"] {
+  fill: var(--color-fruto);
+  stroke: var(--color-fruto-hondo);
 }

@@ -47,7 +47,10 @@ class EntidadConfirmarMaqueta implements EntidadConfirmarPuerto {
               "kg",
               true,
               "12 de 15 kg",
-              "Dos bolsas rotas."),
+              "Dos bolsas rotas.",
+              "12 de octubre, 10:00",
+              "13 de octubre, 11:00",
+              "14 de octubre, 9:10"),
           new EntidadEntregaVista(
               "ropa",
               "ropa de abrigo",
@@ -73,7 +76,10 @@ class EntidadConfirmarMaqueta implements EntidadConfirmarPuerto {
               "unidades",
               false,
               "8 de 10 unidades",
-              "Faltaba una caja."));
+              "Faltaba una caja.",
+              "11 de octubre, 9:30",
+              "12 de octubre, 16:00",
+              "13 de octubre, 10:15"));
 
   @Override
   public List<EntidadEntregaVista> entregas(UUID entidad, String pedida) {

@@ -4,11 +4,11 @@
        (docs/interfaz/componentes.md). Es la única respuesta a un envío con página propia (DA-06):
        dice qué pasó, qué quedó guardado y cómo seguir, y se puede volver a abrir. Arriba, las migas
        (vive en Entregas), el título con el sello de la entrega confirmada; la lámina protagonista
-       con el dibujo de la puerta (la raíz llega al quinto nudo) y los 5 pasos, cumplidos; debajo, lo
-       que quedó asentado y la necesidad, y la etiqueta de la entrega como la ve quien donó con qué
-       sigue. Quién recibió es la organización: el nombre de la persona no se guarda (HG-03). Los
-       frutos del mes y la fecha de los tres primeros pasos todavía no llegan a la vista de la
-       entrega (EntidadEntregaVista): no se dibujan ni se inventan.
+       con el dibujo de la puerta (la raíz llega al quinto nudo y el árbol tiene los frutos del mes)
+       y los 5 pasos, cumplidos, cada uno con su fecha; debajo, lo que quedó asentado y la necesidad,
+       y la etiqueta de la entrega como la ve quien donó con qué sigue. Quién recibió es la
+       organización: el nombre de la persona no se guarda (HG-03). Los frutos (frutos y mesFrutos,
+       del controller) son las recibidas del mes, contadas como en Inicio.
        Esta dirección (?entrega=lentejas o ropa; desde "Ver lo que quedó asentado" o, fuera de la
        maqueta, la respuesta al acta) muestra lo asentado; con recien (la respuesta al acta), el
        último tramo de la raíz se dibuja una vez. entidad-seguimiento-sellada-<clave>, la respuesta
@@ -51,12 +51,13 @@
 
     <th:block th:if="${e}">
       <!--/* La lámina del cierre (D7): el dibujo de la puerta con la raíz hasta el quinto nudo (D2) y
-             los 5 pasos en la lista, que dice lo mismo en texto. El dibujo es decorativo. Lo que la
-             entrega no trae (cuándo se registró, se asignó y se preparó) no se escribe. */-->
+             los frutos del mes, hasta cinco (D4), con la cifra completa debajo; y los 5 pasos en la
+             lista, que dice lo mismo en texto. El dibujo es decorativo. Un paso sin fecha en el
+             historial va sin ella: no se inventa. */-->
       <section class="tarjeta pila" data-espacio="3" data-papel="protagonista"
                aria-labelledby="pasos-titulo">
         <div class="grilla" data-espacio="4">
-          <figure>
+          <figure class="pila" data-espacio="2">
             <svg viewBox="0 0 640 400" aria-hidden="true" focusable="false">
               <use href="/img/ilustraciones/puerta.svg#puerta-fondo"
                    th:href="@{/img/ilustraciones/puerta.svg} + '#puerta-fondo'"/>
@@ -70,14 +71,22 @@
                 <circle cx="520" cy="318" r="13" stroke-width="2.5"/>
                 <text x="520" y="323.5" font-size="15" font-weight="700" text-anchor="middle">5</text>
               </g>
+              <g data-dibujo="frutos" stroke-width="2.5" th:if="${frutos > 0}"
+                 th:with="lugares=${ { {474, 138}, {498, 86}, {554, 90}, {574, 140}, {522, 124} } }">
+                <circle th:each="l, i : ${lugares}" th:if="${i.index < frutos}" r="10"
+                        th:attr="cx=${l[0]},cy=${l[1]}"/>
+              </g>
             </svg>
+            <figcaption>
+              <div th:replace="~{componentes/huerta :: frutos(${frutos}, |por tu organización en ${mesFrutos}|, ${recien})}"></div>
+            </figcaption>
           </figure>
           <div class="pila" data-espacio="3">
             <h2 id="pasos-titulo">Los 5 pasos, cumplidos</h2>
             <ol th:replace="~{componentes/huerta :: raiz-pasos(${ {
-                  {nombre: 'Registrada', avance: 'hecho'},
-                  {nombre: 'Asignada', avance: 'hecho', detalle: (e.pedido == null ? null : 'Para tu necesidad: ' + e.pedido)},
-                  {nombre: 'Preparada', avance: 'hecho'},
+                  {nombre: 'Registrada', avance: 'hecho', cuando: e.registrada},
+                  {nombre: 'Asignada', avance: 'hecho', cuando: e.asignada, detalle: (e.pedido == null ? null : 'Para tu necesidad: ' + e.pedido)},
+                  {nombre: 'Preparada', avance: 'hecho', cuando: e.preparada},
                   {nombre: 'En camino', avance: 'hecho', cuando: e.salio, detalle: e.llegaron},
                   {nombre: 'Entrega confirmada', avance: 'hecho', cuando: e.confirmo, detalle: 'La confirmó ' + cuenta.nombre + '.'} } }, null, null, ${recien})}"></ol>
           </div>

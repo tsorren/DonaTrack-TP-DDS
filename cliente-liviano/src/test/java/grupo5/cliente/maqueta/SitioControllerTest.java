@@ -319,6 +319,14 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("<dd>0001-00004521</dd>")))
         .andExpect(content().string(containsString("Recibió: Comedor Barrio Ejemplo")))
         .andExpect(content().string(containsString("Foto de ejemplo")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "6 entregas confirmadas</strong> por tu organización en octubre.")))
+        .andExpect(content().string(containsString("data-recien=\"si\"")))
+        .andExpect(content().string(containsString(">12 de octubre, 10:00</span>")))
+        .andExpect(content().string(containsString(">14 de octubre, 9:10</span>")))
         .andExpect(content().string(not(containsString("Marta"))))
         .andExpect(content().string(containsString("Te queda una en la puerta")))
         .andExpect(content().string(containsString("entidad-seguimiento-confirmar?entrega=ropa")));

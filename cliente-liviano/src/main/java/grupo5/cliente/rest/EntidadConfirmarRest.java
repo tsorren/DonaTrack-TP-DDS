@@ -1,16 +1,19 @@
 package grupo5.cliente.rest;
 
 import static grupo5.cliente.rest.Comun.ARGENTINA;
+import static grupo5.cliente.rest.Comun.ASIGNADA;
 import static grupo5.cliente.rest.Comun.DIA;
 import static grupo5.cliente.rest.Comun.DIA_Y_ANIO;
 import static grupo5.cliente.rest.Comun.DIA_Y_HORA;
 import static grupo5.cliente.rest.Comun.ES_AR;
 import static grupo5.cliente.rest.Comun.HORA;
+import static grupo5.cliente.rest.Comun.LISTA;
 import static grupo5.cliente.rest.Comun.PUERTA;
 import static grupo5.cliente.rest.Comun.cantidad;
 import static grupo5.cliente.rest.Comun.categoria;
 import static grupo5.cliente.rest.Comun.desde;
 import static grupo5.cliente.rest.Comun.icono;
+import static grupo5.cliente.rest.Comun.normalizado;
 
 import grupo5.cliente.puertos.EntidadConfirmarPuerto;
 import grupo5.cliente.rest.DonacionesApi.Categoria;
@@ -59,7 +62,8 @@ import org.springframework.web.multipart.MultipartFile;
  * <p>Recepción confirmada (ORG-12) arma la entrega ya confirmada con lo que Logística guarda de
  * ella ({@code GET /api/entregas/{id}}): el remito, la primera foto (solo si es una dirección web),
  * cuándo pasó a ENTREGADA y el problema que se contó. Quién la recibió no se guarda (HG-03): la
- * pantalla dice la organización.
+ * pantalla dice la organización. Cuándo se registró, se asignó y se preparó sale del historial de
+ * la donación, que ya llega con ella.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -290,7 +294,25 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
         unidad.isEmpty() ? "unidades" : unidad,
         "kg".equals(unidad) || "l".equals(unidad),
         a.llegoMenos(),
-        a.detalle());
+        a.detalle(),
+        d.fechaRegistro() == null ? null : d.fechaRegistro().format(DIA_Y_HORA),
+        paso(d, ASIGNADA),
+        paso(d, LISTA));
+  }
+
+  /**
+   * Cuándo la donación pasó a {@code estado} por última vez (hora local), del historial; si nunca
+   * pasó, null: a diferencia de {@code Comun.desde}, no cae en la fecha de registro.
+   */
+  private static String paso(DonacionesApi.Donacion d, String estado) {
+    return d.historial() == null
+        ? null
+        : d.historial().stream()
+            .filter(c -> c.timestamp() != null && normalizado(c.estadoNuevo()).equals(estado))
+            .map(DonacionesApi.Cambio::timestamp)
+            .max(Comparator.naturalOrder())
+            .map(t -> t.format(DIA_Y_HORA))
+            .orElse(null);
   }
 
   /**

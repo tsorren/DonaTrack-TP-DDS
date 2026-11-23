@@ -156,6 +156,9 @@ class EntidadConfirmarRestTest {
     assertEquals("kg", e.unidad());
     assertEquals(true, e.decimales());
     assertNull(e.remito());
+    assertNull(e.registrada());
+    assertNull(e.asignada());
+    assertNull(e.preparada());
     assertEquals("8 de noviembre de 2026", adaptador.hoy());
   }
 
@@ -269,6 +272,9 @@ class EntidadConfirmarRestTest {
         entregas.stream().map(EntidadEntregaVista::clave).toList());
     EntidadEntregaVista enLaPuerta = entregas.getFirst();
     assertEquals("8 de noviembre, 18:20", enLaPuerta.llego());
+    // Sin el cambio a ASIGNADA ni a LISTA en el historial, sin fecha: no cae en el registro
+    assertNull(enLaPuerta.asignada());
+    assertNull(enLaPuerta.preparada());
     assertEquals("Llegó a tu puerta el 8 de noviembre a las 18:20.", enLaPuerta.llegoFrase());
     assertNull(entregas.get(1).llego());
     assertEquals("Salió del depósito el 8 de noviembre a las 14:30.", entregas.get(1).llegoFrase());
@@ -283,8 +289,11 @@ class EntidadConfirmarRestTest {
                 """
                 [{"id": "%s", "descripcion": "Lentejas secas", "estadoActual": "ENTREGADA",
                   "items": [{"bien": {"categoria": {"id": "%s", "nombre": "Alimentos", "unidad": "KILOGRAMO"}}}],
-                  "cantidad": 15,
-                  "historial": [{"estadoNuevo": "EnPuerta", "timestamp": "2026-11-08T18:20:00"}]}]
+                  "cantidad": 15, "fechaRegistro": "2026-11-05T10:00:00",
+                  "historial": [
+                    {"estadoNuevo": "AsignacionRealizada", "timestamp": "2026-11-06T11:00:00"},
+                    {"estadoNuevo": "ListaParaEntregar", "timestamp": "2026-11-07T09:10:00"},
+                    {"estadoNuevo": "EnPuerta", "timestamp": "2026-11-08T18:20:00"}]}]
                 """
                     .formatted(DONACION, NECESIDAD),
                 MediaType.APPLICATION_JSON));
@@ -333,6 +342,10 @@ class EntidadConfirmarRestTest {
     assertEquals("Llegó a tu puerta el 8 de noviembre a las 18:20.", e.llegoFrase());
     assertEquals("12,5 de 15 kg", e.llegoMenos());
     assertEquals("Dos bolsas rotas.", e.detalle());
+    // Los tres primeros pasos, del historial de la donación (U3)
+    assertEquals("5 de noviembre, 10:00", e.registrada());
+    assertEquals("6 de noviembre, 11:00", e.asignada());
+    assertEquals("7 de noviembre, 9:10", e.preparada());
   }
 
   @Test
