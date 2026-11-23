@@ -182,12 +182,11 @@
 /entidad-inicio?escenario=sin-puerta
 /entidad-inicio?escenario=lento
 /entidad-inicio?escenario=error
-/entidad-recibidas
-/entidad-recibidas?estado=en-camino
-/entidad-recibidas?escenario=sin-resultados
-/entidad-recibidas?escenario=vacio
-/entidad-recibidas?escenario=lento
-/entidad-recibidas?escenario=error
+/entidad-seguimiento?estado=en-camino
+/entidad-seguimiento?escenario=sin-resultados
+/entidad-seguimiento?escenario=sin-puerta
+/entidad-entrega-problema
+/entidad-entrega-problema?entrega=pan
 /entidad-notificaciones
 /entidad-notificaciones-leidas
 /entidad-notificaciones?escenario=vacio

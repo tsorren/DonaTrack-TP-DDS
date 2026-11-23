@@ -30,9 +30,9 @@ import org.springframework.web.client.RestClientException;
  * La bandeja de la entidad desde Notificaciones, de a una página (R11-14): la página, "Sin leer",
  * la búsqueda, la categoría y el orden los resuelve el servicio, y el total y las sin leer son sus
  * números. La categoría y el título salen del tipo de evento (HB-09); sin tipo, "Otras novedades" y
- * "Novedad". Todas llevan a Donaciones recibidas. La que avisa que la entrega salió lleva además el
- * botón "Confirmar recepción" si Logística tiene esa donación en una entrega que todavía espera y
- * está entre las asignadas de la entidad, como lo exige Confirmar recepción (su clave es la de la
+ * "Novedad". Todas llevan a Entregas. La que avisa que la entrega salió lleva además el botón
+ * "Confirmar recepción" si Logística tiene esa donación en una entrega que todavía espera y está
+ * entre las asignadas de la entidad, como lo exige Confirmar recepción (su clave es la de la
  * entrega, no la de la donación que trae el aviso); si Logística o Donaciones no responden, queda
  * el vínculo simple. Eso se calcula solo para los avisos de la página.
  */
@@ -44,7 +44,7 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
 
   private static final DateTimeFormatter ISO = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
   private static final String EN_CAMINO = "DONACION_EN_CAMINO";
-  private static final String A_RECIBIDAS = "/entidad-recibidas";
+  private static final String A_ENTREGAS = "/entidad-seguimiento";
   private static final String NOVEDAD = "Novedad";
   private static final String CAMINO = "camino";
   private static final String ASIGNADAS = "asignadas";
@@ -135,7 +135,7 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
         n.fechaLectura() != null,
         titulo,
         n.mensaje() == null ? "" : n.mensaje(),
-        "Ver en Donaciones recibidas",
+        "Ver en Entregas",
         confirmable ? "Confirmar recepción" : null,
         confirmable ? n.mensaje() : null,
         confirmable ? "/entidad-seguimiento-confirmar?entrega=" + entrega : destino(tema),
@@ -162,10 +162,10 @@ class EntidadNotificacionesRest implements EntidadNotificacionesPuerto {
 
   static String destino(String tema) {
     return switch (tema) {
-      case CAMINO -> A_RECIBIDAS + "?estado=en-camino";
-      case ASIGNADAS -> A_RECIBIDAS + "?estado=por-salir";
-      case RECIBIDAS -> A_RECIBIDAS + "?estado=recibidas";
-      default -> A_RECIBIDAS;
+      case CAMINO -> A_ENTREGAS + "?estado=en-camino";
+      case ASIGNADAS -> A_ENTREGAS + "?estado=por-salir";
+      case RECIBIDAS -> A_ENTREGAS + "?estado=recibidas";
+      default -> A_ENTREGAS;
     };
   }
 

@@ -73,9 +73,9 @@ class RecibidasMaqueta implements RecibidasPuerto {
                   "10 litros",
                   ALMACEN,
                   "problema",
-                  "El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha.",
+                  "El camión no pudo llegar el 14 de octubre.",
                   null,
-                  "te avisamos la nueva fecha"),
+                  "no pudo llegar el 14 de octubre"),
               espera(
                   ARROZ,
                   "Arroz",

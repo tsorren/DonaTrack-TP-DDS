@@ -300,12 +300,12 @@
           <th:block th:text="|Mostramos ${#lists.size(n.entregas)} de ${n.puerta + n.camino + n.problema} entregas en curso.|">Mostramos
             3 de 5 entregas en curso.</th:block>
           <a
-             href="/entidad-recibidas?estado=en-tu-puerta&amp;estado=con-problema&amp;estado=en-camino&amp;estado=por-salir"
-             th:href="@{/entidad-recibidas(estado=${ {'en-tu-puerta', 'con-problema', 'en-camino', 'por-salir'} })}">Ver
+             href="/entidad-seguimiento?estado=en-tu-puerta&amp;estado=con-problema&amp;estado=en-camino&amp;estado=por-salir"
+             th:href="@{/entidad-seguimiento(estado=${ {'en-tu-puerta', 'con-problema', 'en-camino', 'por-salir'} })}">Ver
             todas</a>
         </p>
         <a href="/entidad-seguimiento"
-           th:href="@{/entidad-seguimiento}">Ver en Seguir entregas</a>
+           th:href="@{/entidad-seguimiento}">Ver en Entregas</a>
       </section>
 
       <section class="parte" th:aria-labelledby="|${n.clave}-donaron|">
@@ -324,8 +324,8 @@
         <p th:if="${n.hayMasRecibidas()}">
           <th:block th:text="|Mostramos las ${#lists.size(n.donaron)} más recientes de ${n.recibidas} recibidas.|">Mostramos
             las 3 más recientes de 8 recibidas.</th:block>
-          <a href="/entidad-recibidas?estado=recibidas"
-             th:href="@{/entidad-recibidas(estado='recibidas')}">Ver todas</a>
+          <a href="/entidad-seguimiento?estado=recibidas"
+             th:href="@{/entidad-seguimiento(estado='recibidas')}">Ver todas</a>
         </p>
       </section>
     </div>

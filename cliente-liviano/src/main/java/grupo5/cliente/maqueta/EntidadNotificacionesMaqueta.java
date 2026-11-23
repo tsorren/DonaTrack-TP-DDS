@@ -29,8 +29,8 @@ class EntidadNotificacionesMaqueta implements EntidadNotificacionesPuerto {
   private static final String NECESIDADES = "necesidades";
   private static final String RECIBIDAS = "recibidas";
   private static final String CONFIRMAR = "Confirmar recepción";
-  private static final String A_RECIBIDAS = "/entidad-recibidas?estado=recibidas";
-  private static final String A_EN_CAMINO = "/entidad-recibidas?estado=en-camino";
+  private static final String A_CONFIRMADAS = "/entidad-seguimiento?estado=recibidas";
+  private static final String A_EN_CAMINO = "/entidad-seguimiento?estado=en-camino";
 
   private static final String AHORA = "2026-10-15T18:30";
 
@@ -43,7 +43,7 @@ class EntidadNotificacionesMaqueta implements EntidadNotificacionesPuerto {
               false,
               "Llegó a tu puerta",
               "Lentejas secas, 15 kg, llegó a tu puerta. Confirmá la recepción con una foto.",
-              "Ver en Donaciones recibidas",
+              "Ver en Entregas",
               CONFIRMAR,
               "lentejas secas",
               "/entidad-seguimiento-confirmar?entrega=lentejas",
@@ -55,7 +55,7 @@ class EntidadNotificacionesMaqueta implements EntidadNotificacionesPuerto {
               false,
               "Entrega en camino",
               "Arroz, 20 kg, salió del depósito. Llega mañana.",
-              "Ver en Donaciones recibidas",
+              "Ver en Entregas",
               null,
               null,
               A_EN_CAMINO,
@@ -68,7 +68,7 @@ class EntidadNotificacionesMaqueta implements EntidadNotificacionesPuerto {
               "Llegó a tu puerta",
               "Ropa de abrigo, 10 unidades, llegó a tu puerta. Confirmá la recepción con una"
                   + " foto.",
-              "Ver en Donaciones recibidas",
+              "Ver en Entregas",
               CONFIRMAR,
               "ropa de abrigo",
               "/entidad-seguimiento-confirmar?entrega=ropa",
@@ -94,10 +94,10 @@ class EntidadNotificacionesMaqueta implements EntidadNotificacionesPuerto {
               "Nueva donación asignada",
               "Se asignó a tu necesidad de leche en polvo una donación de 12 unidades. Sale"
                   + " del depósito el 17 de octubre.",
-              "Ver en Donaciones recibidas",
+              "Ver en Entregas",
               null,
               null,
-              "/entidad-recibidas?estado=por-salir",
+              "/entidad-seguimiento?estado=por-salir",
               null),
           new Novedad(
               "n6",
@@ -106,10 +106,10 @@ class EntidadNotificacionesMaqueta implements EntidadNotificacionesPuerto {
               true,
               "Entrega recibida",
               "Lentejas secas, 10 kg, llegó a tu puerta.",
-              "Ver en Donaciones recibidas",
+              "Ver en Entregas",
               null,
               null,
-              A_RECIBIDAS,
+              A_CONFIRMADAS,
               "Confirmaste la recepción el 10 de octubre."),
           new Novedad(
               "n7",
@@ -118,7 +118,7 @@ class EntidadNotificacionesMaqueta implements EntidadNotificacionesPuerto {
               true,
               "Nueva donación asignada",
               "Se asignó a tu necesidad de arroz una donación de 20 kg.",
-              "Ver en Donaciones recibidas",
+              "Ver en Entregas",
               null,
               null,
               A_EN_CAMINO,
@@ -130,10 +130,10 @@ class EntidadNotificacionesMaqueta implements EntidadNotificacionesPuerto {
               true,
               "Entrega recibida",
               "Fideos secos, 10 kg, llegó a tu puerta.",
-              "Ver en Donaciones recibidas",
+              "Ver en Entregas",
               null,
               null,
-              A_RECIBIDAS,
+              A_CONFIRMADAS,
               "Confirmaste la recepción el 28 de septiembre."));
 
   /** Las categorías del menú: todas las del rol. */

@@ -2,27 +2,19 @@
 # backlog, sus clases salen de acá y entran a docs/interfaz/componentes.md. No se agregan clases nuevas.
 acciones
 acta
-acta-cuanto
 acta-entrega
 acta-formulario
-acta-paso
-acta-titulo
-actas
 armazon
 armazon-avisos
 armazon-avisos-cuenta
 armazon-avisos-texto
 asentado
 asentado-pedido
-asiento
-asiento-fecha
-asiento-texto
 aviso-acciones
 aviso-codigo
 bajada
 boton--google
 cambiar
-camion
 campo--corto
 campos-par
 casilla
@@ -47,7 +39,6 @@ confirmar-cabecera
 contacto
 contacto-cuenta
 contacto-lamina
-cuaderno-recibidas
 cuenta
 cuenta--enviada
 cuenta--ingresar
@@ -104,7 +95,6 @@ foto
 foto-falta
 fruto
 grupo
-grupos
 hito
 iconos
 inicio
@@ -127,9 +117,7 @@ mesa
 mesa-cabecera
 mesa-fecha
 mesa-resumen
-mostrando
 necesidades
-nodo-numero
 nota
 noticias-inicio
 noticias-todas
@@ -172,7 +160,6 @@ raiz
 raiz-detalle
 raiz-nombre
 raiz-paso
-recibidas
 recibido
 recibido-sello
 registro-mesa
@@ -199,9 +186,6 @@ siguiente-que
 sin-dibujar
 solo-lectores
 subte-borde
-subte-estacion
-subte-hueco
-subte-hueco-centro
 subte-linea
 tierra-impresa
 todo

@@ -111,14 +111,14 @@ class EntidadNotificacionesRestTest {
     assertFalse(asignada.leida());
     assertEquals("asignadas", asignada.tema());
     assertEquals("Nueva donación asignada", asignada.titulo());
-    assertEquals("Ver en Donaciones recibidas", asignada.vinculo());
-    assertEquals("/entidad-recibidas?estado=por-salir", asignada.destino());
+    assertEquals("Ver en Entregas", asignada.vinculo());
+    assertEquals("/entidad-seguimiento?estado=por-salir", asignada.destino());
     assertNull(asignada.boton());
     Novedad vieja = vista.pagina().filas().get(1);
     assertTrue(vieja.leida());
     assertEquals("otras", vieja.tema());
     assertEquals("Novedad", vieja.titulo());
-    assertEquals("/entidad-recibidas", vieja.destino());
+    assertEquals("/entidad-seguimiento", vieja.destino());
   }
 
   @Test
@@ -149,8 +149,8 @@ class EntidadNotificacionesRestTest {
     assertEquals(
         List.of("Entrega recibida", "La entrega tuvo un problema", "Novedad"),
         filas.stream().map(Novedad::titulo).toList());
-    assertEquals("/entidad-recibidas?estado=recibidas", filas.get(0).destino());
-    assertEquals("/entidad-recibidas", filas.get(1).destino());
+    assertEquals("/entidad-seguimiento?estado=recibidas", filas.get(0).destino());
+    assertEquals("/entidad-seguimiento", filas.get(1).destino());
   }
 
   @Test
@@ -269,7 +269,7 @@ class EntidadNotificacionesRestTest {
     servidor.verify();
     for (Novedad n : List.of(entregada, sinLogistica)) {
       assertNull(n.boton());
-      assertEquals("/entidad-recibidas?estado=en-camino", n.destino());
+      assertEquals("/entidad-seguimiento?estado=en-camino", n.destino());
     }
   }
 
@@ -286,7 +286,7 @@ class EntidadNotificacionesRestTest {
 
     servidor.verify();
     assertNull(ajena.boton());
-    assertEquals("/entidad-recibidas?estado=en-camino", ajena.destino());
+    assertEquals("/entidad-seguimiento?estado=en-camino", ajena.destino());
   }
 
   @Test

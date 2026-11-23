@@ -1,23 +1,27 @@
 <!DOCTYPE html>
-<!--/* Raíces, Seguir entregas de la entidad (RF-14), según su ficha de flujo
-       (docs/interfaz/flujos/raices-entidad-navegable.md, sección 4.5): las entregas asignadas al
-       Comedor Barrio Ejemplo que todavía no confirmó, en el orden de lo que hay que hacer (en la
-       puerta, con problema, en camino y pendiente). Es un sistema de raíces: la puerta de la entidad
-       arriba, en la línea de tierra, con su dirección exacta, y una raíz por entrega que baja hasta
-       el depósito de donde viene, con el sello de su estado donde va y la abeja en una posición
-       aproximada (ronda del 2026-11-09: antes, la puerta al centro). Las cifras por estado y el dibujo
-       van juntos en un bloque que en pantalla grande queda fijo arriba mientras la lista se mueve al
-       lado; cada cifra lleva a la primera entrega de su estado. El
-       dibujo es fijo para las 5 del ejemplo (en el sistema, MapLibre, D21) y va oculto a los
-       lectores: la lista dice todo, con el mismo número (RF-CL-06). Las donaciones salen de
-       piezas-entidad.html (datos), las mismas de Inicio y Donaciones recibidas; la última noticia de
-       cada una, del controller (noticiasDeEntregas: de la maqueta o de Logística). Fuera de la
-       maqueta el dibujo sigue siendo el del ejemplo.
-       ?escenario=vacio, lento y error. */-->
+<!--/* Entregas de la organización (RF-11 y RF-14): el arquetipo A10 de la guía «Huerta y galpón»
+       (docs/interfaz/guia/partes/50-pantallas.html, #entregas), hecho con las piezas del catálogo
+       (docs/interfaz/componentes.md). Funde Donaciones recibidas y Seguir entregas (DA-02):
+       /entidad-recibidas redirige acá con la misma consulta. Dos estados, que decide el servidor con
+       lo asignado: con una entrega en la puerta, la lámina protagonista «Para confirmar» con la única
+       acción llena; sin ella, la lámina no está y la bajada lo dice. Debajo, tarjetas de un solo tema
+       en un orden fijo: por llegar (primero la que tiene un problema, que lleva a su página,
+       /entidad-entrega-problema; la nueva salida no llega: HG-01) y las confirmadas, con los frutos
+       del mes y quién recibió (HG-03: el nombre de la organización). La búsqueda y los filtros son
+       el componente listado (lo arma EntidadSeguimientoController): la fecha de registro, el estado
+       (?estado=en-tu-puerta, con-problema, en-camino, por-salir o recibidas, repetido o separado por
+       coma), la categoría, quien donó (si la fuente lo filtra) y el orden. Las donaciones salen de
+       piezas-entidad.html (datos), las mismas de Inicio; la última noticia de cada una, del
+       controller (noticiasDeEntregas).
+       R11-43: con los datos reales llega una página de 20 (ya filtrada por Donaciones) y las cifras
+       de cada grupo (recibidas.cuantas) y del mes (recibidas.enElMes) las cuenta Donaciones. La
+       maqueta deja cuantas en null: las cifras salen de la lista.
+       ?escenario=vacio, sin-puerta (después de confirmar), lento, error y sin-resultados (el aceite
+       ya no está y el filtro queda en Con problema). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-seguimiento', ~{::contenido})}">
 <head>
-  <title>Seguir entregas - DonaTrack</title>
+  <title>Entregas - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
@@ -25,205 +29,165 @@
 </th:block>
 
 <th:block th:fragment="cuerpo"
-    th:with="vienen=${asignadas.?[grupo != 'recibida']},
-             conDatos=${escenario == '' and !#lists.isEmpty(vienen)},
+    th:with="paginada=${recibidas.cuantas != null},
+             pedidos=${param.estado != null ? ',' + #strings.arrayJoin(param.estado, ',') + ',' : (escenario == 'sin-resultados' ? ',con-problema,' : '')},
+             elegidos=${grupos.?[#root.pedidos.contains(',' + valor + ',')]},
+             claves=${elegidos.![clave]},
+             filtrada=${!#lists.isEmpty(elegidos)},
+             conFiltros=${listado.filtrada() or filtrada},
+             soloEstado=${filtrada and listado.elegidos() == 1 + (listado.orden.elegida() ? 1 : 0)},
+             vacia=${escenario == 'vacio' or (escenario != 'lento' and escenario != 'error' and !conFiltros and #lists.isEmpty(asignadas))},
+             conLista=${!vacia and escenario != 'error'},
+             conDatos=${conLista and escenario != 'lento'},
+             encontradas=${filtrada ? asignadas.?[#root.claves.contains(grupo)] : asignadas},
+             puerta=${encontradas.?[grupo == 'puerta']},
+             porLlegar=${#lists.size(encontradas.?[grupo == 'problema' or grupo == 'camino' or grupo == 'salir'])},
+             conProblema=${!#lists.isEmpty(encontradas.?[grupo == 'problema'])},
+             confirmadas=${encontradas.?[grupo == 'recibida']},
+             frutos=${recibidas.enElMes != null ? recibidas.enElMes : #lists.size(confirmadas)},
              noticias=${noticiasDeEntregas}">
-  <header class="cabecera-entidad">
-    <p class="rotulo" th:text="${seccion}">Seguir entregas</p>
-    <h1>Lo que viene a tu puerta</h1>
-    <p>Las entregas asignadas a <th:block th:text="${cuenta.nombre}">Comedor Barrio Ejemplo</th:block>,
-      desde que salen del depósito hasta que confirmás la recepción. Tu dirección es exacta; la del
-      camión, aproximada. <th:block th:text="|Al ${recibidas.actualizado}.|">Al 15 de octubre de 2026, 18:30.</th:block></p>
-    <th:block th:if="${conDatos and sinLeer > 0}">
-      <a th:replace="~{piezas-entidad :: novedades(${sinLeer})}"></a>
+  <div class="pila" data-espacio="5">
+    <header class="pila" data-espacio="1">
+      <h1>Entregas</h1>
+      <p data-tono="suave"><th:block th:text="|${cuenta.nombre}. Al ${recibidas.actualizado}.|">Comedor
+        Barrio Ejemplo. Al 15 de octubre de 2026, 18:30.</th:block><th:block
+          th:if="${conDatos and !conFiltros and #lists.isEmpty(puerta)}"> No tenés entregas para
+        confirmar.</th:block></p>
+    </header>
+
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{piezas-entidad :: error('No pudimos cargar tus entregas.',
+               'Es un problema nuestro: no cambió nada en tus entregas. Probá de nuevo en unos minutos; si sigue,',
+               '/entidad-seguimiento')}"></section>
     </th:block>
-  </header>
 
-  <th:block th:if="${escenario == 'error'}">
-    <section th:replace="~{piezas-entidad :: error('No pudimos cargar tus entregas.',
-             'Es un problema nuestro: no cambió nada en tus entregas. Probá de nuevo en unos minutos; si sigue,',
-             '/entidad-seguimiento')}"></section>
-  </th:block>
+    <section th:if="${vacia}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">Todavía no se asignaron donaciones a tu organización.</h2>
+      <p>Se asignan a lo que pedís: publicá tus necesidades y, cuando se asigne una donación, vas a
+        ver acá cuándo llega a tu puerta.</p>
+      <a class="boton" data-tono="principal" href="/entidad-necesidades"
+         th:href="@{/entidad-necesidades}">Ver tus necesidades</a>
+    </section>
 
-  <section th:if="${escenario == 'vacio' or (escenario == '' and #lists.isEmpty(vienen))}" class="vacio"
-           aria-labelledby="vacio-titulo">
-    <h2 id="vacio-titulo">No tenés entregas por recibir.</h2>
-    <p>Cuando se asigne una donación a tu organización, vas a ver acá por dónde viene y cuándo llega a tu
-      puerta.</p>
-    <a class="boton" data-tono="secundario" href="/entidad-necesidades"
-       th:href="@{/entidad-necesidades}">Ver tus necesidades</a>
-  </section>
+    <!--/* La búsqueda y los filtros: el componente listado. */-->
+    <th:block th:if="${conLista}"><form th:replace="~{componentes/listado :: listado(${listado})}"></form></th:block>
 
-  <th:block th:if="${escenario == 'lento'}">
-    <p class="cargando" role="status">Cargando tus entregas…</p>
-    <div class="mapa-cuerpo" aria-busy="true">
-      <div class="esqueleto" data-forma="hueco" data-tamano="alto"></div>
-      <div class="esqueleto" data-forma="hueco" data-tamano="alto"></div>
-    </div>
-  </th:block>
+    <th:block th:if="${escenario == 'lento'}">
+      <p class="cargando" role="status">Cargando tus entregas…</p>
+      <div class="pila" data-espacio="3" aria-busy="true">
+        <div class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
+        <div class="esqueleto" data-forma="hueco" data-tamano="alto"></div>
+      </div>
+    </th:block>
 
-  <th:block th:if="${conDatos}">
+    <th:block th:if="${conDatos}">
+      <!--/* Con un filtro puesto: cuál es. «Sacar los filtros» está en la barra. */-->
+      <p th:if="${conFiltros and !#lists.isEmpty(encontradas)}" data-tono="suave"
+         th:text="${soloEstado} ? |Mostrando: ${#strings.listJoin(elegidos.![clave == 'recibida' ? 'Confirmadas' : nombre], ', ')} (${paginada ? recibidas.total : #lists.size(encontradas)}).| : |Mostrando ${paginada ? recibidas.total : #lists.size(encontradas)} con esos filtros.|">Mostrando:
+        En camino (1).</p>
+      <section th:if="${conFiltros and #lists.isEmpty(encontradas)}" class="vacio"
+               aria-labelledby="sinres-titulo" tabindex="-1" autofocus>
+        <h2 id="sinres-titulo" th:text="${soloEstado and #lists.size(elegidos) == 1} ? 'No hay entregas en ese estado.' : (${soloEstado} ? 'No hay entregas en esos estados.' : 'No hay entregas con esos filtros.')">No
+          hay entregas en ese estado.</h2>
+        <p>Probá con otras fechas, otro estado o categoría, o mirá todas.</p>
+        <a class="boton" data-tono="secundario" href="/entidad-seguimiento"
+           th:href="@{/entidad-seguimiento}">Ver todas</a>
+      </section>
 
-  <svg th:replace="~{iconos :: categorias}"></svg>
-
-  <div class="mapa-cuerpo">
-    <!--/* El bloque fijo: las cifras por estado y el dibujo, juntos (en pantalla grande, sticky). */-->
-    <div>
-    <!--/* Las cifras por estado: el agrupador de la lista. Cada una lleva a la primera entrega de su
-           estado, que queda resaltada en el dibujo y en la lista. */-->
-    <section class="cifras" aria-labelledby="cifras-titulo">
-      <h2 id="cifras-titulo" class="cifras-titulo">Tus entregas, por estado</h2>
-      <dl>
-        <div class="cifra" th:each="g : ${grupos.?[clave != 'recibida']}"
-             th:with="primera=${vienen.^[grupo == #root.g.clave]}">
-          <dt><a th:if="${primera != null}" href="#entrega-lentejas" th:href="|#entrega-${primera.clave}|"><span
-              class="estado" th:data-estado="${g.clave}"><th:block
-              th:replace="~{componentes/sello :: sello(${g.clave})}"></th:block><th:block
-              th:text="${g.nombre}">Esperan tu confirmación</th:block></span></a><span th:if="${primera == null}"
-              class="estado" th:data-estado="${g.clave}"><th:block
-              th:replace="~{componentes/sello :: sello(${g.clave})}"></th:block><th:block
-              th:text="${g.nombre}">Esperan tu confirmación</th:block></span></dt>
-          <!--/* R11-43: con los datos reales, la cifra la cuenta Donaciones (la lista es una página). */-->
-          <dd th:text="${recibidas.cuantas != null ? recibidas.cuantas[g.clave] : #lists.size(vienen.?[grupo == #root.g.clave])}">2</dd>
+      <!--/* Para confirmar: la lámina protagonista, una sola por pantalla (D7), con la única acción
+             llena. Después de confirmar, no está. */-->
+      <section th:unless="${#lists.isEmpty(puerta)}" class="tarjeta pila" data-papel="protagonista"
+               data-espacio="3" aria-labelledby="confirmar-titulo">
+        <div class="racimo" data-alinea="entre arriba">
+          <h2 id="confirmar-titulo">Para confirmar</h2>
+          <span th:replace="~{componentes/sello :: pedido()}"></span>
         </div>
-      </dl>
-    </section>
-
-    <!--/* El dibujo, fijo para las 5 del ejemplo: la puerta de la entidad arriba, en la línea de tierra
-           (450, 80), y una raíz por entrega que baja hasta su depósito, al pie. Lo recorrido, impreso;
-           lo que falta, punteado. 1 y 2 (lentejas y ropa) llegaron: impresas hasta la puerta, con su
-           sello junto a ella. 3 (aceite), con problema: impresa hasta donde se cortó. 4 (arroz), en
-           camino: impresa hasta la abeja, a mitad de camino. 5 (leche), pendiente: punteada, con su
-           sello junto al depósito. Los números son los de la lista. */-->
-    <figure th:if="${dibujoDeEjemplo}" class="mapa-dibujo tierra-impresa" aria-hidden="true">
-      <svg class="dibujo" viewBox="0 0 900 590" aria-hidden="true" focusable="false">
-        <path class="dibujo-tierra" d="M0 80H900"/>
-
-        <g class="estacion estacion--1">
-          <path class="subte-borde" d="M90 500V300L450 80"/>
-          <path class="subte-linea" d="M90 500V300L450 80"/>
-          <g transform="translate(399 111)">
-            <circle class="sello-tinta" cx="2" cy="2" r="13"/><circle class="sello-hecho" r="13"/>
-          </g>
-          <g transform="translate(90 500)">
-            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-            <text class="nodo-numero" y="7">1</text>
-          </g>
-          <text class="dibujo-rotulo" x="90" y="548">Depósito</text>
-        </g>
-
-        <g class="estacion estacion--2">
-          <path class="subte-borde" d="M270 500V300L450 80"/>
-          <path class="subte-linea" d="M270 500V300L450 80"/>
-          <g transform="translate(390 154)">
-            <circle class="sello-tinta" cx="2" cy="2" r="13"/><circle class="sello-hecho" r="13"/>
-          </g>
-          <g transform="translate(270 500)">
-            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-            <text class="nodo-numero" y="7">2</text>
-          </g>
-          <text class="dibujo-rotulo" x="270" y="548">Depósito</text>
-        </g>
-
-        <g class="estacion estacion--3">
-          <path class="subte-hueco" d="M450 288V102"/>
-          <path class="subte-hueco-centro" d="M450 288V102"/>
-          <path class="subte-borde" d="M450 500V316"/>
-          <path class="subte-linea" d="M450 500V316"/>
-          <g transform="translate(450 302)">
-            <circle class="sello-problema" r="13"/>
-            <path class="sello-calado" d="M0 -6V2M0 6V6.5"/>
-          </g>
-          <g transform="translate(450 500)">
-            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-            <text class="nodo-numero" y="7">3</text>
-          </g>
-          <text class="dibujo-rotulo" x="450" y="548">Depósito</text>
-        </g>
-
-        <g class="estacion estacion--4">
-          <path class="subte-hueco" d="M617 285L450 80"/>
-          <path class="subte-hueco-centro" d="M617 285L450 80"/>
-          <path class="subte-borde" d="M630 500V318"/>
-          <path class="subte-linea" d="M630 500V318"/>
-          <g class="camion" transform="translate(630 300)">
-            <circle r="18"/>
-            <path class="sello-medio" d="M0 -18A18 18 0 0 0 0 18Z"/>
-            <image href="/img/ilustraciones/abeja-arriba.svg" th:href="@{/img/ilustraciones/abeja-arriba.svg}"
-                   x="-4" y="-46" width="44" height="44"/>
-          </g>
-          <g transform="translate(630 500)">
-            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-            <text class="nodo-numero" y="7">4</text>
-          </g>
-          <text class="dibujo-rotulo" x="630" y="548">Depósito</text>
-        </g>
-
-        <g class="estacion estacion--5">
-          <path class="subte-hueco" d="M810 482V300L450 80"/>
-          <path class="subte-hueco-centro" d="M810 482V300L450 80"/>
-          <g transform="translate(810 452)">
-            <circle class="sello-contorno sello-contorno--punteado" r="12"/>
-          </g>
-          <g transform="translate(810 500)">
-            <circle class="sello-tinta" cx="3" cy="3" r="18"/><circle class="sello-disco" r="18"/>
-            <text class="nodo-numero" y="7">5</text>
-          </g>
-          <text class="dibujo-rotulo" x="810" y="548">Depósito</text>
-        </g>
-
-        <!--/* La puerta de la entidad: el nodo principal, arriba, en la línea de tierra, con su nombre y
-               su dirección exacta sobre la tierra. */-->
-        <circle class="subte-estacion" cx="450" cy="80" r="22"/>
-        <text class="dibujo-rotulo dibujo-rotulo--papel" x="486" y="38"
-              th:text="|Tu puerta · ${cuenta.nombre}|">Tu puerta · Comedor Barrio Ejemplo</text>
-        <text class="dibujo-rotulo dibujo-rotulo--papel" x="486" y="62">Calle Ejemplo 450</text>
-      </svg>
-    </figure>
-    </div>
-
-    <!--/* La lista: lo mismo que el dibujo, con el mismo número. Al pasar o enfocar una entrega, su
-           línea queda llena y las demás se apagan (bloque mapa). */-->
-    <section class="mapa-lista" aria-labelledby="lista-titulo">
-      <h2 id="lista-titulo">Entrega por entrega</h2>
-      <ol class="estaciones" role="list">
-        <li th:each="d, vuelta : ${vienen}" class="estacion-ficha"
-            th:classappend="|estacion-ficha--${vuelta.count}|" th:id="|entrega-${d.clave}|" tabindex="-1"
-            th:with="g=${grupos.^[clave == #root.d.grupo]}">
-          <header class="estacion-cabeza">
-            <svg class="estacion-sello" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle
-                class="sello-tinta" cx="24" cy="24" r="19"/><circle class="sello-disco" cx="21" cy="21" r="19"/><text
-                class="nodo-numero" x="21" y="29" th:text="${vuelta.count}">1</text></svg>
-            <div>
-              <h3 th:text="${d.nombre}">Lentejas secas</h3>
-              <p><svg th:if="${d.categoria != null}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-                  <use href="#cat-alimentos" th:href="|#${d.categoria}|"/></svg>
-                <th:block th:text="|${d.categoriaNombre != null ? d.categoriaNombre + ' · ' : ''}${d.cuanto} · Donó ${d.dono}|">Alimentos · 15 kg · Donó
-                Distribuidora Ejemplo SA</th:block></p>
+        <ul class="pila" data-espacio="4" role="list">
+          <li th:each="d : ${puerta}" class="pila" data-espacio="2" th:id="|entrega-${d.clave}|">
+            <p><strong th:text="|${d.nombre}, ${d.cuanto}|">Lentejas secas, 15 kg</strong><th:block
+                th:text="|, de ${d.dono}. ${d.llego != null ? d.llego : d.paso}|">, de Distribuidora
+              Ejemplo SA. Llegó hoy, 18:20, desde el Depósito Central.</th:block></p>
+            <div class="racimo">
+              <a class="boton" data-tono="principal" href="/entidad-seguimiento-confirmar?entrega=lentejas"
+                 th:href="@{/entidad-seguimiento-confirmar(entrega=${d.clave})}">Confirmar
+                recepción<span class="solo-lectores" th:text="|: ${d.nombre}|">: Lentejas secas</span></a>
             </div>
-          </header>
-          <p class="estado" th:data-estado="${d.grupo}">
-            <svg th:replace="~{componentes/sello :: sello(${d.grupo})}"></svg>
-            <th:block th:text="${g.estado}">Espera tu confirmación</th:block></p>
-          <p th:text="${d.paso}">Llegó a tu puerta hoy a las 18:20. Espera tu confirmación.</p>
-          <p th:if="${noticias[d.clave] != null}" th:text="${noticias[d.clave]}">Última noticia: 14 de
-            octubre, 16:40.</p>
-          <a th:if="${d.grupo == 'puerta'}" class="boton" data-tono="principal"
-             href="/entidad-seguimiento-confirmar?entrega=lentejas"
-             th:href="@{/entidad-seguimiento-confirmar(entrega=${d.clave})}">Confirmar
-            recepción<span class="solo-lectores" th:text="${d.pedidoNombre == null} ? '' : |: ${d.pedidoNombre}|">: lentejas secas</span></a>
-          <a th:if="${d.grupo == 'problema'}" class="boton" data-tono="secundario"
-             href="/entidad-necesidades?necesidad=aceite"
-             th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu necesidad</a>
-        </li>
-      </ol>
+          </li>
+        </ul>
+        <p data-tono="suave">Con tu confirmación y la foto, quien donó ve que llegó. Si llegó con un
+          problema, lo contás en el mismo formulario.</p>
+      </section>
+
+      <!--/* Por llegar: una tarjeta por entrega, primero la que tiene un problema. */-->
+      <section th:unless="${porLlegar == 0}" class="pila" data-espacio="3"
+               aria-labelledby="llegar-titulo">
+        <h2 id="llegar-titulo">Por llegar</h2>
+        <ul class="lista" role="list">
+          <th:block th:each="g : ${ {'problema', 'camino', 'salir'} }">
+            <li th:each="d : ${encontradas.?[grupo == #root.g]}" th:id="|entrega-${d.clave}|"
+                th:with="estado=${grupos.^[clave == #root.d.grupo]}">
+              <article class="tarjeta pila" data-espacio="1" th:aria-labelledby="|titulo-${d.clave}|">
+                <div class="racimo" data-alinea="entre arriba">
+                  <h3 th:id="|titulo-${d.clave}|" th:text="|${d.nombre}, ${d.cuanto}|">Aceite de
+                    girasol, 10 litros</h3>
+                  <span class="estado" th:data-estado="${d.grupo}" data-estado="problema"><th:block
+                      th:replace="~{componentes/sello :: sello(${d.grupo})}"></th:block><th:block
+                      th:text="${estado.estado}">Con problema</th:block></span>
+                </div>
+                <p data-tono="suave" class="texto-chico" th:text="|De ${d.dono}|">De Almacén Ejemplo SRL</p>
+                <!--/* La nueva salida no llega del backend (HG-01). */-->
+                <p><th:block th:text="${d.paso}">El camión no pudo llegar el 14 de octubre.</th:block><th:block
+                    th:if="${d.grupo == 'problema'}"> Todavía sin fecha de nueva salida.</th:block></p>
+                <p th:if="${noticias[d.clave] != null}" data-tono="suave" class="texto-chico"
+                   th:text="${noticias[d.clave]}">Última noticia: 14 de octubre, 16:40.</p>
+                <a th:if="${d.grupo == 'problema'}" href="/entidad-entrega-problema?entrega=aceite"
+                   th:href="@{/entidad-entrega-problema(entrega=${d.clave})}">Ver el detalle<span
+                    class="solo-lectores" th:text="| de ${d.nombre}|"> de Aceite de girasol</span></a>
+                <a th:if="${d.grupo != 'problema' and d.pedido != null}"
+                   href="/entidad-necesidades?necesidad=arroz"
+                   th:href="@{/entidad-necesidades(necesidad=${d.pedido})}"
+                   th:text="|Para tu necesidad de ${d.pedidoNombre}|">Para tu necesidad de arroz</a>
+              </article>
+            </li>
+          </th:block>
+        </ul>
+        <p data-tono="suave" class="texto-chico"><th:block
+            th:text="${porLlegar == 1} ? |1 entrega por llegar al ${recibidas.actualizado}.| : |${porLlegar} entregas por llegar al ${recibidas.actualizado}.|">3
+          entregas por llegar al 15 de octubre de 2026, 18:30.</th:block><th:block
+            th:if="${conProblema and porLlegar > 1}"> Primero va la que tiene un problema.</th:block></p>
+      </section>
+
+      <!--/* Las confirmadas: los frutos del mes (D4) y una fila por entrega, de la última a la primera.
+             Quién recibió no llega del backend (HG-03): va el nombre de la organización. */-->
+      <section th:unless="${#lists.isEmpty(confirmadas)}" class="pila" data-espacio="3"
+               aria-labelledby="confirmadas-titulo">
+        <h2 id="confirmadas-titulo"
+            th:text="${paginada} ? 'Confirmadas' : |Confirmadas en ${recibidas.mes}|">Confirmadas en
+          octubre</h2>
+        <div th:replace="~{componentes/huerta :: frutos(${frutos}, |por tu organización en ${recibidas.mes}|, false)}"></div>
+        <ul class="lista" data-forma="filas" role="list">
+          <li th:each="d : ${confirmadas}" th:id="|entrega-${d.clave}|">
+            <div>
+              <strong th:text="|${d.nombre}, ${d.cuanto}|">Lentejas secas, 10 kg</strong>
+              <span class="estado" data-estado="confirmada"><th:block
+                  th:replace="~{componentes/sello :: sello('confirmada')}"></th:block>Entrega confirmada</span>
+              <span data-tono="suave" class="texto-chico"
+                    th:text="|De ${d.dono}.${d.pedidoNombre != null ? ' Para tu necesidad de ' + d.pedidoNombre + '.' : ''}|">De
+                Almacén Ejemplo SRL. Para tu necesidad de lentejas secas.</span>
+              <span data-tono="suave" class="texto-chico"
+                    th:text="${d.dia != null} ? |Recibió: ${cuenta.nombre}, el ${d.dia} de ${recibidas.mesDe(d)}.| : |Recibió: ${cuenta.nombre}. ${d.paso}|">Recibió:
+                Comedor Barrio Ejemplo, el 10 de octubre.</span>
+            </div>
+          </li>
+        </ul>
+        <p data-tono="suave" class="texto-chico"
+           th:text="${#lists.size(confirmadas) == 1} ? 'Mostrando 1 entrega confirmada.' : |Mostrando ${#lists.size(confirmadas)} entregas confirmadas.|">Mostrando
+          6 entregas confirmadas.</p>
+      </section>
+
       <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
-      <p>Las que ya recibiste, con su foto, están en Donaciones recibidas.
-        <a href="/entidad-recibidas?estado=recibidas" th:href="@{/entidad-recibidas(estado='recibidas')}">Ver
-          las recibidas</a></p>
-    </section>
+    </th:block>
   </div>
-  </th:block>
 </th:block>
 </body>
 </html>

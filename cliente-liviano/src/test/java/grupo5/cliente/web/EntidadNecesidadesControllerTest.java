@@ -267,13 +267,13 @@ class EntidadNecesidadesControllerTest {
         .andExpect(content().string(containsString("min=\"2026-11-08\"")))
         .andExpect(content().string(containsString("Desde hoy, 8 de noviembre, en adelante.")))
         .andExpect(content().string(containsString("Cumplidas y terminadas (1)")))
-        // Regla 2: el resumen de las entregas en curso lleva "Ver todas", a Recibidas en curso
+        // Regla 2: el resumen de las entregas en curso lleva "Ver todas", a Entregas en curso
         .andExpect(content().string(containsString("Mostramos 1 de 5 entregas en curso.")))
         .andExpect(
             content()
                 .string(
                     containsString(
-                        "href=\"/entidad-recibidas?estado=en-tu-puerta&amp;estado=con-problema"
+                        "href=\"/entidad-seguimiento?estado=en-tu-puerta&amp;estado=con-problema"
                             + "&amp;estado=en-camino&amp;estado=por-salir\">Ver")))
         .andExpect(content().string(not(containsString("null"))))
         .andExpect(content().string(not(containsString("15 de octubre"))));

@@ -64,12 +64,14 @@ public class Pantallas {
 
   /**
    * Pantallas que son parte de una sección aunque su nombre no empiece con el de ella: la pestaña
-   * Importaciones es de Donantes (R11-20) y la pestaña Actividad, de Administradores (R11-26).
+   * Importaciones es de Donantes (R11-20), la pestaña Actividad, de Administradores (R11-26), y la
+   * entrega con problema, de Entregas de la organización (ORG-08).
    */
   private static final Map<String, String> EN_LA_SECCION =
       Map.of(
           "admin-importaciones", "admin-donantes",
-          "admin-actividad", "admin-administradores");
+          "admin-actividad", "admin-administradores",
+          "entidad-entrega-problema", "entidad-seguimiento");
 
   private static final String SIN_DIBUJAR = "sin-dibujar";
   private static final String INICIO = "Inicio";
@@ -101,8 +103,8 @@ public class Pantallas {
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "entidad-inicio"),
               new Seccion("Necesidades", "necesidades", "entidad-necesidades"),
-              new Seccion(DONACIONES, ICONO_DONACIONES, "entidad-recibidas"),
-              new Seccion("Seguir entregas", "Entregas", ICONO_SEGUIMIENTO, "entidad-seguimiento")),
+              new Seccion("Entregas", "entregas", "entidad-seguimiento"),
+              new Seccion("Ayuda", "ayuda", "publico-para-entidades")),
           Area.ADMIN,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "admin-inicio"),

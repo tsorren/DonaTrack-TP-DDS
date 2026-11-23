@@ -107,7 +107,12 @@ class EntidadInicioEnPuertaControllerTest {
   @Autowired private MockMvc mvc;
 
   @ParameterizedTest
-  @ValueSource(strings = {"/entidad-inicio", "/entidad-recibidas", "/entidad-seguimiento"})
+  @ValueSource(
+      strings = {
+        "/entidad-inicio",
+        "/entidad-seguimiento?estado=en-tu-puerta",
+        "/entidad-seguimiento"
+      })
   void laQueLlegoEsperaLaConfirmacionConElBotonAlActaDeEsaDonacion(String pantalla)
       throws Exception {
     mvc.perform(get(pantalla).param("entidad", ENTIDAD))

@@ -490,7 +490,7 @@ class InterfazFitnessTest {
       List.of(
           "donante-donaciones.html",
           "persona/donante-donaciones.html",
-          "entidad-recibidas.html",
+          "entidad-seguimiento.html",
           "donante-entidades.html",
           "persona/donante-entidades.html",
           "admin-donaciones.html",

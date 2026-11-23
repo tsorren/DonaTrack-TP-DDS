@@ -66,9 +66,9 @@ class SitioConApisTest {
   }
 
   @Test
-  void recibidasSinEntidadMandaAIngresarYConDonacionesCaidoEsUnaFallaNuestra() throws Exception {
-    mvc.perform(get("/entidad-recibidas")).andExpect(redirectedUrl("/publico-ingresar"));
-    mvc.perform(get("/entidad-recibidas?entidad=00000000-0000-0000-0000-000000000003"))
+  void entregasSinEntidadMandaAIngresarYConDonacionesCaidoEsUnaFallaNuestra() throws Exception {
+    mvc.perform(get("/entidad-seguimiento")).andExpect(redirectedUrl("/publico-ingresar"));
+    mvc.perform(get("/entidad-seguimiento?entidad=00000000-0000-0000-0000-000000000003"))
         .andExpect(status().isBadGateway());
   }
 

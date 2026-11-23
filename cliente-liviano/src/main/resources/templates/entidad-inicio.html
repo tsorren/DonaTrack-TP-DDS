@@ -41,7 +41,8 @@
       <th:block th:if="${conDatos}">
         <div th:each="d : ${problemas}" class="aviso" data-tipo="error">
           <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
-          <p class="aviso-titulo"><a href="/entidad-seguimiento" th:href="@{/entidad-seguimiento}"
+          <p class="aviso-titulo"><a href="/entidad-entrega-problema?entrega=aceite"
+             th:href="@{/entidad-entrega-problema(entrega=${d.clave})}"
              th:text="|${d.nombre}, ${d.cuanto}: con problema|">Aceite de girasol, 10 litros: con
             problema</a></p>
           <p><th:block th:text="${d.paso}">El camión no pudo llegar el 14 de octubre.</th:block>
@@ -104,8 +105,8 @@
                   Ejemplo.</th:block></p>
                 <div class="racimo"><span class="estado" data-estado="confirmada"><th:block
                     th:replace="~{componentes/sello :: sello('confirmada')}"></th:block>Entrega confirmada</span></div>
-                <p class="salidas"><a href="/entidad-recibidas?estado=recibidas"
-                   th:href="@{/entidad-recibidas(estado='recibidas')}">Ver las recibidas</a></p>
+                <p class="salidas"><a href="/entidad-seguimiento?estado=recibidas"
+                   th:href="@{/entidad-seguimiento(estado='recibidas')}">Ver las confirmadas</a></p>
               </th:block>
               <p data-tono="suave">Cuando llegue una entrega, aparece acá para que confirmes la
                 recepción.</p>
@@ -193,10 +194,8 @@
              th:text="${#lists.isEmpty(problemas)} ? (${#lists.size(viene) == 1} ? 'Es la única entrega asignada que todavía no llegó.' : |${#lists.size(viene)} entregas asignadas que todavía no llegaron.|) : 'Las que tuvieron un problema están en el aviso de arriba.'">Las
             que tuvieron un problema están en el aviso de arriba.</p>
           <p class="salidas">
-            <a href="/entidad-recibidas" th:href="@{/entidad-recibidas}">Ver
-              todas en Donaciones recibidas</a>
-            <a href="/entidad-seguimiento" th:href="@{/entidad-seguimiento}">Seguir
-              entregas</a>
+            <a href="/entidad-seguimiento" th:href="@{/entidad-seguimiento}">Ver
+              todas en Entregas</a>
           </p>
         </th:block>
       </section>
