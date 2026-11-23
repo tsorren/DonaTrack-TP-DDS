@@ -166,7 +166,7 @@
             galería: JPG o PNG, hasta 5 MB cada una. Muestran lo entregado y el lugar, no a las
             personas.<th:block th:if="${problema}"> Si se ve el daño, sacale una foto.</th:block></small>
           <p th:if="${conError}" id="fotos-error" class="campo-error"
-             th:text="|La foto ${e.foto}.jpg pesa más de 5 MB y el máximo es 5 MB. Elegí otra o sacala de nuevo con menos calidad. Por seguridad, el navegador no guarda las fotos: volvé a elegirlas.|">La
+             th:text="|La foto ${e.foto}.jpg pesa más de 5 MB, el máximo. Elegí otra o sacala de nuevo con menos calidad. Por seguridad, el navegador no guarda las fotos: volvé a elegirlas.|">La
             foto lentejas-1.jpg pesa más de 5 MB.</p>
           <input id="fotos" name="fotos" type="file" accept="image/*" multiple required
                  x-ref="entrada" x-on:change="elegir"
