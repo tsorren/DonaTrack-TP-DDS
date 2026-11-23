@@ -11,6 +11,9 @@
 
 .tarjeta {
   position: relative;
+  /* Su propio apilado: lo de adentro con z-index negativo (la ruta de las abejas de la huerta) queda
+     sobre el papel y no detrás. */
+  isolation: isolate;
   padding: var(--espacio-relleno, 0);
   border: var(--borde-fino);
   border-radius: var(--radio-lamina);
