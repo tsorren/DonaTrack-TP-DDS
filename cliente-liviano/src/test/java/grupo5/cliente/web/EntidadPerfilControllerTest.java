@@ -126,7 +126,13 @@ class EntidadPerfilControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("<h1>Mi perfil</h1>")))
         .andExpect(content().string(containsString("class=\"aviso-breve\" data-estado=\"hecho\"")))
-        .andExpect(content().string(containsString("Guardamos los datos de tu organización.")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Guardamos los datos de tu organización.</p><button type=\"button\"\n"
+                            + "        class=\"aviso-cerrar\" data-cerrar"
+                            + " aria-label=\"Cerrar el aviso\">×</button></div>")))
         .andExpect(content().string(not(containsString("Guardamos cómo te avisamos."))));
   }
 }

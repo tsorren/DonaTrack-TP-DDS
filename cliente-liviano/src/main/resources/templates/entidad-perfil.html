@@ -45,11 +45,13 @@
     <div th:if="${guardo == 'datos'}" hx-swap-oob="beforeend:#avisos"><div
         class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus><svg
         th:replace="~{componentes/sello :: signo('confirmada')}"></svg><p>Listo.
-      Guardamos los datos de tu organización.</p></div></div>
+      Guardamos los datos de tu organización.</p><button type="button"
+        class="aviso-cerrar" data-cerrar aria-label="Cerrar el aviso">×</button></div></div>
     <div th:if="${guardo == 'avisos'}" hx-swap-oob="beforeend:#avisos"><div
         class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus><svg
         th:replace="~{componentes/sello :: signo('confirmada')}"></svg><p>Listo.
-      Guardamos cómo te avisamos.</p></div></div>
+      Guardamos cómo te avisamos.</p><button type="button"
+        class="aviso-cerrar" data-cerrar aria-label="Cerrar el aviso">×</button></div></div>
     <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="error-titulo">
       <h2 id="error-titulo">No pudimos guardar los cambios.</h2>
