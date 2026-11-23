@@ -238,4 +238,25 @@ class EntidadConfirmarControllerTest {
         .andExpect(content().string(not(containsString("15 de octubre"))))
         .andExpect(content().string(not(containsString("null"))));
   }
+
+  /**
+   * U3: en la respuesta al acta, la recién confirmada es el fruto que brota, aunque Donaciones
+   * todavía no la tenga entre las recibidas del mes (las dos del puerto son otras).
+   */
+  @Test
+  void laRespuestaAlActaCuentaLaRecienConfirmadaEntreLosFrutos() throws Exception {
+    mvc.perform(
+            get("/entidad-seguimiento-sellada")
+                .param("entidad", "6f1c2c1e-0000-4000-8000-0000000000e1")
+                .param("entrega", ENTREGA)
+                .flashAttr("recien", true))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "3 entregas confirmadas</strong> por tu organización en noviembre.")))
+        .andExpect(content().string(containsString("data-recien=\"si\"")))
+        .andExpect(content().string(containsString("huerta-raiz-trazo")));
+  }
 }

@@ -54,7 +54,9 @@ public class EntidadConfirmarController {
   /**
    * La entrega es la de {@code ?entrega=} o, en las respuestas de la maqueta, la de la dirección
    * ({@code -sellada-ropa}). Los frutos (D4) son las recibidas del mes en curso, de la misma
-   * lectura que Inicio: {@code frutos}, cuántas, y {@code mesFrutos}, el mes ("octubre").
+   * lectura que Inicio: {@code frutos}, cuántas, y {@code mesFrutos}, el mes ("octubre"). En la
+   * respuesta al acta ({@code recien}, o las de la maqueta), la recién confirmada cuenta aunque
+   * Donaciones todavía no la tenga como entregada: es el fruto que brota.
    */
   @GetMapping({
     "/entidad-seguimiento-sellada",
@@ -64,21 +66,26 @@ public class EntidadConfirmarController {
   String confirmada(Model model, HttpServletRequest pedido) {
     String pantalla = Entidad.pantalla(pedido);
     String pedida = pedido.getParameter("entrega");
+    boolean respuesta = Boolean.TRUE.equals(model.getAttribute("recien"));
     if (pedida == null && pantalla.startsWith(SELLADA)) {
       pedida = pantalla.substring(SELLADA.length());
+      respuesta = true;
     }
     String vista = mostrar(model, pedido, pedida, confirmar::confirmada);
+    String confirmada = pedida;
+    boolean recien = respuesta;
     cuentas
         .entidad(pedido)
         .ifPresent(
             entidad -> {
               RecibidasVista delMes = recibidas.recibidas(entidad);
-              model.addAttribute(
-                  "frutos",
-                  Math.toIntExact(
-                      delMes.asignadas().stream()
-                          .filter(r -> RecibidasVista.RECIBIDA.equals(r.grupo()))
-                          .count()));
+              List<String> claves =
+                  delMes.asignadas().stream()
+                      .filter(r -> RecibidasVista.RECIBIDA.equals(r.grupo()))
+                      .map(RecibidasVista.Recibida::clave)
+                      .toList();
+              boolean falta = recien && confirmada != null && !claves.contains(confirmada);
+              model.addAttribute("frutos", claves.size() + (falta ? 1 : 0));
               model.addAttribute("mesFrutos", delMes.mes());
             });
     return vista;

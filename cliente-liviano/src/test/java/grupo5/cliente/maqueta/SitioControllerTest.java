@@ -323,7 +323,7 @@ class SitioControllerTest {
             content()
                 .string(
                     containsString(
-                        "6 entregas confirmadas</strong> por tu organización en octubre.")))
+                        "7 entregas confirmadas</strong> por tu organización en octubre.")))
         .andExpect(content().string(containsString("data-recien=\"si\"")))
         .andExpect(content().string(containsString(">12 de octubre, 10:00</span>")))
         .andExpect(content().string(containsString(">14 de octubre, 9:10</span>")))
