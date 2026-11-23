@@ -71,8 +71,9 @@ span.estado:not([data-forma]) > .sello-signo {
   display: contents;
 }
 
-/* Registrada (y los nombres de hoy que dicen lo mismo): todavía no salió, el borde punteado. */
-span.estado:is([data-estado="registrada"], [data-estado="pendiente"], [data-estado="salir"]) {
+/* Registrada: todavía no la tomó nadie, el borde punteado (solo ella, como en la guía). Pendiente y
+   salir quedan con el par neutro de borde lleno, igual que vencida, cancelada y en revisión. */
+span.estado[data-estado="registrada"] {
   border-style: dashed;
 }
 
