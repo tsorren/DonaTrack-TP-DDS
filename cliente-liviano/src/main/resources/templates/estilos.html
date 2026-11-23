@@ -1262,6 +1262,101 @@
             <p class="cargando htmx-indicator htmx-request" role="status">Guardando…</p>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.icono', 'Los íconos de la guía (iconos :: comunes, C1-05): la marca y 16 de línea, de 24 px, con el color del texto. Se usan con svg.icono y use href=&quot;#i-…&quot;; son decorativos (aria-hidden) y van junto a la palabra que dice lo mismo. data-forma=&quot;marca&quot;: la marca llena, con el cuerpo verde y la hoja verde claro.', ~{::demo-icono})}">
+          <th:block th:fragment="demo-icono">
+            <svg th:replace="~{iconos :: comunes}"></svg>
+            <div class="racimo">
+              <span class="racimo" data-espacio="1"><svg class="icono" data-forma="marca" aria-hidden="true" focusable="false"><use href="#i-marca"/></svg><code>i-marca</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-campana"/></svg><code>i-campana</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-cuenta"/></svg><code>i-cuenta</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-mas"/></svg><code>i-mas</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-cerrar"/></svg><code>i-cerrar</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-camara"/></svg><code>i-camara</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-camion"/></svg><code>i-camion</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-caja"/></svg><code>i-caja</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-casa"/></svg><code>i-casa</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-lista"/></svg><code>i-lista</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-gente"/></svg><code>i-gente</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-ayuda"/></svg><code>i-ayuda</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-brote"/></svg><code>i-brote</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-bandeja"/></svg><code>i-bandeja</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-puntos"/></svg><code>i-puntos</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-podio"/></svg><code>i-podio</code></span>
+              <span class="racimo" data-espacio="1"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-ir"/></svg><code>i-ir</code></span>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.icono[data-forma=&quot;signo&quot;]', 'Los signos de estado de la guía (iconos :: signos, C1-05), de 14 px y con el color del texto: el disco se llena con los pasos cumplidos (registrada, asignada, preparada y en camino) y siguen confirmada, problema, info, atención y espera. Van siempre al lado de la palabra del estado: el signo solo acompaña.', ~{::demo-signo})}">
+          <th:block th:fragment="demo-signo">
+            <svg th:replace="~{iconos :: signos}"></svg>
+            <div class="pila" data-espacio="2">
+              <div class="racimo">
+                <span class="racimo" data-espacio="1"><svg class="icono" data-forma="signo" aria-hidden="true" focusable="false"><use href="#e-registrada"/></svg><code>e-registrada</code></span>
+                <span class="racimo" data-espacio="1"><svg class="icono" data-forma="signo" aria-hidden="true" focusable="false"><use href="#e-asignada"/></svg><code>e-asignada</code></span>
+                <span class="racimo" data-espacio="1"><svg class="icono" data-forma="signo" aria-hidden="true" focusable="false"><use href="#e-preparada"/></svg><code>e-preparada</code></span>
+                <span class="racimo" data-espacio="1"><svg class="icono" data-forma="signo" aria-hidden="true" focusable="false"><use href="#e-en-camino"/></svg><code>e-en-camino</code></span>
+                <span class="racimo" data-espacio="1"><svg class="icono" data-forma="signo" aria-hidden="true" focusable="false"><use href="#e-confirmada"/></svg><code>e-confirmada</code></span>
+                <span class="racimo" data-espacio="1"><svg class="icono" data-forma="signo" aria-hidden="true" focusable="false"><use href="#e-problema"/></svg><code>e-problema</code></span>
+                <span class="racimo" data-espacio="1"><svg class="icono" data-forma="signo" aria-hidden="true" focusable="false"><use href="#e-info"/></svg><code>e-info</code></span>
+                <span class="racimo" data-espacio="1"><svg class="icono" data-forma="signo" aria-hidden="true" focusable="false"><use href="#e-atencion"/></svg><code>e-atencion</code></span>
+                <span class="racimo" data-espacio="1"><svg class="icono" data-forma="signo" aria-hidden="true" focusable="false"><use href="#e-espera"/></svg><code>e-espera</code></span>
+              </div>
+              <p class="racimo" data-espacio="1"><svg class="icono" data-forma="signo" aria-hidden="true" focusable="false"><use href="#e-confirmada"/></svg>Entrega confirmada</p>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('img/ilustraciones/ (dibujos de la guía)', 'Los dibujos de la guía (C1-06), uno por archivo, con sus colores adentro como los demás de la carpeta. Se usan enteros (img) o por símbolo (un svg con viewBox y, adentro, un use con el archivo y #símbolo); el texto que dicen va en aria-label o al lado. El recorrido es la ilustración de la portada. La puerta son dos símbolos fijos, puerta-fondo y puerta-nudos: entre los dos, cada pantalla dibuja lo que cambia con el estado (el tramo al quinto nudo, los bultos y los frutos). El mapa es el del seguimiento.', ~{::demo-dibujos})}">
+          <th:block th:fragment="demo-dibujos">
+            <div class="pila" data-espacio="3">
+              <div class="pila" data-espacio="1">
+                <svg viewBox="0 0 640 396" role="img" aria-label="Ilustración: una raíz con cinco nudos numerados va por debajo de la tierra desde un depósito hasta un árbol con nueve frutos, junto a la puerta de una organización. Arriba, un camión va de uno a otro."><use href="/img/ilustraciones/ilustracion-recorrido.svg#ilustracion-recorrido" th:href="@{/img/ilustraciones/ilustracion-recorrido.svg} + '#ilustracion-recorrido'"/></svg>
+                <p><code>ilustracion-recorrido</code></p>
+              </div>
+              <div class="pila" data-espacio="1">
+                <svg viewBox="0 0 640 400" role="img" aria-label="Dibujo: la puerta de la organización y su árbol. La raíz llega al cuarto de cinco nudos."><use href="/img/ilustraciones/puerta.svg#puerta-fondo" th:href="@{/img/ilustraciones/puerta.svg} + '#puerta-fondo'"/><use href="/img/ilustraciones/puerta.svg#puerta-nudos" th:href="@{/img/ilustraciones/puerta.svg} + '#puerta-nudos'"/></svg>
+                <p><code>puerta-fondo</code> y <code>puerta-nudos</code></p>
+              </div>
+              <div class="pila" data-espacio="1">
+                <div class="marco"><svg role="img" aria-label="Mapa: el camión salió del Depósito Central y recorrió más de la mitad del camino hacia Comedor Barrio Ejemplo. El tramo recorrido está dibujado como la raíz; el que falta, punteado."><use href="/img/ilustraciones/mapa-recorrido.svg#mapa-recorrido" th:href="@{/img/ilustraciones/mapa-recorrido.svg} + '#mapa-recorrido'"/></svg></div>
+                <p><code>mapa-recorrido</code></p>
+              </div>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('img/ilustraciones/escena-*.svg', 'Las 7 escenas «foto de ejemplo» de la guía (C1-06): lo entregado y el lugar, sin personas, en 4:3 y recortadas para llenar su marco. Van donde iría la foto de una entrega en los datos de ejemplo, siempre con el rótulo «Foto de ejemplo» en el aria-label.', ~{::demo-escenas})}">
+          <th:block th:fragment="demo-escenas">
+            <div class="grilla">
+              <div class="pila" data-espacio="1">
+                <div class="marco" data-proporcion="4-3"><svg role="img" aria-label="Foto de ejemplo: tres bolsas y una caja en el piso, junto a una puerta verde"><use href="/img/ilustraciones/escena-puerta.svg#escena-puerta" th:href="@{/img/ilustraciones/escena-puerta.svg} + '#escena-puerta'"/></svg></div>
+                <p><code>escena-puerta</code></p>
+              </div>
+              <div class="pila" data-espacio="1">
+                <div class="marco" data-proporcion="4-3"><svg role="img" aria-label="Foto de ejemplo: una caja y siete latas de leche en polvo sobre una mesa, junto a una ventana"><use href="/img/ilustraciones/escena-latas.svg#escena-latas" th:href="@{/img/ilustraciones/escena-latas.svg} + '#escena-latas'"/></svg></div>
+                <p><code>escena-latas</code></p>
+              </div>
+              <div class="pila" data-espacio="1">
+                <div class="marco" data-proporcion="4-3"><svg role="img" aria-label="Foto de ejemplo: dos pilas de ropa doblada sobre una mesa"><use href="/img/ilustraciones/escena-ropa.svg#escena-ropa" th:href="@{/img/ilustraciones/escena-ropa.svg} + '#escena-ropa'"/></svg></div>
+                <p><code>escena-ropa</code></p>
+              </div>
+              <div class="pila" data-espacio="1">
+                <div class="marco" data-proporcion="4-3"><svg role="img" aria-label="Foto de ejemplo: paquetes de fideos y una caja en dos estantes"><use href="/img/ilustraciones/escena-estante.svg#escena-estante" th:href="@{/img/ilustraciones/escena-estante.svg} + '#escena-estante'"/></svg></div>
+                <p><code>escena-estante</code></p>
+              </div>
+              <div class="pila" data-espacio="1">
+                <div class="marco" data-proporcion="4-3"><svg role="img" aria-label="Foto de ejemplo: tres bolsas sobre una mesa"><use href="/img/ilustraciones/escena-bolsas.svg#escena-bolsas" th:href="@{/img/ilustraciones/escena-bolsas.svg} + '#escena-bolsas'"/></svg></div>
+                <p><code>escena-bolsas</code></p>
+              </div>
+              <div class="pila" data-espacio="1">
+                <div class="marco" data-proporcion="4-3"><svg role="img" aria-label="Foto de ejemplo: cinco paquetes de arroz parados en un cajón"><use href="/img/ilustraciones/escena-cajon.svg#escena-cajon" th:href="@{/img/ilustraciones/escena-cajon.svg} + '#escena-cajon'"/></svg></div>
+                <p><code>escena-cajon</code></p>
+              </div>
+              <div class="pila" data-espacio="1">
+                <div class="marco" data-proporcion="4-3"><svg role="img" aria-label="Foto de ejemplo: doce latas de leche en polvo en su caja, vistas desde arriba"><use href="/img/ilustraciones/escena-caja-latas.svg#escena-caja-latas" th:href="@{/img/ilustraciones/escena-caja-latas.svg} + '#escena-caja-latas'"/></svg></div>
+                <p><code>escena-caja-latas</code></p>
+              </div>
+            </div>
+          </th:block>
+        </div>
       </div>
       <!--/* Fuera de la grilla, a todo el ancho: desde la tableta grande la tabla necesita el ancho de una lista. */-->
       <div th:replace="~{componentes/muestra :: muestra('.tabla', 'Una tabla de datos (caption y th scope) que en el celular es una tarjeta por fila: el título de la fila (th scope=&quot;row&quot;) arriba y cada dato con su rótulo adelante (data-rotulo). Desde la tableta grande, una tabla con filetes de tinta. Achicá la ventana para ver las tarjetas.', ~{::demo-tabla})}">

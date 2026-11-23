@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240">
+<!-- Foto de ejemplo: tres bolsas sobre una mesa. Dibujo de la guía (docs/interfaz/guia/partes/20-simbolos.html), con los colores de tokens.css escritos adentro, como los demás de esta carpeta. Se usa entero (img) o por símbolo (use href="…/escena-bolsas.svg#escena-bolsas"). -->
+<symbol id="escena-bolsas" viewBox="0 0 320 240" preserveAspectRatio="xMidYMid slice">
+      <rect fill="#cfe1d4" width="320" height="240"/><rect fill="#ebe3c4" y="176" width="320" height="64"/><rect fill="#3b3527" y="166" width="320" height="12"/>
+      <g stroke="#2a2a22" stroke-width="3"><rect fill="#fffaea" x="26" y="76" width="82" height="92" rx="24"/><rect fill="#fffaea" x="118" y="64" width="86" height="104" rx="26"/><rect fill="#fffaea" x="214" y="80" width="80" height="88" rx="24"/>
+      <path fill="none" d="M50 76c5-11 29-11 34 0M144 64c5-12 29-12 34 0M237 80c5-11 29-11 34 0"/></g>
+      <rect fill="#f4c844" x="42" y="112" width="50" height="22"/><rect fill="#f4c844" x="135" y="106" width="52" height="24"/><rect fill="#f4c844" x="229" y="114" width="50" height="22"/>
+    </symbol>
+<use href="#escena-bolsas"/>
+</svg>

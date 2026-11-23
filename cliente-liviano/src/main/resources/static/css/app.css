@@ -45,6 +45,7 @@
 @import url("componentes/buzon.css") layer(bloques);
 @import url("componentes/flota.css") layer(bloques);
 @import url("componentes/paginas.css") layer(bloques);
+@import url("componentes/icono.css") layer(bloques);
 
 *,
 *::before,
