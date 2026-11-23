@@ -47,7 +47,12 @@ main h1 em {
   color: var(--color-tinta-suave);
 }
 
+/* La opción y la casilla (guía «Huerta y galpón», C1-12): el grupo de opciones (`fieldset` o `div`
+   `.opciones`) con un `label` por opción, que lleva adentro su radio o su casilla. Cada opción es un
+   bloque que se toca entero. */
 .opciones {
+  display: grid;
+  gap: var(--espacio-1);
   margin: 0;
   padding: 0;
   border: 0;
@@ -58,44 +63,105 @@ main h1 em {
   font-weight: 700;
 }
 
-/* Cada opción ocupa el renglón entero: el radio nativo, transparente, la cubre (se toca en todo el
-   renglón y funciona con el teclado), y el sello de al lado dice si está elegida. */
+/* El control nativo, transparente, cubre el bloque (se toca en todo el bloque, mide lo mismo que él y
+   funciona con el teclado); la marca de al lado dice si está elegida. La guía deja ver el control
+   nativo, de 22 px: no llega al toque de 48 px que mide la verificación visual, y la marca dibujada
+   lo reemplaza con el mismo tamaño. */
 .opciones label {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--espacio-2);
   min-height: var(--medida-toque-minimo);
+  padding: var(--espacio-1) var(--espacio-3);
+  border: var(--borde-control);
+  border-radius: var(--radio-campo);
+  background: var(--color-campo);
   font-weight: 400;
+  cursor: pointer;
 }
 
+/* La marca: un círculo para el radio y un cuadro para la casilla, del tamaño del control de la guía. */
 .opciones label::before {
   content: "";
   flex: none;
   width: 1.375rem;
   height: 1.375rem;
   border: 2px solid var(--color-tinta);
-  border-radius: 50%;
-  background: var(--color-papel);
+  border-radius: var(--radio-pastilla);
+  background: var(--color-campo);
 }
 
-/* Elegida: el sello lleno de verde (con la paleta Oliva, la raíz es paja y no se ve sobre el papel). */
+.opciones label:has([type="checkbox"])::before {
+  border-radius: var(--radio-estampa);
+}
+
+.opciones label:hover {
+  border-color: var(--color-tinta);
+}
+
+/* Elegida: el borde en tinta, el fondo de salvia y la letra gruesa; la marca, llena de verde. */
+.opciones label:has(:checked) {
+  border-color: var(--color-tinta);
+  background: var(--color-salvia);
+  font-weight: 700;
+}
+
 .opciones label:has(:checked)::before {
-  background: var(--color-acento);
-  box-shadow: inset 0 0 0 0.25rem var(--color-papel);
+  border-color: var(--color-accion-primaria);
+  background: var(--color-accion-primaria);
+  box-shadow: inset 0 0 0 0.25rem var(--color-campo);
 }
 
+/* La casilla marcada: llena, con su tilde de papel. */
+.opciones label:has([type="checkbox"]:checked)::before {
+  box-shadow: none;
+}
+
+.opciones label:has([type="checkbox"]:checked)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: calc(var(--espacio-3) + var(--espacio-0) + 2px);
+  width: 0.4375rem;
+  height: 0.75rem;
+  border-right: 3px solid var(--color-texto-sobre-accion);
+  border-bottom: 3px solid var(--color-texto-sobre-accion);
+  translate: 0 -60%;
+  rotate: 45deg;
+}
+
+/* El foco del control se ve en el bloque entero, con el aro de la base. */
 .opciones label:has(:focus-visible) {
-  outline: 3px solid var(--color-foco);
+  outline: var(--borde-ancho-foco) solid var(--color-foco);
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--color-foco-separador);
 }
 
+.opciones label:has(:disabled) {
+  border-color: transparent;
+  background: var(--color-deshabilitado-fondo);
+  color: var(--color-deshabilitado-texto);
+  cursor: not-allowed;
+}
+
+.opciones label:has(:disabled)::before {
+  border-color: var(--color-deshabilitado-texto);
+}
+
+/* Con error: el borde, más grueso, en el color del problema. */
+.opciones label:has([aria-invalid="true"]) {
+  border: 2.5px solid var(--color-error-borde);
+}
+
+/* El control cubre también el borde del bloque (hasta 2,5 px con error): así mide los 48 px enteros. */
 .opciones input {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: calc(-1 * var(--borde-ancho-foco));
+  left: calc(-1 * var(--borde-ancho-foco));
+  width: calc(100% + 2 * var(--borde-ancho-foco));
+  height: calc(100% + 2 * var(--borde-ancho-foco));
   margin: 0;
   opacity: 0;
-  cursor: pointer;
+  cursor: inherit;
 }

@@ -1,79 +1,98 @@
-/* Bloque campo (D33, B2-02): un campo de formulario. La etiqueta visible arriba, el control nativo, la
-   ayuda (`small`) y, si falla, el error al lado (`.campo-error`). Se carga en la capa `bloques` desde
-   app.css. Con un error, el campo lleva `data-estado="error"`. Catálogo: docs/interfaz/componentes.md. */
+/* Bloque campo (D33, B2-02; guía «Huerta y galpón», C1-12): un campo de formulario. La etiqueta
+   visible arriba, el control nativo, la ayuda (`small`) y, si falla, el error al lado
+   (`.campo-error`). Se carga en la capa `bloques` desde app.css. Con un error, el campo lleva
+   `data-estado="error"` y el control, `aria-invalid="true"`. Las opciones de radio y las casillas
+   van en su grupo (`.opciones`, formularios.css). Catálogo: docs/interfaz/componentes.md. */
 .campo {
   display: grid;
-  gap: 0.375rem;
+  gap: var(--espacio-1);
+  min-width: 0;
 }
 
-.campo label {
+.campo :is(label, legend) {
   font-weight: 700;
 }
 
 .campo small {
-  color: var(--color-tinta-suave);
-  font-size: 0.9375rem;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
 }
 
-/* Los radios no: van en su grupo de opciones, con su propio tamaño. Un campo para escribir se
-   distingue del papel (usuario, 2026-11-08): fondo más claro, borde suave, esquinas redondeadas y un
-   texto de ejemplo atenuado (placeholder). Al enfocarlo, el borde y el anillo verdes. */
-.campo :is(input:not([type="radio"], [type="checkbox"]), select, textarea) {
-  min-height: var(--medida-toque-minimo);
-  padding: 0.625rem 0.875rem;
-  border: 1.5px solid var(--color-borde-control);
-  border-radius: var(--radio-boton);
-  background: var(--color-campo);
-  box-shadow: inset 0 1px 2px var(--color-filete);
-  color: var(--color-tinta);
-  font: inherit;
+/* Un campo para escribir se distingue del papel: fondo de campo, borde de control y esquinas
+   redondeadas. Los radios y las casillas no: van en su grupo de opciones. */
+.campo :is(input:not(:where([type="radio"], [type="checkbox"], [type="file"])), select, textarea) {
   min-width: 0;
   max-width: 100%;
+  min-height: var(--medida-toque-minimo);
+  padding: 0 var(--espacio-3);
+  border: var(--borde-control);
+  border-radius: var(--radio-campo);
+  background-color: var(--color-campo);
+  color: var(--color-texto);
+  font: inherit;
+}
+
+.campo textarea {
+  min-height: calc(2 * var(--medida-toque-minimo));
+  padding-block: var(--espacio-2);
+  resize: vertical;
 }
 
 .campo :is(input, textarea)::placeholder {
-  color: var(--color-tinta-suave);
-  opacity: 0.75;
+  color: var(--color-texto-suave);
+  opacity: 1;
 }
 
-.campo :is(input:not([type="radio"], [type="checkbox"]), select, textarea):focus {
-  border-color: var(--color-acento);
+/* Con el cursor y con foco, el borde en tinta; el aro de foco es el de la base (app.css). */
+.campo :is(input:not(:where([type="radio"], [type="checkbox"], [type="file"])), select, textarea):is(:hover, :focus-visible) {
+  border-color: var(--color-tinta);
 }
 
-.campo :is(input:not([type="radio"], [type="checkbox"]), select, textarea):focus-visible {
-  outline: 3px solid var(--color-foco);
-  outline-offset: 2px;
+.campo :is(input:not(:where([type="radio"], [type="checkbox"], [type="file"])), select, textarea):disabled {
+  border-color: transparent;
+  background-color: var(--color-deshabilitado-fondo);
+  color: var(--color-deshabilitado-texto);
+  cursor: not-allowed;
 }
 
 .campo :is(input[type="checkbox"], input[type="radio"]) {
-  accent-color: var(--color-acento);
+  accent-color: var(--color-accion-primaria);
 }
 
 .campo input[type="number"] {
   max-width: 8rem;
 }
 
-.campo textarea {
-  resize: vertical;
+/* Con error: el borde, más grueso, en el color del problema. */
+.campo[data-estado="error"] :is(input:not(:where([type="radio"], [type="checkbox"], [type="file"])), select, textarea),
+.campo :is(input:not(:where([type="radio"], [type="checkbox"], [type="file"])), select, textarea)[aria-invalid="true"] {
+  border: 2.5px solid var(--color-error-borde);
 }
 
-.campo[data-estado="error"] :is(input:not([type="radio"]), select, textarea) {
-  border-color: var(--color-problema-texto);
-}
-
+/* El error dice qué pasó y cómo seguir, al lado del campo; si lleva el signo del problema, va a la
+   altura del primer renglón. */
 .campo-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-1);
   margin: 0;
-  color: var(--color-problema-texto);
-  font-weight: 700;
+  color: var(--color-error-texto);
+  font-weight: 600;
+}
+
+/* El error que espera su momento (`hidden`, lo muestra el script de la pantalla) no se ve. */
+.campo-error[hidden] {
+  display: none;
 }
 
 /* La flecha de los desplegables (usuario, 2026-11-09: "agregar padding en la flecha, no debería
-   quedar pegada a la derecha"). El relleno general de arriba pisaba el de Pico, que deja lugar para
-   la flecha; acá se le devuelve el aire, en todos los desplegables, estén o no dentro de un campo. */
+   quedar pegada a la derecha"). El relleno general de arriba pisaba el de la base, que deja lugar
+   para la flecha; acá se le devuelve el aire, en todos los desplegables, estén o no dentro de un
+   campo. */
 select:not([multiple], [size]),
 .campo select:not([multiple], [size]) {
   appearance: none;
-  padding-inline-end: 3rem;
+  padding-inline-end: var(--medida-toque-minimo);
   /* La flecha nativa no se mueve con el relleno: se dibuja con dos triángulos de tinta, a 1 rem
      del borde (el mismo dibujo que los filtros del donante). */
   background-image:
@@ -84,6 +103,6 @@ select:not([multiple], [size]),
     right 1rem center;
   background-size: 0.375rem 0.375rem;
   background-repeat: no-repeat;
-  border-radius: var(--radio-boton);
+  border-radius: var(--radio-campo);
   cursor: pointer;
 }

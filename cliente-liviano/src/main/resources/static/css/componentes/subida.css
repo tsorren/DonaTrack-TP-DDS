@@ -1,73 +1,70 @@
-/* Bloque de subida de fotos (D33, B2-10): un campo de formulario (`.campo`) que es una zona de carga
-   grande, con el control nativo de archivos adentro (la cámara o la galería del celular, sin
-   JavaScript) y, si hay JavaScript, la vista previa de lo elegido (`Alpine.data("subidaFotos")`). La
-   vista previa nunca es lo esencial: el formulario manda los archivos del control nativo. Se carga en
-   la capa `bloques` desde app.css, después de campo.css (comparten especificidad: gana la que viene
-   después). Con un error, el campo lleva `data-estado="error"`. Catálogo: docs/interfaz/componentes.md. */
+/* Bloque de subida de fotos (D33, B2-10; guía «Huerta y galpón», C1-13): un campo de formulario
+   (`.campo`) que es una zona de carga, con el control nativo de archivos adentro (la cámara o la
+   galería del celular, sin JavaScript) y, si hay JavaScript, la vista previa de lo elegido
+   (`Alpine.data("subidaFotos")`). La vista previa nunca es lo esencial: el formulario manda los
+   archivos del control nativo. Se carga en la capa `bloques` desde app.css, después de campo.css
+   (comparten especificidad: gana la que viene después). Con un error, el campo lleva
+   `data-estado="error"`. Catálogo: docs/interfaz/componentes.md. */
 
-/* Un recuadro punteado, como un sello hueco, con la cámara al centro. Tocar la cámara o el título abre
-   la cámara o la galería; en la computadora se puede soltar la foto sobre el campo. */
+/* Un recuadro punteado (guía, `.subir`): arriba el título con la cámara, la ayuda y el botón que abre
+   la cámara o la galería; debajo, lo elegido. Tocar el título también abre la cámara o la galería. */
 .subida {
-  justify-items: center;
-  gap: 0.5rem;
-  padding: 1.5rem 1rem 1.25rem;
-  border: 2px dashed var(--color-tinta);
+  justify-items: start;
+  gap: var(--espacio-2);
+  padding: var(--espacio-3);
+  border: var(--borde-punteado);
   border-radius: var(--radio-lamina);
-  background: var(--color-pendiente-fondo);
-  text-align: center;
 }
 
 .subida[data-estado="error"] {
-  border-color: var(--color-problema-texto);
-}
-
-.subida:focus-within {
-  outline: 3px solid var(--color-acento);
-  outline-offset: 3px;
+  border-color: var(--color-error-borde);
 }
 
 .subida label {
-  display: grid;
-  justify-items: center;
-  gap: 0.375rem;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-1);
   cursor: pointer;
 }
 
 .subida label span {
-  font-size: 1.125rem;
+  font-size: var(--tamano-grande);
 }
 
+/* La cámara, del tamaño de un ícono de la guía y en el trazo de la letra. */
 .subida-icono {
   display: block;
-  width: 3.5rem;
-  height: 3.5rem;
-  fill: var(--color-raiz);
-  stroke: var(--color-tinta);
-  stroke-width: 2;
+  flex: none;
+  width: var(--espacio-4);
+  height: var(--espacio-4);
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 4;
   stroke-linejoin: round;
 }
 
-/* El control nativo, tan ancho como su botón y su texto, para quedar centrado en la zona; su botón,
-   como el botón secundario de Raíces. */
+/* El control nativo, con su botón como el botón secundario: claro, con el borde de tinta y 48 px de
+   alto para el dedo. El aro de foco es el de la base (app.css), alrededor del control. */
 .subida input[type="file"] {
-  width: auto;
+  min-width: 0;
   max-width: 100%;
-  padding: 0.5rem;
-  border: 0;
-  background: transparent;
+  font: inherit;
 }
 
 .subida input[type="file"]::file-selector-button {
-  min-height: 2.75rem;
-  margin-right: 0.75rem;
-  padding: 0.5rem 1rem;
-  border: 2px solid var(--color-acento);
+  min-height: var(--medida-toque-minimo);
+  margin-right: var(--espacio-2);
+  padding: 0 var(--espacio-4);
+  border: var(--borde-tinta);
   border-radius: var(--radio-boton);
-  background: var(--color-acento-claro);
-  color: var(--color-tinta);
-  font: inherit;
-  font-weight: 700;
+  background: var(--color-accion-secundaria);
+  color: var(--color-texto-sobre-secundaria);
+  font: 700 var(--tamano-base) / 1.2 var(--fuente-texto);
   cursor: pointer;
+}
+
+.subida input[type="file"]:hover::file-selector-button {
+  background: var(--color-accion-secundaria-activa);
 }
 
 /* La vista previa: nace oculta (`hidden`) y Alpine la muestra al elegir fotos. El anuncio para lectores
@@ -87,11 +84,12 @@
   font-weight: 700;
 }
 
+/* Las fotos elegidas, de a dos por renglón (guía, `.fotos-cargadas`), con el filete de tinta. */
 .subida-previas {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-2);
+  width: 100%;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -104,16 +102,17 @@
 
 .subida-previa {
   display: grid;
-  justify-items: center;
-  gap: 0.375rem;
-  max-width: 8rem;
+  justify-items: start;
+  gap: var(--espacio-0);
+  min-width: 0;
 }
 
 .subida-previa img {
-  width: 7rem;
-  height: 7rem;
-  border: 2px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border: var(--borde-tinta);
+  border-radius: var(--radio-estampa);
   object-fit: cover;
 }
 

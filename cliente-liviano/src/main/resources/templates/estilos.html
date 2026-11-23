@@ -407,15 +407,27 @@
       <h2 id="componentes">Componentes</h2>
       <p data-tono="suave">Cada uno con su hoja en <code>static/css/componentes/</code>. Las variantes van por atributo.</p>
       <div class="grilla">
-        <div th:replace="~{componentes/muestra :: muestra('.boton', 'El botón y el enlace con forma de botón. data-tono: principal (la acción de la pantalla o de una parte de ella, como la tierra de la portada), secundario o quitar. data-tamano=&quot;chico&quot;: más bajo, para acciones dentro de una lista. data-forma=&quot;foto&quot; (con el tamaño chico): la miniatura de una foto arriba y la leyenda debajo. data-zona=&quot;suelo&quot; o &quot;suelo-hondo&quot;: sobre la tierra, con el contorno de paja; con el tono principal, lleno de paja.', ~{::demo-boton})}">
+        <div th:replace="~{componentes/muestra :: muestra('.boton', 'El botón y el enlace con forma de botón, de 48 px de alto. Sin tono o con data-tono=&quot;secundario&quot;: claro, con el borde de tinta. data-tono=&quot;principal&quot;: lleno de verde (la acción de la pantalla o de una parte de ella, como la tierra de la portada). data-tono=&quot;quitar&quot;: dar de baja, con el borde y la letra en el color del problema. Con el cursor se oscurece y al apretarlo baja un poco. disabled (o aria-disabled=&quot;true&quot;): en gris, sin borde. aria-busy=&quot;true&quot;: cargando, con una ruedita que gira y el texto de lo que está haciendo. data-tamano=&quot;chico&quot;: más angosto y con la letra densa, para acciones dentro de una lista. data-forma=&quot;foto&quot; (con el tamaño chico): la miniatura de una foto arriba y la leyenda debajo. data-zona=&quot;suelo&quot; o &quot;suelo-hondo&quot;: sobre la tierra, con el borde de paja; con el tono principal, lleno de paja.', ~{::demo-boton})}">
           <th:block th:fragment="demo-boton">
             <div class="pila" data-espacio="3">
               <div class="racimo">
                 <button type="button" class="boton" data-tono="principal">Principal</button>
                 <button type="button" class="boton" data-tono="secundario">Secundario</button>
                 <button type="button" class="boton" data-tono="quitar">Quitar</button>
+              </div>
+              <div class="racimo">
+                <button type="button" class="boton" data-tono="principal" disabled>Principal deshabilitado</button>
+                <button type="button" class="boton" data-tono="secundario" disabled>Secundario deshabilitado</button>
+                <button type="button" class="boton" data-tono="quitar" disabled>Quitar deshabilitado</button>
+              </div>
+              <div class="racimo">
+                <button type="button" class="boton" data-tono="principal" aria-busy="true">Confirmando…</button>
+                <button type="button" class="boton" data-tono="secundario" aria-busy="true">Guardando…</button>
+              </div>
+              <div class="racimo">
                 <button type="button" class="boton" data-tamano="chico">Chico</button>
                 <button type="button" class="boton" data-tono="principal" data-tamano="chico">Chico principal</button>
+                <button type="button" class="boton" data-tamano="chico" disabled>Chico deshabilitado</button>
                 <button type="button" class="boton" data-tamano="chico" data-forma="foto"><img
                     src="/img/ejemplo-entrega.svg" th:src="@{/img/ejemplo-entrega.svg}" alt="" width="120"
                     height="75"><span>Ver la foto</span></button>
@@ -430,17 +442,76 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.campo', 'Un campo de formulario: etiqueta visible arriba, control nativo, ayuda debajo (small) y, si falla, el error al lado (.campo-error) con data-estado=&quot;error&quot;.', ~{::demo-campo})}">
+        <div th:replace="~{componentes/muestra :: muestra('.campo', 'Un campo de formulario: la etiqueta visible arriba, el control nativo (input, select o textarea) y la ayuda debajo (small), que dice dónde encontrar el dato. El control tiene fondo de campo y borde de control; con el cursor o con foco, el borde es de tinta. disabled: en gris, sin borde. Si falla, data-estado=&quot;error&quot; en el campo y aria-invalid=&quot;true&quot; en el control: el borde, más grueso, en el color del problema, y el error al lado (.campo-error), que dice qué pasó y cómo seguir.', ~{::demo-campo})}">
           <th:block th:fragment="demo-campo">
             <div class="pila" data-espacio="3">
               <div class="campo">
                 <label for="muestra-nombre">Nombre <small>(como figura en el cartel)</small></label>
-                <input id="muestra-nombre" type="text" value="Distribuidora Ejemplo" placeholder="Por ejemplo: Distribuidora Ejemplo SA">
+                <input id="muestra-nombre" type="text" placeholder="Por ejemplo: Distribuidora Ejemplo SA">
+              </div>
+              <div class="campo">
+                <label for="muestra-remito">Número de remito</label>
+                <small id="muestra-remito-ayuda">Está arriba a la derecha del papel.</small>
+                <input id="muestra-remito" type="text" value="0001-00004521" aria-describedby="muestra-remito-ayuda">
+              </div>
+              <div class="campo">
+                <label for="muestra-remito-viejo">Número de remito, ya cargado</label>
+                <input id="muestra-remito-viejo" type="text" value="0001-00004498" disabled>
+              </div>
+              <div class="campo">
+                <label for="muestra-frecuencia">Cada cuánto</label>
+                <select id="muestra-frecuencia"><option>Una sola vez</option><option>Cada mes</option></select>
+              </div>
+              <div class="campo">
+                <label for="muestra-detalle">Qué pasó</label>
+                <textarea id="muestra-detalle">Llegaron 13 kg: faltó una bolsa.</textarea>
               </div>
               <div class="campo" data-estado="error">
                 <label for="muestra-correo">Correo electrónico</label>
                 <input id="muestra-correo" type="email" value="contacto@ejemplo" aria-invalid="true" aria-describedby="muestra-correo-error" placeholder="nombre@ejemplo.com">
                 <p id="muestra-correo-error" class="campo-error">Falta el dominio, por ejemplo @ejemplo.test.</p>
+              </div>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.opciones', 'La opción: elegir una entre pocas, antes que escribir. Un grupo (fieldset con su legend, o div dentro de uno) con un label por opción y su radio adentro. Cada opción es un bloque de 48 px que se toca entero; el radio nativo lo cubre, transparente, y la marca de al lado dice si está elegida. Elegida: el borde de tinta, el fondo de salvia y la letra gruesa. disabled: en gris. Con error, aria-invalid=&quot;true&quot; en cada radio: el borde, más grueso, en el color del problema, y el error del grupo debajo. Hoja: formularios.css.', ~{::demo-opciones})}">
+          <th:block th:fragment="demo-opciones">
+            <div class="pila" data-espacio="3">
+              <fieldset class="opciones">
+                <legend>¿Llegó bien?</legend>
+                <label><input type="radio" name="muestra-llego" value="si" checked> Sí, completa</label>
+                <label><input type="radio" name="muestra-llego" value="no"> Llegó con un problema</label>
+              </fieldset>
+              <fieldset class="opciones">
+                <legend>¿Llegó bien? (todavía no se puede elegir)</legend>
+                <label><input type="radio" name="muestra-llego-quieto" value="si" disabled> Sí, completa</label>
+                <label><input type="radio" name="muestra-llego-quieto" value="no" disabled> Llegó con un problema</label>
+              </fieldset>
+              <div class="campo" data-estado="error">
+                <fieldset class="opciones" aria-describedby="muestra-llego-error">
+                  <legend>¿Llegó bien? (con error)</legend>
+                  <label><input type="radio" name="muestra-llego-falta" value="si" aria-invalid="true"> Sí, completa</label>
+                  <label><input type="radio" name="muestra-llego-falta" value="no" aria-invalid="true"> Llegó con un problema</label>
+                </fieldset>
+                <p id="muestra-llego-error" class="campo-error">Elegí cómo llegó la entrega.</p>
+              </div>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.opciones con casillas', 'La casilla: elegir varias, o aceptar algo. El mismo bloque de la opción, con una casilla (input type=&quot;checkbox&quot;) adentro: la marca es un cuadro y, marcada, se llena de verde con su tilde. disabled: en gris. Con error, aria-invalid=&quot;true&quot;. La casilla sola de 48 × 48 px, sin texto, de la tabla con selección del galpón, entra con el galpón; la de la bandeja (.buzon) tiene su propia ficha. Hoja: formularios.css.', ~{::demo-casillas})}">
+          <th:block th:fragment="demo-casillas">
+            <div class="pila" data-espacio="3">
+              <fieldset class="opciones">
+                <legend>Qué te avisamos</legend>
+                <label><input type="checkbox" name="muestra-avisos" value="salida" checked> Cuando sale</label>
+                <label><input type="checkbox" name="muestra-avisos" value="llegada"> Cuando llega</label>
+                <label><input type="checkbox" name="muestra-avisos" value="misiones" disabled> Tus misiones (todavía no)</label>
+              </fieldset>
+              <div class="campo" data-estado="error">
+                <div class="opciones">
+                  <label><input type="checkbox" name="muestra-terminos" value="si" aria-invalid="true" aria-describedby="muestra-terminos-error"> Leí y acepto los términos</label>
+                </div>
+                <p id="muestra-terminos-error" class="campo-error">Para seguir, aceptá los términos.</p>
               </div>
             </div>
           </th:block>
@@ -850,8 +921,21 @@
             <div data-ancho="pantalla"><section th:replace="~{componentes/huerta :: raices}"></section></div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.subida', 'La zona para subir fotos: un campo con el control nativo de archivos (la cámara o la galería del celular; sin JavaScript anda igual y manda lo elegido) y, con JavaScript, la vista previa de cada imagen con su nombre y un botón Quitar. data-estado=&quot;error&quot; pone el recuadro en el color del problema. Probala: elegí una imagen.', ~{::demo-subida})}">
+        <div th:replace="~{componentes/muestra :: muestra('.subida', 'La zona para subir fotos: un recuadro punteado con el título y su cámara, la ayuda y el control nativo de archivos, cuyo botón es como el botón secundario, de 48 px de alto (abre la cámara o la galería del celular; sin JavaScript anda igual y manda lo elegido). Con JavaScript, debajo, la vista previa de cada imagen, de a dos por renglón, con su nombre y un botón Quitar. data-estado=&quot;error&quot; pone el recuadro en el color del problema y el error (.campo-error) dice qué pasó y cómo seguir. Probala: elegí una imagen.', ~{::demo-subida})}">
           <th:block th:fragment="demo-subida">
+            <div class="pila" data-espacio="3">
+            <div class="campo subida" data-estado="error">
+              <label for="muestra-fotos-error">
+                <svg class="subida-icono" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                  <path d="M6 16H14L18 10H30L34 16H42V38H6Z"/><circle cx="24" cy="26" r="7"/>
+                </svg>
+                <span>Fotos de lo que llegó, con error</span>
+              </label>
+              <small id="muestra-fotos-error-ayuda">Al menos una. JPG o PNG, hasta 5 MB cada una.</small>
+              <p id="muestra-fotos-error-texto" class="campo-error">La foto pesa 7 MB y el máximo es 5 MB. Elegí otra más liviana.</p>
+              <input id="muestra-fotos-error" type="file" accept="image/*" multiple aria-invalid="true"
+                     aria-describedby="muestra-fotos-error-texto muestra-fotos-error-ayuda">
+            </div>
             <div class="campo subida" x-data="subidaFotos">
               <label for="muestra-fotos">
                 <svg class="subida-icono" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
@@ -874,6 +958,7 @@
                   </li>
                 </template>
               </ul>
+            </div>
             </div>
           </th:block>
         </div>
