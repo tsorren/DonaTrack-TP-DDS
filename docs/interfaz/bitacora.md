@@ -31,6 +31,332 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-23 · proceso · Los menús de cada rol no cambian en C1 (DA-17; DA-01, DA-02 y DA-03a diferidas)
+
+- **Decisión:** C1 no cambia ninguna entrada de ningún menú. El menú de cada rol cambia en la ola de
+  ese rol: el público en PUB1 (DA-01, el Mapa pasa a Entregas), el de la organización en ORG (DA-02,
+  «Donaciones recibidas» y «Seguir entregas» se funden en «Entregas») y el de quien dona en DON
+  (DA-03a, «Seguimiento» sale del menú y se abre desde el detalle).
+- **Alternativas:** cambiar los cuatro menús junto con el armazón, en C1.
+- **Por qué:** una entrada nueva sin su pantalla rehecha lleva a una pantalla vieja; cada ola rehace
+  el menú junto con las pantallas a las que lleva.
+- **Costo:** hasta la ola de cada rol, el armazón nuevo convive con las entradas de hoy.
+- **Quién decidió:** usuario (DA-17, ronda 3 del 2026-11-22). Cumplida: PASS de la revisión de
+  `c1-armazon`, ronda 1.
+- **Evidencia:** backlog §2.2 y §10.2; `41bc195b8`.
+
+### 2026-11-23 · proceso · Las piezas del galpón no entran en C1 (DA-18)
+
+- **Decisión:** la tabla con selección, el cajón y el armazón del galpón pasan a la ola ADM1.
+- **Alternativas:** traerlas al catálogo en C1 junto con las demás piezas.
+- **Por qué:** solo las usa el admin, y entran con sus pantallas.
+- **Costo:** el admin sigue con el armazón de la huerta hasta ADM1. También queda para ADM1 la
+  casilla sola de 48 × 48 px.
+- **Quién decidió:** usuario (DA-18, ronda 3 del 2026-11-22).
+- **Evidencia:** backlog §2.2 y §10.2.
+
+### 2026-11-23 · sello · «Vencida», «cancelada» y «en revisión» van con el sello neutro y el signo de información (DA-07)
+
+- **Decisión:** los tres estados que la guía no dibuja usan el par de «pendiente» y su palabra
+  (DA-07). Como signo, el lote eligió `e-info`, el mismo para los tres.
+- **Alternativas:** para el signo, `e-registrada` (se confunde con «registrada», que usa el mismo
+  par), `e-atencion` y `e-problema` (alarman, y DA-07 pide algo neutro) y `e-espera` (es el de la
+  chapa de pedido).
+- **Por qué:** neutro, sin alarma y sin confundirse con otro estado.
+- **Costo:** `/admin-donaciones` sigue mapeando «vencida» a `problema` hasta ADM1, porque su plantilla
+  no es de la ola.
+- **Quién decidió:** usuario (DA-07); el signo, agente (lote `c1-estados`), sin consultar.
+  Cumplida: PASS de la revisión del lote, ronda 2.
+- **Evidencia:** `ebb17dd0d` y `dfdb876d3`; `componentes/sello.css` y `sello.html`.
+
+### 2026-11-23 · base · La base de la guía entra en una capa propia, con el aro de foco de un solo color
+
+- **Decisión:** el reset de márgenes, las listas sin viñetas, los títulos, `a`, `strong`, `svg` y el
+  foco van en `@layer base`; `body` sigue sin capa. La medida del texto se fija en `main :where(p)`.
+  El foco conserva el selector genérico `:focus-visible`. `.dt`, `.es-foco` y `.es-cursor` de la
+  maqueta no entran.
+- **Alternativas:** dejar la base sin capa (les ganaba a `.pila > * + *` y a todos los bloques);
+  restringir el foco a la lista de elementos de la guía (se perdía en otros).
+- **Por qué:** que cualquier composición o componente le gane a la base sin pelear especificidad.
+- **Costo:** en las pantallas que no son de la ola, las listas pierden viñetas, los párrafos quedan en
+  34 rem, el texto pasa a `--color-texto` con interlineado 1,5 y algunas partes quedan más apretadas.
+  Es un dato para G1.
+- **Quién decidió:** agente (lote `c1-base`), sin consultar.
+- **Evidencia:** `1447644f2`; `app.css`.
+
+### 2026-11-23 · composición · Los nombres de la guía se traducen a las piezas que ya existen
+
+- **Decisión:** `.fila` es `.racimo`, `.entre` es `data-alinea="entre"`, `.suave` es
+  `data-tono="suave"`, `.chico` es `.texto-chico` y `.oculto-visual` es `.solo-lectores`. Lo que
+  faltaba entra con la forma de hoy: `data-alinea` acepta varias palabras (`"entre arriba"`) y
+  `data-espacio="0"`. `.pila` sigue con margen y no pasa a `gap`. No entran `.medida`, `.cifra`,
+  `.enlace-suelto` ni `.sobre-suelo` (es `.raices-pie`).
+- **Alternativas:** copiar las clases de la guía; reescribir `.pila` con `gap`.
+- **Por qué:** la regla de la ola: los nombres que existen se conservan. Reescribir `.pila` podía
+  mover pantallas que no son de la ola.
+- **Costo:** quien lee la guía tiene que traducir los nombres. `.enlace-suelto` queda sin pieza.
+- **Quién decidió:** agente (lote `c1-base`), sin consultar.
+- **Evidencia:** `1447644f2`; `composicion.css` y `componentes.md`.
+
+### 2026-11-23 · movimiento · Las animaciones nuevas reusan las de hoy y sus duraciones van al token más cercano
+
+- **Decisión:** el trazo y el asomo de la guía son `mov-traza` y `mov-aparece`, que ya existían. Son
+  nuevas solo `mov-gira`, `mov-late` y `mov-brote` (`--movimiento-animacion-brote`, porque `-brota` ya
+  es otra). El giro de 0,9 s va con `--movimiento-duracion-larga` (0,75 s) y el latido de 1,4 s con
+  `--movimiento-duracion-trazo` (1,1 s). `--movimiento-animacion-traza-raiz` toma la curva de la
+  guía.
+- **Alternativas:** duraciones literales, que la regla de la ola no permite; un token nuevo en
+  `tokens.css`, que no se toca.
+- **Por qué:** una duración va siempre a un token.
+- **Costo:** el giro y el latido son algo más rápidos que en la guía; la diferencia está anotada en
+  `movimiento.css` y en el catálogo.
+- **Quién decidió:** agente (lote `c1-base`), sin consultar.
+- **Evidencia:** `1447644f2`.
+
+### 2026-11-23 · tokens · Las fichas de tokens de /estilos pasan al fragmento de muestra
+
+- **Decisión:** las 14 fichas usan `componentes/muestra :: muestra`; el relleno pasa a
+  `.muestra-demo`. Se suma una sección «Base» con tres fichas (títulos y texto, foco y listas).
+- **Alternativas:** dejarlas a mano (el bloqueante de C0); un parámetro nuevo del fragmento para los
+  títulos en prosa.
+- **Por qué:** lo que existe se usa como está, y la pieza nueva de la base necesita su muestra.
+- **Costo:** los títulos en prosa («Letra», «Color: superficies y texto») salen en monoespaciada,
+  porque el fragmento envuelve el nombre en `<code>`.
+- **Quién decidió:** agente (lote `c1-base`), sin consultar.
+- **Evidencia:** `1447644f2`; [DTI-46](../adr/DEUDA_TECNICA.md#dti-46), ítem 1.
+
+### 2026-11-23 · símbolos · El ícono es `.icono` y el signo de estado, una variante por atributo
+
+- **Decisión:** la hoja nueva es `icono.css`, con `.icono`; el `.signo` de la guía es
+  `.icono[data-forma="signo"]`, con puntas rectas. Íconos y signos van en dos fragmentos nuevos de
+  `iconos.html`, `comunes` y `signos`, y no en `navegacion`. Las medidas salen de tokens exactos.
+- **Alternativas:** una segunda clase `.signo` (otra hoja, fuera del patrón de variantes por
+  atributo); sumar los símbolos a `navegacion`, que cargan los dos layouts.
+- **Por qué:** no agrandar todas las páginas y seguir el catálogo.
+- **Costo:** ningún layout carga todavía esos fragmentos: los incluye la primera ola que los use en
+  una pantalla.
+- **Quién decidió:** agente (lote `c1-simbolos`), sin consultar.
+- **Evidencia:** `cb50bb372` y `b5cef7d93`.
+
+### 2026-11-23 · símbolos · La marca de tres colores se resuelve con un hueco en el cuerpo
+
+- **Decisión:** en `i-marca`, el cuerpo toma `currentColor`, la hoja hereda `--color-hoja` y la hoja
+  clara es un hueco (`fill-rule="evenodd"`).
+- **Alternativas:** colores en hex en la plantilla; la marca de un solo color.
+- **Por qué:** ni los atributos SVG ni una plantilla sin `style` aceptan `var()`.
+- **Costo:** sobre un fondo de color, la hoja clara toma ese color en lugar del papel.
+- **Quién decidió:** agente (lote `c1-simbolos`), sin consultar.
+- **Evidencia:** `cb50bb372`; `iconos.html`.
+
+### 2026-11-23 · ilustraciones · Los dibujos de la guía entran como los de hoy, con los colores en hex
+
+- **Decisión:** el recorrido, la puerta, el mapa y las 7 escenas van en `static/img/ilustraciones/`.
+  Cada clase `f-*` y `s-*` de la guía pasa al hex de su token, y cada archivo trae el símbolo y lo
+  dibuja con `<use>`, para servir como `<img>` y como `<use href>`. De la puerta entran solo los
+  símbolos fijos; las partes que cambian con el estado las dibuja la pantalla.
+- **Alternativas:** clases de color nuevas; ponerlos sueltos en `static/img/`.
+- **Por qué:** el producto no tiene las clases de la maqueta, y así no se mezclan con otros recursos.
+- **Costo:** los dibujos no siguen un cambio de tema; los números piden «DM Sans» por nombre.
+- **Quién decidió:** agente (lote `c1-simbolos`), sin consultar.
+- **Evidencia:** `cb50bb372`.
+
+### 2026-11-23 · armazón · El menú de abajo llega hasta 56 em en todos los roles
+
+- **Decisión:** el menú pasa a la barra de arriba recién desde `--medida-quiebre-menu` (56 em), como
+  la guía, también en las áreas privadas (antes, desde 37,5 em). La barra de arriba va en una sola
+  fila, y `--medida-cabecera-fija` tiene un solo valor (4,125 rem). Con 5 secciones, la letra se
+  estrecha en el celular y se aprieta entre 56 y 68,75 em.
+- **Alternativas:** conservar el corte de 37,5 em en las privadas.
+- **Por qué:** manda la guía.
+- **Costo:** entre 600 y 896 px las privadas muestran el menú abajo. A 320 px, con 5 secciones, dos
+  nombres bajan de renglón (75 px de alto, sin desborde).
+- **Quién decidió:** agente (lote `c1-armazon`), sin consultar.
+- **Evidencia:** `41bc195b8` y `00e6aed69`; `app.css` y `componentes/navegacion.css`.
+
+### 2026-11-23 · armazón · En el celular la barra de arriba no queda fija, aunque la guía la pega
+
+- **Decisión:** se mantiene R11-33: en el celular arriba no queda nada fijo.
+- **Alternativas:** pegar la barra arriba en todo ancho, como la guía (`10-componentes.css:318`).
+- **Por qué:** rige la decisión R11-33 y `ArmazonFijoTest` lo afirma; esta ola no edita los tests de
+  `visual/`.
+- **Costo:** una diferencia con la guía. Queda pendiente para el usuario
+  ([DTI-47](../adr/DEUDA_TECNICA.md#dti-47)).
+- **Quién decidió:** agente (lote `c1-armazon`), sin consultar; la decisión de fondo es del usuario.
+- **Evidencia:** `app.css` (bloque de lo fijo).
+
+### 2026-11-23 · armazón · El pie es el corte de suelo de la guía, sin el lema
+
+- **Decisión:** el pie pierde el lema «Lo que donás echa raíces.» y los fondos de raíces y textura.
+  La marca toma la letra de la guía y conserva el `img` de hoy. Las reglas de la campana pasan a
+  `componentes/campanita.css`, y el menú de la cuenta y el de la campana llevan el borde de tinta.
+- **Alternativas:** conservar el lema y los fondos.
+- **Por qué:** la guía no los dibuja.
+- **Costo:** sale un texto que estaba en el pie desde la identidad Raíces. Ahora
+  `AbejasYRenglonesTest.loQueDonasYEchaRaicesVanEnterosEnSuRenglonEnTodosLosAnchos` da error porque
+  mide ese lema: el usuario decide si se conserva o si se quita esa medición
+  ([DTI-47](../adr/DEUDA_TECNICA.md#dti-47)). `img/raices-pie.svg` queda sin uso.
+- **Quién decidió:** agente (lote `c1-armazon`), sin consultar.
+- **Evidencia:** `41bc195b8`; `pie.html` y `app.css`.
+
+### 2026-11-23 · armazón · Las migas dibujan su flecha en línea
+
+- **Decisión:** `componentes/migas.css` y su fragmento dibujan la flecha con el trazo en línea, no
+  con `use href="#i-ir"`. El enlace lleva un ancho mínimo de 48 px.
+- **Alternativas:** usar el símbolo `i-ir`, que obliga a la página a cargar `iconos :: comunes`.
+- **Por qué:** que el fragmento ande en cualquier página y que un texto corto llegue al toque mínimo.
+- **Costo:** la flecha está dibujada dos veces.
+- **Quién decidió:** agente (lote `c1-armazon`), sin consultar.
+- **Evidencia:** `41bc195b8`.
+
+### 2026-11-23 · formularios · La opción y la casilla dibujan su marca y dejan el control nativo encima, transparente
+
+- **Decisión:** la opción y la casilla son `.opciones`, con su variante de casilla. El control nativo
+  queda transparente sobre todo el bloque, para que mida 48 px o más, y la marca de 22 px es un
+  `::before`. `.opciones` queda en una columna.
+- **Alternativas:** mostrar el control nativo de 22 px, como la guía (no llega al toque mínimo);
+  encimarlo solo en el relleno (46 px, 44 con error); las clases `.opcion` y `.casilla` de la guía
+  (`.casilla` ya es la casilla de los términos del registro); dos columnas desde 37,5 em (los
+  párrafos de nota ocupaban una celda).
+- **Por qué:** el piso de toque de 48 px no se negocia y no se toca el test.
+- **Costo:** la casilla de los términos del registro conserva el dibujo de antes y se ve distinta.
+- **Quién decidió:** agente (lote `c1-formularios`), sin consultar.
+- **Evidencia:** `6051f2a1a` y `a5d384c7a`.
+
+### 2026-11-23 · formularios · El botón trae su estado «cargando» y no las variantes que nadie usa
+
+- **Decisión:** el botón con `aria-busy` muestra la ruedita (`--movimiento-animacion-gira`, de
+  `--espacio-3`). Deshabilitado les gana a todos los tonos, también con el cursor encima. El botón
+  con foto y el botón chico pasan a tokens. No entran las variantes de texto e ícono.
+- **Alternativas:** traer las variantes de la guía.
+- **Por qué:** ninguna plantilla las usa.
+- **Costo:** las hojas de pantalla que pisan `.boton` pueden verse distintas del botón nuevo (dato para
+  G1).
+- **Quién decidió:** agente (lote `c1-formularios`), sin consultar.
+- **Evidencia:** `6051f2a1a`.
+
+### 2026-11-23 · formularios · El error de campo lleva el signo de la guía, y sin signo sigue siendo un párrafo
+
+- **Decisión:** el error va en fila solo si lleva el signo (`.campo-error:has(> svg)`), de 1 rem
+  (`--espacio-3`) y con `--espacio-0` hacia abajo. Las cuatro muestras de error de `/estilos` lo
+  llevan.
+- **Alternativas:** el margen de `--espacio-1` que proponía la revisión; un error siempre en fila.
+- **Por qué:** `--espacio-0` es el token más cercano a los 0,3125 rem de la guía, y un error sin signo
+  no debe partir su texto.
+- **Costo:** el error que arma `publico.js` sigue sin signo.
+- **Quién decidió:** agente (lote `c1-formularios`, rondas 1 y 2), sin consultar.
+- **Evidencia:** `c7814ee54` y `7d4fcefc0`.
+
+### 2026-11-23 · estados · El sello de la guía se ve en la chapa; suelto sigue el dibujo de hoy
+
+- **Decisión:** `sello(estado)` dibuja las dos cosas: el signo de la guía, que se ve solo dentro de
+  `span.estado`, y el dibujo de hoy, que se ve suelto o en `p.estado`. Los signos se dibujan en línea
+  en `sello :: signo(nombre)`. El borde punteado va solo en «registrada». El sello deja partir el
+  renglón (sin `nowrap`). La chapa de espera es `.sello-pedido`.
+- **Alternativas:** cambiar el dibujo por el signo en todos lados (rediseñaba etapas y contadores de
+  pantallas que no son de la ola); usar `use href="#e-…"` (las pantallas no cargan ese sprite).
+- **Por qué:** la pieza nueva sin rehacer pantallas, y textos largos de sello que con `nowrap` se
+  salían del borde.
+- **Costo:** dos fuentes de verdad para la geometría de los signos (`iconos.html` y `sello.html`).
+  Cada `span.estado` de las pantallas cambia de pastilla a chapa.
+- **Quién decidió:** agente (lote `c1-estados`), sin consultar.
+- **Evidencia:** `ebb17dd0d` y `dfdb876d3`.
+
+### 2026-11-23 · avisos · El aviso en la página es una pieza nueva y el breve toma el papel de la guía
+
+- **Decisión:** clase nueva `.aviso` con `data-tipo`; `.banner` no se convierte. El aviso breve de la
+  guía se aplica a `.aviso-breve:not([data-pista])`, y «hecho» pinta el signo con el color del éxito,
+  sin franja ni negrita. El ícono del aviso mide 1,25 rem con una regla propia.
+- **Alternativas:** convertir `.banner`; sumar el tamaño a `.aviso-breve > .icono` (no le ganaba a
+  `.icono[data-forma="signo"]`).
+- **Por qué:** la pista conserva su papel, y la pieza nueva no rehace pantallas.
+- **Costo:** los avisos breves reales todavía no traen el signo ni el botón de ícono.
+- **Quién decidió:** agente (lote `c1-estados`; la regla del ícono, en la ronda 1), sin consultar.
+- **Evidencia:** `ebb17dd0d` y `a976019af`.
+
+### 2026-11-23 · entrega · La lámina pierde la sombra granulada y sus variantes van por `data-papel`
+
+- **Decisión:** `.tarjeta` lleva el filete fino de la guía y `isolation: isolate`. Sus variantes son
+  `data-papel` (protagonista, hueco, tierra). `data-filete="contorno"` pasa a ser el filete en tinta;
+  el hueco usa `background-color: transparent`, para no borrar la trama.
+- **Alternativas:** las clases `lamina--*` (heredadas); `data-tono` (ya es una utilidad de texto);
+  conservar el `outline` de contorno (dibujaba dos líneas); subir la especificidad de la trama.
+- **Por qué:** seguir la guía sin chocar con nombres que ya existen.
+- **Costo:** las pantallas que usan `.tarjeta` pierden la sombra granulada; `grano-sombra.svg` y
+  `--color-sombra-grano` quedan sin uso. Con `tierra`, el atajo `background` todavía borra la trama.
+- **Quién decidió:** agente (lote `c1-entrega`; el hueco, en la ronda 1), sin consultar.
+- **Evidencia:** `4c6d2a36c`, `0e574abf8` y `0f68f2e14`.
+
+### 2026-11-23 · entrega · La etiqueta de la entrega se apila sola, sin media query
+
+- **Decisión:** `etiqueta-entrega`, con el nombre de su hoja como prefijo. Con la foto al costado, se
+  apila sola por debajo de unos 21,8 rem (`flex-wrap`) y el filete entre foto y texto es una sombra.
+  El sello es siempre el de entregada; el título, un `h3`. Las medidas de la guía pasan a tokens: el
+  hueco del agujero a `--espacio-5` (guía, 2 rem) y el rótulo a `--espacio-0` (guía, 0,375 rem).
+- **Alternativas:** el quiebre de 37,5 em (apilaba la etiqueta en celulares de 390 a 600 px, donde la
+  guía la muestra al costado); `.etiqueta`, `.foto` y `.foto-falta` (son clases heredadas).
+- **Por qué:** el `@container` de la guía no tiene un quiebre equivalente.
+- **Costo:** las variantes de espera y de fila quedan para ORG. En `/estilos` la foto al costado se
+  ve cortada en la captura de 1280 px.
+- **Quién decidió:** agente (lote `c1-entrega`), sin consultar.
+- **Evidencia:** `4c6d2a36c`.
+
+### 2026-11-23 · raíz · La raíz de los 5 pasos y los frutos son fragmentos nuevos
+
+- **Decisión:** `huerta :: raiz-pasos(pasos, forma, nombre, recien)` y
+  `huerta :: frutos(cuenta, periodo, recien)`, con las clases `.huerta-raiz-*` y `.huerta-frutos*`.
+  Las formas van por `data-forma` (acostada, numerada, numerada tendida); la tendida, desde 56 em. Con
+  `recien`, el último tramo es una raya SVG que se dibuja con la animación de hoy. Las medidas salen
+  de `--espacio-*`.
+- **Alternativas:** rehacer `recorrido(d)` o `cifras(estado, valores)`; los nombres `raiz`,
+  `raiz-paso` y `fruto` (heredados); `mov-recorta` para el trazo; omitir el trazo.
+- **Por qué:** `cifras` cuenta números grandes y sus pantallas no son de la ola. `mov-traza` anima un
+  trazo SVG y la raíz de la guía usa bordes.
+- **Costo:** los frutos se separan 0,25 rem (guía, 0,3125). La tendida con un paso que falta dibuja
+  una línea punteada. La puerta y `.estado-raiz` quedan para ORG, y ninguna pantalla usa todavía
+  estas piezas.
+- **Quién decidió:** agente (lote `c1-raiz`), sin consultar.
+- **Evidencia:** `10f3d3b64` y `bd1c8b233`.
+
+### 2026-11-23 · listas · La lista de filas es una variante, y la vacía y la que carga pierden sus abejas
+
+- **Decisión:** la lista de la guía entra como `.lista[data-forma="filas"]`. La caja de la lista vacía
+  se pinta desde `lista.css`. Salen la abeja dormida de `.vacio`, la abeja que vuela en `.cargando` y
+  la ola del esqueleto, que pasa a latir; con tres renglones, son los de la guía. La caja de carga va
+  en `[aria-busy="true"]:has(> .esqueleto > i)`.
+- **Alternativas:** cambiar la `.lista` base (unas 27 plantillas la usan como grilla); la clase
+  `lista-fila` de la guía; editar `aviso.css`, de otro lote.
+- **Por qué:** manda la guía, que no dibuja las abejas.
+- **Costo:** pisa la ronda de ilustraciones del 2026-11-08 y la ola del esqueleto, que había decidido
+  el usuario el 2026-11-12. Quedan reglas muertas en `aviso.css`. La lista con error sigue con el
+  `.banner` y la vacía, sin la trama (bloqueantes abiertos, [DTI-47](../adr/DEUDA_TECNICA.md#dti-47)).
+- **Quién decidió:** agente (lote `c1-listas`), sin consultar.
+- **Evidencia:** `c919e6848`, `6456a75fc` y `d641c4b60`.
+
+### 2026-11-23 · listas · La tabla se apila por debajo de 56 em con el rótulo en el margen de la celda
+
+- **Decisión:** el corte pasa de 53,75 a 56 em. Apilada, el rótulo flota en el margen de la celda
+  (`float` con margen negativo), y la celda de acciones ocupa todo el ancho. Desde 56 em, la cabecera
+  usa `--color-galpon-cabecera` y la fila bajo el cursor, `--color-fila-cursor`.
+- **Alternativas:** la grilla de dos columnas de la guía (partía las celdas que mezclan texto, `<br>`
+  y botones); el rótulo en `::before` absoluto (la primera versión); un `min-height`; `.tabla-caja`
+  (pide un envoltorio en las plantillas).
+- **Por qué:** las celdas reales del admin mezclan contenidos.
+- **Costo:** las tablas del admin, que no son de la ola, pasan de tarjetas a filas entre filetes.
+- **Quién decidió:** agente (lote `c1-listas`, y la ronda 1), sin consultar.
+- **Evidencia:** `c919e6848`, `2c97c0b57` y `6456a75fc`.
+
+### 2026-11-23 · listas · Las pestañas se pueden desplazar de costado
+
+- **Decisión:** desde 37,5 em, el filete es una sombra hacia adentro de la lista, que se desplaza de
+  costado (`overflow-x: auto`). Se conserva la animación de impresión de la elegida.
+- **Alternativas:** el borde con margen de -1,5 px de la guía (recortaba la solapa elegida al
+  desplazar).
+- **Por qué:** en columnas angostas las pestañas se salían.
+- **Costo:** en la ficha de `/estilos` a 1280 px la tercera pestaña queda escondida, sin barra a la
+  vista: bloqueante abierto ([DTI-47](../adr/DEUDA_TECNICA.md#dti-47)).
+- **Quién decidió:** agente (lote `c1-listas`), sin consultar.
+- **Evidencia:** `c919e6848`; `pestanas.css`.
+
 ### 2026-11-22 · proceso · Las casillas de la demo de la bandeja en /estilos son una excepción conocida del gate visual
 
 - **Decisión:** `VerificacionVisualTest` deja afuera del piso las fallas de toque de las casillas
