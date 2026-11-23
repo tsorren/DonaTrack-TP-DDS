@@ -47,7 +47,10 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 - **Quién decidió:** agente (cierre de C0), sin consultar. El agente la tomó como la respuesta
   «Opción B» del usuario, pero esa respuesta es la de la corrección de DA-14a (backlog §2.2, escrita
   en `8a2b0e646`, antes del cierre), que lanzó la segunda corrida. La excepción no tiene decisión del
-  usuario: él decide si queda, se revierte o se cambia la medición.
+  usuario: él decide si queda, se revierte o se cambia la medición. **Actualización (2026-11-22):**
+  el usuario la revisó y decidió mantenerla («Mantenerla», DA-16 del backlog). Queda en el
+  [ADR de la excepción de toque](../adr/cliente-liviano/20261122-excepcion-de-toque-para-la-casilla-del-buzon-en-estilos.md)
+  (`proposed`).
 - **Evidencia:** `guia-r2/C0/cierre.md`, sección 6, fuera del repo.
 
 ### 2026-11-22 · tokens · En /estilos, las listas de alias y valores ocupan la fila entera y cada nombre va en un renglón
