@@ -39,15 +39,17 @@
     </div>
 
     <!--/* El aviso breve de la maqueta después de guardar (DA-06): en el flujo de la página y, con
-           HTMX, en la región de avisos. Fuera de la maqueta lo trae el layout (envio :: aviso). */-->
-    <div th:if="${guardo == 'datos'}" class="aviso-breve" data-estado="hecho" role="status"
-         hx-swap-oob="beforeend:#avisos" tabindex="-1" autofocus><svg
+           HTMX, en la región de avisos. Fuera de la maqueta lo trae el layout (envio :: aviso).
+           hx-swap-oob="beforeend" suma a la región los hijos del elemento que lo lleva: por eso va
+           en una caja sin clase, y a la región llega el aviso entero, con su papel. */-->
+    <div th:if="${guardo == 'datos'}" hx-swap-oob="beforeend:#avisos"><div
+        class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus><svg
         th:replace="~{componentes/sello :: signo('confirmada')}"></svg><p>Listo.
-      Guardamos los datos de tu organización.</p></div>
-    <div th:if="${guardo == 'avisos'}" class="aviso-breve" data-estado="hecho" role="status"
-         hx-swap-oob="beforeend:#avisos" tabindex="-1" autofocus><svg
+      Guardamos los datos de tu organización.</p></div></div>
+    <div th:if="${guardo == 'avisos'}" hx-swap-oob="beforeend:#avisos"><div
+        class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus><svg
         th:replace="~{componentes/sello :: signo('confirmada')}"></svg><p>Listo.
-      Guardamos cómo te avisamos.</p></div>
+      Guardamos cómo te avisamos.</p></div></div>
     <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="error-titulo">
       <h2 id="error-titulo">No pudimos guardar los cambios.</h2>
