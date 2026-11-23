@@ -186,14 +186,15 @@ Siete pantallas de hoy, sin rehacer, solo para mirar cómo quedan con los tokens
 `/admin-asignaciones` y `/admin-donaciones`. Sus capturas salen de la corrida completa de
 `-Pvisual` (las 320 rutas de `cliente-liviano/src/test/resources/verificacion/paginas.txt`), que
 corre el cierre de la ola y guarda fuera del repo, junto a su `cierre.md` (regla del manifiesto).
-No entran en la revisión de pantallas ni en la hoja de contacto de la ola.
+No entran en la revisión de pantallas ni en la hoja de contacto de la ola. Es la muestra de C0, una
+primera señal; la de G1, con 16 pantallas, está en §10.3.
 
 ### 3.4 Qué mide el piloto
 
 | Medida | Para qué |
 |---|---|
 | Duración de punta a punta y por paso | Decidir si las olas siguen en serie o en dos pistas (G0) |
-| Tokens por lote y por paso | Proyectar la cuota de las 12 corridas que faltan (13 en total: 9 olas de `construir` y 4 de `disenar`, porque ORG, DON, ADM1 y ADM2 tienen pantallas con ficha para aprobar antes de construir) |
+| Tokens por lote y por paso | Proyectar la cuota de las 12 corridas que faltan (13 en total: 9 olas de `construir` y 4 de `disenar`, porque ORG, DON, ADM1 y ADM2 tienen pantallas con ficha para aprobar antes de construir). Así era el plan al medir; desde G0 quedan 8 después de C0, sin corridas `disenar` (§2.2, G0 y DA-19) |
 | Rondas de reparación y de revisión de pantallas | Ajustar el tamaño de los lotes |
 | `-Pvisual` sobre las 320 rutas con los tokens nuevos | El piso: contraste AA, desbordes y toque de 48 px |
 | Las capturas de la muestra de §3.3 | Primera señal para G1 |
@@ -351,7 +352,7 @@ armazón del galpón (la mitad de P26), que pasan a ADM1 (DA-18).
 | ID | Pieza | Guía | Destino | Qué se hace |
 |---|---|---|---|---|
 | P01 | Base y aro de foco | 1-43 | `app.css` | Se retoca |
-| P02 | Composición y medida del texto | 44-71, 452 | `composicion.css` | Se retoca |
+| P02 | Composición y medida del texto | 44-71, 453-454 | `composicion.css` | Se retoca |
 | P03 | Botones, con «cargando» | 72-114 | `componentes/boton.css` | Se retoca |
 | P04 | Campos, opción y casilla | 115-156 | `componentes/campo.css`, `formularios.css` | Se extiende |
 | P05 | Subir fotos | 456-461; `15-pantallas.css:60` | `componentes/subida.css` | Se retoca |
@@ -359,12 +360,12 @@ armazón del galpón (la mitad de P26), que pasan a ADM1 (DA-18).
 | P07 | Lámina y sombra de paja (D7) | 179-190 | `componentes/tarjeta.css` | Se retoca |
 | P08 | Foto de una entrega y etiqueta (D3) | 191-223; `15-pantallas.css:121` | `componentes/etiqueta-entrega.css` y `componentes/etiqueta-entrega.html` `[PROPOSED]` | Componente nuevo, con otro nombre: `.etiqueta` ya es una clase heredada (`entidad-seguimiento-confirmar.css:47`). Reemplaza al acta de `entidad-comun.css` en la ola ORG |
 | P09 | Raíz (D2), cuatro formas y «no pudo llegar» | 224-263, 490-502; `15-pantallas.css:39-40, 94-97` | `componentes/huerta.css` y `componentes/huerta.html` | Se extiende |
-| P10 | Frutos (D4) | 264-267, 483 | `componentes/huerta.html` (fragmento `cifras`) | Se extiende: un fruto por entrega confirmada |
+| P10 | Frutos (D4) | 264-267, 484 | `componentes/huerta.html` (fragmento `cifras`) | Se extiende: un fruto por entrega confirmada |
 | P11 | Trama (D5) | 268-273 | `componentes/trama.css` `[PROPOSED]` | Componente nuevo |
 | P12 | Avance de una necesidad | 274-279 | `componentes/progreso.css` | Se retoca |
-| P13 | Avisos: en la página y breve | 280-313, 480 | `componentes/aviso.css` | Se extiende. La lista de novedades de ese bloque es del buzón: va con su ficha, en las olas de rol |
-| P14 | Barra superior e inferior, con el salto al contenido y la campana | 315-356 (la campana, 340-341), 444 | `componentes/navegacion.css`, `componentes/campanita.css` | Se retoca |
-| P15 | Pestañas | 357-368, 447 | `componentes/pestanas.css` | Se retoca |
+| P13 | Avisos: en la página y breve | 280-313, 481 | `componentes/aviso.css` | Se extiende. La lista de novedades de ese bloque es del buzón: va con su ficha, en las olas de rol |
+| P14 | Barra superior e inferior, con el salto al contenido y la campana | 315-356 (la campana, 340-341), 445 | `componentes/navegacion.css`, `componentes/campanita.css` | Se retoca |
+| P15 | Pestañas | 357-367, 448 | `componentes/pestanas.css` | Se retoca |
 | P16 | Migas de pan | 369-373 | `componentes/migas.css` `[PROPOSED]` | Componente nuevo |
 | P17 | Paginador | 374-379 | `componentes/paginas.css` | Se retoca |
 | P18 | Pie de la huerta | 380-384 | `pie.html` | Se retoca |
@@ -441,7 +442,8 @@ guía (DA-07).
 
 ## 10. Ola C1: las piezas
 
-C1 lleva al catálogo y a `/estilos` 25 de las 27 piezas de §6 y el armazón de la huerta. No cambia
+C1 lleva al catálogo y a `/estilos` 25 de las 27 piezas de §6, con el armazón de la huerta entre
+ellas, y pasa al fragmento las fichas de tokens que dejó C0: 26 ítems. No cambia
 ninguna pantalla: ni entradas de menú (DA-17), ni rutas, ni plantillas de pantalla. Manifiesto:
 [`backlog-guia-al-codigo.c1.manifiesto.json`](backlog-guia-al-codigo.c1.manifiesto.json).
 
@@ -458,10 +460,10 @@ y los fragmentos bajo `cliente-liviano/src/main/resources/templates/`. Las líne
 |---|---|---|---|---|
 | C1-01 | `c1-base` | P01 · La base y el aro de foco de la guía. El aro queda de un solo color (hoy usa dos, [DTI-46](../adr/DEUDA_TECNICA.md#dti-46), ítem 5). El catálogo deja de nombrar a `pico` como primera capa | Guía 1-43. Hoy: `app.css`, desde el principio hasta antes de `.raices-cabecera` (`app.css:114`); capas en `app.css:8`; catálogo `:36` | Sin empezar |
 | C1-02 | `c1-base` | P02 · La composición y la medida del texto | Guía 44-71 y 453-454. Hoy: `composicion.css`; muestras en `estilos.html:21-87`; catálogo `:40-86` | Sin empezar |
-| C1-03 | `c1-base` | P27 · El movimiento reducido y el trazo, más las animaciones con nombre que piden otras piezas: el giro del botón que carga, el latido del esqueleto y el trazo de la raíz, con su asomo y su brote. Llevan el prefijo `mov-` de `movimiento.css`, no el `dt-` de la guía; `mov-traza` ya existe. Las demás piezas solo las nombran | Guía 428-431, 108-113 y 411-415; 15, 177-184. Hoy: `movimiento.css` (el prefijo, `:4-5`; `mov-traza`, `:131`); muestras en `estilos.html:89-145`; catálogo `:87-142`. Los `@keyframes` van solo en `movimiento.css` y cada `data-movimiento` va en el catálogo y en las muestras (`InterfazFitnessTest.java:433, 365-379`) | Sin empezar |
+| C1-03 | `c1-base` | P27 · El movimiento reducido y el trazo, más las animaciones con nombre que piden otras piezas: el giro del botón que carga, el latido del esqueleto y el trazo de la raíz, con su asomo y su brote. Llevan el prefijo `mov-` de `movimiento.css`, no el `dt-` de la guía; `mov-traza` ya existe. Sus duraciones usan los tokens `--movimiento-duracion-*` que ya existen: la guía escribe 0,9 s para el giro (`:111`) y 1,4 s para el latido (`:412`), que no son tokens, y se usa el más cercano. Las demás piezas solo las nombran | Guía 428-431, 108-113 y 411-415; 15, 177-184. Hoy: `movimiento.css` (el prefijo, `:4-5`; `mov-traza`, `:131`); muestras en `estilos.html:89-145`; catálogo `:87-142`. Los `@keyframes` van solo en `movimiento.css` y cada `data-movimiento` va en el catálogo y en las muestras (`InterfazFitnessTest.java:433, 365-379`) | Sin empezar |
 | C1-04 | `c1-base` | Las 14 fichas de la sección «Tokens» de `/estilos` pasan al fragmento `componentes/muestra :: muestra(nombre, cuando, cuerpo)` | Fichas a mano en `estilos.html:147-372`; fragmento en `componentes/muestra.html:11`; [DTI-46](../adr/DEUDA_TECNICA.md#dti-46), ítem 1 | Sin empezar |
 | C1-05 | `c1-simbolos` | P25 · Los 17 íconos y los 9 signos de estado de la guía entran en `iconos.html`. Los `id` de hoy (`nav-*` y los de categorías) se conservan | 20, 6-24 (íconos) y 27-35 (signos). Hoy: `iconos.html`, 20 símbolos y ningún signo de estado | Sin empezar |
-| C1-06 | `c1-simbolos` | P24 · Los dibujos de la guía: el recorrido, la puerta, el mapa y las 7 escenas | 20, 91 (recorrido), 131 y 151 (puerta), 157 (mapa) y 38-81 (escenas). Hoy: `static/img/`, con `ilustraciones/` y `huerta/` | Sin empezar |
+| C1-06 | `c1-simbolos` | P24 · Los dibujos de la guía: el recorrido, la puerta, el mapa y las 7 escenas. En la guía se colorean con las clases `f-*` y `s-*` de `docs/interfaz/guia/partes/08-dibujo.css`, que no existen en el producto: entran como los dibujos de hoy, sin clases nuevas | 20, 91 (recorrido), 131 y 151 (puerta), 157 (mapa) y 38-81 (escenas). Hoy: `static/img/`, con `ilustraciones/` y `huerta/` | Sin empezar |
 | C1-07 | `c1-armazon` | P26 · El armazón de la huerta en los dos layouts. El del galpón no entra (DA-18) | 15, 1-14 (común). Fuera: 15, 16-25 y 98-104 (galpón). Hoy: `layout-publico.html` (`header.raices-cabecera`, `:31`), `layout-privado.html` (`header.armazon`, `:26`), `app.css:114` y `privado.css` | Sin empezar |
 | C1-08 | `c1-armazon` | P14 · La barra superior, el menú del celular, el salto al contenido y la campana. Las entradas de cada menú quedan como están (DA-17). El cajón no entra (DA-18) | Guía 315-356 (la campana, 340-341) y 445. Fuera: guía 417-427 (cajón). Hoy: `componentes/navegacion.css`, `componentes/campanita.css`, `componentes/campanita.html`, `publico-navegacion.css` y `privado.css`; muestras en `estilos.html:581` y `:669`; catálogo `:208` y `:210` | Sin empezar |
 | C1-09 | `c1-armazon` | P18 · El pie de la huerta | Guía 380-384. Hoy: `pie.html:9` (`footer.raices-pie`) y `app.css:360`; sin muestra en `/estilos` ni fila en el catálogo | Sin empezar |
@@ -473,9 +475,9 @@ y los fragmentos bajo `cliente-liviano/src/main/resources/templates/`. Las líne
 | C1-15 | `c1-estados` | P13 · Los avisos: en la página y breve. La lista de novedades del mismo bloque no entra: es del buzón | Guía 280-313 y 481. Hoy: `componentes/aviso.css`; muestra en `estilos.html:439`; catálogo `:201` | Sin empezar |
 | C1-16 | `c1-estados` | P12 · El avance de una necesidad | Guía 274-279. Hoy: `componentes/progreso.css`; muestra en `estilos.html:962`; catálogo `:225` | Sin empezar |
 | C1-17 | `c1-entrega` | P07 · La lámina y la sombra de paja | Guía 179-190. Hoy: `componentes/tarjeta.css`; muestra en `estilos.html:751`; catálogo `:212` | Sin empezar |
-| C1-18 | `c1-entrega` | P08 · La foto de una entrega y su etiqueta, componente nuevo con el nombre `etiqueta-entrega`. `.etiqueta` ya es una clase heredada y esa pantalla no es de la ola | Guía 191-223; 15, 121. Heredada: `entidad-seguimiento-confirmar.css:47` y `cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt:99-101` | Sin empezar |
+| C1-18 | `c1-entrega` | P08 · La foto de una entrega y su etiqueta, componente nuevo con el nombre `etiqueta-entrega`, que va de prefijo en todas sus clases. `.etiqueta`, `.foto` y `.foto-falta` ya son clases heredadas de pantallas que no son de la ola | Guía 191-223; 15, 121. Heredadas: `entidad-seguimiento-confirmar.css:47` y `cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt:99-101, 106-107` | Sin empezar |
 | C1-19 | `c1-entrega` | P11 · La trama, componente nuevo. Solo en fondos | Guía 268-273. Hoy no existe `componentes/trama.css` | Sin empezar |
-| C1-20 | `c1-raiz` | P09 · La raíz de los 5 pasos, con sus cuatro formas (la base, acostada, numerada y tendida) y el paso «no pudo llegar» | Guía 224-263 (acostada, 250) y 492-502; 15, 39-40 (numerada) y 94-97 (tendida). Hoy: `componentes/huerta.css` y `componentes/huerta.html`; muestras en `estilos.html:785` y `:798`; catálogo `:216` | Sin empezar |
+| C1-20 | `c1-raiz` | P09 · La raíz de los 5 pasos, con sus cuatro formas (la base, acostada, numerada y tendida) y el paso «no pudo llegar» | Guía 224-263 (acostada, 250) y 490-502; 15, 39-40 (numerada) y 94-97 (tendida). Hoy: `componentes/huerta.css` y `componentes/huerta.html`; muestras en `estilos.html:785` y `:798`; catálogo `:216` | Sin empezar |
 | C1-21 | `c1-raiz` | P10 · Los frutos: un fruto por entrega confirmada | Guía 264-267 y 484. Hoy: fragmento `cifras(estado, valores)` en `componentes/huerta.html:314` | Sin empezar |
 | C1-22 | `c1-listas` | P15 · Las pestañas | Guía 357-367 y 448. Hoy: `componentes/pestanas.css`; muestra en `estilos.html:830`; catálogo `:220` | Sin empezar |
 | C1-23 | `c1-listas` | P17 · El paginador | Guía 374-379. Hoy: `componentes/paginas.css` y `componentes/paginas.html:20-24`; muestra en `estilos.html:1250`; catálogo `:234` | Sin empezar |
@@ -533,3 +535,7 @@ la arma la sesión que cierra C1.
   adaptador `rest`. El recorrido real se hace en ORG y en Z.
 - **Los topes no se tocan.** Clases de un solo uso, 159 (`InterfazFitnessTest.java:253`); medidas
   literales, 1192 (`:567`). El test acepta un valor igual o menor (`:392-393, 613-615`).
+  `[VERIFIED]` El de medidas literales no tiene margen: hoy el conteo es 1192, igual al tope
+  (réplica de `medidasLiterales`, `:569-572` y `:643-651`, sobre las 74 hojas, 2026-11-22). Cada
+  lote deja el conteo de sus hojas igual o menor: una medida que la guía escribe como número pasa
+  al token más cercano o se compensa en las hojas del lote, y la diferencia se anota.
