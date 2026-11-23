@@ -131,7 +131,6 @@ mesa-fecha
 mesa-resumen
 mostrando
 necesidades
-necesidades-bajada
 nodo-numero
 nota
 noticias-inicio
@@ -144,17 +143,10 @@ parte--periodos
 pedido
 pedido--nuevo
 pedido-acciones
-pedido-cuanto
 pedido-detalle
-pedido-falta
 pedido-marca
 pedido-partes
-pedido-porque
-pedido-que
-pedido-repite
 pedido-resumen
-pedido-va
-pedidos
 pedidos-lista
 pedidos-ver
 perfil
@@ -216,7 +208,6 @@ subte-estacion
 subte-hueco
 subte-hueco-centro
 subte-linea
-terminadas
 tierra-impresa
 todo
 todo-fecha

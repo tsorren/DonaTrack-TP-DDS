@@ -124,8 +124,9 @@ class EntidadEnviosControllerTest {
             flash().attribute(Envios.AVISO, "Confirmaste la recepción. Le avisamos a quien donó."));
   }
 
+  /** DA-06: publicar termina en Necesidades con el aviso breve de cómo salió. */
   @Test
-  void publicarCambiarYDarDeBajaUnaNecesidad() throws Exception {
+  void publicarUnaNecesidadTerminaEnNecesidadesConSuAviso() throws Exception {
     mvc.perform(
             post("/entidad-necesidades-publicada")
                 .param("que", UNA.toString())
@@ -151,7 +152,11 @@ class EntidadEnviosControllerTest {
         .andExpect(redirectedUrl("/entidad-necesidades"));
     verify(necesidades)
         .publicar(ENTIDAD, UNA, 6, null, LocalDate.of(2026, 11, 20), "Para el comedor.");
+  }
 
+  /** DA-06: cambiar termina en Necesidades, con esa necesidad abierta, y el aviso breve. */
+  @Test
+  void cambiarUnaNecesidadTerminaEnNecesidadesConSuAviso() throws Exception {
     String abierta = "/entidad-necesidades?necesidad=necesidad-" + UNA + "#necesidad-" + UNA;
     mvc.perform(
             post("/entidad-necesidades-cambiada?necesidad=" + UNA + "&version=3")
@@ -160,7 +165,11 @@ class EntidadEnviosControllerTest {
         .andExpect(redirectedUrl(abierta))
         .andExpect(flash().attribute(Envios.AVISO, "Guardamos los cambios de tu necesidad."));
     verify(necesidades).cambiar(UNA, 3, 45, "Para el almuerzo.");
+  }
 
+  /** DA-06: dar de baja termina en Necesidades con el aviso breve de cómo salió. */
+  @Test
+  void darDeBajaUnaNecesidadTerminaEnNecesidadesConSuAviso() throws Exception {
     mvc.perform(post("/entidad-necesidades-baja?necesidad=" + UNA))
         .andExpect(redirectedUrl("/entidad-necesidades"))
         .andExpect(

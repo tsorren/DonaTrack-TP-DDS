@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<!--/* Raíces, Necesidades de la entidad (RF-10), según su ficha de flujo
-       (docs/interfaz/flujos/raices-necesidades.md). Arriba, el registro de cifras y "Publicar otra
-       necesidad", que abre una ventana en 3 pasos (r11-p2-ventanas.md); la lista de las necesidades vigentes, en un cantero plegable por categoría
-       (con su resumen: cuántas, cuántas cubiertas y cuántas entregas esperan), cada uno plegado con su resumen y,
-       abierto, su detalle: por qué hace falta, las entregas para esa necesidad, quién donó, la historia
-       de los períodos en barras (si se repite) y las acciones (cambiar y dar de baja, con su confirmación en un
-       diálogo del navegador, sin JavaScript); al pie, las cumplidas y terminadas. Los datos de
+<!--/* Necesidades de la entidad (RF-10), con el arquetipo A02 de la guía (docs/interfaz/guia/partes/
+       50-pantallas.html, #necesidades; ola ORG, ORG-04 y ORG-05). Arriba, el título y cuántas hay
+       vigentes; después, la lámina protagonista con la entrega que llegó y falta confirmar (el estado
+       «con una entrega en la puerta»: sin ella, nada ocupa su lugar, el estado «después de
+       confirmar»); al final, «Lo que pediste», con «Publicar otra necesidad» (una ventana en 3 pasos,
+       r11-p2-ventanas.md) y las pestañas Vigentes y Cumplidas y terminadas. Cada necesidad vigente es
+       una tarjeta plegada con su nombre, su chapa, la barra de lo que llegó y sus entregas; abierta,
+       su detalle: por qué hace falta, las entregas para esa necesidad, quién donó, la historia de los
+       períodos en barras (si se repite) y las acciones (cambiar y dar de baja, con su confirmación en
+       un diálogo del navegador, sin JavaScript). Lo que llegó es la cuenta de hoy (HG-04); una entrega
+       con un problema dice «Todavía sin fecha de nueva salida» (HG-01). Los datos de
        partida son los del primer prototipo de Necesidades, con las
        decisiones del 2026-11-02 (usuario): la cantidad en la unidad de la subcategoría del catálogo,
        se repite cada semana, quincena o mes, el cambio de cantidad vale para el período en curso, la
@@ -14,18 +18,15 @@
        ?necesidad=<clave> abre esa necesidad (de partida, lentejas); una clave que no está, o
        ?escenario=no-existe, muestra "No encontramos esa necesidad". ?escenario=vacio, lento, error,
        error-publicar, error-cambiar, error-baja, sin-conexion, conflicto, cambiar-datos,
-       ya-no-vigente y entidad-inactiva. Cada acción es un formulario real (POST) que lleva a
-       entidad-necesidades-publicada, -cambiada o -baja; el error de datos al publicar es
-       entidad-necesidades-publicar-error.
-       El envoltorio .necesidades se llama igual que la lista del bloque necesidad: la hoja de la
-       pantalla lo deja en display: block para que la lista vigente ocupe todo el ancho (2026-11-10).
-       "Con un problema" del registro de cifras abre esa necesidad en la misma pantalla con hx-boost.
+       ya-no-vigente y entidad-inactiva. Cada acción es un formulario real (POST). En la maqueta
+       lleva a entidad-necesidades-publicada, -cambiada o -baja, que muestran Necesidades con el aviso
+       breve de cómo salió (DA-06); fuera de la maqueta, EntidadEnviosController vuelve a
+       entidad-necesidades con el aviso del servidor. El error de datos al publicar es
+       entidad-necesidades-publicar-error, un estado del formulario (deriva de A12).
        En pantalla se dice "necesidades", nunca "pedidos" (las clases pedido-* quedan como están).
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'publicada', 'publicar-error',
          'cambiada' o 'baja'.
-       - publicar(conError): el botón y la ventana para publicar, arriba de la lista (o el
-         formulario abierto en la página, sin vigentes o con un error).
        - formularioPublicar(conError, escrito, enVentana): el formulario, en tres grupos.
        - periodo(p, max): un período de la historia, con su barra. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -54,24 +55,30 @@
              pedida=${param.necesidad != null ? param.necesidad[0] : (mostrarNueva ? 'fideos' : (escenario == 'error-baja' ? 'aceite' : 'lentejas'))},
              noExiste=${escenario == 'no-existe' or (param.necesidad != null and #lists.isEmpty(vigentes.?[clave == #root.pedida]))},
              cambiando=${escenario == 'conflicto' or escenario == 'cambiar-datos' or escenario == 'error-cambiar'},
-             sinVigentes=${escenario == 'vacio' or (escenario != 'error' and escenario != 'lento' and #lists.isEmpty(vigentes))}">
-  <svg th:replace="~{iconos :: categorias}"></svg>
-  <div class="necesidades">
-    <header>
-      <p class="rotulo" th:text="${seccion}">Necesidades</p>
-      <h1>Lo que <em>hace falta</em></h1>
-      <p class="necesidades-bajada">Tus necesidades vigentes. Las ven los donantes y el catálogo público,
-        sin tus datos de contacto.</p>
+             sinVigentes=${escenario == 'vacio' or (escenario != 'error' and escenario != 'lento' and #lists.isEmpty(vigentes))},
+             conError=${accion == 'publicar-error'},
+             escrito=${escenario == 'error-publicar' or escenario == 'sin-conexion'},
+             abierto=${conError or escrito or sinVigentes},
+             textoAviso=${ {'publicada': 'Publicamos tu necesidad. Ya la ven los donantes y el catálogo público.', 'cambiada': 'Guardamos los cambios de Lentejas secas.', 'baja': 'Diste de baja Aceite de girasol. Ya no la ven los donantes. La entrega que no pudo llegar vuelve al depósito para otra organización.'}.get(accion) },
+             enLaPuerta=${lista.aConfirmar == null or escenario == 'error' ? null : vigentes.^[entregas.?[confirmar == #root.lista.aConfirmar].size() > 0]},
+             llego=${enLaPuerta == null ? null : enLaPuerta.entregas.^[confirmar == #root.lista.aConfirmar]},
+             terminadas=${#lists.size(lista.terminadas) + (sinAceite ? 1 : 0)}">
+  <div class="pila" data-espacio="4">
+    <header class="pila" data-espacio="1">
+      <h1>Necesidades</h1>
+      <p th:if="${escenario != 'error' and !#lists.isEmpty(vigentes)}" data-tono="suave"
+         th:text="|${#lists.size(vigentes) == 1 ? '1 vigente' : #lists.size(vigentes) + ' vigentes'} al ${lista.al}. Las ven los donantes y el catálogo público, sin tus datos de contacto.|">5
+        vigentes al 15 de octubre de 2026. Las ven los donantes y el catálogo público, sin tus datos de
+        contacto.</p>
     </header>
 
-    <!--/* Los avisos de cada acción, con el foco (decisión de la ficha: el éxito toma el foco). */-->
-    <p th:if="${accion == 'publicada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Publicamos tu necesidad. Ya la ven los donantes y el catálogo público.</p>
-    <p th:if="${accion == 'cambiada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Guardamos los cambios de Lentejas secas.</p>
-    <p th:if="${accion == 'baja'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Diste de baja Aceite de girasol. Ya no la ven los donantes. La entrega que no
-      pudo llegar vuelve al depósito para otra organización.</p>
+    <!--/* El aviso breve de cómo salió la acción (DA-06), con el foco (decisión de la ficha: el éxito
+           toma el foco). Con HTMX va a la región de avisos del layout; sin JavaScript queda acá. */-->
+    <div th:if="${textoAviso != null}" class="aviso-breve" hx-swap-oob="beforeend:#avisos"
+         data-estado="hecho" role="status" tabindex="-1" autofocus><svg
+        th:replace="~{componentes/sello :: signo('confirmada')}"></svg><p th:text="${textoAviso}">Publicamos
+        tu necesidad. Ya la ven los donantes y el catálogo público.</p><button type="button"
+        class="aviso-cerrar" data-cerrar aria-label="Cerrar el aviso">×</button></div>
     <section th:if="${noExiste}" class="banner" role="alert" aria-labelledby="noexiste-titulo">
       <h2 id="noexiste-titulo">No encontramos esa necesidad.</h2>
       <p>Puede que el enlace esté incompleto o que ya no esté vigente. Fijate en la lista o en
@@ -105,149 +112,145 @@
          th:href="@{/entidad-necesidades}">Volver a cargar</a>
     </section>
 
-    <!--/* El registro de cifras, con fecha, como el de Seguir entregas; se cuentan las entregas de los
-           necesidades vigentes. */-->
-    <section th:if="${escenario != 'error' and !#lists.isEmpty(vigentes)}" class="cifras"
-             aria-labelledby="cifras-titulo">
-      <h2 id="cifras-titulo" class="cifras-titulo" th:text="|Al ${lista.al}|">Al 15 de octubre de 2026</h2>
-      <dl>
-        <div class="cifra">
-          <dt>Necesidades vigentes</dt>
-          <dd th:text="${#lists.size(vigentes)}">5</dd>
-        </div>
-        <div class="cifra">
-          <dt><a href="/entidad-seguimiento-confirmar?entrega=lentejas"
-                 th:href="${lista.aConfirmar != null} ? @{/entidad-seguimiento-confirmar(entrega=${lista.aConfirmar})} : @{/entidad-seguimiento}">Entregas
-            esperan tu confirmación</a></dt>
-          <dd th:text="${#aggregates.sum(vigentes.![puerta])}">2</dd>
-        </div>
-        <div class="cifra">
-          <dt>En camino o por salir</dt>
-          <dd th:text="${#aggregates.sum(vigentes.![camino])}">2</dd>
-        </div>
-        <div class="cifra">
-          <dt th:if="${#aggregates.sum(vigentes.![problema]) > 0}"><a href="/entidad-necesidades?necesidad=aceite#aceite"
-                 th:href="@{/entidad-necesidades(necesidad=${lista.conProblema})} + '#' + ${lista.conProblema}" hx-boost="true"
-                 hx-swap="outerHTML show:#aceite:top" th:attr="hx-swap=|outerHTML show:#${lista.conProblema}:top|">Con un
-            problema</a></dt>
-          <dt th:unless="${#aggregates.sum(vigentes.![problema]) > 0}">Con un problema</dt>
-          <dd th:text="${#aggregates.sum(vigentes.![problema])}">1</dd>
-        </div>
-      </dl>
-    </section>
-
-    <!--/* Sin necesidades vigentes: el aviso y, debajo, el formulario de publicar abierto. */-->
-    <section th:if="${sinVigentes}" class="vacio" aria-labelledby="vacio-titulo">
-      <h2 id="vacio-titulo">No tenés necesidades vigentes.</h2>
-      <p>Publicá lo que le hace falta a tu organización: lo ven los donantes y el catálogo público.</p>
+    <!--/* Lo primero que espera: la entrega que llegó y falta confirmar (la lámina protagonista, D7,
+           con la única acción llena). La raíz acostada va por el paso 4 de 5 y el último, punteado,
+           es la confirmación. Sin una entrega en la puerta no hay lámina y nada ocupa su lugar. */-->
+    <section th:if="${llego != null}" class="tarjeta pila" data-papel="protagonista" data-espacio="3"
+             aria-labelledby="puerta-titulo">
+      <div class="racimo" data-alinea="entre arriba">
+        <h2 id="puerta-titulo">Llegó una entrega: falta que la confirmes</h2>
+        <span th:replace="~{componentes/sello :: pedido()}"></span>
+      </div>
+      <p><strong th:text="|${enLaPuerta.nombre}, ${llego.cuanto}.|">Lentejas secas, 15 kg.</strong>
+        <th:block th:text="${llego.texto}">Llegaron a tu puerta hoy a las 18:20 y esperan tu
+          confirmación.</th:block></p>
+      <div class="racimo">
+        <a class="boton" data-tono="principal" href="/entidad-seguimiento-confirmar?entrega=lentejas"
+           th:href="@{/entidad-seguimiento-confirmar(entrega=${llego.confirmar})}">Confirmar recepción</a>
+      </div>
+      <ol th:replace="~{componentes/huerta :: raiz-pasos(${ { {nombre: 'Registrada', avance: 'hecho'}, {nombre: 'Asignada', avance: 'hecho'}, {nombre: 'Preparada', avance: 'hecho'}, {nombre: 'En camino: llegó a tu puerta', avance: 'actual'}, {nombre: 'Falta confirmar la entrega', avance: 'falta'} } }, 'acostada', 'El recorrido de esta entrega: va por el paso 4 de 5', false)}"></ol>
+      <p data-tono="suave">Paso 4 de 5. Falta el último: tu confirmación con la foto. Con eso, quien
+        donó ve que llegó.</p>
     </section>
 
     <!--/* Publicar: si la entidad no está activa (se sabe al cargar), el aviso va en lugar del
-           formulario. */-->
+           botón. */-->
     <section th:if="${escenario == 'entidad-inactiva'}" class="banner" aria-labelledby="inactiva-titulo">
       <h2 id="inactiva-titulo">Tu organización no está activa, así que no puede publicar necesidades.</h2>
       <p><a href="/publico-contacto"
          th:href="@{/publico-contacto(volver='/entidad-necesidades')}">Escribinos</a>
         para revisarlo.</p>
     </section>
-    <th:block th:unless="${escenario == 'entidad-inactiva'}">
-      <th:block th:replace="~{:: publicar(${accion == 'publicar-error'})}"></th:block>
-    </th:block>
 
-    <section th:if="${escenario != 'error' and !#lists.isEmpty(vigentes)}" class="pedidos"
+    <section th:unless="${escenario == 'error'}" class="pila" data-espacio="3"
              aria-labelledby="pedidos-titulo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <h2 id="pedidos-titulo">Tus necesidades vigentes</h2>
-      <!--/* Un cantero por categoría (prueba necesidades-b, elegida en la ronda del 2026-11-09, tarde):
-             el pictograma grande, cuántas necesidades tiene, cuántas están cubiertas y cuántas entregas
-             esperan; adentro, las tarjetas compactas. La categoría también se pliega ("que se pueda
-             plegar la categoría también"): es un details abierto de partida, y plegado deja a la vista
-             ese resumen. */-->
-      <div class="pila" data-espacio="4"
-           th:with="rubros=${lista.rubros}">
-        <th:block th:each="r : ${rubros}" th:with="deEste=${vigentes.?[rubro == #root.r.nombre]}">
-          <details th:unless="${#lists.isEmpty(deEste)}" data-cantero open th:id="|cantero-${r.clave}|">
-            <summary th:with="cuantas=${#lists.size(deEste)},
-                              cubiertas=${#lists.size(deEste.?[valor != null and valor >= max])},
-                              puerta=${#aggregates.sum(deEste.![puerta])}">
-              <svg th:if="${r.icono != null}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-                <use href="#cat-alimentos" th:href="|#${r.icono}|"/>
-              </svg>
-              <span>
-                <h3 th:text="${r.nombre}">Alimentos</h3>
-                <span th:text="|${cuantas == 1 ? '1 necesidad' : cuantas + ' necesidades'} · ${cubiertas == 0 ? (cuantas == 1 ? 'todavía no está cubierta' : 'ninguna cubierta todavía') : (cubiertas == cuantas ? (cuantas == 1 ? 'cubierta' : 'todas cubiertas') : cubiertas + ' de ' + cuantas + ' cubiertas')}${puerta > 0 ? (puerta == 1 ? ' · 1 entrega espera tu confirmación' : ' · ' + puerta + ' entregas esperan tu confirmación') : ''}|">5
-                  necesidades · ninguna cubierta todavía · 1 entrega espera tu confirmación</span>
-              </span>
-              <span data-cantero-ver aria-hidden="true"><span>Plegar</span><span>Mostrar</span></span>
-            </summary>
-            <ul class="pedidos-lista" role="list">
-              <li th:each="n : ${deEste}" th:id="${n.clave}">
-                <details th:replace="~{entidad-necesidades :: pedido(${n})}"></details>
-              </li>
-            </ul>
-          </details>
+      <!--/* Publicar (R11-31, ficha r11-p2-ventanas), con los datos que pide el contrato. Dos formas:
+             - Con vigentes, el botón "Publicar otra necesidad" al lado del título y la ventana
+               #publicar-ventana, que bloquea el fondo (data-bloquea) y, con JavaScript, va en 3
+               pasos (data-forma="pasos", componente pasos de static/js/interfaz.js). Sin
+               JavaScript, la ventana de siempre con los tres grupos.
+             - Abierto en la página (con el error de datos, con el error al enviar o sin necesidades
+               vigentes): el formulario con sus tres grupos a la vista y un solo "Publicar
+               necesidad". Con conError, el error de datos de entidad-necesidades-publicar-error
+               (cuánto y la fecha). */-->
+      <div class="racimo" data-alinea="entre">
+        <h2 id="pedidos-titulo">Lo que pediste</h2>
+        <th:block th:unless="${abierto or escenario == 'entidad-inactiva'}">
+          <button type="button" class="boton" data-tono="secundario" popovertarget="publicar-ventana">Publicar
+            otra necesidad</button>
+          <dialog class="dialogo" id="publicar-ventana" popover data-bloquea data-forma="pasos"
+                  aria-labelledby="publicar-ventana-titulo">
+            <h2 class="dialogo-titulo" id="publicar-ventana-titulo">Publicar otra necesidad</h2>
+            <form th:replace="~{:: formularioPublicar(false, false, true)}"></form>
+          </dialog>
         </th:block>
       </div>
-    </section>
+      <details th:if="${abierto and escenario != 'entidad-inactiva'}" id="publicar" class="publicar" open>
+        <summary class="boton" data-tono="secundario"
+                 th:text="${sinVigentes} ? 'Publicar una necesidad' : 'Publicar otra necesidad'">Publicar
+          otra necesidad</summary>
+        <form th:replace="~{:: formularioPublicar(${conError}, ${escrito}, false)}"></form>
+      </details>
 
-    <!--/* Las cumplidas y terminadas, aparte y plegadas (usuario, 2026-11-01): cómo terminó cada una,
-           con fecha y cifra. */-->
-    <details th:unless="${escenario == 'error'}" id="terminadas" class="terminadas"
-             th:open="${escenario == 'ya-no-vigente'}">
-      <summary th:text="|Cumplidas y terminadas (${#lists.size(lista.terminadas) + (sinAceite ? 1 : 0)})|">Cumplidas y terminadas (3)</summary>
-      <ul role="list">
-        <li th:if="${sinAceite}"><b>Aceite de girasol · 20 litros</b> <span
-            th:text="${accion == 'baja'} ? 'La diste de baja hoy, sin nada recibido.' : 'Se dio de baja hoy, sin nada recibido.'">La
-          diste de baja hoy, sin nada recibido.</span></li>
-        <li th:each="t : ${lista.terminadas}"><b th:text="${t.titulo}">Útiles escolares · 30 unidades</b> <th:block
-            th:text="${t.texto}">Cumplida el 28 de septiembre: llegaron las 30.</th:block></li>
-      </ul>
-    </details>
+      <!--/* Vigentes y Cumplidas y terminadas, en pestañas (componente pestanas). Sin JavaScript,
+             cada pestaña es un enlace a su panel y se ve uno por vez. */-->
+      <div class="pestanas" x-data="pestanas" x-on:hashchange.window="desdeLaDireccion">
+        <nav class="pestanas-lista" aria-label="Necesidades por estado" x-on:keydown="teclear">
+          <a class="pestana" id="pestana-vigentes" href="#vigentes" x-on:click="elegir"
+             th:text="|Vigentes (${#lists.size(vigentes)})|">Vigentes (5)</a>
+          <a class="pestana" id="pestana-terminadas" href="#terminadas" x-on:click="elegir"
+             th:text="|Cumplidas y terminadas (${terminadas})|">Cumplidas y terminadas (3)</a>
+        </nav>
+        <div class="pestanas-panel" id="vigentes">
+          <section th:if="${sinVigentes}" class="vacio" aria-labelledby="vacio-titulo">
+            <h3 id="vacio-titulo">No tenés necesidades vigentes.</h3>
+            <p>Publicá lo que le hace falta a tu organización: lo ven los donantes y el catálogo público.</p>
+          </section>
+          <ul th:unless="${#lists.isEmpty(vigentes)}" class="lista pedidos-lista" role="list">
+            <li th:each="n : ${vigentes}" th:id="${n.clave}">
+              <details th:replace="~{entidad-necesidades :: pedido(${n})}"></details>
+            </li>
+          </ul>
+        </div>
+        <!--/* Las cumplidas y terminadas (usuario, 2026-11-01): cómo terminó cada una, con fecha y
+               cifra. */-->
+        <div class="pestanas-panel" id="terminadas">
+          <ul th:unless="${terminadas == 0}" class="lista" data-forma="filas" role="list">
+            <li th:if="${sinAceite}"><div><span class="pila" data-espacio="0"><b>Aceite de girasol · 20 litros</b>
+              <span data-tono="suave"
+                    th:text="${accion == 'baja'} ? 'La diste de baja hoy, sin nada recibido.' : 'Se dio de baja hoy, sin nada recibido.'">La
+                diste de baja hoy, sin nada recibido.</span></span></div></li>
+            <li th:each="t : ${lista.terminadas}"><div><span class="pila" data-espacio="0"><b
+                th:text="${t.titulo}">Útiles escolares · 30 unidades</b>
+              <span data-tono="suave" th:text="${t.texto}">Cumplida el 28 de septiembre: llegaron las
+                30.</span></span></div></li>
+          </ul>
+          <p th:if="${terminadas == 0}">Todavía no hay necesidades cumplidas ni terminadas.</p>
+        </div>
+      </div>
+    </section>
   </div>
 </th:block>
 
-<!--/* Un pedido: su resumen y, abierto, su detalle, dentro del cantero de su categoría. */-->
+<!--/* Una necesidad vigente: la tarjeta de A02 plegada y, abierta, su detalle. */-->
 <details th:fragment="pedido(n)" class="tarjeta pedido" th:open="${n.clave == pedida}"
-         th:attr="data-categoria=${n.categoria}"
          th:classappend="${mostrarNueva and n.clave == 'fideos'} ? 'pedido--nuevo'">
-  <!--/* El resumen dice todo lo necesario para recorrer la lista sin abrir nada, en tres grupos
-         (ronda del 2026-11-09): qué hace falta (con la categoría y si se repite), cuánto llegó (la
-         cifra y la barra) y hasta cuándo con el estado de sus entregas; al pie, "Ver el detalle".
-         Cuánto pide va una sola vez, en la cifra («10 de 40 kg»). */-->
+  <!--/* Plegada dice lo necesario para recorrer la lista sin abrir nada, como la tarjeta de la guía:
+         el nombre con su chapa (espera tu confirmación o con un problema), si se repite y hasta
+         cuándo, la barra y la cuenta de lo que llegó (la de hoy, HG-04) y cómo vienen sus entregas;
+         al pie, "Ver el detalle". */-->
   <summary class="pedido-resumen"
            th:with="otra=${escenario == 'conflicto' and n.clave == pedida},
                     meta=${otra ? 45 : n.max}">
-    <span class="pedido-que">
-      <svg th:if="${n.categoria != null}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-        <use href="#cat-alimentos" th:href="|#${n.categoria}|"/>
-      </svg>
-      <span>
-        <b th:text="${n.nombre}">Lentejas secas</b>
-        <span class="pedido-repite" th:text="|${n.rubro} · ${n.repite}|">Alimentos · Cada mes</span>
-      </span>
+    <h3 th:text="${n.nombre}">Lentejas secas</h3>
+    <th:block th:if="${n.puerta > 0}"><span th:replace="~{componentes/sello :: pedido()}"></span></th:block>
+    <span th:if="${n.puerta == 0 and n.problema > 0}" class="estado" data-estado="problema"><th:block
+        th:replace="~{componentes/sello :: sello('problema')}"></th:block>Con un problema</span>
+    <span class="racimo" data-espacio="1"
+          th:if="${(mostrarNueva and n.clave == 'fideos') or n['cambiada'] != null}">
       <span th:if="${mostrarNueva and n.clave == 'fideos'}" class="pedido-marca">Nueva</span>
       <span th:if="${n['cambiada']}" class="pedido-marca" th:text="${n.cambiada}">Cambiada hoy</span>
     </span>
-    <span class="pedido-va">
-      <span class="pedido-falta"><b th:if="${n.valor != null}" th:text="${n.valor}">10</b>
-        <span th:text="${n.valor != null} ? |de ${meta} ${n.unidad} ${n.unidad == 'unidades' ? 'recibidas' : 'recibidos'}| : |Pide ${meta} ${n.unidad}|">de
-          40 kg recibidos</span></span>
-      <progress th:if="${n.valor != null}" class="progreso" th:value="${n.valor}" th:max="${meta}" value="10" max="40"
-                aria-hidden="true"></progress>
-    </span>
-    <span class="pedido-cuanto">
-      <span class="pedido-porque"><span th:text="${n.plazo}">Octubre, hasta el 31</span>
-        <small th:if="${n.faltan != null}" th:text="|(${n.faltan})|">(faltan 16 días)</small></span>
-      <span th:if="${n.problema > 0}" class="estado" data-estado="problema"
-            th:text="${n.problema == 1} ? '1 entrega con un problema' : |${n.problema} entregas con un problema|">1
-        entrega con un problema</span>
-      <span th:if="${n.puerta > 0}" class="estado" data-estado="puerta"
-            th:text="${n.puerta == 1} ? '1 entrega espera tu confirmación' : |${n.puerta} entregas esperan tu confirmación|">1
-        entrega espera tu confirmación</span>
-      <span th:if="${n.camino > 0}" class="estado" data-estado="camino"
-            th:text="${n.camino == 1} ? '1 entrega en camino o por salir' : |${n.camino} entregas en camino o por salir|">1
-        entrega en camino o por salir</span>
-      <span th:if="${n.problema + n.puerta + n.camino == 0}" class="estado" data-estado="pendiente">Sin
-        entregas en curso</span>
+    <span class="texto-chico" data-tono="suave"><th:block
+        th:text="${n.plazo != null} ? |${n.repite} · ${n.plazo}| : ${n.repite}">Cada mes · Octubre, hasta
+        el 31</th:block><th:block th:if="${n.faltan != null}" th:text="| (${n.faltan})|"> (faltan 16
+        días)</th:block></span>
+    <progress th:if="${n.valor != null}" class="progreso" th:value="${n.valor}" th:max="${meta}" value="10" max="40"
+              th:aria-label="|Llegaron ${n.valor} de ${meta} ${n.unidad}|" aria-label="Llegaron 10 de 40 kg"></progress>
+    <span><b th:if="${n.valor != null}" th:text="${n.valor}">10</b>
+      <span th:text="${n.valor != null} ? |de ${meta} ${n.unidad} ${n.unidad == 'unidades' ? 'recibidas' : 'recibidos'}| : |Pide ${meta} ${n.unidad}|">de
+        40 kg recibidos</span></span>
+    <span>
+      <th:block th:if="${n.puerta > 0}"
+                th:text="${n.puerta == 1} ? '1 entrega espera tu confirmación.' : |${n.puerta} entregas esperan tu confirmación.|">1
+        entrega espera tu confirmación.</th:block>
+      <th:block th:if="${n.problema > 0}"
+                th:text="${n.problema == 1} ? '1 entrega con un problema. Todavía sin fecha de nueva salida.' : |${n.problema} entregas con un problema. Todavía sin fecha de nueva salida.|">1
+        entrega con un problema. Todavía sin fecha de nueva salida.</th:block>
+      <th:block th:if="${n.camino > 0}"
+                th:text="${n.camino == 1} ? '1 entrega en camino o por salir.' : |${n.camino} entregas en camino o por salir.|">1
+        entrega en camino o por salir.</th:block>
+      <th:block th:if="${n.problema + n.puerta + n.camino == 0}">Sin entregas en curso.</th:block>
     </span>
     <span class="pedidos-ver" aria-hidden="true"><span>Ver el detalle</span><span>Cerrar</span></span>
   </summary>
@@ -453,32 +456,6 @@ con este código</a>.</p>
     </div>
   </div>
 </details>
-
-<!--/* Publicar (R11-31, ficha r11-p2-ventanas), con los datos que pide el contrato. Dos formas:
-       - En la página, abierto (con el error de datos, con el error al enviar o sin necesidades
-         vigentes): el formulario con sus tres grupos a la vista y un solo "Publicar necesidad".
-       - Si no, el botón "Publicar otra necesidad" y la ventana #publicar-ventana, que bloquea el
-         fondo (data-bloquea) y, con JavaScript, va en 3 pasos (data-forma="pasos", componente
-         pasos de static/js/interfaz.js). Sin JavaScript, la ventana de siempre con los tres grupos.
-       Con conError, el error de datos de entidad-necesidades-publicar-error (cuánto y la fecha). */-->
-<th:block th:fragment="publicar(conError)"
-          th:with="escrito=${escenario == 'error-publicar' or escenario == 'sin-conexion'}">
-  <details th:if="${conError or escrito or sinVigentes}" id="publicar" class="publicar" open>
-    <summary class="boton" data-tono="secundario"
-             th:text="${sinVigentes} ? 'Publicar una necesidad' : 'Publicar otra necesidad'">Publicar
-      otra necesidad</summary>
-    <form th:replace="~{:: formularioPublicar(${conError}, ${escrito}, false)}"></form>
-  </details>
-  <div th:unless="${conError or escrito or sinVigentes}" class="publicar">
-    <button type="button" class="boton" data-tono="secundario" popovertarget="publicar-ventana">Publicar
-      otra necesidad</button>
-    <dialog class="dialogo" id="publicar-ventana" popover data-bloquea data-forma="pasos"
-            aria-labelledby="publicar-ventana-titulo">
-      <h2 class="dialogo-titulo" id="publicar-ventana-titulo">Publicar otra necesidad</h2>
-      <form th:replace="~{:: formularioPublicar(false, false, true)}"></form>
-    </dialog>
-  </div>
-</th:block>
 
 <!--/* El formulario de publicar. enVentana: dentro de #publicar-ventana, con el indicador, el
        resumen, el aviso de corte y los botones de los pasos (ocultos hasta que el JavaScript toma el
