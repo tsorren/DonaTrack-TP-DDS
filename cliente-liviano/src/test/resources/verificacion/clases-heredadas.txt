@@ -22,7 +22,6 @@ aviso-codigo
 bajada
 boton--google
 cambiar
-cambio
 camion
 campo--corto
 campos-par
@@ -144,9 +143,7 @@ pedido--nuevo
 pedido-acciones
 pedido-detalle
 pedido-partes
-pedido-resumen
 pedidos-lista
-pedidos-ver
 perfil
 perfil-cuenta
 perfil-grupo

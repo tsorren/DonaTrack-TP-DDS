@@ -1,19 +1,19 @@
 /* Necesidades de la entidad, con el arquetipo A02 de la guía (ola ORG, ORG-04): la lámina
    protagonista, «Lo que pediste» con sus pestañas y una tarjeta por necesidad vigente que se despliega
    en su detalle; la historia de cada necesidad que se repite, una barra por período (A/B 2, usuario,
-   2026-11-01). Las piezas son del catálogo (tarjeta, pestañas, lista, progreso, sello, aviso breve);
-   esta hoja solo dispone y conserva lo heredado del detalle. */
+   2026-11-01). Las piezas son del catálogo (tarjeta, plegable, pestañas, lista, progreso, sello,
+   aviso, aviso breve); esta hoja solo dispone: sin colores, fuentes ni filetes. */
 @import url("privado.css");
 @import url("sellos.css");
 @import url("formularios.css");
 
-/* --- Lo plegable: sin el triángulo del navegador ---------------------------------------------- */
-:is(.pedido, .publicar, .cambiar, .periodos-anteriores) > summary {
+/* --- Lo plegable que no es .plegable: sin el triángulo del navegador ---------------------------- */
+:is(.publicar, .cambiar, .periodos-anteriores) > summary {
   list-style: none;
   cursor: pointer;
 }
 
-:is(.pedido, .publicar, .cambiar, .periodos-anteriores) > summary::-webkit-details-marker {
+:is(.publicar, .cambiar, .periodos-anteriores) > summary::-webkit-details-marker {
   display: none;
 }
 
@@ -34,8 +34,6 @@
 .cambiar > summary::before {
   content: "+";
   margin-right: 0.5rem;
-  font-size: 1.25rem;
-  line-height: 1;
 }
 
 .publicar[open] > summary::before,
@@ -57,80 +55,42 @@
   grid-column: 1 / -1;
 }
 
-/* La tarjeta plegada, como la de la guía: el nombre con su chapa en el primer renglón y, debajo, si
-   se repite, la barra, lo que llegó y sus entregas. El resumen tiene el radio de la tarjeta; abierto,
-   solo arriba: el detalle cierra la tarjeta abajo. */
-.pedido-resumen {
-  display: grid;
+/* La tarjeta plegada (el .plegable del catálogo), como la de la guía: el nombre con su chapa en el
+   primer renglón y, debajo, si se repite, la barra, lo que llegó y sus entregas; al pie, «Ver el
+   detalle» (abierta, «Cerrar»). Las columnas del resumen las pone la pantalla. */
+.pedido > summary {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
-  gap: var(--espacio-1) var(--espacio-2);
   height: 100%;
-  padding: var(--espacio-3);
-  border-radius: var(--radio-lamina);
 }
 
-.pedido-resumen > :not(h3, .estado, .sello-pedido) {
+.pedido[open] > summary {
+  height: auto;
+}
+
+.pedido > summary > :not(h3, .estado, .sello-pedido) {
   grid-column: 1 / -1;
 }
 
-.pedido[open] > .pedido-resumen {
-  height: auto;
-  border-radius: var(--radio-lamina) var(--radio-lamina) 0 0;
-}
-
-/* Al pie: "Ver el detalle", con el triángulo que apunta abajo cerrado y arriba abierto. */
-.pedidos-ver {
-  display: inline-flex;
-  align-items: center;
+.pedido > summary > .plegable-ver {
   justify-self: end;
   align-self: end;
-  gap: 0.625rem;
-  padding-top: 0.75rem;
-  color: var(--color-enlace);
-  font-weight: 700;
 }
 
-.pedidos-ver::after {
-  content: "";
-  width: 0.5rem;
-  height: 0.5rem;
-  margin-top: -0.25rem;
-  border-right: 2.5px solid currentcolor;
-  border-bottom: 2.5px solid currentcolor;
-  rotate: 45deg;
-}
-
-.pedido:not([open]) .pedidos-ver > :last-child,
-.pedido[open] .pedidos-ver > :first-child {
+.pedido:not([open]) .plegable-ver > :last-child,
+.pedido[open] .plegable-ver > :first-child {
   display: none;
 }
 
-.pedido[open] .pedidos-ver::after {
-  margin-top: 0.25rem;
-  rotate: 225deg;
-}
-
-/* --- El detalle ------------------------------------------------------------------------------- */
-.pedido-detalle {
-  display: grid;
-  gap: 1.5rem;
-  padding: 0.5rem 1.25rem 1.25rem;
-  border-top: 1px solid var(--color-filete);
-}
-
+/* --- El detalle (el .plegable-cuerpo): los filetes son los hr del cuerpo ------------------------ */
 .pedido-partes {
   display: grid;
   gap: 1.25rem;
 }
 
-/* El cartel del cambio de cantidad: una nota con filete de acento, a todo el ancho del detalle. */
-.cambio {
+/* El cartel del cambio de cantidad (un .aviso del catálogo) y los filetes, a todo el ancho. */
+.pedido-detalle > :is(.aviso, hr) {
   grid-column: 1 / -1;
-  margin: 0.75rem 0 0;
-  padding-left: 0.75rem;
-  border-left: 3px solid var(--color-acento);
-  font-weight: 700;
 }
 
 .parte h3 {
@@ -163,10 +123,9 @@
   justify-self: start;
 }
 
-/* El enlace suelto de una parte («Ver en Seguir entregas») y «Ver los anteriores»: el color y el
-   subrayado son los de la base; acá, solo su lugar para el dedo. */
-.parte > a,
-.periodos-anteriores > summary {
+/* El enlace suelto de una parte («Ver en Seguir entregas»): el color y el subrayado son los de la
+   base; acá, solo su lugar para el dedo. «Ver los anteriores» es un botón chico del catálogo. */
+.parte > a {
   display: inline-flex;
   align-items: center;
   min-height: var(--medida-toque-minimo);
@@ -216,10 +175,6 @@
   margin-top: 0.5rem;
 }
 
-.periodos-anteriores > summary {
-  cursor: pointer;
-}
-
 .periodos-anteriores .periodos {
   margin-top: 0.5rem;
 }
@@ -234,8 +189,6 @@
   flex-wrap: wrap;
   align-items: start;
   gap: 1rem;
-  padding-top: 1rem;
-  border-top: 1px dotted var(--color-tinta-suave);
 }
 
 .pedido-acciones > .banner,
@@ -247,18 +200,12 @@
   margin: 0;
 }
 
-.pedido-acciones .banner h3 {
-  margin: 0 0 0.5rem;
-  font: 800 1.125rem/1.2 var(--fuente-titulo);
-}
-
 @media (min-width: 68.75em) {
   /* Datos y gráfico (A/B de la review de Sofía, 2026-11-02): a la izquierda, por qué hace falta y
      quién donó lado a lado, y las entregas debajo; a la derecha, los períodos como barras que suben. */
   .pedido-detalle {
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
     column-gap: 3rem;
-    padding: 0.5rem 1.5rem 1.5rem;
   }
 
   .pedido-partes {

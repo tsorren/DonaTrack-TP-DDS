@@ -223,13 +223,13 @@
 </th:block>
 
 <!--/* Una necesidad vigente: la tarjeta de A02 plegada y, abierta, su detalle. */-->
-<details th:fragment="pedido(n)" class="tarjeta pedido" th:open="${n.clave == pedida}"
+<details th:fragment="pedido(n)" class="plegable pedido" th:open="${n.clave == pedida}"
          th:classappend="${mostrarNueva and n.clave == 'fideos'} ? 'pedido--nuevo'">
   <!--/* Plegada dice lo necesario para recorrer la lista sin abrir nada, como la tarjeta de la guía:
          el nombre con su chapa (espera tu confirmación o con un problema), si se repite y hasta
          cuándo, la barra y la cuenta de lo que llegó (la de hoy, HG-04) y cómo vienen sus entregas;
          al pie, "Ver el detalle". */-->
-  <summary class="pedido-resumen"
+  <summary
            th:with="otra=${escenario == 'conflicto' and n.clave == pedida},
                     meta=${otra ? 45 : n.max}">
     <h3 th:text="${n.nombre}">Lentejas secas</h3>
@@ -262,14 +262,17 @@
         entrega en camino o por salir.</th:block>
       <th:block th:if="${n.problema + n.puerta + n.camino == 0}">Sin entregas en curso.</th:block>
     </span>
-    <span class="pedidos-ver" aria-hidden="true"><span>Ver el detalle</span><span>Cerrar</span></span>
+    <span class="plegable-ver" aria-hidden="true"><span>Ver el detalle</span><span>Cerrar</span></span>
   </summary>
 
-  <div class="pedido-detalle">
+  <div class="plegable-cuerpo pedido-detalle">
+    <hr>
     <!--/* El cartel del cambio de cantidad, para quienes administran la necesidad, hasta que
            termina el período en curso (review de Sofía, 2026-11-02). */-->
-    <p th:if="${n['cambio']}" class="cambio" th:text="${n.cambio}">Hoy pasó de 40 a 45 kg por
-      mes. Vale desde octubre: lo que ya llegó cuenta.</p>
+    <div th:if="${n['cambio']}" class="aviso" data-tipo="info"><svg
+        th:replace="~{componentes/sello :: signo('info')}"></svg>
+      <p th:text="${n.cambio}">Hoy pasó de 40 a 45 kg por mes. Vale desde octubre: lo que ya llegó
+        cuenta.</p></div>
     <div class="pedido-partes">
       <section class="parte" th:aria-labelledby="|${n.clave}-porque|">
         <h3 class="texto-chico" data-tono="acento" th:id="|${n.clave}-porque|">Por qué hace falta</h3>
@@ -342,7 +345,7 @@
         </th:block>
       </ol>
       <details th:if="${#lists.size(n.periodos) > 4}" class="periodos-anteriores">
-        <summary>Ver los anteriores</summary>
+        <summary class="boton" data-tono="secundario" data-tamano="chico">Ver los anteriores</summary>
         <ol class="periodos periodos--lista" role="list"
             th:aria-label="|Períodos anteriores de ${n.nombre}|">
           <th:block th:each="p, vuelta : ${n.periodos}" th:if="${vuelta.index >= 4}">
@@ -353,6 +356,7 @@
       <p class="periodos-desde texto-chico" data-tono="suave" th:text="${n.desde}">Desde julio de 2026</p>
     </section>
 
+    <hr>
     <div class="pedido-acciones">
       <section th:if="${escenario == 'error-cambiar' and n.clave == pedida}"
                class="banner" data-estado="error" role="alert" aria-labelledby="errorcambio-titulo">
@@ -541,7 +545,7 @@ con este código</a>.</p>
           ejemplo: 30.</p>
         <input id="cuanto" name="cuanto" type="number" min="1" inputmode="numeric" required
                th:value="${escrito} ? '30' : null"
-               th:attr="aria-describedby=${conError} ? 'cuanto-error cuanto-ayuda' : 'cuanto-ayuda',aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: 10">
+               th:attr="aria-describedby=${conError} ? 'cuanto-error cuanto-ayuda' : 'cuanto-ayuda',aria-invalid=${conError} ? 'true' : null" placeholder="10">
       </div>
     </fieldset>
 
