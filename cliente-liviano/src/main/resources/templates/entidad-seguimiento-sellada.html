@@ -123,17 +123,22 @@
         <div class="pila" data-espacio="4">
           <!--/* La etiqueta de la entrega (D3), como la ve quien donó: la foto, qué, quién recibió y el
                  sello. Una foto de verdad es una dirección web; la maqueta trae el nombre de su foto
-                 de ejemplo y muestra una escena con el rótulo «Foto de ejemplo». */-->
+                 de ejemplo y muestra una escena con el rótulo «Foto de ejemplo». El pie, como en
+                 Entregas: «Recibió: <la organización>, el <día>.»; el día sale de cuándo se confirmó
+                 («15 de octubre de 2026, 18:45» da «15 de octubre»). */-->
           <section class="pila" data-espacio="2" aria-labelledby="ve-titulo"
                    th:with="real=${e.foto != null and (#strings.startsWith(e.foto, 'https://') or #strings.startsWith(e.foto, 'http://'))},
-                            escena=${e.categoria == 'cat-ropa' ? 'escena-ropa' : 'escena-bolsas'}">
+                            escena=${e.categoria == 'cat-ropa' ? 'escena-ropa' : 'escena-bolsas'},
+                            pie=${e.confirmo != null and #strings.contains(e.confirmo, ' de ')
+                                  ? 'Recibió: ' + cuenta.nombre + ', el ' + e.confirmo.substring(0, e.confirmo.lastIndexOf(' de ')) + '.'
+                                  : 'Recibió: ' + cuenta.nombre + '.'}">
             <h2 id="ve-titulo">Así lo ve quien donó</h2>
             <th:block th:if="${real}"><article th:replace="~{componentes/etiqueta-entrega :: etiqueta-entrega(foto=${e.foto},
                   descripcion=|Foto de ${e.nombre} que subió ${cuenta.nombre}|, rotulo=null, titulo=${e.titulo},
-                  lugar=null, pie=|Recibió: ${cuenta.nombre}|, sello='Entrega confirmada', costado=true)}"></article></th:block>
+                  lugar=null, pie=${pie}, sello='Entrega confirmada', costado=true)}"></article></th:block>
             <th:block th:if="${e.foto != null and not real}"><article th:replace="~{componentes/etiqueta-entrega :: etiqueta-entrega(foto=@{|/img/ilustraciones/${escena}.svg|},
                   descripcion=|Foto de ejemplo de ${e.nombre}|, rotulo='Foto de ejemplo', titulo=${e.titulo},
-                  lugar=null, pie=|Recibió: ${cuenta.nombre}|, sello='Entrega confirmada', costado=true)}"></article></th:block>
+                  lugar=null, pie=${pie}, sello='Entrega confirmada', costado=true)}"></article></th:block>
             <p th:if="${e.foto == null}">Quien donó ve la entrega confirmada con la fecha.</p>
             <p class="texto-chico" data-tono="suave">Las fotos muestran lo entregado y el lugar. En las
               entregas públicas no mostramos quién donó.</p>

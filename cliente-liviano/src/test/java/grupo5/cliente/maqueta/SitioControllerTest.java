@@ -317,7 +317,8 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("data-papel=\"protagonista\"")))
         .andExpect(content().string(containsString("aria-current=\"page\">Recepción confirmada")))
         .andExpect(content().string(containsString("<dd>0001-00004521</dd>")))
-        .andExpect(content().string(containsString("Recibió: Comedor Barrio Ejemplo")))
+        .andExpect(
+            content().string(containsString("Recibió: Comedor Barrio Ejemplo, el 15 de octubre.")))
         .andExpect(content().string(containsString("Foto de ejemplo")))
         .andExpect(
             content()

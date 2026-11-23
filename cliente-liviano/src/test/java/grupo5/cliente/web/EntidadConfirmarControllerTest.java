@@ -221,6 +221,7 @@ class EntidadConfirmarControllerTest {
         .andExpect(content().string(containsString("<dd>8 de noviembre de 2026, 18:45</dd>")))
         .andExpect(content().string(containsString("src=\"https://fotos.ejemplo/1.jpg\"")))
         .andExpect(content().string(containsString("Recibió: ")))
+        .andExpect(content().string(containsString(", el 8 de noviembre.")))
         // D4: los frutos del mes, en el dibujo y con su cifra; D2: cada paso con su fecha
         .andExpect(content().string(containsString("data-dibujo=\"frutos\"")))
         .andExpect(

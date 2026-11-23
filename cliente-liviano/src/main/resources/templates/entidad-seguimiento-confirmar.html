@@ -198,14 +198,16 @@
                dependa de JavaScript: el servidor lo exige con «Llegó menos» y lo descarta con las
                otras. En la maqueta, ?escenario=revisar muestra la cantidad vacía y el remito. */-->
         <th:block th:if="${problema}">
-          <fieldset class="opciones">
-            <legend>Qué pasó</legend>
-            <label><input type="radio" name="motivo" value="incompleta" required
-                          th:checked="${revisar}"> Llegó menos de lo que salió</label>
-            <label><input type="radio" name="motivo" value="danada"> Llegó dañada o en mal
-              estado</label>
-            <label><input type="radio" name="motivo" value="otro"> Otra cosa</label>
-          </fieldset>
+          <div class="campo">
+            <fieldset class="opciones">
+              <legend>Qué pasó</legend>
+              <label><input type="radio" name="motivo" value="incompleta" required
+                            th:checked="${revisar}"> Llegó menos de lo que salió</label>
+              <label><input type="radio" name="motivo" value="danada"> Llegó dañada o en mal
+                estado</label>
+              <label><input type="radio" name="motivo" value="otro"> Otra cosa</label>
+            </fieldset>
+          </div>
           <div class="campo" th:data-estado="${revisar} ? 'error'">
             <label for="cantidad" th:text="|Cuánto llegó, en ${e.unidad}|">Cuánto llegó, en kg</label>
             <small id="cantidad-ayuda" th:text="|Obligatorio si llegó menos: salieron ${e.cantidad}.|">Obligatorio
