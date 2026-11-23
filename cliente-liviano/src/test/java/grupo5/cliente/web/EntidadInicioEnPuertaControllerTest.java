@@ -124,7 +124,10 @@ class EntidadInicioEnPuertaControllerTest {
     mvc.perform(get("/entidad-inicio").param("entidad", ENTIDAD))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Llegó el 8 de noviembre, 18:20.")))
-        .andExpect(content().string(containsString("1 entrega espera tu confirmación.")))
+        .andExpect(content().string(containsString("Llegó una entrega")))
+        .andExpect(content().string(containsString("data-papel=\"protagonista\"")))
+        .andExpect(content().string(containsString("Espera tu confirmación")))
+        .andExpect(content().string(not(containsString("No tenés entregas para confirmar"))))
         .andExpect(content().string(not(containsString("Para tu necesidad de"))));
   }
 }

@@ -6,7 +6,6 @@ acta-cuanto
 acta-entrega
 acta-formulario
 acta-paso
-acta-texto
 acta-titulo
 actas
 armazon
@@ -113,8 +112,6 @@ iconos
 inicio
 inicio-cabecera
 inicio-cuerpo
-inicio-fecha
-inicio-partes
 lamina
 lamina-categoria
 lamina-fecha
@@ -158,9 +155,7 @@ pedido-repite
 pedido-resumen
 pedido-va
 pedidos
-pedidos-inicio
 pedidos-lista
-pedidos-renglones
 pedidos-ver
 perfil
 perfil-cuenta
@@ -181,9 +176,6 @@ publica
 publica-barra
 publica-cabeza
 publicar
-puerta
-puerta-bajada
-puerta-lista
 quien-ve
 raices-cabecera
 raices-pie
@@ -195,14 +187,9 @@ raiz-nombre
 raiz-paso
 recibidas
 recibido
-recibido-fruto
-recibido-rama
 recibido-sello
-recibido-texto
 registro-mesa
 registros
-renglon-que
-renglon-va
 resultado
 resumen
 rotulo
@@ -245,8 +232,4 @@ tramo-paso--falta
 tramo-paso--hecho
 tramo-seccion
 tramo-sello
-viene
-viene-detalle
-viene-lista
-viene-paso
 volver
