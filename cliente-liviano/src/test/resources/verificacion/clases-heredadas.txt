@@ -1,7 +1,6 @@
 # Clases que las plantillas usaban antes del catálogo (B0-07, D33). Solo baja: al migrar un ítem del
 # backlog, sus clases salen de acá y entran a docs/interfaz/componentes.md. No se agregan clases nuevas.
 acciones
-acta
 acta-formulario
 armazon
 armazon-avisos
@@ -46,10 +45,6 @@ detalle-estado
 detalle-etapas
 detalle-foto
 detalle-noticias
-dibujo
-dibujo-rotulo
-dibujo-rotulo--papel
-dibujo-tierra
 donaciones
 donaciones-pie
 donaron
@@ -161,8 +156,6 @@ sello-entrega
 separador
 sin-dibujar
 solo-lectores
-subte-borde
-subte-linea
 tierra-impresa
 todo
 todo-fecha
