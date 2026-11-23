@@ -636,11 +636,11 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.cargando y .esqueleto', 'Lo que se ve mientras algo tarda más de 300 ms. .cargando es el texto que dice qué se trae (role=&quot;status&quot;), en la tinta suave; .esqueleto, el lugar de cada parte que espera, dentro de una región con aria-busy=&quot;true&quot;: papel gris que late (se aclara y vuelve) mientras dura la carga, quieto si se pidió reducir el movimiento. Vacío es un bloque; con tres renglones adentro (i, oculto a los lectores), las filas de una lista que viene. data-forma=&quot;punteado&quot; le pone contorno y data-forma=&quot;hueco&quot;, contorno sin papel adentro (el de la organización); data-tamano=&quot;alto&quot; da más altura y data-tamano=&quot;bajo&quot;, menos.', ~{::demo-carga})}">
+        <div th:replace="~{componentes/muestra :: muestra('.cargando y .esqueleto', 'Lo que se ve mientras algo tarda más de 300 ms. .cargando es el texto que dice qué se trae (role=&quot;status&quot;), en la tinta suave; .esqueleto, el lugar de cada parte que espera, dentro de una región con aria-busy=&quot;true&quot;: papel gris que late (se aclara y vuelve) mientras dura la carga, quieto si se pidió reducir el movimiento. Vacío es un bloque; con tres renglones adentro (i, oculto a los lectores), las filas de una lista que viene: la región con aria-busy=&quot;true&quot; que los lleva, con el .cargando adentro, es una caja de contorno punteado, como la lista vacía. data-forma=&quot;punteado&quot; le pone contorno y data-forma=&quot;hueco&quot;, contorno sin papel adentro (el de la organización); data-tamano=&quot;alto&quot; da más altura y data-tamano=&quot;bajo&quot;, menos.', ~{::demo-carga})}">
           <th:block th:fragment="demo-carga">
             <div class="pila" data-espacio="3">
-              <p class="cargando" role="status">Cargando tus donaciones…</p>
               <div aria-busy="true">
+                <p class="cargando" role="status">Cargando tus donaciones…</p>
                 <div class="esqueleto" aria-hidden="true"><i></i><i></i><i></i></div>
               </div>
               <div class="grilla" aria-busy="true">

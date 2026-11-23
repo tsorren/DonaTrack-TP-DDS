@@ -38,6 +38,22 @@
   visibility: visible;
 }
 
+/* La lista que carga, como en la guía («Cargando», la misma caja que la lista vacía): la región con
+   aria-busy="true" que lleva el esqueleto con renglones, y adentro el .cargando, va en una caja de
+   contorno punteado con la esquina de la lámina. */
+[aria-busy="true"]:has(> .esqueleto > i) {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-2);
+  padding: var(--espacio-4);
+  border: var(--borde-punteado);
+  border-radius: var(--radio-lamina);
+}
+
+[aria-busy="true"]:has(> .esqueleto > i) > .cargando {
+  margin: 0;
+}
+
 /* El lugar de una parte que espera: papel gris tierra, sin datos inventados. Vacío, es un solo
    bloque (el de una lámina o una tarjeta); con renglones adentro (`<i>`, como en la guía), cada
    renglón es una fila de la lista que viene, el segundo y el tercero más cortos. */

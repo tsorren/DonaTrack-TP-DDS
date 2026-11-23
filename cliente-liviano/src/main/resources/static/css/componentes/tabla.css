@@ -7,7 +7,14 @@
 
    Es la tabla de la huerta de la guía (10-componentes.css, `tabla--apilable`): se lee con aire, en la
    letra de siempre. Se apila por debajo de 56 em (--medida-quiebre-menu, el corte de la guía). La
-   tabla densa del galpón, con selección de filas, no es esta pieza. */
+   tabla densa del galpón, con selección de filas, no es esta pieza.
+
+   Diferencias con la guía: (1) la guía pone la tabla dentro de una caja (`.tabla-caja`: borde fino,
+   radio de botón y fondo de superficie); la caja pide un envoltorio en las plantillas de pantalla, que
+   esta ola no edita, así que la tabla va sin caja. (2) En el celular, la guía hace de cada celda con
+   rótulo una grilla de dos columnas; acá el rótulo flota en el margen izquierdo de la celda: ocupa
+   lugar como en la guía (la celda crece si el rótulo pasa a dos renglones) sin partir en pedazos una
+   celda con texto y etiquetas mezclados. */
 
 .tabla {
   display: block;
@@ -60,15 +67,16 @@
    la vista, el lector oye el rótulo, como antes. Una celda sin rótulo (`data-rotulo=""`, la de las
    acciones) ocupa todo el ancho. */
 .tabla td[data-rotulo] {
-  position: relative;
   padding-inline-start: calc(5rem + var(--espacio-2));
 }
 
+/* El rótulo flota en el margen de la celda (un margen negativo lo lleva ahí) y la celda, que es un
+   elemento de la grilla de la fila, lo contiene: si el rótulo ocupa dos renglones, la celda crece y
+   no se monta sobre la siguiente. */
 .tabla td[data-rotulo]::before {
   content: attr(data-rotulo);
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: 0;
+  float: inline-start;
+  margin-inline-start: calc(-5rem - var(--espacio-2));
   width: 5rem;
   color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
@@ -132,6 +140,7 @@
   .tabla thead th {
     padding-block: var(--espacio-1);
     border-bottom: var(--borde-tinta);
+    background: var(--color-galpon-cabecera);
     font-size: var(--tamano-chico);
     font-weight: 700;
     white-space: nowrap;
@@ -139,6 +148,11 @@
 
   .tabla td[data-rotulo]::before {
     content: none;
+  }
+
+  /* La fila bajo el cursor, como en la guía. */
+  .tabla tbody tr:hover {
+    background: var(--color-fila-cursor);
   }
 }
 
