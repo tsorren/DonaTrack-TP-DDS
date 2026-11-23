@@ -1,0 +1,27 @@
+/* Bloque datos (guía al código C1-26): la lista de datos, lo que quedó asentado (un remito, quién
+   recibió, cuándo). Un `dl` con un `div` por dato: el rótulo (`dt`) a la izquierda, en la tinta
+   suave, y el dato (`dd`) a la derecha, entre filetes finos. No se toca: no tiene estados. Fragmento:
+   templates/componentes/datos.html. Se carga en la capa `bloques` desde app.css. Catálogo:
+   docs/interfaz/componentes.md. Como en la guía (15-pantallas.css, «Lista de datos»). */
+
+.datos {
+  margin: 0;
+  border-top: var(--borde-fino);
+}
+
+.datos > div {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 28%) minmax(0, 1fr);
+  gap: var(--espacio-2);
+  padding: var(--espacio-2) var(--espacio-1);
+  border-bottom: var(--borde-fino);
+}
+
+.datos dt {
+  color: var(--color-texto-suave);
+}
+
+.datos dd {
+  margin: 0;
+  font-weight: 600;
+}

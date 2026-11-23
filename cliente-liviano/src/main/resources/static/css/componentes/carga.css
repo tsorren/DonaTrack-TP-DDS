@@ -1,37 +1,29 @@
-/* Bloque de carga (D33, B2-09): el indicador de carga (`.cargando`, un texto que dice qué se está
-   trayendo) y el esqueleto (`.esqueleto`, el lugar de una parte que espera). Se carga en la capa
-   `bloques` desde app.css. El estado vacío (`.vacio`) comparte el papel del aviso y vive en
-   aviso.css. Las variantes van por atributo: `data-forma="punteado"` y `data-forma="hueco"` y
-   `data-tamano="alto"` y `data-tamano="bajo"` en el esqueleto. Catálogo: docs/interfaz/componentes.md. */
+/* Bloque de carga (D33, B2-09; guía al código C1-24): el indicador de carga (`.cargando`, un texto que
+   dice qué se está trayendo) y el esqueleto (`.esqueleto`, el lugar de una parte que espera). Se carga
+   en la capa `bloques` desde app.css. El estado vacío (`.vacio`) comparte el papel del aviso, en
+   aviso.css, y su caja de lista vacía está en lista.css. Las variantes van por atributo:
+   `data-forma="punteado"` y `data-forma="hueco"` y `data-tamano="alto"` y `data-tamano="bajo"` en el
+   esqueleto. Catálogo: docs/interfaz/componentes.md.
+
+   Como en la guía (10-componentes.css, «Estados de una lista»): el texto en la tinta suave, sin
+   dibujo, y el esqueleto como renglones de papel gris que laten (se aclaran y vuelven) mientras dura
+   la carga. Sin movimiento si la persona lo pidió así: el papel queda quieto. */
 
 /* El texto de lo que carga. Va con role="status" o dentro de una región con aria-busy="true". */
 .cargando {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 0 0 1rem;
-  font-weight: 700;
-}
-
-/* La abeja vuela mientras la página trae los datos (ilustraciones de diseño, 2026-11-08). Decorativa:
-   el texto dice qué carga. */
-.cargando::before {
-  content: "";
-  flex: none;
-  width: 2.25rem;
-  height: 2.25rem;
-  background: url("../../img/ilustraciones/abeja-arriba.svg") center / contain no-repeat;
+  margin: 0 0 var(--espacio-3);
+  color: var(--color-texto-suave);
 }
 
 /* Indicador común de HTMX: el script lo anuncia recién después de 300 ms para no parpadear en las
    respuestas rápidas. Vive fuera de #contenido para no desaparecer cuando HTMX reemplaza el panel. */
 #indicador-carga {
   position: fixed;
-  top: 1rem;
-  right: 1rem;
+  top: var(--espacio-3);
+  right: var(--espacio-3);
   z-index: 10;
   margin: 0;
-  padding: 0.5rem 0.75rem;
+  padding: var(--espacio-1) var(--espacio-2);
   border-radius: var(--radio-lamina);
   background: var(--color-superficie);
   box-shadow: var(--sombra-papel);
@@ -46,51 +38,65 @@
   visibility: visible;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .cargando::before {
-    animation: var(--movimiento-animacion-vuelo-carga);
-  }
-}
-
-/* El lugar de una parte que espera: papel gris tierra, sin datos inventados. */
+/* El lugar de una parte que espera: papel gris tierra, sin datos inventados. Vacío, es un solo
+   bloque (el de una lámina o una tarjeta); con renglones adentro (`<i>`, como en la guía), cada
+   renglón es una fila de la lista que viene, el segundo y el tercero más cortos. */
 .esqueleto {
-  position: relative;
-  overflow: hidden;
+  display: grid;
+  gap: var(--espacio-2);
+  width: 100%;
   min-height: 9rem;
   border-radius: var(--radio-lamina);
   background: var(--color-pendiente-fondo);
 }
 
-/* La ola: un brillo que cruza el papel de izquierda a derecha mientras carga (usuario, 2026-11-12).
-   Va encima del fondo, así sirve aunque una pantalla cambie el papel. Con "reducir movimiento"
-   la animación no existe y el brillo queda fuera del lugar: se ve el papel quieto. */
-.esqueleto::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    100deg,
-    transparent 20%,
-    color-mix(in srgb, var(--color-superficie) 65%, transparent) 50%,
-    transparent 80%
-  );
-  translate: -100% 0;
-  pointer-events: none;
+.esqueleto:has(> i) {
+  min-height: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.esqueleto > i {
+  display: block;
+  height: 3rem;
+  border-radius: var(--radio-boton);
+  background: var(--color-pendiente-fondo);
+}
+
+.esqueleto > i:nth-child(2) {
+  width: 86%;
+}
+
+.esqueleto > i:nth-child(3) {
+  width: 64%;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .esqueleto::after {
-    animation: var(--movimiento-animacion-ola);
+  /* En reglas separadas: sin :has() (navegadores viejos) se descartaría también la de los renglones. */
+  .esqueleto:not(:has(> i)) {
+    animation: var(--movimiento-animacion-late);
+  }
+
+  .esqueleto > i {
+    animation: var(--movimiento-animacion-late);
+  }
+
+  .esqueleto > i:nth-child(2) {
+    animation: var(--movimiento-animacion-late-segundo);
+  }
+
+  .esqueleto > i:nth-child(3) {
+    animation: var(--movimiento-animacion-late-tercero);
   }
 }
 
 .esqueleto[data-forma="punteado"] {
-  border: 2px dashed var(--color-tinta-suave);
+  border: var(--borde-punteado);
 }
 
 /* El hueco de la entidad: el mismo contorno punteado, pero sin papel gris adentro. */
 .esqueleto[data-forma="hueco"] {
-  border: 2px dashed var(--color-tinta-suave);
+  border: var(--borde-punteado);
   background: none;
 }
 
@@ -110,5 +116,5 @@
 }
 
 .cargando.htmx-indicator.htmx-request {
-  display: flex;
+  display: block;
 }

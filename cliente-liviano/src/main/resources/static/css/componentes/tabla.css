@@ -1,13 +1,22 @@
-/* Bloque de tabla adaptable (D33, F2 del roadmap de vistas): una tabla de datos (`table` con
-   `caption` y `th scope`) que en pantalla grande es una tabla y en el celular, una tarjeta por fila
-   que repite el rótulo de cada dato (`data-rotulo` en cada `td`). La primera celda de la fila
-   (`th scope="row"`) es el título de la tarjeta. Se carga en la capa `bloques` desde app.css.
-   Catálogo: docs/interfaz/componentes.md. */
+/* Bloque de tabla adaptable (D33, F2 del roadmap de vistas; guía al código C1-25): una tabla de datos
+   (`table` con `caption` y `th scope`) que en pantalla grande es una tabla y en el celular se apila:
+   cada fila es un bloque entre filetes y cada dato lleva su rótulo a la vista (`data-rotulo` en cada
+   `td`), sin esconder ninguna columna. La primera celda de la fila (`th scope="row"`) es el título del
+   bloque; si lleva al detalle, su enlace es la parte que se toca. Se carga en la capa `bloques` desde
+   app.css. Catálogo: docs/interfaz/componentes.md.
+
+   Es la tabla de la huerta de la guía (10-componentes.css, `tabla--apilable`): se lee con aire, en la
+   letra de siempre. Se apila por debajo de 56 em (--medida-quiebre-menu, el corte de la guía). La
+   tabla densa del galpón, con selección de filas, no es esta pieza. */
 
 .tabla {
+  display: block;
   width: 100%;
   margin: 0;
   border-collapse: collapse;
+  font-size: var(--tamano-base);
+  line-height: var(--tamano-interlinea-texto);
+  font-variant-numeric: tabular-nums;
 }
 
 .tabla caption {
@@ -26,32 +35,68 @@
   white-space: nowrap;
 }
 
-.tabla tr {
+.tabla tbody {
+  display: block;
+  border-top: var(--borde-fino);
+}
+
+.tabla tbody tr {
   display: grid;
   gap: var(--espacio-1);
-  margin: 0 0 var(--espacio-3);
-  padding: var(--espacio-3);
-  border: 2px solid var(--color-tinta);
-  border-radius: var(--radio-lamina);
-  background: var(--color-papel);
+  padding: var(--espacio-1) var(--espacio-3) var(--espacio-3);
+  border-bottom: var(--borde-fino);
 }
 
 .tabla :is(th, td) {
   display: block;
   padding: 0;
+  font-weight: 400;
   text-align: left;
+  vertical-align: top;
 }
 
-.tabla tbody th {
-  font-size: var(--tamano-grande);
+/* El dato con su rótulo adelante, en dos columnas. El rótulo no se lee dos veces: el lector ya
+   oye el encabezado de la columna. */
+.tabla td[data-rotulo] {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: var(--espacio-2);
+}
+
+/* Lo que hay adentro (un sello y su small, por ejemplo), siempre en la columna del dato. */
+.tabla td[data-rotulo] > * {
+  grid-column: 2;
 }
 
 .tabla td[data-rotulo]::before {
-  content: attr(data-rotulo) ": ";
+  content: attr(data-rotulo);
+  content: attr(data-rotulo) / "";
   color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 600;
 }
 
-@media (min-width: 53.75em) {
+/* El enlace al detalle, en el título de la fila: de 48 px de alto, en negrita. */
+.tabla tbody th > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  font-weight: 700;
+}
+
+/* Lo secundario de una celda (un número de donación, el paso): debajo, chico y suave. */
+.tabla small {
+  display: block;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 400;
+}
+
+@media (min-width: 56em) {
+  .tabla {
+    display: table;
+  }
+
   .tabla thead {
     position: static;
     width: auto;
@@ -60,29 +105,35 @@
     clip-path: none;
   }
 
-  .tabla tr {
+  .tabla tbody {
+    display: table-row-group;
+    border-top: 0;
+  }
+
+  .tabla tbody tr {
     display: table-row;
-    margin: 0;
     padding: 0;
-    border: 0;
-    background: none;
+  }
+
+  .tabla tbody tr:last-child {
+    border-bottom: 0;
   }
 
   .tabla :is(th, td) {
     display: table-cell;
-    padding: var(--espacio-2) var(--espacio-3) var(--espacio-2) 0;
-    border-bottom: 1px solid var(--color-tinta);
-    vertical-align: top;
+    padding: var(--espacio-2) var(--espacio-3);
   }
 
   .tabla thead th {
-    border-bottom-width: 2px;
-    color: var(--color-texto-suave);
+    padding-block: var(--espacio-1);
+    border-bottom: var(--borde-tinta);
     font-size: var(--tamano-chico);
+    font-weight: 700;
+    white-space: nowrap;
   }
 
-  .tabla tbody th {
-    font-size: var(--tamano-base);
+  .tabla td[data-rotulo] {
+    display: table-cell;
   }
 
   .tabla td[data-rotulo]::before {
@@ -92,11 +143,10 @@
 
 /* Una fila apagada (`tr data-atenuada="si"`; agente admin, ronda 2026-11-09: un camión
    deshabilitado): sobre un papel gris, sin el color de su sello y con el texto en la tinta suave
-   (5:1 sobre ese gris, AA); en el celular, la tarjeta con borde punteado; en la tabla, la fila es una
-   franja de esquinas redondeadas. La última celda (sus acciones, como "Volver a habilitar") conserva
-   su color. El estado va siempre también en palabras. */
+   (5:1 sobre ese gris, AA); en la tabla, la fila es una franja de esquinas redondeadas. La última
+   celda (sus acciones, como "Volver a habilitar") conserva su color. El estado va siempre también en
+   palabras. */
 .tabla tr[data-atenuada] {
-  border-style: dashed;
   background: var(--color-pendiente-fondo);
 }
 
@@ -108,7 +158,7 @@
   filter: grayscale(1);
 }
 
-@media (min-width: 53.75em) {
+@media (min-width: 56em) {
   .tabla tr[data-atenuada] {
     background: none;
   }
@@ -118,7 +168,6 @@
   }
 
   .tabla tr[data-atenuada] > :first-child {
-    padding-inline-start: var(--espacio-3);
     border-start-start-radius: var(--radio-boton);
     border-end-start-radius: var(--radio-boton);
   }

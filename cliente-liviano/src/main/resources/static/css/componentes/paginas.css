@@ -1,5 +1,5 @@
-/* Bloque paginas (R11-11, ficha docs/interfaz/flujos/r11-p1-paginador.md): el paginador del sitio,
-   debajo de todo listado completo y centrado. Fragmento: templates/componentes/paginas.html. Se
+/* Bloque paginas (R11-11, ficha docs/interfaz/flujos/r11-p1-paginador.md; guía al código C1-23): el
+   paginador del sitio, debajo de todo listado completo y centrado. Fragmento: templates/componentes/paginas.html. Se
    carga en la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md.
    Primero el celular: la forma corta (‹ 3 de 9 ›). Desde 37,5 em (el corte de navegacion.css), la
    larga (« ‹ 1 2 3 … 9 › »), salvo con data-forma="corta" (las columnas del tablero de la empresa).
@@ -10,7 +10,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
+  gap: var(--espacio-0);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -21,47 +21,48 @@
   margin: 0;
 }
 
-/* Cada casilla, de al menos 48 × 48 px, en contorno de tinta como el botón secundario. */
-.paginas li > a,
-.paginas li > span:not(.solo-lectores) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 3rem;
-  min-height: 3rem;
-  padding: 0 0.75rem;
+/* Cada casilla, de al menos 48 × 48 px, sin contorno: como en la guía (10-componentes.css,
+   «Paginador»), el número y las flechas en letra grande, y el fondo solo al pasar o en la actual.
+   Con :where(), para que la actual, lo apagado y el hueco le ganen sin subir el peso. */
+.paginas li > :where(a, span:not(.solo-lectores)) {
+  display: grid;
+  place-items: center;
+  min-width: var(--medida-toque-minimo);
+  min-height: var(--medida-toque-minimo);
+  padding-inline: var(--espacio-1);
   border-radius: var(--radio-boton);
-  font-weight: 700;
+  color: var(--color-texto);
+  font-size: var(--tamano-grande);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-decoration: none;
 }
 
-.paginas li > a {
-  box-shadow: inset 0 0 0 2px var(--color-tinta);
-  background: var(--color-papel);
-  color: var(--color-tinta);
-}
-
 .paginas li > a:hover {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
-/* La actual: llena del acento, no solo otro color (fondo, letra clara y peso). */
+.paginas li > a:active {
+  background: var(--color-salvia);
+  translate: 0 2px;
+}
+
+/* La actual: llena de tinta, con la letra del papel (no solo otro color: fondo y letra). */
 .paginas li > [aria-current="page"] {
-  background: var(--color-acento);
-  color: var(--color-papel);
+  background: var(--color-tinta);
+  color: var(--color-fondo-pagina);
 }
 
-/* Lo que no sigue: se ve, sin contorno y apagado, para que el paginador no cambie de ancho. */
+/* Lo que no sigue: se ve apagado, para que el paginador no cambie de ancho. */
 .paginas li > [data-estado="apagado"] {
-  color: var(--color-tinta-suave);
-  font-weight: 400;
+  color: var(--color-deshabilitado-texto);
 }
 
-/* El "…" y el lugar ("3 de 9") son texto, sin contorno. */
-.paginas-hueco > span,
-.paginas-lugar > span {
-  color: var(--color-tinta-suave);
+/* El "…" y el lugar ("3 de 9") son texto suave, en la letra de siempre. */
+.paginas .paginas-hueco > span,
+.paginas .paginas-lugar > span:not(.solo-lectores) {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-base);
 }
 
 .paginas .paginas-lugar > span:not(.solo-lectores) {

@@ -1,6 +1,9 @@
-/* Bloque de pestañas (D33, B2-11): varias secciones de una misma pantalla, de a una por vez, como
-   pestañas de carpeta sobre una lámina. Se carga en la capa `bloques` desde app.css. Catálogo:
-   docs/interfaz/componentes.md.
+/* Bloque de pestañas (D33, B2-11; guía al código C1-22): varias secciones de una misma pantalla, de
+   a una por vez. Se carga en la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md.
+   Como en la guía (docs/interfaz/guia/partes/10-componentes.css, «Pestañas», y su ajuste en
+   15-pantallas.css): en el celular cada pestaña es un botón y bajan de renglón, así ninguna queda
+   escondida; la elegida va llena de tinta. Desde 37,5 em (--medida-quiebre-chico), solapas sobre un
+   filete de tinta, y la elegida, del papel de la página, pegada al filete.
 
    Dos modos, el mismo aspecto:
    - Sin JavaScript, cada pestaña (`.pestana`) es un enlace a su sección (`.pestanas-panel`, con un id) y
@@ -12,35 +15,96 @@
 
 .pestanas-lista {
   display: flex;
-  gap: 0.25rem;
-  margin: 0 0 -2px;
-  overflow-x: auto;
   flex-wrap: wrap;
+  gap: var(--espacio-1);
+  margin: 0 0 var(--espacio-3);
 }
 
 .pestana {
   display: inline-flex;
   align-items: center;
+  gap: var(--espacio-1);
   min-height: var(--medida-toque-minimo);
-  padding: 0 1rem;
-  border: 2px solid var(--color-tinta);
-  border-bottom: 0;
-  border-radius: var(--radio-lamina) var(--radio-lamina) 0 0;
-  background: var(--color-acento-claro);
-  color: var(--color-tinta);
-  font-weight: 700;
+  padding: 0 var(--espacio-2);
+  border: var(--borde-control);
+  border-radius: var(--radio-boton);
+  color: var(--color-texto);
+  font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
 }
 
-/* La pestaña de la sección que se ve: del color de la lámina, pegada a ella. */
+.pestana:hover {
+  background: var(--color-salvia);
+}
+
+/* La pestaña de la sección que se ve: con JavaScript, la de aria-selected; sin él, la del panel
+   elegido por lugar (o la primera, al entrar). En reglas separadas: sin :has() (navegadores viejos)
+   se descartaría también la de aria-selected. */
 .pestana[aria-selected="true"] {
-  position: relative;
-  z-index: 1;
-  background: var(--color-papel);
-  text-decoration: underline;
-  text-decoration-thickness: 3px;
-  text-underline-offset: 0.4em;
+  border-color: var(--color-tinta);
+  background: var(--color-tinta);
+  color: var(--color-fondo-pagina);
+  font-weight: 700;
+}
+
+.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(1):target) .pestana:nth-of-type(1),
+.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(2):target) .pestana:nth-of-type(2),
+.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(3):target) .pestana:nth-of-type(3),
+.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(4):target) .pestana:nth-of-type(4),
+.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(5):target) .pestana:nth-of-type(5),
+.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(6):target) .pestana:nth-of-type(6),
+.pestanas:not([data-interactivo]):not(:has(.pestanas-panel:target)) .pestana:first-of-type {
+  border-color: var(--color-tinta);
+  background: var(--color-tinta);
+  color: var(--color-fondo-pagina);
+  font-weight: 700;
+}
+
+@media (min-width: 37.5em) {
+  .pestanas-lista {
+    flex-wrap: nowrap;
+    gap: var(--espacio-0);
+    overflow-x: auto;
+    scrollbar-width: thin;
+    box-shadow: inset 0 -1.5px 0 var(--color-tinta);
+  }
+
+  /* El filete es una sombra por dentro de la lista (no un borde): la solapa elegida, con su papel,
+     lo tapa sin salirse de la lista, y la lista puede desplazarse de costado si no entran todas. */
+  .pestana {
+    position: relative;
+    padding: 0 var(--espacio-3);
+    border: var(--borde-tinta);
+    border-color: transparent;
+    border-bottom: 0;
+    border-radius: var(--radio-boton) var(--radio-boton) 0 0;
+  }
+
+  .pestana:focus-visible {
+    outline-offset: -4px;
+    box-shadow: none;
+  }
+
+  .pestana[aria-selected="true"] {
+    z-index: 1;
+    border-color: var(--color-tinta);
+    background: var(--color-fondo-pagina);
+    color: var(--color-texto);
+  }
+
+  .pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(1):target) .pestana:nth-of-type(1),
+  .pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(2):target) .pestana:nth-of-type(2),
+  .pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(3):target) .pestana:nth-of-type(3),
+  .pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(4):target) .pestana:nth-of-type(4),
+  .pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(5):target) .pestana:nth-of-type(5),
+  .pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(6):target) .pestana:nth-of-type(6),
+  .pestanas:not([data-interactivo]):not(:has(.pestanas-panel:target)) .pestana:first-of-type {
+    z-index: 1;
+    border-color: var(--color-tinta);
+    background: var(--color-fondo-pagina);
+    color: var(--color-texto);
+  }
 }
 
 /* Sin JavaScript. En reglas separadas: sin :has() (navegadores viejos) se descartaría también la de
@@ -56,21 +120,6 @@
 
 .pestanas:not([data-interactivo]):not(:has(.pestanas-panel:target)) .pestanas-panel:first-of-type {
   display: block;
-}
-
-.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(1):target) .pestana:nth-of-type(1),
-.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(2):target) .pestana:nth-of-type(2),
-.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(3):target) .pestana:nth-of-type(3),
-.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(4):target) .pestana:nth-of-type(4),
-.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(5):target) .pestana:nth-of-type(5),
-.pestanas:not([data-interactivo]):has(.pestanas-panel:nth-of-type(6):target) .pestana:nth-of-type(6),
-.pestanas:not([data-interactivo]):not(:has(.pestanas-panel:target)) .pestana:first-of-type {
-  position: relative;
-  z-index: 1;
-  background: var(--color-papel);
-  text-decoration: underline;
-  text-decoration-thickness: 3px;
-  text-underline-offset: 0.4em;
 }
 
 /* Con JavaScript. */

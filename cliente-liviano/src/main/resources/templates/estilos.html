@@ -607,13 +607,18 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.vacio', 'Una lista o una parte sin datos todavía: dice qué significa e invita a la acción posible. Mismo papel que el banner. Título con id enlazado por aria-labelledby, un texto y, si hay, un botón. data-forma=&quot;filetes&quot;: sin papel, un renglón entre dos filetes finos en el lugar de los datos (la portada); con data-zona=&quot;suelo&quot;, sobre la tierra: filetes de paja, letra clara y al centro.', ~{::demo-vacio})}">
+        <div th:replace="~{componentes/muestra :: muestra('.vacio', 'Una lista o una parte sin datos todavía: dice qué va a aparecer e invita a la acción posible. Ocupa el lugar de la lista, con un contorno punteado sobre el papel de la página, sin sombra ni dibujo. Título con id enlazado por aria-labelledby, un texto y, si hay, un botón. Con error, la lista muestra el banner de error en su lugar: qué pasó y cómo seguir. data-forma=&quot;filetes&quot;: sin papel, un renglón entre dos filetes finos en el lugar de los datos (la portada); con data-zona=&quot;suelo&quot;, sobre la tierra: filetes de paja, letra clara y al centro.', ~{::demo-vacio})}">
           <th:block th:fragment="demo-vacio">
             <div class="pila" data-espacio="3">
               <section class="vacio" aria-labelledby="muestra-vacio-titulo">
                 <h2 id="muestra-vacio-titulo">Todavía no tenés donaciones asignadas.</h2>
                 <p>Empezá por publicar lo que necesita tu organización. Cuando se te asigne una donación, aparece acá.</p>
                 <a class="boton" data-tono="principal" href="#vacio">Publicar una necesidad</a>
+              </section>
+              <section class="banner" data-estado="error" role="alert" aria-labelledby="muestra-vacio-error">
+                <h2 id="muestra-vacio-error">No pudimos traer las entregas.</h2>
+                <p>El servicio no respondió. Lo que ya confirmaste está guardado. Probá de nuevo en un rato.</p>
+                <a class="boton" data-tono="secundario" href="#vacio">Volver a intentar</a>
               </section>
               <p class="vacio" data-forma="filetes">Todavía no hay entregas confirmadas este mes.</p>
               <div data-fondo="suelo">
@@ -625,10 +630,13 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.cargando y .esqueleto', 'Lo que se ve mientras algo tarda más de 300 ms. .cargando es el texto que dice qué se trae (role=&quot;status&quot;); .esqueleto, el lugar de cada parte que espera, dentro de una región con aria-busy=&quot;true&quot;, con un brillo que lo cruza en ciclo (la ola). data-forma=&quot;punteado&quot; le pone contorno y data-forma=&quot;hueco&quot;, contorno sin papel adentro (el de la organización); data-tamano=&quot;alto&quot; da más altura y data-tamano=&quot;bajo&quot;, menos.', ~{::demo-carga})}">
+        <div th:replace="~{componentes/muestra :: muestra('.cargando y .esqueleto', 'Lo que se ve mientras algo tarda más de 300 ms. .cargando es el texto que dice qué se trae (role=&quot;status&quot;), en la tinta suave; .esqueleto, el lugar de cada parte que espera, dentro de una región con aria-busy=&quot;true&quot;: papel gris que late (se aclara y vuelve) mientras dura la carga, quieto si se pidió reducir el movimiento. Vacío es un bloque; con tres renglones adentro (i, oculto a los lectores), las filas de una lista que viene. data-forma=&quot;punteado&quot; le pone contorno y data-forma=&quot;hueco&quot;, contorno sin papel adentro (el de la organización); data-tamano=&quot;alto&quot; da más altura y data-tamano=&quot;bajo&quot;, menos.', ~{::demo-carga})}">
           <th:block th:fragment="demo-carga">
             <div class="pila" data-espacio="3">
               <p class="cargando" role="status">Cargando tus donaciones…</p>
+              <div aria-busy="true">
+                <div class="esqueleto" aria-hidden="true"><i></i><i></i><i></i></div>
+              </div>
               <div class="grilla" aria-busy="true">
                 <div class="esqueleto"></div>
                 <div class="esqueleto" data-forma="punteado"></div>
@@ -967,13 +975,20 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.lista', 'Una lista sin viñetas cuyos elementos, casi siempre tarjetas, se reparten en tantas columnas como entren, cada una de al menos --medida-columna (sin esa medida, una sola columna). A diferencia de .grilla, no estira los pocos elementos para llenar la fila. Para datos en columnas, .tabla.', ~{::demo-lista})}">
+        <div th:replace="~{componentes/muestra :: muestra('.lista', 'Una lista sin viñetas cuyos elementos, casi siempre tarjetas, se reparten en tantas columnas como entren, cada una de al menos --medida-columna (sin esa medida, una sola columna). A diferencia de .grilla, no estira los pocos elementos para llenar la fila. data-forma=&quot;filas&quot;: la lista de la huerta, una fila por elemento entre filetes finos; la fila entera es el enlace al detalle (o un div si no lleva a ningún lado), con lo principal a la izquierda, el estado a la derecha y, debajo, el texto suave; se pinta al pasar y se hunde al tocarla. Sus estados (vacía, cargando y con error) son .vacio, .cargando con .esqueleto y el banner de error. Para datos en columnas, .tabla.', ~{::demo-lista})}">
           <th:block th:fragment="demo-lista">
-            <ul class="lista" role="list">
-              <li class="tarjeta" data-filete="doble"><b>Lentejas secas</b><br>15 kg · Esperan tu confirmación</li>
-              <li class="tarjeta" data-filete="doble"><b>Ropa de abrigo</b><br>10 unidades · En camino</li>
-              <li class="tarjeta" data-filete="doble"><b>Fideos secos</b><br>8 kg · Pendiente</li>
-            </ul>
+            <div class="pila" data-espacio="4">
+              <ul class="lista" role="list">
+                <li class="tarjeta" data-filete="doble"><b>Lentejas secas</b><br>15 kg · Esperan tu confirmación</li>
+                <li class="tarjeta" data-filete="doble"><b>Ropa de abrigo</b><br>10 unidades · En camino</li>
+                <li class="tarjeta" data-filete="doble"><b>Fideos secos</b><br>8 kg · Pendiente</li>
+              </ul>
+              <ul class="lista" data-forma="filas" role="list" id="lista-filas">
+                <li><a href="#lista-filas"><strong>Arroz largo fino, 10 kg</strong><span class="estado" data-estado="pendiente"><th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>Pendiente</span><span data-tono="suave">Paso 1 de 5. En el depósito desde el 12 de octubre.</span></a></li>
+                <li><a href="#lista-filas"><strong>Lentejas secas, 15 kg</strong><span class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En camino</span><span data-tono="suave">Paso 4 de 5. Salió hoy a las 14:30.</span></a></li>
+                <li><div><span><strong>Útiles escolares</strong>, 2 cajas, para Escuela Ejemplo 12</span><span class="estado" data-estado="con-problema"><th:block th:replace="~{componentes/sello :: sello('con-problema')}"></th:block>Con problema</span><span data-tono="suave">No pudo llegar el 11 de octubre. Sale de nuevo el 17. Sin enlace: un div.</span></div></li>
+              </ul>
+            </div>
           </th:block>
         </div>
         <div th:replace="~{componentes/muestra :: muestra('.huerta-planta', 'La lámina de una donación, como en la variante K (componentes/huerta :: planta(d)), dentro de una .lista con la clase huerta-lista. El dibujo sale del estado: entregada, la planta crecida de su categoría; en camino, el brote con la abeja que lo lleva; pendiente, la maceta en el depósito; con problema, la maceta de reintentar. Las demás piezas de la estética de K (la portada, cómo funciona, las raíces, las cifras en árboles, quién participa, las preguntas, el cierre, la fila de cifras del donante y su recorrido) son fragmentos del mismo componente.', ~{::demo-huerta})}">
@@ -1092,7 +1107,7 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.pestanas', 'Varias secciones de una misma pantalla, de a una por vez, como pestañas de carpeta. Sin JavaScript cada pestaña es un enlace a su sección; con JavaScript se cambia sin recargar y se recorre con las flechas, Inicio y Fin. Cada pestaña lleva el id y el href de su panel (.pestanas-panel).', ~{::demo-pestanas})}">
+        <div th:replace="~{componentes/muestra :: muestra('.pestanas', 'Varias secciones de una misma pantalla, de a una por vez. En el celular cada pestaña es un botón y bajan de renglón (ninguna queda escondida); la elegida va llena de tinta. Desde 37,5 em, solapas sobre un filete de tinta, y la elegida, del papel de la página. Se pintan al pasar. Sin JavaScript cada pestaña es un enlace a su sección; con JavaScript se cambia sin recargar y se recorre con las flechas, Inicio y Fin. Cada pestaña lleva el id y el href de su panel (.pestanas-panel).', ~{::demo-pestanas})}">
           <th:block th:fragment="demo-pestanas">
             <div class="pestanas" x-data="pestanas" x-on:hashchange.window="desdeLaDireccion">
               <nav class="pestanas-lista" aria-label="Secciones de la muestra" x-on:keydown="teclear">
@@ -1597,23 +1612,29 @@
           </th:block>
         </div>
       </div>
+      <div th:replace="~{componentes/muestra :: muestra('.datos', 'La lista de datos: lo que quedó asentado (un remito, quién recibió, cuándo). El rótulo a la izquierda, en la tinta suave, y el dato a la derecha, entre filetes finos. No se toca: no tiene estados. componentes/datos :: datos(filas), con filas una lista de rótulo y valor ya formateados; un dato sin valor no se dibuja.', ~{::demo-datos})}">
+        <th:block th:fragment="demo-datos">
+          <dl th:replace="~{componentes/datos :: datos(${ { {rotulo: 'Remito', valor: '0001-00004521'}, {rotulo: 'Recibió', valor: 'Marta, por Comedor Barrio Ejemplo'}, {rotulo: 'Cuándo', valor: '15 de octubre de 2026, 18:45'} } })}"></dl>
+        </th:block>
+      </div>
       <!--/* Fuera de la grilla, a todo el ancho: desde la tableta grande la tabla necesita el ancho de una lista. */-->
-      <div th:replace="~{componentes/muestra :: muestra('.tabla', 'Una tabla de datos (caption y th scope) que en el celular es una tarjeta por fila: el título de la fila (th scope=&quot;row&quot;) arriba y cada dato con su rótulo adelante (data-rotulo). Desde la tableta grande, una tabla con filetes de tinta. Achicá la ventana para ver las tarjetas.', ~{::demo-tabla})}">
+      <div th:replace="~{componentes/muestra :: muestra('.tabla', 'Una tabla de datos (caption y th scope) que se lee con aire y, en el celular, se apila: cada fila es un bloque entre filetes, con su título (th scope=&quot;row&quot;) arriba y cada dato con su rótulo a la vista (data-rotulo); no se esconde ninguna columna. Si la fila lleva al detalle, el enlace va en su título, de 48 px de alto. Lo secundario de una celda, en small: debajo, chico y suave. Desde 56 em, una tabla con el encabezado sobre un filete de tinta y filetes finos entre filas. Una fila apagada lleva data-atenuada=&quot;si&quot;. Achicá la ventana para verla apilada.', ~{::demo-tabla})}">
         <th:block th:fragment="demo-tabla">
-          <table class="tabla">
-            <caption>Donantes de ejemplo</caption>
+          <table class="tabla" id="tabla-muestra">
+            <caption>Donaciones de ejemplo</caption>
             <thead>
-              <tr><th scope="col">Nombre</th><th scope="col">Tipo</th><th scope="col">Estado</th></tr>
+              <tr><th scope="col">Donación</th><th scope="col">Para</th><th scope="col">Estado</th><th scope="col">Lo último</th></tr>
             </thead>
             <tbody>
-              <tr><th scope="row">Ana Ejemplo</th><td data-rotulo="Tipo">Persona</td><td data-rotulo="Estado">Activo</td></tr>
-              <tr><th scope="row">Distribuidora Ejemplo SA</th><td data-rotulo="Tipo">Empresa</td><td data-rotulo="Estado">Activo</td></tr>
+              <tr><th scope="row"><a href="#tabla-muestra">Leche en polvo, 6 unidades</a><small>Donación 0043</small></th><td data-rotulo="Para">Comedor Barrio Ejemplo</td><td data-rotulo="Estado"><span class="estado" data-estado="pendiente"><th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>Pendiente</span><small>Paso 1 de 5</small></td><td data-rotulo="Lo último">14 de octubre, 12:15. Se registró.</td></tr>
+              <tr><th scope="row"><a href="#tabla-muestra">Lentejas secas, 15 kg</a><small>Donación 0041</small></th><td data-rotulo="Para">Comedor Barrio Ejemplo</td><td data-rotulo="Estado"><span class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En camino</span><small>Paso 4 de 5</small></td><td data-rotulo="Lo último">Hoy, 14:30. Salió del depósito.</td></tr>
+              <tr data-atenuada="si"><th scope="row">Ropa de abrigo, 10 unidades<small>Donación 0039</small></th><td data-rotulo="Para">Escuela Ejemplo 12</td><td data-rotulo="Estado">Cancelada</td><td data-rotulo="Lo último">2 de octubre. La cancelaste.</td></tr>
             </tbody>
           </table>
         </th:block>
       </div>
       <!--/* Fuera de la grilla, a todo el ancho: la forma larga necesita el ancho de una lista. */-->
-      <div th:replace="~{componentes/muestra :: muestra('.paginas', 'El único paginador del sitio (componentes/paginas :: paginas(p), con p un vistas.Paginador que arma web.Paginadores.de), debajo de todo listado completo y centrado. Desde 37,5 em, la forma larga: « ‹ 1 2 3 … 9 › », con la primera y la última siempre (.paginas-extremo), tres números seguidos alrededor de la actual (.paginas-numero, la actual con aria-current=&quot;page&quot;) y un hueco (.paginas-hueco) que nunca esconde una sola página. En el celular, o con data-forma=&quot;corta&quot; (componentes/paginas :: corta(p), para una columna angosta), ‹ 3 de 9 › (.paginas-lugar). Lo que no sigue se ve apagado (data-estado=&quot;apagado&quot;) y no es un enlace. Los enlaces son direcciones reales que conservan la búsqueda y los filtros: anda sin JavaScript. Con una sola página no se dibuja. Achicá la ventana para ver la forma corta; los de esta muestra vuelven acá.', ~{::demo-paginas})}">
+      <div th:replace="~{componentes/muestra :: muestra('.paginas', 'El único paginador del sitio (componentes/paginas :: paginas(p), con p un vistas.Paginador que arma web.Paginadores.de), debajo de todo listado completo y centrado. Desde 37,5 em, la forma larga: « ‹ 1 2 3 … 9 › », con la primera y la última siempre (.paginas-extremo), tres números seguidos alrededor de la actual (.paginas-numero, la actual con aria-current=&quot;page&quot;, llena de tinta) y un hueco (.paginas-hueco) que nunca esconde una sola página. En el celular, o con data-forma=&quot;corta&quot; (componentes/paginas :: corta(p), para una columna angosta), ‹ 3 de 9 › (.paginas-lugar). Cada casilla, sin contorno y en letra grande, de 48 px o más; se pinta al pasar. Lo que no sigue se ve apagado (data-estado=&quot;apagado&quot;) y no es un enlace. Los enlaces son direcciones reales que conservan la búsqueda y los filtros: anda sin JavaScript. Con una sola página no se dibuja. Achicá la ventana para ver la forma corta; los de esta muestra vuelven acá.', ~{::demo-paginas})}">
         <th:block th:fragment="demo-paginas">
           <div id="paginas" class="pila" data-espacio="3">
             <p data-tono="suave">En la primera de 9:</p>
