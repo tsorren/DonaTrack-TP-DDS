@@ -78,18 +78,24 @@ class EntidadEnviosControllerTest {
     verify(notificaciones).dejarSinLeer(UNA);
   }
 
+  /**
+   * DA-06: guardar el perfil no tiene página de respuesta propia. Termina en el perfil, en la
+   * sección que se guardó, con el aviso breve; el aviso dice que todavía no se guarda.
+   */
   @Test
-  void elPerfilTodaviaNoGuardaYLoDice() throws Exception {
+  void elPerfilVuelveALaSeccionGuardadaConElAvisoBreve() throws Exception {
+    String aviso =
+        "Todavía no podemos guardar estos cambios desde acá: siguen como estaban. Si"
+            + " necesitás cambiar algo, escribinos desde Contacto.";
     mvc.perform(post("/entidad-perfil-guardado").param("seccion", "avisos"))
         .andExpect(redirectedUrl("/entidad-perfil#como-te-avisamos"))
-        .andExpect(
-            flash()
-                .attribute(
-                    Envios.AVISO,
-                    "Todavía no podemos guardar estos cambios desde acá: siguen como estaban. Si"
-                        + " necesitás cambiar algo, escribinos desde Contacto."));
+        .andExpect(flash().attribute(Envios.AVISO, aviso));
     mvc.perform(post("/entidad-perfil-guardado").param("seccion", "datos"))
-        .andExpect(redirectedUrl("/entidad-perfil#datos"));
+        .andExpect(redirectedUrl("/entidad-perfil#datos"))
+        .andExpect(flash().attribute(Envios.AVISO, aviso));
+    mvc.perform(post("/entidad-perfil-guardado"))
+        .andExpect(redirectedUrl("/entidad-perfil#datos"))
+        .andExpect(flash().attribute(Envios.AVISO, aviso));
   }
 
   @Test

@@ -76,4 +76,57 @@ class EntidadPerfilControllerTest {
         .andExpect(content().string(not(containsString("Calle Ejemplo 450"))))
         .andExpect(content().string(not(containsString("11 5555-0200"))));
   }
+
+  /**
+   * Deriva de A12 (ORG-06): un formulario por sección, con los campos, las opciones y el botón del
+   * catálogo, y sin las clases del perfil del donante. Cada formulario guarda con la pieza envio.
+   */
+  @Test
+  void cadaSeccionEsUnFormularioConLasPiezasDelCatalogo() throws Exception {
+    mvc.perform(get(PANTALLA).param("entidad", "6f1c2c1e-0000-4000-8000-0000000000e1"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("/css/entidad-perfil.css")))
+        .andExpect(content().string(containsString("<h1>Mi perfil</h1>")))
+        .andExpect(content().string(containsString("aria-label=\"Secciones de tu perfil\"")))
+        .andExpect(
+            content().string(containsString("hx-indicator=\"#enviando-entidad-perfil-datos\"")))
+        .andExpect(
+            content().string(containsString("hx-indicator=\"#enviando-entidad-perfil-avisos\"")))
+        .andExpect(content().string(containsString("<div class=\"campo\">")))
+        .andExpect(content().string(containsString("<fieldset class=\"opciones\"")))
+        .andExpect(content().string(containsString("class=\"boton\" data-tono=\"principal\"")))
+        .andExpect(content().string(not(containsString("class=\"formulario"))))
+        .andExpect(content().string(not(containsString("class=\"perfil"))))
+        .andExpect(content().string(not(containsString("donante-perfil.css"))));
+  }
+
+  /** DA-06: después de guardar, el perfil muestra el aviso breve del servidor en su región. */
+  @Test
+  void despuesDeGuardarMuestraElAvisoBreve() throws Exception {
+    mvc.perform(
+            get(PANTALLA)
+                .param("entidad", "6f1c2c1e-0000-4000-8000-0000000000e1")
+                .flashAttr(Envios.AVISO, "Todavía no podemos guardar estos cambios desde acá."))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "class=\"aviso-breve\" data-estado=\"hecho\">Todavía no podemos guardar"
+                            + " estos cambios desde acá.")));
+  }
+
+  /** En la maqueta, la ruta de guardado sigue: es el perfil con el aviso breve de la sección. */
+  @Test
+  void enLaMaquetaGuardadoEsElPerfilConElAvisoBreve() throws Exception {
+    mvc.perform(
+            get("/entidad-perfil-guardado")
+                .param("entidad", "6f1c2c1e-0000-4000-8000-0000000000e1")
+                .param("seccion", "datos"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("<h1>Mi perfil</h1>")))
+        .andExpect(content().string(containsString("class=\"aviso-breve\" data-estado=\"hecho\"")))
+        .andExpect(content().string(containsString("Guardamos los datos de tu organización.")))
+        .andExpect(content().string(not(containsString("Guardamos cómo te avisamos."))));
+  }
 }
