@@ -46,9 +46,20 @@
 /* El control nativo, con su botón como el botón secundario: claro, con el borde de tinta y 48 px de
    alto para el dedo. El aro de foco es el de la base (app.css), alrededor del control. */
 .subida input[type="file"] {
+  width: auto;
   min-width: 0;
   max-width: 100%;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
   font: inherit;
+}
+
+/* Con error, lo marca el recuadro, no el control. */
+.subida[data-estado="error"] input[type="file"],
+.subida input[type="file"][aria-invalid="true"] {
+  border: 0;
 }
 
 .subida input[type="file"]::file-selector-button {

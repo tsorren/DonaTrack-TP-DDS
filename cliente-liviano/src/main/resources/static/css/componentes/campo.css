@@ -20,7 +20,7 @@
 
 /* Un campo para escribir se distingue del papel: fondo de campo, borde de control y esquinas
    redondeadas. Los radios y las casillas no: van en su grupo de opciones. */
-.campo :is(input:not(:where([type="radio"], [type="checkbox"], [type="file"])), select, textarea) {
+.campo :is(input:not([type="radio"], [type="checkbox"]), select, textarea) {
   min-width: 0;
   max-width: 100%;
   min-height: var(--medida-toque-minimo);
@@ -32,7 +32,7 @@
   font: inherit;
 }
 
-.campo textarea {
+.campo textarea:not([hidden]) {
   min-height: calc(2 * var(--medida-toque-minimo));
   padding-block: var(--espacio-2);
   resize: vertical;
@@ -44,11 +44,11 @@
 }
 
 /* Con el cursor y con foco, el borde en tinta; el aro de foco es el de la base (app.css). */
-.campo :is(input:not(:where([type="radio"], [type="checkbox"], [type="file"])), select, textarea):is(:hover, :focus-visible) {
+.campo :is(input:not([type="radio"], [type="checkbox"]), select, textarea):is(:hover, :focus-visible) {
   border-color: var(--color-tinta);
 }
 
-.campo :is(input:not(:where([type="radio"], [type="checkbox"], [type="file"])), select, textarea):disabled {
+.campo :is(input:not([type="radio"], [type="checkbox"]), select, textarea):disabled {
   border-color: transparent;
   background-color: var(--color-deshabilitado-fondo);
   color: var(--color-deshabilitado-texto);
@@ -64,25 +64,25 @@
 }
 
 /* Con error: el borde, más grueso, en el color del problema. */
-.campo[data-estado="error"] :is(input:not(:where([type="radio"], [type="checkbox"], [type="file"])), select, textarea),
-.campo :is(input:not(:where([type="radio"], [type="checkbox"], [type="file"])), select, textarea)[aria-invalid="true"] {
+.campo[data-estado="error"] :is(input:not([type="radio"], [type="checkbox"]), select, textarea),
+.campo :is(input:not([type="radio"], [type="checkbox"]), select, textarea)[aria-invalid="true"] {
   border: 2.5px solid var(--color-error-borde);
 }
 
 /* El error dice qué pasó y cómo seguir, al lado del campo; si lleva el signo del problema, va a la
    altura del primer renglón. */
 .campo-error {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--espacio-1);
   margin: 0;
   color: var(--color-error-texto);
   font-weight: 600;
 }
 
-/* El error que espera su momento (`hidden`, lo muestra el script de la pantalla) no se ve. */
-.campo-error[hidden] {
-  display: none;
+/* Solo con el signo: el signo y el texto en fila. Sin él, el error es un párrafo común (su texto
+   puede llevar enlaces o negritas sin partirse). */
+.campo-error:has(> svg):not([hidden]) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-1);
 }
 
 /* La flecha de los desplegables (usuario, 2026-11-09: "agregar padding en la flecha, no debería
