@@ -3,7 +3,7 @@
 > **Desde el 2026-11-23,** la ficha [`guia-org-buzon.md`](guia-org-buzon.md) (ola ORG de la guía
 > «Huerta y galpón») manda sobre esta en cómo se ve el buzón: sin fondo para las sin leer, el punto
 > lleno o hueco, «Novedades» como título y la casilla de 48 px. El recorrido, los estados y los
-> textos de esta ficha siguen.
+> textos de esta ficha siguen, salvo los cambios de §5 y §6 de `guia-org-buzon.md`.
 
 > **Estado:** aprobada · **Fecha:** 2026-11-12 · **Aprobó:** el usuario, 2026-11-12 (opciones recomendadas, aprobación automática pedida por él)
 > Ficha de la skill `ux-flujo` para el lote `p1-notificaciones` del
