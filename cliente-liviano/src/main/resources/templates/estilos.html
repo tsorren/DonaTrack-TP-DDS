@@ -984,16 +984,17 @@
         <div th:replace="~{componentes/muestra :: muestra('.lista', 'Una lista sin viñetas cuyos elementos, casi siempre tarjetas, se reparten en tantas columnas como entren, cada una de al menos --medida-columna (sin esa medida, una sola columna). A diferencia de .grilla, no estira los pocos elementos para llenar la fila. data-forma=&quot;filas&quot;: la lista de la huerta, una fila por elemento entre filetes finos; la fila entera es el enlace al detalle (o un div si no lleva a ningún lado), con lo principal a la izquierda, el estado a la derecha y, debajo, el texto suave; se pinta al pasar y se hunde al tocarla. Sus estados (vacía, cargando y con error) son .vacio, .cargando con .esqueleto y el banner de error. Para datos en columnas, .tabla.', ~{::demo-lista})}">
           <th:block th:fragment="demo-lista">
             <div class="pila" data-espacio="4">
-              <ul class="lista" role="list">
+              <!--/* Cada lista en su caja: .lista anula el margen que pone la pila. */-->
+              <div><ul class="lista" role="list">
                 <li class="tarjeta" data-filete="doble"><b>Lentejas secas</b><br>15 kg · Esperan tu confirmación</li>
                 <li class="tarjeta" data-filete="doble"><b>Ropa de abrigo</b><br>10 unidades · En camino</li>
                 <li class="tarjeta" data-filete="doble"><b>Fideos secos</b><br>8 kg · Pendiente</li>
-              </ul>
-              <ul class="lista" data-forma="filas" role="list" id="lista-filas">
+              </ul></div>
+              <div><ul class="lista" data-forma="filas" role="list" id="lista-filas">
                 <li><a href="#lista-filas"><strong>Arroz largo fino, 10 kg</strong><span class="estado" data-estado="pendiente"><th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>Pendiente</span><span data-tono="suave">Paso 1 de 5. En el depósito desde el 12 de octubre.</span></a></li>
                 <li><a href="#lista-filas"><strong>Lentejas secas, 15 kg</strong><span class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En camino</span><span data-tono="suave">Paso 4 de 5. Salió hoy a las 14:30.</span></a></li>
                 <li><div><span><strong>Útiles escolares</strong>, 2 cajas, para Escuela Ejemplo 12</span><span class="estado" data-estado="con-problema"><th:block th:replace="~{componentes/sello :: sello('con-problema')}"></th:block>Con problema</span><span data-tono="suave">No pudo llegar el 11 de octubre. Sale de nuevo el 17. Sin enlace: un div.</span></div></li>
-              </ul>
+              </ul></div>
             </div>
           </th:block>
         </div>
