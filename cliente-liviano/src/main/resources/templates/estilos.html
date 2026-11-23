@@ -1305,7 +1305,7 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('img/ilustraciones/ (dibujos de la guía)', 'Los dibujos de la guía (C1-06), uno por archivo, con sus colores adentro como los demás de la carpeta. Se usan enteros (img) o por símbolo (un svg con viewBox y, adentro, un use con el archivo y #símbolo); el texto que dicen va en aria-label o al lado. El recorrido es la ilustración de la portada. La puerta son dos símbolos fijos, puerta-fondo y puerta-nudos: entre los dos, cada pantalla dibuja lo que cambia con el estado (el tramo al quinto nudo, los bultos y los frutos). El mapa es el del seguimiento.', ~{::demo-dibujos})}">
+        <div th:replace="~{componentes/muestra :: muestra('Dibujos', 'Los dibujos de la guía (C1-06), uno por archivo en la carpeta img/ilustraciones, con sus colores adentro como los demás de la carpeta. Se usan enteros (img) o por símbolo (un svg con viewBox y, adentro, un use con el archivo y #símbolo); el texto que dicen va en aria-label o al lado. El recorrido es la ilustración de la portada. La puerta son dos símbolos fijos, puerta-fondo y puerta-nudos: entre los dos, cada pantalla dibuja lo que cambia con el estado (el tramo al quinto nudo, los bultos y los frutos). El mapa es el del seguimiento.', ~{::demo-dibujos})}">
           <th:block th:fragment="demo-dibujos">
             <div class="pila" data-espacio="3">
               <div class="pila" data-espacio="1">
@@ -1323,7 +1323,7 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('img/ilustraciones/escena-*.svg', 'Las 7 escenas «foto de ejemplo» de la guía (C1-06): lo entregado y el lugar, sin personas, en 4:3 y recortadas para llenar su marco. Van donde iría la foto de una entrega en los datos de ejemplo, siempre con el rótulo «Foto de ejemplo» en el aria-label.', ~{::demo-escenas})}">
+        <div th:replace="~{componentes/muestra :: muestra('escena-*','Las 7 escenas «foto de ejemplo» de la guía (C1-06): lo entregado y el lugar, sin personas, en 4:3 y recortadas para llenar su marco. Van donde iría la foto de una entrega en los datos de ejemplo, siempre con el rótulo «Foto de ejemplo» en el aria-label.', ~{::demo-escenas})}">
           <th:block th:fragment="demo-escenas">
             <div class="grilla">
               <div class="pila" data-espacio="1">

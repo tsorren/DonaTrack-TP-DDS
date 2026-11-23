@@ -21,6 +21,9 @@
   block-size: var(--tamano-chico);
   fill: currentColor;
   stroke: none;
+  /* Las puntas rectas de la guía: redondas, las rayas de e-registrada tapan sus huecos. */
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
 }
 
 /* La marca, llena: el cuerpo en el verde de la acción y la hoja en el verde de hoja. */
