@@ -516,21 +516,38 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.estado', 'El renglón de un estado: el sello y su palabra (.estado-sello). data-estado: pendiente, en-camino, entregada, con-problema; en la organización, puerta, camino, salir, recibida o problema. El color solo acompaña.', ~{::demo-estado})}">
+        <div th:replace="~{componentes/muestra :: muestra('.estado', 'El sello de un estado (D1): una chapa derecha con su signo y su palabra, el mismo en la huerta y en el galpón (span.estado con componentes/sello :: sello(estado) adentro). data-estado, los seis de la guía: registrada (borde punteado), asignada, preparada, en-camino, confirmada y problema; antes del viaje el disco se va llenando. Vencida, cancelada y en-revision, que la guía no dibuja, van con el par neutro, el de registrada, y el signo de información (DA-07). Los nombres de hoy siguen: pendiente, entregada y con-problema; en la organización, puerta, camino, salir, recibida o problema. El color solo acompaña: el estado se dice siempre en palabras.', ~{::demo-estado})}">
           <th:block th:fragment="demo-estado">
-            <div class="pila" data-espacio="2">
-              <span class="estado" data-estado="pendiente"><th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>Pendiente</span>
-              <span class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En camino</span>
-              <span class="estado" data-estado="entregada"><th:block th:replace="~{componentes/sello :: sello('entregada')}"></th:block>Entregada</span>
-              <span class="estado" data-estado="con-problema"><th:block th:replace="~{componentes/sello :: sello('con-problema')}"></th:block>Con problema</span>
-              <span class="estado" data-estado="puerta"><th:block th:replace="~{componentes/sello :: sello('puerta')}"></th:block>En tu puerta</span>
-              <span class="estado" data-forma="punto" data-estado="recibida">Activa (data-forma="punto")</span>
-              <span class="estado" data-forma="punto" data-estado="pendiente">Pendiente</span>
-              <span class="estado" data-forma="punto" data-estado="inactiva">Inactiva</span>
+            <div class="pila" data-espacio="3">
+              <div class="racimo">
+                <span class="estado" data-estado="registrada"><th:block th:replace="~{componentes/sello :: sello('registrada')}"></th:block>Registrada</span>
+                <span class="estado" data-estado="asignada"><th:block th:replace="~{componentes/sello :: sello('asignada')}"></th:block>Asignada</span>
+                <span class="estado" data-estado="preparada"><th:block th:replace="~{componentes/sello :: sello('preparada')}"></th:block>Preparada</span>
+                <span class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En camino</span>
+                <span class="estado" data-estado="confirmada"><th:block th:replace="~{componentes/sello :: sello('confirmada')}"></th:block>Entrega confirmada</span>
+                <span class="estado" data-estado="problema"><th:block th:replace="~{componentes/sello :: sello('problema')}"></th:block>Con problema</span>
+              </div>
+              <div class="racimo">
+                <span class="estado" data-estado="vencida"><th:block th:replace="~{componentes/sello :: sello('vencida')}"></th:block>Vencida</span>
+                <span class="estado" data-estado="cancelada"><th:block th:replace="~{componentes/sello :: sello('cancelada')}"></th:block>Cancelada</span>
+                <span class="estado" data-estado="en-revision"><th:block th:replace="~{componentes/sello :: sello('en-revision')}"></th:block>En revisión</span>
+              </div>
+              <div class="racimo">
+                <span class="estado" data-estado="pendiente"><th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>Pendiente</span>
+                <span class="estado" data-estado="entregada"><th:block th:replace="~{componentes/sello :: sello('entregada')}"></th:block>Entregada</span>
+                <span class="estado" data-estado="con-problema"><th:block th:replace="~{componentes/sello :: sello('con-problema')}"></th:block>Con problema</span>
+                <span class="estado" data-estado="puerta"><th:block th:replace="~{componentes/sello :: sello('puerta')}"></th:block>En tu puerta</span>
+              </div>
+              <p class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En un renglón (p.estado): el dibujo y la palabra en el color del estado</p>
+              <div class="racimo">
+                <span class="estado" data-forma="punto" data-estado="recibida">Activa (data-forma="punto")</span>
+                <span class="estado" data-forma="punto" data-estado="pendiente">Pendiente</span>
+                <span class="estado" data-forma="punto" data-estado="inactiva">Inactiva</span>
+              </div>
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('componentes/sello :: sello(estado)', 'El dibujo del sello, solo. Además de los de arriba: hecho (etapa cumplida) y falta (etapa que todavía no se imprimió). A la derecha, las piezas sueltas (sello-tinta, sello-disco y sello-tilde) con las que las pantallas arman un sello propio. Decorativo: el estado se dice siempre en palabras.', ~{::demo-sello})}">
+        <div th:replace="~{componentes/muestra :: muestra('componentes/sello :: sello(estado)', 'El dibujo del sello, solo: lo que queda fuera de la chapa (en un contador, en las etapas de un recorrido). Además de los de arriba: hecho (etapa cumplida) y falta (etapa que todavía no se imprimió). A la derecha, las piezas sueltas (sello-tinta, sello-disco y sello-tilde) con las que las pantallas arman un sello propio. componentes/sello :: signo(nombre) da el signo de la guía solo, sin depender de iconos :: signos. Decorativo: el estado se dice siempre en palabras.', ~{::demo-sello})}">
           <th:block th:fragment="demo-sello">
             <div class="racimo">
               <th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block>
@@ -539,10 +556,31 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.aviso-breve y .avisos', 'Un aviso breve (toast) que confirma una acción que salió bien. data-estado=&quot;hecho&quot;. Con la página viene en el flujo, a la vista; los que trae HTMX van a la región .avisos del layout (aria-live=&quot;polite&quot;), donde una cola de Alpine deja ver tres a la vez, los quita a los 6 segundos (no se van mientras el puntero o el foco están encima) y los cierra con .aviso-cerrar (data-cerrar).', ~{::demo-aviso-breve})}">
+        <div th:replace="~{componentes/muestra :: muestra('.sello-pedido', 'Espera tu confirmación (componentes/sello :: pedido()): no es un estado, es un pedido a quien mira. Va en tinta llena, sin borde, con el signo de espera. Lo que no tiene nada que estampar, como «Sin entregas en curso», es texto.', ~{::demo-sello-pedido})}">
+          <th:block th:fragment="demo-sello-pedido">
+            <div class="racimo">
+              <span th:replace="~{componentes/sello :: pedido()}"></span>
+              <span data-tono="suave">Sin entregas en curso.</span>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.aviso', 'El aviso en la página: queda hasta que se resuelve. El signo (componentes/sello :: signo) a la izquierda, el título (.aviso-titulo) y el texto al lado. data-tipo: info (sin tipo), exito, advertencia o error, cada uno con su signo; role=&quot;status&quot; para lo que salió bien y role=&quot;alert&quot; solo para un problema. Si lleva a un detalle, el enlace es su título y ocupa 48 px de alto.', ~{::demo-aviso})}">
+          <th:block th:fragment="demo-aviso">
+            <div class="pila" data-espacio="3">
+              <div class="aviso" data-tipo="info"><svg th:replace="~{componentes/sello :: signo('info')}"></svg><p class="aviso-titulo">La revisión suele llevar unos días hábiles</p><p>Te avisamos por correo cuando esté.</p></div>
+              <div class="aviso" data-tipo="exito" role="status"><svg th:replace="~{componentes/sello :: signo('confirmada')}"></svg><p class="aviso-titulo">Publicaste la necesidad</p><p>Arroz, 40 kg cada mes. Ya la ven quienes donan.</p></div>
+              <div class="aviso" data-tipo="advertencia"><svg th:replace="~{componentes/sello :: signo('atencion')}"></svg><p class="aviso-titulo">4 donaciones vencen en 7 días</p><p><a href="#componentes">Ver las que vencen</a></p></div>
+              <div class="aviso" data-tipo="error"><svg th:replace="~{componentes/sello :: signo('problema')}"></svg><p class="aviso-titulo">Una entrega no pudo llegar</p><p>Útiles escolares, 2 cajas: el camino estaba cortado. Sale de nuevo el 17 de octubre.</p></div>
+              <div class="aviso" data-tipo="error"><svg th:replace="~{componentes/sello :: signo('problema')}"></svg><p class="aviso-titulo"><a href="#componentes">Útiles escolares, 2&nbsp;cajas: no pudo llegar</a></p><p>El 11 de octubre el camino estaba cortado. Sale de nuevo el&nbsp;17.</p></div>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.aviso-breve y .avisos', 'Un aviso breve (toast): aparece, cuenta cómo salió algo y no pide nada. Papel claro con filete de tinta; si trae signo (componentes/sello :: signo), va a la izquierda, y el botón de cerrar (.aviso-cerrar, de 48 px), a la derecha. data-estado=&quot;hecho&quot;: una acción que salió bien, con el signo en el color del éxito. Con la página viene en el flujo, a la vista; los que trae HTMX van a la región .avisos del layout (aria-live=&quot;polite&quot;), donde una cola de Alpine deja ver tres a la vez, los quita a los 6 segundos (no se van mientras el puntero o el foco están encima) y los cierra con .aviso-cerrar (data-cerrar).', ~{::demo-aviso-breve})}">
           <th:block th:fragment="demo-aviso-breve">
             <div class="pila" data-espacio="3">
               <p class="aviso-breve" data-estado="hecho" role="status">Listo. Guardamos los datos de tu cuenta.</p>
+              <div class="aviso-breve" data-estado="hecho" role="status"><svg th:replace="~{componentes/sello :: signo('confirmada')}"></svg><p>Aprobaste 2 propuestas.</p><button
+                  type="button" class="aviso-cerrar" aria-label="Cerrar el aviso">×</button></div>
               <div>
                 <button type="button" class="boton" data-tono="secundario" x-data="avisoDeMuestra"
                         x-on:click="agregar">Mostrar un aviso en la región</button>
@@ -1094,10 +1132,16 @@
             </ol>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.progreso', 'Cuánto va de un objetivo, en una barra nativa (progress con max, value y nombre accesible). La barra acompaña: la cuenta va siempre en texto al lado.', ~{::demo-progreso})}">
+        <div th:replace="~{componentes/muestra :: muestra('.progreso', 'El avance de una necesidad: cuánto llegó de un objetivo, en una barra nativa (progress con max, value y nombre accesible) con filete de tinta, el campo de fondo y el relleno verde. La barra acompaña: la cuenta va siempre en texto al lado. Vacía, a medias y completa.', ~{::demo-progreso})}">
           <th:block th:fragment="demo-progreso">
-            <progress class="progreso" max="50" value="12" aria-label="Ejemplo: 12 de 50 bienes"></progress>
-            <p>12 de 50 bienes</p>
+            <div class="pila" data-espacio="2">
+              <progress class="progreso" max="40" value="0" aria-label="Ejemplo: llegaron 0 de 40 kg"></progress>
+              <p>Llegaron 0 de 40 kg.</p>
+              <progress class="progreso" max="40" value="15" aria-label="Ejemplo: llegaron 15 de 40 kg"></progress>
+              <p>Llegaron 15 de 40 kg. Sin entregas en curso.</p>
+              <progress class="progreso" max="40" value="40" aria-label="Ejemplo: llegaron 40 de 40 kg"></progress>
+              <p>Llegaron 40 de 40 kg. Completa.</p>
+            </div>
           </th:block>
         </div>
         <div th:replace="~{componentes/muestra :: muestra('.almanaque', 'Un año mes a mes, para la persona que dona. El mes con donaciones (data-mes=&quot;con&quot;) es un enlace a su lista, con la cuenta y una planta por donación; el mes sin donaciones (sin) y el que viene (por-venir) se ven neutros, nunca como falta. El mes actual lleva data-hoy y la marca Este mes.', ~{::demo-almanaque})}">
