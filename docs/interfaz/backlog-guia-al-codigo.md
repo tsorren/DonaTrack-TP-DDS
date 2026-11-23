@@ -257,7 +257,7 @@ persona (lo dice su comentario de cabecera).
 | `entidad-notificaciones`, `entidad-notificaciones-leidas` | Sin arquetipo | El buzón |
 | `entidad-perfil`, `entidad-perfil-guardado` | Deriva de A12 | |
 | Página nueva: Entrega con problema | A11 directo | El detalle de una entrega que no pudo llegar |
-| Página nueva: Ayuda | Sin arquetipo | DA-05 |
+| Ayuda: no es una página nueva | — | La entrada del menú lleva a `publico-para-entidades` (DA-05) |
 
 **DON (19: 10 de la empresa y 9 de la persona)**
 
@@ -291,7 +291,7 @@ su gemela de la empresa (DA-13).
 | `publico-donaciones` | Deriva de A10 | Las etiquetas de entregas confirmadas |
 | `publico-entidades` | Deriva de A02 | Tarjetas con `componentes/listado` |
 | `publico-mapa` | Deriva de A07 | Mapa con su lista; sale del menú (DA-01) |
-| `publico-nosotros`, `publico-para-donantes`, `publico-para-entidades` | Deriva de A01 | «Cómo funciona» (DA-05) |
+| `publico-nosotros`, `publico-para-donantes`, `publico-para-entidades` | Deriva de A01 | «Cómo funciona», «Cómo donar» y «Ayuda», en ese orden (DA-05) |
 | `publico-legales` | Sin arquetipo | Página de lectura |
 | `publico-contacto`, `publico-contacto-enviado`, `publico-contacto-error` | Deriva de A12 | La respuesta, aviso breve (DA-06) |
 

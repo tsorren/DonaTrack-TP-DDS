@@ -43,16 +43,16 @@ Sin cambios respecto de R11-14 §3.
 │ [barra de componentes/listado: buscar, estado, categoría,    │
 │  agrupar y ordenar], como hoy                                │
 ├─ lámina (P07) ───────────────────────────────────────────────┤
-│ [☐ Elegir todas]                 [Marcar todas como leídas]  │
+│ [☐ Seleccionar todas]            [Marcar todas como leídas]  │
 │ ● ☐ Entrega en camino                              [✓]       │
 │      El camión salió con tus lentejas.                       │
 │      Ver en Entregas · Hoy, 14:30 · Entregas en camino       │
-│ ○ ☐ Entrega recibida                               [✉]       │
+│ ○   Entrega recibida                               [✉]       │
 │      …                                                       │
 ├──────────────────────────────────────────────────────────────┤
 │ Mostrando 1 a 20 de 57 novedades      ‹ 1 2 3 › (P17)        │
 └──────────────────────────────────────────────────────────────┘
-● punto lleno = sin leer · ○ punto hueco = leída
+● punto lleno = sin leer · ○ punto hueco = leída · la casilla, solo en las sin leer (como hoy)
 ```
 
 **Qué cambia respecto de R11-14:**
@@ -63,7 +63,7 @@ Sin cambios respecto de R11-14 §3.
 | Marca de sin leer | Punto, fondo suave del acento y título en negrita | Punto de 10 px con el borde de tinta: **lleno** sin leer, **hueco** leída. Título en negrita solo sin leer. **Sin fondo propio**: en la guía, el salvia es el de pasar el mouse o del foco, no el de un estado |
 | Pasar el mouse o enfocar | Fondo propio | El salvia de la guía (`--color-salvia`), con el aro de foco visible encima |
 | Filtros y paginador | La barra de `componentes/listado` (desde R11-B04, con Estado: Todas, Sin leer o Leídas) y el paginador de R11 | La misma barra, sin cambios, y el paginador P17, retocado en C1 |
-| Casilla de elegir | `input` nativo de 12 px | La casilla de P04 (C1-12): el control nativo transparente, de 48 × 48 px como mínimo, encima de la casilla dibujada (DA-21). Lo mismo para «Elegir todas» |
+| Casilla de elegir | `input` nativo de 12 px | La casilla de P04 (C1-12): el control nativo transparente, de 48 × 48 px como mínimo, encima de la casilla dibujada (DA-21). Lo mismo para «Seleccionar todas». La excepción de toque de DA-16 es de la muestra de `/estilos` y no se toca en esta ola |
 | Acciones de la fila | Tilde y sobre cerrado | Igual, como botón de ícono de P03 (48 px) |
 | Avisos al marcar | Aviso en `#avisos` | El aviso breve de P13 (DA-06) |
 | Vacío, cargando y error | Los de R11 | Los estados de lista de P19 y el aviso de error de P13; los textos no cambian |
