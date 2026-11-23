@@ -1304,7 +1304,7 @@
             </div>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.buzon', 'La bandeja de notificaciones de los tres roles (componentes/buzon :: buzon, con la barra de «Todas | Sin leer», la búsqueda y las pastillas). Una lámina con la cabecera (.buzon-cabeza: «Seleccionar todas», que muestra Alpine, y «Marcar todas como leídas»), los títulos de las columnas (.buzon-columnas, en la computadora), los grupos por fecha (.buzon-grupo) y una fila por notificación (.buzon-fila, data-leida): el punto, la casilla (.buzon-casilla), el ícono (.buzon-icono), el mensaje (.buzon-mensaje), a qué está asociada y hace cuánto (.buzon-meta, un .chip y un time) y el tilde de marcar como leída (.buzon-accion), que aparece al pasar o enfocar donde hay puntero. En el celular, cada fila se apila.', ~{::demo-buzon})}">
+        <div th:replace="~{componentes/muestra :: muestra('.buzon', 'La bandeja de notificaciones de los tres roles (componentes/buzon :: buzon, con la barra de «Todas | Sin leer», la búsqueda y las pastillas). Una lámina con la cabecera (.buzon-cabeza: «Seleccionar todas», que muestra Alpine, y «Marcar todas como leídas»), los títulos de las columnas (.buzon-columnas, en la computadora), los grupos por fecha (.buzon-grupo) y una fila por novedad (.buzon-fila, data-leida), la de la campana de la guía: el punto (lleno sin leer, hueco leída, con el borde de tinta), sin fondo propio por el estado y con el salvia al pasar o enfocar; la casilla (.buzon-casilla: el control nativo, transparente, de 48 × 48 px, encima de la casilla dibujada; lo mismo en «Seleccionar todas»), el ícono (.buzon-icono), el mensaje (.buzon-mensaje), a qué está asociada y hace cuánto (.buzon-meta, un .chip y un time) y el tilde de marcar como leída (.buzon-accion), que aparece al pasar o enfocar donde hay puntero. En el celular, cada fila se apila.', ~{::demo-buzon})}">
           <th:block th:fragment="demo-buzon"
               th:with="temasMuestra=${ {{valor: '', texto: 'Todas las categorías'}, {valor: 'camino', texto: 'Entregas en camino', icono: 'camion'},
                        {valor: 'recibidas', texto: 'Donaciones recibidas', icono: 'tilde'}} },
@@ -1331,7 +1331,7 @@
             </form>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.buzon-titulo', 'La fila de la bandeja paginada del donante y de la organización (componentes/buzon :: pagina y :: aviso, R11-14): el título (.buzon-titulo), en negrita solo si no se leyó y con «Sin leer: » o «Leída: » para el lector; el mensaje entero y el vínculo aparte (.buzon-vinculo), en peso normal y subrayado. La sin leer tiene fondo suave y punto; la leída va sin fondo, en el tono apagado y con el sobre cerrado de «Marcar como no leída». Debajo, cuántas se muestran (.buzon-total, con .buzon-total-largo y .buzon-total-corto) y el paginador.', ~{::demo-buzon-bandeja})}">
+        <div th:replace="~{componentes/muestra :: muestra('.buzon-titulo', 'La fila de la bandeja paginada del donante y de la organización (componentes/buzon :: pagina y :: aviso, R11-14): el título (.buzon-titulo), en negrita solo si no se leyó y con «Sin leer: » o «Leída: » para el lector; el mensaje entero y el vínculo aparte (.buzon-vinculo), en peso normal y subrayado. La sin leer tiene el punto lleno; la leída, el punto hueco, en el tono apagado y con el sobre cerrado de «Marcar como no leída». Ninguna tiene fondo propio por su estado. Debajo, cuántas se muestran (.buzon-total, con .buzon-total-largo y .buzon-total-corto) y el paginador.', ~{::demo-buzon-bandeja})}">
           <th:block th:fragment="demo-buzon-bandeja"
               th:with="temasMuestra=${ {{valor: '', texto: 'Todas las categorías'}, {valor: 'camino', texto: 'Donaciones en camino', icono: 'camion'},
                        {valor: 'entregadas', texto: 'Donaciones entregadas', icono: 'tilde'}} },
@@ -1357,7 +1357,7 @@
                   </ol>
                 </section>
               </form>
-              <p class="buzon-total"><span class="buzon-total-largo">Mostrando 1 a 20 de 57 notificaciones.</span><span
+              <p class="buzon-total"><span class="buzon-total-largo">Mostrando 1 a 20 de 57 novedades.</span><span
                   class="buzon-total-corto">1 a 20 de 57</span></p>
             </div>
           </th:block>

@@ -16,7 +16,7 @@
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
-  <title>Notificaciones - DonaTrack</title>
+  <title>Novedades - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
@@ -42,7 +42,7 @@
     <header class="mesa-cabecera">
       <div>
         <p class="rotulo">Administración</p>
-        <h1>Notificaciones</h1>
+        <h1>Novedades</h1>
         <p th:if="${conDatos}" th:text="${sinLeer > 0} ? |${sinLeer} sin leer. Al ${bandeja.actualizado}.| : |No hay notificaciones sin leer para la administración. Al ${bandeja.actualizado}.|">3
           sin leer. Al 15 de octubre de 2026, 18:45.</p>
         <p th:if="${escenario == '' or escenario == 'vacio'}" class="bajada"

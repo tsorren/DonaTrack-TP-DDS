@@ -1373,7 +1373,8 @@ class SitioControllerTest {
         .andExpect(model().attribute("seccion", "Mis donaciones"))
         .andExpect(content().string(containsString("Martina Ruiz")));
     mvc.perform(get("/donante-notificaciones").sessionAttr("cuenta", "persona"))
-        .andExpect(view().name("persona/donante-notificaciones"));
+        .andExpect(view().name("persona/donante-notificaciones"))
+        .andExpect(content().string(containsString("<h1>Novedades</h1>")));
     mvc.perform(get("/donante-perfil").sessionAttr("cuenta", "persona"))
         .andExpect(view().name("persona/donante-perfil"))
         .andExpect(model().attribute("seccion", "Mi perfil"));

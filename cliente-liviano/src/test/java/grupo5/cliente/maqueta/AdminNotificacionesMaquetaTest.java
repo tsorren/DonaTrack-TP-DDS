@@ -30,6 +30,9 @@ class AdminNotificacionesMaquetaTest {
   void muestraLosEjemplosDeLaMaquetaConLasCategoriasDelAdmin() throws Exception {
     mvc.perform(get("/admin-notificaciones"))
         .andExpect(status().isOk())
+        // El título es «Novedades» en los tres roles (ficha guia-org-buzon, sección 6).
+        .andExpect(content().string(containsString("<h1>Novedades</h1>")))
+        .andExpect(content().string(containsString("<title>Novedades - DonaTrack</title>")))
         .andExpect(content().string(containsString("3 sin leer. Al 15 de octubre de 2026, 18:45.")))
         .andExpect(content().string(containsString("Terminó una importación")))
         .andExpect(content().string(containsString("Nuevo mensaje de contacto Nº 12")))

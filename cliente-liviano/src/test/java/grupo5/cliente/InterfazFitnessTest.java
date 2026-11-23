@@ -284,7 +284,6 @@ class InterfazFitnessTest {
           "entidad-comun.css",
           "entidad-inicio.css",
           "entidad-necesidades.css",
-          "entidad-notificaciones.css",
           "entidad-recibidas.css",
           "entidad-seguimiento-confirmar.css",
           "formularios.css",

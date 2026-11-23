@@ -18,9 +18,9 @@
        describen en la ficha y no se dibujan.
        Fragmento hoja(accion): la pantalla entera; accion es '' (la bandeja) o 'leidas'. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-notificaciones', ~{::contenido})}">
+      th:replace="~{layout-privado :: pagina(~{::title}, 'privado', ~{::contenido})}">
 <head>
-  <title>Notificaciones - DonaTrack</title>
+  <title>Novedades - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
@@ -38,7 +38,7 @@
              sinLeer=${marcadas == 'todas' ? 0 : bandeja.sinLeer}">
   <div class="pila" data-espacio="4">
     <header class="cabecera-entidad">
-      <p class="rotulo">Notificaciones</p>
+      <p class="rotulo">Novedades</p>
       <h1>Tus <em>novedades</em></h1>
       <p th:if="${conDatos and sinLeer > 0}"
          th:text="|${sinLeer} sin leer. Al ${bandeja.actualizado}.|">3 sin leer. Al 15 de
@@ -55,14 +55,22 @@
       <p>Las entregas que esperan en tu puerta siguen esperando tu confirmación.</p>
     </section>
 
-    <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tus novedades…</p>
-    <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo" aria-busy="true"></div>
+    <!--/* Cargando y error: los estados de lista del catálogo (la lista que carga y el aviso de error). */-->
+    <div th:if="${escenario == 'lento'}" aria-busy="true">
+      <p class="cargando" role="status">Cargando tus novedades…</p>
+      <div class="esqueleto" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
 
-    <th:block th:if="${escenario == 'error'}">
-      <section th:replace="~{piezas-entidad :: error('No pudimos cargar tus novedades.',
-               'Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,',
-               '/entidad-notificaciones')}"></section>
-    </th:block>
+    <div th:if="${escenario == 'error'}" class="aviso" data-tipo="error" role="alert"><svg
+        th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo">No pudimos cargar tus novedades.</p>
+      <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue, <a
+          href="/publico-contacto?codigo=a1b2c3d4e5f6"
+          th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/entidad-notificaciones')}">escribinos
+        con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      <p><a href="/entidad-notificaciones" th:href="@{/entidad-notificaciones}">Volver a cargar</a></p>
+    </div>
 
     <section th:if="${escenario == 'vacio' or (conDatos and cuentaVacia)}" class="vacio"
              aria-labelledby="vacio-titulo">

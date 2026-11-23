@@ -1,17 +1,19 @@
-/* Bloque buzón (usuario, 2026-11-10, con la bandeja de notificaciones de GitHub de referencia): la
-   bandeja de notificaciones de los tres roles, una lámina de papel (`form.buzon`) con su cabecera
-   (`.buzon-cabeza`: «Seleccionar todas» y «Marcar todas como leídas»), los títulos de las columnas
-   (`.buzon-columnas`, solo en la computadora), los grupos por fecha (`.buzon-grupo`, con su `h2` y
-   su `ol`) y una fila por notificación (`.buzon-fila`, `data-leida="no|si"`): el punto de la sin
-   leer, la casilla (`.buzon-casilla`), el mensaje (`.buzon-mensaje`), la categoría y hace cuánto
-   (`.buzon-meta`, con el `.buzon-icono`, un `.chip` y un `time`) y el tilde de «Marcar como leída»
-   o el sobre cerrado de «Marcar como no leída» (`.buzon-accion`). En la bandeja paginada
-   (`buzon :: pagina`, R11-14), la fila lleva su título (`.buzon-titulo`), el mensaje y el vínculo
-   aparte, y debajo de la lista van la nota del alcance de «Marcar todas» (`.buzon-nota`) y el
-   total (`.buzon-total`). En el celular cada fila se apila (el mensaje y, debajo, categoría · hace
-   cuánto); desde 53,75 em es una grilla de columnas. El tilde aparece al pasar o enfocar la fila
-   donde hay puntero. Fragmentos: templates/componentes/buzon.html. Se carga en la capa `bloques`
-   desde app.css. Catálogo: docs/interfaz/componentes.md. */
+/* Bloque buzón (usuario, 2026-11-10, con la bandeja de notificaciones de GitHub de referencia; desde
+   el 2026-11-23, con la fila de la campana de la guía «Huerta y galpón», ficha
+   docs/interfaz/flujos/guia-org-buzon.md): la bandeja de novedades de los tres roles, una lámina de
+   papel (`form.buzon`) con su cabecera (`.buzon-cabeza`: «Seleccionar todas» y «Marcar todas como
+   leídas»), los títulos de las columnas (`.buzon-columnas`, solo en la computadora), los grupos por
+   fecha (`.buzon-grupo`, con su `h2` y su `ol`) y una fila por novedad (`.buzon-fila`,
+   `data-leida="no|si"`): el punto (lleno sin leer, hueco leída), la casilla (`.buzon-casilla`), el
+   mensaje (`.buzon-mensaje`), la categoría y hace cuánto (`.buzon-meta`, con el `.buzon-icono`, un
+   `.chip` y un `time`) y el tilde de «Marcar como leída» o el sobre cerrado de «Marcar como no
+   leída» (`.buzon-accion`). En la bandeja paginada (`buzon :: pagina`, R11-14), la fila lleva su
+   título (`.buzon-titulo`), el mensaje y el vínculo aparte, y debajo de la lista van la nota del
+   alcance de «Marcar todas» (`.buzon-nota`) y el total (`.buzon-total`). En el celular cada fila se
+   apila (el mensaje y, debajo, categoría · hace cuánto); desde 53,75 em es una grilla de columnas.
+   El tilde aparece al pasar o enfocar la fila donde hay puntero. Fragmentos:
+   templates/componentes/buzon.html. Se carga en la capa `bloques` desde app.css. Catálogo:
+   docs/interfaz/componentes.md. */
 .buzon {
   margin: 0;
   border-radius: var(--radio-lamina);
@@ -23,21 +25,24 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 1rem;
+  gap: var(--espacio-1) var(--espacio-3);
   min-height: 4rem;
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid var(--color-filete);
+  padding: var(--espacio-1) var(--espacio-3);
+  border-bottom: var(--borde-fino);
   border-radius: var(--radio-lamina) var(--radio-lamina) 0 0;
   background: var(--color-papel);
 }
 
+/* «Seleccionar todas»: la casilla dibujada al lado del texto (abajo, con la de cada fila). */
 .buzon-cabeza label {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--espacio-2);
   min-height: var(--medida-toque-minimo);
   margin: 0;
-  padding-left: 0.875rem;
+  padding: 0 var(--espacio-1);
+  border-radius: var(--radio-boton);
   font-weight: 700;
   cursor: pointer;
 }
@@ -61,7 +66,7 @@
   text-align: right;
 }
 
-/* «Mostrando 21 a 40 de 57 notificaciones.»; en el celular, «21 a 40 de 57». */
+/* «Mostrando 21 a 40 de 57 novedades.»; en el celular, «21 a 40 de 57». */
 .buzon-total {
   margin: 0;
   color: var(--color-texto-suave);
@@ -81,15 +86,72 @@
   }
 }
 
-/* La casilla, del tamaño de una común (usuario, 2026-11-12: un cuarto de los 48 px de antes); lo
-   que se toca es la etiqueta, que mide 48 px (--medida-toque-minimo). */
+/* La casilla (DA-21, como la de la opción de C1-12): el control nativo, transparente, cubre la
+   etiqueta entera (48 × 48 px en la fila; en «Seleccionar todas», el texto también), recibe el
+   foco y el toque; la casilla dibujada de al lado (::before) no es interactiva. */
 .buzon-cabeza input,
 .buzon-casilla input {
-  flex: none;
-  width: calc(var(--medida-toque-minimo) / 4);
-  height: calc(var(--medida-toque-minimo) / 4);
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   margin: 0;
-  cursor: pointer;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.buzon-cabeza label::before,
+.buzon-casilla::before {
+  content: "";
+  flex: none;
+  box-sizing: border-box;
+  width: 1.375rem;
+  height: 1.375rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-estampa);
+  background: var(--color-campo);
+}
+
+/* Elegida: llena de verde, con su tilde de papel; «Seleccionar todas» a medias, con una raya. */
+.buzon-cabeza label:has(:checked, :indeterminate)::before,
+.buzon-casilla:has(:checked)::before {
+  border-color: var(--color-accion-primaria);
+  background: var(--color-accion-primaria);
+}
+
+.buzon-cabeza label:has(:checked)::after,
+.buzon-casilla:has(:checked)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.4375rem;
+  height: 0.75rem;
+  border-right: 3px solid var(--color-texto-sobre-accion);
+  border-bottom: 3px solid var(--color-texto-sobre-accion);
+  translate: -50% -60%;
+  rotate: 45deg;
+}
+
+.buzon-cabeza label:has(:indeterminate)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: var(--espacio-2);
+  border-bottom: 3px solid var(--color-texto-sobre-accion);
+  translate: -50% -50%;
+}
+
+/* En «Seleccionar todas», la marca va en el centro de la casilla, no de la etiqueta. */
+.buzon-cabeza label:has(:checked, :indeterminate)::after {
+  left: calc(var(--espacio-1) + 0.6875rem);
+}
+
+/* El foco del control se ve en la etiqueta entera, con el aro de la base. */
+.buzon-cabeza label:has(:focus-visible),
+.buzon-casilla:has(:focus-visible) {
+  outline: var(--borde-ancho-foco) solid var(--color-foco);
+  outline-offset: calc(-1 * var(--borde-ancho-foco));
 }
 
 .buzon-columnas {
@@ -98,8 +160,8 @@
 
 .buzon-grupo > h2 {
   margin: 0;
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid var(--color-filete);
+  padding: var(--espacio-1) var(--espacio-3);
+  border-bottom: var(--borde-fino);
   color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
 }
@@ -117,13 +179,13 @@
   grid-template-areas:
     "punto casilla mensaje accion"
     "punto casilla meta accion";
-  grid-template-columns: 0.5rem 3rem minmax(0, 1fr) auto;
+  grid-template-columns: 0.625rem var(--medida-toque-minimo) minmax(0, 1fr) auto;
   align-items: center;
-  column-gap: 0.5rem;
-  row-gap: 0.25rem;
+  column-gap: var(--espacio-1);
+  row-gap: var(--espacio-0);
   margin: 0;
-  padding: 0.625rem 0.5rem 0.625rem 0.625rem;
-  border-bottom: 1px solid var(--color-filete);
+  padding: var(--espacio-1) var(--espacio-1) var(--espacio-1) var(--espacio-2);
+  border-bottom: var(--borde-fino);
 }
 
 .buzon-grupo:last-child li:last-child {
@@ -131,30 +193,47 @@
   border-radius: 0 0 var(--radio-lamina) var(--radio-lamina);
 }
 
+/* Pasar el mouse o enfocar: el salvia de la guía. No es la marca de un estado. */
 .buzon-fila:hover,
 .buzon-fila:focus-within {
-  background: var(--color-papel);
+  background: var(--color-salvia);
 }
 
-/* Lo que no se leyó (R11-14): fondo suave, un punto verde al margen y solo el título en negrita
-   (el strong de .buzon-titulo). El estado no depende solo del color: el punto es una forma, la
-   negrita un peso y "Sin leer: " o "Leída: " van en texto para los lectores de pantalla. El punto
-   es un borde, que los colores forzados del sistema conservan. */
-.buzon-fila[data-leida="no"] {
-  background: var(--color-acento-claro);
-}
-
-.buzon-fila[data-leida="no"]::before {
+/* El punto de la campana de la guía (10-componentes.css, «El desplegable de la campanita»): con el
+   borde de tinta, lleno sin leer y hueco leída. La fila no tiene fondo propio por su estado. El
+   estado no depende solo del color: el punto es una forma, la negrita un peso y "Sin leer: " o
+   "Leída: " van en texto para los lectores de pantalla. El punto es un borde, que los colores
+   forzados del sistema conservan. */
+.buzon-fila::before {
   content: "";
   grid-area: punto;
   box-sizing: border-box;
-  width: 0.5rem;
-  height: 0.5rem;
-  border: 0.25rem solid var(--color-acento);
-  border-radius: 50%;
+  width: 0.625rem;
+  height: 0.625rem;
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-pastilla);
+}
+
+.buzon-fila[data-leida="no"]::before {
+  background: var(--color-tinta);
+}
+
+/* Sin leer, en negrita: el mensaje que es el enlace (buzon :: fila); en la paginada, el strong
+   del título. */
+.buzon-fila[data-leida="no"] .buzon-mensaje > a:not([class]) {
+  font-weight: 700;
+}
+
+/* El mensaje que es el enlace (buzon :: fila) va en su propio renglón: su área táctil llega a los
+   48 px, como el vínculo de la paginada. */
+.buzon-mensaje > a:not([class]) {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
 }
 
 .buzon-casilla {
+  position: relative;
   display: flex;
   grid-area: casilla;
   align-items: center;
@@ -162,6 +241,7 @@
   width: var(--medida-toque-minimo);
   height: var(--medida-toque-minimo);
   margin: 0;
+  border-radius: var(--radio-boton);
   cursor: pointer;
 }
 
@@ -169,7 +249,7 @@
   display: grid;
   grid-area: mensaje;
   justify-items: start;
-  gap: 0.25rem;
+  gap: var(--espacio-0);
   min-width: 0;
 }
 
@@ -185,23 +265,20 @@
   font-weight: 400;
 }
 
-/* Leída: sin fondo propio y el título y el mensaje en el tono apagado. */
+/* Leída: el título y el mensaje en el tono apagado. */
 .buzon-fila[data-leida="si"] .buzon-mensaje > p:not(.texto-chico) {
   color: var(--color-texto-suave);
 }
 
-/* Los vínculos, leídos o no, en peso normal, subrayados y en el color de vínculo. */
-.buzon-vinculo {
-  color: var(--color-enlace);
-  font-weight: 400;
-  text-decoration: underline;
-}
-
-/* El vínculo va en su propio renglón, no dentro de un texto: su área táctil llega a los 48 px. */
+/* Los vínculos, leídos o no, en peso normal, subrayados y en el color de vínculo. Van en su propio
+   renglón, no dentro de un texto: su área táctil llega a los 48 px. */
 .buzon-vinculo {
   display: inline-flex;
   align-items: center;
   min-height: var(--medida-toque-minimo);
+  color: var(--color-enlace);
+  font-weight: 400;
+  text-decoration: underline;
 }
 
 .buzon-mensaje > .texto-chico {
@@ -213,14 +290,14 @@
   flex-wrap: wrap;
   grid-area: meta;
   align-items: center;
-  gap: 0.25rem 0.5rem;
+  gap: var(--espacio-0) var(--espacio-1);
   color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
 }
 
 .buzon-meta > time::before {
   content: "·" / "";
-  margin-right: 0.5rem;
+  margin-right: var(--espacio-1);
 }
 
 .buzon-icono {
@@ -234,6 +311,7 @@
   stroke-linejoin: round;
 }
 
+/* El tilde y el sobre: botones de ícono de 48 px, sin borde ni fondo, como la campana. */
 .buzon-accion {
   display: inline-flex;
   grid-area: accion;
@@ -255,8 +333,8 @@
 }
 
 .buzon-accion:focus-visible {
-  outline: 3px solid var(--color-foco);
-  outline-offset: -3px;
+  outline: var(--borde-ancho-foco) solid var(--color-foco);
+  outline-offset: calc(-1 * var(--borde-ancho-foco));
 }
 
 /* La computadora: una grilla de columnas (punto, casilla, ícono, mensaje, a qué está asociada, hace
@@ -265,14 +343,14 @@
   .buzon-fila,
   .buzon-columnas {
     grid-template-areas: "punto casilla icono mensaje tema cuando accion";
-    grid-template-columns: 0.5rem 3rem 1.25rem minmax(0, 1fr) 13rem 9rem 3rem;
-    column-gap: 0.75rem;
+    grid-template-columns: 0.625rem 3rem 1.25rem minmax(0, 1fr) 13rem 9rem 3rem;
+    column-gap: var(--espacio-2);
   }
 
   .buzon-columnas {
     display: grid;
-    padding: 0.5rem 0.5rem 0.5rem 0.625rem;
-    border-bottom: 1px solid var(--color-filete);
+    padding: var(--espacio-1) var(--espacio-1) var(--espacio-1) var(--espacio-2);
+    border-bottom: var(--borde-fino);
     color: var(--color-texto-suave);
     font-size: var(--tamano-chico);
     font-weight: 700;
@@ -316,5 +394,25 @@
 @media (min-width: 53.75em) and (hover: hover) {
   .buzon-fila:not(:hover, :focus-within) .buzon-accion {
     opacity: 0;
+  }
+}
+
+/* Con los colores del sistema, el punto lleno y la casilla elegida se pintan con el color del texto. */
+@media (forced-colors: active) {
+  .buzon-fila::before,
+  .buzon-cabeza label::before,
+  .buzon-casilla::before {
+    border-color: CanvasText;
+  }
+
+  .buzon-fila[data-leida="no"]::before,
+  .buzon-cabeza label:has(:checked, :indeterminate)::before,
+  .buzon-casilla:has(:checked)::before {
+    background: CanvasText;
+  }
+
+  .buzon-cabeza label::after,
+  .buzon-casilla::after {
+    border-color: Canvas;
   }
 }

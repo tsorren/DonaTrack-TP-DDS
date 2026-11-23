@@ -175,6 +175,8 @@
 /donante-notificaciones?escenario=lento
 /donante-notificaciones?escenario=error
 /donante-notificaciones-leidas
+/donante-notificaciones?cuenta=persona
+/donante-notificaciones-leidas?cuenta=persona
 /entidad-inicio
 /entidad-inicio?escenario=vacio
 /entidad-inicio?escenario=sin-puerta
