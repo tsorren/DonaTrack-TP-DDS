@@ -85,6 +85,17 @@
   gap: var(--espacio-1);
 }
 
+/* El signo, de 1 rem (--espacio-3) y bajado a la altura del primer renglón. La guía lo baja
+   0,3125 rem; acá, con el token más cercano (--espacio-0, 0,25 rem). El selector le gana al tamaño
+   chico de .icono[data-forma="signo"] (icono.css), que está en la misma capa. */
+.campo-error > svg,
+.campo-error > svg.icono[data-forma] {
+  flex-shrink: 0;
+  margin-block-start: var(--espacio-0);
+  inline-size: var(--espacio-3);
+  block-size: var(--espacio-3);
+}
+
 /* La flecha de los desplegables (usuario, 2026-11-09: "agregar padding en la flecha, no debería
    quedar pegada a la derecha"). El relleno general de arriba pisaba el de la base, que deja lugar
    para la flecha; acá se le devuelve el aire, en todos los desplegables, estén o no dentro de un
