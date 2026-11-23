@@ -477,16 +477,20 @@
         <div th:replace="~{componentes/muestra :: muestra('.opciones', 'La opción: elegir una entre pocas, antes que escribir. Un grupo (fieldset con su legend, o div dentro de uno) con un label por opción y su radio adentro. Cada opción es un bloque de 48 px que se toca entero; el radio nativo lo cubre, transparente, y la marca de al lado dice si está elegida. Elegida: el borde de tinta, el fondo de salvia y la letra gruesa. disabled: en gris. Con error, aria-invalid=&quot;true&quot; en cada radio: el borde, más grueso, en el color del problema, y el error del grupo debajo. Hoja: formularios.css.', ~{::demo-opciones})}">
           <th:block th:fragment="demo-opciones">
             <div class="pila" data-espacio="3">
-              <fieldset class="opciones">
-                <legend>¿Llegó bien?</legend>
-                <label><input type="radio" name="muestra-llego" value="si" checked> Sí, completa</label>
-                <label><input type="radio" name="muestra-llego" value="no"> Llegó con un problema</label>
-              </fieldset>
-              <fieldset class="opciones">
-                <legend>¿Llegó bien? (todavía no se puede elegir)</legend>
-                <label><input type="radio" name="muestra-llego-quieto" value="si" disabled> Sí, completa</label>
-                <label><input type="radio" name="muestra-llego-quieto" value="no" disabled> Llegó con un problema</label>
-              </fieldset>
+              <div class="campo">
+                <fieldset class="opciones">
+                  <legend>¿Llegó bien?</legend>
+                  <label><input type="radio" name="muestra-llego" value="si" checked> Sí, completa</label>
+                  <label><input type="radio" name="muestra-llego" value="no"> Llegó con un problema</label>
+                </fieldset>
+              </div>
+              <div class="campo">
+                <fieldset class="opciones">
+                  <legend>¿Llegó bien? (todavía no se puede elegir)</legend>
+                  <label><input type="radio" name="muestra-llego-quieto" value="si" disabled> Sí, completa</label>
+                  <label><input type="radio" name="muestra-llego-quieto" value="no" disabled> Llegó con un problema</label>
+                </fieldset>
+              </div>
               <div class="campo" data-estado="error">
                 <fieldset class="opciones" aria-describedby="muestra-llego-error">
                   <legend>¿Llegó bien? (con error)</legend>
@@ -501,12 +505,14 @@
         <div th:replace="~{componentes/muestra :: muestra('.opciones con casillas', 'La casilla: elegir varias, o aceptar algo. El mismo bloque de la opción, con una casilla (input type=&quot;checkbox&quot;) adentro: la marca es un cuadro y, marcada, se llena de verde con su tilde. disabled: en gris. Con error, aria-invalid=&quot;true&quot;. La casilla sola de 48 × 48 px, sin texto, de la tabla con selección del galpón, entra con el galpón; la de la bandeja (.buzon) tiene su propia ficha. Hoja: formularios.css.', ~{::demo-casillas})}">
           <th:block th:fragment="demo-casillas">
             <div class="pila" data-espacio="3">
-              <fieldset class="opciones">
-                <legend>Qué te avisamos</legend>
-                <label><input type="checkbox" name="muestra-avisos" value="salida" checked> Cuando sale</label>
-                <label><input type="checkbox" name="muestra-avisos" value="llegada"> Cuando llega</label>
-                <label><input type="checkbox" name="muestra-avisos" value="misiones" disabled> Tus misiones (todavía no)</label>
-              </fieldset>
+              <div class="campo">
+                <fieldset class="opciones">
+                  <legend>Qué te avisamos</legend>
+                  <label><input type="checkbox" name="muestra-avisos" value="salida" checked> Cuando sale</label>
+                  <label><input type="checkbox" name="muestra-avisos" value="llegada"> Cuando llega</label>
+                  <label><input type="checkbox" name="muestra-avisos" value="misiones" disabled> Tus misiones (todavía no)</label>
+                </fieldset>
+              </div>
               <div class="campo" data-estado="error">
                 <div class="opciones">
                   <label><input type="checkbox" name="muestra-terminos" value="si" aria-invalid="true" aria-describedby="muestra-terminos-error"> Leí y acepto los términos</label>
