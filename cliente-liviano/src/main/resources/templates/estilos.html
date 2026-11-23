@@ -989,6 +989,63 @@
             </ul>
           </th:block>
         </div>
+        <div th:replace="~{componentes/muestra :: muestra('.huerta-raiz-pasos', 'La raíz de los 5 pasos de la guía (componentes/huerta :: raiz-pasos(pasos, forma, nombre, recien)): el recorrido comprobado de una donación, solo en la huerta. Cada paso lleva data-paso: hecho (lleno), actual (el nudo grande con su anillo; aria-current=&quot;step&quot;), falta (punteado) o problema (un paso que se intentó y no pudo ser: el nudo lleva el signo #e-problema, además del color, y el tramo que sigue es punteado). data-forma: sin ella, paso a paso con su texto y su hora (.huerta-raiz-cuando); acostada, los cinco nudos en un renglón, con los nombres para el lector de pantalla y el aria-label de la lista; numerada, el número en el nudo; numerada tendida, desde 56 em los cinco pasos en un renglón, cada uno con su texto (achicá la ventana para verla apilada). Con recien, el último tramo lleno es una raya SVG (.huerta-raiz-trazo) que se dibuja una vez con traza-raiz y después asoma el nudo al que llega; sin movimiento, ya dibujada.', ~{::demo-huerta-raiz})}">
+          <th:block th:fragment="demo-huerta-raiz"
+                    th:with="enCamino=${ { {nombre: 'Registrada', avance: 'hecho'}, {nombre: 'Asignada', avance: 'hecho'}, {nombre: 'Preparada', avance: 'hecho'}, {nombre: 'En camino, ahora', avance: 'actual'}, {nombre: 'Falta confirmar la entrega', avance: 'falta'} } },
+                             confirmada=${ { {nombre: 'Registrada', avance: 'hecho'}, {nombre: 'Asignada', avance: 'hecho'}, {nombre: 'Preparada', avance: 'hecho'}, {nombre: 'En camino', avance: 'hecho'}, {nombre: 'Entrega confirmada', avance: 'hecho'} } },
+                             conProblema=${ { {nombre: 'Registrada', avance: 'hecho'}, {nombre: 'Asignada', avance: 'hecho'}, {nombre: 'Preparada', avance: 'hecho'}, {nombre: 'Salió y no pudo llegar', avance: 'problema'}, {nombre: 'Falta: entrega confirmada', avance: 'falta'} } },
+                             pasoAPaso=${ { {nombre: 'Registrada', avance: 'hecho', cuando: '8 de octubre, 10:15', detalle: 'En el Depósito Central, a tu nombre.'}, {nombre: 'Asignada', avance: 'hecho', cuando: '9 de octubre, 9:00', detalle: 'Al Comedor Barrio Ejemplo, que pidió lentejas.'}, {nombre: 'Preparada', avance: 'hecho', cuando: '9 de octubre, 16:30', detalle: 'En el Depósito Central.'}, {nombre: 'En camino', avance: 'actual', cuando: 'Desde las 14:30', detalle: 'Sale en el camión de hoy.'}, {nombre: 'Falta confirmar la entrega', avance: 'falta', detalle: 'La confirma la organización con la foto.'} } },
+                             conTropiezo=${ { {nombre: 'Preparada', avance: 'hecho', cuando: '9 de octubre, 16:30', detalle: 'En el Depósito Central.'}, {nombre: 'Salió y no pudo llegar', avance: 'problema', cuando: '11 de octubre', detalle: 'El camino estaba cortado. Sale de nuevo el 17 de octubre.'}, {nombre: 'Falta confirmar la entrega', avance: 'falta', detalle: 'La confirma la organización con la foto.'} } },
+                             comoFunciona=${ { {nombre: 'Llevás tu donación', avance: 'hecho', detalle: 'Al depósito. El equipo la registra a tu nombre.'}, {nombre: 'Se asigna', avance: 'hecho', detalle: 'A una organización que pidió eso mismo.'}, {nombre: 'Se prepara', avance: 'hecho', detalle: 'En el depósito, para salir en el próximo viaje.'}, {nombre: 'Viaja', avance: 'hecho', detalle: 'Ves en el mapa por dónde anda el camión.'}, {nombre: 'La confirman', avance: 'hecho', detalle: 'La organización sube la foto y vos la ves.'} } }">
+            <div class="grilla">
+              <div class="pila" data-espacio="2">
+                <h4>Paso a paso</h4>
+                <ol th:replace="~{componentes/huerta :: raiz-pasos(${pasoAPaso}, null, null, false)}"></ol>
+              </div>
+              <div class="pila" data-espacio="2">
+                <h4>Un paso que no pudo ser</h4>
+                <ol th:replace="~{componentes/huerta :: raiz-pasos(${conTropiezo}, null, null, false)}"></ol>
+              </div>
+            </div>
+            <div class="pila" data-espacio="2">
+              <h4>Acostada: en camino, confirmada y con problema</h4>
+              <ol th:replace="~{componentes/huerta :: raiz-pasos(${enCamino}, 'acostada', 'Paso 4 de 5', false)}"></ol>
+              <p>Paso 4 de 5: en camino.</p>
+              <ol th:replace="~{componentes/huerta :: raiz-pasos(${confirmada}, 'acostada', 'Paso 5 de 5', false)}"></ol>
+              <p>Paso 5 de 5: entrega confirmada.</p>
+              <ol th:replace="~{componentes/huerta :: raiz-pasos(${conProblema}, 'acostada', 'Cumplió 3 de 5 pasos y el cuarto no pudo llegar', false)}"></ol>
+              <p>Cumplió 3 de 5 pasos y el cuarto no pudo llegar.</p>
+            </div>
+            <div class="grilla">
+              <div class="pila" data-espacio="2">
+                <h4>Numerada</h4>
+                <ol th:replace="~{componentes/huerta :: raiz-pasos(${enCamino}, 'numerada', null, false)}"></ol>
+              </div>
+              <div class="pila" data-espacio="2">
+                <h4>Recién llegada: el trazo</h4>
+                <ol th:replace="~{componentes/huerta :: raiz-pasos(${enCamino}, 'acostada', 'Paso 4 de 5, recién llegada', true)}"></ol>
+                <p>El tramo al cuarto nudo se dibuja una vez al cargar la página.</p>
+              </div>
+            </div>
+            <!--/* Con el ancho de una pantalla: tendida, cada paso necesita su columna. La ficha se
+                   desplaza de costado; el ejemplo toma el foco para desplazarla con el teclado. */-->
+            <div class="pila" data-espacio="2" data-ancho="pantalla" tabindex="0" role="group"
+                 aria-label="Ejemplo de la raíz numerada y tendida">
+              <h4>Numerada y tendida</h4>
+              <ol th:replace="~{componentes/huerta :: raiz-pasos(${comoFunciona}, 'numerada tendida', null, false)}"></ol>
+            </div>
+          </th:block>
+        </div>
+        <div th:replace="~{componentes/muestra :: muestra('.huerta-frutos', 'Los frutos de la guía (componentes/huerta :: frutos(cuenta, periodo, recien)): un fruto es una entrega confirmada, nunca una donación registrada. Van junto a su cifra y su período (.huerta-frutos-cuenta), así que la fila de frutos es decorativa (aria-hidden). Con 0 no hay frutos, solo el texto; con muchos, bajan de renglón. Con recien (data-recien), el último fruto brota una vez.', ~{::demo-huerta-frutos})}">
+          <th:block th:fragment="demo-huerta-frutos">
+            <div class="pila" data-espacio="2">
+              <div th:replace="~{componentes/huerta :: frutos(0, 'del 1 al 15 de octubre', false)}"></div>
+              <div th:replace="~{componentes/huerta :: frutos(1, 'del 1 al 15 de octubre', false)}"></div>
+              <div th:replace="~{componentes/huerta :: frutos(9, 'en octubre, del 1 al 15', false)}"></div>
+              <div th:replace="~{componentes/huerta :: frutos(5, 'por tu organización, del 1 al 15 de octubre', true)}"></div>
+            </div>
+          </th:block>
+        </div>
         <div th:replace="~{componentes/muestra :: muestra('.huerta-bajo', 'Bajo tierra (componentes/huerta :: raices, cuarta ronda): las raíces del dibujo de la diseñadora como SVG decorativo (.huerta-bajo-dibujo, con .huerta-bajo-raiz, -trazo, -punteada, -nudo y -halo pintados con los tokens de la tierra) y, encima, la lista real de categorías (.huerta-bajo-categoria) y tipos de organización (.huerta-bajo-entidad), puesta con data-lugar en porcentajes del dibujo. .huerta-bajo-tu es la invitación «Tu organización», que lleva al registro. Por debajo de 37,5 em el dibujo se oculta y la misma lista se ve como tres raíces apiladas. Achicá la ventana para verlo.', ~{::demo-huerta-bajo})}">
           <th:block th:fragment="demo-huerta-bajo">
             <div data-ancho="pantalla"><section th:replace="~{componentes/huerta :: raices}"></section></div>

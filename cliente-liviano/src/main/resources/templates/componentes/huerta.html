@@ -24,6 +24,10 @@
        - mes(estado): lo que viajó este mes, una galería de fotos de las entregas.
        - preguntas: las preguntas frecuentes.
        - cierre: la invitación del final, con su planta.
+       - raiz-pasos(pasos, forma, nombre, recien): la raíz de los 5 pasos de la guía (D2), con sus
+         cuatro formas y el paso que no pudo ser.
+       - frutos(cuenta, periodo, recien): los frutos de la guía (D4), un fruto por entrega
+         confirmada, con su cuenta.
        No es una pantalla: SitioController solo sirve nombres con rol. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
 <body>
@@ -622,5 +626,63 @@
     </li>
   </ol>
 </section>
+
+<!--/* La raíz de los 5 pasos (guía, D2; C1-20): el recorrido comprobado de una donación. Llena, lo que
+       pasó; punteada, lo que falta; con el signo del problema, un paso que se intentó y no pudo ser.
+       Solo en la huerta.
+       - pasos: una lista de {nombre, avance, cuando?, detalle?}; avance es hecho, actual, falta o
+         problema (en mayúsculas o minúsculas). cuando y detalle son optativos.
+       - forma: null (la de base, paso a paso, con su texto), 'acostada' (los cinco nudos en un
+         renglón; los nombres quedan para el lector de pantalla), 'numerada' (el número en el nudo) o
+         'numerada tendida' (desde 56 em, los cinco pasos en un renglón, cada uno con su texto).
+       - nombre: el aria-label de la lista («Paso 4 de 5»); hace falta en la acostada. null, sin él.
+       - recien: true al llegar desde el formulario: el último tramo lleno se dibuja una vez y asoma el
+         nudo al que llega (--movimiento-animacion-traza-raiz y -asoma). Sin movimiento, ya dibujado.
+       El signo del problema es #e-problema: la página trae iconos :: signos. */-->
+<ol th:fragment="raiz-pasos(pasos, forma, nombre, recien)" class="huerta-raiz-pasos" role="list"
+    th:data-forma="${forma}" th:aria-label="${nombre}"
+    th:with="acostada=${forma != null and forma.contains('acostada')},
+             numerada=${forma != null and forma.contains('numerada')}">
+  <li th:each="p, vuelta : ${pasos}" th:with="avance=${#strings.toLowerCase(p.avance)}"
+      th:data-paso="${avance}" data-paso="hecho" th:aria-current="${avance == 'actual'} ? 'step' : null">
+    <!--/* El último tramo lleno: el que llega al paso actual o, con todo cumplido, al quinto. */-->
+    <span th:if="${recien and avance == 'hecho' and !vuelta.last
+                   and (vuelta.index + 2 == vuelta.size or #strings.toLowerCase(pasos[vuelta.index + 1].avance) != 'hecho')}"
+          class="huerta-raiz-trazo" aria-hidden="true">
+      <svg viewBox="0 0 10 10" preserveAspectRatio="none" focusable="false">
+        <g data-eje="alto"><path pathLength="1" d="M5 0V10"/><path pathLength="1" d="M5 0V10"/></g>
+        <g data-eje="ancho"><path pathLength="1" d="M0 5H10"/><path pathLength="1" d="M0 5H10"/></g>
+      </svg>
+    </span>
+    <span class="huerta-raiz-nudo" aria-hidden="true">
+      <th:block th:if="${numerada and avance != 'problema'}" th:text="${vuelta.count}">1</th:block>
+      <svg th:if="${avance == 'problema'}" class="icono" data-forma="signo" focusable="false"><use href="#e-problema"/></svg>
+    </span>
+    <span th:if="${acostada}" class="solo-lectores" th:text="${p.nombre}">Registrada</span>
+    <div th:unless="${acostada}">
+      <p><strong th:text="${p.nombre}">Preparada</strong><th:block th:if="${p['cuando'] != null}">
+        <span class="huerta-raiz-cuando" th:text="${p['cuando']}">9 de octubre, 16:30</span></th:block></p>
+      <p th:if="${p['detalle'] != null}" th:text="${p['detalle']}">En el Depósito Central.</p>
+    </div>
+  </li>
+</ol>
+
+<!--/* Los frutos (guía, D4; C1-21): un fruto es una entrega confirmada, nunca una donación
+       registrada. Van junto a su cifra, con el período, así que la fila de frutos es decorativa.
+       - cuenta: cuántas entregas confirmó la organización en el período (un número chico: un fruto
+         por cada una). Con 0 no hay frutos, solo el texto.
+       - periodo: el período, en palabras («del 1 al 15 de octubre»).
+       - recien: true al confirmar una entrega: el último fruto brota una vez
+         (--movimiento-animacion-brote). */-->
+<div th:fragment="frutos(cuenta, periodo, recien)" class="huerta-frutos-cuenta">
+  <ul th:if="${cuenta > 0}" class="huerta-frutos" role="list" aria-hidden="true"
+      th:data-recien="${recien} ? 'si' : null">
+    <li th:each="i : ${#numbers.sequence(1, cuenta)}"></li>
+  </ul>
+  <span><strong th:text="${cuenta == 0} ? 'Todavía no hay entregas confirmadas'
+                         : (${cuenta == 1} ? '1 entrega confirmada' : |${cuenta} entregas confirmadas|)">2
+      entregas confirmadas</strong> <th:block th:text="|${periodo}.|">del 1 al 15 de octubre.</th:block><th:block
+      th:if="${cuenta > 1}"> Cada fruto es una.</th:block></span>
+</div>
 </body>
 </html>
