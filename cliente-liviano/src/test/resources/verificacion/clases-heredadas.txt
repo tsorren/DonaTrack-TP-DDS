@@ -80,7 +80,6 @@ donaron
 ejemplo-inicial
 ejemplos
 ejemplos-lista
-enlace
 enlace-campo
 entidades
 entrega
@@ -144,7 +143,6 @@ pedido
 pedido--nuevo
 pedido-acciones
 pedido-detalle
-pedido-marca
 pedido-partes
 pedido-resumen
 pedidos-lista

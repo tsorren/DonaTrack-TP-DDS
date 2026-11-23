@@ -17,9 +17,16 @@
   display: none;
 }
 
-/* La lámina protagonista: el relleno de la tarjeta. */
+/* La lámina protagonista: el relleno de la tarjeta y, en su cuerpo, el texto con el botón y la raíz
+   lado a lado cuando entran (como la lámina de la puerta de entidad-inicio). */
 .tarjeta[data-papel="protagonista"] {
   --espacio-relleno: var(--espacio-4);
+}
+
+.tarjeta[data-papel="protagonista"] > .grilla {
+  --medida-grilla: 18rem;
+
+  align-items: start;
 }
 
 /* --- Publicar y cambiar: el botón abre el formulario debajo -------------------------------------- */
@@ -34,10 +41,6 @@
 .publicar[open] > summary::before,
 .cambiar[open] > summary::before {
   content: "−";
-}
-
-.boton[data-tono="secundario"] {
-  color: var(--color-tinta);
 }
 
 /* --- La lista: una tarjeta por necesidad, en columnas; la abierta ocupa el ancho entero. --------- */
@@ -55,8 +58,8 @@
 }
 
 /* La tarjeta plegada, como la de la guía: el nombre con su chapa en el primer renglón y, debajo, si
-   se repite, la barra, lo que llegó y sus entregas. El resumen tiene el radio de la tarjeta: el fondo
-   del :hover no deja esquinas rectas. Abierto, solo arriba; el detalle cierra la tarjeta abajo. */
+   se repite, la barra, lo que llegó y sus entregas. El resumen tiene el radio de la tarjeta; abierto,
+   solo arriba: el detalle cierra la tarjeta abajo. */
 .pedido-resumen {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -74,21 +77,6 @@
 .pedido[open] > .pedido-resumen {
   height: auto;
   border-radius: var(--radio-lamina) var(--radio-lamina) 0 0;
-}
-
-.pedido-resumen:hover {
-  background: var(--color-pendiente-fondo);
-}
-
-.pedido-marca {
-  padding: 0.125rem 0.625rem;
-  border-radius: 999px;
-  background: var(--color-acento-claro);
-  color: var(--color-acento-hondo);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 /* Al pie: "Ver el detalle", con el triángulo que apunta abajo cerrado y arriba abierto. */
@@ -123,10 +111,6 @@
   rotate: 225deg;
 }
 
-.pedido--nuevo > .pedido-resumen {
-  background: var(--color-acento-claro);
-}
-
 /* --- El detalle ------------------------------------------------------------------------------- */
 .pedido-detalle {
   display: grid;
@@ -151,11 +135,6 @@
 
 .parte h3 {
   margin: 0.75rem 0 0.375rem;
-  color: var(--color-acento);
-  font: 700 0.875rem var(--fuente-texto);
-  font-stretch: 112%;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 
 .parte p,
@@ -184,13 +163,13 @@
   justify-self: start;
 }
 
-.enlace {
+/* El enlace suelto de una parte («Ver en Seguir entregas») y «Ver los anteriores»: el color y el
+   subrayado son los de la base; acá, solo su lugar para el dedo. */
+.parte > a,
+.periodos-anteriores > summary {
   display: inline-flex;
   align-items: center;
   min-height: var(--medida-toque-minimo);
-  color: var(--color-enlace);
-  font-weight: 700;
-  text-underline-offset: 0.25em;
 }
 
 /* La historia de los períodos, del que está en curso al primero: una barra que se llena por período,
@@ -217,11 +196,6 @@
   grid-row: span 2;
 }
 
-.periodo-nombre span {
-  color: var(--color-tinta-suave);
-  font-size: 0.875rem;
-}
-
 .periodo .progreso {
   grid-column: 2;
   grid-row: 1;
@@ -235,8 +209,6 @@
 
 .periodo-cuanto {
   grid-column: 2;
-  color: var(--color-tinta-suave);
-  font-size: 0.9375rem;
 }
 
 /* Los períodos anteriores a los cuatro de la vista, plegados debajo. */
@@ -254,8 +226,6 @@
 
 .periodos-desde {
   margin: 0;
-  color: var(--color-tinta-suave);
-  font-size: 0.9375rem;
 }
 
 /* --- Las acciones del pedido: cambiar (abre su formulario) y dar de baja (abre su diálogo) -------- */
@@ -370,6 +340,5 @@
   .periodos:not(.periodos--lista) .periodo-cuanto {
     grid-column: 1;
     grid-row: 3;
-    font-size: 0.875rem;
   }
 }

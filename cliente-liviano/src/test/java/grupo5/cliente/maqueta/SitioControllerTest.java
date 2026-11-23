@@ -398,7 +398,14 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Cumplidas y terminadas (4)")));
     mvc.perform(get("/entidad-necesidades-publicada"))
         .andExpect(content().string(containsString("Publicamos tu necesidad.")))
-        .andExpect(content().string(containsString("pedido--nuevo")));
+        .andExpect(content().string(containsString("pedido--nuevo")))
+        // hx-swap-oob="beforeend" suma a #avisos los hijos de su caja: el aviso va entero adentro.
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<div hx-swap-oob=\"beforeend:#avisos\"><div class=\"aviso-breve\"\\s+"
+                            + "data-estado=\"hecho\" role=\"status\".*")));
     mvc.perform(get("/entidad-necesidades-cambiada"))
         .andExpect(content().string(containsString("Guardamos los cambios de Lentejas secas.")))
         .andExpect(content().string(containsString("Cambiada hoy")))

@@ -73,12 +73,14 @@
     </header>
 
     <!--/* El aviso breve de cómo salió la acción (DA-06), con el foco (decisión de la ficha: el éxito
-           toma el foco). Con HTMX va a la región de avisos del layout; sin JavaScript queda acá. */-->
-    <div th:if="${textoAviso != null}" class="aviso-breve" hx-swap-oob="beforeend:#avisos"
+           toma el foco). Con HTMX va a la región de avisos del layout; sin JavaScript queda acá.
+           hx-swap-oob="beforeend" suma a la región los hijos del elemento que lo lleva: por eso va
+           en una caja sin clase, y a la región llega el aviso entero, con su papel. */-->
+    <div th:if="${textoAviso != null}" hx-swap-oob="beforeend:#avisos"><div class="aviso-breve"
          data-estado="hecho" role="status" tabindex="-1" autofocus><svg
         th:replace="~{componentes/sello :: signo('confirmada')}"></svg><p th:text="${textoAviso}">Publicamos
         tu necesidad. Ya la ven los donantes y el catálogo público.</p><button type="button"
-        class="aviso-cerrar" data-cerrar aria-label="Cerrar el aviso">×</button></div>
+        class="aviso-cerrar" data-cerrar aria-label="Cerrar el aviso">×</button></div></div>
     <section th:if="${noExiste}" class="banner" role="alert" aria-labelledby="noexiste-titulo">
       <h2 id="noexiste-titulo">No encontramos esa necesidad.</h2>
       <p>Puede que el enlace esté incompleto o que ya no esté vigente. Fijate en la lista o en
@@ -121,16 +123,24 @@
         <h2 id="puerta-titulo">Llegó una entrega: falta que la confirmes</h2>
         <span th:replace="~{componentes/sello :: pedido()}"></span>
       </div>
-      <p><strong th:text="|${enLaPuerta.nombre}, ${llego.cuanto}.|">Lentejas secas, 15 kg.</strong>
-        <th:block th:text="${llego.texto}">Llegaron a tu puerta hoy a las 18:20 y esperan tu
-          confirmación.</th:block></p>
-      <div class="racimo">
-        <a class="boton" data-tono="principal" href="/entidad-seguimiento-confirmar?entrega=lentejas"
-           th:href="@{/entidad-seguimiento-confirmar(entrega=${llego.confirmar})}">Confirmar recepción</a>
+      <!--/* El cuerpo de A02 (.protagonista-cuerpo): el texto con el botón y, al lado cuando
+             entran, la raíz con su nota. */-->
+      <div class="grilla" data-espacio="3">
+        <div class="pila" data-espacio="3">
+          <p><strong th:text="|${enLaPuerta.nombre}, ${llego.cuanto}.|">Lentejas secas, 15 kg.</strong>
+            <th:block th:text="${llego.texto}">Llegaron a tu puerta hoy a las 18:20 y esperan tu
+              confirmación.</th:block></p>
+          <div class="racimo">
+            <a class="boton" data-tono="principal" href="/entidad-seguimiento-confirmar?entrega=lentejas"
+               th:href="@{/entidad-seguimiento-confirmar(entrega=${llego.confirmar})}">Confirmar recepción</a>
+          </div>
+        </div>
+        <div class="pila" data-espacio="1">
+          <ol th:replace="~{componentes/huerta :: raiz-pasos(${ { {nombre: 'Registrada', avance: 'hecho'}, {nombre: 'Asignada', avance: 'hecho'}, {nombre: 'Preparada', avance: 'hecho'}, {nombre: 'En camino: llegó a tu puerta', avance: 'actual'}, {nombre: 'Falta confirmar la entrega', avance: 'falta'} } }, 'acostada', 'El recorrido de esta entrega: va por el paso 4 de 5', false)}"></ol>
+          <p data-tono="suave">Paso 4 de 5. Falta el último: tu confirmación con la foto. Con eso,
+            quien donó ve que llegó.</p>
+        </div>
       </div>
-      <ol th:replace="~{componentes/huerta :: raiz-pasos(${ { {nombre: 'Registrada', avance: 'hecho'}, {nombre: 'Asignada', avance: 'hecho'}, {nombre: 'Preparada', avance: 'hecho'}, {nombre: 'En camino: llegó a tu puerta', avance: 'actual'}, {nombre: 'Falta confirmar la entrega', avance: 'falta'} } }, 'acostada', 'El recorrido de esta entrega: va por el paso 4 de 5', false)}"></ol>
-      <p data-tono="suave">Paso 4 de 5. Falta el último: tu confirmación con la foto. Con eso, quien
-        donó ve que llegó.</p>
     </section>
 
     <!--/* Publicar: si la entidad no está activa (se sabe al cargar), el aviso va en lugar del
@@ -228,8 +238,8 @@
         th:replace="~{componentes/sello :: sello('problema')}"></th:block>Con un problema</span>
     <span class="racimo" data-espacio="1"
           th:if="${(mostrarNueva and n.clave == 'fideos') or n['cambiada'] != null}">
-      <span th:if="${mostrarNueva and n.clave == 'fideos'}" class="pedido-marca">Nueva</span>
-      <span th:if="${n['cambiada']}" class="pedido-marca" th:text="${n.cambiada}">Cambiada hoy</span>
+      <strong th:if="${mostrarNueva and n.clave == 'fideos'}" class="texto-chico" data-tono="acento">Nueva</strong>
+      <strong th:if="${n['cambiada']}" class="texto-chico" data-tono="acento" th:text="${n.cambiada}">Cambiada hoy</strong>
     </span>
     <span class="texto-chico" data-tono="suave"><th:block
         th:text="${n.plazo != null} ? |${n.repite} · ${n.plazo}| : ${n.repite}">Cada mes · Octubre, hasta
@@ -262,12 +272,12 @@
       mes. Vale desde octubre: lo que ya llegó cuenta.</p>
     <div class="pedido-partes">
       <section class="parte" th:aria-labelledby="|${n.clave}-porque|">
-        <h3 th:id="|${n.clave}-porque|">Por qué hace falta</h3>
+        <h3 class="texto-chico" data-tono="acento" th:id="|${n.clave}-porque|">Por qué hace falta</h3>
         <p th:text="${n.motivo}">Para el almuerzo de lunes a viernes.</p>
       </section>
 
       <section class="parte" th:aria-labelledby="|${n.clave}-entregas|">
-        <h3 th:id="|${n.clave}-entregas|">Entregas para esta necesidad</h3>
+        <h3 class="texto-chico" data-tono="acento" th:id="|${n.clave}-entregas|">Entregas para esta necesidad</h3>
         <p th:if="${#lists.isEmpty(n.entregas)}">No hay entregas pendientes para esta
           necesidad.</p>
         <ul th:unless="${#lists.isEmpty(n.entregas)}" class="entregas" role="list">
@@ -286,17 +296,17 @@
         <p th:if="${n.hayMasEntregas()}">
           <th:block th:text="|Mostramos ${#lists.size(n.entregas)} de ${n.puerta + n.camino + n.problema} entregas en curso.|">Mostramos
             3 de 5 entregas en curso.</th:block>
-          <a class="enlace"
+          <a
              href="/entidad-recibidas?estado=en-tu-puerta&amp;estado=con-problema&amp;estado=en-camino&amp;estado=por-salir"
              th:href="@{/entidad-recibidas(estado=${ {'en-tu-puerta', 'con-problema', 'en-camino', 'por-salir'} })}">Ver
             todas</a>
         </p>
-        <a class="enlace" href="/entidad-seguimiento"
+        <a href="/entidad-seguimiento"
            th:href="@{/entidad-seguimiento}">Ver en Seguir entregas</a>
       </section>
 
       <section class="parte" th:aria-labelledby="|${n.clave}-donaron|">
-        <h3 th:id="|${n.clave}-donaron|">Quién donó</h3>
+        <h3 class="texto-chico" data-tono="acento" th:id="|${n.clave}-donaron|">Quién donó</h3>
         <p th:if="${#lists.isEmpty(n.donaron)}">Todavía no llegó nada.</p>
         <ul th:unless="${#lists.isEmpty(n.donaron)}" class="donaron" role="list">
           <!--/* Con el nombre oculto, la categoría del ranking; si no llega
@@ -311,7 +321,7 @@
         <p th:if="${n.hayMasRecibidas()}">
           <th:block th:text="|Mostramos las ${#lists.size(n.donaron)} más recientes de ${n.recibidas} recibidas.|">Mostramos
             las 3 más recientes de 8 recibidas.</th:block>
-          <a class="enlace" href="/entidad-recibidas?estado=recibidas"
+          <a href="/entidad-recibidas?estado=recibidas"
              th:href="@{/entidad-recibidas(estado='recibidas')}">Ver todas</a>
         </p>
       </section>
@@ -322,7 +332,7 @@
            decorativa. */-->
     <section th:unless="${#lists.isEmpty(n.periodos)}" class="parte parte--periodos"
              th:aria-labelledby="|${n.clave}-periodos|">
-      <h3 th:id="|${n.clave}-periodos|" th:text="${n.repite}">Cada mes</h3>
+      <h3 class="texto-chico" data-tono="acento" th:id="|${n.clave}-periodos|" th:text="${n.repite}">Cada mes</h3>
       <!--/* A la vista, los cuatro últimos; los anteriores, plegados (review de Sofía,
              2026-11-02: con más barras, los nombres no entran en el gráfico). El 4 se
              repite en el orden del gráfico de entidad-necesidades.css (nth-child 1 a 4). */-->
@@ -332,7 +342,7 @@
         </th:block>
       </ol>
       <details th:if="${#lists.size(n.periodos) > 4}" class="periodos-anteriores">
-        <summary class="enlace">Ver los anteriores</summary>
+        <summary>Ver los anteriores</summary>
         <ol class="periodos periodos--lista" role="list"
             th:aria-label="|Períodos anteriores de ${n.nombre}|">
           <th:block th:each="p, vuelta : ${n.periodos}" th:if="${vuelta.index >= 4}">
@@ -340,7 +350,7 @@
           </th:block>
         </ol>
       </details>
-      <p class="periodos-desde" th:text="${n.desde}">Desde julio de 2026</p>
+      <p class="periodos-desde texto-chico" data-tono="suave" th:text="${n.desde}">Desde julio de 2026</p>
     </section>
 
     <div class="pedido-acciones">
@@ -616,8 +626,8 @@ con este código</a>.</p>
 <li th:fragment="periodo(p, max)" class="periodo" th:classappend="|periodo--${p.tono}|"
     th:aria-current="${p.tono == 'curso'} ? 'true' : null">
   <span class="periodo-nombre"><b th:text="${p.nombre}">Octubre</b>
-    <span th:if="${p['fechas']}" th:text="${p.fechas}">del 1 al 31</span></span>
-  <span class="periodo-cuanto" th:text="|${p.recibido} · ${p.estado}|">10 de 40 kg · En curso</span>
+    <span th:if="${p['fechas']}" class="texto-chico" data-tono="suave" th:text="${p.fechas}">del 1 al 31</span></span>
+  <span class="periodo-cuanto texto-chico" data-tono="suave" th:text="|${p.recibido} · ${p.estado}|">10 de 40 kg · En curso</span>
   <progress class="progreso" th:value="${p.valor}" th:max="${max}" value="10" max="40" aria-hidden="true"></progress>
 </li>
 
