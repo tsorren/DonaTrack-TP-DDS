@@ -33,9 +33,25 @@
   `cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt`. La lista solo baja:
   al migrar un ítem del backlog, sus clases salen de la lista y entran acá. No se agregan clases
   nuevas a la lista.
-- Las capas, en orden (la última gana): `pico, tokens, composicion, utilidades, bloques,
+- Las capas, en orden (la última gana): `base, tokens, composicion, utilidades, bloques,
   excepciones, pantallas`, declaradas en `app.css`. Lo que no está en una capa (las hojas de
-  pantalla de hoy) gana a todas, hasta que se migre: por eso una regla sin capa de un elemento (como `a { color }`) le ganaría a un componente, y las de base viven en la capa `pico`: el color de los enlaces, el anillo de foco (`:focus-visible`, también el de paja sobre la cabecera y el pie) y el título de sección (`main h2`). La textura `.tierra-impresa` vive en la capa `utilidades` por lo mismo: la barra de navegación, que es fija, tiene que ganarle.
+  pantalla de hoy) gana a todas, hasta que se migre: por eso una regla sin capa de un elemento (como `a { color }`) le ganaría a un componente, y las de los elementos sueltos viven en la capa `base` (ver [Base](#base)). La textura `.tierra-impresa` vive en la capa `utilidades` por lo mismo: la barra de navegación, que es fija, tiene que ganarle.
+
+## Base
+
+Hoja: `static/css/app.css`, capa `base` (C1-01 y C1-02, la base de la guía «Huerta y galpón»,
+[`guia/partes/10-componentes.css`](guia/partes/10-componentes.css)). Sin clases: son las reglas de los
+elementos sueltos, y cualquier composición, componente u hoja de pantalla les gana.
+
+| Elemento | Cómo queda | Tokens |
+|---|---|---|
+| `body` | Papel, tinta y DM Sans con el alto de renglón del texto | `--color-fondo-pagina`, `--color-texto`, `--tamano-base`, `--tamano-interlinea-texto`, `--fuente-texto` |
+| `h1` a `h4`, `p`, listas, `dl`, `figure`, `fieldset`, `legend`, `table` | Sin márgenes ni relleno del navegador; las listas, sin viñetas (una lista que las necesita las pone en su componente); el `fieldset`, sin borde | — |
+| `h1`, `h2`, `h3` | Archivo ancha y pesada, con el renglón apretado y los renglones parejos (`text-wrap: balance`). El `h4`, en DM Sans de 700 | `--fuente-titulo`, `--fuente-peso-titulo`, `--fuente-ancho-titulo`, `--tamano-interlinea-titulo`, `--tamano-titulo-1` a `-3` |
+| `a` | Verde hondo, subrayado de 1,5 px; con el cursor, de 3 px | `--color-enlace` |
+| `strong`, `svg` | `strong` en 700; `svg` en bloque | — |
+| `:focus-visible` | El aro de foco, de un solo color en todo el sitio: tinta de 3 px con un filete de papel. Sobre la tierra del pie (`.raices-pie`), paja con filete de tierra | `--borde-ancho-foco`, `--color-foco`, `--color-foco-separador`, `--color-foco-sobre-suelo`, `--color-suelo` |
+| `main p` | La medida del texto: un párrafo no pasa de unos 70 caracteres por renglón; con `.texto-chico`, un poco menos | `--medida-texto`, `--medida-texto-chico` |
 
 ## Composición
 
@@ -44,8 +60,8 @@ Hoja: `static/css/composicion.css`, capa `composicion`. El espacio entre hijos s
 
 | Clase | Equivalente | Cuándo | Parámetros (custom properties) |
 |---|---|---|---|
-| `.pila` | `stack` | Hijos en columna con el mismo espacio entre ellos | `--espacio-entre` (por `data-espacio`) |
-| `.racimo` | `cluster` | Hijos en fila que bajan de renglón: botones, etiquetas. `data-alinea`: `centro`, `fin`, `entre` | `--espacio-entre` |
+| `.pila` | `stack` | Hijos en columna con el mismo espacio entre ellos. Se achica por debajo de su contenido (`min-width: 0`) | `--espacio-entre` (por `data-espacio`) |
+| `.racimo` | `cluster` | Hijos en fila que bajan de renglón: botones, etiquetas. `data-alinea`, una o dos palabras: `centro`, `fin` o `entre` (a lo ancho) y `arriba` (los hijos por arriba, no por el medio), como `data-alinea="entre arriba"`. Se achica por debajo de su contenido | `--espacio-entre` |
 | `.barra-lateral` | `sidebar` | Dos hijos lado a lado; el primero es la barra y el segundo ocupa el resto. En pantalla chica, uno sobre otro | `--medida-barra` (ancho de la barra, 15rem), `--espacio-entre` |
 | `.cubierta` | `cover` | Llena la altura de la pantalla; el hijo con `data-centro` queda en el medio | — |
 | `.grilla` | `grid` | Tantas columnas como entren | `--medida-grilla` (ancho mínimo de columna, 16rem), `--espacio-entre` |
@@ -58,7 +74,7 @@ Hoja: `static/css/utilidades.css`, capa `utilidades`. Una por token de uso.
 
 | Clase o atributo | Token | Cuándo |
 |---|---|---|
-| `data-espacio="1"` a `"5"` | `--espacio-1` a `--espacio-5` | El espacio entre hijos de una pila, un racimo, una barra lateral o una grilla |
+| `data-espacio="0"` a `"5"` | `--espacio-0` a `--espacio-5` | El espacio entre hijos de una pila, un racimo, una barra lateral o una grilla. El `0` es el escalón de 4 px, no la nada |
 | `.texto-chico`, `.texto-base`, `.texto-grande` | `--tamano-chico`, `--tamano-base`, `--tamano-grande` | Cambiar el tamaño del texto de un elemento |
 | `.solo-lectores` (en `app.css`) | — | Un texto que solo leen los lectores de pantalla: el nombre de un control con ícono |
 | `data-tono="suave"`, `"acento"`, `"exito"`, `"aviso"`, `"error"` | `--color-texto-suave`, `--color-acento`, `--color-exito-texto`, `--color-advertencia-texto`, `--color-error-texto` | El color del texto según lo que dice. Siempre con palabras: el color solo no alcanza |
@@ -126,7 +142,11 @@ la declaración queda sin valor y el elemento no se anima. Una animación nueva 
 | `--movimiento-animacion-registro` | `mov-registro` | Se imprime: aparece con la segunda tinta corrida (7 px, −6 px) | larga · entrada · entrada |
 | `--movimiento-animacion-registro-fino` | `mov-registro-fino` | Igual, con corrimiento de 4 px (panel de una pestaña) | media · entrada · — |
 | `--movimiento-animacion-traza` | `mov-traza` | Dibuja un trazo SVG con `pathLength="1"` | trazo · enfasis · entrada |
-| `--movimiento-animacion-traza-raiz` | `mov-traza` | Dibuja un trazo después del brote | trazo · enfasis · trazo |
+| `--movimiento-animacion-traza-raiz` | `mov-traza` | El trazo de la raíz (C1-03): al llegar desde el formulario, el último tramo se dibuja una vez (`backwards`: sin animación queda dibujado) | trazo · entrada · — |
+| `--movimiento-animacion-asoma` | `mov-aparece` | El nudo nuevo de la raíz asoma con un fundido cuando termina el trazo | media · salida · `duracion-trazo` |
+| `--movimiento-animacion-brote` | `mov-brote` | El fruto nuevo brota desde escala 0, después del nudo; va con `transform-box: fill-box` y el origen en el centro | media · entrada · `duracion-trazo` + `duracion-corta` |
+| `--movimiento-animacion-gira` | `mov-gira` | La ruedita del botón que carga gira en ciclo mientras dura el envío (la guía escribe 0,9 s) | larga · `linear` · — |
+| `--movimiento-animacion-late`, `--movimiento-animacion-late-segundo`, `--movimiento-animacion-late-tercero` | `mov-late` | Los renglones del esqueleto se aclaran hasta 0,45 y vuelven, en ciclo, uno detrás del otro (la guía escribe 1,4 s y esperas de 0,2 s y 0,4 s) | trazo · salida · —, `duracion-corta` y `duracion-media` |
 | `--movimiento-animacion-recorta` | `mov-recorta` | Revela un trazo de izquierda a derecha con `clip-path` | trazo · enfasis · entrada |
 | `--movimiento-animacion-baja` | `mov-baja` | Aparece bajando 6 px desde arriba | media · base · sello |
 | `--movimiento-animacion-imprime` | `mov-imprime` | Un sello aparece desde escala 1,4 | media · salida · sello |
@@ -140,6 +160,15 @@ custom properties: son `@keyframes` para las líneas de tiempo del scroll
 (`animation: mov-asiento linear both` más `animation-timeline` y `animation-range` en la hoja de
 pantalla, que es disposición, o en el bloque que la usa: `mov-asiento` la pide `.libreta`). Esas reglas dejan `animation-delay: var(--movimiento-retraso-ninguno)`
 para anular la espera de la animación del tiempo: es un reset, no una duración.
+
+Las duraciones de la guía que no son tokens pasan al token más cercano (C1-03): el giro de 0,9 s a
+`duracion-larga` (0,75 s) y el latido de 1,4 s a `duracion-trazo` (1,1 s). Las esperas de 0,2 s y
+0,4 s del esqueleto y la del brote usan `duracion-corta` y `duracion-media`, que valen eso mismo.
+
+**Movimiento reducido** (C1-03, guía «Huerta y galpón»). Con «reducir movimiento» en el sistema,
+`movimiento.css` apaga toda animación y toda transición del sitio (`animation: none` y
+`transition: none` con `!important` sobre `*`, `::before` y `::after`): le gana a todas las capas y a
+las hojas sin capa. Las custom properties de arriba, además, no existen con esa preferencia.
 
 ## Tokens
 

@@ -52,25 +52,62 @@
   box-sizing: border-box;
 }
 
+/* La base de la guía «Huerta y galpón» (C1-01): el papel, la tinta y el texto en DM Sans con su alto
+   de renglón. */
 body {
   position: relative;
   margin: 0;
-  background: var(--color-papel);
-  color: var(--color-tinta-suave);
-  font: 400 1.0625rem/1.6 var(--fuente-texto);
+  color-scheme: light;
+  background: var(--color-fondo-pagina);
+  color: var(--color-texto);
+  font: 400 var(--tamano-base) / var(--tamano-interlinea-texto) var(--fuente-texto);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* El color de los enlaces y el anillo de foco son la base: van en la capa `base` para que los
-   componentes (el botón con forma de enlace, la barra de navegación) le ganen sin pelear por
-   especificidad. */
+/* Las reglas de los elementos sueltos, el color de los enlaces y el aro de foco son la base: van en
+   la capa `base` para que la composición, los componentes y las hojas de pantalla les ganen sin pelear
+   por especificidad. */
 @layer base {
-  a {
-    color: var(--color-acento);
+  /* Sin márgenes ni viñetas del navegador: el espacio lo ponen la composición y los componentes. */
+  :where(h1, h2, h3, h4, p, ul, ol, dl, dd, figure, fieldset, legend, table) {
+    margin: 0;
+    padding: 0;
   }
 
-  :focus-visible {
-    outline: 3px solid var(--color-acento);
-    outline-offset: 3px;
+  :where(ul, ol) {
+    list-style: none;
+  }
+
+  :where(fieldset) {
+    border: 0;
+    min-width: 0;
+  }
+
+  /* Los títulos, en Archivo ancha y pesada; el cuarto, en la letra del texto. */
+  :where(h1, h2, h3) {
+    font-family: var(--fuente-titulo);
+    font-weight: var(--fuente-peso-titulo);
+    font-stretch: var(--fuente-ancho-titulo);
+    line-height: var(--tamano-interlinea-titulo);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  h1 {
+    font-size: var(--tamano-titulo-1);
+  }
+
+  h2 {
+    font-size: var(--tamano-titulo-2);
+  }
+
+  h3 {
+    font-size: var(--tamano-titulo-3);
+  }
+
+  h4 {
+    font: 700 var(--tamano-base) / 1.3 var(--fuente-texto);
   }
 
   /* La parte destacada de un título va derecha, en otro color (piel Huerta, 2026-11-08). */
@@ -78,9 +115,46 @@ body {
     font-style: normal;
   }
 
-  /* Sobre la tierra honda del pie, el anillo es de paja. */
+  /* El enlace, en verde hondo y subrayado; con el cursor, el subrayado engrosa. */
+  a {
+    color: var(--color-enlace);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.2em;
+  }
+
+  a:hover {
+    text-decoration-thickness: 3px;
+  }
+
+  strong {
+    font-weight: 700;
+  }
+
+  svg {
+    display: block;
+  }
+
+  /* El foco, de un solo color en todo el sitio: un aro de tinta separado por un filete de papel, para
+     que se vea sobre cualquier fondo. */
+  :focus-visible {
+    outline: var(--borde-ancho-foco) solid var(--color-foco);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-foco-separador);
+  }
+
+  /* Sobre la tierra del pie, el aro es de paja y el filete, de tierra. */
   .raices-pie :focus-visible {
-    outline-color: var(--color-raiz);
+    outline-color: var(--color-foco-sobre-suelo);
+    box-shadow: 0 0 0 2px var(--color-suelo);
+  }
+
+  /* El texto corrido no pasa de unos 70 caracteres por renglón; el chico, un poco menos. */
+  main :where(p) {
+    max-width: var(--medida-texto);
+  }
+
+  main :where(p.texto-chico, .texto-chico p) {
+    max-width: var(--medida-texto-chico);
   }
 }
 

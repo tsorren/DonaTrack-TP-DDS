@@ -28,7 +28,12 @@
     --movimiento-animacion-registro: mov-registro var(--movimiento-duracion-larga) var(--movimiento-curva-entrada) var(--movimiento-retraso-entrada) both;
     --movimiento-animacion-registro-fino: mov-registro-fino var(--movimiento-duracion-media) var(--movimiento-curva-entrada) both;
     --movimiento-animacion-traza: mov-traza var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-entrada) both;
-    --movimiento-animacion-traza-raiz: mov-traza var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-trazo) both;
+    /* El trazo de la raíz (guía «Huerta y galpón», C1-03): al llegar desde el formulario, el último
+       tramo se dibuja una vez; después asoma el nudo nuevo y brota el fruto. El estado de base es el
+       dibujo completo (backwards: sin animación, queda dibujado). */
+    --movimiento-animacion-traza-raiz: mov-traza var(--movimiento-duracion-trazo) var(--movimiento-curva-entrada) backwards;
+    --movimiento-animacion-asoma: mov-aparece var(--movimiento-duracion-media) var(--movimiento-curva-salida) var(--movimiento-duracion-trazo) backwards;
+    --movimiento-animacion-brote: mov-brote var(--movimiento-duracion-media) var(--movimiento-curva-entrada) calc(var(--movimiento-duracion-trazo) + var(--movimiento-duracion-corta)) backwards;
     --movimiento-animacion-recorta: mov-recorta var(--movimiento-duracion-trazo) var(--movimiento-curva-enfasis) var(--movimiento-retraso-entrada) both;
     --movimiento-animacion-baja: mov-baja var(--movimiento-duracion-media) var(--movimiento-curva-base) var(--movimiento-retraso-sello) both;
     --movimiento-animacion-imprime: mov-imprime var(--movimiento-duracion-media) var(--movimiento-curva-salida) var(--movimiento-retraso-sello) both;
@@ -49,6 +54,15 @@
     /* La ola del esqueleto (usuario, 2026-11-12): un brillo cruza el lugar de lo que carga, en
        ciclo, mientras dura la carga, y se va con ella. */
     --movimiento-animacion-ola: mov-ola calc(var(--movimiento-duracion-larga) * 2) var(--movimiento-curva-ambiente) infinite;
+    /* El botón que carga (C1-03): su ruedita gira en ciclo mientras dura el envío. La guía escribe
+       0,9 s; el token más cercano es la duración larga (0,75 s). */
+    --movimiento-animacion-gira: mov-gira var(--movimiento-duracion-larga) linear infinite;
+    /* El latido del esqueleto (C1-03): cada renglón se aclara y vuelve, en ciclo, mientras dura la
+       carga; el segundo y el tercero esperan un poco. La guía escribe 1,4 s y esperas de 0,2 s y
+       0,4 s; los tokens más cercanos son la duración del trazo (1,1 s), la corta y la media. */
+    --movimiento-animacion-late: mov-late var(--movimiento-duracion-trazo) var(--movimiento-curva-salida) infinite alternate;
+    --movimiento-animacion-late-segundo: mov-late var(--movimiento-duracion-trazo) var(--movimiento-curva-salida) var(--movimiento-duracion-corta) infinite alternate;
+    --movimiento-animacion-late-tercero: mov-late var(--movimiento-duracion-trazo) var(--movimiento-curva-salida) var(--movimiento-duracion-media) infinite alternate;
     --movimiento-transicion-atenua: opacity var(--movimiento-duracion-corta);
     --movimiento-transicion-dialogo: opacity var(--movimiento-duracion-media) var(--movimiento-curva-salida), overlay var(--movimiento-duracion-media) allow-discrete, display var(--movimiento-duracion-media) allow-discrete;
   }
@@ -131,6 +145,29 @@
   @keyframes mov-traza {
     from {
       stroke-dashoffset: 1;
+    }
+  }
+
+  /* El fruto nuevo brota desde nada (va con transform-box: fill-box y el origen en el centro). */
+  @keyframes mov-brote {
+    from {
+      scale: 0;
+    }
+  }
+
+  @keyframes mov-gira {
+    to {
+      rotate: 1turn;
+    }
+  }
+
+  @keyframes mov-late {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0.45;
     }
   }
 
@@ -282,5 +319,17 @@
     11% {
       rotate: -1deg;
     }
+  }
+}
+
+/* Movimiento reducido (guía «Huerta y galpón», C1-03): con esa preferencia nada gira, late ni se
+   desliza en todo el sitio, tampoco lo que piden las hojas sin capa; los cambios son inmediatos. Va
+   con !important porque tiene que ganarles a todas las capas y a las hojas de pantalla. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }
