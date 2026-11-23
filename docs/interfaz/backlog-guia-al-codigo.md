@@ -598,8 +598,8 @@ buzón: [`flujos/guia-org-buzon.md`](flujos/guia-org-buzon.md), aprobada el mism
 | ORG-02 | `org-buzon` | La casilla de cada fila y la de elegir todas con un control de 48 × 48 px | DA-21 |
 | ORG-03 | `org-inicio` | Inicio de la organización, con los dos estados que decide el servidor. El avance de una necesidad, con la cuenta de donaciones de hoy (HG-04) | A09 |
 | ORG-04 | `org-necesidades` | Necesidades y su error al publicar | A02; el error deriva de A12 |
-| ORG-05 | `org-necesidades` | Publicada, cambiada y dada de baja pasan a aviso breve en Necesidades | DA-06 |
-| ORG-06 | `org-perfil` | El perfil, y «guardado» pasa a aviso breve | Deriva de A12; DA-06 |
+| ORG-05 | `org-necesidades` | Publicada, cambiada y dada de baja pasan a aviso breve en Necesidades; en la maqueta, sus rutas siguen y muestran Necesidades con el aviso | DA-06 |
+| ORG-06 | `org-perfil` | El perfil, y «guardado» pasa a aviso breve; en la maqueta, su ruta sigue | Deriva de A12; DA-06 (DA-06-perfil en el manifiesto) |
 | ORG-07 | `org-entregas` | Entregas: las donaciones recibidas y el seguimiento en una sola pantalla | A10; DA-02 |
 | ORG-08 | `org-entregas` | Página nueva: entrega con problema (`/entidad-entrega-problema`). La nueva salida, con «Todavía sin fecha de nueva salida» (HG-01) | A11 |
 | ORG-09 | `org-entregas` | El menú de la organización: Inicio, Necesidades, Entregas y Ayuda, que lleva a Para organizaciones | DA-02, DA-05 y DA-17 |
@@ -613,7 +613,8 @@ Cada lote termina, además, la migración de las hojas heredadas de sus pantalla
 
 - **En cada lote:** los gates y `-Pvisual` sobre sus `rutasVisuales`, una por plantilla.
 - **Al cierre:** el stack con el seed y el recorrido con login, porque ORG toca un adaptador `rest`
-  (`EntidadConfirmarRest`); `-Pvisual` sobre todas las rutas, con la línea de base de §10.4; y los
+  (`EntidadConfirmarRest`); `-Pvisual` sobre las rutas del área (las `/entidad-` de `paginas.txt` y
+  los buzones de quien dona y del admin), no sobre las 320 (DA-20), con la línea de base de §10.4; y los
   otros cinco tests visuales, con la línea de base de §10.5.
 - **Lo que cambia en la línea de base:** con DA-21, las tres rutas `/…-notificaciones` tendrían que
   pasar `[INFERRED]`; si pasan, se anota. Las otras 8 siguen siendo heredadas.

@@ -31,6 +31,32 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-23 · buzón · El buzón de los tres roles toma la fila de la campana de la guía
+
+- **Decisión:** la ficha [`guia-org-buzon.md`](flujos/guia-org-buzon.md): «Novedades» como título
+  en los tres roles; sin leer, con el punto lleno y la negrita, **sin fondo** (revierte el fondo
+  suave que aprobó R11-14); y el buzón del admin cambia en la ola ORG junto con los otros dos.
+- **Alternativas:** dejar los títulos de hoy; conservar el fondo suave; una variante del admin hasta
+  ADM2.
+- **Por qué:** la campana y el buzón muestran la misma señal; en la guía, el salvia es de pasar el
+  mouse o del foco, no de un estado; y el buzón es una sola pieza.
+- **Costo:** sin fondo, una fila sin leer se distingue menos de lejos.
+- **Quién decidió:** usuario («ok» a la ficha con las tres recomendadas, 2026-11-23).
+- **Evidencia:** la ficha, §9; backlog §11.
+
+### 2026-11-23 · proceso · G1: las cuatro áreas se pueden mostrar así, como excepción a la regla del piso
+
+- **Decisión:** las cuatro áreas pueden entrar a medias el 30/11, aunque 11 pantallas sin rehacer
+  fallan el piso por toque.
+- **Alternativas:** aplicar la regla del plan (§10) y dejar las cuatro áreas en «no se puede mostrar
+  así», con todas sus olas necesarias para el go.
+- **Por qué:** las 11 fallan solo por toque, no por contraste; el usuario conoció la regla y mantuvo
+  su respuesta.
+- **Costo:** si una ola no llega, su área se muestra con esas fallas de toque.
+- **Quién decidió:** usuario («Las 4 se muestran» y, al conocer la regla, «Mantener, excepción»).
+- **Evidencia:** backlog §2.2 (fila G1), §10.3 a §10.5; la hoja en `guia-c1/G1/hoja-g1.html`, fuera
+  del repo.
+
 ### 2026-11-23 · proceso · Ronda 4: lo que necesitan los manifiestos de rol (DA-03b, DA-03c, DA-04, DA-05, DA-06, DA-08, DA-13 y DA-21)
 
 - **Decisión:** el admin entra por «Por decidir», que reemplaza a Inicio y a Asignar, y los

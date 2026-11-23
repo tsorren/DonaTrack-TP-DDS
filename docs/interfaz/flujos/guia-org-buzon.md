@@ -2,7 +2,7 @@
 
 > **Estado:** aprobado · **Fecha:** 2026-11-23 · **Aprobó:** el usuario, 2026-11-23 («ok», con las tres preguntas de §9 en la opción recomendada). Corrección de hecho del mismo día, después de aprobar: los filtros son la barra de `componentes/listado` desde R11-B04, no pestañas
 > Ficha del lote `org-buzon` de la ola ORG del
-> [backlog de la guía al código](../backlog-guia-al-codigo.md) (§5 y §10.2). Pedida por DA-08 y
+> [backlog de la guía al código](../backlog-guia-al-codigo.md) (§5 y §11). Pedida por DA-08 y
 > escrita en sesión con el usuario (DA-19).
 > Hereda de la ficha [R11-14 del buzón](r11-p1-notificaciones.md) (aprobada el 2026-11-12) el
 > recorrido (§3), los estados (§5), los textos (§6), la accesibilidad (§7) y lo que el servicio
@@ -91,7 +91,6 @@ Los de R11-14 §6, con estos cambios:
 | Título de la pantalla | Organización: «Tus novedades»; quien dona: «Noticias de tus donaciones»; admin: «Notificaciones» | «Novedades» en los tres roles (la organización puede seguir con «Tus novedades») | La guía llama «Novedades» a la campana en todas las cabeceras (pregunta 1) |
 | Total y paginador | «de 57 notificaciones» · «Páginas de notificaciones» | «de 57 novedades» · «Páginas de novedades» | El mismo nombre que el título |
 | Vínculo de la organización | «Ver en Donaciones recibidas» | «Ver en Entregas», a la ruta de Entregas | DA-02 funde Recibidas en Entregas; la ruta la fija `org-entregas` |
-| Casilla de cada fila, para lectores | — | «Elegir: <título>» | Cada casilla tiene un nombre único |
 
 Filtro de tono: sin cambios respecto de R11-14.
 
