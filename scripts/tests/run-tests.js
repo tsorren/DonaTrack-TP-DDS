@@ -838,14 +838,14 @@ assert('19.11 the rule is identical in the workflow and in the check',
 // El workflow, cargado como en el sandbox (sin el export) y con agentes que no responden: prueba la
 // sintaxis y el arranque sin lanzar agentes. No reemplaza una corrida real.
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-const correrWorkflow = async (manifiesto, responder = async () => null) => {
+const correrWorkflow = async (manifiesto, responder = async () => null, paralelo = async (thunks) => Promise.all(thunks.map((t) => t()))) => {
   const llamadas = [];
   const agentes = [];
   const fn = new AsyncFunction('args', 'agent', 'parallel', 'phase', 'log', WORKFLOW.replace(/^export const meta/m, 'const meta'));
   const resultado = await fn(
     { manifiesto, ola: 'P0', fase: 'construir', carpeta: '/tmp/oleada' },
     async (prompt, opts) => { llamadas.push(opts.label); agentes.push({ prompt, ...opts }); return responder(opts); },
-    async (thunks) => Promise.all(thunks.map((t) => t())),
+    paralelo,
     () => {}, () => {});
   return { resultado, llamadas, agentes };
 };
@@ -929,6 +929,20 @@ const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '', omite = '', ex
   assert('19.22 contradictory lines (NO CUMPLE wins) or "CUMPLE parcialmente" → no PR',
     contradice.resultado.pr === '' && parcial.resultado.pr === '' &&
     !parcial.resultado.decisionesDelUsuario.some((d) => d.startsWith('D2') && d.includes(': cumplida')));
+
+  // El runtime real puede devolver copias desde parallel(): el lazo no puede comparar lotes por identidad.
+  // p0-mis-donaciones pide cambios en la ronda 1 y aprueba en la 2; p0-api-donaciones aprueba en la 1.
+  const conArreglo = agenteFalso(true);
+  const copias = await correrWorkflow(PLANTILLA, async (opts) => {
+    const r = await conArreglo(opts);
+    if (opts.label === 'revisión p0-mis-donaciones r1') return { ...r, veredicto: 'CHANGES_REQUIRED', bloqueantes: ['falta un estado'] };
+    return r;
+  }, async (thunks) => structuredClone(await Promise.all(thunks.map((t) => t()))));
+  const revisiones = copias.llamadas.filter((l) => l.startsWith('revisión '));
+  assert('19.23 parallel() returns copies → a PASS lote is not reviewed again, none twice in a round, decisions met',
+    !revisiones.includes('revisión p0-api-donaciones r2') &&
+    new Set(revisiones).size === revisiones.length &&
+    copias.resultado.decisionesDelUsuario.filter((d) => d.includes('cumplida (PASS')).length === 2);
 
   resumen();
 })().catch((e) => { console.error(e); failed++; resumen(); });

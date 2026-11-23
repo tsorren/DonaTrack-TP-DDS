@@ -413,7 +413,8 @@ Bloqueante es lo que rompe un criterio de aceptación (incluida toda decisión d
       for (const d of decisionesDe(r.lote)) estadoDecision[d.id] = `cumplida (PASS de la revisión del lote, ronda ${ronda})`
     }
     const conCambios = revisiones.filter((r) => !aprobados.includes(r) && r.bloqueantes.length)
-    const sinVeredicto = aRevisar.filter((l) => !aprobados.some((r) => r.lote === l) && !conCambios.some((r) => r.lote === l))
+    // Por id: parallel() puede devolver copias, y r.lote no es el mismo objeto que l.
+    const sinVeredicto = aRevisar.filter((l) => ![...aprobados, ...conCambios].some((r) => r.lote.id === l.id))
     if (ronda === RONDAS) {
       for (const r of conCambios) resultado.pendientes.push(`${r.lote.id}: quedó con bloqueantes tras ${RONDAS} rondas: ${r.bloqueantes.join(' | ')}`)
       for (const l of sinVeredicto) resultado.pendientes.push(`${l.id}: sin PASS tras ${RONDAS} rondas (el revisor no respondió o no dio bloqueantes)`)
@@ -445,7 +446,7 @@ Comiteá "${PREFIJO}${r.lote.id}, arreglos ronda ${ronda}". Devolvé los campos 
       resultado.pendientes.push(`${etiqueta}, ronda ${ronda}: los arreglos no se integraron (no respondió el arreglo o el integrador)`)
     }
     // Todo lo que no aprobó vuelve a revisarse: lo arreglado y lo que quedó igual.
-    aRevisar = [...conCambios.map((r) => r.lote), ...sinVeredicto]
+    aRevisar = aRevisar.filter((l) => !conPass.has(l.id))
   }
 
   for (const l of integrados) resultado.lotes.push({ id: l.id, items: l.items, tanda: t })
