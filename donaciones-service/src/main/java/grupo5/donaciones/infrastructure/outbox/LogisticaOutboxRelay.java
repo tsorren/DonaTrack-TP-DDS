@@ -14,6 +14,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.function.Consumer;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -45,6 +46,10 @@ public class LogisticaOutboxRelay {
     this.clock = clock;
   }
 
+  @SchedulerLock(
+      name = "donaciones.relay-outbox-logistica",
+      lockAtMostFor = "PT5M",
+      lockAtLeastFor = "PT0.5S")
   @Scheduled(fixedDelayString = "${donatrack.logistica.outbox.intervalo-ms:10000}")
   public void procesarPendientes() {
     for (EntradaOutboxLogistica entrada : outbox.pendientesListas(LocalDateTime.now(clock))) {

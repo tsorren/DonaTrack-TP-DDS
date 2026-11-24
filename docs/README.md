@@ -28,6 +28,7 @@ docs/
 │   ├── principios-diseno-arquitectura.md  # Fundamentación teórica, 8 atributos, SOLID, GRASP, GoF, DDD
 │   ├── shared-kernel.md                   # CrudRepository, eventos de dominio y OpenAPI
 │   ├── logging-trazabilidad.md            # Observabilidad distribuida, MDC y traceId
+│   ├── metricas-de-negocio.md             # Contadores de Micrometer de negocio (M01, M04, M13, M16, M10r) para tableros
 │   ├── analisis-arquitectonico.md         # Diagnóstico estructural del monorepo
 │   ├── guia-patrones-diseno.md            # Catálogo de patrones de diseño aplicados
 │   ├── catalogo-errores.md                # ⚠️ Catálogo unificado de códigos de error (ERR-INF, ERR-VAL, etc.)
@@ -121,7 +122,7 @@ docs/
 │   ├── plan-e6-trabajo-sin-auth.md        # Trabajo de E6 que avanza sin auth ni estilos (priorizado)
 │   ├── plan-e6-cliente-datos-reales-y-gateway.md # Cliente con datos reales, gateway y base para auth (alternativas y fases)
 │   ├── brechas-de-datos-por-pantalla-e6.md # Qué pantallas conectan hoy y qué le falta al backend (insumo de F2)
-│   └── requerimientos-e7.md               # Rondas de decisión de E7 (observabilidad, autorestart, rate limiting, gRPC o GraphQL); Rondas 1 a 4 respondidas (GraphQL en Donaciones, stack Grafana, todo en Kubernetes con kind y Kustomize, revisado el 2026-11-18 a Docker Swarm de un nodo con réplicas en la revisión de simplificación (§5, rondas S1 a S5: Swarm, nginx, otel-lgtm con OTLP, seis métricas propias, GraphQL sin el donante y consumido por una pantalla existente), rate limiting en el gateway con Redis), Ronda 5 (GraphQL) y Ronda 6 (diagramas, ADR y consultas a la cátedra) respondidas, con Q15 (reparto del trabajo) en su versión 2 del 2026-11-17 (reparto por tarea con dedicación por persona, sprint de cluster, parciales y punto de control del 22/11; CPM vivo; defensa el 4/12) a la espera del ajuste del resto del grupo y Q02 cerrada (Key Broker diferido, E7-S04d)
+│   └── requerimientos-e7.md               # Rondas de decisión de E7 (observabilidad, autorestart, rate limiting, gRPC o GraphQL); Rondas 1 a 4 respondidas (GraphQL en Donaciones, stack Grafana, todo en Kubernetes con kind y Kustomize, revisado el 2026-11-18 a Docker Swarm de un nodo con réplicas en la revisión de simplificación (§5, rondas S1 a S5: Swarm, nginx (revertido el mismo día después de la prueba de Swarm: sin proxy delante), otel-lgtm con OTLP, seis métricas propias, GraphQL sin el donante y consumido por una pantalla existente), rate limiting en el gateway con Redis), Ronda 5 (GraphQL) y Ronda 6 (diagramas, ADR y consultas a la cátedra) respondidas, con Q15 (reparto del trabajo) en su versión 2 del 2026-11-17 (reparto por tarea con dedicación por persona, sprint de cluster, parciales y punto de control del 22/11; CPM vivo; defensa el 4/12) a la espera del ajuste del resto del grupo y Q02 cerrada (Key Broker diferido, E7-S04d)
 │
 ├── interfaz/                              # 🎨 Proceso de diseño de la interfaz del cliente liviano (E6)
 │   ├── README.md                          # Proceso en 6 pasos, quién decide, listo para entregar, cómo extender
@@ -147,6 +148,9 @@ docs/
 │   ├── arquitectura/anexo-servicios.md     # Anexo por servicio del documento de arquitectura (entregable 3)
 │   └── arquitectura/diagramas/            # Diagramas complementarios (PlantUML + PNG)
 │       └── rabbit/                        # Topología RabbitMQ por flujo (exchanges, colas, DLQ)
+│
+├── entrega-7/
+│   └── arquitectura/diagramas/            # Borrador de componentes y despliegue en Docker Swarm (PlantUML + PNG)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── README.md                          # 🎓 Matriz curricular e índice de entregas 1 a 7
@@ -191,6 +195,8 @@ docs/
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
 * 📋 **Requerimientos de Entrega 6 (cliente liviano, autenticación y gateway):** [requerimientos/requerimientos-e6.md](requerimientos/requerimientos-e6.md)
 * 📋 **Requerimientos de Entrega 7 (observabilidad y seguridad; rondas de decisión):** [requerimientos/requerimientos-e7.md](requerimientos/requerimientos-e7.md)
+* 🧭 **ADRs de E7 (`proposed`, PR de los ADR):** [despliegue en Docker Swarm de un nodo, con réplicas](adr/20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md) · [observabilidad con OpenTelemetry y `otel-lgtm`](adr/20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm.md) · [rate limiting en el gateway](adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md) · [GraphQL de solo lectura en Donaciones](adr/donaciones-service/20261117-graphql-de-solo-lectura-en-donaciones.md)
+* 🗺️ **Diagramas de E7 (borrador de componentes y de despliegue en Docker Swarm):** [entrega-7/arquitectura/diagramas/](entrega-7/arquitectura/diagramas/README.md)
 * 🧭 **Plan de trabajo de E6 sin autenticación ni estilos:** [requerimientos/plan-e6-trabajo-sin-auth.md](requerimientos/plan-e6-trabajo-sin-auth.md)
 * 🔌 **Plan del cliente liviano con datos reales y gateway (alternativas y fases):** [requerimientos/plan-e6-cliente-datos-reales-y-gateway.md](requerimientos/plan-e6-cliente-datos-reales-y-gateway.md) · brechas por pantalla: [requerimientos/brechas-de-datos-por-pantalla-e6.md](requerimientos/brechas-de-datos-por-pantalla-e6.md)
 * 🎨 **Proceso de diseño de la interfaz (UX, identidad visual y vistas):** [interfaz/README.md](interfaz/README.md) · reglas del módulo: [../cliente-liviano/AGENTS.md](../cliente-liviano/AGENTS.md)
@@ -242,6 +248,7 @@ docs/
 * 🔌 **Conexión de pantallas del cliente liviano a las APIs (E6, propuesta):** [SPEC-08](specs/active/SPEC-08-conexion-de-pantallas.md) · [brechas de datos por pantalla](requerimientos/brechas-de-datos-por-pantalla-e6.md)
 * 🏁 **Cierre de E6, demo punta a punta (propuesta):** [SPEC-09](specs/active/SPEC-09-cierre-e6-demo-punta-a-punta.md) · [ADR del estado `EN_PUERTA` de la entrega (`proposed`)](adr/logistica-service/20261111-estado-en-puerta-de-la-entrega.md) · [DTI-38](adr/DEUDA_TECNICA.md#dti-38)
 * 🚪 **API Gateway (etapa 1: rutas y `X-Trace-Id`, sin JWT):** [../api-gateway/README.md](../api-gateway/README.md) · [SPEC-07](specs/active/SPEC-07-api-gateway-etapa-1.md) · [ADR-E6-02](adr/20261107-api-gateway-validacion-jwt-en-doble-capa-y-rutas-publicas.md)
+* 🚦 **Rate limiting en el gateway (E7, requerimiento 3):** [ADR por cuenta o por IP (`proposed`, en el PR de los ADR de E7)](adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md) · [../api-gateway/README.md](../api-gateway/README.md#rate-limiting)
 * 💻 **Cliente Liviano (interfaz web de E6):** [../cliente-liviano/README.md](../cliente-liviano/README.md)
 * 🗄️ **Scripts de Inicialización de Base de Datos (PostgreSQL):** [../persistencia/init-db/01-init-schemas-roles.sql](../persistencia/init-db/01-init-schemas-roles.sql) y [../persistencia/init-db/02-set-role-passwords.sh](../persistencia/init-db/02-set-role-passwords.sh) (contraseñas desde `.env`, ver [../.env.example](../.env.example))
 * 🪣 **MinIO de Donaciones (padrones CSV y fotos de bienes):** [entrega-4/donaciones/bitacora-minio.md](entrega-4/donaciones/bitacora-minio.md) · plan: [entrega-4/donaciones/plan-minio-csv-y-fotos.md](entrega-4/donaciones/plan-minio-csv-y-fotos.md) · usuarios por servicio: [../persistencia/minio/init-usuarios.sh](../persistencia/minio/init-usuarios.sh)

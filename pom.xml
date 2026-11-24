@@ -42,20 +42,13 @@
              cuenta como duplicacion, asi que se los saca del detector de copy-paste.
              Se siguen analizando normalmente para bugs, vulnerabilidades y code smells. -->
         <sonar.cpd.exclusions>**/EventoDonacionAsignadaV1.java,**/config/RabbitMQConfig.java</sonar.cpd.exclusions>
-        <!-- Dos reglas acotadas, con OK del usuario (2026-11-15, DTI-45):
-             e1 java:S1135: la palabra espanola "todo" en comentarios dispara la regla de TODO
-                (las 28 issues eran falsos positivos; un TODO real se resuelve en el codigo).
-             e2 java:S1192: la maqueta repite a proposito los datos de ejemplo del perfil
-                "maqueta" ("alimentos", "arroz", fechas); extraerlos a constantes los leeria peor.
-             El resto del codigo sigue bajo ambas reglas. -->
-        <sonar.issue.ignore.multicriteria>e1,e2</sonar.issue.ignore.multicriteria>
-        <sonar.issue.ignore.multicriteria.e1.ruleKey>java:S1135</sonar.issue.ignore.multicriteria.e1.ruleKey>
-        <sonar.issue.ignore.multicriteria.e1.resourceKey>**/*.java</sonar.issue.ignore.multicriteria.e1.resourceKey>
-        <sonar.issue.ignore.multicriteria.e2.ruleKey>java:S1192</sonar.issue.ignore.multicriteria.e2.ruleKey>
-        <sonar.issue.ignore.multicriteria.e2.resourceKey>**/cliente/maqueta/**</sonar.issue.ignore.multicriteria.e2.resourceKey>
         <testcontainers.version>1.20.4</testcontainers.version>
         <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
+        <!-- Rate limiting del api-gateway (E7, requerimiento 3; ADR 20261115). -->
+        <bucket4j.version>8.14.0</bucket4j.version>
         <archunit.version>1.3.0</archunit.version>
+        <!-- ShedLock (E7-S01d-1): una sola replica corre cada tarea programada; lo arma common-lib. -->
+        <shedlock.version>7.11.0</shedlock.version>
         <pitest.version>1.16.1</pitest.version>
         <pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
         <argLine></argLine>
@@ -88,6 +81,31 @@
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
                 <version>${logstash-logback-encoder.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bucket4j</groupId>
+                <artifactId>bucket4j_jdk17-core</artifactId>
+                <version>${bucket4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bucket4j</groupId>
+                <artifactId>bucket4j_jdk17-lettuce</artifactId>
+                <version>${bucket4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-spring</artifactId>
+                <version>${shedlock.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-jdbc-template</artifactId>
+                <version>${shedlock.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-mongo</artifactId>
+                <version>${shedlock.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.tngtech.archunit</groupId>

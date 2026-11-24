@@ -56,6 +56,10 @@ Las siguientes responsabilidades están centralizadas en `common-lib` debido a s
   * `AgregadoConEventos` y `EventoDeDominio` en `grupo5.common.events`: Abstracciones base para acumulación y despacho desacoplado de eventos de dominio.
   * `DonaTrackOpenApiAutoConfiguration` y `DonaTrackOpenApiProperties` en `grupo5.common.openapi`: Estandarización automática de Swagger UI y especificaciones OpenAPI 3 para todos los microservicios.
 
+### G. Una sola réplica por tarea programada (ShedLock)
+* **Qué incluye:** `ShedLockAutoConfiguration` en `grupo5.common.shedlock`: `@EnableSchedulerLock` y un `LockProvider` JDBC sobre la tabla `shedlock` del esquema de Flyway. Se activa solo si el servicio trae ShedLock (optional en `common-lib`), tiene un `DataSource` y usa `@EnableScheduling`.
+* **Justificación:** Donaciones, Incentivos y Logística (perfil `postgres`) comparten el mismo armado; con el perfil `mongo`, Logística arma su lock en su propio módulo ([ADR de despliegue en Docker Swarm](../adr/20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md)).
+
 ---
 
 ## 3. ¿Para qué NO se usa `common-lib`?

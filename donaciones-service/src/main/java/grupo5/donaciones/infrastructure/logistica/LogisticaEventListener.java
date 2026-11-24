@@ -18,6 +18,10 @@ import org.springframework.stereotype.Service;
  * proveedor viene (headers {@code X-Proveedor-Id} y {@code X-Proveedor-Token}) y que las donaciones
  * le pertenezcan; un evento que no pasa la verificación se descarta con un aviso en el log. Después
  * lo delega en el {@link ProcesadorEventosLogistica}, que decide el cambio de estado.
+ *
+ * <p>Cada oyente corre con un solo consumidor, y sus colas tienen un solo consumidor activo entre
+ * réplicas: los eventos de una misma cola se aplican en el orden en que llegaron. El orden entre
+ * colas distintas no está garantizado (ver {@link RabbitMQConfig#CONCURRENCIA_CONSUMIDOR_UNICO}).
  */
 @Service
 public class LogisticaEventListener {
@@ -31,7 +35,9 @@ public class LogisticaEventListener {
     this.verificador = verificador;
   }
 
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_RUTA_ASIGNADA)
+  @RabbitListener(
+      queues = RabbitMQConfig.QUEUE_RUTA_ASIGNADA,
+      concurrency = RabbitMQConfig.CONCURRENCIA_CONSUMIDOR_UNICO)
   public void onRutaAsignada(
       EventoRutaAsignada evento,
       @Header(name = RabbitMQConfig.HEADER_PROVEEDOR_ID, required = false) String proveedorId,
@@ -41,7 +47,9 @@ public class LogisticaEventListener {
     }
   }
 
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_RUTA_INICIADA)
+  @RabbitListener(
+      queues = RabbitMQConfig.QUEUE_RUTA_INICIADA,
+      concurrency = RabbitMQConfig.CONCURRENCIA_CONSUMIDOR_UNICO)
   public void onRutaIniciada(
       EventoRutaIniciada evento,
       @Header(name = RabbitMQConfig.HEADER_PROVEEDOR_ID, required = false) String proveedorId,
@@ -51,7 +59,9 @@ public class LogisticaEventListener {
     }
   }
 
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_ENTREGA_EXITOSA)
+  @RabbitListener(
+      queues = RabbitMQConfig.QUEUE_ENTREGA_EXITOSA,
+      concurrency = RabbitMQConfig.CONCURRENCIA_CONSUMIDOR_UNICO)
   public void onEntregaExitosa(
       EventoEntregaExitosa evento,
       @Header(name = RabbitMQConfig.HEADER_PROVEEDOR_ID, required = false) String proveedorId,
@@ -61,7 +71,9 @@ public class LogisticaEventListener {
     }
   }
 
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_ENTREGA_FALLIDA)
+  @RabbitListener(
+      queues = RabbitMQConfig.QUEUE_ENTREGA_FALLIDA,
+      concurrency = RabbitMQConfig.CONCURRENCIA_CONSUMIDOR_UNICO)
   public void onEntregaFallida(
       EventoEntregaFallida evento,
       @Header(name = RabbitMQConfig.HEADER_PROVEEDOR_ID, required = false) String proveedorId,
@@ -71,7 +83,9 @@ public class LogisticaEventListener {
     }
   }
 
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_ENTREGA_CANCELADA)
+  @RabbitListener(
+      queues = RabbitMQConfig.QUEUE_ENTREGA_CANCELADA,
+      concurrency = RabbitMQConfig.CONCURRENCIA_CONSUMIDOR_UNICO)
   public void onEntregaCancelada(
       EventoEntregaCancelada evento,
       @Header(name = RabbitMQConfig.HEADER_PROVEEDOR_ID, required = false) String proveedorId,
@@ -81,7 +95,9 @@ public class LogisticaEventListener {
     }
   }
 
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_ENTREGA_EN_PUERTA)
+  @RabbitListener(
+      queues = RabbitMQConfig.QUEUE_ENTREGA_EN_PUERTA,
+      concurrency = RabbitMQConfig.CONCURRENCIA_CONSUMIDOR_UNICO)
   public void onEntregaEnPuerta(
       EventoEntregaEnPuerta evento,
       @Header(name = RabbitMQConfig.HEADER_PROVEEDOR_ID, required = false) String proveedorId,

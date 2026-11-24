@@ -35,7 +35,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health/liveness" ]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -88,7 +88,7 @@ services:
       minio-init:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health/liveness"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -146,7 +146,7 @@ services:
       minio-init:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health/liveness"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -199,7 +199,7 @@ services:
       minio-init:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health/liveness"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -233,6 +233,12 @@ services:
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms64m -Xmx256m
       # Validación del token de Keycloak (SPEC-06 E2-01): apagada salvo PREPROD_SEGURIDAD=true (run-preprod-tests.sh --auth)
       - GATEWAY_SEGURIDAD_HABILITADA=${PREPROD_SEGURIDAD:-false}
+      # Rate limiting (E7, ADR 20261115): el cliente liviano informa la IP del navegador en
+      # X-Forwarded-For y el gateway le cree solo si la conexión viene de la red interna de Docker. Los
+      # cupos por minuto se cambian con GATEWAY_LIMITE_* (ver api-gateway/README.md).
+      - GATEWAY_LIMITE_PROXIES_CONFIABLES=${GATEWAY_LIMITE_PROXIES_CONFIABLES:-172[.](1[6-9]|2[0-9]|3[01])[.].*|10[.].*|192[.]168[.].*}
+      - GATEWAY_LIMITE_HABILITADO=${GATEWAY_LIMITE_HABILITADO:-true}
+      - GATEWAY_REDIS_HOST=redis
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
     depends_on:
@@ -245,7 +251,7 @@ services:
       logistica-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health/liveness"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -291,7 +297,7 @@ services:
       api-gateway:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health/liveness"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -300,16 +306,30 @@ services:
     networks:
       - preprod-network
 
+  # Contadores del rate limiting del api-gateway (E7, Q11; ADR 20261115). Sin persistencia: son
+  # descartables. Sin puerto publicado ni healthcheck del que dependa el gateway: si Redis cae, el
+  # gateway deja pasar los pedidos (fail-open, Q11b) y se reconecta solo cuando vuelve.
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    networks:
+      - preprod-network
+
   rabbitmq:
     image: rabbitmq:3.13-alpine
     # RM-08: el consumidor espía de integration-tests captura los mensajes; solo en loopback
     ports:
       - "127.0.0.1:5672:5672"
+    expose:
+      - "15692"
     environment:
       - RABBITMQ_DEFAULT_USER=donatrack
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS:?ver .env.example}
+    # El chequeo corre como root con HOME=/var/lib/rabbitmq: si llegara antes que el servidor, crearía
+    # .erlang.cookie como root y el servidor se caería con "eacces" (pasó en las corridas de SW2 en Swarm).
+    # Hasta que el servidor cree la cookie, el chequeo falla sin crearla.
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: ["CMD-SHELL", "[ -f /var/lib/rabbitmq/.erlang.cookie ] && rabbitmq-diagnostics -q ping"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -502,6 +522,40 @@ services:
     networks:
       - preprod-network
 
+  otel-lgtm:
+    # Stack unificado de observabilidad: OpenTelemetry Collector, Prometheus, Tempo, Loki y Grafana
+    # (ADR 20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm.md, E7-S03).
+    # Recibe OTLP por 4317 (gRPC) y 4318 (HTTP). Grafana corre en el puerto 3000 con autenticación obligatoria.
+    image: grafana/otel-lgtm:0.8.2
+    entrypoint:
+      - bash
+      - -c
+      - |
+        sed -i 's/GF_AUTH_ANONYMOUS_ENABLED=true/GF_AUTH_ANONYMOUS_ENABLED=false/' /otel-lgtm/run-grafana.sh
+        exec /otel-lgtm/run-all.sh
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?ver .env.example}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - otel_lgtm_data:/data
+      - ./observabilidad/prometheus/prometheus.yaml:/otel-lgtm/prometheus.yaml:ro
+      - ./observabilidad/grafana/provisioning/dashboards/donatrack-dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/donatrack-dashboards.yaml:ro
+      - ./observabilidad/grafana/dashboards:/otel-lgtm/dashboards:ro
+      - ./observabilidad/grafana/provisioning/alerting/donatrack-alertas.yaml:/otel-lgtm/grafana/conf/provisioning/alerting/donatrack-alertas.yaml:ro
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f /tmp/ready ] && curl -f -s http://localhost:3000/api/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      - preprod-network
+
   k6:
     image: grafana/k6:latest
     profiles: ["perf"]
@@ -516,3 +570,4 @@ networks:
 
 volumes:
   n8n_data:
+  otel_lgtm_data:

@@ -23,7 +23,9 @@ import org.springframework.stereotype.Service;
  * <p>Un donante puede darse de baja y volver a registrarse con el mismo id, y RabbitMQ solo
  * garantiza el orden dentro de una cola. Por eso alta y baja comparten cola ({@link
  * RabbitMQConfig#QUEUE_INCENTIVOS_DONANTE_CICLO_DE_VIDA}) y un único consumidor ({@code concurrency
- * = "1"}): así se procesan en el orden en que Donaciones los publicó.
+ * = "1"}): así se procesan en el orden en que Donaciones los publicó. Con dos réplicas, la cola
+ * tiene un solo consumidor activo ({@code x-single-active-consumer}) y la otra réplica queda de
+ * reserva.
  *
  * <p>Tiene que ser una clase aparte: un {@code @RabbitListener} a nivel de clase no se puede
  * mezclar con los {@code @RabbitListener} de método de otras colas. Spring elige el

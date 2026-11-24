@@ -1,0 +1,114 @@
+@startuml 02-despliegue
+' ============================================================
+' Figura 2 (E7, borrador) — Despliegue en Docker Swarm de un nodo.
+' Pregunta: ¿dónde corre cada pieza en E7, cuántas réplicas tiene y qué la vigila?
+' Solo el stack de Swarm, el entorno de la defensa y la prueba final (Q14b, revisada
+' por E7-S01): Compose (desarrollo, CI y demo pública con túnel) no se dibuja.
+' Estado objetivo: decidido en el ADR de despliegue en Docker Swarm (PR 987),
+' todavía no existe en ENTREGA_7.
+' Fuentes:
+'   ADR despliegue en Docker Swarm (20261118): un nodo, docker stack deploy, seis
+'     módulos propios replicados por variable (1 en desarrollo, 2 en la defensa),
+'     infraestructura, Redis y otel-lgtm con una réplica; cliente publicado en el
+'     routing mesh, sin proxy delante; publicar el gateway queda abierto; Keycloak
+'     publicado en todas las interfaces; healthcheck sobre /actuator/health/liveness
+'     (propuesto); Swarm reemplaza la tarea caída o unhealthy, sin tope; mongodb con
+'     hostname: mongodb.
+'   ADR rate limiting (20261115): Redis compartido por las réplicas del gateway, sin
+'     persistencia.
+'   ADR observabilidad (20261118): grafana/otel-lgtm con una réplica, colector sin
+'     publicar, Grafana con usuario y clave; alerta de reinicios repetidos (M26).
+' Lo que el ADR no fija no se dibuja: nombre del stack, redes overlay, puerto de
+' Grafana y cómo se arma el archivo del stack.
+' Notación UML 2: node para el nodo de Swarm y para cada servicio del stack (sus tareas
+' son los contenedores). Los recuadros por función son solo visuales.
+' ============================================================
+!pragma layout smetana
+!include ../../../entrega-4/arquitectura/diagramas/estilo-e4.iuml
+
+title Figura 2 — Despliegue de DonaTrack en Docker Swarm de un nodo, borrador
+
+actor "Personas usuarias\n(navegador)" as usr
+
+node "Máquina del grupo · Docker" as host <<infraestructura>> {
+  node "Nodo único de Swarm (docker swarm init)\nstack desplegado con docker stack deploy" as nodo <<planificado>> {
+
+    rectangle "Routing mesh\n(reparte entre réplicas)" as mesh <<planificado>>
+
+    frame "Módulos propios · réplicas por variable (1 en desarrollo, 2 en la defensa)" as grpApp {
+      node "cliente-liviano ×N\n:8090 publicado" as pCli <<servicio>>
+      node "api-gateway ×N\n:8086 ¿publicado? (abierto)" as pGw <<servicio>>
+      node "donaciones-service ×N" as pDon <<servicio>>
+      node "logistica-service ×N" as pLog <<servicio>>
+      node "incentivos-service ×N" as pInc <<servicio>>
+      node "notificaciones-service ×N" as pNot <<servicio>>
+    }
+
+    frame "Infraestructura · una réplica (guarda estado)" as grpInfra {
+      node "postgres" as pPg <<infraestructura>>
+      node "mongodb\n(hostname: mongodb)" as pMongo <<infraestructura>>
+      node "rabbitmq" as pRmq <<infraestructura>>
+      node "keycloak\n:8180 publicado" as pKc <<infraestructura>>
+      node "minio" as pMinio <<infraestructura>>
+      node "n8n" as pN8n <<infraestructura>>
+      node "redis\n(sin persistencia)" as pRedis <<planificado>>
+    }
+
+    node "otel-lgtm · una réplica\ncolector OTel · Prometheus · Tempo · Loki · Grafana\n(colector sin publicar; Grafana publicado, con usuario y clave)" as pLgtm <<planificado>>
+  }
+}
+
+' ---------- Solo layout ----------
+pCli -[hidden]right- pGw
+pDon -[hidden]right- pLog
+pInc -[hidden]right- pNot
+pGw -[hidden]down- pDon
+pDon -[hidden]down- pInc
+pKc -[hidden]right- pPg
+pPg -[hidden]right- pMongo
+pKc -[hidden]down- pRmq
+pRmq -[hidden]right- pMinio
+pMinio -[hidden]right- pN8n
+pRmq -[hidden]down- pRedis
+grpApp -[hidden]down- grpInfra
+grpInfra -[hidden]down- pLgtm
+
+' ---------- Tráfico de entrada ----------
+usr -[#9A9A9A,dotted]down-> mesh : HTTP (cliente :8090,\nKeycloak :8180)
+mesh -[#9A9A9A,dotted]down-> pCli : réplica sana
+mesh -[#9A9A9A,dotted]down-> pKc : login OIDC
+pCli -right-> pGw : HTTP (red interna)
+pGw -down-> pDon : HTTP
+pGw -[hidden]down- pLog
+
+' ---------- Hacia la infraestructura ----------
+grpApp -down-> grpInfra : JDBC · Mongo · AMQP · S3 · OIDC/JWKS\n(E7: + Redis)
+
+' ---------- Observabilidad ----------
+grpApp -[#9A9A9A,dotted]down-> pLgtm : OTLP: métricas, trazas y logs
+pLgtm -[#9A9A9A,dotted]up-> pRmq : plugin de métricas\n(a verificar)
+
+legend bottom
+  |= Elemento |= Significado |
+  | node «infraestructura» exterior | La máquina del grupo con Docker |
+  |<#FFFFFF> node «planificado» | Pieza nueva, decidida en los ADR de E7 (proposed) |
+  | frame | Agrupación visual por función: Swarm no tiene namespaces |
+  |<#E6EEF8> node «servicio» ×N | Servicio del stack con una pieza de DonaTrack; N réplicas (tareas) |
+  |<#F2F2F2> node «infraestructura» | Servicio del stack con un producto de terceros, una réplica |
+  | ──> | Conexión de red, con su protocolo |
+  | <color:#6E6E6E>· · ·></color> | Conexión planificada en E7 |
+  Réplicas (ADR de despliegue en Docker Swarm): N sale de una variable, 1 en desarrollo y 2 en la
+  defensa y la prueba final; cada servicio va a declarar un límite de memoria. La sesión del cliente
+  vive en la base (CLIENTE_SESIONES_JDBC_HABILITADO=true). Propuesto: ShedLock en las tareas
+  programadas y un único consumidor activo en las colas que necesitan orden.
+  Salud: un solo healthcheck por servicio (propuesto: /actuator/health/liveness). Swarm reemplaza la
+  tarea que termina o queda unhealthy, sin tope; la alerta de reinicios repetidos (M26) va en Grafana.
+  No hay liveness y readiness separados: una réplica con una dependencia caída sigue recibiendo tráfico.
+  Entrada sin proxy: el routing mesh presenta todos los pedidos con su propia IP, así que los visitantes
+  sin cuenta comparten la cubeta por IP del rate limiting. Keycloak queda publicado en todas las
+  interfaces. Grafana también se publica, con usuario y clave propios (puerto sin fijar); RabbitMQ
+  (:5672), solo si corren pruebas desde el host. Publicar el gateway (:8086) está abierto. Los demás
+  puertos de infraestructura no se publican.
+  El gateway llega a los cuatro servicios; se dibuja una flecha para no cruzar el diagrama.
+endlegend
+@enduml
