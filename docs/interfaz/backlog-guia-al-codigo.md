@@ -787,7 +787,8 @@ Suma: 1 + 2 + 1 + 2 + 3 + 4 = 13, las 13 de §5.
 | `pie.html` | `pub1-conocer`, solo el texto de tres enlaces (DA-23) |
 | `layout-publico.html` | Fuera: es el armazón de C1 (C1-07); no se edita |
 | `error/403`, `error/404`, `error/5xx`, `sin-dibujar` y `aviso-persona` | Fuera: son de PUB2 (§5) |
-| `error/429.html` | Fuera: es una página de estado, como las de error, y §5 no la nombra. Queda anotada para PUB2 |
+| `error/429.html` y `pagina-error.html` | Fuera: la primera es una página de estado y la segunda, la pieza que comparten las páginas de error. §5 no las nombra; quedan anotadas para PUB2 |
+| `publico-entidades.html`, su fragmento `pantalla` | Es de `pub1-organizaciones`, pero lo usan también `donante-entidades` y `persona/donante-entidades` (DON): conserva su firma y lo que muestra para quien dona (regla 4) |
 | `persona/datos-persona.html` | Fuera: son los datos de ejemplo de la persona (§5, DON) |
 | `cuenta-menu`, `interaccion`, `envio`, `cerrar-sesion`, `paginador` e `iconos` | Fuera: son comunes a los cuatro roles o del catálogo; no se editan |
 | `componentes/` | Fuera: es el catálogo; no se edita |
@@ -806,7 +807,7 @@ saca solo las reglas que usan nada más que sus pantallas.
 | PUB1-01 | `pub1-portada` | La portada, en el orden de A01: el título con la trama, el dibujo con un fruto por entrega confirmada del mes, la última entrega confirmada con su foto y su sello, las cifras, «Cómo funciona» con la raíz numerada de 5 pasos y las entregas confirmadas del mes. Los datos salen del puerto que ya existe (`cifrasDePortada` y `entregasConfirmadas`) | A01; DA-22; HG-03 con su texto de reemplazo (DA-10) | Pendiente |
 | PUB1-02 | `pub1-portada` | El menú público: Inicio, Entregas, Organizaciones y Cómo funciona (a `/publico-nosotros`), sin el Mapa; en el Mapa queda marcada Entregas | DA-01, DA-05 y DA-17 | Pendiente |
 | PUB1-03 | `pub1-entregas` | Entregas: las entregas confirmadas, cada una con su foto, su etiqueta y quién la recibió, y un enlace al Mapa | Deriva de A10; DA-01, DA-10 y HG-03 | Pendiente |
-| PUB1-04 | `pub1-entregas` | El Mapa, dentro de Entregas: el mapa con su lista y las migas a Entregas. Las dos rutas con `?escenario=muchas` salen de la línea de base de toque de §10.4 | Deriva de A07; DA-01 | Pendiente |
+| PUB1-04 | `pub1-entregas` | El Mapa, dentro de Entregas: el mapa con su lista y las migas a Entregas | Deriva de A07; DA-01 | Pendiente |
 | PUB1-05 | `pub1-organizaciones` | Organizaciones: tarjetas sobre la lámina, con el avance de cada necesidad y la barra de `componentes/listado` | Deriva de A02; HG-04 | Pendiente |
 | PUB1-06 | `pub1-ingresar` | Ingresar y su error, la puerta de la demo | Deriva de A12 | Pendiente |
 | PUB1-07 | `pub1-conocer` | Cómo funciona, Cómo donar y Ayuda: las páginas de hoy, con su nombre nuevo y la composición de A01 | Deriva de A01; DA-05 | Pendiente |
@@ -819,8 +820,12 @@ límite de las hojas compartidas de §13.2.
 
 ### 13.4 Qué se verifica (DA-20)
 
-- **En cada lote:** los gates y `-Pvisual` sobre sus `rutasVisuales`, una por plantilla. En
-  `pub1-entregas` van además las dos rutas del Mapa de la línea de base de toque.
+- **En cada lote:** los gates y `-Pvisual` sobre sus `rutasVisuales`, una por plantilla.
+  `pub1-organizaciones` corre además `-Pvisual` sobre `/donante-entidades` y
+  `/donante-entidades?cuenta=persona&ya=si` antes de comitear, porque esas pantallas usan su
+  fragmento `pantalla`; no entran en la revisión ni en la hoja de contacto.
+- **Mientras dura la tanda:** cada lote ve el menú y el pie de hoy fuera de `pub1-portada` y de
+  `pub1-conocer`. No es hallazgo del lote.
 - **Al cierre:** `-Pvisual` sobre las 53 rutas de PUB1 de `paginas.txt` (las de `/publico-portada`,
   `-ingresar`, `-donaciones`, `-entidades`, `-mapa`, `-nosotros`, `-para-donantes`, `-para-entidades`,
   `-legales` y `-contacto`). No entra `/publico-donaciones?respuesta=404`, que muestra `error/404`
@@ -828,8 +833,10 @@ límite de las hojas compartidas de §13.2.
   con la línea de base de §10.5 y §11.3. No se levantan el stack ni el recorrido con login: los hace
   Z, y ningún lote cambia un adaptador `rest` (plan de la corrida, punto 5).
 - **Lo que cambia en la línea de base:** las dos rutas de `/publico-mapa?escenario=muchas` (con y sin
-  la página 2) tienen que pasar, porque `pub1-entregas` rehace el Mapa; salen de la línea de base de
-  §10.4 al cerrar la ola. En los otros tests visuales, por DA-22 se espera que fallen
+  la página 2) siguen en la línea de base de §10.4. `[OBSERVED]` En la pasada de G1
+  (`guia-c1/C1/muestra-g1/reporte.json`, fuera del repo) fallan a 360 px los marcadores numerados del
+  mapa (`button.mapa-marcador`, de `static/css/componentes/mapa.css` y `static/js/mapa.js`), que son
+  del catálogo y esta ola no edita. Si pasan, se anota. En los otros tests visuales, por DA-22 se espera que fallen
   `AbejasYRenglonesTest.conReducirMovimientoLasAbejasQuedanQuietasDelanteYEnteras` y los dos de
   `BajoTierraRotulosTest`. Miden las abejas y el corte «bajo tierra», que la portada nueva no tiene.
   Siguen fallando, como antes, `AbejasYRenglonesTest.lasAbejasCambianDeCapaSoloCuandoNoSeVen` y
