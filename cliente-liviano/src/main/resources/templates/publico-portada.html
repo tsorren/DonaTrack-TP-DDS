@@ -1,63 +1,135 @@
 <!DOCTYPE html>
-<!--/* La portada, con la composición de la variante K de frontend-donatrack ("Huerta con abejas"; el
-       usuario pidió todo el sitio con la estética de K el 2026-11-08; antes, el corte de suelo de
-       Raíces con la red de subte, las etiquetas de herbario, los frutos y la libreta del mes). En orden,
-       como en K: la portada con tres láminas y el enjambre; cómo funciona, la escalera de pasos con la
-       ruta de las abejas y el árbol del final; bajo tierra, las raíces hasta cada tipo de entidad; lo
-       que ya dio frutos, las cifras en árboles y las entregas del mes con su foto; quién participa;
-       las preguntas y el cierre. Las piezas son del componente huerta (componentes/huerta.html).
-       Las cifras (cifrasDePortada) las da PublicoPuerto; las entregas del mes siguen fijas en
-       componentes/huerta :: mes, que es compartido (pendiente de la conexión). Textos según
-       el tono común (docs/interfaz/tono-y-comunicacion.md). Los estados de la maqueta
-       (?escenario=vacio, error o lento) se ven en las dos partes con datos: las cifras y las entregas
-       del mes. */-->
-<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<!--/* La portada: el arquetipo A01 de la guía «Huerta y galpón» (docs/interfaz/guia/partes/
+       50-pantallas.html, #portada), hecho con las piezas del catálogo (docs/interfaz/componentes.md),
+       en el armazón de las públicas (layout-publico.html). En el orden de A01: el título con la trama
+       (D5), la bajada y las dos acciones, una sola llena; el dibujo del recorrido con un fruto por
+       entrega confirmada del mes (D4); la última entrega confirmada con su foto, su etiqueta (D3) y su
+       sello (D1), al lado de las cifras; «Cómo funciona», la raíz numerada de 5 pasos (D2); y las
+       entregas confirmadas del mes, con «Ver todas» a Entregas. Sin las abejas, el corte bajo tierra
+       ni el cierre de la variante K (DA-22): la portada no carga abejas.js.
+       Datos: cifrasDePortada y entregasConfirmadas, de PublicoPuerto (el adaptador real trae hasta 50
+       entregas del último mes; los frutos son las de esa lista). Quién recibió no llega del backend
+       (HG-03): en lo público va la organización (DA-10), nunca una persona. Una foto que no es de
+       verdad (una de /img) lleva el rótulo «Foto de ejemplo».
+       Estados: ?escenario=vacio, error y lento (en la maqueta); sin entregas en el mes (o sin la
+       respuesta de las entregas), el vacío. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-publico :: pagina(~{::title}, 'publico-portada', ~{::contenido})}">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DonaTrack: lo que donás echa raíces en tu comunidad</title>
-  <link rel="stylesheet" href="/css/publico-portada.css" th:href="@{/css/publico-portada.css}">
-  <link rel="stylesheet" href="/css/publico-navegacion.css" th:href="@{/css/publico-navegacion.css}">
-  <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
-        th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
-  <th:block th:replace="~{interaccion :: cargar}"></th:block>
-  <script src="/js/abejas.js" th:src="@{/js/abejas.js}" defer></script>
+  <title>DonaTrack: seguí tu donación hasta que la organización la confirma</title>
 </head>
-<body hx-indicator="#indicador-carga">
-<p id="indicador-carga" class="cargando" role="status" aria-live="polite" aria-hidden="true">Cargando…</p>
-<a class="saltar" href="#contenido">Saltar al contenido</a>
-<header class="raices-cabecera">
-  <a class="marca" href="/" th:href="@{/}" aria-label="DonaTrack, ir a la portada">
-    <img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt="" width="18" height="24">
-    <span>Dona<em>Track</em></span>
-  </a>
-  <!--/* La navegación pública (ficha raices-publico-navegable.md, sección 2): la misma de las demás
-         públicas. Con la sesión iniciada, "Ir a mi inicio" y la cuenta (ficha r11-p1-portada.md). */-->
-  <nav th:replace="~{navegacion-publica :: navegacion('publico-portada')}"></nav>
-  <th:block th:replace="~{navegacion-publica :: cuenta}"></th:block>
-</header>
-<main id="contenido" tabindex="-1" hx-target="#contenido" hx-select="#contenido" hx-swap="outerHTML show:none"
-      th:with="estado=${param.escenario != null ? param.escenario[0] : ''},
-               conDatos=${estado != 'vacio' and estado != 'error' and estado != 'lento'}">
-  <div class="centro pila">
-    <aside th:replace="~{componentes/pista :: pista('portada', 'Conocé cómo funciona DonaTrack', 'Empezá por el recorrido de la donación: registrás lo que donás y después podés seguir a qué organización llega.')}"></aside>
-    <section th:replace="~{componentes/huerta :: hero('Lo que donás echa raíces', 'en tu comunidad.',
-        'Registrás lo que donás, vos o tu empresa. DonaTrack te muestra a qué organización se asignó, en qué estado está y la foto que sube la organización cuando confirma la entrega.')}"></section>
-    <section th:replace="~{componentes/huerta :: como}"></section>
+<body>
+<th:block th:fragment="contenido"
+    th:with="entregas=${entregasConfirmadas?.lista ?: {}},
+             rango=${entregasConfirmadas?.rangoMes ?: 'en el último mes'},
+             actualizado=${entregasConfirmadas?.actualizado},
+             pedido=${param.escenario != null ? param.escenario[0] : ''},
+             estado=${pedido == 'vacio' or pedido == 'error' or pedido == 'lento' ? pedido : ''},
+             sinEntregas=${estado == 'vacio' or (estado == '' and entregas.isEmpty())},
+             conDatos=${estado == '' and !entregas.isEmpty()},
+             ultima=${conDatos ? entregas[0] : null},
+             cuantas=${#lists.size(entregas)}">
+  <div class="centro pila" data-espacio="5" id="portada">
+
+    <!--/* Arriba: qué es DonaTrack, con el dibujo del recorrido y los frutos del mes. */-->
+    <section class="grilla" data-espacio="5" id="portada-arriba" aria-labelledby="portada-titulo">
+      <div class="pila" data-espacio="3">
+        <div class="trama" id="portada-trama">
+          <h1 id="portada-titulo">Seguí tu donación hasta que la organización la confirma</h1>
+        </div>
+        <p class="texto-grande">Llevás tu donación al depósito. El equipo la registra a tu nombre y vos
+          ves a qué organización va, por dónde anda y la foto de la entrega.</p>
+        <div class="racimo">
+          <a class="boton" data-tono="principal" href="/publico-registro-donante"
+             th:href="@{/publico-registro-donante}">Quiero donar</a>
+          <a class="boton" href="/publico-registro-entidad"
+             th:href="@{/publico-registro-entidad}">Soy una organización</a>
+        </div>
+      </div>
+      <figure class="pila" data-espacio="2" id="portada-dibujo"
+              th:aria-busy="${estado == 'lento'} ? 'true' : null">
+        <svg viewBox="0 0 640 396" role="img"
+             aria-label="Ilustración: una raíz con cinco nudos numerados va por debajo de la tierra desde un depósito hasta un árbol con frutos, junto a la puerta de una organización. Arriba, un camión va de uno a otro."><use
+            href="/img/ilustraciones/ilustracion-recorrido.svg#ilustracion-recorrido"
+            th:href="@{/img/ilustraciones/ilustracion-recorrido.svg} + '#ilustracion-recorrido'"/></svg>
+        <figcaption th:if="${conDatos or sinEntregas}">
+          <div th:replace="~{componentes/huerta :: frutos(${conDatos ? cuantas : 0}, ${rango}, false)}"></div>
+        </figcaption>
+        <div th:if="${estado == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
+      </figure>
+    </section>
+
+    <!--/* La prueba: la última entrega confirmada y cómo se cuenta. */-->
+    <div class="grilla" data-espacio="5" id="portada-prueba">
+      <section class="pila" data-espacio="3" aria-labelledby="portada-ultima"
+               th:aria-busy="${estado == 'lento'} ? 'true' : null">
+        <h2 id="portada-ultima">La última entrega confirmada</h2>
+        <th:block th:if="${conDatos}">
+          <article th:replace="~{componentes/etiqueta-entrega :: etiqueta-entrega(foto=${ultima.foto},
+              descripcion=${ultima.alt}, rotulo=(${#strings.startsWith(ultima.foto, '/img/')} ? 'Foto de ejemplo' : null),
+              titulo=${ultima.que}, lugar=|${ultima.entidad} confirmó la entrega con una foto.|,
+              pie=|Recibió: ${ultima.entidad}, el ${ultima.dia}.|, sello='Entrega confirmada', costado=true)}"></article>
+        </th:block>
+        <div th:if="${sinEntregas}" class="vacio trama">
+          <p>Todavía no hay entregas confirmadas este mes. Cuando una organización confirme una entrega
+            con su foto, la vas a ver acá.</p>
+        </div>
+        <th:block th:if="${estado == 'lento'}">
+          <p class="cargando" role="status">Cargando las entregas confirmadas…</p>
+          <div class="esqueleto" data-forma="hueco" data-tamano="alto"></div>
+        </th:block>
+        <div th:if="${estado == 'error'}" class="aviso" data-tipo="error" role="alert">
+          <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+          <p class="aviso-titulo">No pudimos cargar las entregas confirmadas.</p>
+          <p>Probá de nuevo en unos minutos.</p>
+          <p><a class="boton" data-tamano="chico" href="/publico-portada"
+                th:href="@{/publico-portada}">Volver a cargar</a></p>
+        </div>
+      </section>
+
+      <section class="pila" data-espacio="3" aria-labelledby="portada-cifras">
+        <h2 id="portada-cifras">Cómo sabemos que llega</h2>
+        <th:block th:if="${estado == ''}"><dl
+            th:replace="~{componentes/datos :: datos(${cifrasDePortada.![{rotulo: t, valor: n}]})}"></dl></th:block>
+        <p data-tono="suave">Una entrega cuenta cuando la organización que la recibió la confirma con una
+          foto.<th:block th:if="${estado == '' and actualizado != null}" th:text="| Actualizado el ${actualizado}.|">
+          Actualizado el 15 de octubre de 2026, 14:30.</th:block> No mostramos quién donó.</p>
+      </section>
+    </div>
+
+    <!--/* Cómo funciona: los 5 pasos de toda donación, la raíz numerada (D2). */-->
+    <section class="pila" data-espacio="3" aria-labelledby="portada-como"
+             th:with="pasos=${ {
+               {nombre: 'Llevás tu donación', avance: 'hecho', detalle: 'Al depósito. El equipo la registra a tu nombre.'},
+               {nombre: 'Se asigna', avance: 'hecho', detalle: 'A una organización que pidió eso mismo.'},
+               {nombre: 'Se prepara', avance: 'hecho', detalle: 'En el depósito, para salir en el próximo viaje.'},
+               {nombre: 'Viaja', avance: 'hecho', detalle: 'Ves en el mapa por dónde anda el camión.'},
+               {nombre: 'La confirman', avance: 'hecho', detalle: 'La organización sube la foto y vos la ves.'}
+             } }">
+      <h2 id="portada-como">Cómo funciona</h2>
+      <ol th:replace="~{componentes/huerta :: raiz-pasos(${pasos}, 'numerada tendida', null, false)}"></ol>
+    </section>
+
+    <!--/* Las otras entregas confirmadas del mes: hasta 3 después de la última, con su etiqueta. */-->
+    <section class="pila" data-espacio="3" aria-labelledby="portada-mes"
+             th:aria-busy="${estado == 'lento'} ? 'true' : null">
+      <div class="racimo" data-alinea="entre">
+        <h2 id="portada-mes">Entregas confirmadas del último mes</h2>
+        <p><a href="/publico-donaciones" th:href="@{/publico-donaciones}">Ver todas</a></p>
+      </div>
+      <ul th:if="${conDatos and cuantas > 1}" class="grilla" data-espacio="4" role="list">
+        <li th:each="e, vuelta : ${entregas}" th:if="${vuelta.index > 0 and vuelta.index < 4}">
+          <article th:replace="~{componentes/etiqueta-entrega :: etiqueta-entrega(foto=${e.foto},
+              descripcion=${e.alt}, rotulo=(${#strings.startsWith(e.foto, '/img/')} ? 'Foto de ejemplo' : null),
+              titulo=${e.que}, lugar=${e.lugar}, pie=|Recibió: ${e.entidad}, el ${e.dia}.|,
+              sello='Entrega confirmada', costado=false)}"></article>
+        </li>
+      </ul>
+      <p th:if="${conDatos and cuantas == 1}">Por ahora, la última es la única entrega confirmada del mes.</p>
+      <p th:if="${sinEntregas}">Cuando una organización confirme una entrega, aparece acá con su foto.</p>
+      <div th:if="${estado == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
+    </section>
   </div>
-
-  <section th:replace="~{componentes/huerta :: raices}"></section>
-
-  <div class="centro pila">
-    <section th:replace="~{componentes/huerta :: cifras(${estado}, ${cifrasDePortada})}"></section>
-
-    <section th:replace="~{componentes/huerta :: mes(${estado})}"></section>
-
-    <section th:replace="~{componentes/huerta :: participa}"></section>
-    <section th:replace="~{componentes/huerta :: preguntas}"></section>
-    <section th:replace="~{componentes/huerta :: cierre}"></section>
-  </div>
-</main>
-<footer th:replace="~{pie :: pie}"></footer>
+</th:block>
 </body>
 </html>

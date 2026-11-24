@@ -1,26 +1,57 @@
-/* La portada con la composición de la variante K (2026-11-08): las piezas son del componente huerta
-   (componentes/huerta.css); acá, solo dónde va cada una. El papel de arriba (la portada y cómo
-   funciona) y el de abajo (las cifras, las entregas del mes, quién participa, las preguntas y el
-   cierre) van centrados; la tierra con las raíces, a todo el ancho entre los dos. */
+/* La portada (publico-portada.html): el arquetipo A01 de la guía (50-pantallas.html, #portada). Las
+   piezas son del catálogo (la trama, los frutos, la etiqueta de una entrega, la lista de datos y la
+   raíz de huerta); esta hoja solo dice dónde va cada una, como 15-pantallas.css de la guía
+   (.portada-arriba, .portada-titulo, .portada-dibujo y .portada-prueba). */
 @import url("app.css");
 
-main > .centro {
-  --espacio-entre: 4.5rem;
-  padding-block: 2rem 1rem;
+#portada {
+  padding-block: var(--espacio-4) var(--espacio-5);
 }
 
-/* El árbol de cómo funciona queda apoyado sobre la tierra. */
-main > .centro:first-child {
-  padding-bottom: 0;
+/* Arriba (el título y el dibujo) y la prueba (la última entrega y las cifras): una columna en el
+   celular y dos cuando entran. */
+#portada-arriba,
+#portada-prueba {
+  --medida-grilla: 20rem;
+
+  align-items: start;
 }
 
-main > .centro:last-child {
-  padding-top: 4rem;
+/* El título sobre la trama, con su aire, y en la letra de la portada. */
+#portada-trama {
+  padding: var(--espacio-3) var(--espacio-2);
+  margin-inline: calc(-1 * var(--espacio-2));
+  border-radius: var(--radio-estampa);
 }
 
+#portada-titulo {
+  font-size: var(--tamano-titulo-portada);
+  font-stretch: var(--fuente-ancho-portada);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+}
+
+/* Las cifras (componentes/datos): lo que cuenta a la izquierda y el número a la derecha, a su
+   ancho. Con la columna del rótulo de la lista de datos (28 %), «Organizaciones» no entra a 360 px
+   y se monta sobre el número. */
+#portada-prueba .datos > div {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+/* El dibujo del recorrido, a todo el ancho de su columna. */
+#portada-dibujo svg {
+  width: 100%;
+  height: auto;
+}
+
+/* Desde que entran las dos columnas, la del texto algo más ancha que la del dibujo, como en la guía. */
 @media (min-width: 53.75em) {
-  main > .centro {
-    --espacio-entre: 6rem;
-    padding-top: 3.5rem;
+  #portada {
+    padding-top: var(--espacio-5);
+  }
+
+  #portada-arriba,
+  #portada-prueba {
+    grid-template-columns: minmax(0, 13fr) minmax(0, 11fr);
   }
 }

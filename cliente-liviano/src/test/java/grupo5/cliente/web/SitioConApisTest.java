@@ -73,6 +73,12 @@ class SitioConApisTest {
   }
 
   @Test
+  void laPortadaConDonacionesCaidoEsUnaFallaNuestra() throws Exception {
+    // La portada pide las cifras y las entregas del mes (A01) a Donaciones.
+    mvc.perform(get("/publico-portada")).andExpect(status().isBadGateway());
+  }
+
+  @Test
   void entidadesYMapaConLasApisCaidasSonUnaFallaNuestra() throws Exception {
     mvc.perform(get("/publico-entidades")).andExpect(status().isBadGateway());
     mvc.perform(get("/publico-mapa")).andExpect(status().isBadGateway());

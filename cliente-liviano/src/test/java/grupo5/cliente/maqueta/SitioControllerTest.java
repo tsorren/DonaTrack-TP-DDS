@@ -813,9 +813,11 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("«Donante Sostenedor»")));
     mvc.perform(get("/entidad-seguimiento-sellada-ropa?escenario=sin-categoria"))
         .andExpect(content().string(containsString("Le avisamos a quien donó")));
+    // La portada de A01 no tiene las abejas ni su pausa (DA-22).
     mvc.perform(get("/publico-portada"))
         .andExpect(content().string(containsString("href=\"/publico-legales\"")))
-        .andExpect(content().string(containsString("id=\"pausar-movimiento\"")));
+        .andExpect(content().string(not(containsString("id=\"pausar-movimiento\""))))
+        .andExpect(content().string(not(containsString("/js/abejas.js"))));
   }
 
   @Test
@@ -1017,13 +1019,113 @@ class SitioControllerTest {
 
   @Test
   void laPortadaEnlazaAlSitio() throws Exception {
+    // El Mapa ya no va en la portada ni en el menú: queda dentro de Entregas (DA-01).
     mvc.perform(get("/publico-portada"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("href=\"/publico-ingresar\"")))
-        .andExpect(content().string(containsString("href=\"/publico-mapa\"")))
+        .andExpect(content().string(containsString("href=\"/publico-donaciones\">Ver todas</a>")))
         .andExpect(content().string(containsString("href=\"/publico-registro-donante\"")))
         .andExpect(content().string(containsString("href=\"/publico-registro-entidad\"")))
         .andExpect(content().string(not(containsString("href=\"/prototipo/"))));
+  }
+
+  /**
+   * El menú público de la guía (DA-01, DA-05 y DA-17): Inicio, Entregas, Organizaciones y Cómo
+   * funciona (Nosotros), en ese orden y sin el Mapa, que sigue respondiendo y marca Entregas.
+   */
+  @Test
+  void elMenuPublicoEsInicioEntregasOrganizacionesYComoFunciona() throws Exception {
+    String html =
+        mvc.perform(get("/publico-portada"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+    String barra =
+        html.substring(
+            html.indexOf("class=\"navegacion-barra\""),
+            html.indexOf("class=\"navegacion-acceso\""));
+    assertTrue(
+        barra.matches(
+            "(?s).*href=\"/publico-portada\" aria-current=\"page\">.*Inicio</a>"
+                + ".*href=\"/publico-donaciones\">.*Entregas</a>"
+                + ".*href=\"/publico-entidades\">.*Organizaciones</a>"
+                + ".*href=\"/publico-nosotros\">.*Cómo funciona</a>.*"),
+        barra);
+    assertFalse(barra.contains("/publico-mapa"), barra);
+    assertFalse(barra.contains(">Mapa<"), barra);
+    assertTrue(barra.contains("<use href=\"#i-brote\">"), barra);
+    assertTrue(html.contains("<symbol id=\"i-brote\""), "El brote de Cómo funciona");
+    mvc.perform(get("/publico-mapa"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(not(containsString("href=\"/publico-mapa\" aria-current"))))
+        .andExpect(
+            content().string(containsString("href=\"/publico-donaciones\" aria-current=\"page\"")));
+    mvc.perform(get("/publico-donaciones"))
+        .andExpect(
+            content().string(containsString("href=\"/publico-donaciones\" aria-current=\"page\"")));
+    mvc.perform(get("/publico-entidades"))
+        .andExpect(
+            content().string(containsString("href=\"/publico-entidades\" aria-current=\"page\"")));
+    for (String conocer : List.of("/publico-nosotros", "/publico-para-donantes")) {
+      mvc.perform(get(conocer))
+          .andExpect(
+              content().string(containsString("href=\"/publico-nosotros\" aria-current=\"page\"")));
+    }
+  }
+
+  /**
+   * La portada sigue a A01 (PUB1-01): la última entrega confirmada con su etiqueta, un fruto por
+   * entrega del mes, las cifras, la raíz de 5 pasos y las del mes; quien recibió es la organización
+   * (HG-03, DA-10). Cada estado, con su texto.
+   */
+  @Test
+  void laPortadaSigueAlArquetipoConSusEstados() throws Exception {
+    String html =
+        mvc.perform(get("/publico-portada"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+    assertTrue(html.contains("class=\"trama\""), "el título con la trama");
+    assertTrue(
+        html.contains("Seguí tu donación hasta que la organización la confirma"), "el título");
+    assertTrue(html.contains(">Quiero donar</a>"), "la acción llena");
+    assertTrue(html.contains(">Soy una organización</a>"), "la otra acción");
+    assertEquals(1, html.split("data-tono=\"principal\"", -1).length - 1, "una sola acción llena");
+    assertTrue(html.contains("ilustracion-recorrido.svg#ilustracion-recorrido"), "el dibujo");
+    // La maqueta trae 10 entregas confirmadas en el último mes: 10 frutos.
+    String frutos =
+        html.substring(
+            html.indexOf("class=\"huerta-frutos\""),
+            html.indexOf("</ul>", html.indexOf("class=\"huerta-frutos\"")));
+    assertEquals(10, frutos.split("<li>", -1).length - 1, frutos);
+    assertTrue(html.contains("10 entregas confirmadas"), "la cuenta de los frutos");
+    assertTrue(html.contains("etiqueta-entrega--costado"), "la última, con la foto al costado");
+    assertTrue(
+        html.contains("Recibió: Escuela Ejemplo N.º 12, el 14 de octubre."), "quién recibió");
+    assertTrue(html.contains("Cómo sabemos que llega"), "las cifras");
+    assertTrue(html.contains("<dd>1.284</dd>"), "la cifra de las entregas");
+    assertTrue(html.contains("data-forma=\"numerada tendida\""), "la raíz numerada");
+    assertEquals(5, html.split("class=\"huerta-raiz-nudo\"", -1).length - 1, "los 5 pasos");
+    assertEquals(
+        4, html.split("<article class=\"etiqueta-entrega", -1).length - 1, "la última y 3 más");
+    assertFalse(html.contains("huerta-hero"), "sin el hero de K");
+    assertFalse(html.contains("huerta-tierra"), "sin el corte bajo tierra");
+    assertFalse(html.contains("huerta-cierre"), "sin el cierre de K");
+    mvc.perform(get("/publico-portada?escenario=vacio"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().string(containsString("Todavía no hay entregas confirmadas este mes.")))
+        .andExpect(content().string(not(containsString("class=\"etiqueta-entrega"))));
+    mvc.perform(get("/publico-portada?escenario=lento"))
+        .andExpect(
+            content().string(containsString("role=\"status\">Cargando las entregas confirmadas…")))
+        .andExpect(content().string(containsString("aria-busy=\"true\"")));
+    mvc.perform(get("/publico-portada?escenario=error"))
+        .andExpect(content().string(containsString("role=\"alert\"")))
+        .andExpect(content().string(containsString("No pudimos cargar las entregas confirmadas.")))
+        .andExpect(content().string(not(containsString("<dd>1.284</dd>"))));
   }
 
   /**
@@ -1040,16 +1142,23 @@ class SitioControllerTest {
           .andExpect(content().string(containsString("href=\"/publico-para-entidades\"")));
     }
     mvc.perform(get("/publico-portada"))
-        // El enlace a la landing de donantes, en la tarjeta de quien dona (usuario, 2026-11-08).
-        .andExpect(content().string(containsString("Qué podés donar")))
-        .andExpect(content().string(containsString("Cómo se suma una organización")));
+        // Las dos acciones de A01, cada una a su registro, y Cómo funciona en el menú (DA-05).
+        .andExpect(
+            content().string(containsString("href=\"/publico-registro-donante\">Quiero donar</a>")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("href=\"/publico-registro-entidad\">Soy una organización</a>")))
+        .andExpect(content().string(containsString("href=\"/publico-nosotros\">")));
     mvc.perform(get("/publico-nosotros"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Entregas confirmadas desde marzo de 2026")))
         // Las cifras en árboles de K (2026-11-08; antes, la rama de frutos con data-cosecha).
         .andExpect(content().string(containsString("class=\"huerta-cifras\"")))
         .andExpect(content().string(containsString("Actualizado")))
-        .andExpect(content().string(not(containsString("aria-current=\"page\""))));
+        // Nosotros es Cómo funciona en el menú público, y lo marca (DA-05).
+        .andExpect(
+            content().string(containsString("href=\"/publico-nosotros\" aria-current=\"page\"")));
     mvc.perform(get("/publico-nosotros?escenario=vacio"))
         .andExpect(content().string(containsString("Todavía no hay entregas confirmadas.")))
         .andExpect(content().string(not(containsString("Actualizado"))));
