@@ -28,6 +28,7 @@ docs/
 │   ├── principios-diseno-arquitectura.md  # Fundamentación teórica, 8 atributos, SOLID, GRASP, GoF, DDD
 │   ├── shared-kernel.md                   # CrudRepository, eventos de dominio y OpenAPI
 │   ├── logging-trazabilidad.md            # Observabilidad distribuida, MDC y traceId
+│   ├── metricas-de-negocio.md             # Contadores de Micrometer de negocio (M01, M04, M13, M16, M10r) para tableros
 │   ├── analisis-arquitectonico.md         # Diagnóstico estructural del monorepo
 │   ├── guia-patrones-diseno.md            # Catálogo de patrones de diseño aplicados
 │   ├── catalogo-errores.md                # ⚠️ Catálogo unificado de códigos de error (ERR-INF, ERR-VAL, etc.)

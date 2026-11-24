@@ -18,6 +18,7 @@ import grupo5.donaciones.models.repositories.listados.OrdenPorFecha;
 import grupo5.donaciones.models.repositories.listados.Tramo;
 import grupo5.donaciones.services.IDonacionesService;
 import grupo5.donaciones.services.IFotosBienesService;
+import grupo5.donaciones.services.IMetricasDonaciones;
 import grupo5.donaciones.services.ParametrosListado;
 import grupo5.donaciones.services.mappers.DonacionMapper;
 import java.util.UUID;
@@ -33,6 +34,7 @@ public class DonacionesService implements IDonacionesService {
   private final ProcesadorDeDonaciones procesadorDonaciones;
   private final ApplicationEventPublisher eventPublisher;
   private final IFotosBienesService fotosBienes;
+  private final IMetricasDonaciones metricas;
 
   public DonacionesService(
       IDonacionesRepository donacionesRepository,
@@ -40,13 +42,15 @@ public class DonacionesService implements IDonacionesService {
       DonacionMapper mapper,
       ProcesadorDeDonaciones procesadorDonaciones,
       ApplicationEventPublisher eventPublisher,
-      IFotosBienesService fotosBienes) {
+      IFotosBienesService fotosBienes,
+      IMetricasDonaciones metricas) {
     this.donacionesRepository = donacionesRepository;
     this.donantesRepository = donantesRepository;
     this.mapper = mapper;
     this.procesadorDonaciones = procesadorDonaciones;
     this.eventPublisher = eventPublisher;
     this.fotosBienes = fotosBienes;
+    this.metricas = metricas;
   }
 
   @Override
@@ -70,6 +74,7 @@ public class DonacionesService implements IDonacionesService {
     donacion.clearDomainEvents();
 
     procesadorDonaciones.procesar(donacion);
+    metricas.donacionRegistrada(donacion);
 
     return mapper.toOutputDTO(donacion);
   }

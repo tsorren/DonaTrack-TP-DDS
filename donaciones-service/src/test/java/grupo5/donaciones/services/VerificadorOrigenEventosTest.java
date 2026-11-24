@@ -3,17 +3,23 @@ package grupo5.donaciones.services;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import grupo5.donaciones.models.entities.logistica.SolicitudEntrega;
 import grupo5.donaciones.models.repositories.ISolicitudesEntregaRepository;
 import grupo5.donaciones.services.impl.VerificadorOrigenEventos;
+import grupo5.donaciones.services.logistica.MotivoDescarteEvento;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.env.MockEnvironment;
 
 class VerificadorOrigenEventosTest {
@@ -23,16 +29,18 @@ class VerificadorOrigenEventosTest {
 
   private ISolicitudesEntregaRepository solicitudes;
   private MockEnvironment environment;
+  private IMetricasDonaciones metricas;
   private VerificadorOrigenEventos verificador;
 
   @BeforeEach
   void setUp() {
     solicitudes = mock(ISolicitudesEntregaRepository.class);
+    metricas = mock(IMetricasDonaciones.class);
     environment =
         new MockEnvironment()
             .withProperty("donatrack.logistica.proveedor.externo.token-vuelta", TOKEN_EXTERNO)
             .withProperty("donatrack.logistica.proveedor.donatrack.token-vuelta", TOKEN_DONATRACK);
-    verificador = new VerificadorOrigenEventos(environment, solicitudes);
+    verificador = new VerificadorOrigenEventos(environment, solicitudes, metricas);
   }
 
   private UUID donacionAsignadaA(String proveedorId) {
@@ -48,6 +56,33 @@ class VerificadorOrigenEventosTest {
     UUID donacionId = donacionAsignadaA("externo");
 
     assertTrue(verificador.esOrigenValido("externo", TOKEN_EXTERNO, List.of(donacionId)));
+    verifyNoInteractions(metricas);
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      nullValues = "nulo",
+      value = {
+        "nulo, cualquiera, externo, SIN_PROVEEDOR",
+        "sin-token, cualquiera, sin-token, SIN_TOKEN_CONFIGURADO",
+        "externo, otro-token, externo, TOKEN_INCORRECTO",
+        "externo, token-sintetico-externo, donatrack, DONACION_AJENA"
+      })
+  void eventoDescartado_avisaUnaVezConSuMotivo(
+      String proveedorId, String token, String asignadaA, MotivoDescarteEvento motivo) {
+    UUID donacionId = donacionAsignadaA(asignadaA);
+
+    assertFalse(verificador.esOrigenValido(proveedorId, token, List.of(donacionId)));
+
+    verify(metricas).eventoDeProveedorDescartado(motivo);
+    verifyNoMoreInteractions(metricas);
+  }
+
+  @Test
+  void tokenIncorrecto_seRechazaSinConsultarLasSolicitudes() {
+    assertFalse(verificador.esOrigenValido("externo", "otro-token", List.of(UUID.randomUUID())));
+
+    verifyNoInteractions(solicitudes);
   }
 
   @Test

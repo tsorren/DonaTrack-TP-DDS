@@ -43,6 +43,7 @@ import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.solicitudes.EstadoSolicitud;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.models.repositories.IEventosEntregaRepository;
+import grupo5.logistica.services.IMetricasLogistica;
 import grupo5.logistica.services.IServicioExternoPlanificacion;
 import grupo5.logistica.services.impl.PlanificacionService;
 import grupo5.logistica.services.mappers.SolicitudPlanificacionMapper;
@@ -127,6 +128,7 @@ class PlanificacionTransaccionesMongoTest {
 
   @MockitoBean RabbitTemplate rabbitTemplate;
   @MockitoBean IServicioExternoPlanificacion planificadorExterno;
+  @MockitoBean IMetricasLogistica metricas;
   @MockitoSpyBean IEventosEntregaRepository eventos;
 
   @Autowired PlanificacionService planificacionService;

@@ -37,6 +37,7 @@ docs/
 │   ├── principios-diseno-arquitectura.md  # Fundamentación teórica, 8 atributos, SOLID, GRASP, GoF, DDD
 │   ├── shared-kernel.md                   # CrudRepository, eventos de dominio y OpenAPI
 │   ├── logging-trazabilidad.md            # Observabilidad distribuida, MDC y traceId
+│   ├── metricas-de-negocio.md             # Contadores de Micrometer de negocio (M01, M04, M13, M16, M10r) para tableros
 │   ├── catalogo-errores.md                # 🟢 Catálogo exhaustivo de 112 códigos de error unificados
 │   ├── analisis-arquitectonico.md         # Diagnóstico estructural del monorepo
 │   ├── guia-patrones-diseno.md            # Catálogo de patrones de diseño aplicados
@@ -209,6 +210,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/arquitectura/principios-diseno-arquitectura.md`](arquitectura/principios-diseno-arquitectura.md) | Fundamentos | Atributos de calidad, principios SOLID, GRASP, patrones GoF y fitness checks. | 🟢 Sincronizado |
 | [`docs/arquitectura/shared-kernel.md`](arquitectura/shared-kernel.md) | Shared Kernel | Definición de `common-lib`, contratos de repositorios, excepciones unificadas y traceId. | 🟢 Sincronizado |
 | [`docs/arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) | Observabilidad | Trazabilidad distribuida con MDC, header `X-Trace-Id` e interceptores Feign; desde el 2026-11-19 (E7, O2), OpenTelemetry por OTLP en lugar de Brave: adopta el `X-Trace-Id` entrante (ADR-E6-02, `proposed`), explica el orden con que se elige el `traceId` y las variables que prenden la exportación. | 🟢 Sincronizado |
+| [`docs/arquitectura/metricas-de-negocio.md`](arquitectura/metricas-de-negocio.md) | Observabilidad | Contadores de Micrometer de negocio (M01, M04, M13, M16 y M10 reducida): nombre, etiquetas, pregunta que responde y dónde se cuenta cada uno; M13 se cuenta en Donaciones. | 🟢 Sincronizado |
 | [`docs/arquitectura/guia-patrones-diseno.md`](arquitectura/guia-patrones-diseno.md) | Patrones de Diseño | Catálogo de patrones implementados (State, Strategy, Template Method, Observer, etc.). | 🟢 Sincronizado |
 | [`docs/arquitectura/catalogo-errores.md`](arquitectura/catalogo-errores.md) | Catálogo de Errores | Catálogo exhaustivo de los 112 códigos de error unificados (ERR-INF, ERR-CSR, ERR-VAL, ERR-EST). | 🟢 Sincronizado |
 | [`docs/arquitectura/aggregates-donaciones.md`](arquitectura/aggregates-donaciones.md) | Donaciones | Modelo de agregados DDD, máquina de 7 estados (con la cancelación por baja de la necesidad, HB-19) y propuesta de asignación. | 🟢 Sincronizado |
