@@ -97,13 +97,17 @@
                abajo, encima de la nota. La hoja de MapLibre se pide acá, antes del script (que la
                pide recién después de cargar la biblioteca): sin ella, al armarse el mapa sus piezas
                estiran .mapa-real en el celular, MapLibre lo mide más alto de lo que queda y el
-               encuadre deja afuera el camión y la organización. */-->
+               encuadre deja afuera el camión y la organización. data-mapa-margenes: el encuadre deja
+               a la derecha el ancho de los botones de acercar y medio marcador, y abajo el alto de la
+               atribución a 360 px (dos renglones de 48 px) y medio marcador, para que ningún
+               marcador quede debajo de ellos. */-->
         <div th:if="${punto != null}" class="pila" data-espacio="1" data-parte="mapa">
           <div class="mapa-dibujo"><div class="mapa-real" data-mapa data-mapa-puntos="[data-mapa-punto]" role="region"
                th:aria-label="|Mapa: el camión con ${d.titulo}, desde el depósito hasta ${d.destino}. El recorrido de al lado tiene los mismos datos.|"
                aria-label="Mapa: el camión con Lentejas secas, desde el depósito hasta Comedor Barrio Ejemplo. El recorrido de al lado tiene los mismos datos."
                data-maplibre="/webjars/maplibre-gl/dist/" th:data-maplibre="@{/webjars/maplibre-gl/dist/}"
-               data-deposito-lat="-34.6365" data-deposito-lng="-58.4010" data-deposito-nombre="Depósito de DonaTrack">
+               data-deposito-lat="-34.6365" data-deposito-lng="-58.4010" data-deposito-nombre="Depósito de DonaTrack"
+               data-mapa-margenes="64 96 136 64">
             <p class="mapa-real-aviso">Para ver el mapa hace falta JavaScript. El recorrido, paso a
               paso, dice lo mismo.</p>
             <template data-mapa-icono="deposito"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path

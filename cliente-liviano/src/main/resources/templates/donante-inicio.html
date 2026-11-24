@@ -29,6 +29,7 @@
              claveViaja=${viaja == null ? '' : viaja.clave},
              enCurso=${donaciones.?[estado.tono == 'pendiente' or (estado.tono == 'en-camino' and clave != #root.claveViaja)]},
              confirmadas=${donaciones.?[estado.tono == 'entregada']},
+             confirmadasDelMes=${confirmadas.?[llego != null and llego.endsWith(#root.miInicio.mes)]},
              pasoEstado=${ {'registrada', 'asignada', 'preparada', 'en-camino', 'confirmada'} },
              pasoTexto=${ {'Registrada', 'Asignada', 'Preparada', 'En camino', 'Entrega confirmada'} }">
   <div class="pila" data-espacio="5" id="inicio-empresa">
@@ -149,16 +150,17 @@
         </th:block>
       </section>
 
-      <!--/* Lo ya confirmado: los frutos del mes y las 2 últimas entregas. Quién recibió no llega
+      <!--/* Lo ya confirmado en el mes (A04, como la persona): los frutos y las 2 últimas entregas
+             del mes, las mismas que cuenta el adaptador (llegaron este mes). Quién recibió no llega
              (HG-03): va la organización. Sin foto, una lámina con el mismo sello. */-->
       <section class="pila" data-espacio="3" aria-labelledby="confirmadas-titulo">
-        <h2 id="confirmadas-titulo">Ya confirmadas</h2>
+        <h2 id="confirmadas-titulo" th:text="|Ya confirmadas en ${miInicio.nombreDelMes()}|">Ya confirmadas en octubre</h2>
         <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <th:block th:if="${conDatos}">
-          <div th:replace="~{componentes/huerta :: frutos(${miInicio.entregadasDelMes}, |en ${miInicio.nombreDelMes()}|, false)}"></div>
-          <p th:if="${confirmadas.isEmpty()}">Cuando una organización confirme una entrega, la vas a
+          <div th:replace="~{componentes/huerta :: frutos(${miInicio.entregadasDelMes}, |del 1 al ${miInicio.hoy}|, false)}"></div>
+          <p th:if="${confirmadasDelMes.isEmpty()}">Cuando una organización confirme una entrega, la vas a
             ver acá.</p>
-          <th:block th:each="d, vuelta : ${confirmadas}" th:if="${vuelta.index < 2}"
+          <th:block th:each="d, vuelta : ${confirmadasDelMes}" th:if="${vuelta.index < 2}"
                     th:with="recibio=|Recibió: ${d.destino != null ? d.destino : 'la organización'}${d.llego != null ? ', el ' + d.llego : ''}.|">
             <th:block th:if="${d.foto != null}">
               <article th:replace="~{componentes/etiqueta-entrega :: etiqueta-entrega(${d.foto}, ${d.fotoAlt}, (${#strings.startsWith(d.foto, '/img/')} ? 'Foto de ejemplo' : null), |${d.titulo}, ${d.cantidad}|, null, ${recibio}, 'Entrega confirmada', true)}"></article>

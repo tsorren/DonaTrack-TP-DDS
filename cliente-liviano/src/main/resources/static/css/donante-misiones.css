@@ -63,17 +63,20 @@
   opacity: 1;
 }
 
-/* Los lugares en el celular: una columna debajo del dibujo; cada uno, su planta o su maceta, su
-   nombre y su estado en palabras, en un renglón de 48 px como mínimo. */
+/* Los lugares en el celular: una columna debajo del dibujo; cada uno, su planta o su maceta y, al
+   lado, su nombre con su estado (el sello del catálogo) debajo, en un renglón de 48 px como mínimo. */
 #huerta-lugares {
   padding: var(--espacio-3);
 }
 
 #huerta-lugares a {
   display: grid;
-  grid-template-columns: var(--medida-toque-minimo) minmax(0, 1fr) auto;
-  gap: var(--espacio-3);
+  grid-template-columns: var(--medida-toque-minimo) minmax(0, 1fr);
+  column-gap: var(--espacio-3);
+  row-gap: var(--espacio-1);
+  align-content: center;
   align-items: center;
+  justify-items: start;
   min-height: var(--medida-toque-minimo);
   border-radius: var(--radio-lamina);
   text-decoration: none;
@@ -83,6 +86,15 @@
   width: 100%;
   height: var(--medida-toque-minimo);
   object-fit: contain;
+}
+
+#huerta-lugares a > :not(img) {
+  grid-column: 2;
+}
+
+/* Con estado, la planta ocupa los dos renglones; las cerradas no tienen estado (DA-08-misiones). */
+#huerta-lugares a:has(> .estado) > img {
+  grid-row: 1 / span 2;
 }
 
 #huerta-lugares a > b {

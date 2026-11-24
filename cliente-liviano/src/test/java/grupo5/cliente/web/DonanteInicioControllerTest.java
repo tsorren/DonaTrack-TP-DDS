@@ -173,7 +173,7 @@ class DonanteInicioControllerTest {
                             ">Seguir esta donación<",
                             ">También en curso<",
                             "Silla plegable, 1 unidad",
-                            ">Ya confirmadas<",
+                            ">Ya confirmadas en noviembre<",
                             "Ropa de abrigo, 12 prendas",
                             "Fideos secos, 8 kg")))
             .andExpect(
@@ -205,6 +205,32 @@ class DonanteInicioControllerTest {
     assertThat(cuantas(html, "Entrega confirmada</span>")).isEqualTo(2);
     // A04 no usa el tablero de antes: solo la lista del inicio.
     verify(inicios, never()).tablero(any(), anyInt(), anyInt(), anyInt());
+  }
+
+  /**
+   * La empresa, como la persona (A04): «Ya confirmadas en noviembre» muestra solo las que llegaron
+   * en noviembre, con el período del 1 a hoy; sin ninguna del mes, el texto de espera.
+   */
+  @Test
+  void laEmpresaVeEnYaConfirmadasSoloLasDelMes() throws Exception {
+    DonanteDonacionVista deOctubre = llegoEl(FIDEOS, "28 de octubre de 2026");
+
+    when(inicios.inicio(DONANTE)).thenReturn(inicio(List.of(LENTEJAS, ROPA, deOctubre), 1));
+    String conUna = pagina("/donante-inicio");
+    String seccion = conUna.substring(conUna.indexOf(">Ya confirmadas en noviembre<"));
+    assertThat(seccion)
+        .contains("del 1 al 7 de noviembre")
+        .contains("Ropa de abrigo, 12 prendas", "el 5 de noviembre de 2026")
+        .doesNotContain("Fideos secos")
+        .doesNotContain("28 de octubre")
+        .doesNotContain("Cuando una organización confirme");
+
+    when(inicios.inicio(DONANTE)).thenReturn(inicio(List.of(LENTEJAS, deOctubre), 0));
+    String sinDelMes = pagina("/donante-inicio");
+    assertThat(sinDelMes.substring(sinDelMes.indexOf(">Ya confirmadas en noviembre<")))
+        .contains("Cuando una organización confirme una entrega")
+        .contains("href=\"/donante-donaciones?estado=entregada\">Ver las confirmadas")
+        .doesNotContain("Fideos secos");
   }
 
   @Test
@@ -370,7 +396,7 @@ class DonanteInicioControllerTest {
             content()
                 .string(
                     containsString(
-                        "<strong>Todavía no hay entregas confirmadas</strong> en noviembre.")))
+                        "<strong>Todavía no hay entregas confirmadas</strong> del 1 al 7 de noviembre.")))
         .andExpect(content().string(containsString("Cuando una organización confirme una entrega")))
         .andExpect(content().string(not(containsString("class=\"huerta-frutos\""))))
         .andExpect(content().string(not(containsString("Ver las confirmadas"))));
@@ -386,7 +412,7 @@ class DonanteInicioControllerTest {
             content()
                 .string(
                     containsString(
-                        "<strong>2 entregas confirmadas</strong> en noviembre. Cada fruto es"
+                        "<strong>2 entregas confirmadas</strong> del 1 al 7 de noviembre. Cada fruto es"
                             + " una.")))
         .andExpect(
             content()

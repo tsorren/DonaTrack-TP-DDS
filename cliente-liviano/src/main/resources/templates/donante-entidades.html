@@ -116,12 +116,12 @@
 
 <!--/* «Cómo llega tu donación» (R11-28): el aviso de información del catálogo (.aviso, signo info),
        en todos los estados: es texto fijo. conDeposito: el depósito de ejemplo de la maqueta; sin
-       él, «Escribinos» (R11-09). «Ver Mis donaciones» es un enlace en su renglón, de 48 px. */-->
+       él, «Escribinos» (R11-09). «Ver tus donaciones» es un enlace en su renglón, de 48 px. */-->
 <aside th:fragment="ayuda(conDeposito)" class="aviso" data-tipo="info" aria-labelledby="como-titulo">
   <svg th:replace="~{componentes/sello :: signo('info')}"></svg>
   <h2 class="aviso-titulo" id="como-titulo">Cómo llega tu donación</h2>
   <p>Llevás la donación al depósito. Ahí la registran y la asignan a una necesidad abierta de una
-    organización. Desde que la registran, ves cada paso en Mis donaciones.</p>
+    organización. Desde que la registran, ves cada paso en Donaciones.</p>
   <p th:if="${conDeposito}"><b>Depósito Central Ejemplo</b>: Calle Ejemplo 1234, Ciudad Ejemplo. Lunes
     a viernes de 9 a 17 h; sábados de 9 a 13 h.</p>
   <p th:unless="${conDeposito}">¿No sabés dónde queda el depósito?
@@ -129,7 +129,7 @@
        th:href="@{/publico-contacto(volver='/donante-entidades')}">Escribinos</a> y te pasamos la
     dirección y el horario.</p>
   <ul role="list">
-    <li><a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver Mis donaciones</a></li>
+    <li><a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver tus donaciones</a></li>
   </ul>
 </aside>
 

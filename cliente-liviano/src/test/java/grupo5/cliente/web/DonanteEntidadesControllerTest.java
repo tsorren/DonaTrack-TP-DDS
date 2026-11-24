@@ -329,7 +329,7 @@ class DonanteEntidadesControllerTest {
 
   /**
    * R11-28: "Cómo llega tu donación" es el aviso de información del catálogo arriba de la búsqueda,
-   * no una tarjeta más; "Ver Mis donaciones" es un enlace, no un botón.
+   * no una tarjeta más; "Ver tus donaciones" es un enlace, no un botón.
    */
   @Test
   void comoLlegaEsUnaFranjaDeAyudaArribaDeLaLista() throws Exception {
@@ -348,7 +348,7 @@ class DonanteEntidadesControllerTest {
             .andExpect(
                 content()
                     .string(
-                        containsString("<a href=\"/donante-donaciones\">Ver Mis donaciones</a>")))
+                        containsString("<a href=\"/donante-donaciones\">Ver tus donaciones</a>")))
             .andExpect(content().string(not(containsString("como-donar"))))
             .andExpect(content().string(not(containsString("por categoría"))))
             .andReturn()

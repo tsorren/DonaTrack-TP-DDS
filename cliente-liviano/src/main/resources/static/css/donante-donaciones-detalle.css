@@ -19,3 +19,10 @@
 main .tarjeta[data-papel="hueco"] {
   --espacio-relleno: var(--espacio-3);
 }
+
+/* Los marcadores del mapa, un píxel más que el toque mínimo: MapLibre los corre a posiciones con
+   fracción de píxel y la caja medida puede quedar en 47,99997 px. */
+[data-parte="mapa"] .mapa-marcador {
+  width: calc(var(--medida-toque-minimo) + 1px);
+  height: calc(var(--medida-toque-minimo) + 1px);
+}

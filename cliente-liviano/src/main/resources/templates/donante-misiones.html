@@ -142,8 +142,9 @@
 
         <!--/* Un enlace por lugar. Desde la tableta, encima de su maceta, de 48 × 48 px como mínimo y
                centrado en ella; en el celular, una columna de lugares debajo del dibujo, cada uno con
-               su planta o su maceta, su nombre y su estado en palabras. El nombre del enlace: la misión
-               y cómo está («Gran Aporte, en curso»). */-->
+               su planta o su maceta, su nombre y, debajo, su estado en palabras con el sello del
+               catálogo (las cerradas, sin sello: DA-08-misiones). El nombre del enlace: la misión y
+               cómo está («Gran Aporte, en curso»). */-->
         <ol id="huerta-lugares" class="pila" data-espacio="1" role="list" aria-label="Las macetas de tu huerta">
           <li th:each="l : ${lugares}" th:data-lugar="${l.clave}"
               th:with="m=${l.tipo == 'mision' ? misiones.^[nombre == #root.l.titulo] : null},
@@ -160,7 +161,10 @@
               <img th:src="${tiene} ? @{/img/ilustraciones/huerta/{k}.svg(k=${l.clave})} : @{/img/ilustraciones/huerta/{k}-maceta.svg(k=${l.clave})}"
                    src="/img/ilustraciones/huerta/estante-izq.svg" alt="">
               <b th:text="${nombre}">Racha Inicial</b>
-              <span th:text="${#strings.capitalize(como)}">Completa</span>
+              <span th:if="${como != 'más adelante'}" class="estado"
+                    th:data-estado="${tiene} ? 'entregada' : (${como == 'en curso'} ? 'en-camino' : 'pendiente')"><th:block
+                  th:replace="~{componentes/sello :: sello(${tiene} ? 'entregada' : (${como == 'en curso'} ? 'en-camino' : 'pendiente'))}"></th:block><th:block
+                  th:text="${#strings.capitalize(como)}">Completa</th:block></span>
             </a>
           </li>
         </ol>
