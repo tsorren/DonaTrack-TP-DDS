@@ -15,12 +15,14 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndepe
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
+import grupo5.donaciones.services.IMetricasDonaciones;
 import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import grupo5.donaciones.services.logistica.IProcesadorEventosLogistica;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -48,6 +50,7 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
   private final IEventosConsumidosRepository eventosConsumidosRepository;
   private final IDonacionesIndependientesRepository donacionesIndependientesRepository;
   private final ILogisticaBroker broker;
+  private final IMetricasDonaciones metricas;
   // Nulo en el perfil en memoria, que no tiene base ni transacciones
   private final TransactionTemplate transacciones;
 
@@ -56,11 +59,13 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
       IEventosConsumidosRepository eventosConsumidosRepository,
       IDonacionesIndependientesRepository donacionesIndependientesRepository,
       ILogisticaBroker broker,
+      IMetricasDonaciones metricas,
       ObjectProvider<PlatformTransactionManager> transactionManager) {
     this.donacionesIndependientesService = donacionesIndependientesService;
     this.eventosConsumidosRepository = eventosConsumidosRepository;
     this.donacionesIndependientesRepository = donacionesIndependientesRepository;
     this.broker = broker;
+    this.metricas = metricas;
     PlatformTransactionManager manager = transactionManager.getIfAvailable();
     this.transacciones = manager != null ? new TransactionTemplate(manager) : null;
   }
@@ -149,7 +154,7 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
         evento.donacionIndependienteId(),
         evento.justificacion());
 
-    aplicarCambioEstado(
+    if (aplicarCambioEstado(
         evento.donacionIndependienteId(),
         new CambioEstadoDonacionIndependienteRequestDTO(
             TipoEstadoDonacion.ENTREGA_FALLIDA,
@@ -160,7 +165,9 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
             evento.replanificable()),
         "EntregaFallida",
         origen,
-        evento.entregaId());
+        evento.entregaId())) {
+      metricas.entregaFallida(evento.replanificable());
+    }
   }
 
   /**
@@ -259,19 +266,21 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
    * guardan juntos. Si dos entregas del mismo mensaje llegan a la vez, la restricción única de
    * {@code evento_consumido} hace fallar la segunda y se deshace su cambio.
    */
-  private void aplicarCambioEstado(
+  private boolean aplicarCambioEstado(
       UUID donacionId,
       CambioEstadoDonacionIndependienteRequestDTO request,
       String eventType,
       String origen,
       UUID businessId) {
-    aplicarCambioEstado(donacionId, request, eventType, origen, businessId, NADA);
+    return aplicarCambioEstado(donacionId, request, eventType, origen, businessId, NADA);
   }
 
   /**
    * {@code ademas} corre en la misma transacción, después del cambio, si el evento no es duplicado.
+   * Devuelve si cambió el estado: no lo cambian un duplicado, una donación que ya estaba en el
+   * destino ni un intento que falló.
    */
-  private void aplicarCambioEstado(
+  private boolean aplicarCambioEstado(
       UUID donacionId,
       CambioEstadoDonacionIndependienteRequestDTO request,
       String eventType,
@@ -279,7 +288,7 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
       UUID businessId,
       Runnable ademas) {
     try {
-      conReintentoPorConflicto(
+      return aplicadoConReintentoPorConflicto(
           () ->
               aplicarSiNoFueConsumido(donacionId, request, eventType, origen, businessId, ademas));
     } catch (Exception e) {
@@ -290,6 +299,7 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
           request.estado(),
           e.getMessage(),
           e);
+      return false;
     }
   }
 
@@ -298,11 +308,10 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
    * y la transacción se deshace. Como el mensaje se consume igual, se vuelve a intentar con la
    * donación recién leída en vez de perder el evento.
    */
-  private void conReintentoPorConflicto(Runnable operacion) {
+  private boolean aplicadoConReintentoPorConflicto(BooleanSupplier operacion) {
     for (int intento = 1; ; intento++) {
       try {
-        enTransaccion(operacion);
-        return;
+        return enTransaccion(operacion);
       } catch (BusinessStateException e) {
         if (e.getError() != ErrorCatalog.DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE
             || intento == MAX_INTENTOS_POR_CONFLICTO) {
@@ -313,15 +322,22 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
     }
   }
 
-  private void enTransaccion(Runnable operacion) {
-    if (transacciones == null) {
-      operacion.run();
-    } else {
-      transacciones.executeWithoutResult(estado -> operacion.run());
-    }
+  private void conReintentoPorConflicto(Runnable operacion) {
+    aplicadoConReintentoPorConflicto(
+        () -> {
+          operacion.run();
+          return true;
+        });
   }
 
-  private void aplicarSiNoFueConsumido(
+  private boolean enTransaccion(BooleanSupplier operacion) {
+    if (transacciones == null) {
+      return operacion.getAsBoolean();
+    }
+    return Boolean.TRUE.equals(transacciones.execute(estado -> operacion.getAsBoolean()));
+  }
+
+  private boolean aplicarSiNoFueConsumido(
       UUID donacionId,
       CambioEstadoDonacionIndependienteRequestDTO request,
       String eventType,
@@ -334,11 +350,13 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
           eventType,
           businessId,
           donacionId);
-      return;
+      return false;
     }
 
     var donacion = donacionesIndependientesRepository.findById(donacionId);
-    if (donacion.isPresent() && donacion.get().getEstadoActual().getTipo() == request.estado()) {
+    boolean yaEstabaEnElDestino =
+        donacion.isPresent() && donacion.get().getEstadoActual().getTipo() == request.estado();
+    if (yaEstabaEnElDestino) {
       log.info(
           "Donación {} ya se encuentra en estado {}, registrando como consumido y descartando",
           donacionId,
@@ -356,5 +374,6 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
             businessId,
             donacionId,
             LocalDateTime.now(ZONA_HORARIA)));
+    return !yaEstabaEnElDestino;
   }
 }

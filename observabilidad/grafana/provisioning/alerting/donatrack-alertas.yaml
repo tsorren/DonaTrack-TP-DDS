@@ -1,0 +1,218 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: donatrack-alertas-rabbitmq
+    folder: DonaTrack
+    interval: 30s
+    rules:
+      - uid: alert-m18-dlq
+        title: M18 — Mensajes en Dead Letter Queues (DLQ)
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            queryType: ""
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              editorMode: code
+              expr: sum(rabbitmq_queue_messages{queue=~"^.*\\.dlq$"})
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+              settings:
+                mode: replaceNN
+                replaceWithValue: 0
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: $B > 0
+              refId: C
+              type: math
+        noDataState: OK
+        executionErrorState: Error
+        for: 1m
+        annotations:
+          summary: "Mensajes acumulados en Dead Letter Queues (*.dlq)"
+          description: "La cantidad de mensajes en colas muertas de Notificaciones supera 0. Investigar errores de procesamiento o consumidores desconectados."
+          runbook_url: "docs/arquitectura/topologia-amqp.md"
+        labels:
+          severity: critical
+          metrica: M18
+          subsistema: notificaciones
+
+  - orgId: 1
+    name: donatrack-alertas-gateway
+    folder: DonaTrack
+    interval: 30s
+    rules:
+      - uid: alert-m24-rechazos-rate-limit
+        title: M24 — Rechazos por Rate Limiting en API Gateway
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            queryType: ""
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              editorMode: code
+              expr: sum(increase(http_server_requests_seconds_count{status="429"}[5m])) or sum(increase(donatrack_gateway_rate_limit_rechazos_total[5m]))
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+              settings:
+                mode: replaceNN
+                replaceWithValue: 0
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: $B > 10
+              refId: C
+              type: math
+        noDataState: OK
+        executionErrorState: Error
+        for: 1m
+        annotations:
+          summary: "Tasa elevada de solicitudes rechazadas (HTTP 429) por Rate Limiting"
+          description: "El API Gateway superó los 10 rechazos por límite de tasa en 5 minutos. Posible abuso de clientes, crawler o cupos descalibrados."
+        labels:
+          severity: warning
+          metrica: M24
+          subsistema: api-gateway
+
+      - uid: alert-m25-redis-fail-open
+        title: M25 — Fallos de Redis / Modo Fail-Open en Gateway
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            queryType: ""
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              editorMode: code
+              expr: sum(increase(donatrack_gateway_redis_fallas_total[5m]))
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+              settings:
+                mode: replaceNN
+                replaceWithValue: 0
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: $B > 0
+              refId: C
+              type: math
+        noDataState: OK
+        executionErrorState: Error
+        for: 30s
+        annotations:
+          summary: "Fallo de conexión o timeout con Redis en API Gateway (Fail-Open activo)"
+          description: "El gateway no puede comunicarse con Redis y está operando en modo fail-open (tráfico pasa sin consumir cupo de Rate Limiting). Revisar contenedor Redis."
+        labels:
+          severity: critical
+          metrica: M25
+          subsistema: api-gateway
+
+  - orgId: 1
+    name: donatrack-alertas-servicios
+    folder: DonaTrack
+    interval: 1m
+    rules:
+      - uid: alert-m26-reinicios-servicios
+        title: M26 — Reinicios inesperados de servicios
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            queryType: ""
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              editorMode: code
+              expr: sum by (job, service_name, instance) (changes(process_start_time_seconds[10m]))
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+              settings:
+                mode: replaceNN
+                replaceWithValue: 0
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: $B > 0
+              refId: C
+              type: math
+        noDataState: OK
+        executionErrorState: Error
+        for: 1m
+        annotations:
+          summary: "Se detectó reinicio inesperado en una instancia de microservicio"
+          description: "El tiempo de inicio del proceso cambió en los últimos 10 minutos, indicando reinicio de la JVM o recreación del contenedor."
+        labels:
+          severity: warning
+          metrica: M26
+          subsistema: infraestructura

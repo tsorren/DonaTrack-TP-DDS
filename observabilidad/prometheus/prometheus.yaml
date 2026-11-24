@@ -1,0 +1,37 @@
+---
+# Configuración de Prometheus en otel-lgtm (DonaTrack - Entrega 7 - Tarea O3)
+# Conserva las directivas nativas de OTLP y TSDB de la imagen grafana/otel-lgtm
+# e incorpora el job de scrape para RabbitMQ en el puerto interno 15692.
+
+otlp:
+  promote_resource_attributes:
+    - service.instance.id
+    - service.name
+    - service.namespace
+    - service.version
+    - cloud.availability_zone
+    - cloud.region
+    - container.name
+    - deployment.environment.name
+    - k8s.cluster.name
+    - k8s.container.name
+    - k8s.cronjob.name
+    - k8s.daemonset.name
+    - k8s.deployment.name
+    - k8s.job.name
+    - k8s.namespace.name
+    - k8s.pod.name
+    - k8s.replicaset.name
+    - k8s.statefulset.name
+
+storage:
+  tsdb:
+    out_of_order_time_window: 10m
+
+scrape_configs:
+  - job_name: 'rabbitmq'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['rabbitmq:15692']
