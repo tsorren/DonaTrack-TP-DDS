@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--/* Seguimiento de una donación de la persona que dona (Martina Ruiz, RF-09): la misma pantalla que
        la de la empresa (donante-seguimiento :: seguimiento, el arquetipo A07; DA-13 y DA-03a), con
-       sus datos (persona/datos-persona) y la posición aproximada de las dos en curso (puntos, por
-       clave de donación, sintéticos): ropa de abrigo, en camino, y leche en polvo, asignada. Sin
+       sus datos (persona/datos-persona) y la posición aproximada de la que está en camino (puntos,
+       por clave de donación, sintéticos): ropa de abrigo. Leche en polvo, asignada, no viaja. Sin
        ?donacion=, la ropa de abrigo, la primera en camino. ?escenario=vacio, error y lento. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-donaciones-detalle', ~{::contenido})}">
@@ -16,8 +16,7 @@
 
 <th:block th:fragment="pantalla">
   <th:block th:replace="~{donante-seguimiento :: seguimiento(${donaciones}, ${ {
-      ropa: {lat: -34.6556, lng: -58.4044, destinoLat: -34.6683, destinoLng: -58.4067},
-      leche: {lat: -34.6400, lng: -58.4065, destinoLat: -34.6418, destinoLng: -58.4291} } },
+      ropa: {lat: -34.6556, lng: -58.4044, destinoLat: -34.6683, destinoLng: -58.4067} } },
       'hoy, 15 de octubre, a las 16:25', ${escenario})}"></th:block>
 </th:block>
 </body>

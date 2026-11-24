@@ -218,9 +218,31 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("aria-current=\"step\"")))
         .andExpect(content().string(containsString("aria-labelledby=\"recorrido-titulo\"")))
         .andExpect(content().string(not(containsString("Hora estimada"))));
+    // La que no pudo llegar: el mismo recorrido que su detalle, sin fecha de nueva salida (HG-01),
+    // y sin camión en el mapa, porque no está viajando (A08).
     mvc.perform(get("/donante-seguimiento?donacion=utiles"))
         .andExpect(content().string(containsString("<h1>Útiles escolares, 2 cajas</h1>")))
-        .andExpect(content().string(containsString("data-paso=\"problema\"")));
+        .andExpect(content().string(containsString("data-paso=\"problema\"")))
+        .andExpect(content().string(not(containsString("17 de octubre"))))
+        .andExpect(content().string(not(containsString("data-mapa-puntos"))))
+        .andExpect(content().string(not(containsString("Posición aproximada"))))
+        .andExpect(content().string(containsString("Todavía sin posición del camión")))
+        .andExpect(
+            content().string(containsString("El camión no está viajando con esta donación.")));
+    // La asignada todavía no salió: no hay camión que seguir (A06).
+    mvc.perform(get("/donante-seguimiento?donacion=leche"))
+        .andExpect(content().string(containsString("<h1>Leche en polvo")))
+        .andExpect(content().string(not(containsString("data-mapa-puntos"))))
+        .andExpect(content().string(containsString("Todavía sin posición del camión")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Cuando el camión salga del depósito, vas a ver acá por dónde va.")));
+    mvc.perform(get("/donante-seguimiento?cuenta=persona&donacion=leche"))
+        .andExpect(view().name("persona/donante-seguimiento"))
+        .andExpect(content().string(not(containsString("data-mapa-puntos"))))
+        .andExpect(content().string(containsString("Todavía sin posición del camión")));
     mvc.perform(get("/donante-seguimiento?donacion=fideos"))
         .andExpect(content().string(containsString("No encontramos esa donación en camino.")));
     mvc.perform(get("/donante-seguimiento?cuenta=persona"))

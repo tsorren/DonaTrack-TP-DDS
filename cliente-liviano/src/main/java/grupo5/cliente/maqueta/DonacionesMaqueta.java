@@ -105,7 +105,7 @@ class DonacionesMaqueta implements DonacionesPuerto {
                   ESCUELA,
                   "8 de octubre de 2026",
                   CON_PROBLEMA,
-                  "No pudo llegar; sale de nuevo el 17 de octubre"),
+                  "No pudo llegar. Todavía sin fecha de nueva salida"),
               new Donacion(
                   "zapatillas",
                   3,

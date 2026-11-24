@@ -23,7 +23,9 @@
 </th:block>
 
 <!--/* La donación que se sigue: la pedida en ?donacion=, si va en curso (tiene destino y no llegó);
-       sin pedir ninguna, la primera en camino o, si no hay, la primera en curso. */-->
+       sin pedir ninguna, la primera en camino o, si no hay, la primera en curso. El mapa con el
+       camión, solo si está en camino: asignada (A06) o con problema (A08), no hay camión que seguir,
+       y queda el hueco sin posición, aunque el puerto traiga un punto. */-->
 <th:block th:fragment="seguimiento(donaciones, puntos, actualizado, escenario)"
     th:with="enCurso=${escenario == 'vacio' ? {} : donaciones.?[destino != null and estado.tono != 'entregada']},
              claves=${enCurso.![clave]},
@@ -32,7 +34,7 @@
              clave=${pedida != null ? (claves.contains(pedida) ? pedida : null)
                      : (!enCamino.isEmpty() ? enCamino[0].clave : (enCurso.isEmpty() ? null : enCurso[0].clave))},
              d=${clave == null ? null : enCurso[claves.indexOf(clave)]},
-             punto=${d == null ? null : puntos.get(d.clave)},
+             punto=${d == null or d.estado.tono != 'en-camino' ? null : puntos.get(d.clave)},
              sinDestino=${donaciones.?[destino == null and estado.tono == 'pendiente'].![titulo]},
              titulo=${d == null ? 'Seguimiento' : d.titulo + ', ' + d.cantidad}">
   <svg th:replace="~{iconos :: signos}"></svg>
@@ -92,7 +94,10 @@
                [data-parte="mapa"], como en publico-mapa: en pantalla ancha quedan fijos enteros. El
                marco (.mapa-dibujo) envuelve al mapa y no va en el mismo elemento: MapLibre le pone
                position: relative a .mapa-real y el top del fijo de .mapa-dibujo lo correría hacia
-               abajo, encima de la nota. */-->
+               abajo, encima de la nota. La hoja de MapLibre se pide acá, antes del script (que la
+               pide recién después de cargar la biblioteca): sin ella, al armarse el mapa sus piezas
+               estiran .mapa-real en el celular, MapLibre lo mide más alto de lo que queda y el
+               encuadre deja afuera el camión y la organización. */-->
         <div th:if="${punto != null}" class="pila" data-espacio="1" data-parte="mapa">
           <div class="mapa-dibujo"><div class="mapa-real" data-mapa data-mapa-puntos="[data-mapa-punto]" role="region"
                th:aria-label="|Mapa: el camión con ${d.titulo}, desde el depósito hasta ${d.destino}. El recorrido de al lado tiene los mismos datos.|"
@@ -111,11 +116,16 @@
           </div></div>
           <p data-tono="suave" class="texto-chico" th:text="|Posición aproximada, actualizada ${actualizado}.|">Posición
             aproximada, actualizada hoy, 15 de octubre, a las 16:25.</p>
+          <link rel="stylesheet" href="/webjars/maplibre-gl/dist/maplibre-gl.css"
+                th:href="@{/webjars/maplibre-gl/dist/maplibre-gl.css}">
           <script src="/js/mapa.js" th:src="@{/js/mapa.js}" defer></script>
         </div>
         <div th:if="${punto == null}" class="tarjeta pila" data-papel="hueco" data-espacio="1">
           <h2>Todavía sin posición del camión</h2>
-          <p data-tono="suave">Cuando el camión salga del depósito, vas a ver acá por dónde va.</p>
+          <p data-tono="suave" th:text="${d.estado.tono == 'con-problema'}
+               ? 'El camión no está viajando con esta donación. Cuando salga de nuevo, vas a ver acá por dónde va.'
+               : 'Cuando el camión salga del depósito, vas a ver acá por dónde va.'">Cuando el camión
+            salga del depósito, vas a ver acá por dónde va.</p>
         </div>
 
         <!--/* El recorrido (D2), que es también el punto del mapa: sus datos y sus globos. */-->
