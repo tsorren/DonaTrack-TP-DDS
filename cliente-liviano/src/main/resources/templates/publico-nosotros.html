@@ -1,26 +1,46 @@
 <!DOCTYPE html>
-<!--/* Raíces, Nosotros (ficha docs/interfaz/flujos/raices-conocer-y-activar.md, 4.1; boceto de E1,
-       pág. 3): quiénes somos, las cifras con período y fecha (los árboles de la portada, estética de K), cómo
-       trabajamos, lo que nos importa y dos salidas, una por público. Se llega desde el pie. Los estados
-       de la maqueta (?escenario=vacio, lento o error) solo cambian las cifras: el resto es texto fijo.
-       Las cifras (cifrasDeNosotros) las da PublicoPuerto: de ejemplo o los contadores de Donaciones
-       (HB-02). */-->
+<!--/* Raíces, Cómo funciona (antes Nosotros; DA-05: la misma ruta con otro nombre; ficha
+       docs/interfaz/flujos/raices-conocer-y-activar.md, 4.1). Deriva del arquetipo A01 de la guía
+       (docs/interfaz/guia/partes/50-pantallas.html#portada): el título sobre la trama, las dos
+       salidas con una sola acción llena, el recorrido en la raíz numerada de 5 pasos, las cifras con
+       su período y su fecha, y láminas de un solo tema. Se llega desde el menú público y el pie. Los
+       estados de la maqueta (?escenario=vacio, lento o error) solo cambian las cifras: el resto es
+       texto fijo. Las cifras (cifrasDeNosotros) las da PublicoPuerto: de ejemplo o los contadores de
+       Donaciones (HB-02). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-conocer', ~{::contenido})}">
 <head>
-  <title>Nosotros - DonaTrack</title>
+  <title>Cómo funciona - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido"
     th:with="estado=${param.escenario != null ? param.escenario[0] : ''},
-             conDatos=${estado != 'vacio' and estado != 'error' and estado != 'lento'}">
+             recorrido=${ {
+               {nombre: 'Llevás tu donación', avance: 'hecho', detalle: 'Al depósito. El equipo la registra a tu nombre.'},
+               {nombre: 'Se asigna', avance: 'hecho', detalle: 'A una organización que pidió eso mismo.'},
+               {nombre: 'Se prepara', avance: 'hecho', detalle: 'En el depósito, para salir en el próximo viaje.'},
+               {nombre: 'Viaja', avance: 'hecho', detalle: 'Ves en tu cuenta por dónde anda el camión.'},
+               {nombre: 'La confirman', avance: 'hecho', detalle: 'La organización sube la foto y vos la ves.'} } }">
   <div class="pila" data-espacio="5">
-    <header class="lectura">
-      <p class="rotulo">Nosotros</p>
-      <h1>Lo que donás, <em>seguido hasta que llega</em></h1>
-      <p class="lectura-bajada">DonaTrack une a quienes donan con organizaciones de la comunidad y sigue cada
-        donación desde el depósito hasta que la organización confirma que llegó.</p>
+    <header class="pila" data-espacio="3">
+      <p class="huerta-rotulo">Cómo funciona</p>
+      <div class="trama">
+        <h1>Lo que donás, seguido hasta que la organización lo confirma</h1>
+      </div>
+      <p class="huerta-bajada">DonaTrack une a quienes donan con organizaciones de la comunidad y sigue
+        cada donación desde el depósito hasta que la organización confirma que llegó.</p>
+      <div class="racimo" data-espacio="2">
+        <a class="boton" data-tono="principal" href="/publico-para-donantes"
+           th:href="@{/publico-para-donantes}">Quiero donar</a>
+        <a class="boton" data-tono="secundario" href="/publico-para-entidades"
+           th:href="@{/publico-para-entidades}">Represento a una organización</a>
+      </div>
     </header>
+
+    <section class="pila" data-espacio="3" aria-labelledby="recorrido-titulo">
+      <h2 id="recorrido-titulo">El recorrido de una donación</h2>
+      <ol th:replace="~{componentes/huerta :: raiz-pasos(${recorrido}, 'numerada tendida', null, false)}"></ol>
+    </section>
 
     <section th:replace="~{componentes/huerta :: cifras(${estado}, ${cifrasDeNosotros})}"></section>
 
@@ -32,8 +52,8 @@
         <p>Ordenamos lo que llega al depósito, lo asignamos a lo que cada organización pidió y mostramos el
           recorrido de cada entrega.</p>
       </div>
-      <!--/* Una lámina con el árbol del último paso (ilustración de diseño, estética de K). Decorativa: el
-             texto de al lado dice lo mismo. */-->
+      <!--/* Una lámina con el árbol del último paso (ilustración de diseño). Decorativa: el texto de al
+             lado dice lo mismo. */-->
       <figure th:replace="~{componentes/huerta :: lamina('paso-4-arbol', 173, 252)}"></figure>
     </section>
 
@@ -67,16 +87,6 @@
         <li><b>Datos reales:</b> cada asignación sale de lo que hay y de lo que cada organización pidió.</li>
         <li><b>Compromiso:</b> herramientas que facilitan el trabajo de quienes reciben.</li>
       </ul>
-    </section>
-
-    <section aria-labelledby="sumate-titulo" class="pila" data-espacio="2">
-      <h2 id="sumate-titulo">Sumate</h2>
-      <div class="racimo" data-espacio="2">
-        <a class="boton" data-tono="principal" href="/publico-para-donantes"
-           th:href="@{/publico-para-donantes}">Quiero donar</a>
-        <a class="boton" data-tono="secundario" href="/publico-para-entidades"
-           th:href="@{/publico-para-entidades}">Represento a una organización</a>
-      </div>
     </section>
   </div>
 </th:block>

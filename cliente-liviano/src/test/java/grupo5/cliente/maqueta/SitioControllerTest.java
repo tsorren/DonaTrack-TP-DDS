@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import grupo5.cliente.web.TraceIdFiltro;
 import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -2056,6 +2057,76 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("No pudimos guardar los cambios.")));
     mvc.perform(get("/entidad-perfil?escenario=sin-conexion"))
         .andExpect(content().string(containsString("No sabemos si se guardó.")));
+  }
+
+  /**
+   * DA-05 (PUB1-07): Nosotros, Para donantes y Para organizaciones siguen en sus rutas y se llaman
+   * «Cómo funciona», «Cómo donar» y «Ayuda». Derivan de A01: el título sobre la trama, la raíz
+   * numerada de 5 pasos con el recorrido y una sola acción llena por página.
+   */
+  @Test
+  void lasPaginasParaConocerTienenSuNombreNuevoYLaComposicionDeLaPortada() throws Exception {
+    List<String[]> paginas =
+        List.of(
+            new String[] {"/publico-nosotros", "Cómo funciona"},
+            new String[] {"/publico-para-donantes", "Cómo donar"},
+            new String[] {"/publico-para-entidades", "Ayuda"});
+    for (String[] pagina : paginas) {
+      String html =
+          mvc.perform(get(pagina[0]))
+              .andExpect(status().isOk())
+              .andExpect(view().name(pagina[0].substring(1)))
+              .andReturn()
+              .getResponse()
+              .getContentAsString(StandardCharsets.UTF_8);
+      String principal = html.substring(html.indexOf("<main"), html.indexOf("</main>"));
+      assertTrue(html.contains("<title>" + pagina[1] + " - DonaTrack</title>"), pagina[0]);
+      assertTrue(principal.contains("<p class=\"huerta-rotulo\">" + pagina[1] + "</p>"), pagina[0]);
+      assertTrue(principal.matches("(?s).*<div class=\"trama\">\\s*<h1>.*"), pagina[0]);
+      assertTrue(
+          principal.matches(
+              "(?s).*<ol class=\"huerta-raiz-pasos\" role=\"list\"\\s+data-forma=\"numerada tendida\".*"),
+          pagina[0]);
+      assertEquals(5, cuantasVeces(principal, "class=\"huerta-raiz-nudo\""), pagina[0]);
+      assertEquals(1, cuantasVeces(principal, "data-tono=\"principal\""), pagina[0]);
+    }
+  }
+
+  /**
+   * DA-23 (PUB1-08): el pie nombra las tres páginas con su nombre nuevo, con las rutas y el orden.
+   */
+  @Test
+  void elPieNombraLasPaginasParaConocerConSuNombreNuevo() throws Exception {
+    for (String pantalla : List.of("/publico-legales", "/publico-nosotros", "/donante-inicio")) {
+      String html =
+          mvc.perform(get(pantalla))
+              .andReturn()
+              .getResponse()
+              .getContentAsString(StandardCharsets.UTF_8);
+      String pie = html.substring(html.indexOf("<footer class=\"raices-pie\""));
+      List<String> enlaces = new ArrayList<>();
+      Matcher enlace = Pattern.compile("<a href=\"([^\"]+)\"[^>]*>([^<]+)</a>").matcher(pie);
+      while (enlace.find()) {
+        enlaces.add(enlace.group(1) + " " + enlace.group(2));
+      }
+      assertEquals(
+          List.of(
+              "/publico-nosotros Cómo funciona",
+              "/publico-para-donantes Cómo donar",
+              "/publico-para-entidades Ayuda",
+              "/publico-legales Términos y privacidad",
+              "/publico-contacto Contacto"),
+          enlaces,
+          pantalla);
+    }
+  }
+
+  private static int cuantasVeces(String texto, String buscado) {
+    int n = 0;
+    for (int i = texto.indexOf(buscado); i >= 0; i = texto.indexOf(buscado, i + 1)) {
+      n++;
+    }
+    return n;
   }
 
   @Test
