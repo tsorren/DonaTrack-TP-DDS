@@ -8,6 +8,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,6 +49,20 @@ class ShedLockAutoConfigurationTest {
   void conBaseSinTareasProgramadas_noCreaNada() {
     runner
         .withUserConfiguration(ConBase.class)
+        .run(
+            contexto ->
+                assertThat(contexto)
+                    .hasNotFailed()
+                    .doesNotHaveBean(LockProvider.class)
+                    .doesNotHaveBean(ShedLockAutoConfiguration.class));
+  }
+
+  @Test
+  void sinShedLockEnElClasspath_noCreaNada() {
+    // El gateway, el cliente y Notificaciones no declaran ShedLock: common-lib lo trae optional.
+    runner
+        .withClassLoader(new FilteredClassLoader("net.javacrumbs.shedlock"))
+        .withUserConfiguration(ConBase.class, ConTareas.class)
         .run(
             contexto ->
                 assertThat(contexto)

@@ -91,14 +91,17 @@
         </dependency>
 
         <!-- ShedLock con JDBC (E7-S01d-1): ShedLockAutoConfiguration lo enciende solo en los
-             servicios con base y tareas programadas. -->
+             servicios con base y tareas programadas. Optional: no llega al gateway, al cliente ni
+             a Notificaciones; lo declaran Donaciones, Incentivos y Logistica. -->
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-spring</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc-template</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <dependency>

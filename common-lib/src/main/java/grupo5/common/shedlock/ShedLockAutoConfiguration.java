@@ -21,11 +21,19 @@ import org.springframework.util.StringUtils;
  *
  * <p>Se activa solo si el servicio tiene un {@link DataSource} y programa tareas
  * ({@code @EnableScheduling}). Sin base (perfil en memoria, gateway) o sin tareas (Notificaciones),
- * no crea nada y {@code @SchedulerLock} no tiene efecto.
+ * no crea nada y {@code @SchedulerLock} no tiene efecto. Logística con el perfil {@code mongo} no
+ * tiene base relacional: su lock lo arma su propia configuración, sobre Mongo.
  */
 @AutoConfiguration(
     afterName = "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration")
-@ConditionalOnClass({JdbcTemplate.class, JdbcTemplateLockProvider.class})
+// Por nombre: common-lib trae ShedLock como optional y el servicio que no lo declara no tiene estas
+// clases.
+@ConditionalOnClass(
+    name = {
+      "org.springframework.jdbc.core.JdbcTemplate",
+      "net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider",
+      "net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock"
+    })
 @ConditionalOnBean(
     value = DataSource.class,
     name = TaskManagementConfigUtils.SCHEDULED_ANNOTATION_PROCESSOR_BEAN_NAME)

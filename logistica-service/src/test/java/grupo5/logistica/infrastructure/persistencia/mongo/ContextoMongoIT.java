@@ -1,11 +1,13 @@
 package grupo5.logistica.infrastructure.persistencia.mongo; // NOSONAR
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import grupo5.common.testing.DisabledIfDockerUnavailable;
 import grupo5.logistica.LogisticaServiceApplication;
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.EntregasRepositoryMongoAdapter;
 import grupo5.logistica.models.repositories.IEntregasRepository;
+import net.javacrumbs.shedlock.core.LockProvider;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +33,9 @@ class ContextoMongoIT {
   @Autowired IEntregasRepository entregas;
   @Autowired PlatformTransactionManager transactionManager;
 
+  @Autowired(required = false)
+  LockProvider lockProvider;
+
   @Test
   void losRepositoriosDelDominioSonLosAdaptadoresDeMongo() {
     assertInstanceOf(EntregasRepositoryMongoAdapter.class, entregas);
@@ -39,5 +44,10 @@ class ContextoMongoIT {
   @Test
   void lasTransaccionesLasManejaMongo() {
     assertInstanceOf(MongoTransactionManager.class, transactionManager);
+  }
+
+  @Test
+  void lasTareasProgramadasTienenLockEnMongo() {
+    assertNotNull(lockProvider, "sin LockProvider, @SchedulerLock no tiene efecto");
   }
 }
