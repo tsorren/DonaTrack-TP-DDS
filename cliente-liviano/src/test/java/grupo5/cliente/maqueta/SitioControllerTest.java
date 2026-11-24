@@ -760,7 +760,8 @@ class SitioControllerTest {
       mvc.perform(post("/publico-contacto-enviado").param("volver", afuera))
           .andExpect(redirectedUrl("/publico-contacto-enviado"));
       mvc.perform(get("/publico-contacto-enviado").param("volver", afuera))
-          .andExpect(content().string(containsString("Ir a la portada")))
+          .andExpect(content().string(containsString(RECIBIDO)))
+          .andExpect(content().string(not(containsString("Volver a"))))
           .andExpect(content().string(not(containsString("otro.test"))));
     }
     mvc.perform(
@@ -770,11 +771,22 @@ class SitioControllerTest {
             redirectedUrl(
                 "/publico-contacto-enviado?volver=%2Fentidad-seguimiento-confirmar%3Fentrega%3Dlentejas"));
     mvc.perform(get("/publico-contacto-enviado").param("volver", "/entidad-necesidades"))
-        .andExpect(content().string(containsString("Volver a Necesidades")));
+        .andExpect(view().name("publico-contacto-enviado"))
+        .andExpect(content().string(containsString(RECIBIDO)))
+        .andExpect(content().string(containsString("name=\"mensaje\"")))
+        .andExpect(
+            content()
+                .string(containsString("href=\"/entidad-necesidades\">Volver a Necesidades</a>")));
     mvc.perform(get("/publico-contacto-enviado").param("volver", "https://otro.test"))
-        .andExpect(content().string(containsString("Ir a la portada")))
+        .andExpect(content().string(containsString(RECIBIDO)))
         .andExpect(content().string(not(containsString("otro.test"))));
+    mvc.perform(get("/publico-contacto").param("volver", "/entidad-necesidades"))
+        .andExpect(content().string(containsString("Volver a Necesidades")))
+        .andExpect(content().string(not(containsString(RECIBIDO))));
   }
+
+  /** El aviso breve de Contacto después de enviar, con el número de ejemplo (DA-06, DA-24). */
+  private static final String RECIBIDO = "Recibimos tu mensaje. Su número es <b>4821</b>.";
 
   @Test
   void miPerfilEligeSiSeVeElNombreYMuestraLosLegales() throws Exception {
@@ -808,6 +820,8 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Guardamos cómo te avisamos")));
     mvc.perform(get("/publico-legales"))
         .andExpect(status().isOk())
+        .andExpect(content().string(containsString("<p class=\"huerta-rotulo\">Legales</p>")))
+        .andExpect(content().string(containsString("<a href=\"#datos\">Tus datos</a>")))
         .andExpect(content().string(containsString("Versión 1, vigente desde")))
         .andExpect(content().string(containsString("texto de ejemplo")))
         .andExpect(content().string(containsString("o solo en una donación al registrarla")))
@@ -976,21 +990,27 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("Cerrar sesión"))));
   }
 
+  /**
+   * El envío termina en Contacto con el aviso breve, sin página de respuesta propia (DA-06, DA-24):
+   * con la sesión, en el marco privado del rol; la única salida propia es la de ?volver=.
+   */
   @Test
-  void elEnviadoConSesionVuelveAMiInicioYSinSesionALaPortada() throws Exception {
+  void elEnviadoEsContactoConElAvisoConYSinSesion() throws Exception {
     mvc.perform(get("/publico-contacto-enviado?escenario=con-sesion&area=entidad"))
         .andExpect(content().string(containsString("class=\"raices-privado\"")))
-        .andExpect(content().string(containsString("href=\"/entidad-inicio\"")))
-        .andExpect(content().string(containsString("Volver a mi inicio")))
-        .andExpect(content().string(not(containsString("Ir a la portada"))));
+        .andExpect(content().string(containsString("href=\"/entidad-necesidades\"")))
+        .andExpect(content().string(containsString(RECIBIDO)))
+        .andExpect(content().string(containsString("el correo de tu cuenta")))
+        .andExpect(content().string(not(containsString("Volver a"))));
     mvc.perform(
             get("/publico-contacto-enviado?escenario=con-sesion")
                 .param("volver", "/donante-seguimiento"))
-        .andExpect(content().string(containsString("Volver a Seguimiento")))
-        .andExpect(content().string(not(containsString("Volver a mi inicio"))));
+        .andExpect(content().string(containsString(RECIBIDO)))
+        .andExpect(content().string(containsString("Volver a Seguimiento")));
     mvc.perform(get("/publico-contacto-enviado"))
-        .andExpect(content().string(containsString("Ir a la portada")))
-        .andExpect(content().string(not(containsString("Volver a mi inicio"))));
+        .andExpect(content().string(containsString("class=\"raices-publico\"")))
+        .andExpect(content().string(containsString(RECIBIDO)))
+        .andExpect(content().string(not(containsString("Volver a"))));
   }
 
   /** El traceId de ejemplo que TraceIdFiltro habría dejado en el pedido. */

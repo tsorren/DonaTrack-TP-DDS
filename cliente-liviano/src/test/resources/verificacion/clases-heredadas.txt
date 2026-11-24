@@ -19,8 +19,6 @@ clave-fila
 como-sigue
 confirmar
 contacto
-contacto-cuenta
-contacto-lamina
 cuenta
 cuenta--enviada
 cuenta-principal
@@ -40,8 +38,6 @@ iconos
 lectura
 lectura-bajada
 legales
-legales-indice
-legales-version
 marca
 mesa
 mesa-cabecera
