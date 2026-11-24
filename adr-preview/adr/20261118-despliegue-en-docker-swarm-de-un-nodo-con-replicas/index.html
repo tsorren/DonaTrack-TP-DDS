@@ -1,0 +1,2095 @@
+<!DOCTYPE html><html lang="en"><head><meta name="theme-color" content="#2176AE"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" data-href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&amp;display=swap"/><link rel="stylesheet" data-href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;700&amp;display=swap"/><meta charSet="utf-8"/><meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width"/><link rel="shortcut icon" type="image/x-icon" href="/DonaTrack-TP-DDS/adr-preview/favicon.ico"/><meta name="og:image" content="/DonaTrack-TP-DDS/adr-preview/l4b-static/Log4brains-og.png"/><title>Despliegue en Docker Swarm de un nodo, con réplicas ADR - Architecture knowledge base of DonaTrack</title><meta name="next-head-count" content="5"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/css/f4b1bfe580d32a3f533d.css" as="style"/><link rel="stylesheet" href="/DonaTrack-TP-DDS/adr-preview/_next/static/css/f4b1bfe580d32a3f533d.css" data-n-g=""/><noscript data-n-css=""></noscript><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/webpack-50bee04d1dc61f8adf5b.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/framework.b33896d72531466bcf17.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/commons.1a3eba1bbb8ea986a150.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/main-d0427bd7c9d85889a938.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/a3e17150ead73d62fba7a33a50672ae3f72841a5.56d1813f1730ddfb4c80.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/pages/_app-796f4c8086e869be38c4.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/364bddfb.28847971f0e02b167249.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/3da477db.e49cd5277ed36ace32c1.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/3b07cb59.4f0af644828e83722dc4.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/b4e962f4.26c14c8db148d74faf11.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/45d2d314fc8da5e3d79852782e4a432ad4da6771.e99b072481f3b9d379a2.js" as="script"/><link rel="preload" href="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/pages/adr/%5B...slug%5D-9f67d10c628dcc0d3aa2.js" as="script"/><style id="jss-server-side">html {
+  max-width: 100%;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+strong, b {
+  font-weight: 700;
+}
+body {
+  color: rgba(0, 0, 0, 0.87);
+  margin: 0;
+  padding: 0 !important;
+  font-size: 0.875rem;
+  max-width: 100%;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-weight: 400;
+  line-height: 1.43;
+  letter-spacing: 0.01071em;
+  background-color: #fff;
+}
+@media print {
+  body {
+    background-color: #fff;
+  }
+}
+  body::backdrop {
+    background-color: #fff;
+  }
+  blockquote {
+    color: #9e9e9e;
+    margin: 0;
+    padding: 0 1em;
+    border-left: 0.25em solid #F8F8F8;
+  }
+  .MuiSvgIcon-root {
+    fill: currentColor;
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    font-size: 1.5rem;
+    transition: fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .MuiSvgIcon-colorPrimary {
+    color: #2176AE;
+  }
+  .MuiSvgIcon-colorSecondary {
+    color: #FF007B;
+  }
+  .MuiSvgIcon-colorAction {
+    color: rgba(0, 0, 0, 0.54);
+  }
+  .MuiSvgIcon-colorError {
+    color: #ff1744;
+  }
+  .MuiSvgIcon-colorDisabled {
+    color: rgba(0, 0, 0, 0.26);
+  }
+  .MuiSvgIcon-fontSizeInherit {
+    font-size: inherit;
+  }
+  .MuiSvgIcon-fontSizeSmall {
+    font-size: 1.25rem;
+  }
+  .MuiSvgIcon-fontSizeLarge {
+    font-size: 2.1875rem;
+  }
+  .MuiTooltip-popper {
+    z-index: 1500;
+    pointer-events: none;
+  }
+  .MuiTooltip-popperInteractive {
+    pointer-events: auto;
+  }
+  .MuiTooltip-popperArrow[x-placement*="bottom"] .MuiTooltip-arrow {
+    top: 0;
+    left: 0;
+    margin-top: -0.71em;
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+  .MuiTooltip-popperArrow[x-placement*="top"] .MuiTooltip-arrow {
+    left: 0;
+    bottom: 0;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-bottom: -0.71em;
+  }
+  .MuiTooltip-popperArrow[x-placement*="right"] .MuiTooltip-arrow {
+    left: 0;
+    width: 0.71em;
+    height: 1em;
+    margin-top: 4px;
+    margin-left: -0.71em;
+    margin-bottom: 4px;
+  }
+  .MuiTooltip-popperArrow[x-placement*="left"] .MuiTooltip-arrow {
+    right: 0;
+    width: 0.71em;
+    height: 1em;
+    margin-top: 4px;
+    margin-right: -0.71em;
+    margin-bottom: 4px;
+  }
+  .MuiTooltip-popperArrow[x-placement*="left"] .MuiTooltip-arrow::before {
+    transform-origin: 0 0;
+  }
+  .MuiTooltip-popperArrow[x-placement*="right"] .MuiTooltip-arrow::before {
+    transform-origin: 100% 100%;
+  }
+  .MuiTooltip-popperArrow[x-placement*="top"] .MuiTooltip-arrow::before {
+    transform-origin: 100% 0;
+  }
+  .MuiTooltip-popperArrow[x-placement*="bottom"] .MuiTooltip-arrow::before {
+    transform-origin: 0 100%;
+  }
+  .MuiTooltip-tooltip {
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 0.625rem;
+    max-width: 300px;
+    word-wrap: break-word;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.4em;
+    border-radius: 4px;
+    background-color: rgba(97, 97, 97, 0.9);
+  }
+  .MuiTooltip-tooltipArrow {
+    margin: 0;
+    position: relative;
+  }
+  .MuiTooltip-arrow {
+    color: rgba(97, 97, 97, 0.9);
+    width: 1em;
+    height: 0.71em;
+    overflow: hidden;
+    position: absolute;
+    box-sizing: border-box;
+  }
+  .MuiTooltip-arrow::before {
+    width: 100%;
+    height: 100%;
+    margin: auto;
+    content: "";
+    display: block;
+    transform: rotate(45deg);
+    background-color: currentColor;
+  }
+  .MuiTooltip-touch {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.14286em;
+  }
+  .MuiTooltip-tooltipPlacementLeft {
+    margin: 0 24px ;
+    transform-origin: right center;
+  }
+@media (min-width:900px) {
+  .MuiTooltip-tooltipPlacementLeft {
+    margin: 0 14px;
+  }
+}
+  .MuiTooltip-tooltipPlacementRight {
+    margin: 0 24px;
+    transform-origin: left center;
+  }
+@media (min-width:900px) {
+  .MuiTooltip-tooltipPlacementRight {
+    margin: 0 14px;
+  }
+}
+  .MuiTooltip-tooltipPlacementTop {
+    margin: 24px 0;
+    transform-origin: center bottom;
+  }
+@media (min-width:900px) {
+  .MuiTooltip-tooltipPlacementTop {
+    margin: 14px 0;
+  }
+}
+  .MuiTooltip-tooltipPlacementBottom {
+    margin: 24px 0;
+    transform-origin: center top;
+  }
+@media (min-width:900px) {
+  .MuiTooltip-tooltipPlacementBottom {
+    margin: 14px 0;
+  }
+}
+  .MuiButtonBase-root {
+    color: inherit;
+    border: 0;
+    cursor: pointer;
+    margin: 0;
+    display: inline-flex;
+    outline: 0;
+    padding: 0;
+    position: relative;
+    align-items: center;
+    user-select: none;
+    border-radius: 0;
+    vertical-align: middle;
+    -moz-appearance: none;
+    justify-content: center;
+    text-decoration: none;
+    background-color: transparent;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiButtonBase-root::-moz-focus-inner {
+    border-style: none;
+  }
+  .MuiButtonBase-root.Mui-disabled {
+    cursor: default;
+    pointer-events: none;
+  }
+@media print {
+  .MuiButtonBase-root {
+    color-adjust: exact;
+  }
+}
+  .MuiButton-root {
+    color: rgba(0, 0, 0, 0.87);
+    padding: 6px 16px;
+    font-size: 0.875rem;
+    min-width: 64px;
+    box-sizing: border-box;
+    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.75;
+    border-radius: 4px;
+    letter-spacing: 0.02857em;
+    text-transform: uppercase;
+  }
+  .MuiButton-root:hover {
+    text-decoration: none;
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .MuiButton-root.Mui-disabled {
+    color: rgba(0, 0, 0, 0.26);
+  }
+@media (hover: none) {
+  .MuiButton-root:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-root:hover.Mui-disabled {
+    background-color: transparent;
+  }
+  .MuiButton-label {
+    width: 100%;
+    display: inherit;
+    align-items: inherit;
+    justify-content: inherit;
+  }
+  .MuiButton-text {
+    padding: 6px 8px;
+  }
+  .MuiButton-textPrimary {
+    color: #2176AE;
+  }
+  .MuiButton-textPrimary:hover {
+    background-color: rgba(33, 118, 174, 0.04);
+  }
+@media (hover: none) {
+  .MuiButton-textPrimary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-textSecondary {
+    color: #FF007B;
+  }
+  .MuiButton-textSecondary:hover {
+    background-color: rgba(255, 0, 123, 0.04);
+  }
+@media (hover: none) {
+  .MuiButton-textSecondary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-outlined {
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    padding: 5px 15px;
+  }
+  .MuiButton-outlined.Mui-disabled {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiButton-outlinedPrimary {
+    color: #2176AE;
+    border: 1px solid rgba(33, 118, 174, 0.5);
+  }
+  .MuiButton-outlinedPrimary:hover {
+    border: 1px solid #2176AE;
+    background-color: rgba(33, 118, 174, 0.04);
+  }
+@media (hover: none) {
+  .MuiButton-outlinedPrimary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-outlinedSecondary {
+    color: #FF007B;
+    border: 1px solid rgba(255, 0, 123, 0.5);
+  }
+  .MuiButton-outlinedSecondary:hover {
+    border: 1px solid #FF007B;
+    background-color: rgba(255, 0, 123, 0.04);
+  }
+  .MuiButton-outlinedSecondary.Mui-disabled {
+    border: 1px solid rgba(0, 0, 0, 0.26);
+  }
+@media (hover: none) {
+  .MuiButton-outlinedSecondary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiButton-contained {
+    color: rgba(0, 0, 0, 0.87);
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
+    background-color: #e0e0e0;
+  }
+  .MuiButton-contained:hover {
+    box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12);
+    background-color: #d5d5d5;
+  }
+  .MuiButton-contained.Mui-focusVisible {
+    box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);
+  }
+  .MuiButton-contained:active {
+    box-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);
+  }
+  .MuiButton-contained.Mui-disabled {
+    color: rgba(0, 0, 0, 0.26);
+    box-shadow: none;
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+@media (hover: none) {
+  .MuiButton-contained:hover {
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
+    background-color: #e0e0e0;
+  }
+}
+  .MuiButton-contained:hover.Mui-disabled {
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+  .MuiButton-containedPrimary {
+    color: #fff;
+    background-color: #2176AE;
+  }
+  .MuiButton-containedPrimary:hover {
+    background-color: rgb(23, 82, 121);
+  }
+@media (hover: none) {
+  .MuiButton-containedPrimary:hover {
+    background-color: #2176AE;
+  }
+}
+  .MuiButton-containedSecondary {
+    color: #fff;
+    background-color: #FF007B;
+  }
+  .MuiButton-containedSecondary:hover {
+    background-color: rgb(178, 0, 86);
+  }
+@media (hover: none) {
+  .MuiButton-containedSecondary:hover {
+    background-color: #FF007B;
+  }
+}
+  .MuiButton-disableElevation {
+    box-shadow: none;
+  }
+  .MuiButton-disableElevation:hover {
+    box-shadow: none;
+  }
+  .MuiButton-disableElevation.Mui-focusVisible {
+    box-shadow: none;
+  }
+  .MuiButton-disableElevation:active {
+    box-shadow: none;
+  }
+  .MuiButton-disableElevation.Mui-disabled {
+    box-shadow: none;
+  }
+  .MuiButton-colorInherit {
+    color: inherit;
+    border-color: currentColor;
+  }
+  .MuiButton-textSizeSmall {
+    padding: 4px 5px;
+    font-size: 0.8125rem;
+  }
+  .MuiButton-textSizeLarge {
+    padding: 8px 11px;
+    font-size: 0.9375rem;
+  }
+  .MuiButton-outlinedSizeSmall {
+    padding: 3px 9px;
+    font-size: 0.8125rem;
+  }
+  .MuiButton-outlinedSizeLarge {
+    padding: 7px 21px;
+    font-size: 0.9375rem;
+  }
+  .MuiButton-containedSizeSmall {
+    padding: 4px 10px;
+    font-size: 0.8125rem;
+  }
+  .MuiButton-containedSizeLarge {
+    padding: 8px 22px;
+    font-size: 0.9375rem;
+  }
+  .MuiButton-fullWidth {
+    width: 100%;
+  }
+  .MuiButton-startIcon {
+    display: inherit;
+    margin-left: -4px;
+    margin-right: 8px;
+  }
+  .MuiButton-startIcon.MuiButton-iconSizeSmall {
+    margin-left: -2px;
+  }
+  .MuiButton-endIcon {
+    display: inherit;
+    margin-left: 8px;
+    margin-right: -4px;
+  }
+  .MuiButton-endIcon.MuiButton-iconSizeSmall {
+    margin-right: -2px;
+  }
+  .MuiButton-iconSizeSmall > *:first-child {
+    font-size: 18px;
+  }
+  .MuiButton-iconSizeMedium > *:first-child {
+    font-size: 20px;
+  }
+  .MuiButton-iconSizeLarge > *:first-child {
+    font-size: 22px;
+  }
+@media (min-width:0px) and (max-width:899.95px) {
+  .jss27 {
+    display: none;
+  }
+}
+@media (min-width:0px) {
+  .jss28 {
+    display: none;
+  }
+}
+@media (max-width:899.95px) {
+  .jss29 {
+    display: none;
+  }
+}
+@media (min-width:900px) and (max-width:1059.95px) {
+  .jss30 {
+    display: none;
+  }
+}
+@media (min-width:900px) {
+  .jss31 {
+    display: none;
+  }
+}
+@media (max-width:1059.95px) {
+  .jss32 {
+    display: none;
+  }
+}
+@media (min-width:1060px) and (max-width:1279.95px) {
+  .jss33 {
+    display: none;
+  }
+}
+@media (min-width:1060px) {
+  .jss34 {
+    display: none;
+  }
+}
+@media (max-width:1279.95px) {
+  .jss35 {
+    display: none;
+  }
+}
+@media (min-width:1280px) and (max-width:1919.95px) {
+  .jss36 {
+    display: none;
+  }
+}
+@media (min-width:1280px) {
+  .jss37 {
+    display: none;
+  }
+}
+@media (max-width:1919.95px) {
+  .jss38 {
+    display: none;
+  }
+}
+@media (min-width:1920px) {
+  .jss39 {
+    display: none;
+  }
+}
+@media (min-width:1920px) {
+  .jss40 {
+    display: none;
+  }
+}
+@media (min-width:0px) {
+  .jss41 {
+    display: none;
+  }
+}
+  .MuiDivider-root {
+    border: none;
+    height: 1px;
+    margin: 0;
+    flex-shrink: 0;
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+  .MuiDivider-absolute {
+    left: 0;
+    width: 100%;
+    bottom: 0;
+    position: absolute;
+  }
+  .MuiDivider-inset {
+    margin-left: 72px;
+  }
+  .MuiDivider-light {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+  .MuiDivider-middle {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+  .MuiDivider-vertical {
+    width: 1px;
+    height: 100%;
+  }
+  .MuiDivider-flexItem {
+    height: auto;
+    align-self: stretch;
+  }
+  .MuiTypography-root {
+    margin: 0;
+  }
+  .MuiTypography-body2 {
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.43;
+    letter-spacing: 0.01071em;
+  }
+  .MuiTypography-body1 {
+    font-size: 1rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.00938em;
+  }
+  .MuiTypography-caption {
+    font-size: 0.75rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.66;
+    letter-spacing: 0.03333em;
+  }
+  .MuiTypography-button {
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.75;
+    letter-spacing: 0.02857em;
+    text-transform: uppercase;
+  }
+  .MuiTypography-h1 {
+    font-size: 3.5rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 300;
+    line-height: 1.167;
+    letter-spacing: -0.01562em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h1 {
+    font-size: 5.3556rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h1 {
+    font-size: 5.5698rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h1 {
+    font-size: 5.9983rem;
+  }
+}
+  .MuiTypography-h2 {
+    font-size: 2.375rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -0.00833em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h2 {
+    font-size: 3.3333rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h2 {
+    font-size: 3.5417rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h2 {
+    font-size: 3.75rem;
+  }
+}
+  .MuiTypography-h3 {
+    font-size: 2rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: 0em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h3 {
+    font-size: 2.7273rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h3 {
+    font-size: 2.7273rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h3 {
+    font-size: 2.9545rem;
+  }
+}
+  .MuiTypography-h4 {
+    font-size: 1.5625rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 400;
+    line-height: 1.235;
+    letter-spacing: 0.00735em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h4 {
+    font-size: 2.0243rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h4 {
+    font-size: 2.0243rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h4 {
+    font-size: 2.0243rem;
+  }
+}
+  .MuiTypography-h5 {
+    font-size: 1.25rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 400;
+    line-height: 1.334;
+    letter-spacing: 0em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h5 {
+    font-size: 1.4993rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h5 {
+    font-size: 1.4993rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h5 {
+    font-size: 1.4993rem;
+  }
+}
+  .MuiTypography-h6 {
+    font-size: 1.125rem;
+    font-family: "Roboto Slab", "Noto Serif", "Times New Roman", serif;
+    font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: 0.0075em;
+  }
+@media (min-width:900px) {
+  .MuiTypography-h6 {
+    font-size: 1.25rem;
+  }
+}
+@media (min-width:1060px) {
+  .MuiTypography-h6 {
+    font-size: 1.25rem;
+  }
+}
+@media (min-width:1280px) {
+  .MuiTypography-h6 {
+    font-size: 1.25rem;
+  }
+}
+  .MuiTypography-subtitle1 {
+    font-size: 1rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.75;
+    letter-spacing: 0.00938em;
+  }
+  .MuiTypography-subtitle2 {
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.57;
+    letter-spacing: 0.00714em;
+  }
+  .MuiTypography-overline {
+    font-size: 0.75rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 2.66;
+    letter-spacing: 0.08333em;
+    text-transform: uppercase;
+  }
+  .MuiTypography-srOnly {
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+  }
+  .MuiTypography-alignLeft {
+    text-align: left;
+  }
+  .MuiTypography-alignCenter {
+    text-align: center;
+  }
+  .MuiTypography-alignRight {
+    text-align: right;
+  }
+  .MuiTypography-alignJustify {
+    text-align: justify;
+  }
+  .MuiTypography-noWrap {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .MuiTypography-gutterBottom {
+    margin-bottom: 0.35em;
+  }
+  .MuiTypography-paragraph {
+    margin-bottom: 16px;
+  }
+  .MuiTypography-colorInherit {
+    color: inherit;
+  }
+  .MuiTypography-colorPrimary {
+    color: #2176AE;
+  }
+  .MuiTypography-colorSecondary {
+    color: #FF007B;
+  }
+  .MuiTypography-colorTextPrimary {
+    color: rgba(0, 0, 0, 0.87);
+  }
+  .MuiTypography-colorTextSecondary {
+    color: rgba(0, 0, 0, 0.54);
+  }
+  .MuiTypography-colorError {
+    color: #ff1744;
+  }
+  .MuiTypography-displayInline {
+    display: inline;
+  }
+  .MuiTypography-displayBlock {
+    display: block;
+  }
+  .MuiLink-root:hover {
+    color: rgb(23, 82, 121);
+  }
+  .MuiLink-underlineNone {
+    text-decoration: none;
+  }
+  .MuiLink-underlineHover {
+    text-decoration: none;
+  }
+  .MuiLink-underlineHover:hover {
+    text-decoration: underline;
+  }
+  .MuiLink-underlineAlways {
+    text-decoration: underline;
+  }
+  .MuiLink-button {
+    border: 0;
+    cursor: pointer;
+    margin: 0;
+    outline: 0;
+    padding: 0;
+    position: relative;
+    user-select: none;
+    border-radius: 0;
+    vertical-align: middle;
+    -moz-appearance: none;
+    background-color: transparent;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiLink-button::-moz-focus-inner {
+    border-style: none;
+  }
+  .MuiLink-button.Mui-focusVisible {
+    outline: auto;
+  }
+  .MuiPaper-root {
+    color: rgba(0, 0, 0, 0.87);
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    background-color: #fff;
+  }
+  .MuiPaper-rounded {
+    border-radius: 4px;
+  }
+  .MuiPaper-outlined {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiPaper-elevation0 {
+    box-shadow: none;
+  }
+  .MuiPaper-elevation1 {
+    box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation2 {
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation3 {
+    box-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation4 {
+    box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation5 {
+    box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 5px 8px 0px rgba(0,0,0,0.14),0px 1px 14px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation6 {
+    box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation7 {
+    box-shadow: 0px 4px 5px -2px rgba(0,0,0,0.2),0px 7px 10px 1px rgba(0,0,0,0.14),0px 2px 16px 1px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation8 {
+    box-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation9 {
+    box-shadow: 0px 5px 6px -3px rgba(0,0,0,0.2),0px 9px 12px 1px rgba(0,0,0,0.14),0px 3px 16px 2px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation10 {
+    box-shadow: 0px 6px 6px -3px rgba(0,0,0,0.2),0px 10px 14px 1px rgba(0,0,0,0.14),0px 4px 18px 3px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation11 {
+    box-shadow: 0px 6px 7px -4px rgba(0,0,0,0.2),0px 11px 15px 1px rgba(0,0,0,0.14),0px 4px 20px 3px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation12 {
+    box-shadow: 0px 7px 8px -4px rgba(0,0,0,0.2),0px 12px 17px 2px rgba(0,0,0,0.14),0px 5px 22px 4px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation13 {
+    box-shadow: 0px 7px 8px -4px rgba(0,0,0,0.2),0px 13px 19px 2px rgba(0,0,0,0.14),0px 5px 24px 4px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation14 {
+    box-shadow: 0px 7px 9px -4px rgba(0,0,0,0.2),0px 14px 21px 2px rgba(0,0,0,0.14),0px 5px 26px 4px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation15 {
+    box-shadow: 0px 8px 9px -5px rgba(0,0,0,0.2),0px 15px 22px 2px rgba(0,0,0,0.14),0px 6px 28px 5px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation16 {
+    box-shadow: 0px 8px 10px -5px rgba(0,0,0,0.2),0px 16px 24px 2px rgba(0,0,0,0.14),0px 6px 30px 5px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation17 {
+    box-shadow: 0px 8px 11px -5px rgba(0,0,0,0.2),0px 17px 26px 2px rgba(0,0,0,0.14),0px 6px 32px 5px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation18 {
+    box-shadow: 0px 9px 11px -5px rgba(0,0,0,0.2),0px 18px 28px 2px rgba(0,0,0,0.14),0px 7px 34px 6px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation19 {
+    box-shadow: 0px 9px 12px -6px rgba(0,0,0,0.2),0px 19px 29px 2px rgba(0,0,0,0.14),0px 7px 36px 6px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation20 {
+    box-shadow: 0px 10px 13px -6px rgba(0,0,0,0.2),0px 20px 31px 3px rgba(0,0,0,0.14),0px 8px 38px 7px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation21 {
+    box-shadow: 0px 10px 13px -6px rgba(0,0,0,0.2),0px 21px 33px 3px rgba(0,0,0,0.14),0px 8px 40px 7px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation22 {
+    box-shadow: 0px 10px 14px -6px rgba(0,0,0,0.2),0px 22px 35px 3px rgba(0,0,0,0.14),0px 8px 42px 7px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation23 {
+    box-shadow: 0px 11px 14px -7px rgba(0,0,0,0.2),0px 23px 36px 3px rgba(0,0,0,0.14),0px 9px 44px 8px rgba(0,0,0,0.12);
+  }
+  .MuiPaper-elevation24 {
+    box-shadow: 0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12);
+  }
+  .MuiIconButton-root {
+    flex: 0 0 auto;
+    color: rgba(0, 0, 0, 0.54);
+    padding: 12px;
+    overflow: visible;
+    font-size: 1.5rem;
+    text-align: center;
+    transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    border-radius: 50%;
+  }
+  .MuiIconButton-root:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .MuiIconButton-root.Mui-disabled {
+    color: rgba(0, 0, 0, 0.26);
+    background-color: transparent;
+  }
+@media (hover: none) {
+  .MuiIconButton-root:hover {
+    background-color: transparent;
+  }
+}
+  .MuiIconButton-edgeStart {
+    margin-left: -12px;
+  }
+  .MuiIconButton-sizeSmall.MuiIconButton-edgeStart {
+    margin-left: -3px;
+  }
+  .MuiIconButton-edgeEnd {
+    margin-right: -12px;
+  }
+  .MuiIconButton-sizeSmall.MuiIconButton-edgeEnd {
+    margin-right: -3px;
+  }
+  .MuiIconButton-colorInherit {
+    color: inherit;
+  }
+  .MuiIconButton-colorPrimary {
+    color: #2176AE;
+  }
+  .MuiIconButton-colorPrimary:hover {
+    background-color: rgba(33, 118, 174, 0.04);
+  }
+@media (hover: none) {
+  .MuiIconButton-colorPrimary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiIconButton-colorSecondary {
+    color: #FF007B;
+  }
+  .MuiIconButton-colorSecondary:hover {
+    background-color: rgba(255, 0, 123, 0.04);
+  }
+@media (hover: none) {
+  .MuiIconButton-colorSecondary:hover {
+    background-color: transparent;
+  }
+}
+  .MuiIconButton-sizeSmall {
+    padding: 3px;
+    font-size: 1.125rem;
+  }
+  .MuiIconButton-label {
+    width: 100%;
+    display: flex;
+    align-items: inherit;
+    justify-content: inherit;
+  }
+  .MuiAppBar-root {
+    width: 100%;
+    display: flex;
+    z-index: 1100;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    flex-direction: column;
+  }
+  .MuiAppBar-positionFixed {
+    top: 0;
+    left: auto;
+    right: 0;
+    position: fixed;
+  }
+@media print {
+  .MuiAppBar-positionFixed {
+    position: absolute;
+  }
+}
+  .MuiAppBar-positionAbsolute {
+    top: 0;
+    left: auto;
+    right: 0;
+    position: absolute;
+  }
+  .MuiAppBar-positionSticky {
+    top: 0;
+    left: auto;
+    right: 0;
+    position: sticky;
+  }
+  .MuiAppBar-positionStatic {
+    position: static;
+  }
+  .MuiAppBar-positionRelative {
+    position: relative;
+  }
+  .MuiAppBar-colorDefault {
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #f5f5f5;
+  }
+  .MuiAppBar-colorPrimary {
+    color: #fff;
+    background-color: #2176AE;
+  }
+  .MuiAppBar-colorSecondary {
+    color: #fff;
+    background-color: #FF007B;
+  }
+  .MuiAppBar-colorInherit {
+    color: inherit;
+  }
+  .MuiAppBar-colorTransparent {
+    color: inherit;
+    background-color: transparent;
+  }
+  .MuiBackdrop-root {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    z-index: -1;
+    position: fixed;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiBackdrop-invisible {
+    background-color: transparent;
+  }
+  .MuiButtonGroup-root {
+    display: inline-flex;
+    border-radius: 4px;
+  }
+  .MuiButtonGroup-contained {
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
+  }
+  .MuiButtonGroup-disableElevation {
+    box-shadow: none;
+  }
+  .MuiButtonGroup-fullWidth {
+    width: 100%;
+  }
+  .MuiButtonGroup-vertical {
+    flex-direction: column;
+  }
+  .MuiButtonGroup-grouped {
+    min-width: 40px;
+  }
+  .MuiButtonGroup-groupedHorizontal:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  .MuiButtonGroup-groupedHorizontal:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .MuiButtonGroup-groupedVertical:not(:first-child) {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+  .MuiButtonGroup-groupedVertical:not(:last-child) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .MuiButtonGroup-groupedTextHorizontal:not(:last-child) {
+    border-right: 1px solid rgba(0, 0, 0, 0.23);
+  }
+  .MuiButtonGroup-groupedTextVertical:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.23);
+  }
+  .MuiButtonGroup-groupedTextPrimary:not(:last-child) {
+    border-color: rgba(33, 118, 174, 0.5);
+  }
+  .MuiButtonGroup-groupedTextSecondary:not(:last-child) {
+    border-color: rgba(255, 0, 123, 0.5);
+  }
+  .MuiButtonGroup-groupedOutlinedHorizontal:not(:first-child) {
+    margin-left: -1px;
+  }
+  .MuiButtonGroup-groupedOutlinedHorizontal:not(:last-child) {
+    border-right-color: transparent;
+  }
+  .MuiButtonGroup-groupedOutlinedVertical:not(:first-child) {
+    margin-top: -1px;
+  }
+  .MuiButtonGroup-groupedOutlinedVertical:not(:last-child) {
+    border-bottom-color: transparent;
+  }
+  .MuiButtonGroup-groupedOutlinedPrimary:hover {
+    border-color: #2176AE;
+  }
+  .MuiButtonGroup-groupedOutlinedSecondary:hover {
+    border-color: #FF007B;
+  }
+  .MuiButtonGroup-groupedContained {
+    box-shadow: none;
+  }
+  .MuiButtonGroup-groupedContainedHorizontal:not(:last-child) {
+    border-right: 1px solid #bdbdbd;
+  }
+  .MuiButtonGroup-groupedContainedHorizontal:not(:last-child).Mui-disabled {
+    border-right: 1px solid rgba(0, 0, 0, 0.26);
+  }
+  .MuiButtonGroup-groupedContainedVertical:not(:last-child) {
+    border-bottom: 1px solid #bdbdbd;
+  }
+  .MuiButtonGroup-groupedContainedVertical:not(:last-child).Mui-disabled {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.26);
+  }
+  .MuiButtonGroup-groupedContainedPrimary:not(:last-child) {
+    border-color: rgb(23, 82, 121);
+  }
+  .MuiButtonGroup-groupedContainedSecondary:not(:last-child) {
+    border-color: rgb(178, 0, 86);
+  }
+  .MuiChip-root {
+    color: rgba(0, 0, 0, 0.87);
+    border: none;
+    cursor: default;
+    height: 32px;
+    display: inline-flex;
+    outline: 0;
+    padding: 0;
+    font-size: 0.8125rem;
+    box-sizing: border-box;
+    transition: background-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    align-items: center;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    white-space: nowrap;
+    border-radius: 16px;
+    vertical-align: middle;
+    justify-content: center;
+    text-decoration: none;
+    background-color: #e0e0e0;
+  }
+  .MuiChip-root.Mui-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .MuiChip-root .MuiChip-avatar {
+    color: #616161;
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+    margin-left: 5px;
+    margin-right: -6px;
+  }
+  .MuiChip-root .MuiChip-avatarColorPrimary {
+    color: #fff;
+    background-color: rgb(23, 82, 121);
+  }
+  .MuiChip-root .MuiChip-avatarColorSecondary {
+    color: #fff;
+    background-color: rgb(178, 0, 86);
+  }
+  .MuiChip-root .MuiChip-avatarSmall {
+    width: 18px;
+    height: 18px;
+    font-size: 0.625rem;
+    margin-left: 4px;
+    margin-right: -4px;
+  }
+  .MuiChip-sizeSmall {
+    height: 24px;
+  }
+  .MuiChip-colorPrimary {
+    color: #fff;
+    background-color: #2176AE;
+  }
+  .MuiChip-colorSecondary {
+    color: #fff;
+    background-color: #FF007B;
+  }
+  .MuiChip-clickable {
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiChip-clickable:hover, .MuiChip-clickable:focus {
+    background-color: rgb(206, 206, 206);
+  }
+  .MuiChip-clickable:active {
+    box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);
+  }
+  .MuiChip-clickableColorPrimary:hover, .MuiChip-clickableColorPrimary:focus {
+    background-color: rgb(50, 128, 180);
+  }
+  .MuiChip-clickableColorSecondary:hover, .MuiChip-clickableColorSecondary:focus {
+    background-color: rgb(255, 20, 133);
+  }
+  .MuiChip-deletable:focus {
+    background-color: rgb(206, 206, 206);
+  }
+  .MuiChip-deletableColorPrimary:focus {
+    background-color: rgb(77, 145, 190);
+  }
+  .MuiChip-deletableColorSecondary:focus {
+    background-color: rgb(255, 51, 149);
+  }
+  .MuiChip-outlined {
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    background-color: transparent;
+  }
+  .MuiChip-clickable.MuiChip-outlined:hover, .MuiChip-clickable.MuiChip-outlined:focus, .MuiChip-deletable.MuiChip-outlined:focus {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .MuiChip-outlined .MuiChip-avatar {
+    margin-left: 4px;
+  }
+  .MuiChip-outlined .MuiChip-avatarSmall {
+    margin-left: 2px;
+  }
+  .MuiChip-outlined .MuiChip-icon {
+    margin-left: 4px;
+  }
+  .MuiChip-outlined .MuiChip-iconSmall {
+    margin-left: 2px;
+  }
+  .MuiChip-outlined .MuiChip-deleteIcon {
+    margin-right: 5px;
+  }
+  .MuiChip-outlined .MuiChip-deleteIconSmall {
+    margin-right: 3px;
+  }
+  .MuiChip-outlinedPrimary {
+    color: #2176AE;
+    border: 1px solid #2176AE;
+  }
+  .MuiChip-clickable.MuiChip-outlinedPrimary:hover, .MuiChip-clickable.MuiChip-outlinedPrimary:focus, .MuiChip-deletable.MuiChip-outlinedPrimary:focus {
+    background-color: rgba(33, 118, 174, 0.04);
+  }
+  .MuiChip-outlinedSecondary {
+    color: #FF007B;
+    border: 1px solid #FF007B;
+  }
+  .MuiChip-clickable.MuiChip-outlinedSecondary:hover, .MuiChip-clickable.MuiChip-outlinedSecondary:focus, .MuiChip-deletable.MuiChip-outlinedSecondary:focus {
+    background-color: rgba(255, 0, 123, 0.04);
+  }
+  .MuiChip-icon {
+    color: #616161;
+    margin-left: 5px;
+    margin-right: -6px;
+  }
+  .MuiChip-iconSmall {
+    width: 18px;
+    height: 18px;
+    margin-left: 4px;
+    margin-right: -4px;
+  }
+  .MuiChip-iconColorPrimary {
+    color: inherit;
+  }
+  .MuiChip-iconColorSecondary {
+    color: inherit;
+  }
+  .MuiChip-label {
+    overflow: hidden;
+    white-space: nowrap;
+    padding-left: 12px;
+    padding-right: 12px;
+    text-overflow: ellipsis;
+  }
+  .MuiChip-labelSmall {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .MuiChip-deleteIcon {
+    color: rgba(0, 0, 0, 0.26);
+    width: 22px;
+    cursor: pointer;
+    height: 22px;
+    margin: 0 5px 0 -6px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .MuiChip-deleteIcon:hover {
+    color: rgba(0, 0, 0, 0.4);
+  }
+  .MuiChip-deleteIconSmall {
+    width: 16px;
+    height: 16px;
+    margin-left: -4px;
+    margin-right: 4px;
+  }
+  .MuiChip-deleteIconColorPrimary {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .MuiChip-deleteIconColorPrimary:hover, .MuiChip-deleteIconColorPrimary:active {
+    color: #fff;
+  }
+  .MuiChip-deleteIconColorSecondary {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .MuiChip-deleteIconColorSecondary:hover, .MuiChip-deleteIconColorSecondary:active {
+    color: #fff;
+  }
+  .MuiChip-deleteIconOutlinedColorPrimary {
+    color: rgba(33, 118, 174, 0.7);
+  }
+  .MuiChip-deleteIconOutlinedColorPrimary:hover, .MuiChip-deleteIconOutlinedColorPrimary:active {
+    color: #2176AE;
+  }
+  .MuiChip-deleteIconOutlinedColorSecondary {
+    color: rgba(255, 0, 123, 0.7);
+  }
+  .MuiChip-deleteIconOutlinedColorSecondary:hover, .MuiChip-deleteIconOutlinedColorSecondary:active {
+    color: #FF007B;
+  }
+  .MuiCircularProgress-root {
+    display: inline-block;
+  }
+  .MuiCircularProgress-static {
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+  .MuiCircularProgress-indeterminate {
+    animation: MuiCircularProgress-keyframes-circular-rotate 1.4s linear infinite;
+  }
+  .MuiCircularProgress-determinate {
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+  .MuiCircularProgress-colorPrimary {
+    color: #2176AE;
+  }
+  .MuiCircularProgress-colorSecondary {
+    color: #FF007B;
+  }
+  .MuiCircularProgress-svg {
+    display: block;
+  }
+  .MuiCircularProgress-circle {
+    stroke: currentColor;
+  }
+  .MuiCircularProgress-circleStatic {
+    transition: stroke-dashoffset 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+  .MuiCircularProgress-circleIndeterminate {
+    animation: MuiCircularProgress-keyframes-circular-dash 1.4s ease-in-out infinite;
+    stroke-dasharray: 80px, 200px;
+    stroke-dashoffset: 0px;
+  }
+  .MuiCircularProgress-circleDeterminate {
+    transition: stroke-dashoffset 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+@keyframes MuiCircularProgress-keyframes-circular-rotate {
+  0% {
+    transform-origin: 50% 50%;
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes MuiCircularProgress-keyframes-circular-dash {
+  0% {
+    stroke-dasharray: 1px, 200px;
+    stroke-dashoffset: 0px;
+  }
+  50% {
+    stroke-dasharray: 100px, 200px;
+    stroke-dashoffset: -15px;
+  }
+  100% {
+    stroke-dasharray: 100px, 200px;
+    stroke-dashoffset: -125px;
+  }
+}
+  .MuiCircularProgress-circleDisableShrink {
+    animation: none;
+  }
+  .MuiDrawer-docked {
+    flex: 0 0 auto;
+  }
+  .MuiDrawer-paper {
+    top: 0;
+    flex: 1 0 auto;
+    height: 100%;
+    display: flex;
+    outline: 0;
+    z-index: 1200;
+    position: fixed;
+    overflow-y: auto;
+    flex-direction: column;
+    -webkit-overflow-scrolling: touch;
+  }
+  .MuiDrawer-paperAnchorLeft {
+    left: 0;
+    right: auto;
+  }
+  .MuiDrawer-paperAnchorRight {
+    left: auto;
+    right: 0;
+  }
+  .MuiDrawer-paperAnchorTop {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: auto;
+    height: auto;
+    max-height: 100%;
+  }
+  .MuiDrawer-paperAnchorBottom {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: auto;
+    max-height: 100%;
+  }
+  .MuiDrawer-paperAnchorDockedLeft {
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiDrawer-paperAnchorDockedTop {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiDrawer-paperAnchorDockedRight {
+    border-left: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiDrawer-paperAnchorDockedBottom {
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .MuiList-root {
+    margin: 0;
+    padding: 0;
+    position: relative;
+    list-style: none;
+  }
+  .MuiList-padding {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .MuiList-subheader {
+    padding-top: 0;
+  }
+  .MuiSnackbar-root {
+    left: 8px;
+    right: 8px;
+    display: flex;
+    z-index: 1400;
+    position: fixed;
+    align-items: center;
+    justify-content: center;
+  }
+  .MuiSnackbar-anchorOriginTopCenter {
+    top: 8px;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginTopCenter {
+    top: 24px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+}
+  .MuiSnackbar-anchorOriginBottomCenter {
+    bottom: 8px;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginBottomCenter {
+    left: 50%;
+    right: auto;
+    bottom: 24px;
+    transform: translateX(-50%);
+  }
+}
+  .MuiSnackbar-anchorOriginTopRight {
+    top: 8px;
+    justify-content: flex-end;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginTopRight {
+    top: 24px;
+    left: auto;
+    right: 24px;
+  }
+}
+  .MuiSnackbar-anchorOriginBottomRight {
+    bottom: 8px;
+    justify-content: flex-end;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginBottomRight {
+    left: auto;
+    right: 24px;
+    bottom: 24px;
+  }
+}
+  .MuiSnackbar-anchorOriginTopLeft {
+    top: 8px;
+    justify-content: flex-start;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginTopLeft {
+    top: 24px;
+    left: 24px;
+    right: auto;
+  }
+}
+  .MuiSnackbar-anchorOriginBottomLeft {
+    bottom: 8px;
+    justify-content: flex-start;
+  }
+@media (min-width:900px) {
+  .MuiSnackbar-anchorOriginBottomLeft {
+    left: 24px;
+    right: auto;
+    bottom: 24px;
+  }
+}
+  .MuiToolbar-root {
+    display: flex;
+    position: relative;
+    align-items: center;
+  }
+  .MuiToolbar-gutters {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+@media (min-width:900px) {
+  .MuiToolbar-gutters {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+  .MuiToolbar-regular {
+    min-height: 56px;
+  }
+@media (min-width:0px) and (orientation: landscape) {
+  .MuiToolbar-regular {
+    min-height: 48px;
+  }
+}
+@media (min-width:900px) {
+  .MuiToolbar-regular {
+    min-height: 64px;
+  }
+}
+  .MuiToolbar-dense {
+    min-height: 48px;
+  }
+  .jss80 {
+    height: 18px;
+    font-size: 0.74rem;
+    font-weight: 500;
+    vertical-align: text-bottom;
+  }
+  .jss81 {
+    padding: 0 6px;
+  }
+  .jss82 {
+    color: #424242;
+  }
+  .jss83 {
+    color: #283593;
+  }
+  .jss84 {
+    color: #d84315;
+  }
+  .jss85 {
+    color: #558b2f;
+  }
+  .jss86 {
+    color: #6d4c41;
+  }
+  .jss87 {
+    color: #6d4c41;
+  }
+  .jss91 {
+    text-decoration: line-through;
+  }
+  .jss92 {
+    text-decoration: line-through;
+  }
+  .jss93 {
+    text-decoration: line-through;
+  }
+  .jss96:hover .jss97 {
+    visibility: visible;
+  }
+  .jss97 {
+    color: inherit;
+    visibility: hidden;
+    margin-left: 0.3ch;
+  }
+  .jss97:hover {
+    color: #2176AE;
+  }
+  .jss94 {
+    padding: 3px;
+    border-radius: 4px;
+    background-color: #F8F8F8;
+  }
+  .jss98 > ul {
+    padding: 0 !important;
+  }
+  .jss99 {
+    font-weight: 700;
+    padding-bottom: 8px;
+  }
+  .jss100 {
+    padding-left: 1rem;
+    list-style-type: none;
+  }
+  .jss71 {
+    display: flex;
+  }
+  .jss72 {
+    flex-grow: 0.5;
+  }
+@media (max-width:1279.95px) {
+  .jss72 {
+    display: none;
+  }
+}
+  .jss73 {
+    flex-grow: 1;
+    padding-left: 16px;
+    overflow-wrap: anywhere;
+    padding-right: 16px;
+  }
+@media (min-width:1060px) {
+  .jss73 {
+    flex-grow: 0;
+    flex-basis: 782px;
+    flex-shrink: 0;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+  .jss73 img {
+    max-width: 100%;
+  }
+  .jss74 {
+    flex-grow: 1;
+    flex-basis: 180px;
+  }
+@media (max-width:1279.95px) {
+  .jss74 {
+    display: none;
+  }
+}
+  .jss75 {
+    top: 112px;
+    position: sticky;
+    min-width: 20ch;
+    align-self: flex-start;
+    padding-left: 16px;
+  }
+  .jss43 {
+    padding: 0;
+  }
+  .jss44 {
+    display: block;
+  }
+  .jss45:hover .jss57 {
+    background-color: #2176AE;
+  }
+  .jss46 .jss57 {
+    background-color: #FF007B;
+  }
+  .jss46 .jss44 {
+    color: #FF007B;
+  }
+  .jss46 .jss44:hover {
+    color: #FF007B;
+  }
+  .jss46:hover .jss57 {
+    background-color: #FF007B;
+  }
+  .jss47 {
+    flex: 0 0 calc(12ch - 11.5px);
+  }
+  .jss48 {
+    flex: 0 0 12ch;
+  }
+  .jss49 {
+    width: 35px;
+    height: 35px;
+  }
+  .jss50 {
+    color: #9e9e9e;
+    font-size: 0.8rem;
+  }
+  .jss51 {
+    margin-left: -1ch;
+  }
+  .jss52 {
+    vertical-align: middle;
+  }
+  .jss53 {
+    margin-right: 0.5ch;
+  }
+  .jss54 {
+    color: #616161;
+    font-size: 0.8rem;
+    white-space: pre;
+    vertical-align: text-top;
+  }
+  .jss55 {
+    flex: 0 0 calc(12ch - 12px);
+  }
+  .jss56 {
+    padding-bottom: 16px;
+  }
+  .jss58 {
+    background-color: #FF007B;
+  }
+  .jss62 {
+    text-decoration: line-through;
+  }
+  .jss63 {
+    text-decoration: line-through;
+  }
+  .jss64 {
+    text-decoration: line-through;
+  }
+  .jss1 {
+    display: flex;
+  }
+  .jss2 {
+    flex-grow: 0.5;
+  }
+@media (max-width:1279.95px) {
+  .jss2 {
+    display: none;
+  }
+}
+  .jss3 {
+    flex-grow: 1;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+@media (min-width:1060px) {
+  .jss3 {
+    flex-grow: 0;
+    flex-basis: 782px;
+    flex-shrink: 0;
+  }
+}
+  .jss4 {
+    flex-grow: 1;
+    flex-basis: 180px;
+  }
+@media (max-width:1279.95px) {
+  .jss4 {
+    display: none;
+  }
+}
+  .jss5 {
+    z-index: 1201;
+  }
+@media (min-width:900px) {
+  .jss6 {
+    display: none;
+  }
+}
+  .jss7 {
+    display: none;
+  }
+@media (min-width:900px) {
+  .jss7 {
+    width: 356px;
+    cursor: pointer;
+    display: flex;
+    flex-grow: 0;
+    align-items: center;
+    flex-shrink: 0;
+  }
+}
+  .jss8 {
+    color: inherit;
+    display: block;
+    margin-left: 16px;
+  }
+  .jss8:hover {
+    color: inherit;
+  }
+  .jss9 {
+    z-index: 1298;
+  }
+  .jss10 {
+    width: 100%;
+    z-index: 1299;
+    transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+@media (min-width:1060px) {
+  .jss10 {
+    width: 70%;
+  }
+}
+  .jss11 {
+    width: 100%;
+  }
+@media (min-width:900px) {
+  .jss12 {
+    width: 380px;
+    flex-shrink: 0;
+  }
+}
+  .jss13 {
+    width: 380px;
+  }
+  .jss14 {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+@media (min-width:900px) {
+  .jss14 {
+    padding-top: 48px;
+  }
+}
+  .jss15 {
+    visibility: visible;
+    justify-content: space-between;
+  }
+@media (min-width:900px) {
+  .jss15 {
+    visibility: hidden;
+  }
+}
+  .jss16 {
+    overflow: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+  .jss16::-webkit-scrollbar {
+    width: 6px;
+    background-color: [object Object];
+  }
+  .jss16::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background-color: #bdbdbd;
+    -webkit-box-shadow: inset 0 0 2px rgba(0,0,0,.3);
+  }
+  .jss17 {
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+  .jss18 {
+    display: flex;
+    padding-left: 16px;
+    padding-right: 24px;
+    padding-bottom: 4px;
+    justify-content: space-between;
+  }
+@media (min-width:900px) {
+  .jss18 {
+    padding-left: 24px;
+  }
+}
+  .jss19 {
+    font-weight: 700;
+  }
+  .jss20 {
+    align-self: center;
+    margin-top: 30vh;
+  }
+  .jss21 {
+    flex-grow: 1;
+    padding-top: 16px;
+  }
+@media (min-width:900px) {
+  .jss21 {
+    padding-top: 48px;
+  }
+}
+  .jss22 {
+    min-height: calc(100vh - 35px - 72px);
+  }
+@media (min-width:900px) {
+  .jss22 {
+    min-height: calc(100vh - 35px - 112px);
+  }
+}
+  .jss23 {
+    color: #9e9e9e;
+    height: 35px;
+    display: flex;
+    margin-top: 48px;
+    background-color: #f5f5f5;
+  }
+  .jss24 {
+    font-size: 0.77rem;
+  }
+  .jss25 {
+    color: #757575;
+    font-size: 0.8rem;
+  }
+  .jss25:hover {
+    color: #424242;
+  }
+  .jss26 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .jss76 {
+    color: #616161;
+    display: flex;
+    justify-content: space-between;
+  }
+  .jss77 {
+    display: flex;
+  }
+  .jss77 > * {
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+  .jss77 > *:first-child {
+    margin-left: 0;
+  }
+  .jss77 > *:last-child {
+    margin-right: 0;
+  }
+  .jss78 {
+    vertical-align: middle;
+  }
+  .jss79 {
+    color: #757575;
+  }
+  .jss65 {
+    margin-top: 8px;
+    margin-bottom: 32px;
+  }
+  .jss66 {
+    margin-bottom: 24px;
+  }
+  .jss67 {
+    margin-top: 96px;
+  }
+  .jss68 {
+    display: flex;
+    margin-top: 8px;
+    justify-content: space-between;
+  }
+  .jss70 {
+    color: #757575;
+    font-size: 0.77rem;
+    text-align: center;
+  }</style><style data-href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:normal;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuaabWmQ.woff) format('woff')}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:normal;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbWmQ.woff) format('woff')}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:normal;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWub2bWmQ.woff) format('woff')}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:normal;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYjammQ.woff) format('woff')}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBHMdazTgWw.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBHMdazTgWw.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0302-0303,U+0305,U+0307-0308,U+0310,U+0312,U+0315,U+031A,U+0326-0327,U+032C,U+032F-0330,U+0332-0333,U+0338,U+033A,U+0346,U+034D,U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F0-03F1,U+03F4-03F5,U+2016-2017,U+2034-2038,U+203C,U+2040,U+2043,U+2047,U+2050,U+2057,U+205F,U+2070-2071,U+2074-209F,U+20D0-20DC,U+20E1,U+20E5-20EF,U+2100-2112,U+2114-2115,U+2117-2121,U+2123-214F,U+2190,U+2192,U+2194-21AE,U+21B0-21E5,U+21F1-21F2,U+21F4-2211,U+2213-2214,U+2216-22FF,U+2308-230B,U+2310,U+2319,U+231C-2321,U+2336-237A,U+237C,U+2395,U+239B-23B7,U+23D0,U+23DC-23E1,U+2474-2475,U+25AF,U+25B3,U+25B7,U+25BD,U+25C1,U+25CA,U+25CC,U+25FB,U+266D-266F,U+27C0-27FF,U+2900-2AFF,U+2B0E-2B11,U+2B30-2B4C,U+2BFE,U+3030,U+FF5B,U+FF5D,U+1D400-1D7FF,U+1EE00-1EEFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0001-000C,U+000E-001F,U+007F-009F,U+20DD-20E0,U+20E2-20E4,U+2150-218F,U+2190,U+2192,U+2194-2199,U+21AF,U+21E6-21F0,U+21F3,U+2218-2219,U+2299,U+22C4-22C6,U+2300-243F,U+2440-244A,U+2460-24FF,U+25A0-27BF,U+2800-28FF,U+2921-2922,U+2981,U+29BF,U+29EB,U+2B00-2BFF,U+4DC0-4DFF,U+FFF9-FFFB,U+10140-1018E,U+10190-1019C,U+101A0,U+101D0-101FD,U+102E0-102FB,U+10E60-10E7E,U+1D2C0-1D2D3,U+1D2E0-1D37F,U+1F000-1F0FF,U+1F100-1F1AE,U+1F1E6-1F1FF,U+1F30D-1F30F,U+1F315,U+1F31C,U+1F31E,U+1F320-1F32C,U+1F336,U+1F378,U+1F37D,U+1F382,U+1F393-1F39F,U+1F3A7-1F3A8,U+1F3AC-1F3AF,U+1F3C2,U+1F3C4-1F3C6,U+1F3CA-1F3CE,U+1F3D4-1F3E0,U+1F3ED,U+1F3F1-1F3F3,U+1F3F5-1F3F7,U+1F408,U+1F415,U+1F41F,U+1F426,U+1F43F,U+1F441-1F442,U+1F444,U+1F446-1F449,U+1F44C-1F44E,U+1F453,U+1F46A,U+1F47D,U+1F4A3,U+1F4B0,U+1F4B3,U+1F4B9,U+1F4BB,U+1F4BF,U+1F4C8-1F4CB,U+1F4D6,U+1F4DA,U+1F4DF,U+1F4E3-1F4E6,U+1F4EA-1F4ED,U+1F4F7,U+1F4F9-1F4FB,U+1F4FD-1F4FE,U+1F503,U+1F507-1F50B,U+1F50D,U+1F512-1F513,U+1F53E-1F54A,U+1F54F-1F5FA,U+1F610,U+1F650-1F67F,U+1F687,U+1F68D,U+1F691,U+1F694,U+1F698,U+1F6AD,U+1F6B2,U+1F6B9-1F6BA,U+1F6BC,U+1F6C6-1F6CF,U+1F6D3-1F6D7,U+1F6E0-1F6EA,U+1F6F0-1F6F3,U+1F6F7-1F6FC,U+1F700-1F80B,U+1F810-1F847,U+1F850-1F859,U+1F860-1F887,U+1F890-1F8AD,U+1F8B0-1F8BB,U+1F8C0-1F8C1,U+1F8D0-1F8D8,U+1F900-1F90B,U+1F93B,U+1F946,U+1F984,U+1F996,U+1F9E9,U+1FA00-1FA6F,U+1FA70-1FA7C,U+1FA80-1FAC6,U+1FAC8,U+1FACC-1FADD,U+1FADF-1FAEB,U+1FAEF-1FAFA,U+1FB00-1FBFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:300;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBHMdazTgWw.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBHMdazTgWw.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0302-0303,U+0305,U+0307-0308,U+0310,U+0312,U+0315,U+031A,U+0326-0327,U+032C,U+032F-0330,U+0332-0333,U+0338,U+033A,U+0346,U+034D,U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F0-03F1,U+03F4-03F5,U+2016-2017,U+2034-2038,U+203C,U+2040,U+2043,U+2047,U+2050,U+2057,U+205F,U+2070-2071,U+2074-209F,U+20D0-20DC,U+20E1,U+20E5-20EF,U+2100-2112,U+2114-2115,U+2117-2121,U+2123-214F,U+2190,U+2192,U+2194-21AE,U+21B0-21E5,U+21F1-21F2,U+21F4-2211,U+2213-2214,U+2216-22FF,U+2308-230B,U+2310,U+2319,U+231C-2321,U+2336-237A,U+237C,U+2395,U+239B-23B7,U+23D0,U+23DC-23E1,U+2474-2475,U+25AF,U+25B3,U+25B7,U+25BD,U+25C1,U+25CA,U+25CC,U+25FB,U+266D-266F,U+27C0-27FF,U+2900-2AFF,U+2B0E-2B11,U+2B30-2B4C,U+2BFE,U+3030,U+FF5B,U+FF5D,U+1D400-1D7FF,U+1EE00-1EEFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0001-000C,U+000E-001F,U+007F-009F,U+20DD-20E0,U+20E2-20E4,U+2150-218F,U+2190,U+2192,U+2194-2199,U+21AF,U+21E6-21F0,U+21F3,U+2218-2219,U+2299,U+22C4-22C6,U+2300-243F,U+2440-244A,U+2460-24FF,U+25A0-27BF,U+2800-28FF,U+2921-2922,U+2981,U+29BF,U+29EB,U+2B00-2BFF,U+4DC0-4DFF,U+FFF9-FFFB,U+10140-1018E,U+10190-1019C,U+101A0,U+101D0-101FD,U+102E0-102FB,U+10E60-10E7E,U+1D2C0-1D2D3,U+1D2E0-1D37F,U+1F000-1F0FF,U+1F100-1F1AE,U+1F1E6-1F1FF,U+1F30D-1F30F,U+1F315,U+1F31C,U+1F31E,U+1F320-1F32C,U+1F336,U+1F378,U+1F37D,U+1F382,U+1F393-1F39F,U+1F3A7-1F3A8,U+1F3AC-1F3AF,U+1F3C2,U+1F3C4-1F3C6,U+1F3CA-1F3CE,U+1F3D4-1F3E0,U+1F3ED,U+1F3F1-1F3F3,U+1F3F5-1F3F7,U+1F408,U+1F415,U+1F41F,U+1F426,U+1F43F,U+1F441-1F442,U+1F444,U+1F446-1F449,U+1F44C-1F44E,U+1F453,U+1F46A,U+1F47D,U+1F4A3,U+1F4B0,U+1F4B3,U+1F4B9,U+1F4BB,U+1F4BF,U+1F4C8-1F4CB,U+1F4D6,U+1F4DA,U+1F4DF,U+1F4E3-1F4E6,U+1F4EA-1F4ED,U+1F4F7,U+1F4F9-1F4FB,U+1F4FD-1F4FE,U+1F503,U+1F507-1F50B,U+1F50D,U+1F512-1F513,U+1F53E-1F54A,U+1F54F-1F5FA,U+1F610,U+1F650-1F67F,U+1F687,U+1F68D,U+1F691,U+1F694,U+1F698,U+1F6AD,U+1F6B2,U+1F6B9-1F6BA,U+1F6BC,U+1F6C6-1F6CF,U+1F6D3-1F6D7,U+1F6E0-1F6EA,U+1F6F0-1F6F3,U+1F6F7-1F6FC,U+1F700-1F80B,U+1F810-1F847,U+1F850-1F859,U+1F860-1F887,U+1F890-1F8AD,U+1F8B0-1F8BB,U+1F8C0-1F8C1,U+1F8D0-1F8D8,U+1F900-1F90B,U+1F93B,U+1F946,U+1F984,U+1F996,U+1F9E9,U+1FA00-1FA6F,U+1FA70-1FA7C,U+1FA80-1FAC6,U+1FAC8,U+1FACC-1FADD,U+1FADF-1FAEB,U+1FAEF-1FAFA,U+1FB00-1FBFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBHMdazTgWw.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBHMdazTgWw.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0302-0303,U+0305,U+0307-0308,U+0310,U+0312,U+0315,U+031A,U+0326-0327,U+032C,U+032F-0330,U+0332-0333,U+0338,U+033A,U+0346,U+034D,U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F0-03F1,U+03F4-03F5,U+2016-2017,U+2034-2038,U+203C,U+2040,U+2043,U+2047,U+2050,U+2057,U+205F,U+2070-2071,U+2074-209F,U+20D0-20DC,U+20E1,U+20E5-20EF,U+2100-2112,U+2114-2115,U+2117-2121,U+2123-214F,U+2190,U+2192,U+2194-21AE,U+21B0-21E5,U+21F1-21F2,U+21F4-2211,U+2213-2214,U+2216-22FF,U+2308-230B,U+2310,U+2319,U+231C-2321,U+2336-237A,U+237C,U+2395,U+239B-23B7,U+23D0,U+23DC-23E1,U+2474-2475,U+25AF,U+25B3,U+25B7,U+25BD,U+25C1,U+25CA,U+25CC,U+25FB,U+266D-266F,U+27C0-27FF,U+2900-2AFF,U+2B0E-2B11,U+2B30-2B4C,U+2BFE,U+3030,U+FF5B,U+FF5D,U+1D400-1D7FF,U+1EE00-1EEFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0001-000C,U+000E-001F,U+007F-009F,U+20DD-20E0,U+20E2-20E4,U+2150-218F,U+2190,U+2192,U+2194-2199,U+21AF,U+21E6-21F0,U+21F3,U+2218-2219,U+2299,U+22C4-22C6,U+2300-243F,U+2440-244A,U+2460-24FF,U+25A0-27BF,U+2800-28FF,U+2921-2922,U+2981,U+29BF,U+29EB,U+2B00-2BFF,U+4DC0-4DFF,U+FFF9-FFFB,U+10140-1018E,U+10190-1019C,U+101A0,U+101D0-101FD,U+102E0-102FB,U+10E60-10E7E,U+1D2C0-1D2D3,U+1D2E0-1D37F,U+1F000-1F0FF,U+1F100-1F1AE,U+1F1E6-1F1FF,U+1F30D-1F30F,U+1F315,U+1F31C,U+1F31E,U+1F320-1F32C,U+1F336,U+1F378,U+1F37D,U+1F382,U+1F393-1F39F,U+1F3A7-1F3A8,U+1F3AC-1F3AF,U+1F3C2,U+1F3C4-1F3C6,U+1F3CA-1F3CE,U+1F3D4-1F3E0,U+1F3ED,U+1F3F1-1F3F3,U+1F3F5-1F3F7,U+1F408,U+1F415,U+1F41F,U+1F426,U+1F43F,U+1F441-1F442,U+1F444,U+1F446-1F449,U+1F44C-1F44E,U+1F453,U+1F46A,U+1F47D,U+1F4A3,U+1F4B0,U+1F4B3,U+1F4B9,U+1F4BB,U+1F4BF,U+1F4C8-1F4CB,U+1F4D6,U+1F4DA,U+1F4DF,U+1F4E3-1F4E6,U+1F4EA-1F4ED,U+1F4F7,U+1F4F9-1F4FB,U+1F4FD-1F4FE,U+1F503,U+1F507-1F50B,U+1F50D,U+1F512-1F513,U+1F53E-1F54A,U+1F54F-1F5FA,U+1F610,U+1F650-1F67F,U+1F687,U+1F68D,U+1F691,U+1F694,U+1F698,U+1F6AD,U+1F6B2,U+1F6B9-1F6BA,U+1F6BC,U+1F6C6-1F6CF,U+1F6D3-1F6D7,U+1F6E0-1F6EA,U+1F6F0-1F6F3,U+1F6F7-1F6FC,U+1F700-1F80B,U+1F810-1F847,U+1F850-1F859,U+1F860-1F887,U+1F890-1F8AD,U+1F8B0-1F8BB,U+1F8C0-1F8C1,U+1F8D0-1F8D8,U+1F900-1F90B,U+1F93B,U+1F946,U+1F984,U+1F996,U+1F9E9,U+1FA00-1FA6F,U+1FA70-1FA7C,U+1FA80-1FAC6,U+1FAC8,U+1FACC-1FADD,U+1FADF-1FAEB,U+1FAEF-1FAFA,U+1FB00-1FBFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBHMdazTgWw.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBHMdazTgWw.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0302-0303,U+0305,U+0307-0308,U+0310,U+0312,U+0315,U+031A,U+0326-0327,U+032C,U+032F-0330,U+0332-0333,U+0338,U+033A,U+0346,U+034D,U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F0-03F1,U+03F4-03F5,U+2016-2017,U+2034-2038,U+203C,U+2040,U+2043,U+2047,U+2050,U+2057,U+205F,U+2070-2071,U+2074-209F,U+20D0-20DC,U+20E1,U+20E5-20EF,U+2100-2112,U+2114-2115,U+2117-2121,U+2123-214F,U+2190,U+2192,U+2194-21AE,U+21B0-21E5,U+21F1-21F2,U+21F4-2211,U+2213-2214,U+2216-22FF,U+2308-230B,U+2310,U+2319,U+231C-2321,U+2336-237A,U+237C,U+2395,U+239B-23B7,U+23D0,U+23DC-23E1,U+2474-2475,U+25AF,U+25B3,U+25B7,U+25BD,U+25C1,U+25CA,U+25CC,U+25FB,U+266D-266F,U+27C0-27FF,U+2900-2AFF,U+2B0E-2B11,U+2B30-2B4C,U+2BFE,U+3030,U+FF5B,U+FF5D,U+1D400-1D7FF,U+1EE00-1EEFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0001-000C,U+000E-001F,U+007F-009F,U+20DD-20E0,U+20E2-20E4,U+2150-218F,U+2190,U+2192,U+2194-2199,U+21AF,U+21E6-21F0,U+21F3,U+2218-2219,U+2299,U+22C4-22C6,U+2300-243F,U+2440-244A,U+2460-24FF,U+25A0-27BF,U+2800-28FF,U+2921-2922,U+2981,U+29BF,U+29EB,U+2B00-2BFF,U+4DC0-4DFF,U+FFF9-FFFB,U+10140-1018E,U+10190-1019C,U+101A0,U+101D0-101FD,U+102E0-102FB,U+10E60-10E7E,U+1D2C0-1D2D3,U+1D2E0-1D37F,U+1F000-1F0FF,U+1F100-1F1AE,U+1F1E6-1F1FF,U+1F30D-1F30F,U+1F315,U+1F31C,U+1F31E,U+1F320-1F32C,U+1F336,U+1F378,U+1F37D,U+1F382,U+1F393-1F39F,U+1F3A7-1F3A8,U+1F3AC-1F3AF,U+1F3C2,U+1F3C4-1F3C6,U+1F3CA-1F3CE,U+1F3D4-1F3E0,U+1F3ED,U+1F3F1-1F3F3,U+1F3F5-1F3F7,U+1F408,U+1F415,U+1F41F,U+1F426,U+1F43F,U+1F441-1F442,U+1F444,U+1F446-1F449,U+1F44C-1F44E,U+1F453,U+1F46A,U+1F47D,U+1F4A3,U+1F4B0,U+1F4B3,U+1F4B9,U+1F4BB,U+1F4BF,U+1F4C8-1F4CB,U+1F4D6,U+1F4DA,U+1F4DF,U+1F4E3-1F4E6,U+1F4EA-1F4ED,U+1F4F7,U+1F4F9-1F4FB,U+1F4FD-1F4FE,U+1F503,U+1F507-1F50B,U+1F50D,U+1F512-1F513,U+1F53E-1F54A,U+1F54F-1F5FA,U+1F610,U+1F650-1F67F,U+1F687,U+1F68D,U+1F691,U+1F694,U+1F698,U+1F6AD,U+1F6B2,U+1F6B9-1F6BA,U+1F6BC,U+1F6C6-1F6CF,U+1F6D3-1F6D7,U+1F6E0-1F6EA,U+1F6F0-1F6F3,U+1F6F7-1F6FC,U+1F700-1F80B,U+1F810-1F847,U+1F850-1F859,U+1F860-1F887,U+1F890-1F8AD,U+1F8B0-1F8BB,U+1F8C0-1F8C1,U+1F8D0-1F8D8,U+1F900-1F90B,U+1F93B,U+1F946,U+1F984,U+1F996,U+1F9E9,U+1FA00-1FA6F,U+1FA70-1FA7C,U+1FA80-1FAC6,U+1FAC8,U+1FACC-1FADD,U+1FADF-1FAEB,U+1FAEF-1FAFA,U+1FB00-1FBFF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBHMdazTgWw.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-stretch:100%;font-display:swap;src:url(https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}</style><style data-href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;700&display=swap">@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjo0oSWaw.woff) format('woff')}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjojISWaw.woff) format('woff')}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjovoSWaw.woff) format('woff')}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngbUXZYTXPIvIBgJJSb6s3BzlRRfKOFbvjoa4OWaw.woff) format('woff')}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufA5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufJ5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufB5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufO5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufC5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufD5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:300;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufN5qWr4xCC.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufA5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufJ5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufB5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufO5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufC5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufD5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufN5qWr4xCC.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufA5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufJ5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufB5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufO5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufC5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufD5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufN5qWr4xCC.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufA5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufJ5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufB5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+1F00-1FFF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufO5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufC5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufD5qWr4xCCQ_k.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'Roboto Slab';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/robotoslab/v36/BngMUXZYTXPIvIBgJJSb6ufN5qWr4xCC.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}</style></head><body><div id="__next"><div class="jss1"><header class="MuiPaper-root MuiAppBar-root MuiAppBar-positionFixed MuiAppBar-colorPrimary jss5 mui-fixed MuiPaper-elevation4"><div class="MuiToolbar-root MuiToolbar-regular MuiToolbar-gutters"><button class="MuiButtonBase-root MuiIconButton-root jss6 MuiIconButton-colorInherit MuiIconButton-edgeStart" tabindex="0" type="button" aria-label="open drawer"><span class="MuiIconButton-label"><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg></span></button><div class="jss7"><div><img src="/DonaTrack-TP-DDS/adr-preview/l4b-static/Log4brains-logo-dark.png" alt="Log4brains logo" width="50" height="50"/></div><div><a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss8 MuiTypography-h6 MuiTypography-colorPrimary MuiTypography-noWrap" href="/DonaTrack-TP-DDS/adr-preview/">DonaTrack</a><a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss8 MuiTypography-body2 MuiTypography-colorPrimary MuiTypography-noWrap" href="/DonaTrack-TP-DDS/adr-preview/">Architecture knowledge base</a></div></div><div class="jss2"></div><div class="jss3"><div class="MuiBackdrop-root jss9" aria-hidden="true" style="opacity:0;visibility:hidden"></div></div><div class="jss4"></div></div></header><nav class="jss12" aria-label="architecture decision records list"><div class="jss31"></div><div class="jss29"><div class="MuiDrawer-root MuiDrawer-docked"><div class="MuiPaper-root MuiDrawer-paper jss13 MuiDrawer-paperAnchorLeft MuiDrawer-paperAnchorDockedLeft MuiPaper-elevation0"><div class="jss14"><div class="MuiToolbar-root MuiToolbar-regular jss15 MuiToolbar-gutters"><div></div><a class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeSmall" tabindex="0" aria-disabled="false" aria-label="go to homepage" title="Architecture knowledge base of DonaTrack" href="/DonaTrack-TP-DDS/adr-preview/"><span class="MuiIconButton-label"><img src="/DonaTrack-TP-DDS/adr-preview/l4b-static/Log4brains-logo.png" alt="Log4brains logo" width="40" height="40"/></span></a><button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeSmall" tabindex="0" type="button" aria-label="close drawer" title="Close"><span class="MuiIconButton-label"><svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></span></button></div><div class="jss18"><h6 class="MuiTypography-root jss19 MuiTypography-subtitle2">Decision log</h6><div class="MuiCircularProgress-root MuiCircularProgress-colorPrimary MuiCircularProgress-indeterminate" style="width:13px;height:13px;opacity:0;visibility:hidden" role="progressbar"><svg class="MuiCircularProgress-svg" viewBox="22 22 44 44"><circle class="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate" cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6"></circle></svg></div></div><div class="MuiCircularProgress-root jss20 MuiCircularProgress-colorPrimary MuiCircularProgress-indeterminate" style="width:30px;height:30px" role="progressbar"><svg class="MuiCircularProgress-svg" viewBox="22 22 44 44"><circle class="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate" cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6"></circle></svg></div><ul class="MuiList-root jss17 MuiList-padding"></ul></div></div></div></div></nav><div class="jss21"><div class="MuiToolbar-root MuiToolbar-regular MuiToolbar-gutters"></div><main class="jss22"><div class="jss71"><div class="jss72"></div><div class="jss73"><h3 class="MuiTypography-root MuiTypography-h3 MuiTypography-gutterBottom">Despliegue en Docker Swarm de un nodo, con réplicas</h3><hr class="MuiDivider-root"/><div class="jss65 jss76"><div><div class="jss77"><p class="MuiTypography-root MuiTypography-body2" title="Publication date"><svg class="MuiSvgIcon-root jss78 MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"></path></svg> <!-- -->Nov 19, 2026</p><div title="Status"><div class="MuiChip-root jss80 jss83 MuiChip-outlined MuiChip-sizeSmall"><span class="MuiChip-label MuiChip-labelSmall jss81">PROPOSED</span></div></div></div><p class="MuiTypography-root MuiTypography-body2" title="Deciders"><svg class="MuiSvgIcon-root jss78 MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"></path></svg> <!-- -->el grupo, en las rondas de decisión de E7 (Q08 y Q09, 2026-11-16) y en la revisión de simplificación (E7-S01 a E7-S01d y E7-S02b, 2026-11-18), en requerimientos-e7.md; redacción asistida por agente. Pendiente de aprobación del equipo en el PR</p><p class="MuiTypography-root MuiTypography-body2" title="Tags"><svg class="MuiSvgIcon-root jss78 MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"></path></svg> <span class="jss79">#despliegue #docker #swarm #autorestart #salud #replicas #shedlock #rabbitmq #entrega-7</span></p></div><div><div><div role="group" class="MuiButtonGroup-root"><button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedOutlined MuiButtonGroup-groupedOutlinedHorizontal MuiButtonGroup-groupedOutlined" tabindex="0" type="button" title="Copy link"><span class="MuiButton-label"><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></svg></span></button><a class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedOutlined MuiButtonGroup-groupedOutlinedHorizontal MuiButtonGroup-groupedOutlined" tabindex="0" aria-disabled="false" href="https://github.com/tsorren/DonaTrack-TP-DDS/blob/master/docs/adr/20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md" target="_blank" rel="noopener" title="View/edit on Github"><span class="MuiButton-label"><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M511.6 76.3C264.3 76.2 64 276.4 64 523.5 64 718.9 189.3 885 363.8 946c23.5 5.9 19.9-10.8 19.9-22.2v-77.5c-135.7 15.9-141.2-73.9-150.3-88.9C215 726 171.5 718 184.5 703c30.9-15.9 62.4 4 98.9 57.9 26.4 39.1 77.9 32.5 104 26 5.7-23.5 17.9-44.5 34.7-60.8-140.6-25.2-199.2-111-199.2-213 0-49.5 16.3-95 48.3-131.7-20.4-60.5 1.9-112.3 4.9-120 58.1-5.2 118.5 41.6 123.2 45.3 33-8.9 70.7-13.6 112.9-13.6 42.4 0 80.2 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.3-43.9 2.9 7.7 24.7 58.3 5.5 118 32.4 36.8 48.9 82.7 48.9 132.3 0 102.2-59 188.1-200 212.9a127.5 127.5 0 0 1 38.1 91v112.5c.8 9 0 17.9 15 17.9 177.1-59.7 304.6-227 304.6-424.1 0-247.2-200.4-447.3-447.5-447.3z"></path></svg></svg></span></a></div></div></div></div><div><div><blockquote><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Reescrito el 2026-11-18 (E7-S05 A).</strong> La versión del 2026-11-17 decidía todo en Kubernetes
+con kind y Kustomize (Q07 C2). La revisión de simplificación sacó Kubernetes de E7 (E7-S01 A),
+porque el plan llegaba al congelamiento en el 13 % de las simulaciones. Ese texto queda en el
+historial del PR de los ADR de E7, que no estaba mergeado.</p><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Relación propuesta:</strong> este ADR <strong>supera</strong> al
+<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/incentivos/20260901-coordinacion-distribuida-de-schedulers-con-shedlock/">ADR de ShedLock en Incentivos</a>(<code class="jss94">proposed</code>, sin implementar), porque extiende la misma decisión a los tres servicios con tareas
+programadas. La relación la aprueba un revisor humano (AGENTS.md §9.3); ninguno de los dos cambia
+de estado en este PR.</p></blockquote>
+<h2 class="MuiTypography-root jss96 MuiTypography-h4 MuiTypography-gutterBottom" id="contexto-y-problema">Contexto y Problema<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss97 MuiTypography-colorPrimary" href="#contexto-y-problema" title="Permanent link">¶</a></h2><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><code class="jss94">[DOCUMENTED]</code> El requerimiento 2 de la Entrega 7 pide &quot;monitoreo proactivo de la salud de los
+servicios&quot; con &quot;políticas de autorestart ante fallos&quot;. El enunciado (pág. 23) pide desplegar con
+&quot;Docker o similar&quot;.</p><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><code class="jss94">[OBSERVED]</code> Punto de partida:</p><ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Despliegue.</strong> Todo corre con Docker Compose: siete archivos <code class="jss94">docker-compose*.yml</code> en la raíz y
+14 contenedores en el preprod. Los servicios y el gateway tienen <code class="jss94">healthcheck</code>, pero no hay
+política de <code class="jss94">restart</code> en <code class="jss94">docker-compose.yml</code> ni en el preprod. <code class="jss94">/actuator/health</code> no separa
+<em>liveness</em> de <em>readiness</em>.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Tareas programadas.</strong> Donaciones, Incentivos y Logística tienen 11 clases con <code class="jss94">@Scheduled</code>
+(5, 4 y 2): entre ellas los <em>relays</em> del Outbox, el cierre de rachas y el ranking mensual, y la
+posición simulada de los camiones. Ningún <code class="jss94">pom.xml</code> declara ShedLock.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Mensajería.</strong> 8 clases con <code class="jss94">@RabbitListener</code> (1 en Donaciones, 2 en Incentivos, 1 en
+Logística y 4 en Notificaciones). El oyente del ciclo de vida del donante en Incentivos ya corre
+con <code class="jss94">concurrency = &quot;1&quot;</code> para no desordenar los eventos.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Sesiones del cliente liviano.</strong> Declara <code class="jss94">spring-session-jdbc</code>. El preprod ya enciende la sesión
+en la base (<code class="jss94">CLIENTE_SESIONES_JDBC_HABILITADO=true</code>); el valor por defecto es <code class="jss94">false</code>.</span></li></ul><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Problema: ¿qué mecanismo vigila la salud y reinicia los procesos, cómo se replican los módulos
+propios y qué hay que cambiar en el código para que dos réplicas no se pisen?</p><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Gate A:</strong> decisión nueva (no había política de reinicio ni orquestador). <strong>Gate B:</strong> cambia la
+plataforma de despliegue, cambia cómo se ejecutan las tareas programadas y el consumo de colas
+(dos dependencias nuevas, tablas nuevas y colas redeclaradas) y tiene impacto en todos los
+servicios. Es ARCHITECTURAL (AGENTS.md §7.0).</p><h2 class="MuiTypography-root jss96 MuiTypography-h4 MuiTypography-gutterBottom" id="alternativas-consideradas">Alternativas Consideradas<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss97 MuiTypography-colorPrimary" href="#alternativas-consideradas" title="Permanent link">¶</a></h2><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Dónde corre todo (E7-S01).</strong></p><ol start="1"><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Volver a Docker</strong> (elegida).</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Kubernetes recortado, con un punto de control el 22/11.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Seguir con todo en Kubernetes (la decisión anterior, Q07 C2).</span></li></ol><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Cómo se replica, dentro de Docker (E7-S01c).</strong></p><table><thead><tr><th> Opción </th><th> Qué es </th></tr></thead><tbody><tr><td> A </td><td> Swarm con solo el gateway ×2 (la recomendación del agente) </td></tr><tr><td> B </td><td> Compose con <code class="jss94">restart</code>, un contenedor <em>autoheal</em> y una réplica de cada cosa </td></tr><tr><td> <strong>C</strong> </td><td> <strong>Swarm de un nodo, replicando los seis módulos propios</strong> (elegida) </td></tr></tbody></table><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Lo que pide replicar los servicios (E7-S01d).</strong></p><table><thead><tr><th> Pregunta </th><th> Opciones </th><th> Elegida </th></tr></thead><tbody><tr><td> Tareas programadas </td><td> ShedLock con JDBC · partir cada servicio en <em>api</em> y <em>worker</em> · locks propios con <code class="jss94">pg_advisory_lock</code> </td><td> <strong>ShedLock con JDBC</strong> </td></tr><tr><td> Orden de los eventos </td><td> <em>single active consumer</em> de RabbitMQ · confiar en la máquina de estados y la idempotencia · ignorarlo </td><td> <strong><em>single active consumer</em></strong> </td></tr><tr><td> Memoria </td><td> réplicas por variable · siempre dos réplicas </td><td> <strong>réplicas por variable</strong> </td></tr></tbody></table><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>La IP del visitante detrás de Swarm (E7-S02b).</strong></p><table><thead><tr><th> Opción </th><th> Qué es </th></tr></thead><tbody><tr><td> <strong>A</strong> </td><td> <strong>Aceptar la IP aproximada y documentarla</strong> (elegida el 2026-11-18, después de la prueba de Swarm) </td></tr><tr><td> B </td><td> Un nginx en modo host delante, como única entrada (elegida antes de la prueba; se revirtió) </td></tr><tr><td> C </td><td> Publicar el cliente y el gateway en modo host (contradice las réplicas de E7-S01c) </td></tr></tbody></table><h2 class="MuiTypography-root jss96 MuiTypography-h4 MuiTypography-gutterBottom" id="resultado-de-la-decision">Resultado de la Decisión<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss97 MuiTypography-colorPrimary" href="#resultado-de-la-decision" title="Permanent link">¶</a></h2><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Elegidas <strong>Docker</strong> (E7-S01), <strong>Swarm de un nodo con los seis módulos propios replicados</strong>
+(E7-S01c C), <strong>ShedLock</strong>, <strong><em>single active consumer</em></strong> y <strong>réplicas por variable</strong> (E7-S01d) y la
+<strong>IP aproximada documentada</strong> (E7-S02b A).</p><ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Plataforma.</strong> Un nodo de Swarm (<code class="jss94">docker swarm init</code>) y <code class="jss94">docker stack deploy</code>.
+<code class="jss94">[VERIFIED]</code> Funciona en Docker Desktop para Windows (ver &quot;Evidencia&quot;).</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Qué se replica.</strong> El gateway, el cliente liviano y los cuatro servicios. Postgres, Mongo,
+RabbitMQ, Keycloak, MinIO, Redis, n8n y <code class="jss94">otel-lgtm</code> quedan con una réplica, porque guardan
+estado.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Cuántas réplicas.</strong> <code class="jss94">[PROPOSED]</code> Por variable: 1 en desarrollo y 2 en la defensa y la prueba
+final. Cada servicio va a declarar un límite de memoria. <code class="jss94">[INFERRED]</code> Con dos réplicas de cada módulo propio,
+<code class="jss94">otel-lgtm</code> y Redis, el stack ronda los 6 a 6,5 GiB, a partir de los 3,6 GiB medidos con el
+gateway ×2.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Autorestart (Q08b).</strong> Swarm reemplaza la tarea que termina o queda <code class="jss94">unhealthy</code>. La política es
+la de Swarm por defecto (<code class="jss94">condition: any</code>), sin tope. El tope lo reemplaza una alerta en Grafana
+de reinicios repetidos (M26, ver el
+<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm/">ADR de observabilidad</a>).</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Salud.</strong> En Swarm, un solo <code class="jss94">healthcheck</code> decide dos cosas: si se reinicia la tarea y si recibe
+tráfico (<code class="jss94">[INFERRED]</code> la VIP del servicio enruta solo a tareas sanas; ver el hallazgo de
+mongodb). La separación de Kubernetes entre <em>liveness</em> y <em>readiness</em> no tiene equivalente.
+<code class="jss94">[PROPOSED]</code> El <code class="jss94">healthcheck</code> mira <code class="jss94">/actuator/health/liveness</code> (tarea K3):
+<ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">una caída corta del broker o de la base no reinicia todas las réplicas;</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">el costo es que una réplica con una dependencia caída sigue recibiendo tráfico. Se acepta,
+porque las dependencias son compartidas: si RabbitMQ cae, cae para todas las réplicas y no hay
+adónde desviar el pedido.</span></li></ul></span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Valores del <code class="jss94">healthcheck</code>.</strong> <code class="jss94">[VERIFIED]</code> Con los del preprod (<code class="jss94">interval: 5s</code>, <code class="jss94">timeout: 3s</code>,
+<code class="jss94">retries: 20</code>), una réplica colgada tardó unos 160 s en marcarse <code class="jss94">unhealthy</code>, y mientras tanto la
+mitad de los pedidos cayó en <em>timeout</em>. <code class="jss94">[PROPOSED]</code> En los servicios replicados, del orden de
+<code class="jss94">interval: 5s</code> y <code class="jss94">retries: 3</code>; el <code class="jss94">start_period</code> cubre el arranque. Los valores finales los fija
+el override.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Archivo del stack.</strong> <code class="jss94">[VERIFIED]</code> <code class="jss94">docker stack config</code> no lee el <code class="jss94">.env</code> ni acepta el compose
+del preprod (<code class="jss94">[INFERRED]</code> <code class="jss94">docker stack deploy</code> usa la misma validación): rechaza el <code class="jss94">depends_on</code> largo, <code class="jss94">published</code> como texto, <code class="jss94">start_interval</code> y los puertos
+atados a una interfaz (<code class="jss94">&quot;127.0.0.1:8180:8080&quot;</code>, que <code class="jss94">docker compose config</code> traduce a <code class="jss94">host_ip</code>).
+Tampoco acepta la salida de <code class="jss94">docker compose config</code>. Cómo se arma el archivo queda <strong>abierto</strong>
+(tarea del override): generarlo del compose con un paso de transformación (en la prueba, un
+script de Node de unas 20 líneas) o mantener un <code class="jss94">docker-stack.yml</code> aparte. Cualquiera de las dos
+necesita <code class="jss94">hostname: mongodb</code> (ver &quot;Evidencia&quot;).</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Arranque.</strong> Swarm ignora el orden: los servicios fallan y se reintentan hasta que sus
+dependencias responden. <code class="jss94">[VERIFIED]</code> El stack converge solo en unos 4 minutos, salvo mongodb (y
+Logística, que depende de él), que necesita <code class="jss94">hostname: mongodb</code>.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Tareas programadas: ShedLock con JDBC (E7-S01d-1).</strong> <code class="jss94">[PROPOSED]</code> En Donaciones, Incentivos y
+Logística:
+<ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">una tabla <code class="jss94">shedlock</code> por servicio, creada con una migración de Flyway;</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><code class="jss94">@SchedulerLock</code> en cada uno de los 11 métodos, con <code class="jss94">lockAtMostFor</code> por encima de la duración
+esperada de la tarea;</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">dos dependencias nuevas (<code class="jss94">shedlock-spring</code> y <code class="jss94">shedlock-provider-jdbc-template</code>), aprobadas por
+el grupo al elegir la opción (AGENTS.md §6, a confirmar en el PR).</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Configuración común en <code class="jss94">common-lib</code> (elegido por Tadeo el 2026-11-18, a confirmar en el PR).</strong>
+<code class="jss94">@EnableSchedulerLock</code> y el <code class="jss94">LockProvider</code> van en una autoconfiguración de <code class="jss94">common-lib</code> que se
+activa solo si hay un <code class="jss94">DataSource</code>. Es un cambio estructural de <code class="jss94">common-lib</code> (AGENTS.md §7.0),
+con el reactor completo como gate. Se descartó la opción de cada servicio (A), que era la
+recomendada porque no choca con la tarea de OpenTelemetry (O2), que también cambia
+<code class="jss94">common-lib</code>: se eligió no repetir el código.</span></li></ul></span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Orden de los eventos: <em>single active consumer</em> (E7-S01d-2).</strong> <code class="jss94">[PROPOSED]</code> Las colas donde importa
+el orden se van a declarar con <code class="jss94">x-single-active-consumer: true</code>: una réplica consume y la otra
+queda de reserva. Son siete:</p><ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">las seis del ciclo de vida de una entrega que consume Donaciones (ruta asignada, ruta
+iniciada, en puerta, exitosa, fallida y cancelada);</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">la del ciclo de vida del donante en Incentivos.</span></li></ul><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Las demás se apoyan en la idempotencia que ya tienen. <strong>Lista elegida por Tadeo el
+2026-11-18, a confirmar en el PR:</strong> las siete, con el mismo nombre. Un paso de despliegue documentado borra
+esas colas antes de la versión nueva; en un stack nuevo no hace falta. Se descartaron los nombres
+nuevos (<code class="jss94">.v2</code>) porque tocan tests de integración y otros consumidores.</p><ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Alcance del orden.</strong> <code class="jss94">[INFERRED]</code> El <em>single active consumer</em> ordena los mensajes <strong>dentro
+de una cola</strong>. Los eventos de una entrega viajan por seis colas distintas, así que el orden
+entre ellas (asignada → iniciada → en puerta → exitosa) no queda garantizado: cada cola puede
+tener su consumidor activo en otra réplica, y aun con una réplica los oyentes corren en
+paralelo. El orden entre colas queda sin cubrir, como hoy: la máquina de estados rechaza un
+evento repetido, pero no uno que llega antes de su predecesor. Si hace falta orden entre tipos
+de evento, la alternativa es una sola cola por entidad; queda <strong>abierta</strong> para la tarea.</span></li></ul><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><code class="jss94">[INFERRED]</code> RabbitMQ no deja redeclarar una cola existente con otros argumentos
+(<code class="jss94">PRECONDITION_FAILED</code>): por eso el despliegue borra esas colas antes de la versión nueva (decisión del 2026-11-18).</p></span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Sesiones del cliente liviano.</strong> Con dos réplicas, la sesión vive en la base
+(<code class="jss94">CLIENTE_SESIONES_JDBC_HABILITADO=true</code>, como en el preprod), así que no hace falta afinidad.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Entrada y la IP del visitante (E7-S02b A).</strong> Sin proxy delante: el cliente liviano (8090) se
+publica en el <em>routing mesh</em>, que reparte entre las réplicas.
+<ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Publicar el gateway (8086): abierta.</strong> <code class="jss94">[OBSERVED]</code> Los compose del PR 986 confían en
+<code class="jss94">X-Forwarded-For</code> si el pedido llega de <code class="jss94">10.*</code>. <code class="jss94">[INFERRED]</code> Eso incluye la dirección del mesh:
+con el gateway publicado y esa regex, cualquiera puede elegir su cubeta de rate limiting con
+ese encabezado. <code class="jss94">[PROPOSED]</code> No publicar el gateway en el stack de Swarm (el cliente le habla
+por la red interna; Postman y k6 lo alcanzan desde un contenedor de la red) o limitar
+<code class="jss94">GATEWAY_LIMITE_PROXIES_CONFIABLES</code> a la subred de la aplicación. Lo decide la tarea del
+override (ver el
+<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip/">ADR de rate limiting</a>).</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><code class="jss94">[VERIFIED]</code> El mesh reemplaza la IP de origen por la de su <code class="jss94">ingress-endpoint</code> (<code class="jss94">10.0.0.2</code>).
+Un nginx en modo host tampoco veía la IP real en Docker Desktop (veía <code class="jss94">172.19.0.1</code> para todos
+los pedidos de la PC): por eso se revirtió la opción B.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Consecuencia en el rate limiting: todos los visitantes <strong>sin cuenta</strong> comparten la cubeta
+por IP (120 lecturas y 30 escrituras por minuto en total). Las cuentas con token validado
+siguen con su cubeta propia. Detalle en el
+<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip/">ADR de rate limiting</a>.</span></li></ul></span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Puertos sin <code class="jss94">127.0.0.1</code>.</strong> <code class="jss94">[OBSERVED]</code> El preprod publica Keycloak y RabbitMQ solo en
+<code class="jss94">127.0.0.1</code> (<code class="jss94">&quot;127.0.0.1:8180:8080&quot;</code> y <code class="jss94">&quot;127.0.0.1:5672:5672&quot;</code>). Swarm no admite esa forma: lo
+que se publica queda en todas las interfaces. <code class="jss94">[PROPOSED]</code> Keycloak (8180) se publica igual, porque el navegador inicia sesión ahí
+(<code class="jss94">KC_HOSTNAME</code>). RabbitMQ (5672) se publica solo si corren pruebas desde el host. Grafana se
+publica con su propio usuario y clave (ver el
+<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm/">ADR de observabilidad</a>). Los
+demás puertos de infraestructura no se publican.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Prueba del autorestart (Q09).</strong> Un script de caos (tarea K6) congela o mata el proceso de una
+réplica (<code class="jss94">docker kill -s STOP</code>, <code class="jss94">docker kill</code>) y espera a que Swarm la reemplace, con el evento
+visible en el panel.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Convivencia.</strong> <code class="jss94">[PROPOSED]</code> Compose sigue siendo el entorno de desarrollo, del CI (Gate 4) y de
+la demo pública con túnel. Swarm es el de la defensa y la prueba final. Pasar el CI a Swarm no
+está decidido y tocaría AGENTS.md §11 (PR aparte, §13).</span></li></ul><h3 class="MuiTypography-root jss96 MuiTypography-h5 MuiTypography-gutterBottom" id="evidencia-prueba-de-swarm-2026-11-18">Evidencia: prueba de Swarm (2026-11-18)<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss97 MuiTypography-colorPrimary" href="#evidencia-prueba-de-swarm-2026-11-18" title="Permanent link">¶</a></h3><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph">Docker Desktop 29.8.2 sobre Windows 11, un nodo, primero con un stack descartable de nginx y
+después con el preprod real y el gateway ×2.</p><table><thead><tr><th> # </th><th> Qué se verificó </th><th> Resultado </th></tr></thead><tbody><tr><td> 1 </td><td> Reinicio de una tarea <code class="jss94">unhealthy</code> </td><td> <code class="jss94">[VERIFIED]</code> Swarm la reemplaza, sin <em>autoheal</em>: en el canario en unos 23 s, en el gateway a los ~160 s (por <code class="jss94">retries: 20</code>) </td></tr><tr><td> 2 </td><td> Reparto del <em>routing mesh</em> </td><td> <code class="jss94">[VERIFIED]</code> 10 y 10 pedidos entre las dos réplicas del gateway </td></tr><tr><td> 3 </td><td> IP que ve el gateway </td><td> <code class="jss94">[VERIFIED]</code> Por el mesh, <code class="jss94">10.0.0.2</code> para todos. Detrás de nginx en modo host, la de nginx, con <code class="jss94">X-Forwarded-For: 172.19.0.1</code>. Desde otra máquina, sin probar </td></tr><tr><td> 4 </td><td> <code class="jss94">.env</code> y formato del compose </td><td> <code class="jss94">[VERIFIED]</code> <code class="jss94">docker stack config</code> no lo lee ni acepta el compose (<code class="jss94">[INFERRED]</code> <code class="jss94">deploy</code> se comporta igual). Funcionó un paso de transformación del JSON de <code class="jss94">docker compose config</code> </td></tr><tr><td> 5 </td><td> Arranque sin <code class="jss94">depends_on</code> </td><td> <code class="jss94">[VERIFIED]</code> Converge con reintentos en unos 4 minutos, salvo mongodb </td></tr></tbody></table><ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Hallazgo de mongodb.</strong> Su <code class="jss94">healthcheck</code> inicia el <em>replica set</em> contra <code class="jss94">mongodb:27017</code> y el
+log da <code class="jss94">isSelf could not connect</code> y <code class="jss94">NodeNotFound</code>. <code class="jss94">[INFERRED]</code> En Swarm ese nombre es la VIP
+del servicio, que no enruta a una tarea todavía no sana. Con <code class="jss94">hostname: mongodb</code>, sano en 22 s.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Límites de la prueba.</strong> Solo se ejercitaron <code class="jss94">/actuator/health</code> y el gateway ×2: sin inicio de
+sesión, sin pedidos de negocio y sin segunda réplica del cliente ni de los servicios. ShedLock y
+el <em>single active consumer</em> se verifican en sus tareas.</span></li></ul><h2 class="MuiTypography-root jss96 MuiTypography-h4 MuiTypography-gutterBottom" id="analisis-por-alternativa">Análisis por alternativa<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss97 MuiTypography-colorPrimary" href="#analisis-por-alternativa" title="Permanent link">¶</a></h2><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Docker frente a Kubernetes (E7-S01).</strong> Matriz del grupo: plazo y riesgo 35 %, lo que corrige la
+cátedra 25 %, cantidad de piezas 20 %, aprendizaje 20 %. Totales: Docker 3,95, Kubernetes
+recortado 3,45, todo en Kubernetes 2,55. <code class="jss94">[INFERRED]</code> Si el aprendizaje pesaba 40 % o más, ganaba
+Kubernetes recortado. Kubernetes daba <em>liveness</em> y <em>readiness</em> separados y un Ingress, a costa de
+unos 6 días-persona (kind, Kustomize, manifiestos, migración del CI) que el plan no tenía.</p><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>A. Swarm con solo el gateway ×2</strong></p><ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">A favor: el cambio más chico que muestra réplicas y justifica Redis; los servicios no cambian.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">En contra: solo el gateway escala; el resto queda como punto único de falla.</span></li></ul><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>B. Compose con <em>autoheal</em></strong></p><ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">A favor: usa los <code class="jss94">healthcheck</code> ya escritos; riesgo de plazo mínimo.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">En contra: <em>autoheal</em> monta el socket de Docker (contra el
+<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host/">ADR de aislamiento de contenedores</a>);
+sin réplicas, el rate limiting no necesita Redis. Queda como plan B si Swarm fallaba en la
+prueba (no falló).</span></li></ul><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>C. Swarm replicando los seis módulos (elegida)</strong></p><ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">A favor: autorestart y réplicas de la plataforma, sin socket de Docker; muestra escalado
+horizontal en todos los módulos propios.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">En contra: obliga a coordinar las tareas programadas y el consumo de colas, y a armar el archivo
+del stack. Matriz del grupo: A 3,85, B 3,75, C 3,15; el grupo eligió C por escalabilidad y
+aprendizaje.</span></li></ul><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Tareas programadas.</strong> Partir cada servicio en <em>api</em> y <em>worker</em> duplica imágenes y despliegues;
+<code class="jss94">pg_advisory_lock</code> a mano reimplementa lo que ShedLock ya resuelve (vencimiento del lock si la
+réplica cae, <code class="jss94">lockAtLeastFor</code> contra relojes corridos).</p><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Orden de los eventos.</strong> Confiar solo en la máquina de estados y la idempotencia rechaza bien un
+evento repetido, pero no uno que llega antes de su predecesor. Con dos réplicas consumiendo la
+misma cola, eso pasa más seguido. El <em>single active consumer</em> devuelve a cada cola el orden que
+tenía con una réplica; no ordena entre colas distintas (ver &quot;Alcance del orden&quot;). Ignorarlo deja
+errores intermitentes que aparecen recién con dos réplicas.</p><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>La IP (E7-S02b).</strong> Matriz con los pesos del grupo (plazo 35 %, cátedra 25 %, piezas 20 %,
+exactitud del límite por IP 20 %), recalculada con la evidencia (<code class="jss94">[INFERRED]</code>, puntajes del agente): aceptar la IP aproximada 3,70,
+nginx delante 2,85, defensa en un Linux con Docker nativo 2,75. En Docker Desktop, nginx no daba
+la IP real, así que su costo (0,5 a 1 día-persona y una imagen más) no compraba nada.</p><p class="MuiTypography-root MuiTypography-body1 MuiTypography-paragraph"><strong>Principios.</strong> Cada tarea de Swarm es intercambiable con sus réplicas: el estado vive en la base
+(sesiones, locks de ShedLock) y no en memoria. La coordinación entre réplicas (ShedLock, <em>single
+active consumer</em>) es infraestructura y queda en adaptadores y configuración, sin tocar el dominio.</p><h2 class="MuiTypography-root jss96 MuiTypography-h4 MuiTypography-gutterBottom" id="consecuencias">Consecuencias<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss97 MuiTypography-colorPrimary" href="#consecuencias" title="Permanent link">¶</a></h2><ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Positivas.</strong>
+<ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">El autorestart y el reparto salen de la plataforma, sin código propio ni acceso al socket de
+Docker.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">El gateway con dos réplicas muestra el valor de Redis en el rate limiting.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Las tareas programadas y las colas con orden quedan listas para cualquier cantidad de réplicas.</span></li></ul></span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Negativas.</strong>
+<ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Dos definiciones del despliegue (Compose y el stack de Swarm) que pueden desfasarse, más el
+paso que arma una a partir de la otra si se elige generarla.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">El límite por IP es uno solo para todos los visitantes sin cuenta.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Keycloak queda publicado en todas las interfaces.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Dos dependencias nuevas (ShedLock), una tabla por servicio y colas redeclaradas: al actualizar un stack que ya corre, hay que vaciar esas colas antes de borrarlas o se pierden los eventos pendientes.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Sin separación entre <em>liveness</em> y <em>readiness</em>: una réplica con una dependencia caída sigue
+recibiendo tráfico.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><code class="jss94">[INFERRED]</code> Con dos réplicas de todo, el stack usa casi toda la memoria de una máquina de
+8 GB para Docker.</span></li></ul></span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><strong>Abiertas.</strong>
+<ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Cómo se arma el archivo del stack (generado o aparte).</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Los valores del <code class="jss94">healthcheck</code> de los servicios replicados.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Si el CI pasa a Swarm.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Qué IP se ve desde otra máquina de la red (no se probó).</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Si el gateway se publica, y con qué <code class="jss94">GATEWAY_LIMITE_PROXIES_CONFIABLES</code>.</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Si hace falta orden entre los eventos de una entrega que viajan por colas distintas.</span></li></ul></span></li></ul><h2 class="MuiTypography-root jss96 MuiTypography-h4 MuiTypography-gutterBottom" id="referencias">Referencias<a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss97 MuiTypography-colorPrimary" href="#referencias" title="Permanent link">¶</a></h2><ul><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><a class="MuiTypography-root MuiLink-root MuiLink-underlineNone MuiTypography-colorPrimary" href="../requerimientos/requerimientos-e7.md">Requerimientos de E7</a>: Q08, Q09, §5 (E7-S01 a E7-S01d, E7-S02b y E7-S05)</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/incentivos/20260901-coordinacion-distribuida-de-schedulers-con-shedlock/">ADR de ShedLock en Incentivos</a> (relación &quot;superado por&quot; propuesta)</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm/">ADR de observabilidad</a> (M26 y la alerta de reinicios)</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip/">ADR de rate limiting</a> (dos réplicas del gateway y la cubeta por IP)</span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss89 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host/">ADR de aislamiento de contenedores y logs sin volúmenes del host</a></span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1"><a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss90 MuiTypography-colorPrimary" href="/DonaTrack-TP-DDS/adr-preview/adr/20260426-pipeline-unificado-de-cicd-y-automatizacion-de-calidad/">ADR del pipeline de CI</a></span></li><li class="jss95"><span class="MuiTypography-root MuiTypography-body1">Docker Swarm: <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone MuiTypography-colorPrimary" href="https://docs.docker.com/engine/swarm/">https://docs.docker.com/engine/swarm/</a> · ShedLock: <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone MuiTypography-colorPrimary" href="https://github.com/lukas-krecan/ShedLock">https://github.com/lukas-krecan/ShedLock</a> · <em>Single active consumer</em>: <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone MuiTypography-colorPrimary" href="https://www.rabbitmq.com/docs/consumers#single-active-consumer">https://www.rabbitmq.com/docs/consumers#single-active-consumer</a></span></li></ul></div></div><hr class="MuiDivider-root jss67"/><nav class="jss68"><div></div><div class="jss69"><p class="MuiTypography-root jss70 MuiTypography-body1">Last edited by <!-- -->tsorren</p><p class="MuiTypography-root jss70 MuiTypography-body1">on <!-- -->Nov 19, 2026 10:58 PM</p></div><div></div></nav></div><div class="jss74 jss75"></div></div></main><footer class="jss23"><div class="jss2"></div><div class="jss3 jss26"><p class="MuiTypography-root jss24 MuiTypography-body1">Powered by<!-- --> <a class="MuiTypography-root MuiLink-root MuiLink-underlineNone jss25 MuiTypography-colorPrimary" href="https://github.com/thomvaill/log4brains" target="_blank" rel="noopener">Log4brains</a> <span style="font-size:0.8em">(v1.1.0)</span></p></div><div class="jss4"></div></footer></div></div></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"projectName":"DonaTrack","currentAdr":{"slug":"20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas","package":null,"title":"Despliegue en Docker Swarm de un nodo, con réplicas","status":"proposed","supersededBy":null,"tags":["despliegue","docker","swarm","autorestart","salud","replicas","shedlock","rabbitmq","entrega-7"],"deciders":["el grupo","en las rondas de decisión de E7 (Q08 y Q09","2026-11-16) y en la revisión de simplificación (E7-S01 a E7-S01d y E7-S02b","2026-11-18)","en requerimientos-e7.md; redacción asistida por agente. Pendiente de aprobación del equipo en el PR"],"body":{"enhancedMdx":"\n\u003e **Reescrito el 2026-11-18 (E7-S05 A).** La versión del 2026-11-17 decidía todo en Kubernetes\n\u003e con kind y Kustomize (Q07 C2). La revisión de simplificación sacó Kubernetes de E7 (E7-S01 A),\n\u003e porque el plan llegaba al congelamiento en el 13 % de las simulaciones. Ese texto queda en el\n\u003e historial del PR de los ADR de E7, que no estaba mergeado.\n\u003e\n\u003e **Relación propuesta:** este ADR **supera** al\n\u003e \u003cAdrLink slug=\"incentivos/20260901-coordinacion-distribuida-de-schedulers-con-shedlock\" status=\"proposed\" package=\"incentivos\" customLabel=\"ADR de ShedLock en Incentivos\" /\u003e\n\u003e (`proposed`, sin implementar), porque extiende la misma decisión a los tres servicios con tareas\n\u003e programadas. La relación la aprueba un revisor humano (AGENTS.md §9.3); ninguno de los dos cambia\n\u003e de estado en este PR.\n\n## Contexto y Problema\n\n`[DOCUMENTED]` El requerimiento 2 de la Entrega 7 pide \"monitoreo proactivo de la salud de los\nservicios\" con \"políticas de autorestart ante fallos\". El enunciado (pág. 23) pide desplegar con\n\"Docker o similar\".\n\n`[OBSERVED]` Punto de partida:\n\n- **Despliegue.** Todo corre con Docker Compose: siete archivos `docker-compose*.yml` en la raíz y\n  14 contenedores en el preprod. Los servicios y el gateway tienen `healthcheck`, pero no hay\n  política de `restart` en `docker-compose.yml` ni en el preprod. `/actuator/health` no separa\n  *liveness* de *readiness*.\n- **Tareas programadas.** Donaciones, Incentivos y Logística tienen 11 clases con `@Scheduled`\n  (5, 4 y 2): entre ellas los *relays* del Outbox, el cierre de rachas y el ranking mensual, y la\n  posición simulada de los camiones. Ningún `pom.xml` declara ShedLock.\n- **Mensajería.** 8 clases con `@RabbitListener` (1 en Donaciones, 2 en Incentivos, 1 en\n  Logística y 4 en Notificaciones). El oyente del ciclo de vida del donante en Incentivos ya corre\n  con `concurrency = \"1\"` para no desordenar los eventos.\n- **Sesiones del cliente liviano.** Declara `spring-session-jdbc`. El preprod ya enciende la sesión\n  en la base (`CLIENTE_SESIONES_JDBC_HABILITADO=true`); el valor por defecto es `false`.\n\nProblema: ¿qué mecanismo vigila la salud y reinicia los procesos, cómo se replican los módulos\npropios y qué hay que cambiar en el código para que dos réplicas no se pisen?\n\n**Gate A:** decisión nueva (no había política de reinicio ni orquestador). **Gate B:** cambia la\nplataforma de despliegue, cambia cómo se ejecutan las tareas programadas y el consumo de colas\n(dos dependencias nuevas, tablas nuevas y colas redeclaradas) y tiene impacto en todos los\nservicios. Es ARCHITECTURAL (AGENTS.md §7.0).\n\n## Alternativas Consideradas\n\n**Dónde corre todo (E7-S01).**\n\n1. **Volver a Docker** (elegida).\n2. Kubernetes recortado, con un punto de control el 22/11.\n3. Seguir con todo en Kubernetes (la decisión anterior, Q07 C2).\n\n**Cómo se replica, dentro de Docker (E7-S01c).**\n\n| Opción | Qué es |\n|---|---|\n| A | Swarm con solo el gateway ×2 (la recomendación del agente) |\n| B | Compose con `restart`, un contenedor *autoheal* y una réplica de cada cosa |\n| **C** | **Swarm de un nodo, replicando los seis módulos propios** (elegida) |\n\n**Lo que pide replicar los servicios (E7-S01d).**\n\n| Pregunta | Opciones | Elegida |\n|---|---|---|\n| Tareas programadas | ShedLock con JDBC · partir cada servicio en *api* y *worker* · locks propios con `pg_advisory_lock` | **ShedLock con JDBC** |\n| Orden de los eventos | *single active consumer* de RabbitMQ · confiar en la máquina de estados y la idempotencia · ignorarlo | ***single active consumer*** |\n| Memoria | réplicas por variable · siempre dos réplicas | **réplicas por variable** |\n\n**La IP del visitante detrás de Swarm (E7-S02b).**\n\n| Opción | Qué es |\n|---|---|\n| **A** | **Aceptar la IP aproximada y documentarla** (elegida el 2026-11-18, después de la prueba de Swarm) |\n| B | Un nginx en modo host delante, como única entrada (elegida antes de la prueba; se revirtió) |\n| C | Publicar el cliente y el gateway en modo host (contradice las réplicas de E7-S01c) |\n\n## Resultado de la Decisión\n\nElegidas **Docker** (E7-S01), **Swarm de un nodo con los seis módulos propios replicados**\n(E7-S01c C), **ShedLock**, ***single active consumer*** y **réplicas por variable** (E7-S01d) y la\n**IP aproximada documentada** (E7-S02b A).\n\n- **Plataforma.** Un nodo de Swarm (`docker swarm init`) y `docker stack deploy`.\n  `[VERIFIED]` Funciona en Docker Desktop para Windows (ver \"Evidencia\").\n- **Qué se replica.** El gateway, el cliente liviano y los cuatro servicios. Postgres, Mongo,\n  RabbitMQ, Keycloak, MinIO, Redis, n8n y `otel-lgtm` quedan con una réplica, porque guardan\n  estado.\n- **Cuántas réplicas.** `[PROPOSED]` Por variable: 1 en desarrollo y 2 en la defensa y la prueba\n  final. Cada servicio va a declarar un límite de memoria. `[INFERRED]` Con dos réplicas de cada módulo propio,\n  `otel-lgtm` y Redis, el stack ronda los 6 a 6,5 GiB, a partir de los 3,6 GiB medidos con el\n  gateway ×2.\n- **Autorestart (Q08b).** Swarm reemplaza la tarea que termina o queda `unhealthy`. La política es\n  la de Swarm por defecto (`condition: any`), sin tope. El tope lo reemplaza una alerta en Grafana\n  de reinicios repetidos (M26, ver el\n  \u003cAdrLink slug=\"20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm\" status=\"proposed\" title=\"Observabilidad con OpenTelemetry y la imagen grafana/otel-lgtm\" customLabel=\"ADR de observabilidad\" /\u003e).\n- **Salud.** En Swarm, un solo `healthcheck` decide dos cosas: si se reinicia la tarea y si recibe\n  tráfico (`[INFERRED]` la VIP del servicio enruta solo a tareas sanas; ver el hallazgo de\n  mongodb). La separación de Kubernetes entre *liveness* y *readiness* no tiene equivalente.\n  `[PROPOSED]` El `healthcheck` mira `/actuator/health/liveness` (tarea K3):\n  - una caída corta del broker o de la base no reinicia todas las réplicas;\n  - el costo es que una réplica con una dependencia caída sigue recibiendo tráfico. Se acepta,\n    porque las dependencias son compartidas: si RabbitMQ cae, cae para todas las réplicas y no hay\n    adónde desviar el pedido.\n- **Valores del `healthcheck`.** `[VERIFIED]` Con los del preprod (`interval: 5s`, `timeout: 3s`,\n  `retries: 20`), una réplica colgada tardó unos 160 s en marcarse `unhealthy`, y mientras tanto la\n  mitad de los pedidos cayó en *timeout*. `[PROPOSED]` En los servicios replicados, del orden de\n  `interval: 5s` y `retries: 3`; el `start_period` cubre el arranque. Los valores finales los fija\n  el override.\n- **Archivo del stack.** `[VERIFIED]` `docker stack config` no lee el `.env` ni acepta el compose\n  del preprod (`[INFERRED]` `docker stack deploy` usa la misma validación): rechaza el `depends_on` largo, `published` como texto, `start_interval` y los puertos\n  atados a una interfaz (`\"127.0.0.1:8180:8080\"`, que `docker compose config` traduce a `host_ip`).\n  Tampoco acepta la salida de `docker compose config`. Cómo se arma el archivo queda **abierto**\n  (tarea del override): generarlo del compose con un paso de transformación (en la prueba, un\n  script de Node de unas 20 líneas) o mantener un `docker-stack.yml` aparte. Cualquiera de las dos\n  necesita `hostname: mongodb` (ver \"Evidencia\").\n- **Arranque.** Swarm ignora el orden: los servicios fallan y se reintentan hasta que sus\n  dependencias responden. `[VERIFIED]` El stack converge solo en unos 4 minutos, salvo mongodb (y\n  Logística, que depende de él), que necesita `hostname: mongodb`.\n- **Tareas programadas: ShedLock con JDBC (E7-S01d-1).** `[PROPOSED]` En Donaciones, Incentivos y\n  Logística:\n  - una tabla `shedlock` por servicio, creada con una migración de Flyway;\n  - `@SchedulerLock` en cada uno de los 11 métodos, con `lockAtMostFor` por encima de la duración\n    esperada de la tarea;\n  - dos dependencias nuevas (`shedlock-spring` y `shedlock-provider-jdbc-template`), aprobadas por\n    el grupo al elegir la opción (AGENTS.md §6, a confirmar en el PR).\n  - **Configuración común en `common-lib` (elegido por Tadeo el 2026-11-18, a confirmar en el PR).**\n    `@EnableSchedulerLock` y el `LockProvider` van en una autoconfiguración de `common-lib` que se\n    activa solo si hay un `DataSource`. Es un cambio estructural de `common-lib` (AGENTS.md §7.0),\n    con el reactor completo como gate. Se descartó la opción de cada servicio (A), que era la\n    recomendada porque no choca con la tarea de OpenTelemetry (O2), que también cambia\n    `common-lib`: se eligió no repetir el código.\n- **Orden de los eventos: *single active consumer* (E7-S01d-2).** `[PROPOSED]` Las colas donde importa\n  el orden se van a declarar con `x-single-active-consumer: true`: una réplica consume y la otra\n  queda de reserva. Son siete:\n  - las seis del ciclo de vida de una entrega que consume Donaciones (ruta asignada, ruta\n    iniciada, en puerta, exitosa, fallida y cancelada);\n  - la del ciclo de vida del donante en Incentivos.\n\n  Las demás se apoyan en la idempotencia que ya tienen. **Lista elegida por Tadeo el\n  2026-11-18, a confirmar en el PR:** las siete, con el mismo nombre. Un paso de despliegue documentado borra\n  esas colas antes de la versión nueva; en un stack nuevo no hace falta. Se descartaron los nombres\n  nuevos (`.v2`) porque tocan tests de integración y otros consumidores.\n  - **Alcance del orden.** `[INFERRED]` El *single active consumer* ordena los mensajes **dentro\n    de una cola**. Los eventos de una entrega viajan por seis colas distintas, así que el orden\n    entre ellas (asignada → iniciada → en puerta → exitosa) no queda garantizado: cada cola puede\n    tener su consumidor activo en otra réplica, y aun con una réplica los oyentes corren en\n    paralelo. El orden entre colas queda sin cubrir, como hoy: la máquina de estados rechaza un\n    evento repetido, pero no uno que llega antes de su predecesor. Si hace falta orden entre tipos\n    de evento, la alternativa es una sola cola por entidad; queda **abierta** para la tarea.\n\n  `[INFERRED]` RabbitMQ no deja redeclarar una cola existente con otros argumentos\n  (`PRECONDITION_FAILED`): por eso el despliegue borra esas colas antes de la versión nueva (decisión del 2026-11-18).\n- **Sesiones del cliente liviano.** Con dos réplicas, la sesión vive en la base\n  (`CLIENTE_SESIONES_JDBC_HABILITADO=true`, como en el preprod), así que no hace falta afinidad.\n- **Entrada y la IP del visitante (E7-S02b A).** Sin proxy delante: el cliente liviano (8090) se\n  publica en el *routing mesh*, que reparte entre las réplicas.\n  - **Publicar el gateway (8086): abierta.** `[OBSERVED]` Los compose del PR 986 confían en\n    `X-Forwarded-For` si el pedido llega de `10.*`. `[INFERRED]` Eso incluye la dirección del mesh:\n    con el gateway publicado y esa regex, cualquiera puede elegir su cubeta de rate limiting con\n    ese encabezado. `[PROPOSED]` No publicar el gateway en el stack de Swarm (el cliente le habla\n    por la red interna; Postman y k6 lo alcanzan desde un contenedor de la red) o limitar\n    `GATEWAY_LIMITE_PROXIES_CONFIABLES` a la subred de la aplicación. Lo decide la tarea del\n    override (ver el\n    \u003cAdrLink slug=\"20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip\" status=\"proposed\" title=\"Rate limiting en el api-gateway, por cuenta o por IP\" customLabel=\"ADR de rate limiting\" /\u003e).\n  - `[VERIFIED]` El mesh reemplaza la IP de origen por la de su `ingress-endpoint` (`10.0.0.2`).\n    Un nginx en modo host tampoco veía la IP real en Docker Desktop (veía `172.19.0.1` para todos\n    los pedidos de la PC): por eso se revirtió la opción B.\n  - Consecuencia en el rate limiting: todos los visitantes **sin cuenta** comparten la cubeta\n    por IP (120 lecturas y 30 escrituras por minuto en total). Las cuentas con token validado\n    siguen con su cubeta propia. Detalle en el\n    \u003cAdrLink slug=\"20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip\" status=\"proposed\" title=\"Rate limiting en el api-gateway, por cuenta o por IP\" customLabel=\"ADR de rate limiting\" /\u003e.\n- **Puertos sin `127.0.0.1`.** `[OBSERVED]` El preprod publica Keycloak y RabbitMQ solo en\n  `127.0.0.1` (`\"127.0.0.1:8180:8080\"` y `\"127.0.0.1:5672:5672\"`). Swarm no admite esa forma: lo\n  que se publica queda en todas las interfaces. `[PROPOSED]` Keycloak (8180) se publica igual, porque el navegador inicia sesión ahí\n  (`KC_HOSTNAME`). RabbitMQ (5672) se publica solo si corren pruebas desde el host. Grafana se\n  publica con su propio usuario y clave (ver el\n  \u003cAdrLink slug=\"20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm\" status=\"proposed\" title=\"Observabilidad con OpenTelemetry y la imagen grafana/otel-lgtm\" customLabel=\"ADR de observabilidad\" /\u003e). Los\n  demás puertos de infraestructura no se publican.\n- **Prueba del autorestart (Q09).** Un script de caos (tarea K6) congela o mata el proceso de una\n  réplica (`docker kill -s STOP`, `docker kill`) y espera a que Swarm la reemplace, con el evento\n  visible en el panel.\n- **Convivencia.** `[PROPOSED]` Compose sigue siendo el entorno de desarrollo, del CI (Gate 4) y de\n  la demo pública con túnel. Swarm es el de la defensa y la prueba final. Pasar el CI a Swarm no\n  está decidido y tocaría AGENTS.md §11 (PR aparte, §13).\n\n### Evidencia: prueba de Swarm (2026-11-18)\n\nDocker Desktop 29.8.2 sobre Windows 11, un nodo, primero con un stack descartable de nginx y\ndespués con el preprod real y el gateway ×2.\n\n| # | Qué se verificó | Resultado |\n|---|---|---|\n| 1 | Reinicio de una tarea `unhealthy` | `[VERIFIED]` Swarm la reemplaza, sin *autoheal*: en el canario en unos 23 s, en el gateway a los ~160 s (por `retries: 20`) |\n| 2 | Reparto del *routing mesh* | `[VERIFIED]` 10 y 10 pedidos entre las dos réplicas del gateway |\n| 3 | IP que ve el gateway | `[VERIFIED]` Por el mesh, `10.0.0.2` para todos. Detrás de nginx en modo host, la de nginx, con `X-Forwarded-For: 172.19.0.1`. Desde otra máquina, sin probar |\n| 4 | `.env` y formato del compose | `[VERIFIED]` `docker stack config` no lo lee ni acepta el compose (`[INFERRED]` `deploy` se comporta igual). Funcionó un paso de transformación del JSON de `docker compose config` |\n| 5 | Arranque sin `depends_on` | `[VERIFIED]` Converge con reintentos en unos 4 minutos, salvo mongodb |\n\n- **Hallazgo de mongodb.** Su `healthcheck` inicia el *replica set* contra `mongodb:27017` y el\n  log da `isSelf could not connect` y `NodeNotFound`. `[INFERRED]` En Swarm ese nombre es la VIP\n  del servicio, que no enruta a una tarea todavía no sana. Con `hostname: mongodb`, sano en 22 s.\n- **Límites de la prueba.** Solo se ejercitaron `/actuator/health` y el gateway ×2: sin inicio de\n  sesión, sin pedidos de negocio y sin segunda réplica del cliente ni de los servicios. ShedLock y\n  el *single active consumer* se verifican en sus tareas.\n\n## Análisis por alternativa\n\n**Docker frente a Kubernetes (E7-S01).** Matriz del grupo: plazo y riesgo 35 %, lo que corrige la\ncátedra 25 %, cantidad de piezas 20 %, aprendizaje 20 %. Totales: Docker 3,95, Kubernetes\nrecortado 3,45, todo en Kubernetes 2,55. `[INFERRED]` Si el aprendizaje pesaba 40 % o más, ganaba\nKubernetes recortado. Kubernetes daba *liveness* y *readiness* separados y un Ingress, a costa de\nunos 6 días-persona (kind, Kustomize, manifiestos, migración del CI) que el plan no tenía.\n\n**A. Swarm con solo el gateway ×2**\n- A favor: el cambio más chico que muestra réplicas y justifica Redis; los servicios no cambian.\n- En contra: solo el gateway escala; el resto queda como punto único de falla.\n\n**B. Compose con *autoheal***\n- A favor: usa los `healthcheck` ya escritos; riesgo de plazo mínimo.\n- En contra: *autoheal* monta el socket de Docker (contra el\n  \u003cAdrLink slug=\"20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host\" status=\"proposed\" title=\"Aislamiento Completo de Contenedores y Recolección de Logs sin Volúmenes de Host\" customLabel=\"ADR de aislamiento de contenedores\" /\u003e);\n  sin réplicas, el rate limiting no necesita Redis. Queda como plan B si Swarm fallaba en la\n  prueba (no falló).\n\n**C. Swarm replicando los seis módulos (elegida)**\n- A favor: autorestart y réplicas de la plataforma, sin socket de Docker; muestra escalado\n  horizontal en todos los módulos propios.\n- En contra: obliga a coordinar las tareas programadas y el consumo de colas, y a armar el archivo\n  del stack. Matriz del grupo: A 3,85, B 3,75, C 3,15; el grupo eligió C por escalabilidad y\n  aprendizaje.\n\n**Tareas programadas.** Partir cada servicio en *api* y *worker* duplica imágenes y despliegues;\n`pg_advisory_lock` a mano reimplementa lo que ShedLock ya resuelve (vencimiento del lock si la\nréplica cae, `lockAtLeastFor` contra relojes corridos).\n\n**Orden de los eventos.** Confiar solo en la máquina de estados y la idempotencia rechaza bien un\nevento repetido, pero no uno que llega antes de su predecesor. Con dos réplicas consumiendo la\nmisma cola, eso pasa más seguido. El *single active consumer* devuelve a cada cola el orden que\ntenía con una réplica; no ordena entre colas distintas (ver \"Alcance del orden\"). Ignorarlo deja\nerrores intermitentes que aparecen recién con dos réplicas.\n\n**La IP (E7-S02b).** Matriz con los pesos del grupo (plazo 35 %, cátedra 25 %, piezas 20 %,\nexactitud del límite por IP 20 %), recalculada con la evidencia (`[INFERRED]`, puntajes del agente): aceptar la IP aproximada 3,70,\nnginx delante 2,85, defensa en un Linux con Docker nativo 2,75. En Docker Desktop, nginx no daba\nla IP real, así que su costo (0,5 a 1 día-persona y una imagen más) no compraba nada.\n\n**Principios.** Cada tarea de Swarm es intercambiable con sus réplicas: el estado vive en la base\n(sesiones, locks de ShedLock) y no en memoria. La coordinación entre réplicas (ShedLock, *single\nactive consumer*) es infraestructura y queda en adaptadores y configuración, sin tocar el dominio.\n\n## Consecuencias\n\n- **Positivas.**\n  - El autorestart y el reparto salen de la plataforma, sin código propio ni acceso al socket de\n    Docker.\n  - El gateway con dos réplicas muestra el valor de Redis en el rate limiting.\n  - Las tareas programadas y las colas con orden quedan listas para cualquier cantidad de réplicas.\n- **Negativas.**\n  - Dos definiciones del despliegue (Compose y el stack de Swarm) que pueden desfasarse, más el\n    paso que arma una a partir de la otra si se elige generarla.\n  - El límite por IP es uno solo para todos los visitantes sin cuenta.\n  - Keycloak queda publicado en todas las interfaces.\n  - Dos dependencias nuevas (ShedLock), una tabla por servicio y colas redeclaradas: al actualizar un stack que ya corre, hay que vaciar esas colas antes de borrarlas o se pierden los eventos pendientes.\n  - Sin separación entre *liveness* y *readiness*: una réplica con una dependencia caída sigue\n    recibiendo tráfico.\n  - `[INFERRED]` Con dos réplicas de todo, el stack usa casi toda la memoria de una máquina de\n    8 GB para Docker.\n- **Abiertas.**\n  - Cómo se arma el archivo del stack (generado o aparte).\n  - Los valores del `healthcheck` de los servicios replicados.\n  - Si el CI pasa a Swarm.\n  - Qué IP se ve desde otra máquina de la red (no se probó).\n  - Si el gateway se publica, y con qué `GATEWAY_LIMITE_PROXIES_CONFIABLES`.\n  - Si hace falta orden entre los eventos de una entrega que viajan por colas distintas.\n\n## Referencias\n\n- [Requerimientos de E7](../requerimientos/requerimientos-e7.md): Q08, Q09, §5 (E7-S01 a E7-S01d, E7-S02b y E7-S05)\n- \u003cAdrLink slug=\"incentivos/20260901-coordinacion-distribuida-de-schedulers-con-shedlock\" status=\"proposed\" package=\"incentivos\" customLabel=\"ADR de ShedLock en Incentivos\" /\u003e (relación \"superado por\" propuesta)\n- \u003cAdrLink slug=\"20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm\" status=\"proposed\" title=\"Observabilidad con OpenTelemetry y la imagen grafana/otel-lgtm\" customLabel=\"ADR de observabilidad\" /\u003e (M26 y la alerta de reinicios)\n- \u003cAdrLink slug=\"20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip\" status=\"proposed\" title=\"Rate limiting en el api-gateway, por cuenta o por IP\" customLabel=\"ADR de rate limiting\" /\u003e (dos réplicas del gateway y la cubeta por IP)\n- \u003cAdrLink slug=\"20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host\" status=\"proposed\" title=\"Aislamiento Completo de Contenedores y Recolección de Logs sin Volúmenes de Host\" customLabel=\"ADR de aislamiento de contenedores y logs sin volúmenes del host\" /\u003e\n- \u003cAdrLink slug=\"20260426-pipeline-unificado-de-cicd-y-automatizacion-de-calidad\" status=\"accepted\" title=\"Pipeline Unificado de CI/CD y Automatización de Calidad\" customLabel=\"ADR del pipeline de CI\" /\u003e\n- Docker Swarm: https://docs.docker.com/engine/swarm/ · ShedLock: https://github.com/lukas-krecan/ShedLock · *Single active consumer*: https://www.rabbitmq.com/docs/consumers#single-active-consumer\n"},"creationDate":"2026-11-18T19:21:29.000Z","lastEditDate":"2026-11-19T22:58:20.000Z","lastEditAuthor":"tsorren","publicationDate":"2026-11-19T02:59:59.000Z","file":{"relativePath":"docs/adr/20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md","absolutePath":"/home/runner/work/DonaTrack-TP-DDS/DonaTrack-TP-DDS/docs/adr/20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md"},"repository":{"provider":"github","viewUrl":"https://github.com/tsorren/DonaTrack-TP-DDS/blob/master/docs/adr/20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md"}},"l4bVersion":"1.1.0"},"__N_SSG":true},"page":"/adr/[...slug]","query":{"slug":["20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas"]},"buildId":"nABYPdXXbtsLRQwXuw77v","assetPrefix":"/DonaTrack-TP-DDS/adr-preview","runtimeConfig":{},"isFallback":false,"gsp":true}</script><script nomodule="" src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/polyfills-694d8cb7f00ed89b8e7e.js"></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/webpack-50bee04d1dc61f8adf5b.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/framework.b33896d72531466bcf17.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/commons.1a3eba1bbb8ea986a150.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/main-d0427bd7c9d85889a938.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/a3e17150ead73d62fba7a33a50672ae3f72841a5.56d1813f1730ddfb4c80.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/pages/_app-796f4c8086e869be38c4.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/364bddfb.28847971f0e02b167249.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/3da477db.e49cd5277ed36ace32c1.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/3b07cb59.4f0af644828e83722dc4.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/b4e962f4.26c14c8db148d74faf11.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/45d2d314fc8da5e3d79852782e4a432ad4da6771.e99b072481f3b9d379a2.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/chunks/pages/adr/%5B...slug%5D-9f67d10c628dcc0d3aa2.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/nABYPdXXbtsLRQwXuw77v/_buildManifest.js" async=""></script><script src="/DonaTrack-TP-DDS/adr-preview/_next/static/nABYPdXXbtsLRQwXuw77v/_ssgManifest.js" async=""></script></body></html>
