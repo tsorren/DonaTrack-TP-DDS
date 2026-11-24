@@ -21,8 +21,8 @@ misma validación es `[INFERRED]` (ADR). `generar-stack.js`, en todos los servic
 - borra `build`, `depends_on`, `container_name`, `pull_policy`, los campos en `null` y `healthcheck.start_interval`;
 - deja afuera los servicios con `profiles` (k6);
 - pasa `published` a número y borra `host_ip` (Swarm no publica solo en `127.0.0.1`);
-- deja publicados solo los puertos de `PUERTOS_PUBLICADOS`: el cliente liviano (8090) y Keycloak (8180, el
-  navegador inicia sesión ahí). RabbitMQ (5672), solo con `DONATRACK_PUBLICAR_RABBITMQ=true`;
+- deja publicados solo los puertos de `PUERTOS_PUBLICADOS`: el cliente liviano (8090), Keycloak (8180, el
+  navegador inicia sesión ahí) y Grafana en otel-lgtm (3000). RabbitMQ (5672), solo con `DONATRACK_PUBLICAR_RABBITMQ=true`;
 - pone las redes como `overlay` y `attachable`.
 
 Un override no puede sacar puertos ni campos del archivo base: por eso lo hace la transformación.
@@ -63,7 +63,7 @@ No se commitea ni se comparte.
 
 ## Qué está publicado
 
-`[PROPOSED]` Solo el cliente liviano (`http://localhost:8090`) y Keycloak (`http://localhost:8180`).
+`[PROPOSED]` Solo el cliente liviano (`http://localhost:8090`), Keycloak (`http://localhost:8180`) y Grafana (`http://localhost:3000`).
 `[INFERRED]` Quedan en todas las interfaces: la prueba verificó que Swarm rechaza los puertos atados a
 `127.0.0.1`, no en qué interfaces escucha.
 
