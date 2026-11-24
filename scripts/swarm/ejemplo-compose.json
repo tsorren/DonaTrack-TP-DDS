@@ -1,0 +1,44 @@
+{
+ "name": "donatrack-tp-dds",
+ "services": {
+  "cliente-liviano": {
+   "image": "donatrack/cliente-liviano:preprod",
+   "build": { "context": ".", "dockerfile": "cliente-liviano/Dockerfile" },
+   "depends_on": { "postgres": { "condition": "service_healthy", "required": true } },
+   "environment": { "CLIENTE_SESIONES_JDBC_HABILITADO": "true", "PORT": "8090" },
+   "healthcheck": { "test": ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"], "interval": "5s", "start_interval": "1s" },
+   "ports": [{ "mode": "ingress", "target": 8090, "published": "8090", "protocol": "tcp" }],
+   "networks": { "preprod-network": null }
+  },
+  "api-gateway": {
+   "image": "donatrack/api-gateway:preprod",
+   "ports": [{ "mode": "ingress", "target": 8086, "published": "8086", "protocol": "tcp" }],
+   "networks": { "preprod-network": null }
+  },
+  "keycloak": {
+   "image": "donatrack/auth-service:preprod",
+   "healthcheck": { "test": ["CMD", "bash", "-c", "case \"$$estado\" in *' 200 '*) exit 0;; esac"] },
+   "ports": [{ "mode": "ingress", "host_ip": "127.0.0.1", "target": 8080, "published": "8180", "protocol": "tcp" }],
+   "networks": { "preprod-network": null }
+  },
+  "rabbitmq": {
+   "image": "rabbitmq:3.13-alpine",
+   "ports": [{ "mode": "ingress", "host_ip": "127.0.0.1", "target": 5672, "published": "5672", "protocol": "tcp" }],
+   "networks": { "preprod-network": null }
+  },
+  "mongodb": {
+   "image": "mongo:7.0",
+   "container_name": "donatrack-mongodb",
+   "pull_policy": "missing",
+   "command": null,
+   "networks": { "preprod-network": null }
+  },
+  "k6": {
+   "image": "grafana/k6:latest",
+   "profiles": ["perf"],
+   "networks": { "preprod-network": null }
+  }
+ },
+ "networks": { "preprod-network": { "name": "donatrack-tp-dds_preprod-network", "driver": "bridge" } },
+ "volumes": { "n8n_data": { "name": "donatrack-tp-dds_n8n_data" } }
+}

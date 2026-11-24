@@ -1,0 +1,122 @@
+# Override del stack de Docker Swarm de un nodo (ADR 20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas).
+# Va encima del stack que genera scripts/swarm/generar-stack.js; se despliega con scripts/swarm/desplegar.sh.
+# No nombrar servicios que no estén en docker-compose.preprod.yml: un servicio solo en el override rompe el stack.
+#
+# [PROPOSED] Réplicas: DONATRACK_REPLICAS (1 por defecto, 2 en la defensa) en los seis módulos propios.
+# [PROPOSED] Límites de memoria: lo medido en la prueba del 2026-11-18 más margen sobre -Xmx o
+#   MaxRAMPercentage=75 (cliente liviano). Son techos, sin reservas: no frenan la planificación en un nodo.
+#   minio-init no se midió (tarea de una vez): su límite es un valor a ojo.
+# [PROPOSED] Healthcheck de los replicados: interval 5s, timeout 3s, retries 3 (una réplica colgada saldría
+#   en unos 15 a 25 s, [INFERRED]; con retries 20 tardó 160 s). start_period 120s porque con retries 3 un arranque lento
+#   con 14 contenedores a la vez no puede contar como falla. El test sigue siendo /actuator/health
+#   del compose: pasa a /actuator/health/liveness cuando entre K3.
+version: "3.9"
+
+x-replicado: &replicado
+  replicas: ${DONATRACK_REPLICAS:-1}
+
+x-salud-replicado: &salud-replicado
+  interval: 5s
+  timeout: 3s
+  retries: 3
+  start_period: 120s
+
+services:
+  api-gateway:
+    deploy:
+      <<: *replicado
+      resources:
+        limits:
+          memory: 448M
+    healthcheck: *salud-replicado
+
+  cliente-liviano:
+    deploy:
+      <<: *replicado
+      resources:
+        limits:
+          memory: 640M
+    healthcheck: *salud-replicado
+
+  donaciones-service:
+    deploy:
+      <<: *replicado
+      resources:
+        limits:
+          memory: 640M
+    healthcheck: *salud-replicado
+
+  incentivos-service:
+    deploy:
+      <<: *replicado
+      resources:
+        limits:
+          memory: 640M
+    healthcheck: *salud-replicado
+
+  logistica-service:
+    deploy:
+      <<: *replicado
+      resources:
+        limits:
+          memory: 640M
+    healthcheck: *salud-replicado
+
+  notificaciones-service:
+    deploy:
+      <<: *replicado
+      resources:
+        limits:
+          memory: 640M
+    healthcheck: *salud-replicado
+
+  # Su healthcheck inicia el replica set contra mongodb:27017. En Swarm ese nombre es la VIP, que no
+  # enruta a una tarea todavía no sana: con hostname resuelve al propio contenedor (prueba, chequeo 5).
+  mongodb:
+    hostname: mongodb
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # Tarea de una vez: con la política por defecto (any) Swarm la relanzaría para siempre.
+  # [PROPOSED] 128M sin medición: la prueba no midió minio-init.
+  minio-init:
+    deploy:
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          memory: 128M
+
+  keycloak:
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+
+  postgres:
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+  # [INFERRED] RabbitMQ toma el límite como su memoria: con 768M su marca de 40 % (~300 MiB) queda
+  # lejos de los 160 MiB medidos; si la pasa, bloquea a los que publican.
+  rabbitmq:
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+
+  minio:
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  n8n:
+    deploy:
+      resources:
+        limits:
+          memory: 640M
