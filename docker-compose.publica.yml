@@ -35,6 +35,8 @@ services:
       - LOGISTICA_FOTOS_URL_PUBLICA_BASE=${PUBLICA_URL_GATEWAY:?correr scripts/demo-publica.sh}
   notificaciones-service:
     <<: *reinicio
+  redis:
+    <<: *reinicio
   rabbitmq:
     # En Docker Desktop sobre Windows a veces sale con ".erlang.cookie: eacces" al arrancar (DIT-11).
     <<: *reinicio

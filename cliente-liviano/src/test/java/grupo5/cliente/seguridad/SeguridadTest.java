@@ -107,6 +107,19 @@ class SeguridadTest {
   }
 
   @Test
+  void laSaludDelHealthcheckNoPideIngresar() throws Exception {
+    // En este corte no está el actuator: lo que importa es que no redirija a ingresar
+    mvc.perform(get("/actuator/health")).andExpect(status().is(not(302)));
+    mvc.perform(get("/actuator/health/liveness")).andExpect(status().is(not(302)));
+    mvc.perform(get("/actuator/health/readiness")).andExpect(status().is(not(302)));
+  }
+
+  @Test
+  void losComponentesDeLaSaludPidenIngresar() throws Exception {
+    mvc.perform(get("/actuator/health/ping")).andExpect(redirectedUrl(INGRESAR));
+  }
+
+  @Test
   void unaPantallaPrivadaSinSesionLlevaAIngresar() throws Exception {
     mvc.perform(get("/donante-inicio")).andExpect(redirectedUrl(INGRESAR));
   }
