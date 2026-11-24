@@ -154,9 +154,7 @@ class SitioControllerTest {
               .getContentAsString();
       assertTrue(
           Pattern.compile(
-                  "<script(?:\\s[^>\\s]*+)*?\\ssrc=\""
-                      + alpine
-                      + "[\\d.]++/dist/cdn\\.min\\.js\"(?:\\s[^>\\s]*+)*?\\sdefer\\b")
+                  "<script[^>]*src=\"" + alpine + "[\\d.]+/dist/cdn\\.min\\.js\"[^>]*\\bdefer\\b")
               .matcher(html)
               .find(),
           pantalla + ": falta Alpine con defer");
@@ -596,6 +594,7 @@ class SitioControllerTest {
   @Test
   void enLaMaquetaUnaPantallaPuedeResponderSinPermisoOConUnaFalla() throws Exception {
     mvc.perform(get("/entidad-inicio?respuesta=403")).andExpect(status().isForbidden());
+    mvc.perform(get("/donante-inicio?respuesta=429")).andExpect(status().isTooManyRequests());
     mvc.perform(get("/donante-inicio?respuesta=500")).andExpect(status().isInternalServerError());
     mvc.perform(get("/donante-inicio?respuesta=otra")).andExpect(status().isOk());
   }
@@ -618,6 +617,13 @@ class SitioControllerTest {
     html = error(500, "/publico-mapa", "sin-codigo");
     assertTrue(!html.contains("Código para soporte"));
     assertTrue(html.contains("Si sigue, escribinos y contanos qué estabas haciendo."));
+    // El rate limiting del gateway (E7): esperar y volver a intentar la misma dirección.
+    html = error(429, "/publico-mapa", "");
+    assertTrue(html.contains("Error 429"), html);
+    assertTrue(html.contains("<title>Demasiados pedidos seguidos - DonaTrack</title>"), html);
+    assertTrue(html.contains("Esperá un minuto y probá de nuevo."), html);
+    assertTrue(html.contains("href=\"/publico-mapa\">Volver a intentar"), html);
+    assertTrue(html.contains("Código para soporte: <code>" + CODIGO + "</code>"), html);
   }
 
   @Test
