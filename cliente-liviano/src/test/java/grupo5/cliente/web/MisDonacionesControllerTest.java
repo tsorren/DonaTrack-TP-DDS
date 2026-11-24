@@ -227,9 +227,9 @@ class MisDonacionesControllerTest {
                 .string(
                     matchesPattern(
                         "(?s).*href=\"/donante-donaciones\\?donante=[^\"]+\"\\s+aria-current=\"page\">"
-                            + "Todas<b>2</b>.*")))
-        .andExpect(content().string(containsString(">Pendientes<b>1</b></a>")))
-        .andExpect(content().string(containsString(">En camino<b>0</b></a>")))
+                            + "Todas <b>2</b>.*")))
+        .andExpect(content().string(containsString(">Pendientes <b>1</b></a>")))
+        .andExpect(content().string(containsString(">En camino <b>0</b></a>")))
         .andExpect(content().string(not(containsString("huerta-lista"))));
 
     // Con un estado elegido: su vista queda marcada, las cuentas no cambian y se conserva el mes.
@@ -248,16 +248,16 @@ class MisDonacionesControllerTest {
                 .string(
                     containsString(
                         "href=\"/donante-donaciones?mes=2026-10&amp;estado=entregada\""
-                            + " aria-current=\"page\">Entregadas<b>1</b></a>")))
+                            + " aria-current=\"page\">Entregadas <b>1</b></a>")))
         .andExpect(
             content()
                 .string(
                     containsString(
                         "href=\"/donante-donaciones?mes=2026-10&amp;estado=pendiente\">"
-                            + "Pendientes<b>1</b></a>")))
+                            + "Pendientes <b>1</b></a>")))
         .andExpect(
             content()
-                .string(containsString("href=\"/donante-donaciones?mes=2026-10\">Todas<b>2</b>")));
+                .string(containsString("href=\"/donante-donaciones?mes=2026-10\">Todas <b>2</b>")));
   }
 
   @Test

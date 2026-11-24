@@ -307,9 +307,9 @@ class SitioControllerTest {
                 .string(
                     containsString(
                         "aria-label=\"El recorrido de esta donación: va por el paso 4 de 5\"")))
-        .andExpect(content().string(containsString(">Todas<b>8</b></a>")))
-        .andExpect(content().string(containsString(">Entregadas<b>5</b></a>")))
-        .andExpect(content().string(containsString(">Con problema<b>0</b></a>")));
+        .andExpect(content().string(containsString(">Todas <b>8</b></a>")))
+        .andExpect(content().string(containsString(">Entregadas <b>5</b></a>")))
+        .andExpect(content().string(containsString(">Con problema <b>0</b></a>")));
     mvc.perform(get("/donante-donaciones?cuenta=persona&estado=en-camino"))
         .andExpect(content().string(containsString("1 donación con esos filtros.")))
         .andExpect(content().string(containsString("Ropa de abrigo")))
@@ -319,8 +319,8 @@ class SitioControllerTest {
                 .string(
                     containsString(
                         "href=\"/donante-donaciones?cuenta=persona&amp;estado=en-camino\""
-                            + " aria-current=\"page\">En camino<b>1</b></a>")))
-        .andExpect(content().string(containsString(">Todas<b>8</b></a>")));
+                            + " aria-current=\"page\">En camino <b>1</b></a>")))
+        .andExpect(content().string(containsString(">Todas <b>8</b></a>")));
   }
 
   @Test

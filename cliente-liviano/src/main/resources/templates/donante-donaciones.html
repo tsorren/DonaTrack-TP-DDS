@@ -100,7 +100,7 @@
 <nav th:fragment="vistas(vistas, cuentas)" class="segmentos" data-forma="desliza"
      aria-label="Donaciones por estado" hx-boost="true">
   <a th:each="v : ${vistas}" href="/donante-donaciones" th:href="${v.direccion}"
-     th:aria-current="${v.actual} ? 'page' : null"><th:block th:text="${v.texto}">Todas</th:block><b
+     th:aria-current="${v.actual} ? 'page' : null"><th:block th:text="${v.texto}">Todas</th:block> <b
       th:text="${cuentas == null ? v.cuenta : cuentas[v.tono]}">7</b></a>
 </nav>
 
