@@ -119,6 +119,21 @@ class EntidadNotificacionesControllerTest {
   }
 
   @Test
+  void elErrorYLaCargaSonLosEstadosDeListaDelCatalogo() throws Exception {
+    String entidad = "6f1c2c1e-0000-4000-8000-0000000000e1";
+    mvc.perform(get(PANTALLA).param("entidad", entidad).param("escenario", "error"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().string(containsString("class=\"aviso\" data-tipo=\"error\" role=\"alert\"")))
+        .andExpect(content().string(containsString("No pudimos cargar tus novedades.")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    mvc.perform(get(PANTALLA).param("entidad", entidad).param("escenario", "lento"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("<div aria-busy=\"true\">")))
+        .andExpect(content().string(containsString("Cargando tus novedades…")));
+  }
+
+  @Test
   void sinEntidadMandaAIngresar() throws Exception {
     mvc.perform(get(PANTALLA)).andExpect(redirectedUrl("/publico-ingresar"));
   }
@@ -129,6 +144,11 @@ class EntidadNotificacionesControllerTest {
     mvc.perform(
             get(PANTALLA).param("entidad", "6f1c2c1e-0000-4000-8000-0000000000e1").session(sesion))
         .andExpect(status().isOk())
+        // La organización conserva «Tus novedades»; el rótulo y la pestaña dicen «Novedades»
+        // (ficha guia-org-buzon, sección 6).
+        .andExpect(content().string(containsString("<p class=\"rotulo\">Novedades</p>")))
+        .andExpect(content().string(containsString("<h1>Tus <em>novedades</em></h1>")))
+        .andExpect(content().string(containsString("<title>Novedades - DonaTrack</title>")))
         .andExpect(
             content().string(containsString("1 sin leer. Al 8 de noviembre de 2026, 18:30.")))
         .andExpect(content().string(containsString("Tu donación salió del depósito.")))

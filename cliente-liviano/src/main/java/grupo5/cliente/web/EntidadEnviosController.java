@@ -118,8 +118,10 @@ public class EntidadEnviosController {
 
   /**
    * El acta de Confirmar recepción y de Llegó con un problema ({@code motivo}): sube las fotos y
-   * deja la entrega como entregada, con el remito y el problema si lo hay. La clave es la entrega
-   * de Logística; vuelve a Seguir entregas con el aviso.
+   * deja la entrega como entregada, con el remito y el problema si lo hay. La clave es la de la
+   * entrega en el acta (la donación). Termina en su página propia (DA-06): Recepción confirmada de
+   * esa entrega, con el problema si lo hubo y la raíz que se dibuja una vez ({@code recien}); esa
+   * página es la respuesta, sin aviso breve.
    */
   @PostMapping("/entidad-seguimiento-sellada-{clave}")
   String confirmarRecepcion(
@@ -140,12 +142,11 @@ public class EntidadEnviosController {
         entidad,
         clave.toString(),
         new EntidadConfirmarPuerto.Acta(fotos, remito, elegido, cantidadRecibida, detalle));
-    return Envios.listo(
-        "entidad-seguimiento",
-        elegido == null
-            ? "Confirmaste la recepción. Le avisamos a quien donó."
-            : "Confirmaste la recepción y contaste el problema. Le avisamos a quien donó.",
-        atributos);
+    // recien: la página dibuja una vez el último tramo de la raíz
+    atributos.addFlashAttribute("recien", true);
+    return "redirect:/entidad-seguimiento-sellada?entrega="
+        + clave
+        + (elegido == null ? "" : "&problema=" + elegido);
   }
 
   /**

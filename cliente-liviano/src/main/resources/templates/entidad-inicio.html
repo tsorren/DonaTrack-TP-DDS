@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<!--/* Raíces, Inicio de la entidad (RF-11, RF-12, RF-13, RF-04), según su ficha de flujo
-       (docs/interfaz/flujos/raices-entidad-navegable.md, sección 4.1). Ordenado por lo que hay que
-       hacer: arriba y a todo el ancho, lo que espera en la puerta, en la tierra, con un acta por
-       entrega y su botón para confirmar. Debajo, en dos columnas desde el quiebre ancho (una en el
-       celular), como el mockup 18 de la ronda del 2026-11-10: a la izquierda, lo que viene (un panel
-       cálido con la abeja de la huerta y la lista con su barra de tinta, cada entrega con su pastilla
-       de estado) y lo recibido en el mes (un fruto con la cifra, en una tarjeta clara); a la derecha,
-       tus necesidades vigentes, un renglón por necesidad con su barra de .progreso. Las donaciones
-       salen de piezas-entidad.html (datos), las mismas de Donaciones recibidas; las necesidades, de
-       Necesidades, y el día, del controller (inicio: de la maqueta o de Donaciones); las novedades
-       sin leer, de la cabecera (sinLeer). En pantalla se dice "necesidades", nunca "pedidos".
-       ?escenario=vacio (entidad recién aprobada), sin-puerta, lento y error. */-->
+<!--/* Inicio de la organización (RF-11, RF-12, RF-13, RF-04): el arquetipo A09 de la guía «Huerta y
+       galpón» (docs/interfaz/guia/partes/50-pantallas.html, #inicio-organizacion), hecho con las
+       piezas del catálogo (docs/interfaz/componentes.md). Dos estados, que decide el servidor con lo
+       asignado: con una entrega en la puerta, la lámina protagonista pide confirmarla; sin ella, dice
+       la última confirmada y deja de ser protagonista. Arriba, el saludo y un aviso por entrega con
+       problema (la nueva salida no llega: HG-01). La lámina lleva el dibujo de la puerta
+       (img/ilustraciones/puerta.svg; lo que cambia con el estado se dibuja acá, entre puerta-fondo y
+       puerta-nudos) y los frutos del mes (huerta :: frutos). Debajo, lo que viene y tus necesidades,
+       cada una con su barra de avance y la cuenta de hoy (HG-04). Las donaciones salen de
+       piezas-entidad.html (datos), las mismas de Donaciones recibidas; las necesidades y la hora, del
+       controller. En pantalla se dice "necesidades", nunca "pedidos".
+       ?escenario=vacio (organización recién aprobada), sin-puerta, lento y error. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-inicio', ~{::contenido})}">
 <head>
@@ -26,18 +26,30 @@
              conPartes=${escenario != 'vacio' and escenario != 'error'},
              conDatos=${conPartes and escenario != 'lento'},
              puerta=${asignadas.?[grupo == 'puerta']},
-             recibidas=${asignadas.?[grupo == 'recibida']},
+             problemas=${asignadas.?[grupo == 'problema']},
+             viene=${asignadas.?[grupo == 'camino' or grupo == 'salir']},
+             confirmadas=${asignadas.?[grupo == 'recibida']},
+             enLaPuerta=${conDatos and not #lists.isEmpty(puerta)},
+             frutos=${#lists.size(confirmadas)},
              necesidades=${inicio.necesidades}">
-  <div class="inicio">
-    <header class="cabecera-entidad">
-      <p class="rotulo" th:text="${seccion}">Inicio</p>
-      <h1>Hola, <em th:text="${cuenta.nombre}">Marta</em></h1>
-      <p class="inicio-fecha"><th:block th:text="${cuenta.rol}">Comedor Barrio Ejemplo</th:block> ·
-        <th:block th:text="${inicio.fecha}">jueves 15 de octubre de 2026</th:block></p>
-      <th:block th:if="${conDatos and sinLeer > 0}">
-        <a th:replace="~{piezas-entidad :: novedades(${escenario == 'sin-puerta' ? 1 : sinLeer})}"></a>
+  <div class="pila" data-espacio="5">
+    <div class="pila" data-espacio="3">
+      <h1>Hola, <th:block th:text="${cuenta.nombre}">Comedor Barrio Ejemplo</th:block></h1>
+
+      <!--/* Una entrega que no pudo llegar: un aviso, antes de todo lo demás. La nueva salida no llega
+             del backend (HG-01). */-->
+      <th:block th:if="${conDatos}">
+        <div th:each="d : ${problemas}" class="aviso" data-tipo="error">
+          <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+          <p class="aviso-titulo"><a href="/entidad-entrega-problema?entrega=aceite"
+             th:href="@{/entidad-entrega-problema(entrega=${d.clave})}"
+             th:text="|${d.nombre}, ${d.cuanto}: con problema|">Aceite de girasol, 10 litros: con
+            problema</a></p>
+          <p><th:block th:text="${d.paso}">El camión no pudo llegar el 14 de octubre.</th:block>
+            Todavía sin fecha de nueva salida.</p>
+        </div>
       </th:block>
-    </header>
+    </div>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando tu inicio…</p>
 
@@ -50,129 +62,172 @@
     <!--/* Recién aprobada: un aviso con un solo paso en lugar de las partes. */-->
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no tenés donaciones asignadas.</h2>
-      <p>Empezá por publicar lo que necesita tu organización: lo ven los donantes y el catálogo público.
-        Cuando se te asigne una donación, aparece acá.</p>
+      <p>Empezá por publicar lo que necesita tu organización: lo ven quienes donan y el catálogo
+        público. Cuando se te asigne una donación, aparece acá.</p>
       <a class="boton" data-tono="principal" href="/entidad-necesidades"
          th:href="@{/entidad-necesidades}">Publicar una necesidad</a>
     </section>
 
-    <div th:if="${conPartes}" class="inicio-partes" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <!--/* Lo primero: lo que espera en la puerta, en la tierra (el umbral de la entidad), con el acta
-             de cada entrega en su etiqueta de papel. */-->
-      <section class="puerta tierra-impresa" aria-labelledby="puerta-titulo">
-        <h2 id="puerta-titulo">En tu puerta</h2>
-        <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
-        <th:block th:if="${conDatos}">
-          <p th:if="${#lists.isEmpty(puerta)}" class="puerta-bajada">No tenés entregas para
-            confirmar.<br>Cuando una entrega llegue a tu puerta, aparece acá para que confirmes la
-            recepción.</p>
-          <th:block th:unless="${#lists.isEmpty(puerta)}">
-            <p class="puerta-bajada"
-               th:text="${#lists.size(puerta) == 1} ? '1 entrega espera tu confirmación.' : |${#lists.size(puerta)} entregas esperan tu confirmación.|">2
-              entregas esperan tu confirmación.</p>
-            <ul class="puerta-lista" role="list">
-              <li th:each="d : ${puerta}" class="tarjeta acta" data-filete="doble">
-                <h3 th:id="|puerta-${d.clave}|" class="acta-titulo">
-                  <svg th:if="${d.categoria != null}" class="categoria-icono" viewBox="0 0 100 100" role="img"
-                       th:aria-label="${d.categoriaNombre}" aria-label="Alimentos">
-                    <use href="#cat-alimentos" th:href="|#${d.categoria}|"/>
-                  </svg>
-                  <span th:text="|${d.nombre} · ${d.cuanto}|">Lentejas secas · 15 kg</span>
-                </h3>
-                <!--/* Sin el estado "Espera tu confirmación": ya lo dice la parte (ronda del 2026-11-09). */-->
-                <!--/* Fuera de la maqueta el pedido que cubre no llega (HB-17): solo cuándo llegó (HB-22). */-->
-                <p class="acta-texto" th:text="${d.pedidoNombre == null} ? ${d.llego} : |${d.llego} Para tu necesidad de ${d.pedidoNombre}.|">Llegó hoy,
-                  18:20, desde el Depósito Central. Para tu necesidad de lentejas secas.</p>
-                <a class="boton" data-tono="principal" href="/entidad-seguimiento-confirmar?entrega=lentejas"
-                   th:href="@{/entidad-seguimiento-confirmar(entrega=${d.clave})}">Confirmar
-                  recepción<span class="solo-lectores" th:text="${d.pedidoNombre == null} ? '' : |: ${d.pedidoNombre}|">: lentejas secas</span></a>
+    <!--/* La puerta: la lámina protagonista mientras haya algo para confirmar (D7). */-->
+    <section th:if="${conPartes}" class="tarjeta pila" data-espacio="3"
+             th:data-papel="${enLaPuerta} ? 'protagonista' : null"
+             th:aria-busy="${escenario == 'lento'} ? 'true' : null"
+             th:aria-labelledby="${conDatos} ? 'puerta-titulo' : null">
+      <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
+      <th:block th:if="${conDatos}">
+        <h2 id="puerta-titulo"
+            th:text="${enLaPuerta} ? (${#lists.size(puerta) == 1} ? 'Llegó una entrega' : |Llegaron ${#lists.size(puerta)} entregas|) : 'No tenés entregas para confirmar'">Llegó
+          una entrega</h2>
+        <div class="grilla" data-espacio="4">
+          <div class="pila" data-espacio="3">
+            <ul th:if="${enLaPuerta}" class="pila" data-espacio="4" role="list">
+              <li th:each="d : ${puerta}" class="pila" data-espacio="2">
+                <p><strong th:text="|${d.nombre}, ${d.cuanto}|">Lentejas secas, 15 kg</strong><th:block
+                    th:text="|, de ${d.dono}.|">, de Distribuidora Ejemplo SA.</th:block></p>
+                <div class="racimo">
+                  <a class="boton" data-tono="principal" href="/entidad-seguimiento-confirmar?entrega=lentejas"
+                     th:href="@{/entidad-seguimiento-confirmar(entrega=${d.clave})}">Confirmar
+                    recepción<span class="solo-lectores" th:text="|: ${d.nombre}|">: Lentejas secas</span></a>
+                </div>
+                <div class="racimo"><span th:replace="~{componentes/sello :: pedido()}"></span></div>
+                <!--/* Fuera de la maqueta la necesidad que cubre no llega (HB-17): solo cuándo llegó (HB-22). */-->
+                <p data-tono="suave"
+                   th:text="${d.pedidoNombre == null} ? ${d.llego} : |${d.llego} Para tu necesidad de ${d.pedidoNombre}.|">Llegó
+                  hoy, 18:20, desde el Depósito Central. Para tu necesidad de lentejas secas.</p>
               </li>
             </ul>
-          </th:block>
-        </th:block>
-      </section>
-
-      <!--/* Lo que viene (ronda del 2026-11-10, mockup 18): un panel cálido, con la abeja quieta de la
-             huerta (static/img/ilustraciones/abeja-partes.svg) al lado del título, y la lista con una
-             barra de tinta a la izquierda; cada entrega, en negrita, y debajo su estado en la pastilla
-             de .estado y cuándo llega. De lo que está más cerca de llegar a lo que no pudo. */-->
-      <section class="viene" aria-labelledby="viene-titulo">
-        <h2 id="viene-titulo"><svg viewBox="0 0 11.82 12.99" aria-hidden="true" focusable="false">
-            <use href="/img/ilustraciones/abeja-partes.svg#ala-atras" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-atras'"></use>
-            <use href="/img/ilustraciones/abeja-partes.svg#cuerpo-arriba" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#cuerpo-arriba'"></use>
-            <use href="/img/ilustraciones/abeja-partes.svg#ala-delante" th:href="@{/img/ilustraciones/abeja-partes.svg} + '#ala-delante'"></use></svg>
-          Lo que viene</h2>
-        <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
-        <th:block th:if="${conDatos}"
-            th:with="lista=${asignadas.?[grupo == 'camino' or grupo == 'salir' or grupo == 'problema']}">
-          <p th:if="${#lists.isEmpty(lista)}">No hay entregas asignadas en camino.</p>
-          <th:block th:unless="${#lists.isEmpty(lista)}">
-            <p th:text="${#lists.size(lista) == 1} ? '1 entrega asignada que todavía no llegó.' : |${#lists.size(lista)} entregas asignadas que todavía no llegaron.|">3
-              entregas asignadas que todavía no llegaron.</p>
-            <ol class="viene-lista" role="list">
-              <th:block th:each="g : ${ {'camino', 'salir', 'problema'} }">
-                <li th:each="d : ${lista.?[grupo == #root.g]}" class="viene-paso"
-                    th:with="estado=${grupos.?[clave == #root.d.grupo][0]}">
-                  <b th:text="|${d.nombre}, ${d.cuanto}|">Arroz, 20 kg</b>
-                  <span class="viene-detalle"><span class="estado" th:data-estado="${d.grupo}"
-                        data-estado="camino" th:text="${estado.estado}">En camino</span>, <th:block
-                        th:text="${d.breve}">llega mañana</th:block></span>
-                </li>
+            <p th:if="${enLaPuerta}" data-tono="suave">Falta el último paso: tu confirmación con la
+              foto. Con eso, quien donó ve que llegó.</p>
+            <th:block th:unless="${enLaPuerta}" th:with="ultima=${#lists.isEmpty(confirmadas)} ? null : ${confirmadas[0]}">
+              <th:block th:if="${ultima != null}">
+                <p>La última que confirmaste: <strong th:text="|${ultima.nombre}, ${ultima.cuanto}|">Lentejas
+                  secas, 10 kg</strong><th:block th:text="|, de ${ultima.dono}.|">, de Almacén
+                  Ejemplo.</th:block></p>
+                <div class="racimo"><span class="estado" data-estado="confirmada"><th:block
+                    th:replace="~{componentes/sello :: sello('confirmada')}"></th:block>Entrega confirmada</span></div>
+                <p class="salidas"><a href="/entidad-seguimiento?estado=recibidas"
+                   th:href="@{/entidad-seguimiento(estado='recibidas')}">Ver las confirmadas</a></p>
               </th:block>
-            </ol>
-          </th:block>
+              <p data-tono="suave">Cuando llegue una entrega, aparece acá para que confirmes la
+                recepción.</p>
+            </th:block>
+          </div>
+
+          <!--/* El dibujo de la puerta (D2, D4): con algo en la puerta, los bultos esperan afuera y el
+                 tramo al quinto nudo es punteado; si no, la raíz llega al árbol, salvo que todavía no
+                 haya ninguna confirmada. Los frutos del árbol son las confirmadas del mes, hasta
+                 cinco: la cuenta completa va debajo. Decorativo: el texto dice todo. */-->
+          <figure class="pila" data-espacio="2"
+                  th:with="llega=${not enLaPuerta and frutos > 0}">
+            <svg viewBox="0 0 640 400" aria-hidden="true" focusable="false">
+              <use href="/img/ilustraciones/puerta.svg#puerta-fondo"
+                   th:href="@{/img/ilustraciones/puerta.svg} + '#puerta-fondo'"/>
+              <path th:unless="${llega}" data-dibujo="tramo-falta" fill="none" stroke-width="4"
+                    stroke-linecap="round" stroke-dasharray="1 10" d="M345 350C420 350 500 360 520 318V254"/>
+              <g th:if="${llega}" fill="none" stroke-linecap="round">
+                <path data-dibujo="tramo-borde" stroke-width="11" d="M345 350C420 350 500 360 520 318V254"/>
+                <path data-dibujo="tramo" stroke-width="7" d="M345 350C420 350 500 360 520 318V254"/>
+              </g>
+              <use href="/img/ilustraciones/puerta.svg#puerta-nudos"
+                   th:href="@{/img/ilustraciones/puerta.svg} + '#puerta-nudos'"/>
+              <g th:data-dibujo="${llega} ? 'nudo' : 'nudo-falta'" data-dibujo="nudo-falta">
+                <circle cx="520" cy="318" r="13" stroke-width="2.5"
+                        th:attr="stroke-dasharray=${llega} ? null : '4 4'"/>
+                <text x="520" y="323.5" font-size="15" font-weight="700" text-anchor="middle">5</text>
+              </g>
+              <g data-dibujo="frutos" stroke-width="2.5" th:if="${frutos > 0}"
+                 th:with="lugares=${ { {474, 138}, {498, 86}, {554, 90}, {574, 140}, {522, 124} } }">
+                <circle th:each="l, i : ${lugares}" th:if="${i.index < frutos}" r="10"
+                        th:attr="cx=${l[0]},cy=${l[1]}"/>
+              </g>
+              <g th:if="${enLaPuerta}" data-dibujo="bultos">
+                <g stroke-width="3">
+                  <rect data-dibujo="caja" x="330" y="216" width="34" height="34"/>
+                  <rect x="366" y="188" width="44" height="62" rx="15"/>
+                  <rect x="406" y="204" width="38" height="46" rx="13"/>
+                  <rect x="440" y="194" width="36" height="56" rx="13"/>
+                  <path data-dibujo="asas" d="M377 188c4-9 18-9 22 0M415 204c4-8 16-8 20 0M449 194c4-8 14-8 18 0"/>
+                </g>
+                <rect data-dibujo="cinta" x="344" y="217.5" width="6" height="31"/>
+                <g data-dibujo="rotulos">
+                  <rect x="375" y="214" width="26" height="12"/>
+                  <rect x="413" y="223" width="24" height="11"/>
+                  <rect x="447" y="217" width="22" height="11"/>
+                </g>
+              </g>
+            </svg>
+            <figcaption class="pila" data-espacio="1">
+              <div th:replace="~{componentes/huerta :: frutos(${frutos}, |por tu organización en ${mesRecibido}|, false)}"></div>
+              <p data-tono="suave" class="texto-chico" th:text="|Al ${inicio.al}.|">Al 15 de octubre, 18:30.</p>
+            </figcaption>
+          </figure>
+        </div>
+      </th:block>
+    </section>
+
+    <div th:if="${conPartes}" class="grilla" data-espacio="5"
+         th:aria-busy="${escenario == 'lento'} ? 'true' : null">
+      <!--/* Lo que viene: lo asignado que todavía no llegó, del más cercano al que todavía no salió. Lo
+             que tuvo un problema está en su aviso, arriba. */-->
+      <section class="pila" data-espacio="3" aria-labelledby="viene-titulo">
+        <h2 id="viene-titulo">Lo que viene</h2>
+        <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
+        <th:block th:if="${conDatos}">
+          <p th:if="${#lists.isEmpty(viene)}">No hay entregas asignadas en camino.</p>
+          <ul th:unless="${#lists.isEmpty(viene)}" class="lista" data-forma="filas" role="list">
+            <th:block th:each="g : ${ {'camino', 'salir'} }">
+              <li th:each="d : ${viene.?[grupo == #root.g]}"
+                  th:with="estado=${grupos.?[clave == #root.d.grupo][0]}">
+                <div>
+                  <strong th:text="|${d.nombre}, ${d.cuanto}|">Arroz, 20 kg</strong>
+                  <span class="estado" th:data-estado="${d.grupo}" data-estado="camino"><th:block
+                      th:replace="~{componentes/sello :: sello(${d.grupo})}"></th:block><th:block
+                      th:text="${estado.estado}">En camino</th:block></span>
+                  <span data-tono="suave" class="texto-chico"
+                        th:text="|${d.paso} De ${d.dono}.|">Salió del depósito hoy a las 9:15. Llega
+                    mañana. De Almacén Ejemplo.</span>
+                </div>
+              </li>
+            </th:block>
+          </ul>
+          <p data-tono="suave" class="texto-chico"
+             th:text="${#lists.isEmpty(problemas)} ? (${#lists.size(viene) == 1} ? 'Es la única entrega asignada que todavía no llegó.' : |${#lists.size(viene)} entregas asignadas que todavía no llegaron.|) : 'Las que tuvieron un problema están en el aviso de arriba.'">Las
+            que tuvieron un problema están en el aviso de arriba.</p>
           <p class="salidas">
-            <a href="/entidad-recibidas" th:href="@{/entidad-recibidas}">Ver
-              todas en Donaciones recibidas</a>
-            <a href="/entidad-seguimiento" th:href="@{/entidad-seguimiento}">Seguir
-              entregas</a>
+            <a href="/entidad-seguimiento" th:href="@{/entidad-seguimiento}">Ver
+              todas en Entregas</a>
           </p>
         </th:block>
       </section>
 
-      <!--/* Tus necesidades: las vigentes de Necesidades, un renglón claro por necesidad con el ícono de
-             su categoría en su caja, hasta cuándo y, a la derecha, cuánto llegó sobre la barra de
-             .progreso (la misma de Necesidades). */-->
-      <section class="pedidos-inicio" aria-labelledby="necesidades-titulo">
+      <!--/* Tus necesidades: las vigentes, cada una con cuánto llegó en palabras y en la barra de
+             avance. La cuenta es la de donaciones de hoy (HG-04); si no llega, va sin barra. */-->
+      <section class="pila" data-espacio="3" aria-labelledby="necesidades-titulo">
         <h2 id="necesidades-titulo">Tus necesidades</h2>
         <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <th:block th:if="${conDatos}">
-          <p th:text="|${#lists.size(necesidades)} necesidades vigentes.|">5 necesidades vigentes.</p>
-          <ul class="pedidos-renglones" role="list">
+          <ul class="lista" data-forma="filas" role="list">
             <li th:each="n : ${necesidades}">
-              <svg th:if="${n.categoria != null}" class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-                <use href="#cat-alimentos" th:href="|#${n.categoria}|"/>
-              </svg>
-              <span class="renglon-que"><b th:text="${n.nombre}">Lentejas secas</b>
-                <small th:text="${n.plazo}">Octubre, hasta el 31</small></span>
-              <span th:if="${n.recibido != null}" class="renglon-va"><span th:text="${n.recibido}">10 de 40 kg</span>
-                <progress class="progreso" th:value="${n.valor}" th:max="${n.max}" value="10" max="40" aria-hidden="true"></progress></span>
+              <div>
+                <strong th:text="${n.nombre}">Lentejas secas</strong>
+                <span th:if="${n.recibido != null}" th:text="${n.recibido}">10 de 40 kg</span>
+                <progress th:if="${n.recibido != null}" class="progreso" th:value="${n.valor}"
+                          th:max="${n.max}" th:aria-label="|Llegaron ${n.recibido}|" value="10" max="40"
+                          aria-label="Llegaron 10 de 40 kg"></progress>
+                <span th:if="${n.plazo != null}" data-tono="suave" class="texto-chico"
+                      th:text="${n.plazo}">Octubre, hasta el 31</span>
+              </div>
             </li>
           </ul>
+          <p data-tono="suave" class="texto-chico"
+             th:text="${#lists.size(necesidades) == 1} ? |1 necesidad vigente al ${inicio.al}.| : |${#lists.size(necesidades)} necesidades vigentes al ${inicio.al}.|">5
+            necesidades vigentes al 15 de octubre, 18:30.</p>
           <p class="salidas">
-            <a href="/entidad-necesidades" th:href="@{/entidad-necesidades}">Ver
-              tus necesidades</a>
-            <a href="/entidad-necesidades#publicar"
-               th:href="@{/entidad-necesidades#publicar}">Publicar otra necesidad</a>
+            <a href="/entidad-necesidades" th:href="@{/entidad-necesidades}">Ver tus necesidades</a>
+            <a class="boton" href="/entidad-necesidades#publicar"
+               th:href="@{/entidad-necesidades#publicar}">Publicar una necesidad</a>
           </p>
         </th:block>
-      </section>
-
-      <!--/* Lo recibido en el mes: en una tarjeta clara, un fruto de la rama de la portada ("Lo que está
-             confirmado"), con la cifra adentro y su período y fecha al lado. Es un resultado
-             registrado, no un efecto. */-->
-      <section class="recibido" aria-labelledby="recibido-titulo">
-        <h2 id="recibido-titulo" th:text="|Lo recibido en ${mesRecibido}|">Lo recibido en octubre</h2>
-        <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
-        <div th:if="${conDatos}" class="recibido-rama">
-          <p class="recibido-fruto" aria-hidden="true" th:text="${#lists.size(recibidas)}">6</p>
-          <div class="recibido-texto">
-            <p th:text="|${#lists.size(recibidas)} donaciones recibidas, confirmadas por tu organización. Al ${inicio.al}.|">6
-              donaciones recibidas, confirmadas por tu organización. Al 15 de octubre, 18:30.</p>
-            <a class="boton" data-tono="secundario" href="/entidad-recibidas?estado=recibidas"
-               th:href="@{/entidad-recibidas(estado='recibidas')}">Ver las recibidas</a>
-          </div>
-        </div>
       </section>
     </div>
   </div>

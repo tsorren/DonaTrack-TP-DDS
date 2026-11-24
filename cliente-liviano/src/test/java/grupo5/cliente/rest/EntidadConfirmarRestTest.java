@@ -49,6 +49,17 @@ class EntidadConfirmarRestTest {
           + ENTIDAD
           + "&estado=EN_PUERTA&estado=EN_TRASLADO&orden=ATENCION&size=2";
 
+  /**
+   * ORG-12: la confirmada, en Donaciones, ENTREGADA o, si todavía no se enteró, en la puerta o en
+   * traslado.
+   */
+  private static final String LA_CONFIRMADA =
+      "http://donaciones/donaciones-independientes?entidadId="
+          + ENTIDAD
+          + "&id="
+          + DONACION
+          + "&estado=ENTREGADA&estado=EN_PUERTA&estado=EN_TRASLADO&orden=ATENCION&size=1";
+
   /** R11-43: de Logística, solo las entregas de esas donaciones. */
   private static String esperando(String... donaciones) {
     return deLaDonacion(donaciones) + "&estado=EN_PUERTA&estado=EN_TRASLADO";
@@ -145,6 +156,9 @@ class EntidadConfirmarRestTest {
     assertEquals("kg", e.unidad());
     assertEquals(true, e.decimales());
     assertNull(e.remito());
+    assertNull(e.registrada());
+    assertNull(e.asignada());
+    assertNull(e.preparada());
     assertEquals("8 de noviembre de 2026", adaptador.hoy());
   }
 
@@ -258,8 +272,184 @@ class EntidadConfirmarRestTest {
         entregas.stream().map(EntidadEntregaVista::clave).toList());
     EntidadEntregaVista enLaPuerta = entregas.getFirst();
     assertEquals("8 de noviembre, 18:20", enLaPuerta.llego());
+    // Sin el cambio a ASIGNADA ni a LISTA en el historial, sin fecha: no cae en el registro
+    assertNull(enLaPuerta.asignada());
+    assertNull(enLaPuerta.preparada());
     assertEquals("Llegó a tu puerta el 8 de noviembre a las 18:20.", enLaPuerta.llegoFrase());
     assertNull(entregas.get(1).llego());
     assertEquals("Salió del depósito el 8 de noviembre a las 14:30.", entregas.get(1).llegoFrase());
+  }
+
+  @Test
+  void laConfirmadaTraeElRemitoLaFotoCuandoYElProblemaDeLogistica() {
+    donaciones
+        .expect(requestTo(LA_CONFIRMADA))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "%s", "descripcion": "Lentejas secas", "estadoActual": "ENTREGADA",
+                  "items": [{"bien": {"categoria": {"id": "%s", "nombre": "Alimentos", "unidad": "KILOGRAMO"}}}],
+                  "cantidad": 15, "fechaRegistro": "2026-11-05T10:00:00",
+                  "historial": [
+                    {"estadoNuevo": "AsignacionRealizada", "timestamp": "2026-11-06T11:00:00"},
+                    {"estadoNuevo": "ListaParaEntregar", "timestamp": "2026-11-07T09:10:00"},
+                    {"estadoNuevo": "EnPuerta", "timestamp": "2026-11-08T18:20:00"}]}]
+                """
+                    .formatted(DONACION, NECESIDAD),
+                MediaType.APPLICATION_JSON));
+    // Ninguna otra espera: no hay nada para ofrecer después
+    donaciones.expect(requestTo(LA_OTRA)).andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(deLaDonacion(DONACION)))
+        .andRespond(
+            withSuccess(
+                """
+                [{"idEntrega": "%s", "idDonacion": "%s", "estadoEntrega": "ENTREGADA",
+                  "horaSalida": "2026-11-08T17:30:00Z"}]
+                """
+                    .formatted(ENTREGA, DONACION),
+                MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(LOGISTICA + ENTREGA))
+        .andExpect(method(HttpMethod.GET))
+        .andRespond(
+            withSuccess(
+                """
+                {"id": "%s", "estadoActual": "ENTREGADA", "numeroRemito": " 0001-00004521 ",
+                 "fotosRecepcion": ["https://fotos.ejemplo/1.jpg", "https://fotos.ejemplo/2.jpg"],
+                 "historialEstado": [
+                   {"estadoAnterior": "EN_TRASLADO", "estadoNuevo": "EN_PUERTA",
+                    "timestamp": "2026-11-08T21:20:00Z"},
+                   {"estadoAnterior": "EN_PUERTA", "estadoNuevo": "ENTREGADA",
+                    "timestamp": "2026-11-08T21:45:00Z"}],
+                 "reporte": {"motivo": "INCOMPLETA", "detalle": " Dos bolsas rotas. ",
+                             "cantidadRecibida": 12.5}}
+                """
+                    .formatted(ENTREGA),
+                MediaType.APPLICATION_JSON));
+
+    List<EntidadEntregaVista> vistas = adaptador.confirmada(ENTIDAD, DONACION, null);
+
+    donaciones.verify();
+    logistica.verify();
+    assertEquals(1, vistas.size());
+    EntidadEntregaVista e = vistas.getFirst();
+    assertEquals(DONACION, e.clave());
+    assertEquals("Lentejas secas, 15 kg", e.titulo());
+    assertEquals("0001-00004521", e.remito());
+    assertEquals("https://fotos.ejemplo/1.jpg", e.foto());
+    assertEquals("8 de noviembre de 2026, 18:45", e.confirmo());
+    assertEquals("Llegó a tu puerta el 8 de noviembre a las 18:20.", e.llegoFrase());
+    assertEquals("12,5 de 15 kg", e.llegoMenos());
+    assertEquals("Dos bolsas rotas.", e.detalle());
+    // El motivo asentado en Logística, como lo nombra la pantalla
+    assertEquals("incompleta", e.problema());
+    // Los tres primeros pasos, del historial de la donación (U3)
+    assertEquals("5 de noviembre, 10:00", e.registrada());
+    assertEquals("6 de noviembre, 11:00", e.asignada());
+    assertEquals("7 de noviembre, 9:10", e.preparada());
+  }
+
+  @Test
+  void unaFotoQueNoEsUnaDireccionWebNoLlegaALaPantalla() {
+    donaciones
+        .expect(requestTo(LA_CONFIRMADA))
+        .andRespond(
+            withSuccess(
+                "[{\"id\": \"" + DONACION + "\", \"descripcion\": \"Arroz\", \"cantidad\": 5}]",
+                MediaType.APPLICATION_JSON));
+    donaciones.expect(requestTo(LA_OTRA)).andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(deLaDonacion(DONACION)))
+        .andRespond(
+            withSuccess(
+                """
+                [{"idEntrega": "%s", "idDonacion": "%s", "estadoEntrega": "ENTREGADA"}]
+                """
+                    .formatted(ENTREGA, DONACION),
+                MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(LOGISTICA + ENTREGA))
+        .andRespond(
+            withSuccess(
+                "{\"fotoRecepcionUrl\": \"javascript:alert(1)\"}", MediaType.APPLICATION_JSON));
+
+    EntidadEntregaVista e = adaptador.confirmada(ENTIDAD, DONACION, null).getFirst();
+
+    assertNull(e.foto());
+    assertNull(e.remito());
+    assertNull(e.confirmo());
+    assertNull(e.llegoMenos());
+  }
+
+  /**
+   * Confirmada desde el traslado, sin pasar por la puerta: no hay hora de llegada (no cae en la
+   * fecha de registro) y, sin reporte, no hay problema aunque la dirección traiga uno.
+   */
+  @Test
+  void unaConfirmadaDesdeElTrasladoNoInventaLaLlegadaNiElProblema() {
+    donaciones
+        .expect(requestTo(LA_CONFIRMADA))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "%s", "descripcion": "Arroz", "cantidad": 5,
+                  "fechaRegistro": "2026-11-05T10:00:00",
+                  "historial": [
+                    {"estadoNuevo": "EnTraslado", "timestamp": "2026-11-08T14:30:00"}]}]
+                """
+                    .formatted(DONACION),
+                MediaType.APPLICATION_JSON));
+    donaciones.expect(requestTo(LA_OTRA)).andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(deLaDonacion(DONACION)))
+        .andRespond(
+            withSuccess(
+                """
+                [{"idEntrega": "%s", "idDonacion": "%s", "estadoEntrega": "ENTREGADA",
+                  "horaSalida": "2026-11-08T17:30:00Z"}]
+                """
+                    .formatted(ENTREGA, DONACION),
+                MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(LOGISTICA + ENTREGA))
+        .andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
+
+    EntidadEntregaVista e = adaptador.confirmada(ENTIDAD, DONACION, "danada").getFirst();
+
+    assertNull(e.llego());
+    assertEquals("Salió del depósito el 8 de noviembre a las 14:30.", e.llegoFrase());
+    assertNull(e.problema());
+  }
+
+  @Test
+  void siLaPedidaTodaviaNoEstaEntregadaNoHayNadaAsentado() {
+    donaciones
+        .expect(requestTo(LA_CONFIRMADA))
+        .andRespond(
+            withSuccess(
+                "[{\"id\": \"" + DONACION + "\", \"descripcion\": \"Arroz\", \"cantidad\": 5}]",
+                MediaType.APPLICATION_JSON));
+    donaciones.expect(requestTo(LA_OTRA)).andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(deLaDonacion(DONACION)))
+        .andRespond(
+            withSuccess(
+                """
+                [{"idEntrega": "%s", "idDonacion": "%s", "estadoEntrega": "EN_PUERTA"}]
+                """
+                    .formatted(ENTREGA, DONACION),
+                MediaType.APPLICATION_JSON));
+
+    assertFalse(adaptador.confirmada(ENTIDAD, DONACION, null).iterator().hasNext());
+    donaciones.verify();
+    logistica.verify();
+  }
+
+  @Test
+  void laConfirmadaSinUnaClaveQueSeaUnIdNoLlamaANingunServicio() {
+    assertFalse(adaptador.confirmada(ENTIDAD, "lentejas", null).iterator().hasNext());
+    donaciones.verify();
+    logistica.verify();
   }
 }

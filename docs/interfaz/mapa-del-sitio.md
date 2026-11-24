@@ -222,6 +222,19 @@ pestaña (Actividad); ninguna a más de 3 niveles
 | Recibimos la solicitud | "Lo que nos enviaste" con los datos guardados y "Corregir los datos"; si ya la aprobaron, "Ingresar de nuevo" | R11-41 |
 | Listados (desde la tableta) | La cabecera y la barra de búsqueda y filtros quedan fijas al desplazarse; en el celular, el botón de Confirmar recepción queda fijo encima del menú | R11-33 |
 
+## Cambios de la oleada ORG de la guía «Huerta y galpón» (2026-11-23)
+
+Una pantalla nueva (la entrega con problema, nivel 3) y dos que se funden; ninguna a más de 3
+niveles ([backlog de la guía](backlog-guia-al-codigo.md), §11):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Menú de la organización | Inicio, Necesidades, Entregas y Ayuda. Ayuda lleva a Para organizaciones (`/publico-para-entidades`). Los menús de quien dona, el admin, la persona y lo público no cambian | ORG-09; DA-02, DA-05 y DA-17 |
+| Donaciones recibidas y Seguir entregas | Una sola pantalla, Entregas (`/entidad-seguimiento`): Para confirmar, Por llegar y Confirmadas. `/entidad-recibidas` redirige ahí con su búsqueda y sus filtros | ORG-07; DA-02 |
+| Entregas → Entrega con problema | Página nueva, `/entidad-entrega-problema?entrega=`: qué pasó, los pasos y «Todavía sin fecha de nueva salida». Se llega también desde el aviso de Inicio | ORG-08 |
+| Publicar, cambiar o dar de baja una necesidad; guardar el perfil | Terminan en la misma pantalla con un aviso breve; en la maqueta, las rutas de respuesta siguen y muestran Necesidades o el perfil con el aviso. Solo confirmar una recepción tiene página de respuesta | ORG-05, ORG-06; DA-06 |
+| Notificaciones de los tres roles | Se titulan «Novedades» (la organización, «Tus novedades»); las rutas no cambian | ORG-01; DA-08 |
+
 ## Observaciones para el diseño
 
 - El admin tenía 9 secciones de nivel 2. Quedan 6 por tema, como el prototipo: registrar,

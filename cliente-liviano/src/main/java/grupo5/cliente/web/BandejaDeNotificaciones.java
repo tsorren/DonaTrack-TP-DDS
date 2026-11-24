@@ -14,8 +14,8 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 final class BandejaDeNotificaciones {
 
-  /** El nombre del paginador para los lectores de pantalla (ficha, sección 6). */
-  static final String PAGINAS = "Páginas de notificaciones";
+  /** El nombre del paginador para los lectores de pantalla (ficha guia-org-buzon, sección 6). */
+  static final String PAGINAS = "Páginas de novedades";
 
   /**
    * Lo que la bandeja conserva en la dirección: los filtros (con los nombres de antes de R11-B04

@@ -31,6 +31,235 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-23 · datos · Recepción confirmada muestra lo asentado en Logística, no lo de la dirección
+
+- **Decisión:** el problema de Recepción confirmada sale del motivo del reporte de Logística
+  (`EntidadEntregaVista.problema`), y la llegada, solo del cambio a `EN_PUERTA` del historial. El
+  puerto recibe el `?problema=` de la respuesta, pero solo lo usa la maqueta, que no guarda el
+  acta. Sin cómo va la necesidad, «Tu necesidad» dice cuál es, como Llegó con un problema.
+- **Alternativas:** seguir leyendo `?problema=` en la plantilla (al volver a abrir la página el
+  problema desaparecía, y con un parámetro inventado aparecía uno que no existe); pedir a Donaciones
+  la cuenta de la necesidad en esta pantalla (una llamada más por cada confirmación).
+- **Por qué:** la página promete mostrar lo que quedó asentado y poder volver a abrirse (DA-06).
+- **Costo:** la cuenta de donaciones de la necesidad no aparece en esta pantalla con datos reales;
+  se conecta en Z con HG-04 ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 2).
+- **Quién decidió:** agente, al arreglar en sesión los bloqueantes de la ronda 3 de `org-confirmar`.
+- **Evidencia:** backlog §11 (ORG-11 y ORG-12); `EntidadConfirmarRestTest`.
+
+### 2026-11-23 · navegación · Entregas reúne «Donaciones recibidas» y «Seguir entregas» (DA-02)
+
+- **Decisión:** una sola pantalla, Entregas (`/entidad-seguimiento`), con Para confirmar, Por llegar y
+  Confirmadas. `/entidad-recibidas` redirige ahí y conserva su consulta, así que los filtros de
+  antes siguen andando. Los textos, las migas y las salidas que decían «Seguir entregas» o
+  «Donaciones recibidas» pasan a «Entregas».
+- **Alternativas:** dejar las dos pantallas; borrar `/entidad-recibidas` sin redirigir.
+- **Por qué:** las dos mostraban las mismas entregas en momentos distintos; la redirección no rompe
+  los enlaces guardados ni los de las novedades.
+- **Costo:** los tests que afirmaban la ruta vieja se actualizaron con aserciones igual de fuertes.
+- **Quién decidió:** usuario (DA-02, «3 si», ronda 2 del 2026-11-22; diferida a ORG por DA-17).
+  Cumplida: PASS de la revisión de `org-entregas`, ronda 2.
+- **Evidencia:** backlog §11.1 (ORG-07); `e7c9d1327` y `1520674a0`.
+
+### 2026-11-23 · navegación · Ayuda de la organización es Para organizaciones (DA-05)
+
+- **Decisión:** la entrada «Ayuda» del menú lleva a `/publico-para-entidades`, con otro nombre; su
+  ícono es `nav-ayuda`, con el dibujo de `i-ayuda`.
+- **Alternativas:** una página de ayuda nueva.
+- **Por qué:** la página ya explica a la organización cómo funciona y no suma una pantalla antes del
+  30/11.
+- **Costo:** quien entra a Ayuda sale del área privada a una página pública.
+- **Quién decidió:** usuario (DA-05, ronda 4 del 2026-11-23); el ícono, agente (lote
+  `org-entregas`), sin consultar. Cumplida: PASS de la revisión de `org-entregas`, ronda 2.
+- **Evidencia:** backlog §11.1 (ORG-09); `iconos.html`.
+
+### 2026-11-23 · navegación · En ORG cambia solo el menú de la organización (DA-17)
+
+- **Decisión:** Inicio, Necesidades, Entregas y Ayuda. Los menús de quien dona, el admin, la persona
+  y lo público quedan como estaban.
+- **Alternativas:** cambiar todos los menús juntos.
+- **Por qué:** cada ola rehace el menú junto con las pantallas a las que lleva.
+- **Costo:** hasta su ola, los otros roles conviven con sus entradas de hoy.
+- **Quién decidió:** usuario (DA-17, ronda 3 del 2026-11-22). Cumplida: PASS de la revisión de
+  `org-entregas`, ronda 2; `[VERIFIED]` en el recorrido con login.
+- **Evidencia:** backlog §11.3; `Pantallas.java`.
+
+### 2026-11-23 · avisos · Solo confirmar una recepción tiene página de respuesta (DA-06)
+
+- **Decisión:** publicar, cambiar o dar de baja una necesidad termina en Necesidades con el aviso
+  breve del catálogo (signo y cerrar, por `hx-swap-oob` a `#avisos`); en la maqueta, las rutas de
+  respuesta siguen y muestran Necesidades con el aviso. Guardar el perfil responde en el perfil
+  (DA-06-perfil). Confirmar una recepción conserva su página.
+- **Alternativas:** una página de respuesta por acción, como antes.
+- **Por qué:** la respuesta se ve donde se hizo la acción; confirmar es el momento que merece su
+  página, con la raíz completa y lo que quedó asentado.
+- **Costo:** la parte de Necesidades consta como no cumplida: el lote quedó sin PASS tras 3 rondas
+  por bloqueantes de su hoja, no del aviso ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 1).
+- **Quién decidió:** usuario (DA-06, ronda 4 del 2026-11-23). En el perfil, cumplida: PASS de la
+  revisión de `org-perfil`, ronda 2. En Necesidades, el comportamiento está `[VERIFIED]` en el
+  recorrido, sin PASS del lote.
+- **Evidencia:** backlog §11.1 (ORG-05, ORG-06); `b99ddff71` y `9e409b266`.
+
+### 2026-11-23 · buzón · La casilla del buzón mide 48 × 48 px de verdad (DA-21)
+
+- **Decisión:** en cada fila y en «Seleccionar todas», el control nativo, transparente, de 48 px,
+  queda encima de la casilla dibujada (`::before`, 1,375 rem, borde de tinta y `--radio-estampa`;
+  elegida, llena de verde con su tilde), como la opción de C1-12. Solo con CSS: el marcado no cambia.
+- **Alternativas:** extender la excepción de DA-16 a las rutas del buzón; que el test mida la
+  etiqueta.
+- **Por qué:** pasa el piso de toque sin tocar el test.
+- **Costo:** la excepción de DA-16 de `/estilos` queda sin uso y sigue en el test, que no se edita
+  ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 10).
+- **Quién decidió:** usuario (DA-21, ronda 4 del 2026-11-23); el tamaño y el dibujo, agente (lote
+  `org-buzon`). Cumplida: PASS de la revisión del lote, ronda 1; las tres rutas `/…-notificaciones`
+  salen de la línea de base `[VERIFIED]`.
+- **Evidencia:** backlog §11.3; `buzon.css`.
+
+### 2026-11-23 · buzón · El rótulo, el título y la pestaña dicen «Novedades»
+
+- **Decisión:** sobre el título, el rótulo «Novedades» en la organización y en quien dona, como en
+  el dibujo de la ficha; en el admin, «Administración». La organización conserva «Tus novedades».
+  El `<title>` de las 8 pantallas pasa a «Novedades - DonaTrack». De la ficha (§6) cambian solo el
+  título, el total y el nombre del paginador («Páginas de novedades»).
+- **Alternativas:** quitar el rótulo (las otras pantallas lo tienen); dejar «Notificaciones»
+  (repite el título con otro nombre); cambiar también los vacíos y la búsqueda.
+- **Por qué:** la pestaña dice lo mismo que el título; los demás textos los hereda la ficha de R11-14.
+- **Costo:** quedan textos con «notificaciones» al lado de «Novedades», y en quien dona el rótulo
+  repite el título ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 5).
+- **Quién decidió:** agente (lote `org-buzon`), sin consultar.
+- **Evidencia:** `d9e8b73d7`.
+
+### 2026-11-23 · buzón · Los estados del buzón son los de lista del catálogo
+
+- **Decisión:** en la organización y en quien dona, el error es un `.aviso` con
+  `data-tipo="error"`, `role="alert"` y el signo «problema»; la carga, una región `aria-busy` con
+  `.cargando` y el esqueleto de tres renglones. El botón de ícono es `.buzon-accion`, de 48 px, con
+  el aro de foco en tokens. Ningún texto cambia.
+- **Alternativas:** seguir con el `.banner` de `piezas-entidad` y `datos-donante`.
+- **Por qué:** son las piezas que la guía usa para una lista con error o cargando.
+- **Costo:** el admin sigue con el banner y el esqueleto heredados hasta ADM2.
+- **Quién decidió:** agente (lote `org-buzon`), sin consultar.
+- **Evidencia:** `d9e8b73d7`.
+
+### 2026-11-23 · inicio · La puerta de Inicio: hasta cinco frutos y la raíz punteada sin entrega
+
+- **Decisión:** el árbol dibuja hasta 5 frutos en los lugares de la guía y la cuenta exacta va
+  debajo (`huerta :: frutos`). Sin entrega en la puerta y sin ninguna confirmada, el tramo al
+  quinto nudo queda punteado. Las partes que cambian con el estado se pintan desde la hoja de la
+  pantalla, con selectores `data-dibujo` y los tokens de uso.
+- **Alternativas:** un fruto por entrega (con muchas no entran); ningún fruto (se pierde D4); colores
+  en la plantilla o clases nuevas (los cercos no lo permiten).
+- **Por qué:** la cuenta se lee siempre y el dibujo no se desborda.
+- **Costo:** `entidad-inicio.css` sigue como hoja heredada; conviene llevar la puerta con sus estados
+  al catálogo ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 3).
+- **Quién decidió:** agente (lote `org-inicio`), sin consultar.
+- **Evidencia:** `74f441ee4`.
+
+### 2026-11-23 · inicio · Inicio deja lo que la guía no muestra y lleva el problema arriba
+
+- **Decisión:** salen la fecha larga, la cabecera con su rótulo y el acceso a las novedades (la
+  campana ya lo da). Las entregas con problema van en un aviso arriba, titulado «<nombre>,
+  <cuánto>: con problema» (el grupo incluye las vencidas), con «Todavía sin fecha de nueva salida.»
+  (HG-01) y el enlace a la página del problema. «Lo que viene» muestra solo en camino y pendientes.
+- **Alternativas:** «no pudo llegar» como título (mentiría para una vencida); conservar la fecha.
+- **Por qué:** la composición de A09, sin inventar lo que el grupo no distingue.
+- **Costo:** las filas de «Lo que viene» y «Tus necesidades» son `div` sin enlace.
+- **Quién decidió:** agente (lotes `org-inicio` y `org-entregas`), sin consultar.
+- **Evidencia:** `74f441ee4` y `e7c9d1327`.
+
+### 2026-11-23 · necesidades · Necesidades conserva el detalle dentro de la tarjeta plegable
+
+- **Decisión:** cada necesidad es un `.plegable` con su detalle (por qué hace falta, entregas, quién
+  donó, períodos, cambiar y dar de baja); abierta ocupa el ancho entero y la pedida por defecto queda
+  abierta. Salen el registro de cifras y los canteros por categoría. La lámina protagonista va en
+  una `.grilla` de 18 rem. «Nueva» y «Cambiada hoy» son un `strong.texto-chico` con
+  `data-tono="acento"`; el cartel del cambio, un `.aviso` de información; «Ver los anteriores», un
+  botón chico secundario.
+- **Alternativas:** las tarjetas plegadas de A02 sin el detalle (no habría cómo cambiar ni dar de
+  baja); `.estado` o `.chip` para «Nueva»; `.plegable-ver` para los anteriores (la flecha seguiría
+  al plegable de afuera).
+- **Por qué:** seguir A02 sin perder acciones y sin piezas nuevas.
+- **Costo:** el rótulo «Ver el detalle» / «Cerrar» quedó en la hoja y fue bloqueante de la revisión
+  ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 1).
+- **Quién decidió:** agente (lote `org-necesidades`), sin consultar.
+- **Evidencia:** `279ce7cef`, `5f713b7db` y `b99ddff71`.
+
+### 2026-11-23 · necesidades · Los textos de Necesidades que fija un test o el dato de hoy
+
+- **Decisión:** el botón sigue «Publicar otra necesidad» (lo busca un test de `visual/`); la cuenta
+  sigue «10 de 40 kg recibidos» (HG-04) y la barra lleva el `aria-label` «Llegaron X de Y …»; hay
+  dos pestañas, Vigentes y «Cumplidas y terminadas», porque la vista no distingue cumplidas de dadas
+  de baja. Las chapas son solo las que piden atención («Espera tu confirmación», «Con un problema»).
+- **Alternativas:** los textos y las tres pestañas de la guía.
+- **Por qué:** no inventar un dato ni editar un test de `visual/`.
+- **Costo:** dos textos distintos de la guía.
+- **Quién decidió:** agente (lote `org-necesidades`), sin consultar.
+- **Evidencia:** `279ce7cef`.
+
+### 2026-11-23 · perfil · El perfil de la organización sigue el formulario de A12
+
+- **Decisión:** «Mi perfil» como título, con el nombre de la organización debajo; una columna, sin
+  lámina, con «Todos los datos son obligatorios.»; «guardando» con `aria-busy` en el botón. Hoja
+  propia, `entidad-perfil.css`, que solo dispone. El error del servidor sigue como banner. Sin migas.
+  Fuera de la maqueta, el aviso «Todavía no podemos guardar estos cambios desde acá…» no cambia.
+- **Alternativas:** seguir cargando `donante-perfil.css` (es de otro rol); un formulario a todo el
+  ancho; «Listo. Guardamos…» en el sitio real (sería falso: no se guarda nada).
+- **Por qué:** la composición de A12 con las piezas del catálogo.
+- **Costo:** el perfil de quien dona se ve distinto hasta su ola.
+- **Quién decidió:** agente (lote `org-perfil`), sin consultar.
+- **Evidencia:** `728e65683`, `206096090` y `9e409b266`.
+
+### 2026-11-23 · entregas · Entregas no inventa fotos ni horas
+
+- **Decisión:** una confirmada con foto va con `etiqueta-entrega`; sin foto, una `.tarjeta` con el
+  mismo sello. En el sitio real las confirmadas no traen foto (pedirla sería una llamada por fila).
+  La entrega con problema (A11) tiene 4 pasos sin horas y la necesidad como tarjeta con «Ver tu
+  necesidad», sin barra (HG-04). El desplegable de Estado sigue el orden de las tarjetas y
+  «Recibidas» pasa a «Confirmadas». Sin entrega elegida, la página del problema muestra la primera
+  con problema; con una que no tiene problema, un vacío con «Volver a Entregas».
+- **Alternativas:** escenas de ejemplo en el sitio real; los 5 pasos con horas de la guía; la foto
+  por entrega (N+1).
+- **Por qué:** el backend no entrega esos datos y la regla de la ola prohíbe inventarlos.
+- **Costo:** las confirmadas reales salen sin imagen ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 4).
+- **Quién decidió:** agente (lote `org-entregas`), sin consultar.
+- **Evidencia:** `e7c9d1327` y `1520674a0`.
+
+### 2026-11-23 · confirmar · Confirmar es A12 directo y el problema sigue en su página
+
+- **Decisión:** sin el radio «¿Llegó bien?» ni el campo «Quién recibe»: «llegó con un problema» se
+  abre por un enlace y anda sin JavaScript. Sin etiqueta de herbario; una línea suave «Para tu
+  necesidad: …». El placeholder de «Cuánto llegó» sale (parece un valor cargado).
+- **Alternativas:** el formulario de la guía con el radio y el nombre.
+- **Por qué:** el backend no guarda quién recibe (HG-03) y el problema necesita su formulario.
+- **Costo:** una pantalla más que la guía para el problema.
+- **Quién decidió:** agente (lote `org-confirmar`), sin consultar.
+- **Evidencia:** `ea633995f` y `29123f4da`.
+
+### 2026-11-23 · confirmar · Lo que dice la recepción confirmada
+
+- **Decisión:** el pie dice «Recibió: <la organización>, el <día>.» (HG-03); quién donó va en la
+  frase, y si ocultó el nombre, «Donante <categoría>» o «un donante». La foto se muestra si es una
+  dirección; la de la maqueta es una escena con el rótulo «Foto de ejemplo». Los pasos llevan su
+  fecha cuando el historial la tiene, y sin el dato van sin fecha. La raíz se traza una vez, al
+  llegar desde el acta.
+- **Alternativas:** la fecha de la guía escrita en la plantilla; caer en la fecha de registro.
+- **Por qué:** mostrar solo lo que quedó asentado.
+- **Costo:** el problema sale de la dirección y «Llegó a tu puerta» puede caer en la fecha de
+  registro: bloqueantes de la ronda 3 ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 2).
+- **Quién decidió:** agente (lote `org-confirmar`), sin consultar.
+- **Evidencia:** `ea633995f`, `3eca434eb` y `35af5ec8e`.
+
+### 2026-11-23 · confirmar · Los frutos de la confirmada cuentan las recibidas del mes
+
+- **Decisión:** la cifra sale de las recibidas del mes, con el mismo criterio que Inicio, y suma la
+  recién confirmada si Donaciones todavía no la tiene; el árbol dibuja hasta 5.
+- **Alternativas:** el conteo exacto del mes de Donaciones (la maqueta no lo tiene y pedía un
+  método nuevo en el puerto).
+- **Por qué:** sin sumarla, el fruto que brota no se ve.
+- **Costo:** el cálculo quedó en el controller: bloqueante de la ronda 3
+  ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 2).
+- **Quién decidió:** agente (lote `org-confirmar`), sin consultar.
+- **Evidencia:** `29123f4da`.
+
 ### 2026-11-23 · buzón · El buzón de los tres roles toma la fila de la campana de la guía
 
 - **Decisión:** la ficha [`guia-org-buzon.md`](flujos/guia-org-buzon.md): «Novedades» como título
@@ -41,7 +270,8 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 - **Por qué:** la campana y el buzón muestran la misma señal; en la guía, el salvia es de pasar el
   mouse o del foco, no de un estado; y el buzón es una sola pieza.
 - **Costo:** sin fondo, una fila sin leer se distingue menos de lejos.
-- **Quién decidió:** usuario («ok» a la ficha con las tres recomendadas, 2026-11-23).
+- **Quién decidió:** usuario («ok» a la ficha con las tres recomendadas, 2026-11-23). Cumplida
+  (DA-08): PASS de la revisión de `org-buzon`, ronda 1.
 - **Evidencia:** la ficha, §9; backlog §11.
 
 ### 2026-11-23 · proceso · G1: las cuatro áreas se pueden mostrar así, como excepción a la regla del piso

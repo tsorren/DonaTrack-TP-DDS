@@ -284,7 +284,6 @@ class InterfazFitnessTest {
           "entidad-comun.css",
           "entidad-inicio.css",
           "entidad-necesidades.css",
-          "entidad-notificaciones.css",
           "entidad-recibidas.css",
           "entidad-seguimiento-confirmar.css",
           "formularios.css",
@@ -491,7 +490,7 @@ class InterfazFitnessTest {
       List.of(
           "donante-donaciones.html",
           "persona/donante-donaciones.html",
-          "entidad-recibidas.html",
+          "entidad-seguimiento.html",
           "donante-entidades.html",
           "persona/donante-entidades.html",
           "admin-donaciones.html",

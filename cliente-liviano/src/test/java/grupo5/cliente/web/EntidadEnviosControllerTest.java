@@ -1,5 +1,6 @@
 package grupo5.cliente.web;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -78,22 +79,29 @@ class EntidadEnviosControllerTest {
     verify(notificaciones).dejarSinLeer(UNA);
   }
 
+  /**
+   * DA-06: guardar el perfil no tiene página de respuesta propia. Termina en el perfil, en la
+   * sección que se guardó, con el aviso breve; el aviso dice que todavía no se guarda.
+   */
   @Test
-  void elPerfilTodaviaNoGuardaYLoDice() throws Exception {
+  void elPerfilVuelveALaSeccionGuardadaConElAvisoBreve() throws Exception {
+    String aviso =
+        "Todavía no podemos guardar estos cambios desde acá: siguen como estaban. Si"
+            + " necesitás cambiar algo, escribinos desde Contacto.";
     mvc.perform(post("/entidad-perfil-guardado").param("seccion", "avisos"))
         .andExpect(redirectedUrl("/entidad-perfil#como-te-avisamos"))
-        .andExpect(
-            flash()
-                .attribute(
-                    Envios.AVISO,
-                    "Todavía no podemos guardar estos cambios desde acá: siguen como estaban. Si"
-                        + " necesitás cambiar algo, escribinos desde Contacto."));
+        .andExpect(flash().attribute(Envios.AVISO, aviso));
     mvc.perform(post("/entidad-perfil-guardado").param("seccion", "datos"))
-        .andExpect(redirectedUrl("/entidad-perfil#datos"));
+        .andExpect(redirectedUrl("/entidad-perfil#datos"))
+        .andExpect(flash().attribute(Envios.AVISO, aviso));
+    mvc.perform(post("/entidad-perfil-guardado"))
+        .andExpect(redirectedUrl("/entidad-perfil#datos"))
+        .andExpect(flash().attribute(Envios.AVISO, aviso));
   }
 
+  /** DA-06: confirmar termina en su página propia, Recepción confirmada, sin aviso breve. */
   @Test
-  void elActaConfirmaConLasFotosYElProblemaYVuelveASeguirEntregas() throws Exception {
+  void elActaConfirmaConLasFotosYElProblemaYTerminaEnRecepcionConfirmada() throws Exception {
     MockMultipartFile foto =
         new MockMultipartFile("fotos", "acta.jpg", "image/jpeg", new byte[] {1, 2, 3});
     mvc.perform(
@@ -103,12 +111,10 @@ class EntidadEnviosControllerTest {
                 .param("motivo", "incompleta")
                 .param("cantidadRecibida", "12.5")
                 .param("detalle", "Dos bolsas rotas."))
-        .andExpect(redirectedUrl("/entidad-seguimiento"))
         .andExpect(
-            flash()
-                .attribute(
-                    Envios.AVISO,
-                    "Confirmaste la recepción y contaste el problema. Le avisamos a quien donó."));
+            redirectedUrl("/entidad-seguimiento-sellada?entrega=" + UNA + "&problema=incompleta"))
+        .andExpect(flash().attribute("recien", true))
+        .andExpect(flash().attribute(Envios.AVISO, nullValue()));
     ArgumentCaptor<Acta> acta = ArgumentCaptor.forClass(Acta.class);
     verify(confirmar).confirmar(eq(ENTIDAD), eq(UNA.toString()), acta.capture());
     assertEquals("0001-00004521", acta.getValue().remito());
@@ -119,13 +125,15 @@ class EntidadEnviosControllerTest {
     mvc.perform(
             multipart("/entidad-seguimiento-sellada-" + UNA)
                 .file(foto)
-                .param("remito", "0001-00004522"))
-        .andExpect(
-            flash().attribute(Envios.AVISO, "Confirmaste la recepción. Le avisamos a quien donó."));
+                .param("remito", "0001-00004522")
+                .param("motivo", "cualquiera"))
+        .andExpect(redirectedUrl("/entidad-seguimiento-sellada?entrega=" + UNA))
+        .andExpect(flash().attribute("recien", true));
   }
 
+  /** DA-06: publicar termina en Necesidades con el aviso breve de cómo salió. */
   @Test
-  void publicarCambiarYDarDeBajaUnaNecesidad() throws Exception {
+  void publicarUnaNecesidadTerminaEnNecesidadesConSuAviso() throws Exception {
     mvc.perform(
             post("/entidad-necesidades-publicada")
                 .param("que", UNA.toString())
@@ -151,7 +159,11 @@ class EntidadEnviosControllerTest {
         .andExpect(redirectedUrl("/entidad-necesidades"));
     verify(necesidades)
         .publicar(ENTIDAD, UNA, 6, null, LocalDate.of(2026, 11, 20), "Para el comedor.");
+  }
 
+  /** DA-06: cambiar termina en Necesidades, con esa necesidad abierta, y el aviso breve. */
+  @Test
+  void cambiarUnaNecesidadTerminaEnNecesidadesConSuAviso() throws Exception {
     String abierta = "/entidad-necesidades?necesidad=necesidad-" + UNA + "#necesidad-" + UNA;
     mvc.perform(
             post("/entidad-necesidades-cambiada?necesidad=" + UNA + "&version=3")
@@ -160,7 +172,11 @@ class EntidadEnviosControllerTest {
         .andExpect(redirectedUrl(abierta))
         .andExpect(flash().attribute(Envios.AVISO, "Guardamos los cambios de tu necesidad."));
     verify(necesidades).cambiar(UNA, 3, 45, "Para el almuerzo.");
+  }
 
+  /** DA-06: dar de baja termina en Necesidades con el aviso breve de cómo salió. */
+  @Test
+  void darDeBajaUnaNecesidadTerminaEnNecesidadesConSuAviso() throws Exception {
     mvc.perform(post("/entidad-necesidades-baja?necesidad=" + UNA))
         .andExpect(redirectedUrl("/entidad-necesidades"))
         .andExpect(

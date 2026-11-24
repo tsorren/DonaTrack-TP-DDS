@@ -592,20 +592,20 @@ buzón: [`flujos/guia-org-buzon.md`](flujos/guia-org-buzon.md), aprobada el mism
 
 ### 11.1 Ítems
 
-| ID | Lote | Qué | Arquetipo y decisiones |
-|---|---|---|---|
-| ORG-01 | `org-buzon` | El buzón de los tres roles con la fila de la campana de la guía, según su ficha | Sin arquetipo: ficha (DA-08) |
-| ORG-02 | `org-buzon` | La casilla de cada fila y la de elegir todas con un control de 48 × 48 px | DA-21 |
-| ORG-03 | `org-inicio` | Inicio de la organización, con los dos estados que decide el servidor. El avance de una necesidad, con la cuenta de donaciones de hoy (HG-04) | A09 |
-| ORG-04 | `org-necesidades` | Necesidades y su error al publicar | A02; el error deriva de A12 |
-| ORG-05 | `org-necesidades` | Publicada, cambiada y dada de baja pasan a aviso breve en Necesidades; en la maqueta, sus rutas siguen y muestran Necesidades con el aviso | DA-06 |
-| ORG-06 | `org-perfil` | El perfil, y «guardado» pasa a aviso breve; en la maqueta, su ruta sigue | Deriva de A12; DA-06 (DA-06-perfil en el manifiesto) |
-| ORG-07 | `org-entregas` | Entregas: las donaciones recibidas y el seguimiento en una sola pantalla | A10; DA-02 |
-| ORG-08 | `org-entregas` | Página nueva: entrega con problema (`/entidad-entrega-problema`). La nueva salida, con «Todavía sin fecha de nueva salida» (HG-01) | A11 |
-| ORG-09 | `org-entregas` | El menú de la organización: Inicio, Necesidades, Entregas y Ayuda, que lleva a Para organizaciones | DA-02, DA-05 y DA-17 |
-| ORG-10 | `org-confirmar` | Confirmar recepción y su error; «llegó con un problema» | A12; el problema deriva de A12 |
-| ORG-11 | `org-confirmar` | Recepción confirmada, en sus tres variantes. Quién recibió, con «Recibió: <la organización>» (HG-03) | A13 |
-| ORG-12 | `org-confirmar` | El adaptador real arma la vista de una entrega con el remito, la foto y quién confirmó, con lo que Logística ya entrega (§7) | — |
+| ID | Lote | Qué | Arquetipo y decisiones | Estado |
+|---|---|---|---|---|
+| ORG-01 | `org-buzon` | El buzón de los tres roles con la fila de la campana de la guía, según su ficha | Sin arquetipo: ficha (DA-08) | Hecho (`d9e8b73d7`): «Novedades» en los tres roles, la fila de la campana (punto lleno o hueco, sin fondo por el estado) y los estados de lista del catálogo en la organización y en quien dona; del admin cambian el título y la pieza. PASS de su revisión en la ronda 1 |
+| ORG-02 | `org-buzon` | La casilla de cada fila y la de elegir todas con un control de 48 × 48 px | DA-21 | Hecho (`d9e8b73d7`): la casilla de cada fila y la de elegir todas miden 48 × 48 px, con el control nativo transparente encima de la casilla dibujada (DA-21). Las tres rutas `/…-notificaciones` salen de la línea de base de §10.4 `[VERIFIED]`. PASS de su revisión en la ronda 1 |
+| ORG-03 | `org-inicio` | Inicio de la organización, con los dos estados que decide el servidor. El avance de una necesidad, con la cuenta de donaciones de hoy (HG-04) | A09 | Hecho (`74f441ee4`, ajustado por `e7c9d1327`): los dos estados (con entrega en la puerta y sin ella), la puerta con hasta 5 frutos y la cuenta debajo, «Lo que viene» y las necesidades con la cuenta de hoy (HG-04). `[VERIFIED]` en el recorrido con login. Sin rondas de arreglo; el veredicto de su revisión no consta en el cierre |
+| ORG-04 | `org-necesidades` | Necesidades y su error al publicar | A02; el error deriva de A12 | Hecho (`279ce7cef`, `5f713b7db`, `b99ddff71` y los arreglos en sesión del 2026-11-23): la lámina protagonista, las tarjetas plegables y el error al publicar. Los bloqueantes de la ronda 3 se arreglaron en sesión: `.plegable-ver` con un solo rótulo y la flecha del catálogo, sin tamaño de letra literal y sin la barra punteada del período en curso ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 1) |
+| ORG-05 | `org-necesidades` | Publicada, cambiada y dada de baja pasan a aviso breve en Necesidades; en la maqueta, sus rutas siguen y muestran Necesidades con el aviso | DA-06 | Hecho: el comportamiento está y se `[VERIFIED]` en el recorrido con login (publicar termina en Necesidades con el aviso breve «Publicamos tu necesidad…»); en la maqueta las rutas siguen y muestran Necesidades con el aviso. DA-06 cumplida con los arreglos en sesión de ORG-04 |
+| ORG-06 | `org-perfil` | El perfil, y «guardado» pasa a aviso breve; en la maqueta, su ruta sigue | Deriva de A12; DA-06 (DA-06-perfil en el manifiesto) | Hecho (`728e65683`, `206096090` y `9e409b266`): «Mi perfil» con la columna del formulario de A12, la hoja nueva `entidad-perfil.css` (solo dispone) y «guardado» como aviso breve en el perfil (DA-06-perfil). PASS de su revisión en la ronda 2 |
+| ORG-07 | `org-entregas` | Entregas: las donaciones recibidas y el seguimiento en una sola pantalla | A10; DA-02 | Hecho (`e7c9d1327`, `808d801b5` y `1520674a0`): Entregas (`/entidad-seguimiento`) con Para confirmar, Por llegar y Confirmadas; `/entidad-recibidas` redirige ahí con su consulta. En el sitio real las confirmadas salen sin foto, porque la lista de Logística no la trae ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 4). PASS de su revisión en la ronda 2 |
+| ORG-08 | `org-entregas` | Página nueva: entrega con problema (`/entidad-entrega-problema`). La nueva salida, con «Todavía sin fecha de nueva salida» (HG-01) | A11 | Hecho (`e7c9d1327` y `1520674a0`): `/entidad-entrega-problema`, con la raíz de 4 pasos sin horas y «Todavía sin fecha de nueva salida» (HG-01). El seed no deja ninguna entrega con problema real: con datos solo se vio en la maqueta ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 9). PASS de su revisión en la ronda 2 |
+| ORG-09 | `org-entregas` | El menú de la organización: Inicio, Necesidades, Entregas y Ayuda, que lleva a Para organizaciones | DA-02, DA-05 y DA-17 | Hecho (`e7c9d1327`): Inicio, Necesidades, Entregas y Ayuda (`/publico-para-entidades`), con el ícono `nav-ayuda`; los otros menús no cambian (DA-17). `[VERIFIED]` en el recorrido. PASS de su revisión en la ronda 2 |
+| ORG-10 | `org-confirmar` | Confirmar recepción y su error; «llegó con un problema» | A12; el problema deriva de A12 | Hecho (`ea633995f`, `9231595e8`, `29123f4da`, `3eca434eb` y `35af5ec8e`): Confirmar recepción con «Revisá 2 cosas para confirmar», las migas y el error de la foto, y «llegó con un problema» en su página. `[VERIFIED]` en el recorrido, con foto y remito y con «Llegó menos». El lote quedó sin PASS tras 3 rondas, por ORG-11 y ORG-12; sus bloqueantes se arreglaron en sesión el 2026-11-23 |
+| ORG-11 | `org-confirmar` | Recepción confirmada, en sus tres variantes. Quién recibió, con «Recibió: <la organización>» (HG-03) | A13 | Hecho (con los arreglos en sesión del 2026-11-23): las tres variantes, «Recibió: <la organización>, el <día>» (HG-03), los frutos del mes y las fechas de los pasos. Los frutos se cuentan en la plantilla, como en Inicio; «Tu necesidad» se muestra con la necesidad que cubre cuando no llega cómo va (HG-04), como en Llegó con un problema ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 2) |
+| ORG-12 | `org-confirmar` | El adaptador real arma la vista de una entrega con el remito, la foto y quién confirmó, con lo que Logística ya entrega (§7) | — | Hecho (con los arreglos en sesión del 2026-11-23): el remito, la foto, quién confirmó y la hora (`[VERIFIED]` en el recorrido: `R-0001-00012345` y la foto subida). «Llegó a tu puerta» solo con el cambio a `EN_PUERTA` del historial, y el problema asentado sale del motivo del reporte de Logística (`EntidadEntregaVista.problema`); `?problema=` solo lo usa la maqueta ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 2) |
 
 Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5).
 
@@ -618,3 +618,44 @@ Cada lote termina, además, la migración de las hojas heredadas de sus pantalla
   otros cinco tests visuales, con la línea de base de §10.5.
 - **Lo que cambia en la línea de base:** con DA-21, las tres rutas `/…-notificaciones` tendrían que
   pasar `[INFERRED]`; si pasan, se anota. Las otras 8 siguen siendo heredadas.
+
+### 11.3 Cierre de ORG (2026-11-23)
+
+Rama `E7_guia_ui_org`, `35af5ec8e`; 17 commits de lote sobre `8b13c79d1` (el manifiesto). Estado de
+cada ítem en §11.1: 8 hechos (ORG-01 a ORG-03 y ORG-06 a ORG-10) y 4 parciales (ORG-04, ORG-05,
+ORG-11 y ORG-12). Los parciales son los bloqueantes que dejaron `org-necesidades` y `org-confirmar`
+tras 3 rondas. **Actualización (2026-11-23):** se arreglaron en sesión (`79b9e3f74`): los 12 ítems
+quedan hechos; `mvn clean test -pl cliente-liviano -am` pasa con 861 tests y `-Pvisual` sobre las
+rutas tocadas, sin excepciones. Lo que queda abierto está en [DTI-48](../adr/DEUDA_TECNICA.md#dti-48); las
+decisiones, en la [bitácora](bitacora.md) (2026-11-23).
+
+- `[VERIFIED]` `mvn clean test -pl cliente-liviano -am`: 860 tests, sin fallos. `InterfazFitnessTest`
+  pasa con los topes de hoy (159 y 1192); `tokens.css` y los tests de `visual/` no cambiaron. El test
+  cambió solo en dos nombres: `entidad-notificaciones.css` sale de `HOJAS_HEREDADAS` (la hoja se
+  borró) y en LISTAS `entidad-recibidas.html` pasa a `entidad-seguimiento.html`, como permite la
+  regla de la ola.
+- `[VERIFIED]` `-Pvisual` sobre las 74 rutas del área (las `/entidad-`, `/donante-notificaciones` y
+  `/admin-notificaciones` de `paginas.txt`), a 360, 1280 y 1920 px: pasan las 74. Las tres
+  `/…-notificaciones` de la línea de base de §10.4 ahora pasan (DA-21): la línea de base queda en 8
+  rutas, ninguna del área. Esas 8 no se corrieron (DA-20).
+- `[VERIFIED]` Los otros cinco tests visuales: 31 tests, 3 fallos y 1 error, todos de la línea de
+  base de §10.5 (`ArmazonFijoTest.enElCelularConTabYShiftTabElFocoNoQuedaTapado`,
+  `AbejasYRenglonesTest.lasAbejasCambianDeCapaSoloCuandoNoSeVen`, el inestable de
+  `MenusQueSeCierranTest` y el error del lema del pie, [DTI-47](../adr/DEUDA_TECNICA.md#dti-47),
+  ítem 5). Ningún fallo nuevo.
+- `[VERIFIED]` El stack con el seed y el recorrido con login (DA-20): con la organización, inicio
+  (los dos estados), necesidades (con una necesidad publicada), entregas, confirmar con foto, llegó
+  con un problema, perfil y el buzón; con quien dona y con el admin, el buzón. Para que anduviera
+  hubo que mandar `DONACIONES_URL` directo al servicio: el gateway no enruta
+  `/donaciones-independientes`, un hueco anterior a la ola ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48),
+  ítem 8).
+- Revisión de los lotes: `org-buzon` con PASS en la ronda 1; `org-perfil` y `org-entregas`, en la
+  ronda 2; `org-necesidades` y `org-confirmar` quedaron sin PASS tras 3 rondas. Para `org-inicio`
+  el veredicto no consta en el cierre (no tuvo rondas de arreglo).
+- Commits de lote, en hora del 2026-11-23: `74f441ee4` (16:59), `d9e8b73d7` (17:03), `279ce7cef`
+  (17:04), `728e65683` (17:06), `206096090` (17:14), `9e409b266` (17:34), `5f713b7db` (17:46),
+  `b99ddff71` (18:02), `e7c9d1327` (18:37), `ea633995f` (18:46), `808d801b5` (18:49), `9231595e8`
+  (18:51), `e71928b70` (18:56, integración de la tanda 2), `29123f4da` (19:19), `1520674a0`
+  (19:21), `3eca434eb` (19:27) y `35af5ec8e` (19:46).
+- ADR: ninguno. La ola no tuvo lotes de contrato e implementa el ADR «Huerta y galpón» (§9.1,
+  Gate A); ninguna spec de `docs/specs/active/` es de esta ola.

@@ -3,6 +3,8 @@ package grupo5.cliente.maqueta;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -75,7 +77,7 @@ class SitioControllerTest {
     mvc.perform(get("/entidad-seguimiento-tesoro"))
         .andExpect(status().isOk())
         .andExpect(view().name("sin-dibujar"))
-        .andExpect(model().attribute("seccion", "Seguir entregas"))
+        .andExpect(model().attribute("seccion", "Entregas"))
         .andExpect(content().string(containsString("todavía no está dibujada")))
         .andExpect(content().string(containsString("href=\"/entidad-inicio\"")));
   }
@@ -265,27 +267,43 @@ class SitioControllerTest {
   void elActaMuestraCadaEstadoYConfirmaConUnFormularioReal() throws Exception {
     mvc.perform(get("/entidad-seguimiento-confirmar"))
         .andExpect(status().isOk())
-        .andExpect(model().attribute("seccion", "Seguir entregas"))
+        .andExpect(model().attribute("seccion", "Entregas"))
         .andExpect(
-            content().string(containsString("Lentejas secas, 15 kg. Llegó hoy a las 18:20.")))
+            content()
+                .string(
+                    containsString(
+                        "<strong>Lentejas secas, 15 kg</strong>, de Distribuidora Ejemplo SA."
+                            + " Llegó hoy a las 18:20.")))
         .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
         .andExpect(
             content().string(containsString("action=\"/entidad-seguimiento-sellada-lentejas\"")))
-        .andExpect(content().string(containsString("aria-current=\"step\"")))
+        .andExpect(content().string(containsString("aria-label=\"Dónde estás\"")))
+        .andExpect(content().string(containsString("href=\"/entidad-seguimiento\">Entregas</a>")))
+        .andExpect(content().string(containsString("aria-current=\"page\">Confirmar recepción")))
+        .andExpect(content().string(containsString("Recibe Comedor Barrio Ejemplo, el 15 de")))
+        .andExpect(content().string(containsString("data-papel=\"tierra\"")))
         .andExpect(content().string(containsString("name=\"fotos\"")));
     mvc.perform(get("/entidad-seguimiento-confirmar?entrega=ropa"))
-        .andExpect(content().string(containsString("Donó</dt>")))
-        .andExpect(content().string(containsString("Donante Sostenedor")));
+        .andExpect(content().string(containsString(", de Donante Sostenedor.")));
     mvc.perform(get("/entidad-seguimiento-confirmar?entrega=pan"))
         .andExpect(content().string(containsString("No encontramos esa entrega")));
     mvc.perform(get("/entidad-seguimiento-confirmar?escenario=confirmada"))
         .andExpect(content().string(containsString("Ya confirmaste esta entrega")))
-        .andExpect(content().string(containsString("Esta entrega ya está <em>confirmada</em>")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "La confirmó Comedor Barrio Ejemplo el 15 de octubre de 2026, 18:45.")))
+        .andExpect(
+            content()
+                .string(containsString("href=\"/entidad-seguimiento-sellada?entrega=lentejas\"")))
+        .andExpect(content().string(not(containsString("name=\"fotos\""))))
         .andExpect(content().string(not(containsString("Van 10 kg recibidos."))));
     mvc.perform(get("/entidad-seguimiento-confirmar?escenario=sin-conexion"))
         .andExpect(content().string(containsString("No sabemos si la confirmación llegó.")));
     mvc.perform(get("/entidad-seguimiento-confirmar-error"))
-        .andExpect(content().string(containsString("Revisá dos cosas antes de confirmar")))
+        .andExpect(content().string(containsString("Revisá 2 cosas para confirmar")))
+        .andExpect(content().string(containsString("href=\"#fotos\">La foto lentejas-1.jpg pesa")))
         .andExpect(content().string(containsString("aria-invalid=\"true\"")));
   }
 
@@ -295,13 +313,32 @@ class SitioControllerTest {
         .andExpect(redirectedUrl("/entidad-seguimiento-sellada-lentejas"));
     mvc.perform(get("/entidad-seguimiento-sellada-lentejas"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("confirmada--recien")))
+        .andExpect(content().string(containsString("huerta-raiz-trazo")))
+        .andExpect(content().string(containsString("data-papel=\"protagonista\"")))
+        .andExpect(content().string(containsString("aria-current=\"page\">Recepción confirmada")))
+        .andExpect(content().string(containsString("<dd>0001-00004521</dd>")))
+        .andExpect(
+            content().string(containsString("Recibió: Comedor Barrio Ejemplo, el 15 de octubre.")))
+        .andExpect(content().string(containsString("Foto de ejemplo")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "7 entregas confirmadas</strong> por tu organización en octubre.")))
+        .andExpect(content().string(containsString("data-recien=\"si\"")))
+        .andExpect(content().string(containsString(">12 de octubre, 10:00</span>")))
+        .andExpect(content().string(containsString(">14 de octubre, 9:10</span>")))
+        .andExpect(content().string(not(containsString("Marta"))))
         .andExpect(content().string(containsString("Te queda una en la puerta")))
         .andExpect(content().string(containsString("entidad-seguimiento-confirmar?entrega=ropa")));
+    mvc.perform(get("/entidad-seguimiento-sellada?entrega=lentejas"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Recepción confirmada")))
+        .andExpect(content().string(not(containsString("huerta-raiz-trazo"))));
     mvc.perform(get("/entidad-seguimiento-sellada-ropa"))
         .andExpect(content().string(containsString("No te quedan entregas para confirmar.")))
         .andExpect(content().string(not(containsString("Te queda una en la puerta"))))
-        .andExpect(content().string(containsString("15 de octubre, 18:50")));
+        .andExpect(content().string(containsString("15 de octubre de 2026, 18:50")));
   }
 
   @Test
@@ -398,7 +435,14 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Cumplidas y terminadas (4)")));
     mvc.perform(get("/entidad-necesidades-publicada"))
         .andExpect(content().string(containsString("Publicamos tu necesidad.")))
-        .andExpect(content().string(containsString("pedido--nuevo")));
+        .andExpect(content().string(containsString("pedido--nuevo")))
+        // hx-swap-oob="beforeend" suma a #avisos los hijos de su caja: el aviso va entero adentro.
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<div hx-swap-oob=\"beforeend:#avisos\"><div class=\"aviso-breve\"\\s+"
+                            + "data-estado=\"hecho\" role=\"status\".*")));
     mvc.perform(get("/entidad-necesidades-cambiada"))
         .andExpect(content().string(containsString("Guardamos los cambios de Lentejas secas.")))
         .andExpect(content().string(containsString("Cambiada hoy")))
@@ -428,9 +472,9 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Un donante · 5 unidades")))
         .andExpect(content().string(not(containsString("null"))));
     mvc.perform(get("/entidad-seguimiento-confirmar?entrega=ropa&escenario=sin-categoria"))
-        .andExpect(content().string(containsString("Un donante")));
+        .andExpect(content().string(containsString(", de un donante.")));
     mvc.perform(get("/entidad-seguimiento-confirmar?entrega=ropa"))
-        .andExpect(content().string(containsString("Ropa · 10 unidades")))
+        .andExpect(content().string(containsString("<strong>Ropa de abrigo, 10 unidades</strong>")))
         .andExpect(content().string(not(containsString("bultos"))));
   }
 
@@ -519,7 +563,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("o solo en una donación al registrarla")))
         .andExpect(content().string(containsString("«Donante Sostenedor»")));
     mvc.perform(get("/entidad-seguimiento-sellada-ropa?escenario=sin-categoria"))
-        .andExpect(content().string(containsString("Un donante")));
+        .andExpect(content().string(containsString("Le avisamos a quien donó")));
     mvc.perform(get("/publico-portada"))
         .andExpect(content().string(containsString("href=\"/publico-legales\"")))
         .andExpect(content().string(containsString("id=\"pausar-movimiento\"")));
@@ -534,8 +578,8 @@ class SitioControllerTest {
     mvc.perform(get("/entidad-seguimiento-problema?entrega=lentejas"))
         .andExpect(status().isOk())
         .andExpect(view().name("entidad-seguimiento-problema"))
-        .andExpect(model().attribute("seccion", "Seguir entregas"))
-        .andExpect(content().string(containsString("Contá qué <em>pasó</em>")))
+        .andExpect(model().attribute("seccion", "Entregas"))
+        .andExpect(content().string(containsString("<h1>Llegó con un problema</h1>")))
         .andExpect(
             content().string(containsString("action=\"/entidad-seguimiento-sellada-lentejas\"")))
         .andExpect(content().string(containsString("value=\"incompleta\" required")))
@@ -887,7 +931,7 @@ class SitioControllerTest {
           "entidad-inicio",
           "entidad-seguimiento",
           "entidad-perfil",
-          "entidad-recibidas",
+          "entidad-entrega-problema",
           "entidad-notificaciones",
           "entidad-necesidades",
           "entidad-seguimiento-confirmar",
@@ -1373,7 +1417,8 @@ class SitioControllerTest {
         .andExpect(model().attribute("seccion", "Mis donaciones"))
         .andExpect(content().string(containsString("Martina Ruiz")));
     mvc.perform(get("/donante-notificaciones").sessionAttr("cuenta", "persona"))
-        .andExpect(view().name("persona/donante-notificaciones"));
+        .andExpect(view().name("persona/donante-notificaciones"))
+        .andExpect(content().string(containsString("<h1>Novedades</h1>")));
     mvc.perform(get("/donante-perfil").sessionAttr("cuenta", "persona"))
         .andExpect(view().name("persona/donante-perfil"))
         .andExpect(model().attribute("seccion", "Mi perfil"));
@@ -1394,33 +1439,134 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Martina Ruiz, persona donante")));
   }
 
+  // DA-02: Donaciones recibidas y Seguir entregas son una sola pantalla, Entregas (arquetipo A10).
   @Test
-  void laEntidadSigueLoQueVieneASuPuerta() throws Exception {
-    mvc.perform(get("/entidad-seguimiento"))
-        .andExpect(status().isOk())
-        .andExpect(model().attribute("seccion", "Seguir entregas"))
-        .andExpect(
-            content().string(containsString("href=\"/entidad-seguimiento\" aria-current=\"page\"")))
-        .andExpect(content().string(containsString("Lo que viene a tu puerta")))
-        .andExpect(
-            content().string(containsString("class=\"mapa-dibujo tierra-impresa\" aria-hidden")))
-        .andExpect(content().string(containsString("estacion-ficha estacion-ficha--5")))
-        .andExpect(content().string(not(containsString("estacion-ficha--6"))))
-        .andExpect(content().string(containsString("Calle Ejemplo 450")))
-        .andExpect(content().string(containsString("entrega=lentejas")))
-        .andExpect(content().string(containsString("entrega=ropa")))
-        .andExpect(content().string(containsString("Última noticia: 14 de octubre, 16:40.")))
-        .andExpect(content().string(containsString("actualizada hoy a las 18:25")))
-        .andExpect(content().string(containsString("href=\"/entidad-recibidas?estado=recibidas\"")))
-        .andExpect(content().string(not(containsString("Confirmaste la recepción"))));
+  void laEntidadVeSusEntregasEnUnaSolaPantalla() throws Exception {
+    String entregas =
+        mvc.perform(get("/entidad-seguimiento"))
+            .andExpect(status().isOk())
+            .andExpect(model().attribute("seccion", "Entregas"))
+            .andExpect(
+                content()
+                    .string(containsString("href=\"/entidad-seguimiento\" aria-current=\"page\"")))
+            .andExpect(content().string(containsString("<h1>Entregas</h1>")))
+            .andExpect(content().string(containsString("role=\"search\"")))
+            .andExpect(content().string(containsString("Para confirmar")))
+            .andExpect(content().string(containsString("data-papel=\"protagonista\"")))
+            .andExpect(content().string(containsString("Espera tu confirmación")))
+            .andExpect(content().string(containsString("entrega=lentejas")))
+            .andExpect(content().string(containsString("entrega=ropa")))
+            .andExpect(content().string(containsString("Por llegar")))
+            .andExpect(content().string(containsString("Última noticia: 14 de octubre, 16:40.")))
+            .andExpect(content().string(containsString("actualizada hoy a las 18:25")))
+            .andExpect(
+                content()
+                    .string(containsString("href=\"/entidad-entrega-problema?entrega=aceite\"")))
+            .andExpect(content().string(containsString("Todavía sin fecha de nueva salida.")))
+            .andExpect(content().string(containsString("Confirmadas en octubre")))
+            .andExpect(
+                content().string(containsString("Recibió: Comedor Barrio Ejemplo, el 10 de")))
+            // A10 (D3): cada confirmada es su etiqueta, con la foto y el vínculo a lo asentado
+            .andExpect(
+                content()
+                    .string(containsString("class=\"etiqueta-entrega etiqueta-entrega--costado\"")))
+            .andExpect(content().string(containsString("/img/ilustraciones/escena-puerta.svg")))
+            .andExpect(content().string(containsString("Foto de ejemplo")))
+            .andExpect(
+                content()
+                    .string(containsString("href=\"/entidad-seguimiento-sellada?entrega=r10\"")))
+            .andExpect(content().string(not(containsString("entidad-recibidas"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    // Las tarjetas van en un orden fijo: por confirmar, con problema, por salir y confirmadas.
+    int confirmar = entregas.indexOf("id=\"confirmar-titulo\"");
+    int aceite = entregas.indexOf("id=\"entrega-aceite\"");
+    int leche = entregas.indexOf("id=\"entrega-leche\"");
+    int confirmadas = entregas.indexOf("id=\"confirmadas-titulo\"");
+    assertTrue(confirmar > 0 && confirmar < aceite, "por confirmar, antes que con problema");
+    assertTrue(aceite < leche, "con problema, antes que por salir");
+    assertTrue(leche < confirmadas, "por salir, antes que las confirmadas");
+    mvc.perform(get("/entidad-seguimiento?escenario=sin-puerta"))
+        .andExpect(content().string(containsString("No tenés entregas para")))
+        .andExpect(content().string(not(containsString("Para confirmar"))))
+        .andExpect(content().string(not(containsString("data-papel=\"protagonista\""))));
+    mvc.perform(get("/entidad-seguimiento?estado=recibidas"))
+        .andExpect(content().string(containsString("Mostrando: Confirmadas (6).")))
+        .andExpect(content().string(not(containsString("Por llegar"))));
+    mvc.perform(get("/entidad-seguimiento?escenario=sin-resultados"))
+        .andExpect(content().string(containsString("No hay entregas en ese estado.")));
     mvc.perform(get("/entidad-seguimiento?escenario=vacio"))
-        .andExpect(content().string(containsString("No tenés entregas por recibir.")))
-        .andExpect(content().string(not(containsString("mapa-dibujo"))));
+        .andExpect(
+            content()
+                .string(containsString("Todavía no se asignaron donaciones a tu organización.")))
+        .andExpect(content().string(not(containsString("Por llegar"))));
     mvc.perform(get("/entidad-seguimiento?escenario=lento"))
         .andExpect(content().string(containsString("role=\"status\">Cargando tus entregas")));
     mvc.perform(get("/entidad-seguimiento?escenario=error"))
         .andExpect(content().string(containsString("No pudimos cargar tus entregas.")))
         .andExpect(content().string(containsString("role=\"alert\"")));
+  }
+
+  // DA-02: la ruta vieja de Donaciones recibidas lleva a Entregas con la misma consulta.
+  @Test
+  void donacionesRecibidasRedirigeAEntregasConLaMismaConsulta() throws Exception {
+    mvc.perform(get("/entidad-recibidas")).andExpect(redirectedUrl("/entidad-seguimiento"));
+    mvc.perform(get("/entidad-recibidas?estado=en-camino&categoria=ropa"))
+        .andExpect(redirectedUrl("/entidad-seguimiento?estado=en-camino&categoria=ropa"));
+  }
+
+  // ORG-08: la entrega que no pudo llegar tiene su página, dentro de Entregas (arquetipo A11).
+  @Test
+  void laEntregaConProblemaDiceQuePasoYQueSigue() throws Exception {
+    mvc.perform(get("/entidad-entrega-problema?entrega=aceite"))
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("seccion", "Entregas"))
+        .andExpect(
+            content().string(containsString("href=\"/entidad-seguimiento\" aria-current=\"page\"")))
+        .andExpect(content().string(containsString("<h1>Aceite de girasol, 10 litros</h1>")))
+        .andExpect(content().string(containsString("El camión no pudo llegar el 14 de octubre.")))
+        .andExpect(content().string(containsString("<dd>Todavía sin fecha de nueva salida</dd>")))
+        .andExpect(content().string(containsString("<dd>14 de octubre, 16:40.</dd>")))
+        .andExpect(content().string(containsString("Tu necesidad de aceite de girasol")))
+        // A11: el avance de la necesidad, con la cuenta de Necesidades (HG-04)
+        .andExpect(content().string(containsString("Una sola vez · Hasta el 20 de octubre")))
+        .andExpect(content().string(containsString("aria-label=\"Llegaron 0 de 20 litros\"")))
+        .andExpect(
+            content()
+                .string(containsString("Llegaron 0 de 20 litros. Esta entrega trae 10 litros.")))
+        .andExpect(content().string(containsString("Al 15 de octubre de 2026.")))
+        .andExpect(content().string(containsString("Tu foto de la entrega")))
+        .andExpect(content().string(containsString("Volver a")))
+        .andExpect(content().string(not(containsString("17 de octubre"))));
+    mvc.perform(get("/entidad-entrega-problema?entrega=pan"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No encontramos esa entrega con problema.")));
+  }
+
+  // DA-02 y DA-05: el menú de la organización es Inicio, Necesidades, Entregas y Ayuda; Ayuda es
+  // la página Para organizaciones.
+  @Test
+  void elMenuDeLaOrganizacionEsInicioNecesidadesEntregasYAyuda() throws Exception {
+    String inicio =
+        mvc.perform(get("/entidad-inicio"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    String menu = inicio.substring(inicio.indexOf("id=\"menu\""));
+    menu = menu.substring(0, menu.indexOf("</nav>"));
+    List<String> secciones =
+        Pattern.compile("<span>([^<]+)</span>")
+            .matcher(menu)
+            .results()
+            .map(m -> m.group(1))
+            .toList();
+    assertEquals(List.of("Inicio", "Necesidades", "Entregas", "Ayuda"), secciones);
+    assertTrue(menu.contains("href=\"/entidad-seguimiento\""), menu);
+    assertTrue(menu.contains("href=\"/publico-para-entidades\""), menu);
+    assertTrue(menu.contains("#nav-ayuda"), menu);
+    assertFalse(menu.contains("entidad-recibidas"), menu);
   }
 
   @Test

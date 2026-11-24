@@ -1,0 +1,10 @@
+/* Mi perfil de la organización (ORG-06, deriva de A12 de la guía «Huerta y galpón»): solo dispone.
+   Trae las opciones (`.opciones`, de formularios.css) y deja cada formulario en la columna del
+   formulario de la guía. Lo demás son piezas del catálogo (docs/interfaz/componentes.md). */
+@import url("privado.css");
+@import url("formularios.css");
+
+.pestanas-panel > form {
+  max-width: var(--medida-formulario);
+  padding-block-start: var(--espacio-4);
+}

@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<!--/* Componente buzón (usuario, 2026-11-10, con la bandeja de notificaciones de GitHub de referencia):
-       la bandeja de notificaciones de los tres roles. Arriba, la barra: el componente listado
+<!--/* Componente buzón (usuario, 2026-11-10, con la bandeja de notificaciones de GitHub de referencia;
+       desde el 2026-11-23, con la fila de la campana de la guía, ficha
+       docs/interfaz/flujos/guia-org-buzon.md): la bandeja de novedades de los tres roles. Arriba, la barra: el componente listado
        (R11-B04, componentes/listado; la arma BandejaDeNotificaciones y llega en el modelo como
        listado): la búsqueda, la fecha del aviso (solo si la fuente la filtra: Notificaciones no),
        Estado (Todas, Sin leer o Leídas; reemplaza a «Todas | Sin leer»), Categoría, Agrupar y
        Ordenar. Debajo, la lista en una lámina de papel: la cabecera con
        «Seleccionar todas» (solo con JavaScript) y «Marcar todas como leídas», los títulos de las
-       columnas (en la computadora) y una fila por notificación: el punto si no se leyó, la casilla, el
+       columnas (en la computadora) y una fila por notificación: el punto (lleno sin leer, hueco leída,
+       sin fondo propio por el estado), la casilla (el control nativo de 48 px, transparente, encima
+       de la casilla dibujada, DA-21), el
        ícono de su categoría, el mensaje (el enlace a dónde ir), a qué está asociada (.chip) y hace
        cuánto (<time> con la fecha exacta en el title). Agrupadas por fecha (Hoy, Ayer, Esta semana,
        Antes) o sin agrupar. En el celular cada fila se apila: el mensaje y, debajo, categoría · hace
@@ -221,8 +224,8 @@
 
   <p class="buzon-total">
     <span class="buzon-total-largo"
-          th:text="|Mostrando ${#numbers.formatInteger(desde, 1, 'POINT')} a ${#numbers.formatInteger(hasta, 1, 'POINT')} de ${#numbers.formatInteger(tramo.total, 1, 'POINT')} notificaciones${filtrado or fVer != '' ? ' con esos filtros' : ''}.|">Mostrando
-      1 a 20 de 57 notificaciones.</span>
+          th:text="|Mostrando ${#numbers.formatInteger(desde, 1, 'POINT')} a ${#numbers.formatInteger(hasta, 1, 'POINT')} de ${#numbers.formatInteger(tramo.total, 1, 'POINT')} novedades${filtrado or fVer != '' ? ' con esos filtros' : ''}.|">Mostrando
+      1 a 20 de 57 novedades.</span>
     <span class="buzon-total-corto"
           th:text="|${#numbers.formatInteger(desde, 1, 'POINT')} a ${#numbers.formatInteger(hasta, 1, 'POINT')} de ${#numbers.formatInteger(tramo.total, 1, 'POINT')}|">1
       a 20 de 57</span>

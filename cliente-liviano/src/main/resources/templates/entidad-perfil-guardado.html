@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<!--/* Raíces, Mi perfil de la entidad después de guardar: el aviso, en la misma pestaña, dice qué se
-       guardó (?seccion=datos o avisos; la pestaña, #datos o #como-te-avisamos, la conserva el
-       navegador). */-->
+<!--/* Mi perfil de la organización después de guardar, solo en la maqueta (DA-06: sin página de
+       respuesta propia). Es el envoltorio que delega en entidad-perfil :: hoja(true): el mismo
+       perfil con el aviso breve de lo que se guardó (?seccion=datos o avisos; la pestaña, #datos o
+       #como-te-avisamos, la conserva el navegador). Fuera de la maqueta, el envío vuelve a
+       entidad-perfil con el aviso del servidor (EntidadEnviosController). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-perfil', ~{::contenido})}">
+      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-perfil', ~{::contenido})}">
 <head>
   <title>Guardado - Mi perfil - DonaTrack</title>
 </head>

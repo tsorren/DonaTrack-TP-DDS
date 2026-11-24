@@ -111,8 +111,8 @@ class AdminNotificacionesBandejaTest {
                 .string(
                     containsString(
                         "href=\"/admin-donantes-importado?archivo=7d1a2b3c-0000-4000-8000-000000000001\"")))
-        .andExpect(content().string(containsString("Mostrando 1 a 20 de 45 notificaciones.")))
-        .andExpect(content().string(containsString("Páginas de notificaciones")))
+        .andExpect(content().string(containsString("Mostrando 1 a 20 de 45 novedades.")))
+        .andExpect(content().string(containsString("Páginas de novedades")))
         // Las tres categorías del admin y ninguna de las de ejemplo.
         .andExpect(content().string(containsString("Importaciones")))
         .andExpect(content().string(containsString("Mensajes de contacto")))

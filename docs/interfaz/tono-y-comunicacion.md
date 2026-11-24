@@ -120,7 +120,7 @@ Cada estado dice lo que pasó, no lo que se espera que pase. Lo pendiente se dic
   entregas en el último mes. El mapa muestra las 200 más recientes." Nunca el tope como si fuera el
   total.
 - Una lista paginada dice qué parte se ve y de cuántas *(extensión, oleada P1, R11-11)*:
-  "Mostrando 1 a 20 de 57 notificaciones." con la palabra de lo que se lista, no "resultados".
+  "Mostrando 1 a 20 de 57 novedades." con la palabra de lo que se lista, no "resultados".
 - Un botón no promete un lugar que la cuenta no tiene *(extensión, oleada P1, R11-15)*: con la
   solicitud pendiente, lo público dice "Ver mi solicitud", no "Ir a mi inicio", porque esa cuenta
   todavía no tiene inicio. Con la cuenta activa, "Ir a mi inicio" ("Mi inicio" en la barra del

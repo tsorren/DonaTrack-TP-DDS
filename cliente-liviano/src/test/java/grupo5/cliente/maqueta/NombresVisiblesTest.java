@@ -88,7 +88,7 @@ class NombresVisiblesTest {
   @ValueSource(
       strings = {
         "/entidad-perfil",
-        "/entidad-recibidas",
+        "/entidad-entrega-problema",
         "/entidad-seguimiento",
         "/entidad-seguimiento-confirmar"
       })
