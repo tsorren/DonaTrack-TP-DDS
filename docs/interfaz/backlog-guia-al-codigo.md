@@ -663,22 +663,24 @@ decisiones, en la [bitácora](bitacora.md) (2026-11-23).
 ## 12. Ola DON: quien dona
 
 Rehace las 19 plantillas de quien dona de §5: 10 de la empresa y 9 de la persona (DA-13). El buzón
-de quien dona ya cambió en ORG (ORG-01); acá solo sale su hoja heredada. Fichas, en revisión desde
-el 2026-11-23 (DA-08, DA-19): [`flujos/guia-don-misiones.md`](flujos/guia-don-misiones.md) y
-[`flujos/guia-don-inicio-persona.md`](flujos/guia-don-inicio-persona.md). El manifiesto se escribe
-cuando el usuario apruebe las fichas y el reparto.
+de quien dona ya cambió en ORG (ORG-01); acá solo sale su hoja heredada. Fichas, aprobadas por el
+usuario el 2026-11-23 (DA-08, DA-19): [`flujos/guia-don-misiones.md`](flujos/guia-don-misiones.md) y
+[`flujos/guia-don-inicio-persona.md`](flujos/guia-don-inicio-persona.md). Manifiesto:
+[`backlog-guia-al-codigo.don.manifiesto.json`](backlog-guia-al-codigo.don.manifiesto.json).
 
 ### 12.1 Ronda 5 (2026-11-23): las preguntas de las fichas
 
+Respuesta del usuario a las tres, a las fichas y al reparto: «va asi» (las recomendadas).
+
 | ID | Pregunta | Recomendación | Respuesta del usuario | Fecha |
 |---|---|---|---|---|
-| DON-P1 | Misiones: ¿se cierra la prueba A/B con la huerta (`misiones-b`) como la única Misiones? | Sí; `misiones-a` y su hoja dejan de servirse y se borran en el lote | Pendiente | |
-| DON-P2 | Inicio de la persona: ¿qué pasa con el almanaque del año? | Se queda, chico: los 12 meses en una fila, con la cuenta y un fruto por entrega confirmada; la lista mes por mes sale | Pendiente | |
-| DON-P3 | Inicio de la persona sin nada en camino: ¿qué ocupa la lámina protagonista? | La huerta, con «Ver mi huerta» como acción llena | Pendiente | |
+| DON-P1 | Misiones: ¿se cierra la prueba A/B con la huerta (`misiones-b`) como la única Misiones? | Sí; `misiones-a` y su hoja dejan de servirse y se borran en el lote | La recomendada («va asi») | 2026-11-23 |
+| DON-P2 | Inicio de la persona: ¿qué pasa con el almanaque del año? | Se queda, chico: los 12 meses en una fila, con la cuenta y un fruto por entrega confirmada; la lista mes por mes sale | La recomendada («va asi») | 2026-11-23 |
+| DON-P3 | Inicio de la persona sin nada en camino: ¿qué ocupa la lámina protagonista? | La huerta, con «Ver mi huerta» como acción llena | La recomendada («va asi») | 2026-11-23 |
 
-### 12.2 Reparto propuesto `[PROPOSED]`
+### 12.2 Reparto
 
-Pendiente del OK del usuario. Dos tandas: la segunda toca `Pantallas.java` y
+Aprobado por el usuario el 2026-11-23 («va asi»). Dos tandas: la segunda toca `Pantallas.java` y
 `DonanteInicioController.java` después de la primera, para que dos lotes no cambien el mismo
 archivo a la vez.
 
@@ -693,3 +695,30 @@ archivo a la vez.
 | `don-misiones` | 2 | `donante-misiones` | Sin arquetipo | Sí |
 
 Suma: 1 + 2 + 4 + 2 + 4 + 1 + 1 = 15, más las 4 del buzón que ya cambiaron en ORG: 19.
+
+### 12.3 Ítems
+
+| ID | Lote | Qué | Arquetipo y decisiones | Estado |
+|---|---|---|---|---|
+| DON-01 | `don-inicio` | Inicio de la empresa | A04; HG-01 a HG-03 con su texto de reemplazo | Pendiente |
+| DON-02 | `don-inicio` | Los menús de la empresa (Inicio, Donaciones, Organizaciones y Cómo donar) y de la persona (con Misiones antes de Cómo donar) | DA-03a, DA-03b, DA-05 y DA-17 | Pendiente |
+| DON-03 | `don-donaciones` | Donaciones, de la empresa y de la persona | A05 | Pendiente |
+| DON-04 | `don-detalle` | El detalle de una donación, en sus tres variantes, con el enlace a su seguimiento | A06, A07 o A08; DA-03a; HG-01 | Pendiente |
+| DON-05 | `don-detalle` | Seguimiento, fuera del menú | A07; DA-03a; HG-02 | Pendiente |
+| DON-06 | `don-organizaciones` | Organizaciones, de la empresa y de la persona | Deriva de A02; HG-04 | Pendiente |
+| DON-07 | `don-perfil` | El perfil, y «guardado» como aviso breve | Deriva de A12; DA-06 | Pendiente |
+| DON-08 | `don-perfil` | Sale la hoja heredada del buzón de quien dona (`donante-notificaciones.css`) | — | Pendiente |
+| DON-09 | `don-inicio-persona` | El inicio de la persona, según su ficha | Deriva de A04; DA-03c, DA-08, DON-P2 y DON-P3 | Pendiente |
+| DON-10 | `don-misiones` | Misiones, según su ficha, con lugares de 48 px y sin la variante del álbum | Sin arquetipo: ficha; DA-08, DA-21 y DON-P1 | Pendiente |
+
+Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5).
+
+### 12.4 Qué se verifica (DA-20)
+
+- **En cada lote:** los gates y `-Pvisual` sobre sus `rutasVisuales`, una por plantilla (en
+  `don-misiones`, las dos rutas de la línea de base de toque).
+- **Al cierre:** `-Pvisual` sobre las rutas `/donante-` de `paginas.txt`, con la línea de base de
+  §10.4 sin las 3 del buzón que ORG sacó; y los otros cinco tests visuales, con la línea de base de
+  §10.5. Sin el stack ni el recorrido con login: ningún lote toca un adaptador `rest`.
+- **Lo que cambia en la línea de base:** con DA-21-misiones, las dos rutas de `/donante-misiones`
+  tienen que pasar. `/donante-seguimiento` puede seguir en rojo; si pasa, se anota.

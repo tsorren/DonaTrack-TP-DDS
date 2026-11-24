@@ -1,6 +1,6 @@
 # Flujo: Misiones de la persona con la guía «Huerta y galpón» (don-misiones)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-23 · **Aprobó:** pendiente (usuario)
+> **Estado:** aprobado · **Fecha:** 2026-11-23 · **Aprobó:** el usuario, 2026-11-23 («va asi», con las preguntas de §9 en la opción recomendada)
 > Ficha del lote `don-misiones` de la ola DON del
 > [backlog de la guía al código](../backlog-guia-al-codigo.md) (§5 y §12). La pide DA-08 y se
 > escribe en sesión con el usuario (DA-19).
@@ -127,7 +127,7 @@ decorativo (`aria-hidden`). `VerificacionVisualTest` mide esos enlaces sin excep
   donar), DA-13 (se migra con la persona) y DA-21 (el patrón de 48 px).
 - Decisiones de esta ficha (agente, para aprobar con la ficha): la planta es la misión completa
   solo en esta pantalla; la hoja de variante sale de la pantalla; sin acción llena.
-- Pregunta (ronda 5, ver la [§12 del backlog](../backlog-guia-al-codigo.md)):
+- Pregunta (ronda 5, [§12 del backlog](../backlog-guia-al-codigo.md)), respondida por el usuario el 2026-11-23 con la recomendada (la primera):
   - **DON-P1 · La prueba A/B:** ¿se cierra con la huerta como la única Misiones? Recomendada: sí;
     `misiones-a` (el álbum) y su hoja dejan de servirse y se borran en el lote, con su mención en
     los comentarios. Otra: dejar `?variante=misiones-a` como está, sin migrarla a la guía.

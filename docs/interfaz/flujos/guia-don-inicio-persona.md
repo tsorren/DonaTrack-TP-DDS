@@ -1,6 +1,6 @@
 # Flujo: El inicio de la persona con la guía «Huerta y galpón» (don-inicio-persona)
 
-> **Estado:** en revisión · **Fecha:** 2026-11-23 · **Aprobó:** pendiente (usuario)
+> **Estado:** aprobado · **Fecha:** 2026-11-23 · **Aprobó:** el usuario, 2026-11-23 («va asi», con las preguntas de §9 en la opción recomendada)
 > Ficha del lote `don-inicio-persona` de la ola DON del
 > [backlog de la guía al código](../backlog-guia-al-codigo.md) (§5 y §12). La piden DA-08 y DA-03c
 > y se escribe en sesión con el usuario (DA-19).
@@ -123,7 +123,7 @@ Las demás heurísticas, como R11-06.
 
 - Decisiones del usuario que baja: DA-03a, DA-03c, DA-08, DA-13 y los textos de reemplazo de
   HG-01 a HG-03.
-- Preguntas (ronda 5, ver la [§12 del backlog](../backlog-guia-al-codigo.md)):
+- Preguntas (ronda 5, [§12 del backlog](../backlog-guia-al-codigo.md)), respondidas por el usuario el 2026-11-23 con la recomendada (la primera):
   - **DON-P2 · El almanaque:** la usuaria lo aprobó el 2026-11-09 («las personas particulares no
     donan todos los días») y DA-03c no lo nombra. Recomendada: **se queda, chico**: los 12 meses en
     una fila, con el número de donaciones de cada mes y un fruto por entrega confirmada, debajo de

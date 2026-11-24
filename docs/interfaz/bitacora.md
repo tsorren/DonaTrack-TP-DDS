@@ -31,6 +31,24 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-23 · donante · Fichas de DON: Misiones y el inicio de la persona con la guía
+
+- **Decisión:** las fichas [`guia-don-misiones.md`](flujos/guia-don-misiones.md) y
+  [`guia-don-inicio-persona.md`](flujos/guia-don-inicio-persona.md). Misiones: la huerta
+  (`misiones-b`) queda como la única y el álbum (`misiones-a`) se borra (DON-P1); cada lugar, de
+  48 × 48 px. El inicio de la persona deriva de A04 con una sola lámina protagonista: la donación en
+  camino o, sin ninguna, la huerta con «Ver mi huerta» (DON-P3); el almanaque se queda chico, en
+  una fila de 12 meses, y la lista mes por mes sale (DON-P2). La planta es una misión solo en
+  Misiones; el fruto, una entrega confirmada.
+- **Alternativas:** dejar la variante del álbum sin migrar; sacar el almanaque o dejarlo como hoy;
+  una lámina vacía sin nada en camino.
+- **Por qué:** una sola Misiones que migrar; el almanaque responde a que las personas no donan
+  todos los días (usuaria, 2026-11-09); una sola protagonista y una sola acción llena (piso de la
+  guía).
+- **Costo:** la protagonista del inicio cambia según haya algo en camino.
+- **Quién decidió:** usuario («va asi» a las fichas, las tres preguntas y el reparto, 2026-11-23).
+- **Evidencia:** las fichas, §9; backlog §12.
+
 ### 2026-11-23 · datos · Recepción confirmada muestra lo asentado en Logística, no lo de la dirección
 
 - **Decisión:** el problema de Recepción confirmada sale del motivo del reporte de Logística
