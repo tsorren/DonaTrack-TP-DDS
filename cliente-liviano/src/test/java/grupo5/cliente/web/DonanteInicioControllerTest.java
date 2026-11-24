@@ -618,6 +618,59 @@ class DonanteInicioControllerTest {
     verify(inicios, never()).tablero(any(), anyInt(), anyInt(), anyInt());
   }
 
+  /**
+   * «Ya confirmadas en noviembre» muestra solo las que llegaron en noviembre, las mismas que cuenta
+   * el adaptador; sin ninguna del mes, el texto de espera y el enlace a todas las confirmadas.
+   */
+  @Test
+  void yaConfirmadasMuestraSoloLasDelMes() throws Exception {
+    when(perfiles.tipo(DONANTE)).thenReturn(Tipo.PERSONA);
+    when(inicios.anio(DONANTE)).thenReturn(ANIO_CON_SILLA);
+    DonanteDonacionVista deOctubre = llegoEl(FIDEOS, "28 de octubre de 2026");
+
+    when(inicios.inicio(DONANTE)).thenReturn(inicio(List.of(LENTEJAS, ROPA, deOctubre), 1));
+    String conUna = pagina("/donante-inicio");
+    String seccion =
+        conUna.substring(
+            conUna.indexOf(">Ya confirmadas en noviembre<"), conUna.indexOf("id=\"anio-huerta\""));
+    assertThat(seccion)
+        .contains("Ropa de abrigo, 12 prendas", "el 5 de noviembre de 2026")
+        .doesNotContain("Fideos secos")
+        .doesNotContain("28 de octubre")
+        .doesNotContain("Cuando una organización confirme");
+
+    when(inicios.inicio(DONANTE)).thenReturn(inicio(List.of(LENTEJAS, deOctubre), 0));
+    String sinDelMes = pagina("/donante-inicio");
+    String vacia =
+        sinDelMes.substring(
+            sinDelMes.indexOf(">Ya confirmadas en noviembre<"),
+            sinDelMes.indexOf("id=\"anio-huerta\""));
+    assertThat(vacia)
+        .contains("Cuando una organización confirme una entrega")
+        .contains("href=\"/donante-donaciones?estado=entregada\">Ver las confirmadas")
+        .doesNotContain("Fideos secos");
+  }
+
+  private static DonanteDonacionVista llegoEl(DonanteDonacionVista d, String llego) {
+    return new DonanteDonacionVista(
+        d.clave(),
+        d.numero(),
+        d.titulo(),
+        d.cantidad(),
+        d.categoria(),
+        d.categoriaTexto(),
+        d.destino(),
+        d.donada(),
+        llego,
+        d.estado(),
+        d.nota(),
+        d.foto(),
+        d.fotoAlt(),
+        d.seguimiento(),
+        d.pasos(),
+        d.cartas());
+  }
+
   /** DON-P3: sin nada en camino, la huerta es la protagonista; con una en camino, una tarjeta. */
   @Test
   void sinNadaEnCaminoLaHuertaEsLaProtagonistaYConUnaEnCaminoEsUnaTarjeta() throws Exception {

@@ -33,6 +33,7 @@
              claveViaja=${viaja == null ? '' : viaja.clave},
              enCurso=${donaciones.?[estado.tono == 'pendiente' or (estado.tono == 'en-camino' and clave != #root.claveViaja)]},
              confirmadas=${donaciones.?[estado.tono == 'entregada']},
+             confirmadasDelMes=${confirmadas.?[llego != null and llego.endsWith(#root.miInicio.mes)]},
              conHuerta=${!sinTipo and escenario != 'error'},
              huertaProtagonista=${conHuerta and (vacia or (conDatos and viaja == null))},
              pasoEstado=${ {'registrada', 'asignada', 'preparada', 'en-camino', 'confirmada'} },
@@ -160,16 +161,17 @@
         </th:block>
       </section>
 
-      <!--/* Lo ya confirmado: los frutos del mes y las 2 últimas entregas. Quién recibió no llega
-             (HG-03): va la organización. Sin foto, una lámina con el mismo sello. */-->
+      <!--/* Lo ya confirmado en el mes: los frutos y las 2 últimas entregas del mes, las mismas que
+             cuenta el adaptador (llegaron este mes). Quién recibió no llega (HG-03): va la
+             organización. Sin foto, una lámina con el mismo sello. */-->
       <section class="pila" data-espacio="3" aria-labelledby="confirmadas-titulo">
         <h2 id="confirmadas-titulo" th:text="|Ya confirmadas en ${miInicio.nombreDelMes()}|">Ya confirmadas en octubre</h2>
         <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <th:block th:if="${conDatos}">
           <div th:replace="~{componentes/huerta :: frutos(${miInicio.entregadasDelMes}, |del 1 al ${miInicio.hoy}|, false)}"></div>
-          <p th:if="${confirmadas.isEmpty()}">Cuando una organización confirme una entrega, la vas a
-            ver acá.</p>
-          <th:block th:each="d, vuelta : ${confirmadas}" th:if="${vuelta.index < 2}"
+          <p th:if="${confirmadasDelMes.isEmpty()}">Cuando una organización confirme una entrega, la
+            vas a ver acá.</p>
+          <th:block th:each="d, vuelta : ${confirmadasDelMes}" th:if="${vuelta.index < 2}"
                     th:with="recibio=|Recibió: ${d.destino != null ? d.destino : 'la organización'}${d.llego != null ? ', el ' + d.llego : ''}.|">
             <th:block th:if="${d.foto != null}">
               <article th:replace="~{componentes/etiqueta-entrega :: etiqueta-entrega(${d.foto}, ${d.fotoAlt}, (${#strings.startsWith(d.foto, '/img/')} ? 'Foto de ejemplo' : null), |${d.titulo}, ${d.cantidad}|, null, ${recibio}, 'Entrega confirmada', true)}"></article>
@@ -196,58 +198,61 @@
     <!--/* Su año en doce meses (DON-P2): el mes en que donó lleva a sus donaciones de ese mes, con la
            cuenta y un fruto por entrega confirmada de las que trae (hasta 3; «+N» por las demás). El
            mes sin donaciones y el que viene se ven neutros, sin marca de falta. */-->
-    <section th:if="${conDatos}" id="anio-meses" class="pila" data-espacio="3" aria-labelledby="anio-titulo"
+    <section th:if="${conDatos}" id="anio-meses" aria-labelledby="anio-titulo"
              th:with="cortos=${ {'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'} },
                       nombres=${ {'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto',
                                   'septiembre', 'octubre', 'noviembre', 'diciembre'} },
                       anio=${miAnio.anio}, mesHoy=${miAnio.mesHoy}, total=${miAnio.total}">
-      <h2 id="anio-titulo" th:text="|Tu ${anio}|">Tu 2026</h2>
-      <p data-tono="suave" class="texto-chico"
-         th:text="|${total == 0 ? 'Todavía no hay donaciones tuyas registradas en ' + anio : (total == 1 ? 'Donaste 1 vez en ' + anio : 'Donaste ' + total + ' veces en ' + anio)}. El número de cada mes es cuántas veces donaste; cada fruto, una entrega confirmada. Actualizado hoy, ${#strings.replace(miAnio.actualizado, ', ', ', a las ')}.|">Donaste
-        8 veces en 2026. El número de cada mes es cuántas veces donaste; cada fruto, una entrega
-        confirmada. Actualizado hoy, 15 de octubre, a las 16:25.</p>
-      <ol class="almanaque" role="list" th:aria-label="|Tus donaciones de ${anio}, por mes|"
-          aria-label="Tus donaciones de 2026, por mes">
-        <li th:each="n, vuelta : ${nombres}"
-            th:with="mes=${vuelta.count}, m=${mes <= mesHoy ? miAnio.meses[mes - 1] : null},
-                     cuantas=${m != null ? m.total : 0},
-                     frutos=${m != null ? #lists.size(m.primeras.?[estado.tono == 'entregada']) : 0},
-                     resto=${m != null ? cuantas - #lists.size(m.primeras) : 0}"
-            th:data-mes="${cuantas > 0} ? 'con' : (${mes > mesHoy} ? 'por-venir' : 'sin')"
-            th:attr="data-hoy=${mes == mesHoy} ? 'si' : null">
-          <a th:if="${cuantas > 0}" href="/donante-donaciones?mes=2026-10"
-             th:href="@{/donante-donaciones(mes=${m.clave})}">
-            <b aria-hidden="true" th:text="${cortos[mes - 1]}">Oct</b><span class="solo-lectores"
-               th:text="${#strings.capitalize(n)}">Octubre</span>
-            <small th:if="${mes == mesHoy}" data-hoy>Este mes</small>
-            <span><th:block th:text="${cuantas}">4</th:block><span class="solo-lectores"
-                th:text="|${cuantas == 1 ? ' donación' : ' donaciones'}${frutos == 0 ? '' : (frutos == 1 ? ', 1 con la entrega confirmada' : ', ' + frutos + ' con la entrega confirmada')}${resto > 0 and frutos > 0 ? ' entre las ' + #lists.size(m.primeras) + ' más recientes' : ''}|"> donaciones,
-                1 con la entrega confirmada entre las 3 más recientes</span></span>
-            <ul th:if="${frutos > 0}" class="huerta-frutos" data-plantas role="list" aria-hidden="true">
-              <li th:each="i : ${#numbers.sequence(1, frutos)}"></li>
-            </ul>
-            <small th:if="${resto > 0}" aria-hidden="true" th:text="|+${resto}|">+1</small>
-          </a>
-          <div th:unless="${cuantas > 0}">
-            <b aria-hidden="true" th:text="${cortos[mes - 1]}">Mar</b><span class="solo-lectores"
-               th:text="${#strings.capitalize(n)}">Marzo</span>
-            <span class="solo-lectores" th:text="${mes > mesHoy} ? 'Todavía no llegó' : 'Sin donaciones'">Sin
-              donaciones</span>
-          </div>
-        </li>
-      </ol>
+      <div class="pila" data-espacio="3">
+        <h2 id="anio-titulo" th:text="|Tu ${anio}|">Tu 2026</h2>
+        <p data-tono="suave" class="texto-chico"
+           th:text="|${total == 0 ? 'Todavía no hay donaciones tuyas registradas en ' + anio : (total == 1 ? 'Donaste 1 vez en ' + anio : 'Donaste ' + total + ' veces en ' + anio)}. El número de cada mes es cuántas veces donaste; cada fruto, una entrega confirmada. Actualizado hoy, ${#strings.replace(miAnio.actualizado, ', ', ', a las ')}.|">Donaste
+          8 veces en 2026. El número de cada mes es cuántas veces donaste; cada fruto, una entrega
+          confirmada. Actualizado hoy, 15 de octubre, a las 16:25.</p>
+        <ol class="almanaque" role="list" th:aria-label="|Tus donaciones de ${anio}, por mes|"
+            aria-label="Tus donaciones de 2026, por mes">
+          <li th:each="n, vuelta : ${nombres}"
+              th:with="mes=${vuelta.count}, m=${mes <= mesHoy ? miAnio.meses[mes - 1] : null},
+                       cuantas=${m != null ? m.total : 0},
+                       frutos=${m != null ? #lists.size(m.primeras.?[estado.tono == 'entregada']) : 0},
+                       resto=${m != null ? cuantas - #lists.size(m.primeras) : 0}"
+              th:data-mes="${cuantas > 0} ? 'con' : (${mes > mesHoy} ? 'por-venir' : 'sin')"
+              th:attr="data-hoy=${mes == mesHoy} ? 'si' : null">
+            <a th:if="${cuantas > 0}" href="/donante-donaciones?mes=2026-10"
+               th:href="@{/donante-donaciones(mes=${m.clave})}">
+              <b aria-hidden="true" th:text="${cortos[mes - 1]}">Oct</b><span class="solo-lectores"
+                 th:text="${#strings.capitalize(n)}">Octubre</span>
+              <small th:if="${mes == mesHoy}" data-hoy>Este mes</small>
+              <span><th:block th:text="${cuantas}">4</th:block><span class="solo-lectores"
+                  th:text="|${cuantas == 1 ? ' donación' : ' donaciones'}${frutos == 0 ? '' : (frutos == 1 ? ', 1 con la entrega confirmada' : ', ' + frutos + ' con la entrega confirmada')}${resto > 0 and frutos > 0 ? ' entre las ' + #lists.size(m.primeras) + ' más recientes' : ''}|"> donaciones,
+                  1 con la entrega confirmada entre las 3 más recientes</span></span>
+              <ul th:if="${frutos > 0}" class="huerta-frutos" data-plantas role="list" aria-hidden="true">
+                <li th:each="i : ${#numbers.sequence(1, frutos)}"></li>
+              </ul>
+              <small th:if="${resto > 0}" aria-hidden="true" th:text="|+${resto}|">+1</small>
+            </a>
+            <div th:unless="${cuantas > 0}">
+              <b aria-hidden="true" th:text="${cortos[mes - 1]}">Mar</b><span class="solo-lectores"
+                 th:text="${#strings.capitalize(n)}">Marzo</span>
+              <span class="solo-lectores" th:text="${mes > mesHoy} ? 'Todavía no llegó' : 'Sin donaciones'">Sin
+                donaciones</span>
+            </div>
+          </li>
+        </ol>
+      </div>
     </section>
 
     <!--/* Las 3 últimas novedades, con «Ver todas» al buzón. */-->
-    <section th:if="${conDatos and !miInicio.avisos.isEmpty()}" class="pila" data-espacio="3"
-             aria-labelledby="novedades-titulo">
-      <h2 id="novedades-titulo">Últimas novedades</h2>
-      <ol class="noticias" role="list">
-        <th:block th:each="a, vuelta : ${miInicio.avisos}" th:if="${vuelta.index < 3}">
-          <li th:replace="~{datos-donante :: aviso(${a}, ${vuelta.index < miInicio.sinLeer})}"></li>
-        </th:block>
-      </ol>
-      <p><a href="/donante-notificaciones" th:href="@{/donante-notificaciones}">Ver todas</a></p>
+    <section th:if="${conDatos and !miInicio.avisos.isEmpty()}" aria-labelledby="novedades-titulo">
+      <div class="pila" data-espacio="3">
+        <h2 id="novedades-titulo">Últimas novedades</h2>
+        <ol class="noticias" role="list">
+          <th:block th:each="a, vuelta : ${miInicio.avisos}" th:if="${vuelta.index < 3}">
+            <li th:replace="~{datos-donante :: aviso(${a}, ${vuelta.index < miInicio.sinLeer})}"></li>
+          </th:block>
+        </ol>
+        <p><a href="/donante-notificaciones" th:href="@{/donante-notificaciones}">Ver todas</a></p>
+      </div>
     </section>
   </div>
 </th:block>
