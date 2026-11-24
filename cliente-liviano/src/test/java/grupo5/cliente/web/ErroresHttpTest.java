@@ -49,6 +49,11 @@ class ErroresHttpTest {
   }
 
   @Test
+  void demasiadasSolicitudesTieneSuPagina() throws Exception {
+    mvc.perform(get("/api/429")).andExpect(status().isTooManyRequests());
+  }
+
+  @Test
   void cualquierOtraFallaOUnaApiCaidaEsUnaFallaNuestra() throws Exception {
     mvc.perform(get("/api/500")).andExpect(status().isBadGateway());
     mvc.perform(get("/api/409")).andExpect(status().isBadGateway());

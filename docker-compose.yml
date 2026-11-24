@@ -35,7 +35,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health/liveness" ]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -86,7 +86,7 @@ services:
       minio-init:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health/liveness"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -139,7 +139,7 @@ services:
       minio-init:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health/liveness"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -189,7 +189,7 @@ services:
       minio-init:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health/liveness"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -217,13 +217,19 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       # Validación del token de Keycloak (ADR-E6-02, etapa 2): apagada por defecto, Postman, integration-tests y k6 llaman sin token
       - GATEWAY_SEGURIDAD_HABILITADA=${GATEWAY_SEGURIDAD_HABILITADA:-false}
+      # Rate limiting (E7, ADR 20261115): el cliente liviano informa la IP del navegador en
+      # X-Forwarded-For y el gateway le cree solo si la conexión viene de la red interna de Docker. Los
+      # cupos por minuto se cambian con GATEWAY_LIMITE_* (ver api-gateway/README.md).
+      - GATEWAY_LIMITE_PROXIES_CONFIABLES=${GATEWAY_LIMITE_PROXIES_CONFIABLES:-172[.](1[6-9]|2[0-9]|3[01])[.].*|10[.].*|192[.]168[.].*}
+      - GATEWAY_LIMITE_HABILITADO=${GATEWAY_LIMITE_HABILITADO:-true}
+      - GATEWAY_REDIS_HOST=redis
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms64m -Xmx256m
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health/liveness"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -266,7 +272,7 @@ services:
       api-gateway:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health/liveness"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -332,6 +338,15 @@ services:
       retries: 20
       start_period: 60s
       start_interval: 2s
+    networks:
+      - donatrack-network
+
+  # Contadores del rate limiting del api-gateway (E7, Q11; ADR 20261115). Sin persistencia: son
+  # descartables. Sin puerto publicado ni healthcheck del que dependa el gateway: si Redis cae, el
+  # gateway deja pasar los pedidos (fail-open, Q11b) y se reconecta solo cuando vuelve.
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
     networks:
       - donatrack-network
 

@@ -23,6 +23,7 @@ import java.util.Map;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -47,6 +48,11 @@ public class RabbitMQConfig {
   public static final String QUEUE_ENTREGA_FALLIDA = "donaciones.entrega.fallida";
   public static final String QUEUE_ENTREGA_CANCELADA = "donaciones.entrega.cancelada";
   public static final String QUEUE_ENTREGA_EN_PUERTA = "donaciones.entrega.en-puerta";
+
+  // Concurrencia de los oyentes de esas seis colas: un consumidor por réplica. Entre réplicas, cada
+  // cola tiene un solo consumidor activo (x-single-active-consumer) y los demás quedan de reserva,
+  // así los eventos de una cola se procesan en el orden en que llegaron (ADR de Swarm, E7-S01d-2).
+  public static final String CONCURRENCIA_CONSUMIDOR_UNICO = "1";
 
   // Routing Keys emitidas hacia donaciones.exchange
   public static final String ROUTING_KEY_DONACION_SEGMENTADA = "donacion.segmentada.v1";
@@ -92,24 +98,30 @@ public class RabbitMQConfig {
   }
 
   // --- Colas ---
+  // Agregar o quitar el argumento a una cola que ya existe en el broker da PRECONDITION_FAILED: el
+  // despliegue la borra antes (docs/arquitectura/eventos-amqp.md, "Consumidor único activo").
+  private static Queue colaConConsumidorUnico(String nombre) {
+    return QueueBuilder.durable(nombre).singleActiveConsumer().build();
+  }
+
   @Bean
   public Queue queueRutaAsignada() {
-    return new Queue(QUEUE_RUTA_ASIGNADA, true);
+    return colaConConsumidorUnico(QUEUE_RUTA_ASIGNADA);
   }
 
   @Bean
   public Queue queueRutaIniciada() {
-    return new Queue(QUEUE_RUTA_INICIADA, true);
+    return colaConConsumidorUnico(QUEUE_RUTA_INICIADA);
   }
 
   @Bean
   public Queue queueEntregaExitosa() {
-    return new Queue(QUEUE_ENTREGA_EXITOSA, true);
+    return colaConConsumidorUnico(QUEUE_ENTREGA_EXITOSA);
   }
 
   @Bean
   public Queue queueEntregaFallida() {
-    return new Queue(QUEUE_ENTREGA_FALLIDA, true);
+    return colaConConsumidorUnico(QUEUE_ENTREGA_FALLIDA);
   }
 
   // --- Bindings ---
@@ -135,7 +147,7 @@ public class RabbitMQConfig {
 
   @Bean
   public Queue queueEntregaCancelada() {
-    return new Queue(QUEUE_ENTREGA_CANCELADA, true);
+    return colaConConsumidorUnico(QUEUE_ENTREGA_CANCELADA);
   }
 
   @Bean
@@ -148,7 +160,7 @@ public class RabbitMQConfig {
 
   @Bean
   public Queue queueEntregaEnPuerta() {
-    return new Queue(QUEUE_ENTREGA_EN_PUERTA, true);
+    return colaConConsumidorUnico(QUEUE_ENTREGA_EN_PUERTA);
   }
 
   @Bean

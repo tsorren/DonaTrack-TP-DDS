@@ -61,7 +61,13 @@ public class SeguridadAutoConfiguration {
 
     @Bean
     ReglasDeAcceso rutasDeInfraestructura() {
-      return () -> List.of("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**");
+      return () ->
+          List.of(
+              "/actuator/health",
+              "/actuator/health/liveness",
+              "/actuator/health/readiness",
+              "/swagger-ui/**",
+              "/v3/api-docs/**");
     }
 
     @Bean
