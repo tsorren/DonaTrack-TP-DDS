@@ -32,6 +32,8 @@ class SeguridadConfig {
     "/publico-*",
     "/error",
     "/actuator/health",
+    "/actuator/health/liveness",
+    "/actuator/health/readiness",
     "/css/**",
     "/js/**",
     "/img/**",

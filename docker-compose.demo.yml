@@ -57,7 +57,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health/liveness"]
       interval: 5s
       timeout: 3s
       retries: 20
