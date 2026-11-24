@@ -1,5 +1,6 @@
 package grupo5.donaciones.infrastructure.logistica;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -14,10 +15,13 @@ import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
 import grupo5.donaciones.services.logistica.IVerificadorOrigenEventos;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 
 /**
  * El listener AMQP verifica de qué proveedor viene el evento y, si es válido, delega en el
@@ -37,6 +41,18 @@ class LogisticaEventListenerTest {
     procesador = mock(ProcesadorEventosLogistica.class);
     verificador = mock(IVerificadorOrigenEventos.class);
     listener = new LogisticaEventListener(procesador, verificador);
+  }
+
+  @Test
+  void cadaOyenteCorreConUnSoloConsumidorPorReplica() {
+    List<RabbitListener> oyentes =
+        Arrays.stream(LogisticaEventListener.class.getDeclaredMethods())
+            .map(metodo -> metodo.getAnnotation(RabbitListener.class))
+            .filter(Objects::nonNull)
+            .toList();
+
+    assertEquals(6, oyentes.size());
+    oyentes.forEach(oyente -> assertEquals("1", oyente.concurrency(), oyente.queues()[0]));
   }
 
   @Test
