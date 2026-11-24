@@ -1124,7 +1124,16 @@ class SitioControllerTest {
     assertTrue(html.contains("10 entregas confirmadas"), "la cuenta de los frutos");
     assertTrue(html.contains("etiqueta-entrega--costado"), "la última, con la foto al costado");
     assertTrue(
-        html.contains("Recibió: Escuela Ejemplo N.º 12, el 14 de octubre."), "quién recibió");
+        html.contains("Recibió: Escuela Ejemplo N.º 12, el 14 de octubre de 2026."),
+        "quién recibió");
+    // Las del mes, como en Entregas: el lugar es categoría · barrio y el pie lleva el año.
+    assertTrue(html.contains("<p>Alimentos · Barrio Ejemplo</p>"), "el lugar, como en Entregas");
+    assertTrue(
+        html.contains("Recibió: Comedor Barrio Ejemplo, el 10 de octubre de 2026."),
+        "el pie, como en Entregas");
+    assertFalse(
+        html.contains("<p>Comedor Barrio Ejemplo · Barrio Ejemplo</p>"),
+        "sin repetir la organización en el lugar");
     assertTrue(html.contains("Cómo sabemos que llega"), "las cifras");
     assertTrue(
         html.contains(

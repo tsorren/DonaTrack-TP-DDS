@@ -8,6 +8,12 @@
   padding-block: var(--espacio-4) var(--espacio-5);
 }
 
+/* Las cuatro partes (arriba, la prueba, «Cómo funciona» y las del mes) con el mismo aire entre sí,
+   como en A01: cada parte lleva su propio data-espacio para adentro, y .pila lo leería en el hijo. */
+#portada > * + * {
+  margin-block-start: var(--espacio-5);
+}
+
 /* Arriba (el título y el dibujo) y la prueba (la última entrega y las cifras): una columna en el
    celular y dos cuando entran. */
 #portada-arriba,

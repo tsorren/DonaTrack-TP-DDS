@@ -166,9 +166,15 @@ class PublicoPaginasControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("src=\"https://fotos/2.jpg\"")))
         .andExpect(
-            content().string(containsString("Recibió: Comedor Barrio Ejemplo, el 9 de noviembre.")))
+            content()
+                .string(
+                    containsString("Recibió: Comedor Barrio Ejemplo, el 9 de noviembre de 2026.")))
         .andExpect(
-            content().string(containsString("Recibió: Merendero Ejemplo Sur, el 2 de noviembre.")))
+            content()
+                .string(
+                    containsString("Recibió: Merendero Ejemplo Sur, el 2 de noviembre de 2026.")))
+        // Las del mes, con el lugar como en Entregas: la categoría (y el barrio, si llega).
+        .andExpect(content().string(containsString("<p>Alimentos</p>")))
         .andExpect(content().string(containsString("2 entregas confirmadas")))
         .andExpect(
             content().string(containsString("del 11 de octubre al 10 de noviembre de 2026.")))

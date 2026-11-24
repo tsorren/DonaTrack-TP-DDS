@@ -68,7 +68,7 @@
           <article th:replace="~{componentes/etiqueta-entrega :: etiqueta-entrega(foto=${ultima.foto},
               descripcion=${ultima.alt}, rotulo=(${#strings.startsWith(ultima.foto, '/img/')} ? 'Foto de ejemplo' : null),
               titulo=${ultima.que}, lugar=|${ultima.entidad} confirmó la entrega con una foto.|,
-              pie=|Recibió: ${ultima.entidad}, el ${ultima.dia}.|, sello='Entrega confirmada', costado=true)}"></article>
+              pie=|Recibió: ${ultima.entidad}, el ${ultima.dia} de ${ultima.anio}.|, sello='Entrega confirmada', costado=true)}"></article>
         </th:block>
         <div th:if="${sinEntregas}" class="vacio trama">
           <p>Todavía no hay entregas confirmadas este mes. Cuando una organización confirme una entrega
@@ -131,10 +131,14 @@
         <p><a href="/publico-donaciones" th:href="@{/publico-donaciones}">Ver todas</a></p>
       </div>
       <ul th:if="${conDatos and cuantas > 1}" class="grilla" data-espacio="4" role="list">
-        <li th:each="e, vuelta : ${entregas}" th:if="${vuelta.index > 0 and vuelta.index < 4}">
+        <li th:each="e, vuelta : ${entregas}" th:if="${vuelta.index > 0 and vuelta.index < 4}"
+            th:with="barrio=${#strings.contains(e.lugar, ' · ')} ? ${#strings.substringAfter(e.lugar, ' · ')} : null,
+                     lugar=${e.categoria == null ? barrio : (barrio == null ? e.categoria : e.categoria + ' · ' + barrio)}">
+          <!--/* El lugar y el pie, armados como en Entregas (publico-donaciones.html): la misma entrega
+                 se ve igual en las dos pantallas. */-->
           <article th:replace="~{componentes/etiqueta-entrega :: etiqueta-entrega(foto=${e.foto},
               descripcion=${e.alt}, rotulo=(${#strings.startsWith(e.foto, '/img/')} ? 'Foto de ejemplo' : null),
-              titulo=${e.que}, lugar=${e.lugar}, pie=|Recibió: ${e.entidad}, el ${e.dia}.|,
+              titulo=${e.que}, lugar=${lugar}, pie=|Recibió: ${e.entidad}, el ${e.dia} de ${e.anio}.|,
               sello='Entrega confirmada', costado=false)}"></article>
         </li>
       </ul>
