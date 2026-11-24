@@ -1205,11 +1205,15 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("href=\"/publico-nosotros\">")));
     mvc.perform(get("/publico-nosotros"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Entregas confirmadas desde marzo de 2026")))
-        // Las cifras como en la portada (A01): la lista de datos del catálogo, sin los árboles de
-        // K.
+        // Las cifras como en la portada (A01): una frase con cada número en negrita y el período
+        // dentro de la cifra, sin la lista de datos ni los árboles de K.
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<strong>1.284</strong> entregas confirmadas desde marzo de 2026")))
         .andExpect(content().string(containsString("Cómo sabemos que llega")))
-        .andExpect(content().string(containsString("<dl class=\"datos\">")))
+        .andExpect(content().string(not(containsString("<dl class=\"datos\">"))))
         .andExpect(content().string(not(containsString("class=\"huerta-cifras\""))))
         .andExpect(content().string(containsString("Actualizado el ")))
         // Nosotros es Cómo funciona en el menú público, y lo marca (DA-05).
@@ -1221,12 +1225,21 @@ class SitioControllerTest {
     mvc.perform(get("/publico-nosotros?escenario=lento"))
         .andExpect(content().string(containsString("role=\"status\">Cargando las cifras…")));
     mvc.perform(get("/publico-nosotros?escenario=error"))
-        .andExpect(content().string(containsString("No pudimos cargar las cifras.")));
+        .andExpect(content().string(containsString("No pudimos cargar las cifras.")))
+        // El error de las cifras es el renglón de filetes, como en la portada.
+        .andExpect(
+            content()
+                .string(containsString("class=\"vacio\" data-forma=\"filetes\" role=\"alert\"")))
+        .andExpect(content().string(not(containsString("class=\"aviso\""))));
     mvc.perform(get("/publico-para-donantes"))
         .andExpect(content().string(containsString("href=\"/publico-registro-donante\"")))
         .andExpect(content().string(containsString("<details>")));
     mvc.perform(get("/publico-para-entidades"))
         .andExpect(content().string(containsString("href=\"/publico-registro-entidad\"")))
+        // Las tarjetas de la cuenta y los datos llevan h3, bajo un título de sección, como las de
+        // «Cómo se suma».
+        .andExpect(content().string(containsString("<h3 id=\"cuenta-titulo\">")))
+        .andExpect(content().string(containsString("<h3 id=\"datos-titulo\">")))
         .andExpect(content().string(not(containsString("beneficiario"))));
   }
 

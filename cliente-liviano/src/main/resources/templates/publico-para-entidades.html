@@ -58,23 +58,32 @@
       </ol>
     </section>
 
-    <section class="grilla" data-espacio="3" aria-label="Tu cuenta y tus datos">
-      <section class="tarjeta pila" data-espacio="2" aria-labelledby="cuenta-titulo">
-        <h2 id="cuenta-titulo">Qué hacés con tu cuenta</h2>
-        <ul class="lista" role="list">
-          <li>Publicar lo que necesitás, por categoría y cantidad.</li>
-          <li>Seguir las entregas que van hacia tu organización.</li>
-          <li>Confirmar lo que llega, con una foto.</li>
-        </ul>
-      </section>
-      <section class="tarjeta pila" data-espacio="2" aria-labelledby="datos-titulo">
-        <h2 id="datos-titulo">Qué datos se muestran</h2>
-        <ul class="lista" role="list">
-          <li>Se muestran el nombre, el barrio y lo que la organización necesita.</li>
-          <li>No se muestran el teléfono, el correo ni la dirección exacta: solo los ve el equipo que
-            organiza las entregas.</li>
-        </ul>
-      </section>
+    <!--/* Un título de sección afuera y h3 en cada tarjeta, como en «Cómo se suma». La lista va dentro de
+           un div para que la pila deje su aire entre el título y la lista (.lista reinicia el margen). */-->
+    <section class="pila" data-espacio="3" aria-labelledby="cuenta-y-datos-titulo">
+      <h2 id="cuenta-y-datos-titulo">Tu cuenta y tus datos</h2>
+      <div class="grilla" data-espacio="3">
+        <section class="tarjeta pila" data-espacio="2" aria-labelledby="cuenta-titulo">
+          <h3 id="cuenta-titulo">Qué hacés con tu cuenta</h3>
+          <div>
+            <ul class="lista" role="list">
+              <li>Publicar lo que necesitás, por categoría y cantidad.</li>
+              <li>Seguir las entregas que van hacia tu organización.</li>
+              <li>Confirmar lo que llega, con una foto.</li>
+            </ul>
+          </div>
+        </section>
+        <section class="tarjeta pila" data-espacio="2" aria-labelledby="datos-titulo">
+          <h3 id="datos-titulo">Qué datos se muestran</h3>
+          <div>
+            <ul class="lista" role="list">
+              <li>Se muestran el nombre, el barrio y lo que la organización necesita.</li>
+              <li>No se muestran el teléfono, el correo ni la dirección exacta: solo los ve el equipo que
+                organiza las entregas.</li>
+            </ul>
+          </div>
+        </section>
+      </div>
     </section>
 
     <section aria-labelledby="preguntas-titulo" class="lectura pila" data-espacio="2">

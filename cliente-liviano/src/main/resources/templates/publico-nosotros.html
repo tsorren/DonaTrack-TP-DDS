@@ -42,23 +42,25 @@
       <ol th:replace="~{componentes/huerta :: raiz-pasos(${recorrido}, 'numerada tendida', null, false)}"></ol>
     </section>
 
-    <!--/* Las cifras como en la portada (A01): la lista de datos y la regla de conteo con la fecha. El
-           período va en el rótulo de cada cifra; la fecha, la de las entregas confirmadas. */-->
+    <!--/* Las cifras como en la portada (A01): una frase con cada número en negrita (no son «lo
+           asentado» de la lista de datos), con el período dentro de cada cifra, y la regla de conteo con
+           la fecha de las entregas confirmadas. Cada estado, en el lugar de la frase, con el mismo marcado
+           que la portada. */-->
     <section class="pila" data-espacio="3" aria-labelledby="cifras-titulo"
              th:with="actualizado=${entregasConfirmadas?.actualizado}"
              th:aria-busy="${estado == 'lento'} ? 'true' : null">
       <h2 id="cifras-titulo">Cómo sabemos que llega</h2>
-      <th:block th:if="${estado == ''}"><dl
-          th:replace="~{componentes/datos :: datos(${cifrasDeNosotros != null ? cifrasDeNosotros.![{rotulo: t, valor: n}] : {}})}"></dl></th:block>
-      <p class="vacio" data-forma="filetes" th:if="${estado == 'vacio'}">
+      <p th:if="${estado == '' and !#lists.isEmpty(cifrasDeNosotros)}" class="texto-grande">Hasta hoy,<th:block
+          th:each="c, vuelta : ${cifrasDeNosotros}"><th:block th:unless="${vuelta.first}"
+          th:text="${vuelta.last ? ' y' : ','}"></th:block> <strong th:text="${c.n}">1.284</strong> <th:block
+          th:text="${#strings.toLowerCase(c.t)}">entregas confirmadas desde marzo de 2026</th:block></th:block>.</p>
+      <p th:if="${estado == 'vacio'}" class="vacio" data-forma="filetes">
         Todavía no hay entregas confirmadas. Se cuentan cuando cada organización confirma lo que recibe.</p>
-      <p class="cargando" role="status" th:if="${estado == 'lento'}">Cargando las cifras…</p>
-      <div th:if="${estado == 'error'}" class="aviso" data-tipo="error" role="alert">
-        <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
-        <p class="aviso-titulo">No pudimos cargar las cifras.</p>
-        <p>Probá de nuevo en unos minutos.</p>
-        <p><a class="boton" data-tamano="chico" href="/publico-nosotros"
-              th:href="@{/publico-nosotros}">Volver a cargar</a></p>
+      <p th:if="${estado == 'lento'}" class="cargando" role="status">Cargando las cifras…</p>
+      <div th:if="${estado == 'error'}" class="vacio" data-forma="filetes" role="alert">
+        <p>No pudimos cargar las cifras. Probá de nuevo en unos minutos.</p>
+        <a class="boton" data-tamano="chico" href="/publico-nosotros"
+           th:href="@{/publico-nosotros}">Volver a cargar</a>
       </div>
       <p data-tono="suave">Una entrega cuenta cuando la organización que la recibió la confirma con una
         foto.<th:block th:if="${estado == '' and actualizado != null}" th:text="| Actualizado el ${actualizado}.|">

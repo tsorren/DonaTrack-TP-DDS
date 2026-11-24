@@ -196,7 +196,7 @@ class PublicoPaginasControllerTest {
   void nosotrosMuestraLasCifrasDelPuerto() throws Exception {
     mvc.perform(get("/publico-nosotros"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("<dd>3</dd>")))
+        .andExpect(content().string(containsString("<strong>3</strong> entidades en el mapa")))
         .andExpect(content().string(not(containsString("318"))));
   }
 }
