@@ -10,9 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * Seguimiento del donante (RF-09) con los datos del puerto. El atributo es {@code miSeguimiento}:
- * {@code donaciones} lo define viaje-datos, que sigue envolviendo la pantalla. Sin cuenta, manda a
- * ingresar.
+ * Seguimiento de una donación (RF-09, arquetipo A07, DA-03a) con los datos del puerto, en el
+ * atributo {@code miSeguimiento}. La plantilla elige la donación ({@code ?donacion=}, o la primera
+ * en camino), igual para la empresa y la persona. Sin cuenta, manda a ingresar.
  */
 @Controller
 public class DonanteSeguimientoController {

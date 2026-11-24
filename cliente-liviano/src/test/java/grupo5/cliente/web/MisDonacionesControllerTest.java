@@ -11,10 +11,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import grupo5.cliente.maqueta.MaquetaConfig;
 import grupo5.cliente.puertos.DonacionesPuerto;
 import grupo5.cliente.vistas.DetalleDonacionVista;
+import grupo5.cliente.vistas.DetalleDonacionVista.Noticia;
+import grupo5.cliente.vistas.DetalleDonacionVista.Problema;
 import grupo5.cliente.vistas.EstadoEntrega;
 import grupo5.cliente.vistas.MisDonacionesVista;
 import grupo5.cliente.vistas.MisDonacionesVista.Categoria;
 import grupo5.cliente.vistas.MisDonacionesVista.Donacion;
+import grupo5.cliente.vistas.PasoRecorrido;
+import grupo5.cliente.vistas.PasoRecorrido.Avance;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -98,20 +102,67 @@ class MisDonacionesControllerTest {
 
         @Override
         public Optional<DetalleDonacionVista> detalle(UUID donante, String clave) {
-          // Como lo arma el adaptador REST: entregada sin foto y sin "Figura como" (HB-20).
-          return "a".equals(clave)
-              ? Optional.of(
-                  new DetalleDonacionVista(
-                      misDonaciones(donante).donaciones().get(1),
-                      "5 de octubre de 2026",
-                      List.of(),
-                      null,
-                      null,
-                      null,
-                      "Comedor Barrio Ejemplo confirmó la entrega el 5 de octubre.",
-                      List.of(),
-                      null))
-              : Optional.empty();
+          // Como lo arma el adaptador REST: entregada sin foto y sin "Figura como" (HB-20); en
+          // camino y con problema, con sus cinco etapas y la última noticia.
+          return switch (clave == null ? "" : clave) {
+            case "a" ->
+                Optional.of(
+                    new DetalleDonacionVista(
+                        misDonaciones(donante).donaciones().get(1),
+                        "5 de octubre de 2026",
+                        List.of(),
+                        null,
+                        null,
+                        null,
+                        "Comedor Barrio Ejemplo confirmó la entrega el 5 de octubre.",
+                        List.of(),
+                        null));
+            case "c" -> Optional.of(enCurso("c", EstadoEntrega.EN_CAMINO, null));
+            case "d" ->
+                Optional.of(
+                    enCurso(
+                        "d",
+                        EstadoEntrega.CON_PROBLEMA,
+                        new Problema(
+                            "No pudo llegar a Hogar Ejemplo.",
+                            "El camino estaba cortado. Última noticia: 11 de octubre, 16:10.")));
+            default -> Optional.empty();
+          };
+        }
+
+        /** Una que ya tiene destino: en camino o con problema, en la cuarta etapa. */
+        private DetalleDonacionVista enCurso(
+            String clave, EstadoEntrega estado, Problema problema) {
+          return new DetalleDonacionVista(
+              new Donacion(
+                  clave,
+                  3,
+                  "Mesa ratona",
+                  "1 unidad",
+                  MUEBLES,
+                  null,
+                  MOBILIARIO,
+                  "Hogar Ejemplo",
+                  "8 de octubre de 2026",
+                  estado,
+                  "Salió el 11 de octubre"),
+              null,
+              List.of(
+                  new PasoRecorrido("En depósito", "8 de octubre", Avance.HECHO),
+                  new PasoRecorrido("Asignada", "9 de octubre", Avance.HECHO),
+                  new PasoRecorrido("Lista para entregar", "10 de octubre", Avance.HECHO),
+                  new PasoRecorrido("En camino", "11 de octubre", Avance.ACTUAL),
+                  new PasoRecorrido("Entregada", "Pendiente", Avance.PENDIENTE)),
+              problema,
+              null,
+              null,
+              null,
+              List.of(
+                  new Noticia(
+                      "11 de octubre, 16:10",
+                      "2026-10-11T16:10",
+                      "El camión salió a entregar tu donación a Hogar Ejemplo.")),
+              "Distribuidora Ejemplo SA");
         }
       };
     }
@@ -367,5 +418,41 @@ class MisDonacionesControllerTest {
     mvc.perform(get("/donante-donaciones-detalle?donacion=b").session(sesion))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("No encontramos esa donación.")));
+  }
+
+  /**
+   * DA-03a: el seguimiento de una donación se abre desde su detalle. La en camino (A07) lleva el
+   * enlace a su seguimiento; la entregada, no.
+   */
+  @Test
+  void elDetalleEnCaminoEnlazaASuSeguimiento() throws Exception {
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(get("/donante-donaciones-detalle?donacion=c&donante=" + DONANTE).session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("<h1>Mesa ratona, 1 unidad</h1>")))
+        .andExpect(content().string(containsString("href=\"/donante-seguimiento?donacion=c\"")))
+        .andExpect(content().string(containsString("Ver dónde está el camión")))
+        .andExpect(content().string(containsString("aria-current=\"step\"")))
+        .andExpect(content().string(containsString("figurás como «")));
+
+    mvc.perform(get("/donante-donaciones-detalle?donacion=a").session(sesion))
+        .andExpect(content().string(not(containsString("/donante-seguimiento?donacion="))));
+  }
+
+  /**
+   * A08 y HG-01: la con problema dice qué pasó una sola vez (el aviso, sin la última noticia, que
+   * va en «Qué sigue») y no inventa la nueva salida; el paso que no pudo ser lleva su signo.
+   */
+  @Test
+  void elDetalleConProblemaNoInventaLaNuevaSalida() throws Exception {
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(get("/donante-donaciones-detalle?donacion=d&donante=" + DONANTE).session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(containsString("No pudo llegar a Hogar Ejemplo.")))
+        .andExpect(content().string(containsString("<p>El camino estaba cortado.</p>")))
+        .andExpect(content().string(containsString("Todavía sin fecha de nueva salida")))
+        .andExpect(content().string(containsString("data-paso=\"problema\"")))
+        .andExpect(content().string(not(containsString("/donante-seguimiento?donacion="))));
   }
 }

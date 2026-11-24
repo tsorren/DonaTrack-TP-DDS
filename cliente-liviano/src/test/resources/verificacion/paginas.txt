@@ -12,6 +12,7 @@
 /donante-seguimiento?escenario=vacio
 /donante-seguimiento?escenario=error
 /donante-seguimiento?escenario=lento
+/donante-seguimiento?donacion=utiles
 /donante-donaciones
 /entidad-seguimiento-confirmar
 /entidad-seguimiento-confirmar?entrega=ropa
@@ -161,6 +162,7 @@
 /donante-donaciones-detalle?donacion=pan
 /donante-donaciones-detalle?escenario=lento
 /donante-donaciones-detalle?escenario=error
+/donante-donaciones-detalle?donacion=leche
 /donante-entidades
 /donante-entidades?nombre=zzz
 /donante-entidades?pagina=2
@@ -315,6 +317,8 @@
 /donante-inicio?cuenta=persona
 /donante-inicio?cuenta=persona&escenario=vacio
 /donante-perfil?cuenta=persona
+/donante-donaciones-detalle?cuenta=persona
+/donante-seguimiento?cuenta=persona
 /donante-entidades?cuenta=persona&ya=si
 # R11-18: la segunda página de la maqueta, con los nombres largos.
 /donante-entidades?cuenta=persona&pagina=2

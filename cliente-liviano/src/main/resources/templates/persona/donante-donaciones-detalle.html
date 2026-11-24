@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <!--/* El detalle de una donación de la persona que dona (Martina Ruiz): la misma pantalla que la de
-       la empresa (donante-donaciones-detalle :: cuerpo), con los datos de la persona
-       (persona/datos-persona). ?donacion=<clave> con las claves de esos datos; sin parámetro, las
-       lentejas (la primera que donó; los enlaces siempre llevan la clave). ?escenario=error y lento, como la de la empresa. */-->
+       la empresa (donante-donaciones-detalle :: cuerpo, DA-13), con sus tres variantes de la guía
+       según el estado (A06 asignada, A07 en camino con el enlace a su seguimiento y A08 con
+       problema), dentro de los datos de la persona (persona/datos-persona). El detalle viene del
+       controller, con ?donacion=<clave>; sin parámetro, el de la maqueta (las lentejas, en
+       camino). ?escenario=error y lento, como la de la empresa. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-donaciones-detalle', ~{::contenido})}">
 <head>
-  <title>Detalle de la donación - Mis donaciones - DonaTrack</title>
+  <title>Detalle de la donación - Donaciones - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">

@@ -274,12 +274,10 @@ class InterfazFitnessTest {
       Set.of(
           "admin-inicio.css",
           "donante-comun.css",
-          "donante-donaciones-detalle.css",
           "donante-entidades.css",
           "donante-inicio.css",
           "donante-notificaciones.css",
           "donante-perfil.css",
-          "donante-seguimiento.css",
           "entidad-comun.css",
           "entidad-inicio.css",
           "entidad-necesidades.css",
