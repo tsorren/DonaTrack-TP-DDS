@@ -70,12 +70,12 @@ planta si está completa o su maceta si no.
 | Hoja | `static/css/variantes/misiones-b.css`, una hoja de variante | Las piezas del catálogo; lo que quede propio, en una hoja de pantalla que solo dispone. La hoja de variante sale de `donante-misiones` |
 | La huerta | Su propio fondo y marco | La lámina protagonista (P07) con la sombra de paja: es la única de la pantalla |
 | Plantas y macetas | Dibujos de la ronda del 2026-11-09 | Los mismos dibujos, con el trazo y la tinta de la guía (P24, P27). **Planta = misión completa**, solo en esta pantalla; los frutos siguen siendo entregas confirmadas (P10) y acá no aparecen |
-| Toque de cada lugar | Blancos chicos en el celular (bitácora del 2026-11-12) | Cada lugar es un enlace de 48 × 48 px como mínimo, con el patrón de C1-12: el área de toque encima del dibujo. `/donante-misiones?cuenta=persona` sale de la línea de base de §10.4 |
+| Toque de cada lugar | Blancos chicos en el celular (bitácora del 2026-11-12) | Cada lugar es un enlace de 48 × 48 px como mínimo, con el patrón de C1-12: el área de toque encima del dibujo. `/donante-misiones?cuenta=persona`, con y sin `escenario=vacio`, sale de la línea de base de §10.4 |
 | Estado de la misión | Texto y color de la maceta | El sello de la guía (P06) con su texto: «Completa», «En curso», «En espera» y, para las cerradas, ninguno |
 | Progreso | Barra propia | El avance de P12, con la cuenta en texto al lado («Llevás 12 de 50.») |
 | Categorías completas | Desplegable propio | El plegable del catálogo (`.plegable-ver`, el de ORG-04), cerrado |
 | Insignias | Sellos llenos y huecos | Igual, con el sello P06 |
-| Cargando, error y sin permiso | Los de la ficha anterior | Estados de lista de P19 y aviso en la página de P13; los textos no cambian |
+| Cargando, error y sin permiso | Los de la ficha anterior | Estados de lista de P19 y aviso en la página de P13; los textos no cambian, salvo los de §6 |
 | Acción llena | «Ver mi huerta» llega desde el inicio | En esta pantalla no hay acción llena: es de consulta. «Ver toda la huerta» es secundaria |
 
 - **El estado no depende del color:** cada misión dice su estado en palabras, con el sello.

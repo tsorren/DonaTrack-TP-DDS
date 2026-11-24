@@ -277,7 +277,7 @@ su gemela de la empresa (DA-13).
 | `donante-donaciones-detalle`, `persona/donante-donaciones-detalle` | A06, A07 o A08 | Una plantilla; el estado elige la variante |
 | `donante-seguimiento`, `persona/donante-seguimiento` | A07 directo | Deja de ser sección del menú (DA-03) |
 | `donante-entidades`, `persona/donante-entidades` | Deriva de A02 | Tarjetas con `componentes/listado` |
-| `donante-misiones` | Sin arquetipo | DA-03 |
+| `donante-misiones` | Sin arquetipo | DA-03b y DA-08 (ficha) |
 | `donante-perfil`, `donante-perfil-guardado`, `persona/donante-perfil`, `persona/donante-perfil-guardado` | Deriva de A12 | |
 | `donante-notificaciones`, `donante-notificaciones-leidas`, `persona/donante-notificaciones`, `persona/donante-notificaciones-leidas` | Sin arquetipo | El buzón |
 | Página nueva: Cómo donar | Sin arquetipo | DA-05 |
@@ -666,7 +666,8 @@ Rehace las 19 plantillas de quien dona de §5: 10 de la empresa y 9 de la person
 de quien dona ya cambió en ORG (ORG-01); acá solo sale su hoja heredada. Fichas, aprobadas por el
 usuario el 2026-11-23 (DA-08, DA-19): [`flujos/guia-don-misiones.md`](flujos/guia-don-misiones.md) y
 [`flujos/guia-don-inicio-persona.md`](flujos/guia-don-inicio-persona.md). Manifiesto:
-[`backlog-guia-al-codigo.don.manifiesto.json`](backlog-guia-al-codigo.don.manifiesto.json).
+[`backlog-guia-al-codigo.don.manifiesto.json`](backlog-guia-al-codigo.don.manifiesto.json). Se lanza con ORG ya mergeada en `E7_guia_ui`
+([PR 1004](https://github.com/tsorren/DonaTrack-TP-DDS/pull/1004)).
 
 ### 12.1 Ronda 5 (2026-11-23): las preguntas de las fichas
 
@@ -680,9 +681,9 @@ Respuesta del usuario a las tres, a las fichas y al reparto: «va asi» (las rec
 
 ### 12.2 Reparto
 
-Aprobado por el usuario el 2026-11-23 («va asi»). Dos tandas: la segunda toca `Pantallas.java` y
-`DonanteInicioController.java` después de la primera, para que dos lotes no cambien el mismo
-archivo a la vez.
+Aprobado por el usuario el 2026-11-23 («va asi»). Dos tandas: la segunda va después porque
+`don-inicio-persona` toca `DonanteInicioController.java`, su maqueta y su test, que en la primera
+toca `don-inicio`, y `don-misiones` depende del menú nuevo de la persona.
 
 | Lote | Tanda | Plantillas | Arquetipo y decisiones | Ficha |
 |---|:-:|---|---|---|
@@ -707,7 +708,7 @@ Suma: 1 + 2 + 4 + 2 + 4 + 1 + 1 = 15, más las 4 del buzón que ya cambiaron en 
 | DON-05 | `don-detalle` | Seguimiento, fuera del menú | A07; DA-03a; HG-02 | Pendiente |
 | DON-06 | `don-organizaciones` | Organizaciones, de la empresa y de la persona | Deriva de A02; HG-04 | Pendiente |
 | DON-07 | `don-perfil` | El perfil, y «guardado» como aviso breve | Deriva de A12; DA-06 | Pendiente |
-| DON-08 | `don-perfil` | Sale la hoja heredada del buzón de quien dona (`donante-notificaciones.css`) | — | Pendiente |
+| DON-08 | `don-perfil` | De la hoja heredada del buzón de quien dona (`donante-notificaciones.css`) sale lo que el buzón del catálogo ya resuelve; si queda vacía, se borra | — | Pendiente |
 | DON-09 | `don-inicio-persona` | El inicio de la persona, según su ficha | Deriva de A04; DA-03c, DA-08, DON-P2 y DON-P3 | Pendiente |
 | DON-10 | `don-misiones` | Misiones, según su ficha, con lugares de 48 px y sin la variante del álbum | Sin arquetipo: ficha; DA-08, DA-21 y DON-P1 | Pendiente |
 
