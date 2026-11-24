@@ -78,13 +78,10 @@
           <p class="cargando" role="status">Cargando las entregas confirmadas…</p>
           <div class="esqueleto" data-forma="hueco" data-tamano="alto"></div>
         </th:block>
-        <div th:if="${estado == 'error'}" class="aviso" data-tipo="error" role="alert">
-          <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
-          <p class="aviso-titulo">No pudimos cargar las entregas confirmadas.</p>
-          <p>Probá de nuevo en unos minutos.</p>
-          <p><a class="boton" data-tamano="chico" href="/publico-portada"
-                th:href="@{/publico-portada}">Volver a cargar</a></p>
-        </div>
+        <th:block th:if="${estado == 'error'}">
+          <section th:replace="~{datos-publicos :: avisoError('No pudimos cargar las entregas confirmadas.',
+              'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-portada', true)}"></section>
+        </th:block>
       </section>
 
       <!--/* Las cifras van en una frase, con cada número en negrita, como en A01 (no son «lo asentado»
@@ -99,11 +96,19 @@
         <p th:if="${estado == 'vacio'}" class="vacio" data-forma="filetes">Todavía no hay entregas
           confirmadas. Se cuentan cuando cada organización confirma lo que recibe.</p>
         <p th:if="${estado == 'lento'}" class="cargando" role="status">Cargando las cifras…</p>
-        <div th:if="${estado == 'error'}" class="vacio" data-forma="filetes" role="alert">
-          <p>No pudimos cargar las cifras. Probá de nuevo en unos minutos.</p>
-          <a class="boton" data-tamano="chico" href="/publico-portada"
+        <!--/* El mismo banner de error que avisoError, con su propio id: la portada ya tiene el de las
+               entregas y los dos no pueden repetir «error-titulo». */-->
+        <section th:if="${estado == 'error'}" class="banner" data-estado="error" role="alert"
+                 aria-labelledby="cifras-error-titulo">
+          <h2 id="cifras-error-titulo">No pudimos cargar las cifras.</h2>
+          <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
+            <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+               th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/publico-portada')}">escribinos</a>
+            con este código.</p>
+          <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+          <a class="boton" data-tono="secundario" href="/publico-portada"
              th:href="@{/publico-portada}">Volver a cargar</a>
-        </div>
+        </section>
         <p data-tono="suave">Una entrega cuenta cuando la organización que la recibió la confirma con una
           foto.<th:block th:if="${estado == '' and actualizado != null}" th:text="| Actualizado el ${actualizado}.|">
           Actualizado el 15 de octubre de 2026, 14:30.</th:block> No mostramos quién donó.</p>

@@ -57,11 +57,10 @@
       <p th:if="${estado == 'vacio'}" class="vacio" data-forma="filetes">
         Todavía no hay entregas confirmadas. Se cuentan cuando cada organización confirma lo que recibe.</p>
       <p th:if="${estado == 'lento'}" class="cargando" role="status">Cargando las cifras…</p>
-      <div th:if="${estado == 'error'}" class="vacio" data-forma="filetes" role="alert">
-        <p>No pudimos cargar las cifras. Probá de nuevo en unos minutos.</p>
-        <a class="boton" data-tamano="chico" href="/publico-nosotros"
-           th:href="@{/publico-nosotros}">Volver a cargar</a>
-      </div>
+      <th:block th:if="${estado == 'error'}">
+        <section th:replace="~{datos-publicos :: avisoError('No pudimos cargar las cifras.',
+            'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-nosotros', true)}"></section>
+      </th:block>
       <p data-tono="suave">Una entrega cuenta cuando la organización que la recibió la confirma con una
         foto.<th:block th:if="${estado == '' and actualizado != null}" th:text="| Actualizado el ${actualizado}.|">
         Actualizado el 15 de octubre de 2026, 14:30.</th:block> No mostramos quién donó.</p>
@@ -90,8 +89,7 @@
         </li>
         <li class="tarjeta pila" data-espacio="2">
           <h3>Cuidamos los datos</h3>
-          <p>Lo que se publica no muestra quién donó si esa persona lo prefiere, ni el contacto de las
-            organizaciones.</p>
+          <p>Lo que se publica nunca muestra quién donó ni el contacto de las organizaciones.</p>
         </li>
         <li class="tarjeta pila" data-espacio="2">
           <h3>Mostramos dónde llega</h3>

@@ -1173,11 +1173,33 @@ class SitioControllerTest {
         cifras > 0
             && lento.substring(cifras, lento.indexOf('>', cifras)).contains("aria-busy=\"true\""),
         "la sección de las cifras, ocupada mientras carga");
+    // Los dos errores de carga son el banner de error de Entregas y el Mapa, con el código y
+    // «escribinos» (U1): ni el aviso de formulario ni el renglón de la lista vacía.
     mvc.perform(get("/publico-portada?escenario=error"))
-        .andExpect(content().string(containsString("role=\"alert\"")))
-        .andExpect(content().string(containsString("No pudimos cargar las entregas confirmadas.")))
-        .andExpect(content().string(containsString("data-forma=\"filetes\" role=\"alert\"")))
-        .andExpect(content().string(containsString("No pudimos cargar las cifras.")))
+        .andExpect(
+            content()
+                .string(containsString("class=\"banner\" data-estado=\"error\" role=\"alert\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<h2 id=\"error-titulo\">No pudimos cargar las entregas confirmadas.</h2>")))
+        .andExpect(
+            content()
+                .string(containsString("class=\"banner\" data-estado=\"error\" role=\"alert\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<h2 id=\"cifras-error-titulo\">No pudimos cargar las cifras.</h2>")))
+        .andExpect(content().string(containsString("class=\"aviso-codigo\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/publico-contacto?codigo=a1b2c3d4e5f6&amp;volver=/publico-portada\"")))
+        .andExpect(content().string(not(containsString("data-forma=\"filetes\" role=\"alert\""))))
+        .andExpect(content().string(not(containsString("class=\"aviso\" data-tipo=\"error\""))))
         .andExpect(content().string(not(containsString("<strong>1.284</strong>"))));
   }
 
@@ -1233,10 +1255,17 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("role=\"status\">Cargando las cifras…")));
     mvc.perform(get("/publico-nosotros?escenario=error"))
         .andExpect(content().string(containsString("No pudimos cargar las cifras.")))
-        // El error de las cifras es el renglón de filetes, como en la portada.
+        // El error de las cifras es el banner de error, como en la portada y Entregas (U1).
         .andExpect(
             content()
-                .string(containsString("class=\"vacio\" data-forma=\"filetes\" role=\"alert\"")))
+                .string(containsString("class=\"banner\" data-estado=\"error\" role=\"alert\"")))
+        .andExpect(content().string(containsString("class=\"aviso-codigo\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/publico-contacto?codigo=a1b2c3d4e5f6&amp;volver=/publico-nosotros\"")))
+        .andExpect(content().string(not(containsString("data-forma=\"filetes\" role=\"alert\""))))
         .andExpect(content().string(not(containsString("class=\"aviso\""))));
     mvc.perform(get("/publico-para-donantes"))
         .andExpect(content().string(containsString("href=\"/publico-registro-donante\"")))
