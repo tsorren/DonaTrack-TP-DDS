@@ -345,7 +345,31 @@ class SitioControllerTest {
                         "aria-label=\"El recorrido de esta donación: va por el paso 4 de 5\"")))
         .andExpect(content().string(containsString(">Todas <b>8</b></a>")))
         .andExpect(content().string(containsString(">Entregadas <b>5</b></a>")))
-        .andExpect(content().string(containsString(">Con problema <b>0</b></a>")));
+        .andExpect(content().string(containsString(">Con problema <b>0</b></a>")))
+        // El sello dice lo mismo que la raíz y el detalle (A05, A06): la pendiente sin destino,
+        // registrada; con destino, asignada; la entregada, «Entrega confirmada».
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"registrada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Registrada</span>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"asignada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Asignada</span>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"entregada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Entrega confirmada</span>.*")))
+        .andExpect(content().string(not(containsString("data-estado=\"pendiente\""))));
     mvc.perform(get("/donante-donaciones?cuenta=persona&estado=en-camino"))
         .andExpect(content().string(containsString("1 donación con esos filtros.")))
         .andExpect(content().string(containsString("Ropa de abrigo")))
@@ -373,7 +397,22 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Nada en camino ahora")))
         .andExpect(content().string(not(containsString("Seguir esta donación"))));
     mvc.perform(get("/donante-donaciones?estado=pendiente&categoria=alimentos"))
-        .andExpect(content().string(containsString("2 donaciones con esos filtros.")));
+        .andExpect(content().string(containsString("2 donaciones con esos filtros.")))
+        // Arroz sin destino va registrada; Leche, con destino, asignada, como en su detalle.
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"registrada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Registrada</span>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"asignada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Asignada</span>.*")));
     mvc.perform(get("/donante-donaciones?estado=otro"))
         .andExpect(content().string(containsString("7 donaciones, de la más reciente")));
     // Mis donaciones tiene su controller, pero ?cuenta= sigue cambiando la cuenta de ejemplo.

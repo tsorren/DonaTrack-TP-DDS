@@ -219,7 +219,13 @@ class MisDonacionesControllerTest {
                     containsString(
                         "aria-label=\"El recorrido de esta donación: va por el paso 1 de 5\"")))
         .andExpect(
-            content().string(containsString("<span class=\"estado\" data-estado=\"pendiente\">")))
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"registrada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Registrada</span>.*")))
+        .andExpect(content().string(not(containsString("data-estado=\"pendiente\""))))
         .andExpect(content().string(containsString("Paso 1 de 5")))
         .andExpect(content().string(containsString("aria-label=\"Donaciones por estado\"")))
         .andExpect(
@@ -242,6 +248,14 @@ class MisDonacionesControllerTest {
                     containsString(
                         "aria-label=\"El recorrido de esta donación: los 5 pasos, cumplidos\"")))
         .andExpect(content().string(containsString("Paso 5 de 5")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"entregada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Entrega confirmada</span>.*")))
+        .andExpect(content().string(not(containsString("Entregada</span>"))))
         .andExpect(content().string(containsString("Entrega confirmada el 5 de octubre.")))
         .andExpect(
             content()
