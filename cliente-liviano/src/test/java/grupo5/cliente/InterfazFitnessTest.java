@@ -284,7 +284,6 @@ class InterfazFitnessTest {
           "entidad-seguimiento-confirmar.css",
           "formularios.css",
           "privado.css",
-          "publico-donaciones.css",
           "publico-entidades.css",
           "publico-ingresar.css",
           "publico-listas.css",

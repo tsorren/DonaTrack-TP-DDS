@@ -1,16 +1,25 @@
 @import url("publico-listas.css");
 
-/* Raíces, sitio A: Mapa (publico-mapa.html). El marco, el reparto en dos columnas, la lista de fichas
-   y el resalte cruzado son el bloque `.mapa-cuerpo` (componentes/mapa.css). Desde el 2026-11-09 el
-   mapa es MapLibre (componentes/mapa.css, static/js/mapa.js); acá queda el esqueleto de la carga y el
-   número de las estaciones de la lista. Va sin capa porque compite con `.dibujo-rotulo` (sellos.css)
-   y con el `.esqueleto` de las páginas públicas (publico-listas.css). */
+/* El Mapa (publico-mapa.html), derivado del arquetipo A07 de la guía. El marco, el reparto en dos
+   columnas, la lista de fichas, el resalte cruzado y el mapa real (MapLibre) son el bloque
+   `.mapa-cuerpo` (componentes/mapa.css, static/js/mapa.js); las migas, el listado y la carga, sus
+   componentes. Acá queda dónde va el listado y el número de las estaciones de la lista, que el sello
+   del catálogo (`.estacion-sello`) no dibuja. */
 
-figure.mapa-dibujo.esqueleto {
-  aspect-ratio: 800 / 590;
-  min-height: 0;
-  border-color: var(--color-pendiente-fondo);
-  background: var(--color-pendiente-fondo);
+/* El listado del Mapa no queda fijo: el Mapa ya deja fija la columna del mapa (decisión 6 de la
+   ficha), y los dos fijos se pisarían. */
+.listado[action$="/publico-mapa"] {
+  position: static;
+  padding-block: 0;
+  border-bottom: 0;
+  box-shadow: none;
+}
+
+/* Desde 68,75 em, componentes/mapa.css deja fija la columna del mapa y también el mapa
+   (`.mapa-dibujo`, con su `top`); MapLibre le pone `position: relative` (`.maplibregl-map`) y ese
+   `top` lo corre hacia abajo, encima de los botones de salida. El mapa ya se queda con su columna. */
+[data-parte="mapa"] > .mapa-real {
+  top: 0;
 }
 
 .estacion-numero {
@@ -22,4 +31,3 @@ figure.mapa-dibujo.esqueleto {
 .estacion-sello .estacion-numero {
   font-size: 20px;
 }
-
