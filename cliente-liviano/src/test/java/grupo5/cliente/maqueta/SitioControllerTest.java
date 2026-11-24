@@ -1126,7 +1126,12 @@ class SitioControllerTest {
     assertTrue(
         html.contains("Recibió: Escuela Ejemplo N.º 12, el 14 de octubre."), "quién recibió");
     assertTrue(html.contains("Cómo sabemos que llega"), "las cifras");
-    assertTrue(html.contains("<dd>1.284</dd>"), "la cifra de las entregas");
+    assertTrue(
+        html.contains(
+            "Hasta hoy, <strong>1.284</strong> entregas confirmadas, <strong>46</strong>"
+                + " organizaciones en el mapa y <strong>32</strong> donaciones en camino ahora."),
+        "las cifras, en una frase como en A01");
+    assertFalse(html.contains("class=\"datos\""), "sin la lista de datos");
     assertTrue(html.contains("data-forma=\"numerada tendida\""), "la raíz numerada");
     assertEquals(5, html.split("class=\"huerta-raiz-nudo\"", -1).length - 1, "los 5 pasos");
     assertEquals(
@@ -1138,15 +1143,33 @@ class SitioControllerTest {
         .andExpect(status().isOk())
         .andExpect(
             content().string(containsString("Todavía no hay entregas confirmadas este mes.")))
-        .andExpect(content().string(not(containsString("class=\"etiqueta-entrega"))));
-    mvc.perform(get("/publico-portada?escenario=lento"))
         .andExpect(
-            content().string(containsString("role=\"status\">Cargando las entregas confirmadas…")))
-        .andExpect(content().string(containsString("aria-busy=\"true\"")));
+            content()
+                .string(
+                    containsString(
+                        "class=\"vacio\" data-forma=\"filetes\">Todavía no hay entregas")))
+        .andExpect(content().string(not(containsString("<strong>1.284</strong>"))))
+        .andExpect(content().string(not(containsString("class=\"etiqueta-entrega"))));
+    String lento =
+        mvc.perform(get("/publico-portada?escenario=lento"))
+            .andExpect(
+                content()
+                    .string(containsString("role=\"status\">Cargando las entregas confirmadas…")))
+            .andExpect(content().string(containsString("role=\"status\">Cargando las cifras…")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+    int cifras = lento.indexOf("aria-labelledby=\"portada-cifras\"");
+    assertTrue(
+        cifras > 0
+            && lento.substring(cifras, lento.indexOf('>', cifras)).contains("aria-busy=\"true\""),
+        "la sección de las cifras, ocupada mientras carga");
     mvc.perform(get("/publico-portada?escenario=error"))
         .andExpect(content().string(containsString("role=\"alert\"")))
         .andExpect(content().string(containsString("No pudimos cargar las entregas confirmadas.")))
-        .andExpect(content().string(not(containsString("<dd>1.284</dd>"))));
+        .andExpect(content().string(containsString("data-forma=\"filetes\" role=\"alert\"")))
+        .andExpect(content().string(containsString("No pudimos cargar las cifras.")))
+        .andExpect(content().string(not(containsString("<strong>1.284</strong>"))));
   }
 
   /**

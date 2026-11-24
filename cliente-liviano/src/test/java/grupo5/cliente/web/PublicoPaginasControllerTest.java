@@ -118,8 +118,11 @@ class PublicoPaginasControllerTest {
     for (String ruta : List.of("/", "/publico-portada")) {
       mvc.perform(get(ruta))
           .andExpect(status().isOk())
-          .andExpect(content().string(containsString("<dd>7</dd>")))
-          .andExpect(content().string(containsString("Donantes con al menos una donación")))
+          .andExpect(content().string(containsString("<strong>7</strong> entregas confirmadas")))
+          .andExpect(
+              content()
+                  .string(
+                      containsString("y <strong>5</strong> donantes con al menos una donación.")))
           .andExpect(content().string(not(containsString("1.284"))));
     }
   }
@@ -180,7 +183,7 @@ class PublicoPaginasControllerTest {
         .andExpect(
             content().string(containsString("Todavía no hay entregas confirmadas este mes.")))
         .andExpect(content().string(not(containsString("class=\"etiqueta-entrega"))))
-        .andExpect(content().string(containsString("<dd>7</dd>")));
+        .andExpect(content().string(containsString("<strong>7</strong> entregas confirmadas")));
   }
 
   @Test

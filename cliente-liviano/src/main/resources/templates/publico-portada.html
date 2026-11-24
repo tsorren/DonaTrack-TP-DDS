@@ -87,10 +87,23 @@
         </div>
       </section>
 
-      <section class="pila" data-espacio="3" aria-labelledby="portada-cifras">
+      <!--/* Las cifras van en una frase, con cada número en negrita, como en A01 (no son «lo asentado»
+             de la lista de datos). Cada estado, en el lugar de la frase. */-->
+      <section class="pila" data-espacio="3" aria-labelledby="portada-cifras"
+               th:aria-busy="${estado == 'lento'} ? 'true' : null">
         <h2 id="portada-cifras">Cómo sabemos que llega</h2>
-        <th:block th:if="${estado == ''}"><dl
-            th:replace="~{componentes/datos :: datos(${cifrasDePortada.![{rotulo: t, valor: n}]})}"></dl></th:block>
+        <p th:if="${estado == '' and !#lists.isEmpty(cifrasDePortada)}" class="texto-grande">Hasta hoy,<th:block
+            th:each="c, vuelta : ${cifrasDePortada}"><th:block th:unless="${vuelta.first}"
+            th:text="${vuelta.last ? ' y' : ','}"></th:block> <strong th:text="${c.n}">1.284</strong> <th:block
+            th:text="${#strings.toLowerCase(c.t)}">entregas confirmadas</th:block></th:block>.</p>
+        <p th:if="${estado == 'vacio'}" class="vacio" data-forma="filetes">Todavía no hay entregas
+          confirmadas. Se cuentan cuando cada organización confirma lo que recibe.</p>
+        <p th:if="${estado == 'lento'}" class="cargando" role="status">Cargando las cifras…</p>
+        <div th:if="${estado == 'error'}" class="vacio" data-forma="filetes" role="alert">
+          <p>No pudimos cargar las cifras. Probá de nuevo en unos minutos.</p>
+          <a class="boton" data-tamano="chico" href="/publico-portada"
+             th:href="@{/publico-portada}">Volver a cargar</a>
+        </div>
         <p data-tono="suave">Una entrega cuenta cuando la organización que la recibió la confirma con una
           foto.<th:block th:if="${estado == '' and actualizado != null}" th:text="| Actualizado el ${actualizado}.|">
           Actualizado el 15 de octubre de 2026, 14:30.</th:block> No mostramos quién donó.</p>
