@@ -1,0 +1,245 @@
+{
+  "formato": "oleada-ui/1",
+  "version": "1.0.0",
+  "nombre": "guia",
+  "fecha": "2026-11-24",
+  "backlog": "docs/interfaz/backlog-guia-al-codigo.md",
+  "prefijoCommit": "E7: guía al código",
+  "comoLeerlo": "Manifiesto de la ola PUB1: las 13 plantillas de lo público de la sección 5 del backlog y el menú público (sección 5.1). Los ítems, con su arquetipo, están en la sección 13 del backlog; las decisiones del usuario, en la sección 2.2; el arquetipo de cada plantilla, en la sección 5; los huecos de backend y su texto de reemplazo, en la sección 7. Son 6 lotes en una sola tanda: ningún archivo de Java ni plantilla lo tocan dos lotes, salvo los que la regla 4 reparte por líneas, y el menú (navegacion-publica.html) tiene un solo dueño, pub1-portada. No lleva fichas: Legales, sin arquetipo, es derivación del agente (DA-08). Se escribió el 2026-11-24 en la corrida desatendida (plan C:/IdeaProjects/DonaTrack-TP-DDS/.claude/plan-guia-resto.md): el reparto y DA-22 a DA-24 van con la opción recomendada, delegada por el relevamiento del 2026-11-24, y no los aprobó el usuario. En rutasVisuales va una ruta por plantilla (DA-20). Las dos rutas del Mapa de la línea de base de toque (?escenario=muchas) no entran: fallan por el marcador del mapa del catálogo, que esta ola no edita. La regla 5 es solo para el cierre: esta ola no levanta el stack (plan de la corrida, punto 5; DA-20). DA-19 y DA-20 son decisiones del plan y no de un lote. Requisito para lanzarla: este manifiesto integrado en E7_guia_ui.",
+  "ramas": {
+    "base": "E7_guia_ui",
+    "destino": "E7_guia_ui",
+    "prefijoOla": "E7_guia_ui_"
+  },
+  "topes": {
+    "constructoresEnParalelo": 4,
+    "rondasDeReparacion": 3
+  },
+  "modelos": {
+    "juicio": {
+      "model": "opus",
+      "effort": "medium"
+    },
+    "mecanico": {
+      "model": "sonnet",
+      "effort": "high"
+    }
+  },
+  "olas": [
+    "PUB1"
+  ],
+  "reglas": [
+    "Cada pantalla se rehace con su arquetipo de la guía (docs/interfaz/guia/partes/50-pantallas.html, el ancla de la sección 4 del backlog) y con las piezas que C1 dejó en el catálogo (docs/interfaz/componentes.md y /estilos): no se copia el marcado ni las clases de la guía, se usan los fragmentos y las clases del catálogo. Una plantilla que «deriva» sigue la composición de su arquetipo; publico-legales, sin arquetipo, es una página de lectura con la composición de la huerta (DA-08: derivación del agente). Si una pantalla necesita una pieza que el catálogo no tiene, es un bloqueante del lote y se informa: no se crea una pieza nueva dentro de una hoja de pantalla. Cada lote termina la migración de las hojas heredadas de sus pantallas: lo que la pieza del catálogo ya resuelve sale de la hoja de la pantalla, y una hoja que queda vacía se borra con su import, salvo publico-paginas.css, publico-listas.css y publico-ingresar.css, que también usan /estilos o pantallas de PUB2, y publico-navegacion.css, que enlaza layout-publico.html (regla 4).",
+    "Los cercos no se mueven: ningún tope de InterfazFitnessTest cambia (ni sube ni baja), la lista de clases heredadas no crece (si un lote deja sin uso una clase heredada, borra su línea de cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt y lo anota), tokens.css no se toca y nadie edita un test de cliente-liviano/src/test/java/grupo5/cliente/visual/ ni le suma una excepción. Las listas LISTAS y HOJAS_HEREDADAS de InterfazFitnessTest no son topes: si un lote borra una plantilla o una hoja que nombran, la reemplaza por la que la sucede o saca su línea. Los tests funcionales que afirman una ruta, un texto o un menú que esta ola cambia por una decisión (DA-01, DA-05, DA-06, DA-22, DA-23, DA-24) se actualizan al comportamiento nuevo, con aserciones igual de fuertes; ninguno se borra ni se debilita.",
+    "El alcance es lo público de PUB1: las 13 plantillas de la sección 5 (PUB1), el menú público y lo que la sección 13.2 del backlog asigna. Las pantallas de registro, cuenta y error (PUB2: activar, recuperar, los registros, error/, sin-dibujar y aviso-persona) no cambian, ni las de los roles ni sus menús (DA-17). Una pantalla que no es de la ola no se rediseña ni se arregla: quien construye y quien revisa la anotan como menor, nunca como bloqueante. Ningún lote cambia un adaptador de cliente-liviano/src/main/java/grupo5/cliente/rest/ ni un puerto de cliente-liviano/src/main/java/grupo5/cliente/puertos/: un dato que el adaptador real no entrega (HG-03 y HG-04) se muestra con el texto de «Si no llega» de la sección 7 del backlog, y lo demás que falte se anota como deuda del lote; no se inventa ni se escribe en la plantilla un dato de la guía. Los datos de ejemplo nuevos van en las clases de cliente-liviano/src/main/java/grupo5/cliente/maqueta/.",
+    "Algunos archivos los tocan varios lotes: cliente-liviano/src/test/resources/verificacion/paginas.txt (cada lote, solo las líneas de sus rutas), SitioControllerTest.java (cada lote, solo los tests de sus rutas; pub1-portada, además, los del menú público y los métodos laPortadaEnlazaAlSitio y nosotrosYLasLandingsSeEnlazanDesdeElPieYLaPortada; pub1-conocer, los del pie, en un test propio), PublicoPaginasControllerTest.java (cada lote, solo sus tests; pub1-portada fija el campo entregas en los suyos), NombresVisiblesTest.java y SitioConApisTest.java (cada lote, solo los casos de sus rutas), ListadoEnLasPublicasTest.java (pub1-organizaciones, los tests de Organizaciones; pub1-entregas, los de Entregas y el Mapa), PortadaConSesionMaquetaTest.java (pub1-portada, salvo contactoSigueConElMarcoPrivadoDelRol, que es de pub1-contacto), InterfazFitnessTest.java (cada lote, solo las líneas de HOJAS_HEREDADAS y LISTAS de sus hojas y plantillas), cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt (cada lote, solo las líneas de las clases que deja sin uso), java/grupo5/cliente/maqueta/PublicoMaqueta.java (pub1-portada y pub1-entregas: cada uno, solo los datos de sus pantallas; un método que usan las dos conserva su firma) y templates/datos-publicos.html (cada lote, solo los fragmentos que usan nada más que sus pantallas; avisoError y fotoVentana conservan su firma, porque también los usan pantallas de PUB2). Las hojas heredadas static/css/publico-paginas.css y publico-listas.css: cada lote saca solo las reglas que usan nada más que sus pantallas; las dos se quedan, porque las usan /estilos y las pantallas de PUB2. static/css/publico-ingresar.css y java/grupo5/cliente/web/AccesoController.java los toca solo pub1-ingresar, sin cambiar lo que usan activar y recuperar (PUB2). templates/navegacion-publica.html y static/css/publico-navegacion.css los toca solo pub1-portada; templates/pie.html, solo pub1-conocer, en el texto de tres enlaces (DA-23). El fragmento pantalla de templates/publico-entidades.html (pub1-organizaciones) lo usan también donante-entidades.html y persona/donante-entidades.html (DON): conserva su firma y lo que muestra para quien dona. templates/layout-publico.html, templates/componentes/, static/css/componentes/, static/js/abejas.js, static/js/mapa.js y templates/iconos.html no se editan en esta ola: son del armazón y del catálogo. Como la ola es una sola tanda, las capturas de cada lote muestran el menú público de hoy (fuera de pub1-portada) y el pie de hoy (fuera de pub1-conocer): no es hallazgo de ningún lote. Si al integrar chocan dos lotes en líneas vecinas, se conservan los dos cambios.",
+    "Solo para quien cierra la ola; no es criterio de revisión de ningún lote. (1) No levantes el stack ni hagas el recorrido con login (pasos 2, 3 y 5 del cierre): el recorrido real se hace una sola vez, en Z, y ningún lote de PUB1 cambia un adaptador rest (plan C:/IdeaProjects/DonaTrack-TP-DDS/.claude/plan-guia-resto.md, punto 5; decisión DA-20, backlog, sección 2.2). (2) Después de los gates corré una vez -Pvisual sobre las rutas de la ola, no sobre las 320: la pasada completa es de C1 y de Z (DA-20, puntos 1 y 4). Son las 53 líneas de PUB1 de cliente-liviano/src/test/resources/verificacion/paginas.txt, sin la barra inicial y separadas por comas, sin /publico-donaciones?respuesta=404, que muestra error/404 (PUB2): rm -rf cliente-liviano/target/capturas; R=$(grep -E '^/publico-(portada|ingresar|donaciones|entidades|mapa|nosotros|para-donantes|para-entidades|legales|contacto)' cliente-liviano/src/test/resources/verificacion/paginas.txt | grep -v 'respuesta=' | sed 's#^/##' | paste -sd, -); MSYS2_ARG_CONV_EXCL='-Dverificacion' mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false -Dverificacion.paginas=\"$R\". Compará con la línea de base de la sección 10.4 del backlog: de esa lista, las de PUB1 son /publico-mapa?escenario=muchas y /publico-mapa?escenario=muchas&pagina=2&abierta=ejemplo-12, que fallan por el marcador del mapa del catálogo (sección 13.4): si siguen fallando solo por eso, se anotan y no son bloqueantes. Una ruta que falle y no esté en la lista es bloqueante, con el lote que la rompe. Si una ruta de la lista ahora pasa, anotalo. (3) Corré los otros tests visuales (mvn test -pl cliente-liviano -Pvisual -Dtest=ArmazonFijoTest,MenusQueSeCierranTest,BajoTierraRotulosTest,AbejasYRenglonesTest,DonanteDetallesTest -Dsurefire.failIfNoSpecifiedTests=false) y compará con la línea de base de las secciones 10.5 y 11.3. Un fallo que ya estaba se anota. Por DA-22 se esperan además los de AbejasYRenglonesTest.conReducirMovimientoLasAbejasQuedanQuietasDelanteYEnteras y los dos de BajoTierraRotulosTest, que miden las abejas y el corte bajo tierra que la portada nueva no tiene: se anotan para que decida el usuario (sección 13.4), no son bloqueantes y nadie edita esos tests. Cualquier otro fallo nuevo es bloqueante del lote que tocó eso, y se arregla la pantalla, nunca el test. (4) En cierre.md: cuántas rutas pasan y cuáles no, la hora de cada commit de la ola (git log) y las rondas de revisión de cada lote."
+  ],
+  "decisiones": [
+    {
+      "id": "DA-01",
+      "texto": "La parte de DA-01 que es del menú: el Mapa sale del menú público y, en el Mapa, queda marcada Entregas.",
+      "quien": "usuario",
+      "ok": "Ronda 2 de decisiones, 2026-11-22: «3 si» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-01)",
+      "lote": "pub1-portada",
+      "criterio": "templates/navegacion-publica.html no tiene la entrada Mapa; en /publico-mapa la entrada Entregas del menú lleva aria-current=\"page\"; un test del menú (SitioControllerTest) afirma las dos cosas, y /publico-mapa sigue respondiendo 200."
+    },
+    {
+      "id": "DA-05-menu",
+      "texto": "La parte de DA-05 que es del menú: el menú público es Inicio, Entregas, Organizaciones y Cómo funciona, y Cómo funciona es la página de hoy Nosotros (/publico-nosotros).",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23: «Todas las recomendadas» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-05; sección 5.1, el menú de la guía)",
+      "lote": "pub1-portada",
+      "criterio": "En las capturas a 360 y 1280 px de /publico-portada, el menú público tiene Inicio, Entregas, Organizaciones y Cómo funciona, en ese orden, y Cómo funciona lleva a /publico-nosotros; Ingresar y Crear una cuenta siguen en el acceso. Un test del menú en SitioControllerTest afirma el orden y el enlace."
+    },
+    {
+      "id": "DA-17",
+      "texto": "El menú de cada rol cambia en la ola de ese rol: en PUB1 cambia solo el menú público.",
+      "quien": "usuario",
+      "ok": "Ronda 3 de decisiones, 2026-11-22: «Todas las recomendadas» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-17)",
+      "lote": "pub1-portada",
+      "criterio": "git diff E7_guia_ui...HEAD no toca cliente-liviano/src/main/java/grupo5/cliente/web/Pantallas.java ni cliente-liviano/src/main/java/grupo5/cliente/maqueta/CuentaDeEjemplo.java."
+    },
+    {
+      "id": "DA-22",
+      "texto": "La portada sigue a A01 sin las abejas, el corte bajo tierra ni el cierre de la portada de hoy; los tests de visual/ que los miden no se editan y sus fallos se anotan para que decida el usuario.",
+      "quien": "autor del manifiesto de PUB1, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-22",
+      "lote": "pub1-portada",
+      "criterio": "publico-portada.html no carga static/js/abejas.js ni usa los fragmentos hero, como, raices, mes, participa, preguntas ni cierre de componentes/huerta.html. En las capturas a 360 y 1280 px de /publico-portada se ven, en el orden de A01, el título con la trama, el dibujo con un fruto por entrega confirmada del mes, la última entrega confirmada con su foto y su sello, «Cómo funciona» con la raíz numerada de 5 pasos y las entregas confirmadas del mes. git diff E7_guia_ui...HEAD no toca cliente-liviano/src/test/java/grupo5/cliente/visual/, templates/componentes/ ni static/js/abejas.js."
+    },
+    {
+      "id": "DA-01-entregas",
+      "texto": "La parte de DA-01 que es de Entregas: el Mapa queda dentro de Entregas, que lo enlaza, y el Mapa vuelve a Entregas por sus migas.",
+      "quien": "usuario",
+      "ok": "Ronda 2 de decisiones, 2026-11-22: «3 si» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-01)",
+      "lote": "pub1-entregas",
+      "criterio": "/publico-donaciones tiene un enlace a /publico-mapa, y /publico-mapa lleva las migas del catálogo (componentes/migas) con Entregas enlazada a /publico-donaciones; un test lo afirma (ListadoEnLasPublicasTest o PublicoMapaControllerTest)."
+    },
+    {
+      "id": "DA-10",
+      "texto": "En lo público, quien recibió una entrega es la organización, nunca una persona: «Recibió: <la organización>» (HG-03).",
+      "quien": "relevamiento del 2026-11-24 (delegada)",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-10",
+      "lote": "pub1-entregas",
+      "criterio": "En /publico-donaciones la etiqueta de cada entrega dice «Recibió: » seguido de Entrega.entidad (vistas/PublicoEntregas.java), la organización; ListadoEnLasPublicasTest lo afirma con los datos de ejemplo, y se ve en las capturas a 360 y 1280 px."
+    },
+    {
+      "id": "DA-05-conocer",
+      "texto": "La parte de DA-05 que es de las páginas: Nosotros pasa a «Cómo funciona», Para donantes a «Cómo donar» y Para organizaciones a «Ayuda», con las rutas de hoy.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23: «Todas las recomendadas» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-05)",
+      "lote": "pub1-conocer",
+      "criterio": "El title y el rótulo de /publico-nosotros, /publico-para-donantes y /publico-para-entidades dicen «Cómo funciona», «Cómo donar» y «Ayuda»; las tres rutas siguen respondiendo 200 y un test (SitioControllerTest o PublicoPaginasControllerTest) afirma los tres títulos."
+    },
+    {
+      "id": "DA-23",
+      "texto": "El pie nombra Nosotros, Para donantes y Para organizaciones con su nombre nuevo: «Cómo funciona», «Cómo donar» y «Ayuda».",
+      "quien": "autor del manifiesto de PUB1, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-23",
+      "lote": "pub1-conocer",
+      "criterio": "git diff E7_guia_ui...HEAD de templates/pie.html cambia solo el texto de los enlaces a /publico-nosotros, /publico-para-donantes y /publico-para-entidades, que dicen «Cómo funciona», «Cómo donar» y «Ayuda»; las rutas y el orden del pie no cambian, y un test del pie (SitioControllerTest) afirma los tres textos."
+    },
+    {
+      "id": "DA-24",
+      "texto": "La parte de DA-06 que es de Contacto: el envío termina en Contacto con un aviso breve que lleva el número del mensaje, sin página de respuesta propia; con ?volver=, Contacto ofrece la salida «Volver a …».",
+      "quien": "autor del manifiesto de PUB1, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-24 y DA-06 (ronda 4, 2026-11-23: «Todas las recomendadas»)",
+      "lote": "pub1-contacto",
+      "criterio": "Un POST a /publico-contacto-enviado termina en /publico-contacto (con ?volver= si vino) y el aviso breve lleva el número del mensaje; lo afirma un test de cliente-liviano/src/test/java/grupo5/cliente/web/ con el puerto de Contacto falso. En la maqueta, /publico-contacto-enviado responde 200 y muestra Contacto con ese aviso breve. Ninguna ruta de paginas.txt responde 404."
+    }
+  ],
+  "lotes": [
+    {
+      "id": "pub1-portada",
+      "ola": "PUB1",
+      "tanda": 1,
+      "items": [
+        "PUB1-01",
+        "PUB1-02"
+      ],
+      "titulo": "La portada y el menú público",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/publico-portada.html y navegacion-publica.html; resources/static/css/publico-portada.css y publico-navegacion.css (la migración); java/grupo5/cliente/web/PublicoPortadaController.java (la portada pide además publico.entregasConfirmadas(), que el puerto ya tiene); los datos de ejemplo de la portada en java/grupo5/cliente/maqueta/PublicoMaqueta.java, si hacen falta (regla 4); las líneas de /publico-portada en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de la portada y del menú público (PortadaConSesionMaquetaTest salvo su caso de Contacto, PortadaConSesionTest, y en SitioControllerTest, NombresVisiblesTest y SitioConApisTest los casos de la portada y del menú).",
+      "rutasVisuales": [
+        "publico-portada"
+      ],
+      "que": "La portada es el arquetipo A01 (#portada), con las piezas del catálogo: el título con la trama, la bajada y las dos acciones (una sola llena), el dibujo del recorrido con un fruto por entrega confirmada del mes, la última entrega confirmada con su foto, su etiqueta y su sello, las cifras de cifrasDePortada, «Cómo funciona» con la raíz numerada de 5 pasos y las entregas confirmadas del mes con «Ver todas» a Entregas. Los datos salen de cifrasDePortada y entregasConfirmadas (el puerto ya los tiene; el adaptador real trae hasta 50 entregas, y la cuenta de frutos es la de esa lista); quién recibió, «Recibió: <la organización>» (HG-03, DA-10), nunca una persona. Sin las abejas, el corte bajo tierra ni el cierre de hoy (DA-22): la portada no carga abejas.js ni usa esos fragmentos de componentes/huerta.html, que no se borran. Conserva lo que mide ArmazonFijoTest: el salto al contenido, la pantalla de carga (#indicador-carga) y la carga de las dos letras. El menú público pasa a Inicio, Entregas, Organizaciones y Cómo funciona (a /publico-nosotros), sin el Mapa (DA-01, DA-05, DA-17); en el celular, Cómo funciona lleva el ícono i-brote de iconos :: comunes, como la guía, sin editar iconos.html. En /publico-mapa queda marcada Entregas; Cómo funciona se marca en las páginas de la hoja publico-conocer. Ingresar y Crear una cuenta, o «Ir a mi inicio» con la sesión iniciada, siguen como hoy."
+    },
+    {
+      "id": "pub1-entregas",
+      "ola": "PUB1",
+      "tanda": 1,
+      "items": [
+        "PUB1-03",
+        "PUB1-04"
+      ],
+      "titulo": "Entregas y el Mapa, dentro de Entregas",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/publico-donaciones.html y publico-mapa.html; resources/static/css/publico-donaciones.css y publico-mapa.css (la migración) y publico-listas.css (solo las reglas que usan nada más que estas dos pantallas, regla 4); java/grupo5/cliente/web/PublicoDonacionesController.java y PublicoMapaController.java, si las pantallas lo piden; los datos de ejemplo en java/grupo5/cliente/maqueta/PublicoMaqueta.java (regla 4) y PublicoMapaMaqueta.java, si hacen falta; las líneas de /publico-donaciones y /publico-mapa en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas (PublicoMapaControllerTest, ListadoEnLasPublicasTest en sus tests de Entregas y del Mapa, y en SitioControllerTest y NombresVisiblesTest los casos de esas rutas); en InterfazFitnessTest, solo las líneas de HOJAS_HEREDADAS y LISTAS de sus hojas y plantillas.",
+      "rutasVisuales": [
+        "publico-donaciones",
+        "publico-mapa"
+      ],
+      "que": "Entregas deriva del arquetipo A10 (#entregas): las entregas confirmadas con su foto, la etiqueta de la entrega del catálogo (etiqueta-entrega) y el sello, con la barra de componentes/listado y sus filtros de hoy (el período) y un enlace al Mapa (DA-01). Quién recibió, «Recibió: <la organización>» (HG-03, DA-10), nunca una persona. El Mapa deriva de A07 (#seguimiento): el mapa con su lista, todo lo que dice el dibujo también en texto, y las migas del catálogo con Entregas enlazada (DA-01); los filtros, la lista plegada y el paginador de hoy siguen. Las dos rutas con ?escenario=muchas siguen en la línea de base de toque (sección 10.4 del backlog): a 360 px fallan los marcadores numerados del mapa (button.mapa-marcador, de static/css/componentes/mapa.css y static/js/mapa.js, del catálogo), que esta ola no edita; no son bloqueantes del lote y no entran en sus rutasVisuales."
+    },
+    {
+      "id": "pub1-organizaciones",
+      "ola": "PUB1",
+      "tanda": 1,
+      "items": [
+        "PUB1-05"
+      ],
+      "titulo": "Organizaciones, en lo público",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/publico-entidades.html; resources/static/css/publico-entidades.css (la migración) y publico-listas.css (solo las reglas que usa nada más que esta pantalla, regla 4); java/grupo5/cliente/web/PublicoEntidadesController.java, si la pantalla lo pide; los datos de ejemplo en java/grupo5/cliente/maqueta/PublicoEntidadesMaqueta.java, si hacen falta; las líneas de /publico-entidades en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esa pantalla (PublicoEntidadesControllerTest, ListadoEnLasPublicasTest en sus tests de Organizaciones, y en SitioControllerTest y NombresVisiblesTest los casos de /publico-entidades); en InterfazFitnessTest, solo las líneas de HOJAS_HEREDADAS y LISTAS de sus hojas y plantillas.",
+      "rutasVisuales": [
+        "publico-entidades"
+      ],
+      "que": "Organizaciones deriva del arquetipo A02 (#necesidades): tarjetas de organización sobre la lámina, con el avance de cada necesidad (la cuenta de donaciones de hoy, HG-04) y la barra de componentes/listado con sus filtros de hoy (búsqueda, categoría, tipo de necesidad y emergencias) y el paginador. El plegable de cada tarjeta lleva un solo rótulo y la flecha del catálogo. El fragmento pantalla lo usan también las Organizaciones de quien dona (DON), de la empresa y de la persona: conserva su firma y lo que muestra para quien dona (el filtro «Ya doné»), y antes de comitear el lote corre -Pvisual también sobre donante-entidades y donante-entidades?cuenta=persona&ya=si, que no entran en la revisión ni en la hoja de contacto: una falla nueva ahí es bloqueante del lote."
+    },
+    {
+      "id": "pub1-ingresar",
+      "ola": "PUB1",
+      "tanda": 1,
+      "items": [
+        "PUB1-06"
+      ],
+      "titulo": "Ingresar y su error",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/publico-ingresar.html y publico-ingresar-error.html; resources/static/css/publico-ingresar.css (solo las reglas que usan nada más que estas dos pantallas: las de activar y recuperar, de PUB2, se quedan; regla 4); en java/grupo5/cliente/web/AccesoController.java, solo los métodos de /publico-ingresar y /publico-ingresar-error, si las pantallas lo piden; las líneas de /publico-ingresar en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas (en SitioControllerTest y SeguridadTest los casos de /publico-ingresar y /publico-ingresar-error).",
+      "rutasVisuales": [
+        "publico-ingresar",
+        "publico-ingresar-error"
+      ],
+      "que": "Ingresar deriva del arquetipo A12 (#confirmar): la columna del formulario, con los campos, los errores y los botones del catálogo, una sola acción llena y sus estados de hoy (lento, error, sin conexión, bloqueado, pendiente y sesión vencida). Es la puerta de la demo: las cuentas de ejemplo y sus textos siguen. El error es un estado del mismo formulario, con el resumen arriba y el campo marcado en su lugar; su ruta sigue. En el stack real la puerta es la de Keycloak (el tema de auth-service), que esta ola no toca; IngresoConKeycloakRealTest no se edita."
+    },
+    {
+      "id": "pub1-conocer",
+      "ola": "PUB1",
+      "tanda": 1,
+      "items": [
+        "PUB1-07",
+        "PUB1-08"
+      ],
+      "titulo": "Cómo funciona, Cómo donar y Ayuda",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/publico-nosotros.html, publico-para-donantes.html y publico-para-entidades.html; resources/static/css/publico-conocer.css (la migración) y publico-paginas.css (solo las reglas que usan nada más que estas tres pantallas, regla 4); java/grupo5/cliente/web/PublicoNosotrosController.java, si la pantalla lo pide; en resources/templates/pie.html, solo el texto de tres enlaces (DA-23); las líneas de /publico-nosotros y /publico-para- en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas y del pie (PublicoPaginasControllerTest, y en SitioControllerTest y NombresVisiblesTest los casos de esas rutas y del pie).",
+      "rutasVisuales": [
+        "publico-nosotros",
+        "publico-para-donantes",
+        "publico-para-entidades"
+      ],
+      "que": "Las tres páginas de hoy cambian de nombre y siguen en sus rutas (DA-05): Nosotros es «Cómo funciona», Para donantes es «Cómo donar» (la entrada del menú de quien dona) y Para organizaciones es «Ayuda» (la del menú de la organización). Derivan del arquetipo A01: el título con la trama, la raíz numerada de 5 pasos donde se cuenta el recorrido, las cifras de cifrasDeNosotros con su período y su fecha, láminas de un solo tema y una sola acción llena por página. El pie nombra las tres con su nombre nuevo, sin cambiar rutas ni orden (DA-23). Las tres comparten la hoja publico-conocer, así que el menú público marca Cómo funciona en las tres (lo resuelve pub1-portada)."
+    },
+    {
+      "id": "pub1-contacto",
+      "ola": "PUB1",
+      "tanda": 1,
+      "items": [
+        "PUB1-09",
+        "PUB1-10"
+      ],
+      "titulo": "Contacto y Términos y privacidad",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/publico-contacto.html, publico-contacto-enviado.html, publico-contacto-error.html y publico-legales.html; resources/static/css/publico-paginas.css (solo las reglas que usan nada más que estas pantallas: la hoja se queda, regla 4); java/grupo5/cliente/web/PublicoContactoController.java y PublicoContactoEnvioController.java; los datos de ejemplo en java/grupo5/cliente/maqueta/PublicoContactoMaqueta.java, si hacen falta; las líneas de /publico-contacto y /publico-legales en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas (PublicoContactoControllerTest, EnviosTest si cambia lo que afirma de Contacto, PortadaConSesionMaquetaTest.contactoSigueConElMarcoPrivadoDelRol, y en SitioControllerTest los casos de esas rutas).",
+      "rutasVisuales": [
+        "publico-contacto",
+        "publico-contacto-enviado",
+        "publico-contacto-error",
+        "publico-legales"
+      ],
+      "que": "Contacto deriva del arquetipo A12 (#confirmar): la columna del formulario con los campos, el error con su resumen arriba y una sola acción llena; sus estados de hoy siguen (lento, error, sin conexión, con sesión, el código del aviso y ?volver=), con el marco privado del rol si hay sesión. El envío termina en Contacto con el aviso breve del catálogo, que lleva el número del mensaje («Recibimos tu mensaje. Su número es 4821. Te respondemos por correo.»), sin página de respuesta propia (DA-06, DA-24); con ?volver=, Contacto ofrece la salida «Volver a …» de hoy. En la maqueta, /publico-contacto-enviado sigue y muestra Contacto con ese aviso; publico-contacto-error sigue como el estado de error del formulario. El campo trampa y la clave de envío siguen. Términos y privacidad no tiene arquetipo: es una página de lectura con la composición de la huerta (el ancho de lectura del catálogo, el rótulo y los títulos de sección), sin acción llena."
+    }
+  ]
+}

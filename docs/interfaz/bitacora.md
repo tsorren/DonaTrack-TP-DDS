@@ -250,6 +250,24 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
   revisar el usuario ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 5).
 - **Evidencia:** `VariantesInterceptor.java`, `9b2d3e147`.
 
+### 2026-11-24 · publico · Manifiesto de PUB1: la portada de A01 sin las abejas
+
+- **Decisión:** la portada sigue al arquetipo A01, sin las abejas, el corte «bajo tierra» ni el
+  cierre de la portada de K (DA-22). El pie nombra Nosotros, Para donantes y Para organizaciones
+  como «Cómo funciona», «Cómo donar» y «Ayuda» (DA-23). Contacto responde con un aviso breve en
+  Contacto que lleva el número del mensaje (DA-24). Reparto en 6 lotes de una tanda
+  ([backlog, sección 13](backlog-guia-al-codigo.md)).
+- **Alternativas:** conservar las abejas y el corte debajo de A01; dejar el pie con los nombres de
+  hoy; llevar el envío de Contacto a la pantalla de origen.
+- **Por qué:** la portada es una pantalla «directa» y la guía no dibuja abejas; cada enlace del pie
+  nombra la página a la que lleva; la portada no tiene región de avisos, así que el aviso se
+  perdería.
+- **Costo:** `AbejasYRenglonesTest` y `BajoTierraRotulosTest` van a fallar en lo que miden de la
+  portada de K. No se editan y lo decide el usuario, como el lema del pie en C1.
+- **Quién decidió:** el autor del manifiesto, con la opción recomendada, delegada por el
+  relevamiento del 2026-11-24 (corrida desatendida, rama = gate; plan `.claude/plan-guia-resto.md`).
+  El usuario no las respondió.
+
 ### 2026-11-23 · donante · Fichas de DON: Misiones y el inicio de la persona con la guía
 
 - **Decisión:** las fichas [`guia-don-misiones.md`](flujos/guia-don-misiones.md) y

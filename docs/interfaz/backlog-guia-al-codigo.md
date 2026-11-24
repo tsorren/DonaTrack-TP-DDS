@@ -75,6 +75,10 @@ G1 no entra en esta ronda: se responde por área, mirando la hoja.
 Corrida desatendida (2026-11-24): DA-09, DA-10, DA-12 y DA-14b se resuelven con la opción
 recomendada y DA-11 cambia a Opus medium, «delegada por el relevamiento del 2026-11-24» (plan
 `.claude/plan-guia-resto.md`, aprobado por el usuario).
+Manifiesto de PUB1 (2026-11-24, misma corrida): DA-22, DA-23 y DA-24 son decisiones nuevas que el
+usuario no respondió. Van con la opción recomendada, «Delegada por el relevamiento del 2026-11-24
+(corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md)»; la opción descartada
+queda en la columna de la recomendación.
 
 | ID | Pregunta | Recomendación | Respuesta del usuario | Fecha | Ola |
 |---|---|---|---|---|---|
@@ -98,6 +102,9 @@ recomendada y DA-11 cambia a Opus medium, «delegada por el relevamiento del 202
 | DA-15 | Si el 30/11 no llegó todo: ¿corte por área con la regla G2, o todo o nada? | Corte por área | Corte por área («todas las recomendadas», ronda 1) | 2026-11-22 | Z |
 | DA-16 | La excepción de toque que el cierre de C0 agregó a `VerificacionVisualTest` para la casilla del buzón en `/estilos` (`e7ba71c36`), sin consultar: ¿se mantiene o se revierte? | Ninguna: se presentaron las dos | Se mantiene («Mantenerla»). Queda en el [ADR de la excepción de toque](../adr/cliente-liviano/20261122-excepcion-de-toque-para-la-casilla-del-buzon-en-estilos.md) (`proposed`) y en [DTI-46](../adr/DEUDA_TECNICA.md#dti-46) | 2026-11-22 | C0 |
 | DA-21 | La casilla del buzón: `VerificacionVisualTest` mide el `input` de 12 px y no su etiqueta de 48 px, y ORG, DON y ADM2 rehacen el buzón. ¿Cómo pasa el toque? | Que la casilla mida 48 px de verdad, con el patrón de C1-12 (el control nativo transparente encima de todo el bloque): no cambia el test ni pide ADR. Las otras: extender la excepción de DA-16 a las rutas del buzón, o que el test mida la etiqueta (las dos cambian el test y piden ADR) | La casilla de 48 px («Todas las recomendadas», ronda 4) | 2026-11-23 | ORG, DON y ADM2 |
+| DA-22 | Portada: A01 no dibuja las abejas, el corte «bajo tierra» ni el cierre de la portada de hoy (la variante K), y el ADR «Huerta y galpón» deja abierto qué pasa con ellas. ¿La portada sigue a A01 sin esas piezas, o las conserva debajo de A01? | A01 sin esas piezas. `AbejasYRenglonesTest` y `BajoTierraRotulosTest`, que las miden en `/publico-portada`, no se editan: sus fallos se anotan para que decida el usuario, como el lema del pie en C1 (§10.5, [DTI-47](../adr/DEUDA_TECNICA.md#dti-47)). `static/js/abejas.js` y los fragmentos de `componentes/huerta.html` que la portada deja de usar no se borran en PUB1. Descartada: conservarlas debajo de A01 (los tests siguen pasando, pero una pantalla «directa» deja de ser fiel a su arquetipo y suma composición que la guía no tiene) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | PUB1 |
+| DA-23 | El pie: con DA-05, Nosotros, Para donantes y Para organizaciones pasan a llamarse «Cómo funciona», «Cómo donar» y «Ayuda». La guía dibuja el pie con los nombres de hoy. ¿El pie los nombra con el nombre nuevo? | Sí: cambia solo el texto de esos tres enlaces de `pie.html`; las rutas y el orden siguen. Descartada: el pie con los nombres de hoy (cada enlace llevaría a una página que se llama de otra forma) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | PUB1 |
+| DA-24 | Contacto: con DA-06, la respuesta es un aviso breve. ¿Adónde lleva el envío y dónde queda el número del mensaje? | A Contacto (`/publico-contacto`, con su `?volver=` si vino), con el aviso breve que lleva el número («Recibimos tu mensaje. Su número es 4821. Te respondemos por correo.»). Con `?volver=`, Contacto ofrece la salida «Volver a …» que hoy tiene la página de enviado. En la maqueta, `/publico-contacto-enviado` sigue y muestra Contacto con el aviso. Descartada: llevar a la pantalla de `?volver=` (la portada no tiene la región `#avisos` y el aviso se perdería) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | PUB1 |
 | G0 | Con la medida de C0 (§3.4): ¿el plan sigue con todo el sitio o se recorta al recorrido de la demo? | Recorte al recorrido de la demo (ORG, DON y PUB1), con ADM1 por decidir en G1 | Todo el sitio («Quiero todo el sitio», ronda 3). Quedan 8 corridas: C1, ORG, DON, PUB1, ADM1, PUB2, ADM2 y Z | 2026-11-22 | Todas |
 | G1 | Con la hoja de G1 (16 pantallas de hoy, §10.3): ¿cada área se puede mostrar así? | Ninguna: lo decide el usuario mirando la hoja | Las cuatro áreas se pueden mostrar así («Las 4 se muestran»). G2 permite que un área entre a medias. Es una excepción a la regla del piso del plan (§10: un área con una pantalla sin rehacer que falla el piso queda en «no»): las 11 rutas en rojo de la línea de base (§10.4), que tocan las cuatro áreas, fallan solo por toque, no por contraste. El usuario la mantuvo al conocer la regla («Mantener, excepción») | 2026-11-23 | Todas |
 | DA-17 | ¿El menú de cada rol cambia en la ola de ese rol, y no todos juntos en C1? | Sí: si una ola no llega, su área queda con el menú de hoy | Sí («Todas las recomendadas», ronda 3) | 2026-11-22 | PUB1, DON, ORG y ADM1 |
@@ -785,3 +792,112 @@ abierto está en [DTI-49](../adr/DEUDA_TECNICA.md#dti-49); las decisiones, en la
   `mapa-del-sitio.md`, los cambios de la ola; `componentes.md`, las filas que nombran a quien dona.
   `tono-y-comunicacion.md` y [`requerimientos-e7.md`](../requerimientos/requerimientos-e7.md) no
   cambian: los nombres de los estados ya eran los de la tabla y ningún requerimiento cambia de estado.
+
+## 13. Ola PUB1: el sitio público
+
+Rehace las 13 plantillas de lo público de §5 (PUB1) y el menú público (§5.1; DA-01, DA-05 y
+DA-17). No lleva fichas: Legales, sin arquetipo, es derivación del agente (DA-08). Manifiesto:
+[`backlog-guia-al-codigo.pub1.manifiesto.json`](backlog-guia-al-codigo.pub1.manifiesto.json). Se
+escribió el 2026-11-24 en la corrida desatendida, en paralelo con la corrida de DON: el reparto y
+DA-22 a DA-24 no los aprobó el usuario y van con la opción recomendada (§2.2). Se lanza desde la
+`E7_guia_ui` de ese momento: PUB1 no comparte pantallas con DON; los archivos que comparte
+(`SitioControllerTest`, `paginas.txt`, `InterfazFitnessTest`) se reparten por líneas (regla 4).
+
+### 13.1 Decisiones de la ola
+
+| ID | Qué decide | Lote |
+|---|---|---|
+| DA-01 | El Mapa sale del menú y queda dentro de Entregas: el menú lo saca y Entregas lo enlaza | `pub1-portada` (menú) y `pub1-entregas` (el enlace y las migas) |
+| DA-05 | Nosotros, Para donantes y Para organizaciones pasan a «Cómo funciona», «Cómo donar» y «Ayuda», con las rutas de hoy; «Cómo funciona» entra al menú público | `pub1-portada` (menú) y `pub1-conocer` (las páginas) |
+| DA-06 | La respuesta de Contacto pasa a aviso breve | `pub1-contacto`, con DA-24 |
+| DA-10 | En lo público, quien recibió es la organización (HG-03) | `pub1-entregas` |
+| DA-17 | Cambia solo el menú público | `pub1-portada` |
+| DA-22 | La portada sigue a A01, sin las abejas, el corte «bajo tierra» ni el cierre de hoy | `pub1-portada` |
+| DA-23 | El pie nombra las tres páginas con su nombre nuevo | `pub1-conocer` |
+| DA-24 | Contacto: el envío vuelve a Contacto con el número en el aviso breve | `pub1-contacto` |
+
+DA-22, DA-23 y DA-24 son nuevas de esta ola; su opción descartada está en §2.2.
+
+### 13.2 Reparto
+
+Una sola tanda, con 6 lotes. Ningún archivo de Java ni plantilla lo tocan dos lotes, salvo los que
+la regla 4 reparte por líneas. El menú (`navegacion-publica.html`) tiene un solo dueño,
+`pub1-portada`. Marca la sección por el nombre de la hoja de cada pantalla, y ninguna hoja cambia
+de nombre.
+
+| Lote | Tanda | Plantillas | Arquetipo y decisiones | Ficha |
+|---|:-:|---|---|---|
+| `pub1-portada` | 1 | `publico-portada`; el menú público (`navegacion-publica.html`) | A01 directo; DA-01, DA-05, DA-17 y DA-22 | No |
+| `pub1-entregas` | 1 | `publico-donaciones` y `publico-mapa` | Deriva de A10 y de A07; DA-01, DA-10 y HG-03 | No |
+| `pub1-organizaciones` | 1 | `publico-entidades` | Deriva de A02, con `componentes/listado`; HG-04 | No |
+| `pub1-ingresar` | 1 | `publico-ingresar` y `publico-ingresar-error` | Deriva de A12 | No |
+| `pub1-conocer` | 1 | `publico-nosotros`, `publico-para-donantes` y `publico-para-entidades`; los textos de tres enlaces de `pie.html` | Deriva de A01; DA-05 y DA-23 | No |
+| `pub1-contacto` | 1 | `publico-contacto`, `publico-contacto-enviado`, `publico-contacto-error` y `publico-legales` | Deriva de A12; DA-06 y DA-24. Legales, sin arquetipo: página de lectura | No |
+
+Suma: 1 + 2 + 1 + 2 + 3 + 4 = 13, las 13 de §5.
+
+**Plantillas del área que no son pantallas de PUB1:**
+
+| Plantilla | En PUB1 |
+|---|---|
+| `navegacion-publica.html` | `pub1-portada` (DA-01, DA-05 y DA-17) |
+| `datos-publicos.html` | Compartida (regla 4): `avisoError` y `fotoVentana` conservan su firma, porque también las usan `publico-activar`, `publico-activar-pedir` y los dos registros (PUB2) |
+| `pie.html` | `pub1-conocer`, solo el texto de tres enlaces (DA-23) |
+| `layout-publico.html` | Fuera: es el armazón de C1 (C1-07); no se edita |
+| `error/403`, `error/404`, `error/5xx`, `sin-dibujar` y `aviso-persona` | Fuera: son de PUB2 (§5) |
+| `error/429.html` y `pagina-error.html` | Fuera: la primera es una página de estado y la segunda, la pieza que comparten las páginas de error. §5 no las nombra; quedan anotadas para PUB2 |
+| `publico-entidades.html`, su fragmento `pantalla` | Es de `pub1-organizaciones`, pero lo usan también `donante-entidades` y `persona/donante-entidades` (DON): conserva su firma y lo que muestra para quien dona (regla 4) |
+| `persona/datos-persona.html` | Fuera: son los datos de ejemplo de la persona (§5, DON) |
+| `cuenta-menu`, `interaccion`, `envio`, `cerrar-sesion`, `paginador` e `iconos` | Fuera: son comunes a los cuatro roles o del catálogo; no se editan |
+| `componentes/` | Fuera: es el catálogo; no se edita |
+
+**Hojas heredadas que comparten pantallas de PUB2 o `/estilos`.** `publico-paginas.css` es la de
+Contacto y Legales y la de `/estilos`, y la importan `publico-conocer.css`, `publico-listas.css` y
+`publico-error.css`. `publico-listas.css` la importan Entregas, Organizaciones, el Mapa y
+`publico-registro.css` (PUB2). `publico-ingresar.css` la usan Ingresar y las 7 plantillas de activar
+y recuperar (PUB2). En PUB1 ninguna de las tres se borra ni sale de `HOJAS_HEREDADAS`: cada lote
+saca solo las reglas que usan nada más que sus pantallas.
+
+### 13.3 Ítems
+
+| ID | Lote | Qué | Arquetipo y decisiones | Estado |
+|---|---|---|---|---|
+| PUB1-01 | `pub1-portada` | La portada, en el orden de A01: el título con la trama, el dibujo con un fruto por entrega confirmada del mes, la última entrega confirmada con su foto y su sello, las cifras, «Cómo funciona» con la raíz numerada de 5 pasos y las entregas confirmadas del mes. Los datos salen del puerto que ya existe (`cifrasDePortada` y `entregasConfirmadas`) | A01; DA-22; HG-03 con su texto de reemplazo (DA-10) | Pendiente |
+| PUB1-02 | `pub1-portada` | El menú público: Inicio, Entregas, Organizaciones y Cómo funciona (a `/publico-nosotros`), sin el Mapa; en el Mapa queda marcada Entregas | DA-01, DA-05 y DA-17 | Pendiente |
+| PUB1-03 | `pub1-entregas` | Entregas: las entregas confirmadas, cada una con su foto, su etiqueta y quién la recibió, y un enlace al Mapa | Deriva de A10; DA-01, DA-10 y HG-03 | Pendiente |
+| PUB1-04 | `pub1-entregas` | El Mapa, dentro de Entregas: el mapa con su lista y las migas a Entregas | Deriva de A07; DA-01 | Pendiente |
+| PUB1-05 | `pub1-organizaciones` | Organizaciones: tarjetas sobre la lámina, con el avance de cada necesidad y la barra de `componentes/listado` | Deriva de A02; HG-04 | Pendiente |
+| PUB1-06 | `pub1-ingresar` | Ingresar y su error, la puerta de la demo | Deriva de A12 | Pendiente |
+| PUB1-07 | `pub1-conocer` | Cómo funciona, Cómo donar y Ayuda: las páginas de hoy, con su nombre nuevo y la composición de A01 | Deriva de A01; DA-05 | Pendiente |
+| PUB1-08 | `pub1-conocer` | El pie nombra esas tres páginas con su nombre nuevo | DA-23 | Pendiente |
+| PUB1-09 | `pub1-contacto` | Contacto y su error; la respuesta pasa a aviso breve en Contacto, con el número del mensaje | Deriva de A12; DA-06 y DA-24 | Pendiente |
+| PUB1-10 | `pub1-contacto` | Términos y privacidad, una página de lectura | Sin arquetipo: derivación (DA-08) | Pendiente |
+
+Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5), con el
+límite de las hojas compartidas de §13.2.
+
+### 13.4 Qué se verifica (DA-20)
+
+- **En cada lote:** los gates y `-Pvisual` sobre sus `rutasVisuales`, una por plantilla.
+  `pub1-organizaciones` corre además `-Pvisual` sobre `/donante-entidades` y
+  `/donante-entidades?cuenta=persona&ya=si` antes de comitear, porque esas pantallas usan su
+  fragmento `pantalla`; no entran en la revisión ni en la hoja de contacto.
+- **Mientras dura la tanda:** cada lote ve el menú y el pie de hoy fuera de `pub1-portada` y de
+  `pub1-conocer`. No es hallazgo del lote.
+- **Al cierre:** `-Pvisual` sobre las 53 rutas de PUB1 de `paginas.txt` (las de `/publico-portada`,
+  `-ingresar`, `-donaciones`, `-entidades`, `-mapa`, `-nosotros`, `-para-donantes`, `-para-entidades`,
+  `-legales` y `-contacto`). No entra `/publico-donaciones?respuesta=404`, que muestra `error/404`
+  (PUB2). Se compara con la línea de base de §10.4. Corren también los otros cinco tests visuales,
+  con la línea de base de §10.5 y §11.3. No se levantan el stack ni el recorrido con login: los hace
+  Z, y ningún lote cambia un adaptador `rest` (plan de la corrida, punto 5).
+- **Lo que cambia en la línea de base:** las dos rutas de `/publico-mapa?escenario=muchas` (con y sin
+  la página 2) siguen en la línea de base de §10.4. `[OBSERVED]` En la pasada de G1
+  (`guia-c1/C1/muestra-g1/reporte.json`, fuera del repo) fallan a 360 px los marcadores numerados del
+  mapa (`button.mapa-marcador`, de `static/css/componentes/mapa.css` y `static/js/mapa.js`), que son
+  del catálogo y esta ola no edita. Si pasan, se anota. En los otros tests visuales, por DA-22 se espera que fallen
+  `AbejasYRenglonesTest.conReducirMovimientoLasAbejasQuedanQuietasDelanteYEnteras` y los dos de
+  `BajoTierraRotulosTest`. Miden las abejas y el corte «bajo tierra», que la portada nueva no tiene.
+  Siguen fallando, como antes, `AbejasYRenglonesTest.lasAbejasCambianDeCapaSoloCuandoNoSeVen` y
+  `loQueDonasYEchaRaicesVanEnterosEnSuRenglonEnTodosLosAnchos`. Esos fallos se anotan para que
+  decida el usuario; no son bloqueantes y nadie edita esos tests. Un fallo nuevo en `ArmazonFijoTest`,
+  que también mide la portada y Entregas, sí es bloqueante.
