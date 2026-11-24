@@ -4,11 +4,11 @@
    públicas (el ancho del contenido y los títulos). */
 @import url("publico-listas.css");
 
-/* Una etiqueta por entrega, de a dos en la computadora (la guía: grilla de 2), como en Entregas de la
+/* Una etiqueta por entrega, en tantas columnas como entren, con la misma medida que Entregas de la
    organización; los esqueletos de la carga ocupan el mismo lugar. */
 [aria-labelledby="confirmadas-titulo"] > .lista,
 [aria-busy="true"] > .lista {
-  --medida-columna: 22rem;
+  --medida-columna: 19rem;
 
   gap: var(--espacio-3);
 }

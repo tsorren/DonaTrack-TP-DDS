@@ -74,7 +74,7 @@
            th:text="|Actualizado el ${entregasConfirmadas.actualizado}.|">Actualizado el 15 de octubre de 2026,
           14:30.</p>
       </div>
-      <ol class="lista" role="list">
+      <ol th:unless="${#lists.isEmpty(lista)}" class="lista" role="list">
         <li th:each="e, i : ${lista}" class="pila" data-espacio="1"
             th:with="id=${'foto-' + i.count},
                      real=${#strings.startsWith(e.foto, 'https://') or #strings.startsWith(e.foto, 'http://')},
@@ -90,7 +90,7 @@
           <div th:replace="~{datos-publicos :: fotoVentana(${id}, ${e})}"></div>
         </li>
       </ol>
-      <p data-tono="suave" class="texto-chico"
+      <p th:unless="${#lists.isEmpty(lista)}" data-tono="suave" class="texto-chico"
          th:text="${#lists.size(lista) == 1} ? 'Mostrando 1 entrega confirmada.' : |Mostrando ${#lists.size(lista)} entregas confirmadas, de la última a la primera.|">Mostrando
         10 entregas confirmadas, de la última a la primera.</p>
     </section>
