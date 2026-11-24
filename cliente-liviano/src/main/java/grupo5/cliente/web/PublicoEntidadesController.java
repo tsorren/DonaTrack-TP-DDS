@@ -9,6 +9,7 @@ import grupo5.cliente.vistas.Tramo;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -26,9 +27,11 @@ import org.springframework.web.bind.annotation.RequestParam;
  * ?emergencia=si}) sobre todas las organizaciones, las ordena por tipo y las corta en páginas de
  * {@value #POR_PAGINA} ({@code ?pagina=}). Atributos: {@code entidadesPublicas} (lo que da el
  * puerto), {@code organizaciones} (la página, cada una solo con sus necesidades que cumplen los
- * filtros), {@code grupos} (la página por tipo, en orden), {@code listado} (la barra del componente
- * listado, R11-B04: la categoría y "Emergencias" solo si la fuente los trae), {@code paginador} y,
- * para los textos sin resultados, {@code busqueda}, {@code categoriaElegida} y {@code filtrado}.
+ * filtros), {@code vigentes} (clave a la cantidad de necesidades vigentes de cada organización, sin
+ * filtrar, para «Necesidades satisfechas»), {@code grupos} (la página por tipo, en orden), {@code
+ * listado} (la barra del componente listado, R11-B04: la categoría y "Emergencias" solo si la
+ * fuente los trae), {@code paginador} y, para los textos sin resultados, {@code busqueda}, {@code
+ * categoriaElegida} y {@code filtrado}.
  */
 @Controller
 public class PublicoEntidadesController {
@@ -98,6 +101,11 @@ public class PublicoEntidadesController {
             .filter(e -> !e.pedidos().isEmpty())
             .sorted(Comparator.comparingInt(PublicoEntidadesController::orden))
             .toList();
+    // «Necesidades satisfechas» cuenta todas las necesidades del mes, no solo las que pasan el
+    // filtro
+    Map<String, Integer> vigentes = new HashMap<>();
+    datos.entidades().forEach(e -> vigentes.putIfAbsent(e.clave(), e.pedidos().size()));
+    model.addAttribute("vigentes", vigentes);
     Tramo<Entidad> pagina = Tramo.de(visibles, Paginadores.pedida(peticion), POR_PAGINA);
     model.addAttribute("organizaciones", pagina);
     model.addAttribute("grupos", porGrupo(pagina.filas()));

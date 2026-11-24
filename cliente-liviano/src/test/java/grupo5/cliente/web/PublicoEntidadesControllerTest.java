@@ -168,6 +168,46 @@ class PublicoEntidadesControllerTest {
         .andExpect(content().string(not(containsString("__2__"))));
   }
 
+  private static Pedido pide(String que, String cat) {
+    return new Pedido(que, cat, "Piden 10", "Se repite", null, 10, "recurrente", false);
+  }
+
+  @Test
+  void lasNecesidadesSatisfechasDelMesNoCambianConLosFiltros() throws Exception {
+    datos =
+        new PublicoEntidadesVista(
+            List.of(
+                new Entidad(
+                    "comedor",
+                    "Comedor",
+                    "Comedor Ejemplo",
+                    "alimentos",
+                    null,
+                    3,
+                    null,
+                    null,
+                    List.of(
+                        pide("Arroz", "alimentos"),
+                        pide("Fideos", "alimentos"),
+                        pide("Camperas", "ropa"),
+                        pide("Medias", "ropa"),
+                        pide("Frazadas", "ropa")))),
+            31,
+            "10 de noviembre de 2026",
+            "octubre de 2026",
+            true,
+            false,
+            null);
+
+    // el total del mes son todas sus necesidades vigentes, no solo las que pasan el filtro
+    for (String ruta : List.of("/publico-entidades", "/publico-entidades?categoria=ropa")) {
+      mvc.perform(get(ruta))
+          .andExpect(status().isOk())
+          .andExpect(
+              content().string(containsString("Necesidades satisfechas en octubre: 3 de 8.")));
+    }
+  }
+
   @Test
   void sinEntidadesConPedidosMuestraElEstadoVacio() throws Exception {
     datos = conEntidades();

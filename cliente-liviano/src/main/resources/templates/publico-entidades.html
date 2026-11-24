@@ -156,10 +156,10 @@
 </div>
 
 <!--/* Una organización, en una tarjeta del catálogo. e trae solo las necesidades que cumplen los
-       filtros, las emergencias primero. Con ?abrir=<clave>, su plegable abierto. */-->
+       filtros, las emergencias primero; el total del mes sale de vigentes, sin filtrar. Con ?abrir=<clave>, su plegable abierto. */-->
 <li th:fragment="organizacion(e)" class="tarjeta pila" data-espacio="3" data-v="organizacion"
     th:with="cuantos=${#lists.size(e.pedidos)},
-             delMes=${e.cubiertas == null ? 0 : e.cubiertas + #lists.size(e.pedidos)},
+             delMes=${e.cubiertas == null ? 0 : e.cubiertas + vigentes[e.clave]},
              ya=${yaDonadas != null and #lists.contains(yaDonadas, e.clave)}"
     th:attr="data-ya=${yaDonadas != null} ? (${ya} ? 'si' : 'no') : null">
   <div class="pila" data-espacio="2">
