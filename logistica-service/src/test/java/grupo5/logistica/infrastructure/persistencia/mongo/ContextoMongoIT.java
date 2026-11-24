@@ -33,8 +33,7 @@ class ContextoMongoIT {
   @Autowired IEntregasRepository entregas;
   @Autowired PlatformTransactionManager transactionManager;
 
-  @Autowired(required = false)
-  LockProvider lockProvider;
+  @Autowired LockProvider lockProvider;
 
   @Test
   void losRepositoriosDelDominioSonLosAdaptadoresDeMongo() {
