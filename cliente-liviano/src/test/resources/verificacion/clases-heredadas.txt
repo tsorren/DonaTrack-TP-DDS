@@ -78,13 +78,6 @@ pedido-acciones
 pedido-detalle
 pedido-partes
 pedidos-lista
-perfil
-perfil-cuenta
-perfil-grupo
-perfil-legales
-perfil-par
-perfil-par--calle
-perfil-seccion
 periodo
 periodo-cuanto
 periodo-nombre

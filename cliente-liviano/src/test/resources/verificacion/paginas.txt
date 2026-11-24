@@ -89,6 +89,7 @@
 /donante-perfil?escenario=sin-conexion
 /donante-perfil-guardado
 /donante-perfil-guardado?mostrar=si
+/donante-perfil-guardado?seccion=datos
 /publico-donaciones
 /publico-donaciones?periodo=semana
 /publico-donaciones?escenario=vacio
@@ -319,6 +320,7 @@
 /donante-perfil?cuenta=persona
 /donante-donaciones-detalle?cuenta=persona
 /donante-seguimiento?cuenta=persona
+/donante-perfil-guardado?cuenta=persona
 /donante-entidades?cuenta=persona&ya=si
 # R11-18: la segunda página de la maqueta, con los nombres largos.
 /donante-entidades?cuenta=persona&pagina=2

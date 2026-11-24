@@ -276,7 +276,6 @@ class InterfazFitnessTest {
           "donante-comun.css",
           "donante-entidades.css",
           "donante-inicio.css",
-          "donante-notificaciones.css",
           "donante-perfil.css",
           "entidad-comun.css",
           "entidad-inicio.css",

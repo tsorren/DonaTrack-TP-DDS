@@ -98,7 +98,9 @@ class DonantePerfilControllerTest {
         .andExpect(content().string(containsString("value=\"no\" checked")))
         .andExpect(content().string(containsString("value=\"Martina\"")))
         .andExpect(content().string(containsString("value=\"Ruiz\"")))
-        .andExpect(content().string(containsString("value=\"DNI 12.345.678\"")))
+        // El documento, fijo: texto, no un campo (como la dirección de la organización).
+        .andExpect(content().string(containsString("<strong>DNI 12.345.678</strong>")))
+        .andExpect(content().string(not(containsString("name=\"documento\""))))
         .andExpect(content().string(containsString("value=\"Calle Falsa\"")))
         .andExpect(content().string(containsString("Aceptaste la versión 2")))
         .andExpect(content().string(containsString("hx-indicator=\"#enviando-donante-perfil\"")))
@@ -134,8 +136,98 @@ class DonantePerfilControllerTest {
     mvc.perform(get("/donante-perfil"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Razón social")))
-        .andExpect(content().string(containsString("value=\"30-00000000-0\"")))
+        // El CUIT, fijo: texto, no un campo (como la dirección de la organización).
+        .andExpect(content().string(containsString("<strong>30-00000000-0</strong>")))
+        .andExpect(content().string(not(containsString("name=\"cuit\""))))
         .andExpect(content().string(not(containsString("href=\"/donante-misiones\""))));
+  }
+
+  /** DON-07: deriva de A12, como el de la organización; la persona sigue a la empresa (DA-13). */
+  @Test
+  void cadaSeccionEsUnFormularioConLasPiezasDelCatalogo() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(perfiles.tipo(DONANTE)).thenReturn(Tipo.EMPRESA, Tipo.PERSONA);
+    when(perfiles.perfil(DONANTE)).thenReturn(EMPRESA, PERSONA);
+
+    for (int vez = 0; vez < 2; vez++) {
+      mvc.perform(get("/donante-perfil"))
+          .andExpect(status().isOk())
+          .andExpect(content().string(containsString("/css/donante-perfil.css")))
+          .andExpect(content().string(containsString("<h1>Mi perfil</h1>")))
+          .andExpect(content().string(containsString("aria-label=\"Secciones de tu perfil\"")))
+          .andExpect(
+              content()
+                  .string(
+                      containsString(
+                          "class=\"pila\" data-espacio=\"4\" aria-labelledby=\"nombre-titulo\"")))
+          .andExpect(
+              content()
+                  .string(
+                      containsString(
+                          "class=\"pila\" data-espacio=\"4\" aria-labelledby=\"datos-titulo\"")))
+          .andExpect(
+              content()
+                  .string(
+                      containsString(
+                          "class=\"pila\" data-espacio=\"4\" aria-labelledby=\"avisos-titulo\"")))
+          .andExpect(content().string(containsString("<div class=\"campo\">")))
+          .andExpect(content().string(containsString("<fieldset class=\"opciones\"")))
+          .andExpect(content().string(containsString("class=\"boton\" data-tono=\"principal\"")))
+          .andExpect(content().string(not(containsString("class=\"formulario"))))
+          .andExpect(content().string(not(containsString("class=\"perfil"))))
+          .andExpect(content().string(not(containsString("readonly"))));
+    }
+  }
+
+  /** DA-06: después de guardar, el perfil muestra el aviso breve del servidor en su región. */
+  @Test
+  void despuesDeGuardarMuestraElAvisoBreve() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(perfiles.tipo(DONANTE)).thenReturn(Tipo.PERSONA);
+    when(perfiles.perfil(DONANTE)).thenReturn(PERSONA);
+
+    mvc.perform(
+            get("/donante-perfil")
+                .flashAttr(
+                    Envios.AVISO, "Listo. Las organizaciones ven tu nombre: «Martina Ruiz»."))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "class=\"aviso-breve\" data-estado=\"hecho\">Listo. Las organizaciones ven"
+                            + " tu nombre: «Martina Ruiz».")));
+  }
+
+  /**
+   * En la maqueta, la ruta de guardado sigue: es el perfil con el aviso breve del catálogo, con su
+   * signo y su cierre, para la empresa y para la persona.
+   */
+  @Test
+  void enLaMaquetaGuardadoEsElPerfilConElAvisoBreve() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(perfiles.tipo(DONANTE)).thenReturn(Tipo.EMPRESA, Tipo.PERSONA);
+    when(perfiles.perfil(DONANTE)).thenReturn(EMPRESA, PERSONA);
+
+    mvc.perform(get("/donante-perfil-guardado"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("<h1>Mi perfil</h1>")))
+        .andExpect(content().string(containsString("hx-swap-oob=\"beforeend:#avisos\"><div")))
+        .andExpect(content().string(containsString("class=\"aviso-breve\" data-estado=\"hecho\"")))
+        .andExpect(content().string(containsString("aria-label=\"Cerrar el aviso\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<p>Listo. Las organizaciones ya no ven tu nombre: ven «Empresa donante ·"
+                            + " Sostenedor».</p>")));
+    mvc.perform(get("/donante-perfil-guardado").param("seccion", "datos"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("id=\"persona-perfil\"")))
+        .andExpect(
+            content().string(containsString("<p>Listo. Guardamos los datos de tu cuenta.</p>")))
+        .andExpect(content().string(containsString("aria-label=\"Cerrar el aviso\"")))
+        .andExpect(content().string(not(containsString("ya no ven tu nombre"))));
   }
 
   @Test
