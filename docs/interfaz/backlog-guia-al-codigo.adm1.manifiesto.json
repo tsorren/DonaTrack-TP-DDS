@@ -1,0 +1,296 @@
+{
+  "formato": "oleada-ui/1",
+  "version": "1.0.0",
+  "nombre": "guia",
+  "fecha": "2026-11-24",
+  "backlog": "docs/interfaz/backlog-guia-al-codigo.md",
+  "prefijoCommit": "E7: guía al código",
+  "comoLeerlo": "Manifiesto de la ola ADM1: las 18 plantillas del admin de la sección 5 del backlog (ADM1), el menú del admin (sección 5.1) y las piezas del galpón que DA-18 pasó de C1 a esta ola (la tabla con selección P21, el cajón P22 y el armazón del galpón, la mitad de P26). Los ítems, con su arquetipo, están en la sección 14 del backlog; las decisiones, en la sección 2.2; el arquetipo de cada plantilla, en la sección 5; las piezas, en la sección 6. Son 7 lotes en 2 tandas (sección 14.2): la tanda 1 trae las piezas del galpón (adm1-galpon y adm1-asignaciones) y las pantallas que no las necesitan para construirse; la tanda 2, adm1-por-decidir, que usa la cabecera, las pestañas y la tabla de propuestas de adm1-asignaciones, adm1-registrar, que toca archivos que en la tanda 1 son de adm1-donaciones, y adm1-ranking. Llevan ficha adm1-por-decidir (docs/interfaz/flujos/guia-adm-inicio-graficos.md) y adm1-ranking (docs/interfaz/flujos/guia-adm-ranking.md), aprobadas por delegación. Se escribió el 2026-11-24 en la corrida desatendida (plan C:/IdeaProjects/DonaTrack-TP-DDS/.claude/plan-guia-resto.md): el reparto, las fichas y DA-25 a DA-31 van con la opción recomendada, delegada por el relevamiento del 2026-11-24, y no los aprobó el usuario. En rutasVisuales va una ruta por plantilla (DA-20); adm1-galpon y adm1-asignaciones llevan /estilos por sus piezas. La regla 5 es solo para el cierre: esta ola no levanta el stack (plan de la corrida, punto 5; DA-20). DA-19 y DA-20 son decisiones del plan y no de un lote. Requisito para lanzarla: este manifiesto integrado en E7_guia_ui, después de la ola PUB1.",
+  "ramas": {
+    "base": "E7_guia_ui",
+    "destino": "E7_guia_ui",
+    "prefijoOla": "E7_guia_ui_"
+  },
+  "topes": {
+    "constructoresEnParalelo": 4,
+    "rondasDeReparacion": 3
+  },
+  "modelos": {
+    "juicio": {
+      "model": "opus",
+      "effort": "medium"
+    },
+    "mecanico": {
+      "model": "sonnet",
+      "effort": "high"
+    }
+  },
+  "olas": [
+    "ADM1"
+  ],
+  "reglas": [
+    "Cada pantalla se rehace con su arquetipo de la guía (docs/interfaz/guia/partes/50-pantallas.html, el ancla de la sección 4 del backlog: #bandeja para A03 y #confirmar para A12) y con las piezas que C1 dejó en el catálogo (docs/interfaz/componentes.md y /estilos), más las del galpón que traen adm1-galpon y adm1-asignaciones en la tanda 1 (DA-18): no se copia el marcado ni las clases de la guía, se usan los fragmentos y las clases del catálogo. Una plantilla que «deriva» sigue la composición de su arquetipo; admin-ranking y lo que va debajo de la bandeja en admin-inicio siguen su ficha (DA-08). Las piezas del galpón son del catálogo y van solo en los archivos del catálogo que la regla 4 da a adm1-galpon y a adm1-asignaciones, con su muestra en /estilos y su fila en docs/interfaz/componentes.md. Si una pantalla necesita una pieza que el catálogo no tiene, es un bloqueante del lote y se informa: no se crea una pieza nueva dentro de una hoja de pantalla. Lo de A03 que no es una pieza nueva se arma así, igual en todos los lotes: la cabecera del galpón (título, fecha y acciones) con las utilidades de composición (.pila y .racimo con data-alinea=\"entre arriba\") y los botones del catálogo, sin clase propia; la barra de pestañas con su cuenta, con componentes/segmentos (la cuenta en b, como hoy en Asignar y en Camiones); el botón denso, .boton con data-tamano=\"chico\"; el resumen, la lista de datos del catálogo (.datos), y si una salida «Ver ›» no entra en su fila, las salidas van juntas debajo, en un .racimo de enlaces. Cada lote termina la migración de las hojas heredadas de sus pantallas: lo que la pieza del catálogo ya resuelve sale de la hoja de la pantalla, y una hoja que queda vacía se borra con su import, salvo admin-secciones.css y admin-inicio.css, que también usan las pantallas de ADM2 (regla 4); los gráficos del inicio se quedan en admin-inicio.css (DA-30).",
+    "Los cercos no se mueven: ningún tope de InterfazFitnessTest cambia (ni sube ni baja), la lista de clases heredadas no crece (si un lote deja sin uso una clase heredada, borra su línea de cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt y lo anota), tokens.css no se toca y nadie edita un test de cliente-liviano/src/test/java/grupo5/cliente/visual/ ni le suma una excepción. El tope de medidas literales no tiene margen: cada lote deja el conteo de sus hojas igual o menor; una medida que la guía escribe como número pasa al token más cercano o se compensa en las hojas del lote, y la diferencia se anota. Las listas LISTAS, HOJAS_HEREDADAS y BARRAS_EXCEPTUADAS de InterfazFitnessTest no son topes: si un lote borra una plantilla o una hoja que nombran, la reemplaza por la que la sucede o saca su línea; admin-donaciones, admin-asignaciones, admin-camiones y admin-donaciones-registrar siguen usando componentes/listado. Los tests funcionales que afirman una ruta, un texto o un menú que esta ola cambia por una decisión (DA-04, DA-06, DA-07, DA-25, DA-26) se actualizan al comportamiento nuevo, con aserciones igual de fuertes; ninguno se borra ni se debilita.",
+    "El alcance es el admin de ADM1: las 18 plantillas de la sección 5 (ADM1), el menú del admin y las piezas del galpón, con lo que la sección 14.2 del backlog asigna. Las 22 pantallas de ADM2 (admin-donantes, admin-importaciones, admin-entidades, admin-administradores, admin-actividad, admin-notificaciones, admin-perfil y sus respuestas) no se rediseñan ni se arreglan: ven el armazón y el menú nuevos con su contenido de hoy, y quien construye y quien revisa lo anotan como menor, nunca como bloqueante; lo mismo con cualquier pantalla de otra ola. Los menús de quien dona, de la organización y lo público no cambian (DA-17). Ningún lote cambia un adaptador de cliente-liviano/src/main/java/grupo5/cliente/rest/ ni un puerto de cliente-liviano/src/main/java/grupo5/cliente/puertos/: un dato que el adaptador real no entrega se muestra con el texto de «Si no llega» de la sección 7 del backlog (la nueva salida, «Todavía sin fecha de nueva salida», HG-01), y lo demás que falte se anota como deuda del lote; no se inventa ni se escribe en la plantilla un dato de la guía. Los datos de ejemplo nuevos van en las clases de cliente-liviano/src/main/java/grupo5/cliente/maqueta/.",
+    "Algunos archivos los tocan varios lotes. cliente-liviano/src/test/resources/verificacion/paginas.txt: cada lote, solo las líneas de sus rutas. SitioControllerTest.java, PantallasTest.java, NombresVisiblesTest.java y SitioConApisTest.java: cada lote, solo los casos de sus rutas; adm1-galpon, además, los del menú del admin. Los tests que solo llegan a /admin-inicio (CompletarPerfilTest, ErroresConSesionTest, IngresoConKeycloakRealTest, MaquetaAbiertaTest, PerfilPendienteTest, PortadaConSesionMaquetaTest, SeguridadTest y UsuarioActualTest) no tendrían que cambiar, porque la ruta sigue; si uno afirma un texto de la pantalla que cambia, lo actualiza adm1-por-decidir. InterfazFitnessTest.java: cada lote, solo las líneas de HOJAS_HEREDADAS y LISTAS de sus hojas y plantillas. clases-heredadas.txt: cada lote, solo las líneas de las clases que deja sin uso. AdminOperacionMaquetaTest.java, ListadoEnAdminOperacionTest.java, ListadoEnLaMaquetaTest.java, java/grupo5/cliente/maqueta/AdminOperacionMaqueta.java y AdminOperacionDonaciones.java: cada lote, solo los casos y los datos de sus pantallas; un método que usan dos lotes conserva su firma. AdminDonacionesController.java, AdminDonacionesEnvios.java y AdminDonacionesEnviosTest.java: adm1-donaciones (tanda 1), la lista, el detalle y marcar vencida; adm1-registrar (tanda 2), registrar. AdminAsignacionesEnvios.java y AdminAsignacionesEnviosTest.java: solo adm1-asignaciones; adm1-por-decidir usa su contrato (varios valores de propuesta, DA-26) sin editarlos. java/grupo5/cliente/maqueta/AdminPersonasMaqueta.java la comparte ADM2: adm1-por-decidir, solo los datos del inicio. Hojas: static/css/admin-secciones.css es la hoja de las 39 pantallas del admin que no son el inicio y admin-inicio.css la importa toda la administración: cada lote saca solo las reglas que usan nada más que sus pantallas, y las dos se quedan. Catálogo: static/css/componentes/navegacion.css (solo el cajón y el galpón), static/css/privado.css (solo el armazón del galpón), templates/layout-privado.html (solo lo que dibuja para el admin) y java/grupo5/cliente/web/Pantallas.java (solo el menú del admin y qué sección queda marcada) son de adm1-galpon; static/css/componentes/tabla.css (solo la variante con selección; la tabla de hoy no cambia) es de adm1-asignaciones; templates/estilos.html y docs/interfaz/componentes.md: cada uno de esos dos lotes, solo la muestra y la fila de sus piezas. templates/admin-asignaciones.html deja un fragmento con la cabecera y la barra de pestañas de Por decidir y otro con la tabla de propuestas con selección, que adm1-por-decidir usa en la tanda 2: conservan su firma. El resto de templates/componentes/ y static/css/componentes/ (flota, mapa, filtros, listado, pestanas, segmentos, sello, datos), static/js/, templates/iconos.html (el cajón usa iconos :: comunes), entidad-comun.css, cuenta-menu.html, envio.html y pie.html no se editan en esta ola. Si al integrar chocan dos lotes en líneas vecinas, se conservan los dos cambios.",
+    "Solo para quien cierra la ola; no es criterio de revisión de ningún lote. (1) No levantes el stack ni hagas el recorrido con login (pasos 2, 3 y 5 del cierre): el recorrido real se hace una sola vez, en Z, y ningún lote de ADM1 cambia un adaptador rest (plan C:/IdeaProjects/DonaTrack-TP-DDS/.claude/plan-guia-resto.md, punto 5; decisión DA-20, backlog, sección 2.2). (2) Después de los gates corré una vez -Pvisual sobre las rutas de la ola, no sobre las 320: la pasada completa es de C1 y de Z (DA-20, puntos 1 y 4). Son las 61 líneas de ADM1 de cliente-liviano/src/test/resources/verificacion/paginas.txt más /estilos, sin la barra inicial y separadas por comas: rm -rf cliente-liviano/target/capturas; R=$( (grep -E '^/admin-(inicio|asignaciones|donaciones|camiones|ranking)' cliente-liviano/src/test/resources/verificacion/paginas.txt; echo /estilos) | sed 's#^/##' | paste -sd, -); MSYS2_ARG_CONV_EXCL='-Dverificacion' mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false -Dverificacion.paginas=\"$R\". Compará con la línea de base de la sección 10.4 del backlog, con lo que sacaron DON (sección 12.5) y PUB1: de esa lista, las de ADM1 son /admin-camiones y /admin-camiones-agregar-error, que fallan por el marcador del mapa chico del catálogo (sección 14.4): si siguen fallando solo por eso, se anotan y no son bloqueantes. Una ruta que falle y no esté en la lista es bloqueante, con el lote que la rompe. Si una ruta de la lista ahora pasa, anotalo. (3) Corré los otros tests visuales (mvn test -pl cliente-liviano -Pvisual -Dtest=ArmazonFijoTest,MenusQueSeCierranTest,BajoTierraRotulosTest,AbejasYRenglonesTest,DonanteDetallesTest -Dsurefire.failIfNoSpecifiedTests=false) y compará con la línea de base de las secciones 10.5, 11.3 y 12.5 y del cierre de PUB1 (sección 13). Un fallo que ya estaba se anota. Cualquier fallo nuevo es bloqueante del lote que tocó eso (en ArmazonFijoTest, casi seguro adm1-galpon, DA-27), y se arregla la pantalla o el armazón, nunca el test. (4) En cierre.md: cuántas rutas pasan y cuáles no, la hora de cada commit de la ola (git log) y las rondas de revisión de cada lote."
+  ],
+  "decisiones": [
+    {
+      "id": "DA-04-menu",
+      "texto": "La parte de DA-04 que es del menú, con DA-17: el menú del admin es Por decidir, Donaciones, Donantes, Organizaciones, Camiones y Ranking; Por decidir reemplaza a Inicio y a Asignar donaciones, lleva a /admin-inicio y queda marcada también en /admin-asignaciones y sus respuestas (DA-25). Cambia solo el menú del admin.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23: «Todas las recomendadas» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-04 y DA-17; sección 5.1, el menú de la guía); la marca en /admin-asignaciones, fila DA-25 (delegada por el relevamiento del 2026-11-24)",
+      "lote": "adm1-galpon",
+      "criterio": "Un test del menú (PantallasTest o SitioControllerTest) afirma, para el admin, las seis entradas en ese orden, que Por decidir lleva a /admin-inicio y que en /admin-asignaciones y /admin-asignaciones-aprobada Por decidir lleva aria-current=\"page\"; ninguna entrada dice Inicio ni Asignar donaciones. git diff E7_guia_ui...HEAD de cliente-liviano/src/main/java/grupo5/cliente/web/Pantallas.java cambia solo el menú del admin y su marca; no toca maqueta/CuentaDeEjemplo.java ni templates/navegacion-publica.html."
+    },
+    {
+      "id": "DA-27",
+      "texto": "Con DA-18, el armazón y el cajón del galpón: la barra superior fina (marca, campana y cuenta) se queda en todos los anchos; desde 56 em las secciones van en el cajón, siempre abierto a la izquierda y debajo de la barra; hasta 56 em, la barra del celular con Por decidir, Donaciones, Camiones y Más, que abre todas las secciones.",
+      "quien": "autor del manifiesto de ADM1, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-27 y DA-18 (ronda 3, 2026-11-22: «Todas las recomendadas»)",
+      "lote": "adm1-galpon",
+      "criterio": "En las capturas a 1280 px de /estilos, la muestra del cajón tiene las secciones en la tierra y la actual en papel; a 360 px, la de la barra del celular tiene Por decidir, Donaciones, Camiones y Más. Un test de cliente-liviano/src/test/java/grupo5/cliente/web/ afirma que /admin-inicio tiene body > header con la campana y la cuenta y un solo nav.navegacion con las seis secciones, y que /donante-inicio no lleva el selector del galpón. ArmazonFijoTest y MenusQueSeCierranTest no suman fallos a la línea de base de las secciones 10.5, 11.3 y 12.5; git diff E7_guia_ui...HEAD no toca cliente-liviano/src/test/java/grupo5/cliente/visual/, y las reglas nuevas de static/css/privado.css y componentes/navegacion.css van bajo el selector del galpón, que solo lleva el admin."
+    },
+    {
+      "id": "DA-18-tabla",
+      "texto": "La parte de DA-18 que es de la tabla, con DA-21: la tabla del galpón con selección (P21) entra al catálogo, con la casilla sola de 48 × 48 px (el control nativo transparente encima de la casilla dibujada) y la barra de las elegidas con su cuenta.",
+      "quien": "usuario",
+      "ok": "Ronda 3 de decisiones, 2026-11-22, y ronda 4, 2026-11-23: «Todas las recomendadas» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-18 y DA-21)",
+      "lote": "adm1-asignaciones",
+      "criterio": "/estilos muestra la tabla con selección con su ficha del fragmento componentes/muestra y docs/interfaz/componentes.md tiene su fila; el gate visual del lote no reporta ninguna falla de toque en /estilos ni en /admin-asignaciones (la casilla mide 48 × 48 px) y git diff E7_guia_ui...HEAD no toca cliente-liviano/src/test/java/grupo5/cliente/visual/, y en static/css/componentes/tabla.css solo suma reglas nuevas (la variante con selección y la barra de las elegidas): las reglas de .tabla que ya estaban no cambian."
+    },
+    {
+      "id": "DA-25",
+      "texto": "/admin-inicio y /admin-asignaciones llevan la misma cabecera de A03 (título «Por decidir», la fecha y la última asignación, «Correr la asignación» y «Registrar donación») y la misma barra de pestañas con su cuenta: Propuestas (a /admin-inicio), Conflictos (a /admin-asignaciones?pestana=conflictos), Solicitudes (a /admin-entidades) y Por vencer (a /admin-donaciones?vence=pronto). /admin-asignaciones es la mesa completa: Propuestas paginadas en la tabla con selección, Conflictos de a una, Destino y Decididas.",
+      "quien": "autor del manifiesto de ADM1, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-25",
+      "lote": "adm1-asignaciones",
+      "criterio": "templates/admin-asignaciones.html define el fragmento de la cabecera y las pestañas y /admin-asignaciones lo usa: su h1 dice «Por decidir» y las cuatro pestañas llevan a /admin-inicio, /admin-asignaciones?pestana=conflictos, /admin-entidades y /admin-donaciones?vence=pronto. Un test de cliente-liviano/src/test/java/grupo5/cliente/web/ lo afirma; /admin-asignaciones?pestana=destino y ?vista=decididas siguen respondiendo 200."
+    },
+    {
+      "id": "DA-26",
+      "texto": "Aprobar o descartar varias propuestas juntas: el formulario manda varias propuesta a /admin-asignaciones-aprobada o -descartada y AdminAsignacionesEnvios llama a decidirPropuesta del puerto de hoy una vez por propuesta, en orden; si una falla, para y el aviso dice cuántas se decidieron y por qué no la siguiente. Con una sola, el aviso de hoy.",
+      "quien": "autor del manifiesto de ADM1, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-26",
+      "lote": "adm1-asignaciones",
+      "criterio": "AdminAsignacionesEnviosTest afirma: con dos valores de propuesta, decidirPropuesta se llama dos veces y el aviso dice que se aprobaron las 2; si la segunda falla con 409, la primera queda aprobada, no se llama a la tercera y el aviso dice cuántas se aprobaron y por qué no la siguiente; con un solo valor, el aviso de hoy no cambia; lo mismo para descartar con un motivo. git diff E7_guia_ui...HEAD no toca cliente-liviano/src/main/java/grupo5/cliente/puertos/ ni rest/."
+    },
+    {
+      "id": "DA-07",
+      "texto": "«Vencida» no tiene sello en la guía: va con el par neutro y su texto, no como problema.",
+      "quien": "usuario",
+      "ok": "Ronda 3 de decisiones, 2026-11-22: «Todas las recomendadas» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-07; DTI-47, el mapeo de admin-donaciones que esperaba a ADM1)",
+      "lote": "adm1-donaciones",
+      "criterio": "En templates/admin-donaciones.html el estado vencida usa componentes/sello :: sello('vencida') y ya no se mapea a 'problema'; en las capturas de /admin-donaciones-detalle-vencida el sello es el par neutro con la palabra «Vencida». Un test de cliente-liviano/src/test/java/grupo5/cliente/web/ afirma el data-estado del sello de una vencida en el detalle y en la lista."
+    },
+    {
+      "id": "DA-04-bandeja",
+      "texto": "La parte de DA-04 que es de la pantalla, con DA-25: /admin-inicio es «Por decidir», con la cabecera y las pestañas del fragmento de adm1-asignaciones, la pestaña Propuestas abierta (la primera página de las propuestas sin conflicto en la tabla con selección, con «Aprobar las N» como única acción llena) y, debajo, lo de su ficha.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23: «Todas las recomendadas» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-04); el reparto de las dos rutas, fila DA-25 (delegada por el relevamiento del 2026-11-24)",
+      "lote": "adm1-por-decidir",
+      "criterio": "En las capturas a 360 y 1280 px de /admin-inicio el h1 dice «Por decidir», Propuestas está marcada en las pestañas, hay una tabla con selección con las propuestas de la maqueta y una sola acción llena; el formulario manda a /admin-asignaciones-aprobada con un input name=\"propuesta\" por fila. AdminInicioControllerTest afirma el título, las cuatro pestañas con su cuenta y las filas de propuestas; git diff E7_guia_ui...HEAD no toca puertos/ ni rest/."
+    },
+    {
+      "id": "DA-29",
+      "texto": "Debajo de la bandeja, las cuatro tarjetas de «Cómo está todo» pasan a un solo resumen denso con la lista de datos del catálogo y su fecha, con las mismas cifras y salidas; «Entregas para mirar hoy» no se dibuja y se anota como deuda.",
+      "quien": "autor del manifiesto de ADM1, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-29 y DA-08; ficha docs/interfaz/flujos/guia-adm-inicio-graficos.md, aprobada por la misma delegación",
+      "lote": "adm1-por-decidir",
+      "criterio": "En /admin-inicio el resumen «Cómo está todo» es un dl con las cifras de hoy (las cinco de donaciones por estado, las entregas del mes y en total, la red y los camiones) y su fecha, sin .registro-mesa; con ?escenario=error-camiones, solo la fila de camiones muestra su aviso. No hay ninguna sección «Entregas para mirar hoy». AdminInicioControllerTest lo afirma."
+    },
+    {
+      "id": "DA-30",
+      "texto": "Los gráficos «Mes a mes» y «Por categoría» se quedan como parte de admin-inicio, en admin-inicio.css, con su tabla al lado, y sus reglas usan los nombres de token de la guía con el mismo valor.",
+      "quien": "autor del manifiesto de ADM1, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-30 y DA-08; ficha docs/interfaz/flujos/guia-adm-inicio-graficos.md",
+      "lote": "adm1-por-decidir",
+      "criterio": "En las capturas a 360 y 1280 px de /admin-inicio están los dos gráficos con su leyenda y su tabla; con ?escenario=error-evolucion, su aviso. En static/css/admin-inicio.css ninguna regla de [data-parte] o [data-serie] nombra --color-acento, --color-acento-claro ni --color-tinta-suave, y git diff E7_guia_ui...HEAD no toca templates/componentes/ ni static/css/componentes/."
+    },
+    {
+      "id": "DA-06-registrada",
+      "texto": "La parte de DA-06 que es de registrar una donación: la respuesta es el aviso breve en Donaciones, sin página propia; en la maqueta, /admin-donaciones-registrada sigue y muestra Donaciones con ese aviso.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23: «Todas las recomendadas» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-06)",
+      "lote": "adm1-registrar",
+      "criterio": "Un POST a /admin-donaciones-registrada termina en /admin-donaciones con el aviso breve (AdminDonacionesEnviosTest); en la maqueta, /admin-donaciones-registrada responde 200 y muestra la lista de Donaciones con el aviso breve, sin el banner de hoy. Ninguna ruta de paginas.txt responde 404."
+    },
+    {
+      "id": "DA-28",
+      "texto": "Ranking se construye con su ficha (docs/interfaz/flujos/guia-adm-ranking.md): la tabla del catálogo con el encabezado del galpón, sin selección, y el puesto en número, sin podio, color ni dibujo para los tres primeros.",
+      "quien": "autor del manifiesto de ADM1, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-28 y DA-08; ficha aprobada por la misma delegación",
+      "lote": "adm1-ranking",
+      "criterio": "En las capturas a 360 y 1280 px de /admin-ranking hay una tabla con caption, sin casillas, sin ninguna acción llena y sin dibujo ni color propio en los tres primeros puestos. RankingControllerTest afirma el criterio arriba de la tabla y que las filas no llevan casilla."
+    },
+    {
+      "id": "DA-31",
+      "texto": "En Ranking, el mes se elige como hoy: la pastilla «Mes» de componentes/filtros, «Volver al último mes» y el paginador de meses, sin pestañas por mes.",
+      "quien": "autor del manifiesto de ADM1, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-31; ficha docs/interfaz/flujos/guia-adm-ranking.md",
+      "lote": "adm1-ranking",
+      "criterio": "/admin-ranking usa componentes/filtros :: menu con la pastilla «Mes» y no lleva nav.segmentos ni nav.pestanas; RankingControllerTest afirma que ?mes=2026-08 pone ese mes en el título y ofrece «Volver al último mes»; admin-ranking.html sigue en BARRAS_EXCEPTUADAS de InterfazFitnessTest."
+    }
+  ],
+  "lotes": [
+    {
+      "id": "adm1-galpon",
+      "ola": "ADM1",
+      "tanda": 1,
+      "items": [
+        "ADM1-01",
+        "ADM1-02",
+        "ADM1-03"
+      ],
+      "titulo": "El cajón, el armazón del galpón y el menú del admin",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/layout-privado.html (solo lo que dibuja para el admin); resources/static/css/componentes/navegacion.css (solo el cajón y el galpón) y privado.css (solo el armazón del galpón); java/grupo5/cliente/web/Pantallas.java (solo el menú del admin y qué sección queda marcada); en resources/templates/estilos.html, solo la muestra del cajón y del galpón; en docs/interfaz/componentes.md, la fila de navegación (la frase «el cajón del galpón es de ADM1» pasa a describirlo); y los tests del menú del admin (PantallasTest, y en SitioControllerTest, NombresVisiblesTest y SitioConApisTest los casos del menú del admin, regla 4).",
+      "rutasVisuales": [
+        "estilos"
+      ],
+      "que": "El galpón de la guía (15-pantallas.css:16-25 y 98-104; el cajón, 10-componentes.css:417-427) para el admin, y solo para el admin: papel claro (--color-galpon-fondo), títulos un escalón más chicos y el contenido denso, sin tope de ancho. Desde 56 em el cajón (P22) va siempre abierto a la izquierda, en la tierra, con las seis secciones (la actual en papel, con su cuenta chica cuando la hay); la cuenta no va al pie del cajón: arriba queda la barra superior fina con la marca, la campana y la cuenta (DA-27). Hasta 56 em, la barra del celular de la guía: Por decidir, Donaciones, Camiones y Más, que abre el panel con todas las secciones (el popover de hoy, que anda sin JavaScript). Los íconos salen de iconos :: comunes (i-bandeja, i-caja, i-cuenta, i-gente, i-camion, i-podio e i-puntos), sin editar iconos.html. El menú del admin pasa a Por decidir (a /admin-inicio), Donaciones, Donantes, Organizaciones, Camiones y Ranking (DA-04, DA-17), y Por decidir queda marcada también en /admin-asignaciones y sus respuestas (DA-25). El armazón de la huerta de quien dona y de la organización no cambia. Conserva lo que mide ArmazonFijoTest: body > header, un solo nav.navegacion por pantalla (el mismo menú es la barra del celular y, desde 56 em, el cajón), la barra del listado fija debajo de la cabecera, el salto al contenido y la pantalla de carga. Antes de comitear, corre -Pvisual sobre admin-inicio, admin-donaciones y admin-donantes (ADM2) y los tests ArmazonFijoTest y MenusQueSeCierranTest; esas rutas no entran en la revisión ni en la hoja de contacto. Las pantallas de ADM2 se ven con el armazón nuevo y su contenido de hoy: no es hallazgo."
+    },
+    {
+      "id": "adm1-asignaciones",
+      "ola": "ADM1",
+      "tanda": 1,
+      "items": [
+        "ADM1-04",
+        "ADM1-05",
+        "ADM1-06"
+      ],
+      "titulo": "La tabla con selección y la mesa de Por decidir",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/static/css/componentes/tabla.css (solo la variante con selección del galpón); resources/templates/admin-asignaciones.html, admin-asignaciones-aprobada.html, -corrida.html, -descartada.html y -error.html; en resources/static/css/admin-secciones.css, solo las reglas que usan nada más que estas pantallas (regla 4); java/grupo5/cliente/web/AdminAsignacionesController.java y AdminAsignacionesEnvios.java; los datos de ejemplo de asignaciones en java/grupo5/cliente/maqueta/AdminAsignacionesDeEjemplo.java y AdminOperacionMaqueta.java (regla 4); en resources/templates/estilos.html, solo la muestra de la tabla con selección, y en docs/interfaz/componentes.md, la fila de .tabla; las líneas de /admin-asignaciones en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas (AdminAsignacionesEnviosTest, y en AdminOperacionMaquetaTest, ListadoEnLaMaquetaTest y SitioControllerTest los casos de esas rutas).",
+      "rutasVisuales": [
+        "estilos",
+        "admin-asignaciones",
+        "admin-asignaciones-aprobada",
+        "admin-asignaciones-corrida",
+        "admin-asignaciones-descartada",
+        "admin-asignaciones-error"
+      ],
+      "que": "La tabla del galpón con selección (P21; 10-componentes.css:395-405 y la barra de las elegidas, 15-pantallas.css:20) entra al catálogo como variante de .tabla: la casilla sola de 48 × 48 px con el control nativo transparente encima de la casilla dibujada (DA-21), la de elegir todas, la fila elegida en --color-fila-elegida, las columnas que se esconden en el celular y la barra de las elegidas con su cuenta; con su muestra en /estilos y su fila en el catálogo (DA-18). Asignar pasa a ser la mesa de «Por decidir» (A03, #bandeja): un fragmento con la cabecera (título «Por decidir», la fecha y la última asignación, «Correr la asignación», el POST de hoy a /admin-asignaciones-corrida, y «Registrar donación») y la barra de pestañas con su cuenta (Propuestas a /admin-inicio, Conflictos, Solicitudes a /admin-entidades y Por vencer a /admin-donaciones?vence=pronto; la cuenta de una pestaña va solo si llega), y otro con la tabla de propuestas con selección; los dos los usa /admin-inicio en la tanda 2 y conservan su firma (DA-25). Propuestas va en la tabla, con «Aprobar las N» como única acción llena y Descartar al lado (formaction a cada envío) y el motivo opcional de hoy; Conflictos se decide de a una, con la tarjeta de hoy; Destino y Decididas siguen, enlazadas desde la pantalla. Aprobar o descartar varias juntas, una por una contra el puerto de hoy, con el aviso de cuántas se decidieron (DA-26). Los envíos vuelven a donde se decidió: con pestana=inicio (el campo oculto que manda el formulario de /admin-inicio) vuelven a /admin-inicio; si no, como hoy. El lote lo prueba en AdminAsignacionesEnviosTest, porque adm1-por-decidir no edita los envíos. Las cuatro respuestas siguen como hoy: la mesa con su aviso breve. Conserva componentes/listado (LISTAS) y lo que mide ArmazonFijoTest en /admin-asignaciones?vista=decididas. Mientras dura la tanda 1, la pantalla ve el armazón y el menú de hoy: no es hallazgo."
+    },
+    {
+      "id": "adm1-camiones",
+      "ola": "ADM1",
+      "tanda": 1,
+      "items": [
+        "ADM1-07"
+      ],
+      "titulo": "Camiones y sus respuestas",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/admin-camiones.html, admin-camiones-agregado.html, -agregar-error.html, -deshabilitado.html y -habilitado.html; en resources/static/css/admin-secciones.css, solo las reglas que usan nada más que estas pantallas (regla 4); java/grupo5/cliente/web/AdminCamionesController.java y AdminCamionesEnvios.java, si las pantallas lo piden; los datos de ejemplo de camiones en java/grupo5/cliente/maqueta/AdminOperacionMaqueta.java (regla 4); las líneas de /admin-camiones en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas (AdminCamionesEnviosTest, y en AdminOperacionMaquetaTest, ListadoEnAdminOperacionTest y SitioControllerTest los casos de esas rutas).",
+      "rutasVisuales": [
+        "admin-camiones",
+        "admin-camiones-agregado",
+        "admin-camiones-agregar-error",
+        "admin-camiones-deshabilitado",
+        "admin-camiones-habilitado"
+      ],
+      "que": "Camiones deriva del arquetipo A03 (#bandeja): la cabecera del galpón con el título, las cifras de la flota con su fecha y «Agregar camión»; la barra de componentes/listado con la búsqueda y la capacidad; las vistas por estado con su cuenta (componentes/segmentos) y la flota con su ficha. La flota no tiene arquetipo: sigue con componentes/flota, que no se edita, y la ficha del elegido con sus partes de hoy (etapas, datos del viaje, mapa chico, carga, rendimiento y chofer), en el texto denso del galpón. Los diálogos de agregar y deshabilitar y sus estados de corte siguen; las cuatro respuestas siguen como hoy, la flota con su aviso breve. /admin-camiones y /admin-camiones-agregar-error están en la línea de base de toque (sección 10.4) por el marcador del mapa chico: el lote intenta sacarlas con lo que el catálogo ya tiene (el atributo data-mapa-margenes de static/js/mapa.js, como DON en Seguimiento), sin editar mapa.js ni mapa.css; si siguen fallando solo por el marcador, se anota y no es bloqueante. Conserva componentes/listado (LISTAS) y lo que mide ArmazonFijoTest en /admin-camiones. Mientras dura la tanda 1, la pantalla ve el armazón y el menú de hoy: no es hallazgo."
+    },
+    {
+      "id": "adm1-donaciones",
+      "ola": "ADM1",
+      "tanda": 1,
+      "items": [
+        "ADM1-08"
+      ],
+      "titulo": "Donaciones del admin y su detalle",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/admin-donaciones.html, admin-donaciones-detalle.html y admin-donaciones-detalle-vencida.html; en resources/static/css/admin-secciones.css, solo las reglas que usan nada más que estas pantallas (regla 4); en java/grupo5/cliente/web/AdminDonacionesController.java, solo la lista y el detalle, y en AdminDonacionesEnvios.java, solo marcar vencida, si las pantallas lo piden; los datos de ejemplo de donaciones en java/grupo5/cliente/maqueta/AdminOperacionDonaciones.java (regla 4); las líneas de /admin-donaciones y /admin-donaciones-detalle en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas (en AdminDonacionesEnviosTest, los de marcar vencida, y en AdminOperacionMaquetaTest, ListadoEnAdminOperacionTest, ListadoEnLaMaquetaTest y SitioControllerTest los casos de esas rutas).",
+      "rutasVisuales": [
+        "admin-donaciones",
+        "admin-donaciones-detalle",
+        "admin-donaciones-detalle-vencida"
+      ],
+      "que": "Donaciones deriva del arquetipo A03 (#bandeja): la cabecera del galpón con «Registrar donación», la barra de componentes/listado con sus filtros de hoy (estado, búsqueda, categoría, vence pronto, donante) y el paginador, y la tabla del catálogo con el encabezado del galpón y el sello de cada estado. El detalle, en el mismo galpón: la donación, sus bienes y su estado con el sello, y «Marcar como vencida» con su diálogo (solo en el depósito). «Vencida» usa el par neutro con su palabra, no el problema (DA-07). El fragmento hoja conserva su firma: adm1-registrar lo usa en la tanda 2 para mostrar Donaciones con el aviso breve. Conserva componentes/listado (LISTAS) y lo que mide ArmazonFijoTest en /admin-donaciones. Mientras dura la tanda 1, la pantalla ve el armazón y el menú de hoy: no es hallazgo."
+    },
+    {
+      "id": "adm1-por-decidir",
+      "ola": "ADM1",
+      "tanda": 2,
+      "items": [
+        "ADM1-09",
+        "ADM1-10"
+      ],
+      "titulo": "Por decidir, el inicio del admin, con su resumen y sus gráficos",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ficha",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/admin-inicio.html; resources/static/css/admin-inicio.css (solo las reglas que usa nada más que el inicio; los gráficos se quedan, DA-30; la hoja no se borra, regla 4); java/grupo5/cliente/web/AdminInicioController.java (pide además la primera página de propuestas al AdminOperacionPuerto que ya existe); los datos de ejemplo del inicio en java/grupo5/cliente/maqueta/AdminPersonasMaqueta.java (solo los del inicio, regla 4) y AdminInicioGraficosDeEjemplo.java, si hacen falta; las líneas de /admin-inicio en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esa pantalla (AdminInicioControllerTest, AdminPersonasInicioTest si cambia lo que afirma de la pantalla, y en SitioControllerTest y NombresVisiblesTest los casos de /admin-inicio).",
+      "rutasVisuales": [
+        "admin-inicio"
+      ],
+      "que": "Sigue su ficha aprobada (docs/interfaz/flujos/guia-adm-inicio-graficos.md), que manda sobre este resumen. /admin-inicio es «Por decidir», el arquetipo A03 (#bandeja): la cabecera y la barra de pestañas del fragmento de adm1-asignaciones, con Propuestas marcada y las cuatro cuentas (Propuestas, Solicitudes y Por vencer de las decisiones de AdminInicioVista; Conflictos, de la vista de asignaciones), y la pestaña Propuestas abierta: la primera página de las propuestas sin conflicto en la tabla con selección del fragmento de adm1-asignaciones, con «Aprobar las N» como única acción llena (DA-04, DA-25, DA-26). El formulario manda pestana=inicio, así el envío vuelve a /admin-inicio (lo resuelve adm1-asignaciones); si hay más de una página de propuestas, «Ver las N propuestas» lleva a /admin-asignaciones?pestana=propuestas, la lista paginada. «Hola, Leo» y las tarjetas de «Lo que espera tu decisión» salen. Debajo, «Cómo está todo» como un solo resumen denso con la lista de datos del catálogo, su fecha y las salidas de hoy, sin «Entregas para mirar hoy» (DA-29), y los dos gráficos con su tabla, en admin-inicio.css con los nombres de token de la guía (DA-30). Los escenarios de hoy (vacio, lento, error, error-camiones, error-evolucion, evolucion-corta y evolucion-vacia) siguen. No cambia el puerto ni el adaptador rest."
+    },
+    {
+      "id": "adm1-registrar",
+      "ola": "ADM1",
+      "tanda": 2,
+      "items": [
+        "ADM1-11"
+      ],
+      "titulo": "Registrar una donación, en el galpón",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/admin-donaciones-registrar.html, admin-donaciones-registrar-error.html y admin-donaciones-registrada.html; en resources/static/css/admin-secciones.css, solo las reglas que usan nada más que estas pantallas (regla 4); en java/grupo5/cliente/web/AdminDonacionesController.java, solo el método de registrar, y en AdminDonacionesEnvios.java, solo registrar, si hace falta; los datos de ejemplo del registro en java/grupo5/cliente/maqueta/AdminOperacionDonaciones.java (regla 4); las líneas de /admin-donaciones-registrar y /admin-donaciones-registrada en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas (en AdminDonacionesEnviosTest, los de registrar, y en ListadoEnAdminOperacionTest, ListadoEnLaMaquetaTest y SitioControllerTest los casos de esas rutas).",
+      "rutasVisuales": [
+        "admin-donaciones-registrar",
+        "admin-donaciones-registrar-error",
+        "admin-donaciones-registrada"
+      ],
+      "que": "Registrar donación deriva del arquetipo A12 (#confirmar), en el galpón: la columna del formulario con las migas a Donaciones, quién dona (la búsqueda de hoy, con componentes/listado), los bienes, los campos, los errores y los botones del catálogo, una sola acción llena y sus estados de hoy (donante dado de baja, sin donante, error). El error es un estado del mismo formulario, con el resumen arriba y el campo marcado en su lugar; su ruta sigue. «Registrada» pasa a aviso breve en Donaciones (DA-06): el envío real ya termina en /admin-donaciones con el aviso; en la maqueta, /admin-donaciones-registrada sigue y muestra Donaciones (el fragmento hoja de admin-donaciones.html, que no se edita) con ese aviso, sin el banner de hoy. Conserva componentes/listado (LISTAS)."
+    },
+    {
+      "id": "adm1-ranking",
+      "ola": "ADM1",
+      "tanda": 2,
+      "items": [
+        "ADM1-12"
+      ],
+      "titulo": "Ranking de donantes",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ficha",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/admin-ranking.html; en resources/static/css/admin-secciones.css, solo las reglas que usa nada más que esta pantalla (regla 4); java/grupo5/cliente/web/RankingController.java, si la pantalla lo pide; los datos de ejemplo en java/grupo5/cliente/maqueta/RankingMaqueta.java, si hacen falta; las líneas de /admin-ranking en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esa pantalla (RankingControllerTest, y en SitioControllerTest y SitioConApisTest los casos de /admin-ranking).",
+      "rutasVisuales": [
+        "admin-ranking"
+      ],
+      "que": "Sigue su ficha aprobada (docs/interfaz/flujos/guia-adm-ranking.md), que manda sobre este resumen: Ranking en el galpón, con la cabecera del galpón (el rótulo Administración y el título con el mes), la pastilla «Mes» y «Volver al último mes» como hoy (DA-31), el criterio y la fecha del cálculo arriba de la tabla, la tabla del catálogo con el encabezado del galpón y sin selección, el puesto en número sin podio ni destacado (DA-28), y el paginador de meses. Vacío, cargando y error con los estados de lista del catálogo y el aviso en la página, con los textos de hoy. Sin acción llena. admin-ranking.html sigue en BARRAS_EXCEPTUADAS de InterfazFitnessTest."
+    }
+  ]
+}
