@@ -2,6 +2,7 @@ package grupo5.cliente.maqueta;
 
 import grupo5.cliente.puertos.EntidadConfirmarPuerto;
 import grupo5.cliente.vistas.EntidadEntregaVista;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Component;
     havingValue = "maqueta",
     matchIfMissing = true)
 class EntidadConfirmarMaqueta implements EntidadConfirmarPuerto {
+
+  private static final List<String> MOTIVOS = List.of("incompleta", "danada", "otro");
 
   private static final List<EntidadEntregaVista> ENTREGAS =
       List.of(
@@ -50,7 +53,8 @@ class EntidadConfirmarMaqueta implements EntidadConfirmarPuerto {
               "Dos bolsas rotas.",
               "12 de octubre, 10:00",
               "13 de octubre, 11:00",
-              "14 de octubre, 9:10"),
+              "14 de octubre, 9:10",
+              null),
           new EntidadEntregaVista(
               "ropa",
               "ropa de abrigo",
@@ -79,7 +83,8 @@ class EntidadConfirmarMaqueta implements EntidadConfirmarPuerto {
               "Faltaba una caja.",
               "11 de octubre, 9:30",
               "12 de octubre, 16:00",
-              "13 de octubre, 10:15"));
+              "13 de octubre, 10:15",
+              null));
 
   @Override
   public List<EntidadEntregaVista> entregas(UUID entidad, String pedida) {
@@ -88,11 +93,51 @@ class EntidadConfirmarMaqueta implements EntidadConfirmarPuerto {
 
   /**
    * Recepción confirmada: en el ejemplo se confirman las lentejas primero, y queda la ropa en la
-   * puerta; después de la ropa, ninguna.
+   * puerta; después de la ropa, ninguna. La maqueta no guarda el acta: el problema asentado es el
+   * {@code motivo} que trae la respuesta.
    */
   @Override
-  public List<EntidadEntregaVista> confirmada(UUID entidad, String pedida) {
-    return "ropa".equals(pedida) ? List.of(ENTREGAS.getLast()) : ENTREGAS;
+  public List<EntidadEntregaVista> confirmada(UUID entidad, String pedida, String motivo) {
+    List<EntidadEntregaVista> entregas =
+        "ropa".equals(pedida) ? List.of(ENTREGAS.getLast()) : ENTREGAS;
+    if (motivo == null || !MOTIVOS.contains(motivo)) {
+      return entregas;
+    }
+    List<EntidadEntregaVista> conProblema = new ArrayList<>(entregas);
+    conProblema.set(0, conProblema(entregas.getFirst(), motivo));
+    return conProblema;
+  }
+
+  private static EntidadEntregaVista conProblema(EntidadEntregaVista e, String motivo) {
+    return new EntidadEntregaVista(
+        e.clave(),
+        e.nombre(),
+        e.titulo(),
+        e.cantidad(),
+        e.salio(),
+        e.llego(),
+        e.llegoFrase(),
+        e.llegaron(),
+        e.remito(),
+        e.categoria(),
+        e.categoriaTexto(),
+        e.pedido(),
+        e.recibido(),
+        e.pedidoDespues(),
+        e.dono(),
+        e.donoCategoria(),
+        e.donoTipo(),
+        e.foto(),
+        e.confirmo(),
+        e.salida(),
+        e.unidad(),
+        e.decimales(),
+        e.llegoMenos(),
+        e.detalle(),
+        e.registrada(),
+        e.asignada(),
+        e.preparada(),
+        motivo);
   }
 
   @Override

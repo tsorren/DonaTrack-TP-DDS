@@ -7,12 +7,14 @@
        con el dibujo de la puerta (la raíz llega al quinto nudo y el árbol tiene los frutos del mes)
        y los 5 pasos, cumplidos, cada uno con su fecha; debajo, lo que quedó asentado y la necesidad,
        y la etiqueta de la entrega como la ve quien donó con qué sigue. Quién recibió es la
-       organización: el nombre de la persona no se guarda (HG-03). Los frutos (frutos y mesFrutos,
-       del controller) son las recibidas del mes, contadas como en Inicio.
+       organización: el nombre de la persona no se guarda (HG-03). Los frutos son las recibidas del
+       mes (delMes, del controller), contadas como en Inicio, más la recién confirmada si Donaciones
+       todavía no la tiene (cuentaLaRecien).
        Esta dirección (?entrega=lentejas o ropa; desde "Ver lo que quedó asentado" o, fuera de la
        maqueta, la respuesta al acta) muestra lo asentado; con recien (la respuesta al acta), el
        último tramo de la raíz se dibuja una vez. entidad-seguimiento-sellada-<clave>, la respuesta
-       de la maqueta, lo dibuja siempre. ?problema= (incompleta, danada u otro) suma el problema.
+       de la maqueta, lo dibuja siempre. El problema es el que quedó asentado (e.problema:
+       incompleta, danada u otro); en la maqueta, el de ?problema=.
        Fragmento sellada(recien): adentro están e y otra, del fragmento entrega del acta. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-seguimiento-confirmar', ~{::contenido})}">
@@ -27,8 +29,8 @@
 
 <th:block th:fragment="sellada(recien)">
   <div class="pila" data-espacio="5"
-       th:with="problema=${param.problema == null ? null : param.problema[0]},
-                conProblema=${problema == 'incompleta' or problema == 'danada' or problema == 'otro'}">
+       th:with="problema=${e?.problema},
+                conProblema=${problema != null}">
     <div class="pila" data-espacio="1">
       <nav th:replace="~{componentes/migas :: migas(pasos=${ { {texto: 'Entregas', ruta: '/entidad-seguimiento'} } }, actual='Recepción confirmada')}"></nav>
       <div class="racimo" data-alinea="entre arriba">
@@ -49,7 +51,10 @@
          th:href="@{/entidad-seguimiento}">Volver a Entregas</a>
     </section>
 
-    <th:block th:if="${e}">
+    <th:block th:if="${e}"
+              th:with="confirmadas=${delMes == null ? {} : delMes.asignadas.?[grupo == 'recibida']},
+                       frutos=${#lists.size(confirmadas) + (cuentaLaRecien == true and #lists.isEmpty(confirmadas.?[clave == #root.e.clave]) ? 1 : 0)},
+                       mesFrutos=${delMes?.mes}">
       <!--/* La lámina del cierre (D7): el dibujo de la puerta con la raíz hasta el quinto nudo (D2) y
              los frutos del mes, hasta cinco (D4), con la cifra completa debajo; y los 5 pasos en la
              lista, que dice lo mismo en texto. El dibujo es decorativo. Un paso sin fecha en el
@@ -95,7 +100,7 @@
 
       <div class="grilla" data-espacio="5">
         <div class="pila" data-espacio="4">
-          <!--/* Lo asentado: con ?problema=, el problema; sin la cifra de la necesidad, que depende
+          <!--/* Lo asentado: con el problema, si lo hubo; sin la cifra de la necesidad, que depende
                  de qué haga Donaciones con una cantidad menor (DTI-29). */-->
           <section class="pila" data-espacio="2" aria-labelledby="asentado-titulo"
                    th:with="elProblema=${!conProblema ? null : (problema == 'incompleta'
@@ -112,10 +117,12 @@
             <p th:text="|Le avisamos a ${e.dono ?: 'quien donó'}, ${conProblema ? 'con tus fotos, la fecha y el problema' : 'con tus fotos y la fecha'}.|">Le
               avisamos a Distribuidora Ejemplo SA, con tus fotos y la fecha.</p>
           </section>
-          <section th:if="${e.pedidoDespues != null and not conProblema}" class="pila" data-espacio="2"
-                   aria-labelledby="necesidad-titulo">
+          <!--/* La necesidad que cubre, con cómo va si se sabe; si no (HG-04), solo cuál es, como
+                 Llegó con un problema. */-->
+          <section th:if="${(e.pedidoDespues != null or e.pedido != null) and not conProblema}"
+                   class="pila" data-espacio="2" aria-labelledby="necesidad-titulo">
             <h2 id="necesidad-titulo">Tu necesidad</h2>
-            <p th:text="${e.pedidoDespues}">Tu necesidad de lentejas secas: 25 de 40 kg recibidos,
+            <p th:text="${e.pedidoDespues ?: 'Esta entrega es para tu necesidad: ' + e.pedido}">Tu necesidad de lentejas secas: 25 de 40 kg recibidos,
               hasta el 31 de octubre.</p>
           </section>
         </div>

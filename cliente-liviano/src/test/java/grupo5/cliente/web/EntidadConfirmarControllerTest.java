@@ -109,12 +109,13 @@ class EntidadConfirmarControllerTest {
                   null,
                   null,
                   null,
+                  null,
                   null));
         }
 
         /** La silla ya confirmada, con lo que Logística guardó de ella. */
         @Override
-        public List<EntidadEntregaVista> confirmada(UUID entidad, String pedida) {
+        public List<EntidadEntregaVista> confirmada(UUID entidad, String pedida, String motivo) {
           return List.of(
               new EntidadEntregaVista(
                   ENTREGA,
@@ -143,6 +144,7 @@ class EntidadConfirmarControllerTest {
                   null,
                   "6 de noviembre, 10:00",
                   "7 de noviembre, 11:00",
+                  null,
                   null));
         }
 

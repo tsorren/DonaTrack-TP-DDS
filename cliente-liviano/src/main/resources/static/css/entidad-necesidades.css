@@ -57,7 +57,7 @@
 
 /* La tarjeta plegada (el .plegable del catálogo), como la de la guía: el nombre con su chapa en el
    primer renglón y, debajo, si se repite, la barra, lo que llegó y sus entregas; al pie, «Ver el
-   detalle» (abierta, «Cerrar»). Las columnas del resumen las pone la pantalla. */
+   detalle», con la flecha del catálogo. Las columnas del resumen las pone la pantalla. */
 .pedido > summary {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
@@ -75,11 +75,6 @@
 .pedido > summary > .plegable-ver {
   justify-self: end;
   align-self: end;
-}
-
-.pedido:not([open]) .plegable-ver > :last-child,
-.pedido[open] .plegable-ver > :first-child {
-  display: none;
 }
 
 /* --- El detalle (el .plegable-cuerpo): los filetes son los hr del cuerpo ------------------------ */
@@ -160,10 +155,6 @@
   grid-row: 1;
   max-width: none;
   height: 1rem;
-}
-
-.periodo--curso .progreso {
-  border-style: dashed;
 }
 
 .periodo-cuanto {
@@ -278,10 +269,6 @@
 
   .periodos:not(.periodos--lista) .periodo-nombre {
     grid-row: 2;
-  }
-
-  .periodos:not(.periodos--lista) .periodo-nombre b {
-    font-size: 0.9375rem;
   }
 
   .periodos:not(.periodos--lista) .periodo-cuanto {

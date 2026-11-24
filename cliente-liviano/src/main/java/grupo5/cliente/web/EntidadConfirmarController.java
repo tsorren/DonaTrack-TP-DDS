@@ -4,7 +4,6 @@ import grupo5.cliente.puertos.CuentaActual;
 import grupo5.cliente.puertos.EntidadConfirmarPuerto;
 import grupo5.cliente.puertos.RecibidasPuerto;
 import grupo5.cliente.vistas.EntidadEntregaVista;
-import grupo5.cliente.vistas.RecibidasVista;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +17,8 @@ import org.springframework.web.bind.annotation.GetMapping;
  * Confirmar recepción (RF-12) y las pantallas que usan su fragmento de entregas: el acta con
  * errores y Llegó con un problema, con las que esperan la confirmación; Recepción confirmada
  * (DA-06, la única respuesta con página propia), con la entrega ya confirmada y lo que quedó
- * asentado (las {@code -sellada-<clave>} son las respuestas de la maqueta) y los frutos del mes,
- * contados como en Inicio. Sin entidad, manda a ingresar.
+ * asentado (las {@code -sellada-<clave>} son las respuestas de la maqueta) y las recibidas del mes,
+ * que la plantilla cuenta como frutos, como Inicio. Sin entidad, manda a ingresar.
  */
 @Controller
 public class EntidadConfirmarController {
@@ -53,10 +52,11 @@ public class EntidadConfirmarController {
 
   /**
    * La entrega es la de {@code ?entrega=} o, en las respuestas de la maqueta, la de la dirección
-   * ({@code -sellada-ropa}). Los frutos (D4) son las recibidas del mes en curso, de la misma
-   * lectura que Inicio: {@code frutos}, cuántas, y {@code mesFrutos}, el mes ("octubre"). En la
-   * respuesta al acta ({@code recien}, o las de la maqueta), la recién confirmada cuenta aunque
-   * Donaciones todavía no la tenga como entregada: es el fruto que brota.
+   * ({@code -sellada-ropa}); {@code ?problema=} es el motivo de la respuesta, que solo usa la
+   * maqueta. {@code delMes} son las recibidas de la misma lectura que Inicio, y {@code
+   * cuentaLaRecien} dice si es la respuesta al acta ({@code recien}, o las de la maqueta): la
+   * plantilla suma la recién confirmada a los frutos si Donaciones todavía no la tiene como
+   * entregada.
    */
   @GetMapping({
     "/entidad-seguimiento-sellada",
@@ -71,24 +71,13 @@ public class EntidadConfirmarController {
       pedida = pantalla.substring(SELLADA.length());
       respuesta = true;
     }
-    String vista = mostrar(model, pedido, pedida, confirmar::confirmada);
-    String confirmada = pedida;
-    boolean recien = respuesta;
+    String motivo = pedido.getParameter("problema");
+    model.addAttribute("cuentaLaRecien", respuesta);
     cuentas
         .entidad(pedido)
-        .ifPresent(
-            entidad -> {
-              RecibidasVista delMes = recibidas.recibidas(entidad);
-              List<String> claves =
-                  delMes.asignadas().stream()
-                      .filter(r -> RecibidasVista.RECIBIDA.equals(r.grupo()))
-                      .map(RecibidasVista.Recibida::clave)
-                      .toList();
-              boolean falta = recien && confirmada != null && !claves.contains(confirmada);
-              model.addAttribute("frutos", claves.size() + (falta ? 1 : 0));
-              model.addAttribute("mesFrutos", delMes.mes());
-            });
-    return vista;
+        .ifPresent(entidad -> model.addAttribute("delMes", recibidas.recibidas(entidad)));
+    return mostrar(
+        model, pedido, pedida, (entidad, clave) -> confirmar.confirmada(entidad, clave, motivo));
   }
 
   private String mostrar(

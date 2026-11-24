@@ -11,7 +11,6 @@ import static grupo5.cliente.rest.Comun.LISTA;
 import static grupo5.cliente.rest.Comun.PUERTA;
 import static grupo5.cliente.rest.Comun.cantidad;
 import static grupo5.cliente.rest.Comun.categoria;
-import static grupo5.cliente.rest.Comun.desde;
 import static grupo5.cliente.rest.Comun.icono;
 import static grupo5.cliente.rest.Comun.normalizado;
 
@@ -76,6 +75,9 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
   private static final List<String> SE_CONFIRMAN = List.of(EN_PUERTA, EN_TRASLADO);
   private static final String ENTREGADA = "ENTREGADA";
 
+  /** Los motivos del reporte de Logística, como los nombra la pantalla. */
+  private static final List<String> MOTIVOS = List.of("incompleta", "danada", "otro");
+
   /**
    * La confirmada, en Donaciones: ENTREGADA o, mientras Donaciones no se enteró del cambio de
    * Logística, todavía en la puerta o en traslado.
@@ -125,8 +127,12 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
         .toList();
   }
 
+  /**
+   * El problema sale de lo que Logística asentó, no de {@code motivo}: con la dirección no se
+   * inventa.
+   */
   @Override
-  public List<EntidadEntregaVista> confirmada(UUID entidad, String pedida) {
+  public List<EntidadEntregaVista> confirmada(UUID entidad, String pedida, String motivo) {
     UUID clave = comoId(pedida);
     if (clave == null) {
       return List.of();
@@ -206,18 +212,28 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
             : reporte.detalle().strip();
     String remito =
         e.numeroRemito() == null || e.numeroRemito().isBlank() ? null : e.numeroRemito().strip();
+    String problema =
+        reporte == null || reporte.motivo() == null
+            ? null
+            : reporte.motivo().strip().toLowerCase(Locale.ROOT);
     return new Asentado(
         remito,
         web ? foto : null,
         confirmo == null ? null : confirmo.atZone(ARGENTINA).format(CUANDO),
         llegoMenos,
-        detalle);
+        detalle,
+        problema != null && MOTIVOS.contains(problema) ? problema : null);
   }
 
   /** Lo asentado de una entrega confirmada; en una que espera, nada. */
   private record Asentado(
-      String remito, String foto, String confirmo, String llegoMenos, String detalle) {
-    static final Asentado NADA = new Asentado(null, null, null, null, null);
+      String remito,
+      String foto,
+      String confirmo,
+      String llegoMenos,
+      String detalle,
+      String problema) {
+    static final Asentado NADA = new Asentado(null, null, null, null, null, null);
   }
 
   private static UUID comoId(String clave) {
@@ -261,8 +277,9 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
     String salio =
         s.horaSalida() == null ? null : "Salió del depósito el " + dia(s.horaSalida()) + ".";
     // La hora de llegada es la del cambio a EN_PUERTA en el historial de la donación (hora local);
-    // una entrega en traslado todavía no llegó
-    LocalDateTime llego = EN_TRASLADO.equals(s.estadoEntrega()) ? null : desde(d, PUERTA);
+    // una entrega en traslado todavía no llegó, y una confirmada desde el traslado no pasó por la
+    // puerta: sin ese cambio no hay hora de llegada (no cae en la fecha de registro)
+    LocalDateTime llego = EN_TRASLADO.equals(s.estadoEntrega()) ? null : pasoEn(d, PUERTA);
     String frase =
         llego == null
             ? salio
@@ -297,7 +314,8 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
         a.detalle(),
         d.fechaRegistro() == null ? null : d.fechaRegistro().format(DIA_Y_HORA),
         paso(d, ASIGNADA),
-        paso(d, LISTA));
+        paso(d, LISTA),
+        a.problema());
   }
 
   /**
@@ -305,13 +323,18 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
    * pasó, null: a diferencia de {@code Comun.desde}, no cae en la fecha de registro.
    */
   private static String paso(DonacionesApi.Donacion d, String estado) {
+    LocalDateTime t = pasoEn(d, estado);
+    return t == null ? null : t.format(DIA_Y_HORA);
+  }
+
+  /** Cuándo la donación pasó a {@code estado} por última vez, del historial; si nunca, null. */
+  private static LocalDateTime pasoEn(DonacionesApi.Donacion d, String estado) {
     return d.historial() == null
         ? null
         : d.historial().stream()
             .filter(c -> c.timestamp() != null && normalizado(c.estadoNuevo()).equals(estado))
             .map(DonacionesApi.Cambio::timestamp)
             .max(Comparator.naturalOrder())
-            .map(t -> t.format(DIA_Y_HORA))
             .orElse(null);
   }
 

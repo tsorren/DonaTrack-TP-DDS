@@ -328,7 +328,7 @@ class EntidadConfirmarRestTest {
                     .formatted(ENTREGA),
                 MediaType.APPLICATION_JSON));
 
-    List<EntidadEntregaVista> vistas = adaptador.confirmada(ENTIDAD, DONACION);
+    List<EntidadEntregaVista> vistas = adaptador.confirmada(ENTIDAD, DONACION, null);
 
     donaciones.verify();
     logistica.verify();
@@ -342,6 +342,8 @@ class EntidadConfirmarRestTest {
     assertEquals("Llegó a tu puerta el 8 de noviembre a las 18:20.", e.llegoFrase());
     assertEquals("12,5 de 15 kg", e.llegoMenos());
     assertEquals("Dos bolsas rotas.", e.detalle());
+    // El motivo asentado en Logística, como lo nombra la pantalla
+    assertEquals("incompleta", e.problema());
     // Los tres primeros pasos, del historial de la donación (U3)
     assertEquals("5 de noviembre, 10:00", e.registrada());
     assertEquals("6 de noviembre, 11:00", e.asignada());
@@ -372,12 +374,52 @@ class EntidadConfirmarRestTest {
             withSuccess(
                 "{\"fotoRecepcionUrl\": \"javascript:alert(1)\"}", MediaType.APPLICATION_JSON));
 
-    EntidadEntregaVista e = adaptador.confirmada(ENTIDAD, DONACION).getFirst();
+    EntidadEntregaVista e = adaptador.confirmada(ENTIDAD, DONACION, null).getFirst();
 
     assertNull(e.foto());
     assertNull(e.remito());
     assertNull(e.confirmo());
     assertNull(e.llegoMenos());
+  }
+
+  /**
+   * Confirmada desde el traslado, sin pasar por la puerta: no hay hora de llegada (no cae en la
+   * fecha de registro) y, sin reporte, no hay problema aunque la dirección traiga uno.
+   */
+  @Test
+  void unaConfirmadaDesdeElTrasladoNoInventaLaLlegadaNiElProblema() {
+    donaciones
+        .expect(requestTo(LA_CONFIRMADA))
+        .andRespond(
+            withSuccess(
+                """
+                [{"id": "%s", "descripcion": "Arroz", "cantidad": 5,
+                  "fechaRegistro": "2026-11-05T10:00:00",
+                  "historial": [
+                    {"estadoNuevo": "EnTraslado", "timestamp": "2026-11-08T14:30:00"}]}]
+                """
+                    .formatted(DONACION),
+                MediaType.APPLICATION_JSON));
+    donaciones.expect(requestTo(LA_OTRA)).andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(deLaDonacion(DONACION)))
+        .andRespond(
+            withSuccess(
+                """
+                [{"idEntrega": "%s", "idDonacion": "%s", "estadoEntrega": "ENTREGADA",
+                  "horaSalida": "2026-11-08T17:30:00Z"}]
+                """
+                    .formatted(ENTREGA, DONACION),
+                MediaType.APPLICATION_JSON));
+    logistica
+        .expect(requestTo(LOGISTICA + ENTREGA))
+        .andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
+
+    EntidadEntregaVista e = adaptador.confirmada(ENTIDAD, DONACION, "danada").getFirst();
+
+    assertNull(e.llego());
+    assertEquals("Salió del depósito el 8 de noviembre a las 14:30.", e.llegoFrase());
+    assertNull(e.problema());
   }
 
   @Test
@@ -399,14 +441,14 @@ class EntidadConfirmarRestTest {
                     .formatted(ENTREGA, DONACION),
                 MediaType.APPLICATION_JSON));
 
-    assertFalse(adaptador.confirmada(ENTIDAD, DONACION).iterator().hasNext());
+    assertFalse(adaptador.confirmada(ENTIDAD, DONACION, null).iterator().hasNext());
     donaciones.verify();
     logistica.verify();
   }
 
   @Test
   void laConfirmadaSinUnaClaveQueSeaUnIdNoLlamaANingunServicio() {
-    assertFalse(adaptador.confirmada(ENTIDAD, "lentejas").iterator().hasNext());
+    assertFalse(adaptador.confirmada(ENTIDAD, "lentejas", null).iterator().hasNext());
     donaciones.verify();
     logistica.verify();
   }

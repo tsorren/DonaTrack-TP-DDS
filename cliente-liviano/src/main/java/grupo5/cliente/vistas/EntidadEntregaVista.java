@@ -12,8 +12,9 @@ package grupo5.cliente.vistas;
  * unidad}, con {@code decimales} si se puede escribir con coma. {@code remito}, {@code foto},
  * {@code confirmo}, {@code llegoMenos} y {@code detalle} son lo que la maqueta muestra como ya
  * cargado. {@code registrada}, {@code asignada} y {@code preparada} dicen cuándo pasó cada uno de
- * los tres primeros pasos ("12 de octubre, 10:00"), para la raíz de Recepción confirmada. Lo que no
- * se sabe, null.
+ * los tres primeros pasos ("12 de octubre, 10:00"), para la raíz de Recepción confirmada. {@code
+ * problema}, el motivo que quedó asentado al confirmar ({@code incompleta}, {@code danada} u {@code
+ * otro}). Lo que no se sabe, null.
  */
 public record EntidadEntregaVista(
     String clave,
@@ -42,4 +43,5 @@ public record EntidadEntregaVista(
     String detalle,
     String registrada,
     String asignada,
-    String preparada) {}
+    String preparada,
+    String problema) {}

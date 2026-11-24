@@ -31,6 +31,21 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-23 · datos · Recepción confirmada muestra lo asentado en Logística, no lo de la dirección
+
+- **Decisión:** el problema de Recepción confirmada sale del motivo del reporte de Logística
+  (`EntidadEntregaVista.problema`), y la llegada, solo del cambio a `EN_PUERTA` del historial. El
+  puerto recibe el `?problema=` de la respuesta, pero solo lo usa la maqueta, que no guarda el
+  acta. Sin cómo va la necesidad, «Tu necesidad» dice cuál es, como Llegó con un problema.
+- **Alternativas:** seguir leyendo `?problema=` en la plantilla (al volver a abrir la página el
+  problema desaparecía, y con un parámetro inventado aparecía uno que no existe); pedir a Donaciones
+  la cuenta de la necesidad en esta pantalla (una llamada más por cada confirmación).
+- **Por qué:** la página promete mostrar lo que quedó asentado y poder volver a abrirse (DA-06).
+- **Costo:** la cuenta de donaciones de la necesidad no aparece en esta pantalla con datos reales;
+  se conecta en Z con HG-04 ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 2).
+- **Quién decidió:** agente, al arreglar en sesión los bloqueantes de la ronda 3 de `org-confirmar`.
+- **Evidencia:** backlog §11 (ORG-11 y ORG-12); `EntidadConfirmarRestTest`.
+
 ### 2026-11-23 · navegación · Entregas reúne «Donaciones recibidas» y «Seguir entregas» (DA-02)
 
 - **Decisión:** una sola pantalla, Entregas (`/entidad-seguimiento`), con Para confirmar, Por llegar y
