@@ -1,14 +1,17 @@
 package grupo5.logistica.architecture;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.RestController;
 
 class ArchitectureFitnessTest {
@@ -115,5 +118,16 @@ class ArchitectureFitnessTest {
         .should()
         .beAnnotatedWith(SpringBootTest.class)
         .check(testClasses);
+  }
+
+  /** Con réplicas, una sola corre cada tarea programada (E7-S01d-1). */
+  @Test
+  void tareasProgramadas_debenTenerSchedulerLock() {
+    methods()
+        .that()
+        .areAnnotatedWith(Scheduled.class)
+        .should()
+        .beAnnotatedWith(SchedulerLock.class)
+        .check(importedClasses);
   }
 }

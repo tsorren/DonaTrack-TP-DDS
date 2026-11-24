@@ -42,7 +42,7 @@ propios y qué hay que cambiar en el código para que dos réplicas no se pisen?
 
 **Gate A:** decisión nueva (no había política de reinicio ni orquestador). **Gate B:** cambia la
 plataforma de despliegue, cambia cómo se ejecutan las tareas programadas y el consumo de colas
-(dos dependencias nuevas, tablas nuevas y colas redeclaradas) y tiene impacto en todos los
+(tres dependencias nuevas, tablas nuevas y colas redeclaradas) y tiene impacto en todos los
 servicios. Es ARCHITECTURAL (AGENTS.md §7.0).
 
 ## Alternativas Consideradas
@@ -122,13 +122,26 @@ Elegidas **Docker** (E7-S01), **Swarm de un nodo con los seis módulos propios r
 - **Tareas programadas: ShedLock con JDBC (E7-S01d-1).** `[PROPOSED]` En Donaciones, Incentivos y
   Logística:
   - una tabla `shedlock` por servicio, creada con una migración de Flyway;
-  - `@SchedulerLock` en cada uno de los 11 métodos, con `lockAtMostFor` por encima de la duración
-    esperada de la tarea;
-  - dos dependencias nuevas (`shedlock-spring` y `shedlock-provider-jdbc-template`), aprobadas por
-    el grupo al elegir la opción (AGENTS.md §6, a confirmar en el PR).
+  - `@SchedulerLock` en 10 de los 11 métodos, con `lockAtMostFor` por encima de la duración
+    esperada de la tarea. Queda afuera el reintento del outbox en memoria de Donaciones
+    (`OutboxRetryScheduler`): cada réplica tiene su propio store y no hay trabajo compartido que
+    proteger. Una regla de ArchUnit en cada servicio exige el lock en todo `@Scheduled`, con esa
+    única excepción;
+  - dos dependencias nuevas para el lock con JDBC (`shedlock-spring` y
+    `shedlock-provider-jdbc-template`), aprobadas por
+    el grupo al elegir la opción (AGENTS.md §6, a confirmar en el PR). `common-lib` las declara
+    `optional`: no llegan al gateway, al cliente ni a Notificaciones, y las declaran los tres
+    servicios que las usan;
+  - **Logística con el perfil `mongo` (revisión del PR de SL1, 2026-11-24).** Ese perfil excluye el
+    `DataSource`, así que la autoconfiguración de `common-lib` no se activa. Una configuración del
+    perfil `mongo` en Logística habilita el lock con `MongoLockProvider`, sobre la colección
+    `shedLock` de su base. Suma una tercera dependencia (`shedlock-provider-mongo`), elegida por
+    Tadeo y a confirmar por el grupo en el PR (AGENTS.md §6). Se descartó dejar Logística con una
+    réplica fija: el ADR replica los seis módulos propios.
   - **Configuración común en `common-lib` (elegido por Tadeo el 2026-11-18, a confirmar en el PR).**
     `@EnableSchedulerLock` y el `LockProvider` van en una autoconfiguración de `common-lib` que se
-    activa solo si hay un `DataSource`. Es un cambio estructural de `common-lib` (AGENTS.md §7.0),
+    activa solo si hay un `DataSource` (con el perfil `mongo`, Logística arma su propio lock: ver el
+    punto anterior). Es un cambio estructural de `common-lib` (AGENTS.md §7.0),
     con el reactor completo como gate. Se descartó la opción de cada servicio (A), que era la
     recomendada porque no choca con la tarea de OpenTelemetry (O2), que también cambia
     `common-lib`: se eligió no repetir el código.
@@ -263,7 +276,7 @@ active consumer*) es infraestructura y queda en adaptadores y configuración, si
     paso que arma una a partir de la otra si se elige generarla.
   - El límite por IP es uno solo para todos los visitantes sin cuenta.
   - Keycloak queda publicado en todas las interfaces.
-  - Dos dependencias nuevas (ShedLock), una tabla por servicio y colas redeclaradas: al actualizar un stack que ya corre, hay que vaciar esas colas antes de borrarlas o se pierden los eventos pendientes.
+  - Tres dependencias nuevas (ShedLock), una tabla por servicio y colas redeclaradas: al actualizar un stack que ya corre, hay que vaciar esas colas antes de borrarlas o se pierden los eventos pendientes.
   - Sin separación entre *liveness* y *readiness*: una réplica con una dependencia caída sigue
     recibiendo tráfico.
   - `[INFERRED]` Con dos réplicas de todo, el stack usa casi toda la memoria de una máquina de

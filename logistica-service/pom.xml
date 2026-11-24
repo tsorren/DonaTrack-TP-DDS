@@ -85,6 +85,21 @@
             <artifactId>common-lib</artifactId>
             <version>1.0</version>
         </dependency>
+        <!-- ShedLock (E7-S01d-1): common-lib lo declara optional y lo arma solo si el servicio
+             lo trae. -->
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-spring</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
+        </dependency>
+        <!-- Lock en Mongo para el perfil mongo, que no tiene DataSource (ShedLockMongoConfig). -->
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-mongo</artifactId>
+        </dependency>
         <!-- Resource server (SPEC-06 E2-01): valida el JWT de Keycloak. Apagado por defecto
              (donatrack.seguridad.habilitada=false). Sin versión: la administra el BOM de Spring Boot. -->
         <dependency>
