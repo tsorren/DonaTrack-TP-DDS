@@ -104,7 +104,6 @@ recibido
 recibido-sello
 registro-mesa
 registros
-resultado
 resumen
 rotulo
 salidas

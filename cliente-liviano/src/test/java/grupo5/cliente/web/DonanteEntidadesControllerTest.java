@@ -191,7 +191,10 @@ class DonanteEntidadesControllerTest {
             .getResponse()
             .getContentAsString();
     assertThat(veces(todas, "data-v=\"organizacion\"")).isEqualTo(2);
-    assertThat(veces(todas, "<span data-v=\"nombre\">Hogar Ejemplo</span>")).isEqualTo(1);
+    assertThat(veces(todas, "<h2 data-v=\"nombre\">Hogar Ejemplo</h2>")).isEqualTo(1);
+    // A02: una tarjeta del catálogo por organización, con sus necesidades en el bloque necesidad
+    assertThat(veces(todas, "<li class=\"tarjeta pila\"")).isEqualTo(2);
+    assertThat(veces(todas, "<li class=\"necesidad\">")).isEqualTo(3);
     assertThat(todas.indexOf("Frazadas")).isLessThan(todas.indexOf("Jabón"));
 
     String higiene =
@@ -261,7 +264,7 @@ class DonanteEntidadesControllerTest {
                 content()
                     .string(
                         containsString(
-                            "<span data-v=\"nombre\">Comedor Ejemplo Este</span><span data-v=\"ya-donaste\">Ya le donaste</span>")))
+                            "<h2 data-v=\"nombre\">Comedor Ejemplo Este</h2><strong class=\"texto-chico\" data-tono=\"acento\">Ya le donaste</strong>")))
             .andExpect(content().string(containsString("Hoy no pide nada.")))
             .andReturn()
             .getResponse()
@@ -282,10 +285,13 @@ class DonanteEntidadesControllerTest {
             .andReturn()
             .getResponse()
             .getContentAsString();
-    assertThat(veces(pagina, "<span data-v=\"nombre\">Comedor Ejemplo Este</span>")).isEqualTo(1);
+    assertThat(veces(pagina, "<h2 data-v=\"nombre\">Comedor Ejemplo Este</h2>")).isEqualTo(1);
   }
 
-  /** R11-27: hasta 3 pedidos a la vista; el resto, en un plegable que dice cuántos faltan. */
+  /**
+   * R11-27: hasta 3 pedidos a la vista; el resto, en el plegable del catálogo que dice cuántos
+   * faltan, con un solo rótulo y la flecha de .plegable-ver (sin "Ver menos").
+   */
   @Test
   void conMasDeTresPedidosElRestoVaPlegado() throws Exception {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
@@ -308,21 +314,22 @@ class DonanteEntidadesControllerTest {
                 content()
                     .string(
                         containsString("<span class=\"solo-lectores\"> de Hogar Ejemplo</span>")))
-            .andExpect(content().string(containsString("Ver menos")))
+            .andExpect(content().string(not(containsString("Ver menos"))))
             .andReturn()
             .getResponse()
             .getContentAsString();
-    assertThat(veces(pagina, "<details data-v=\"mas\"")).isEqualTo(2);
+    assertThat(veces(pagina, "<details class=\"plegable\" data-v=\"mas\"")).isEqualTo(2);
+    assertThat(veces(pagina, "<span class=\"plegable-ver\">Ver ")).isEqualTo(2);
     // El cuarto pedido de Hogar va dentro de su plegable; el tercero, a la vista.
-    int hogar = pagina.indexOf("<span data-v=\"nombre\">Hogar Ejemplo</span>");
-    int plegable = pagina.indexOf("<details data-v=\"mas\"", hogar);
+    int hogar = pagina.indexOf("<h2 data-v=\"nombre\">Hogar Ejemplo</h2>");
+    int plegable = pagina.indexOf("<details class=\"plegable\" data-v=\"mas\"", hogar);
     assertThat(pagina.indexOf("Pedido 4", hogar)).isGreaterThan(plegable);
     assertThat(pagina.indexOf("Pedido 3", hogar)).isLessThan(plegable);
   }
 
   /**
-   * R11-28: "Cómo llega tu donación" es una franja de ayuda arriba de la búsqueda, no una tarjeta
-   * más; "Ver Mis donaciones" es un enlace, no un botón.
+   * R11-28: "Cómo llega tu donación" es el aviso de información del catálogo arriba de la búsqueda,
+   * no una tarjeta más; "Ver Mis donaciones" es un enlace, no un botón.
    */
   @Test
   void comoLlegaEsUnaFranjaDeAyudaArribaDeLaLista() throws Exception {
@@ -336,7 +343,8 @@ class DonanteEntidadesControllerTest {
             .andExpect(
                 content()
                     .string(
-                        containsString("<aside data-v=\"ayuda\" aria-labelledby=\"como-titulo\">")))
+                        containsString(
+                            "<aside class=\"aviso\" data-tipo=\"info\" aria-labelledby=\"como-titulo\">")))
             .andExpect(
                 content()
                     .string(
@@ -346,8 +354,10 @@ class DonanteEntidadesControllerTest {
             .andReturn()
             .getResponse()
             .getContentAsString();
-    assertThat(pagina.indexOf("data-v=\"ayuda\"")).isLessThan(pagina.indexOf("role=\"search\""));
-    assertThat(pagina.indexOf("data-v=\"ayuda\""))
+    assertThat(pagina.indexOf("aria-labelledby=\"como-titulo\""))
+        .isPositive()
+        .isLessThan(pagina.indexOf("role=\"search\""));
+    assertThat(pagina.indexOf("aria-labelledby=\"como-titulo\""))
         .isLessThan(pagina.indexOf("data-v=\"organizacion\""));
   }
 
@@ -358,7 +368,41 @@ class DonanteEntidadesControllerTest {
 
     mvc.perform(get("/donante-entidades?escenario=error"))
         .andExpect(content().string(containsString("No pudimos cargar las organizaciones.")))
-        .andExpect(content().string(containsString("data-v=\"ayuda\"")));
+        .andExpect(content().string(containsString("aria-labelledby=\"como-titulo\"")));
+  }
+
+  /**
+   * A02 y HG-04: con lo recibido, la necesidad lleva la barra del catálogo y la cuenta va en
+   * palabras, sin porcentaje; el título es el de la sección, como en la guía.
+   */
+  @Test
+  void conLoRecibidoLaBarraDiceLaCuentaEnPalabras() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    Pedido lentejas =
+        new Pedido(
+            "Lentejas secas",
+            "alimentos",
+            "cat-alimentos",
+            "Faltan 30 de 40 kg este mes",
+            "Se repite cada mes",
+            10,
+            40);
+    when(entidades.entidades(eq(DONANTE), any()))
+        .thenReturn(
+            vista(List.of(new Entidad("Hogar Ejemplo", false, List.of(lentejas))), 1, 1, 1));
+
+    mvc.perform(get("/donante-entidades"))
+        .andExpect(content().string(containsString("<h1>Organizaciones</h1>")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<progress class=\"progreso\" max=\"40\" value=\"10\""
+                            + " aria-label=\"Lentejas secas para Hogar Ejemplo: faltan 30 de 40 kg"
+                            + " este mes\"></progress>")))
+        .andExpect(
+            content().string(containsString("Faltan 30 de 40 kg este mes · Se repite cada mes")))
+        .andExpect(content().string(not(containsString("25 %"))));
   }
 
   private static List<Pedido> pedidos(int cuantos) {
@@ -391,7 +435,7 @@ class DonanteEntidadesControllerTest {
             content()
                 .string(
                     containsString(
-                        "<span data-v=\"nombre\">Hogar Ejemplo</span><span data-v=\"ya-donaste\">Ya le donaste</span>")));
+                        "<h2 data-v=\"nombre\">Hogar Ejemplo</h2><strong class=\"texto-chico\" data-tono=\"acento\">Ya le donaste</strong>")));
   }
 
   @Test
