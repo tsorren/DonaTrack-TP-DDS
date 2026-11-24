@@ -58,6 +58,7 @@
 | `ERR-CSR-003` | `ARGUMENTO_INVALIDO` | Argumento con valor inválido (también usado por bean validation, headers faltantes, type mismatch, JSON malformado) | `400` | `ValidationException` / Spring MVC |
 | `ERR-CSR-401` | `NO_AUTENTICADO` | Falta el token de acceso o no es válido | `401` | Spring Security |
 | `ERR-CSR-403` | `ACCESO_DENEGADO` | El token no tiene el rol, el permiso o la pertenencia que pide la operación | `403` | Spring Security |
+| `ERR-CSR-429` | `DEMASIADAS_SOLICITUDES` | Se superó el límite de solicitudes por minuto del api-gateway (lecturas o escrituras, por usuario o por IP). Va con `Retry-After` | `429` | `LimiteDeSolicitudes` (api-gateway) |
 | `ERR-CSR-500` | `ERROR_INTERNO` | Error interno del servidor (fallback genérico, FeignException) | `500` | `Exception` / `FeignException` |
 
 ---

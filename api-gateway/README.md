@@ -38,6 +38,48 @@ Con `GATEWAY_SEGURIDAD_HABILITADA=true` el gateway valida firma (JWKS), `exp`, `
 
 - `POST /api/contacto` (HB-21): el cliente liviano manda la IP del navegador en `X-Forwarded-For`. Si el gateway agrega otra detrás, Notificaciones igual cuenta por la primera.
 
+## Encabezados de seguridad
+
+[`EncabezadosDeSeguridad`](src/main/java/grupo5/gateway/seguridad/EncabezadosDeSeguridad.java) (Q03 de E7) pone en todas las respuestas, con la seguridad encendida o apagada:
+
+| Encabezado | Valor |
+|---|---|
+| `X-Content-Type-Options` | `nosniff` |
+| `X-Frame-Options` | `DENY` |
+| `Referrer-Policy` | `no-referrer` |
+| `Content-Security-Policy` | `default-src 'none'; frame-ancestors 'none'` (el gateway solo devuelve JSON) |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` |
+| `Cache-Control` | `no-store`, solo en `/api/**` |
+| `Strict-Transport-Security` | `max-age=31536000`. En http el navegador lo ignora; vale cuando haya TLS |
+
+- Es un filtro que corre antes que la cadena de Spring Security, así que el `401` también los lleva.
+- Cada uno sale una sola vez y con este valor: el filtro ignora el que trae el servicio en una ruta enrutada y el que pone la cadena de `common-lib` (su `nosniff`, su `DENY` y, solo en `/api/**`, su `Cache-Control`). Fuera de `/api/**` el `Cache-Control` de la cadena pasa tal cual.
+- Los valores son constantes de la clase, sin propiedades.
+
+## Rate limiting
+
+Requerimiento 3 de E7 ([ADR](../docs/adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md)). [`LimiteDeSolicitudes`](src/main/java/grupo5/gateway/LimiteDeSolicitudes.java) va primero en cada ruta: cada pedido consume una ficha de su cubeta (token bucket de Bucket4j, guardada en Redis por [`CubetasEnRedis`](src/main/java/grupo5/gateway/CubetasEnRedis.java)). Sin fichas, el gateway contesta `429` y el pedido no llega al servicio.
+
+- **De quién es la cubeta.** De la cuenta (`sub` del JWT) si la seguridad está encendida y validó el token. Si no, de la IP de origen: la de la conexión o, si la conexión viene de un proxy confiable (`GATEWAY_LIMITE_PROXIES_CONFIABLES`, regex), la primera de `X-Forwarded-For`. El cliente liviano manda ahí la IP del navegador en todas las llamadas; sin esa regla, todos los visitantes compartirían la cubeta del cliente liviano.
+- **Cupos por minuto**, con recarga gradual. Lecturas (`GET`, `HEAD`, `OPTIONS`) y escrituras por separado:
+
+  | | Lecturas | Escrituras |
+  |---|---|---|
+  | Por cuenta | 300 | 60 |
+  | Por IP | 120 | 30 |
+
+- **La respuesta `429`** trae el error unificado (`ERR-CSR-429`), `Retry-After` en segundos y el `X-Trace-Id`. Las que pasan traen `X-RateLimit-Remaining`. El cliente liviano muestra su página `error/429`.
+- Cada rechazo deja un log `[GATEWAY] [RATE-LIMIT]` con el tipo de cubeta (`usuario` o `ip`), sin la IP ni el `sub`.
+- `/actuator/**` no consume fichas.
+- **Las cubetas viven en Redis** (decisión Q11): todas las réplicas del gateway cuentan contra el mismo cupo. Redis no persiste nada (los contadores son descartables) y borra cada clave 10 s después de que su cubeta se recargó entera.
+- **Si Redis no responde, el pedido pasa** (*fail-open*, Q11b). Cada operación (conectar, consumir) espera como máximo `GATEWAY_REDIS_TIMEOUT`. El gateway arranca aunque Redis esté caído y se conecta con el primer pedido. Si no conecta, no reintenta hasta pasado `GATEWAY_REDIS_REINTENTO`, y mientras tanto los pedidos pasan sin esperar. Queda un `WARN` `[GATEWAY] [RATE-LIMIT] [REDIS-NO-DISPONIBLE]`, uno por ventana como máximo. La métrica y la alerta del panel son de las tareas R3 y O4.
+
+Para probarlo a mano (con los cupos por defecto, la escritura 31 de la misma IP en un minuto da `429`):
+
+```bash
+for i in $(seq 1 31); do curl -s -o /dev/null -w "%{http_code} " -X POST http://localhost:8086/api/contacto; done
+```
+
 ## `X-Trace-Id`
 
 - Si el cliente lo manda con 32 hex en minúscula, el gateway lo adopta, lo manda al servicio y lo devuelve.
@@ -55,6 +97,16 @@ Con `GATEWAY_SEGURIDAD_HABILITADA=true` el gateway valida firma (JWKS), `exp`, `
 | `LOGISTICA_SERVICE_URL` | `http://localhost:8083` |
 | `GATEWAY_SEGURIDAD_HABILITADA` | `false` |
 | `GATEWAY_JWT_AUDIENCIA` | `donatrack-api` |
+| `GATEWAY_LIMITE_HABILITADO` | `true` |
+| `GATEWAY_LIMITE_VENTANA` | `1m` |
+| `GATEWAY_LIMITE_LECTURAS_USUARIO` / `GATEWAY_LIMITE_ESCRITURAS_USUARIO` | `300` / `60` |
+| `GATEWAY_LIMITE_LECTURAS_IP` / `GATEWAY_LIMITE_ESCRITURAS_IP` | `120` / `30` |
+| `GATEWAY_LIMITE_PROXIES_CONFIABLES` | vacío (en Docker Compose: las redes privadas) |
+| `GATEWAY_REDIS_HOST` / `GATEWAY_REDIS_PUERTO` | `localhost` / `6379` (en Docker Compose: `redis`) |
+| `GATEWAY_REDIS_TIMEOUT` | `100ms` |
+| `GATEWAY_REDIS_REINTENTO` | `5s` |
+
+La ventana, los cupos y `GATEWAY_REDIS_TIMEOUT` tienen que ser positivos: con 0 o menos, el gateway no arranca. Para apagar el límite se usa `GATEWAY_LIMITE_HABILITADO=false`.
 
 ## Correr y probar
 
@@ -62,6 +114,10 @@ Con `GATEWAY_SEGURIDAD_HABILITADA=true` el gateway valida firma (JWKS), `exp`, `
 mvn clean test -pl api-gateway -am
 ```
 
+`CubetasEnRedisContraRedisTest` levanta un Redis con Testcontainers; sin Docker se saltea (`[DEFERRED_NO_DOCKER]`).
+
 ```bash
-docker compose up -d api-gateway
+docker compose up -d redis api-gateway
 ```
+
+El gateway no depende de Redis para arrancar: sin `redis`, deja pasar todo (*fail-open*).

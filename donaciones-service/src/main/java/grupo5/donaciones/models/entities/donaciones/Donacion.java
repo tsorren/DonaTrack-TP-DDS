@@ -90,6 +90,10 @@ public class Donacion extends AgregadoConEventos<EventoDonacion> {
     return Collections.unmodifiableList(items);
   }
 
+  public boolean esPerecedera() {
+    return items.stream().anyMatch(item -> item.bien().esPerecedero());
+  }
+
   public void agregarItem(ItemDonacion item) {
     if (item == null) {
       throw new ValidationException(ErrorCatalog.DONACION_ITEM_NULO);

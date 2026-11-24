@@ -20,7 +20,8 @@ import org.springframework.web.servlet.function.ServerResponse;
 
 /**
  * Rutas expuestas por el gateway: son la allowlist de lo que llega a los servicios. Lo que no
- * figura acá da 404 (denegar por defecto).
+ * figura acá da 404 (denegar por defecto). Cada pedido enrutado pasa antes por el {@link
+ * LimiteDeSolicitudes} (rate limiting, E7).
  *
  * <p>Sin reescritura (R1 del ADR-E6-02): la ruta llega igual al servicio. {@code /api/logistica} es
  * de dos servicios, así que se enruta por ruta completa. Quedan afuera los alias sin {@code /api}
@@ -32,8 +33,10 @@ public class RutasGateway {
   private static final Logger log = LoggerFactory.getLogger(RutasGateway.class);
 
   @Bean
-  RouterFunction<ServerResponse> rutaDonaciones(GatewayProperties props) {
+  RouterFunction<ServerResponse> rutaDonaciones(
+      GatewayProperties props, LimiteDeSolicitudes limite) {
     return ruta(
+        limite,
         "donaciones",
         props.servicios().donaciones(),
         "/api/actividad",
@@ -51,8 +54,10 @@ public class RutasGateway {
   }
 
   @Bean
-  RouterFunction<ServerResponse> rutaNotificaciones(GatewayProperties props) {
+  RouterFunction<ServerResponse> rutaNotificaciones(
+      GatewayProperties props, LimiteDeSolicitudes limite) {
     return ruta(
+        limite,
         "notificaciones",
         props.servicios().notificaciones(),
         "/api/notificaciones/**",
@@ -61,13 +66,16 @@ public class RutasGateway {
   }
 
   @Bean
-  RouterFunction<ServerResponse> rutaIncentivos(GatewayProperties props) {
-    return ruta("incentivos", props.servicios().incentivos(), "/api/incentivos/**");
+  RouterFunction<ServerResponse> rutaIncentivos(
+      GatewayProperties props, LimiteDeSolicitudes limite) {
+    return ruta(limite, "incentivos", props.servicios().incentivos(), "/api/incentivos/**");
   }
 
   @Bean
-  RouterFunction<ServerResponse> rutaLogistica(GatewayProperties props) {
+  RouterFunction<ServerResponse> rutaLogistica(
+      GatewayProperties props, LimiteDeSolicitudes limite) {
     return ruta(
+        limite,
         "logistica",
         props.servicios().logistica(),
         "/api/camiones/**",
@@ -80,7 +88,7 @@ public class RutasGateway {
   }
 
   private static RouterFunction<ServerResponse> ruta(
-      String servicio, String url, String... patrones) {
+      LimiteDeSolicitudes limite, String servicio, String url, String... patrones) {
     RequestPredicate predicado =
         Arrays.stream(patrones)
             .map(RequestPredicates::path)
@@ -88,6 +96,8 @@ public class RutasGateway {
             .orElseThrow();
     return route(servicio)
         .route(predicado, http())
+        // Primero el límite (E7, ADR 20261115): un pedido sin ficha no llega al servicio.
+        .filter(limite)
         .before(uri(url))
         .before(RutasGateway::propagarTraceId)
         // El X-Trace-Id de la respuesta lo pone el filtro de common-lib; el del servicio lo

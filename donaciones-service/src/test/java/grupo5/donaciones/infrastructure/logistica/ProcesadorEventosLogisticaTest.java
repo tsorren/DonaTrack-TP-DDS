@@ -17,6 +17,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaCancelada;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaEnPuerta;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
@@ -29,6 +30,7 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.EstadoDonacion
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
+import grupo5.donaciones.services.IMetricasDonaciones;
 import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -38,6 +40,8 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -52,6 +56,7 @@ class ProcesadorEventosLogisticaTest {
   @Mock private IEventosConsumidosRepository eventosConsumidosRepository;
   @Mock private IDonacionesIndependientesRepository donacionesIndependientesRepository;
   @Mock private ILogisticaBroker broker;
+  @Mock private IMetricasDonaciones metricas;
   // Sin transaction manager, como el perfil en memoria: getIfAvailable devuelve null
   @Mock private ObjectProvider<PlatformTransactionManager> transactionManager;
 
@@ -295,6 +300,84 @@ class ProcesadorEventosLogisticaTest {
 
     verify(donacionesIndependientesService, times(3)).cambiarEstado(eq(donacionId), any(), any());
     verify(eventosConsumidosRepository, never()).registrar(any());
+  }
+
+  // M04: entregas fallidas que se cuentan una sola vez
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void entregaFallida_nueva_avisaUnaVezConElReplanificableDelEvento(boolean replanificable) {
+    UUID donacionId = UUID.randomUUID();
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+
+    procesador.procesarEntregaFallida(fallida(donacionId, replanificable), ORIGEN);
+
+    verify(metricas).entregaFallida(replanificable);
+    verifyNoMoreInteractions(metricas);
+  }
+
+  @Test
+  void entregaFallida_duplicada_noAvisa() {
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(true);
+
+    procesador.procesarEntregaFallida(fallida(UUID.randomUUID(), true), ORIGEN);
+
+    verifyNoInteractions(metricas);
+  }
+
+  @Test
+  void entregaFallida_siLaDonacionYaEstabaEnEntregaFallida_laRegistraSinAvisar() {
+    UUID donacionId = UUID.randomUUID();
+    DonacionIndependiente donacion = mock(DonacionIndependiente.class, RETURNS_DEEP_STUBS);
+    when(donacion.getEstadoActual().getTipo()).thenReturn(TipoEstadoDonacion.ENTREGA_FALLIDA);
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.of(donacion));
+
+    procesador.procesarEntregaFallida(fallida(donacionId, true), ORIGEN);
+
+    verify(eventosConsumidosRepository).registrar(any(EventoConsumido.class));
+    verifyNoInteractions(metricas);
+  }
+
+  @Test
+  void entregaFallida_siFallaElCambioDeEstado_noAvisa() {
+    UUID donacionId = UUID.randomUUID();
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+    when(donacionesIndependientesService.cambiarEstado(any(), any(), any()))
+        .thenThrow(new RuntimeException("Fallo al cambiar estado"));
+
+    procesador.procesarEntregaFallida(fallida(donacionId, true), ORIGEN);
+
+    verifyNoInteractions(metricas);
+  }
+
+  @Test
+  void entregaFallida_siOtraOperacionGuardoLaDonacionALaVez_reintentaYAvisaUnaSolaVez() {
+    UUID donacionId = UUID.randomUUID();
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+    when(donacionesIndependientesService.cambiarEstado(eq(donacionId), any(), any()))
+        .thenThrow(
+            new BusinessStateException(
+                ErrorCatalog.DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE))
+        .thenReturn(null);
+
+    procesador.procesarEntregaFallida(fallida(donacionId, false), ORIGEN);
+
+    verify(donacionesIndependientesService, times(2)).cambiarEstado(eq(donacionId), any(), any());
+    verify(metricas).entregaFallida(false);
+    verifyNoMoreInteractions(metricas);
+  }
+
+  private static EventoEntregaFallida fallida(UUID donacionId, boolean replanificable) {
+    return new EventoEntregaFallida(
+        UUID.randomUUID(),
+        donacionId,
+        "Nadie en el domicilio",
+        LocalDateTime.now(),
+        replanificable);
   }
 
   // HB-01: réplica de las fotos de recepción para las destacadas

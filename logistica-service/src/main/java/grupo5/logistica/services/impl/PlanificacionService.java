@@ -23,6 +23,7 @@ import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudPlanificacionRepository;
 import grupo5.logistica.services.ComunicadorEventosLogistica;
+import grupo5.logistica.services.IMetricasLogistica;
 import grupo5.logistica.services.IPlanificacionService;
 import grupo5.logistica.services.IServicioExternoPlanificacion;
 import grupo5.logistica.services.mappers.SolicitudPlanificacionMapper;
@@ -59,6 +60,7 @@ public class PlanificacionService implements IPlanificacionService {
   private final IServicioExternoPlanificacion planificadorExterno;
   private final ApplicationEventPublisher eventPublisher;
   private final GeneradorDeRutas generadorDeRutas;
+  private final IMetricasLogistica metricas;
   private final Clock clock;
   private final int maximoPorLote;
   private final String callbackUrl;
@@ -74,6 +76,7 @@ public class PlanificacionService implements IPlanificacionService {
       IServicioExternoPlanificacion planificadorExterno,
       ApplicationEventPublisher eventPublisher,
       GeneradorDeRutas generadorDeRutas,
+      IMetricasLogistica metricas,
       Clock clock,
       @Value("${logistica.planificacion.max-donaciones-por-lote:100}") int maximoPorLote,
       @Value("${logistica.self.base-url:http://localhost:8083}") String selfBaseUrl) {
@@ -87,6 +90,7 @@ public class PlanificacionService implements IPlanificacionService {
     this.planificadorExterno = planificadorExterno;
     this.eventPublisher = eventPublisher;
     this.generadorDeRutas = generadorDeRutas;
+    this.metricas = metricas;
     this.clock = clock != null ? clock : Clock.systemUTC();
     this.maximoPorLote = Math.min(maximoPorLote, GeneradorDeRutas.MAX_ENTREGAS_POR_SOLICITUD);
     this.callbackUrl = selfBaseUrl + "/api/logistica/callback/rutas";
@@ -145,6 +149,7 @@ public class PlanificacionService implements IPlanificacionService {
 
     if ("ERROR".equalsIgnoreCase(dto.estado())) {
       solicitud.marcarError(dto.motivoError());
+      metricas.planificacionFallida();
       return solicitudMapper.toResponseDTO(solicitudesRepository.save(solicitud));
     }
 
@@ -157,6 +162,7 @@ public class PlanificacionService implements IPlanificacionService {
     persistirPlanificacion(rutas, respuesta);
 
     solicitud.procesarResultados(rutas.stream().map(Ruta::getId).toList());
+    metricas.planificacionProcesada();
     return solicitudMapper.toResponseDTO(solicitudesRepository.save(solicitud));
   }
 

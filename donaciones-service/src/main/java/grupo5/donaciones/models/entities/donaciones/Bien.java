@@ -33,6 +33,10 @@ public record Bien(
   }
 
   // metodos
+  public boolean esPerecedero() {
+    return this.fechaVencimiento != null;
+  }
+
   public boolean estaVencido() {
     if (this.fechaVencimiento == null) return false;
     return this.fechaVencimiento.isBefore(LocalDate.now(ZoneId.systemDefault()));
