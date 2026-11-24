@@ -659,3 +659,37 @@ decisiones, en la [bitácora](bitacora.md) (2026-11-23).
   (19:21), `3eca434eb` (19:27) y `35af5ec8e` (19:46).
 - ADR: ninguno. La ola no tuvo lotes de contrato e implementa el ADR «Huerta y galpón» (§9.1,
   Gate A); ninguna spec de `docs/specs/active/` es de esta ola.
+
+## 12. Ola DON: quien dona
+
+Rehace las 19 plantillas de quien dona de §5: 10 de la empresa y 9 de la persona (DA-13). El buzón
+de quien dona ya cambió en ORG (ORG-01); acá solo sale su hoja heredada. Fichas, en revisión desde
+el 2026-11-23 (DA-08, DA-19): [`flujos/guia-don-misiones.md`](flujos/guia-don-misiones.md) y
+[`flujos/guia-don-inicio-persona.md`](flujos/guia-don-inicio-persona.md). El manifiesto se escribe
+cuando el usuario apruebe las fichas y el reparto.
+
+### 12.1 Ronda 5 (2026-11-23): las preguntas de las fichas
+
+| ID | Pregunta | Recomendación | Respuesta del usuario | Fecha |
+|---|---|---|---|---|
+| DON-P1 | Misiones: ¿se cierra la prueba A/B con la huerta (`misiones-b`) como la única Misiones? | Sí; `misiones-a` y su hoja dejan de servirse y se borran en el lote | Pendiente | |
+| DON-P2 | Inicio de la persona: ¿qué pasa con el almanaque del año? | Se queda, chico: los 12 meses en una fila, con la cuenta y un fruto por entrega confirmada; la lista mes por mes sale | Pendiente | |
+| DON-P3 | Inicio de la persona sin nada en camino: ¿qué ocupa la lámina protagonista? | La huerta, con «Ver mi huerta» como acción llena | Pendiente | |
+
+### 12.2 Reparto propuesto `[PROPOSED]`
+
+Pendiente del OK del usuario. Dos tandas: la segunda toca `Pantallas.java` y
+`DonanteInicioController.java` después de la primera, para que dos lotes no cambien el mismo
+archivo a la vez.
+
+| Lote | Tanda | Plantillas | Arquetipo y decisiones | Ficha |
+|---|:-:|---|---|---|
+| `don-inicio` | 1 | `donante-inicio`; los menús de la empresa y de la persona | A04 directo; DA-03a, DA-03b, DA-05 y DA-17 | No |
+| `don-donaciones` | 1 | `donante-donaciones` y `persona/donante-donaciones` | A05 directo | No |
+| `don-detalle` | 1 | `donante-donaciones-detalle`, `donante-seguimiento` y sus 2 de `persona/` | A06, A07 o A08 según el estado; A07 | No |
+| `don-organizaciones` | 1 | `donante-entidades` y `persona/donante-entidades` | Deriva de A02, con `componentes/listado` | No |
+| `don-perfil` | 1 | `donante-perfil`, `-guardado` y sus 2 de `persona/`; la hoja heredada del buzón | Deriva de A12; DA-06 | No |
+| `don-inicio-persona` | 2 | `persona/donante-inicio` | Deriva de A04; DA-03c | Sí |
+| `don-misiones` | 2 | `donante-misiones` | Sin arquetipo | Sí |
+
+Suma: 1 + 2 + 4 + 2 + 4 + 1 + 1 = 15, más las 4 del buzón que ya cambiaron en ORG: 19.
