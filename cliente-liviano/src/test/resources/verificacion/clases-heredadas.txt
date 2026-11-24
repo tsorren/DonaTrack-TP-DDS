@@ -41,13 +41,9 @@ entregas
 estacion-numero
 fideos
 formulario
-foto
 fruto
 grupo
 iconos
-inicio
-inicio-cabecera
-inicio-cuerpo
 lamina
 lamina-categoria
 lamina-fecha

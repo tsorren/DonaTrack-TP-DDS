@@ -1,9 +1,8 @@
 /* El inicio de quien dona. La empresa (donante-inicio.html) es el arquetipo A04 de la guía
    (50-pantallas.html, #inicio-donante): las piezas son del catálogo (tarjeta, aviso, lista en filas,
    sello, la raíz y los frutos de huerta, la etiqueta de una entrega y el marco del mapa); esta hoja
-   solo dice dónde va cada una. La persona (persona/donante-inicio.html, con persona-inicio.css, que
-   importa esta hoja) todavía usa la cabecera y el cuerpo de antes: sus reglas siguen al final hasta
-   que se rehaga su inicio. */
+   solo dice dónde va cada una. La persona (persona/donante-inicio.html) dispone lo suyo en
+   persona-inicio.css, que importa esta hoja. */
 @import url("donante-comun.css");
 
 /* --- La empresa (A04) --------------------------------------------------------------------------- */
@@ -34,28 +33,5 @@
 @media (min-width: 37.5em) {
   #inicio-empresa > .tarjeta {
     --espacio-relleno: var(--espacio-5);
-  }
-}
-
-/* --- La persona (hasta que se rehaga su inicio) ------------------------------------------------- */
-.inicio-cuerpo {
-  display: grid;
-  gap: 2.5rem;
-}
-
-/* El saludo a la izquierda y las acciones a la derecha (usuario, 2026-11-08). */
-@media (min-width: 53.75em) {
-  .inicio-cabecera {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: 2rem;
-    align-items: end;
-  }
-
-  .inicio-cabecera > .racimo {
-    grid-column: 2;
-    grid-row: 1 / span 3;
-    align-self: end;
-    margin-bottom: 1.5rem;
   }
 }

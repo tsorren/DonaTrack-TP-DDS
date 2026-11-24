@@ -425,6 +425,7 @@ class DonanteInicioControllerTest {
   @Test
   void elMenuDeLaPersonaConIngresoSumaMisionesAntesDeComoDonar() throws Exception {
     when(perfiles.tipo(DONANTE)).thenReturn(Tipo.PERSONA);
+    when(inicios.inicio(DONANTE)).thenReturn(CON_SILLA);
     when(inicios.anio(DONANTE)).thenReturn(ANIO_CON_SILLA);
 
     String html =
@@ -558,41 +559,173 @@ class DonanteInicioControllerTest {
         .andExpect(content().string(not(containsString("href=\"/donante-misiones\""))));
   }
 
+  /**
+   * DA-03c y DA-08: la persona deriva de A04 (saludo, en camino, también en curso, ya confirmadas y
+   * novedades), con la huerta como tarjeta chica debajo y sin lo que es solo de la empresa. Pide lo
+   * mismo que la empresa, más su año.
+   */
   @Test
-  void laPersonaVeSuAnioConLaHuertaArribaDeTodo() throws Exception {
+  void laPersonaVeSuInicioComoA04ConLaHuertaYSinLoDeLaEmpresa() throws Exception {
     when(perfiles.tipo(DONANTE)).thenReturn(Tipo.PERSONA);
+    when(inicios.inicio(DONANTE))
+        .thenReturn(conAvisos(List.of(LENTEJAS, SILLA, ROPA, FIDEOS), 2, 4));
+    when(inicios.anio(DONANTE)).thenReturn(ANIO_CON_SILLA);
+
+    String html =
+        mvc.perform(get("/donante-inicio"))
+            .andExpect(status().isOk())
+            .andExpect(
+                content()
+                    .string(
+                        stringContainsInOrder(
+                            "<h1>Hola, ",
+                            "data-papel=\"protagonista\"",
+                            ">En camino ahora<",
+                            "Lentejas secas, 15 kg",
+                            "data-tono=\"principal\" href=\"/donante-seguimiento?donacion=l1\"",
+                            ">Seguir esta donación<",
+                            ">También en curso<",
+                            "Silla plegable, 1 unidad",
+                            ">Ya confirmadas<",
+                            "<strong>2 entregas confirmadas</strong> en noviembre.",
+                            "Ropa de abrigo, 12 prendas",
+                            "id=\"anio-huerta\"",
+                            "data-tono=\"secundario\" href=\"/donante-misiones\">Ver mi huerta<",
+                            "id=\"anio-meses\"",
+                            ">Últimas novedades<",
+                            "href=\"/donante-notificaciones\">Ver todas</a>")))
+            .andExpect(content().string(containsString("Recibió: Merendero Ejemplo Sur")))
+            .andExpect(content().string(containsString(">Misiones<")))
+            .andExpect(content().string(not(containsString("Ver las 6 en una tabla"))))
+            .andExpect(content().string(not(containsString("tu empresa"))))
+            .andExpect(content().string(not(containsString("planta sos vos"))))
+            .andExpect(content().string(not(containsString("Tu próxima misión"))))
+            .andExpect(content().string(not(containsString("cuenta=persona"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    // La cabecera sin botones (DA-03a): Seguimiento se abre desde la donación.
+    assertThat(html).doesNotContain(">Mis donaciones</a>").doesNotContain(">Ver seguimiento<");
+    // Una sola lámina protagonista y una sola acción llena.
+    assertThat(cuantas(html, "data-papel=\"protagonista\"")).isEqualTo(1);
+    assertThat(cuantas(html, "data-tono=\"principal\"")).isEqualTo(1);
+    // Las 3 últimas novedades, no las 4.
+    assertThat(cuantas(html, "<li class=\"noticia")).isEqualTo(3);
+    // La persona pide lo mismo que la empresa, más su año; nunca el tablero.
+    verify(inicios).inicio(DONANTE);
+    verify(inicios).anio(DONANTE);
+    verify(inicios, never()).tablero(any(), anyInt(), anyInt(), anyInt());
+  }
+
+  /** DON-P3: sin nada en camino, la huerta es la protagonista; con una en camino, una tarjeta. */
+  @Test
+  void sinNadaEnCaminoLaHuertaEsLaProtagonistaYConUnaEnCaminoEsUnaTarjeta() throws Exception {
+    when(perfiles.tipo(DONANTE)).thenReturn(Tipo.PERSONA);
+    when(inicios.anio(DONANTE)).thenReturn(ANIO_CON_SILLA);
+
+    when(inicios.inicio(DONANTE)).thenReturn(inicio(List.of(SILLA, ROPA), 1));
+    String sinCamino = pagina("/donante-inicio");
+    assertThat(sinCamino)
+        .contains(
+            "id=\"anio-huerta\" class=\"tarjeta huerta-caja\" data-papel=\"protagonista\"",
+            "data-tono=\"principal\" href=\"/donante-misiones\">Ver mi huerta<")
+        .doesNotContain("Nada en camino ahora")
+        .doesNotContain("Seguir esta donación");
+    assertThat(cuantas(sinCamino, "data-papel=\"protagonista\"")).isEqualTo(1);
+    assertThat(cuantas(sinCamino, "data-tono=\"principal\"")).isEqualTo(1);
+    assertThat(sinCamino.indexOf("id=\"anio-huerta\""))
+        .as("la huerta, arriba de lo que sigue en curso")
+        .isLessThan(sinCamino.indexOf(">También en curso<"));
+
+    when(inicios.inicio(DONANTE)).thenReturn(inicio(List.of(LENTEJAS, SILLA), 0));
+    String conCamino = pagina("/donante-inicio");
+    assertThat(conCamino)
+        .contains(
+            "data-tono=\"principal\" href=\"/donante-seguimiento?donacion=l1\"",
+            "id=\"anio-huerta\" class=\"tarjeta huerta-caja\" aria-labelledby",
+            "data-tono=\"secundario\" href=\"/donante-misiones\">Ver mi huerta<");
+    assertThat(cuantas(conCamino, "data-papel=\"protagonista\"")).isEqualTo(1);
+    assertThat(cuantas(conCamino, "data-tono=\"principal\"")).isEqualTo(1);
+  }
+
+  /** DA-08: con una donación con problema, el aviso va arriba de la lámina y no promete fecha. */
+  @Test
+  void conUnaConProblemaElAvisoVaArribaDeLaLamina() throws Exception {
+    when(perfiles.tipo(DONANTE)).thenReturn(Tipo.PERSONA);
+    when(inicios.inicio(DONANTE)).thenReturn(inicio(List.of(UTILES, LENTEJAS), 0));
     when(inicios.anio(DONANTE)).thenReturn(ANIO_CON_SILLA);
 
     mvc.perform(get("/donante-inicio"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Este es tu 2026, mes a mes")))
-        .andExpect(content().string(containsString("Noviembre, este mes · 5 donaciones")))
-        .andExpect(content().string(containsString("Silla plegable, 1 unidad")))
-        .andExpect(content().string(containsString("Donaste 5 veces en 2026.")))
-        .andExpect(content().string(containsString("5 donaciones registradas")))
-        .andExpect(content().string(containsString("<dd>2</dd>")))
-        .andExpect(content().string(containsString("href=\"/donante-donaciones?mes=2026-11\"")))
-        .andExpect(content().string(containsString("Ver todas las de noviembre (5)")))
-        .andExpect(content().string(containsString("Ver todas (1 sin leer)")))
-        .andExpect(content().string(stringContainsInOrder("Ver mi huerta", "id=\"anio-meses\"")))
-        .andExpect(content().string(containsString(">Misiones<")))
-        .andExpect(content().string(not(containsString("planta sos vos"))))
-        .andExpect(content().string(not(containsString("Tu próxima misión"))))
-        .andExpect(content().string(not(containsString("cuenta=persona"))))
-        .andExpect(content().string(not(containsString("tu empresa"))));
-    // La persona no pide la lista entera del inicio de la empresa (regla 1 del backlog R11).
-    verify(inicios, never()).inicio(any());
-    verify(inicios, never()).tablero(any(), anyInt(), anyInt(), anyInt());
+        .andExpect(
+            content()
+                .string(
+                    stringContainsInOrder(
+                        "<h1>Hola, ",
+                        "class=\"aviso\" data-tipo=\"error\"",
+                        "href=\"/donante-donaciones-detalle?donacion=u1\"",
+                        "Útiles escolares, 2 cajas: no pudo llegar",
+                        "El camino estaba cortado.",
+                        "Todavía sin fecha de nueva salida.",
+                        "data-papel=\"protagonista\"",
+                        ">En camino ahora<")))
+        .andExpect(content().string(not(containsString("sale de nuevo"))));
+  }
+
+  /**
+   * DON-P2: el almanaque chico, con los 12 meses, la cuenta de cada mes y un fruto por entrega
+   * confirmada; sin plantas, sin lista mes por mes y sin marca de falta en el mes sin donaciones.
+   */
+  @Test
+  void elAlmanaqueTieneDoceMesesConFrutosYSinListaMesPorMes() throws Exception {
+    when(perfiles.tipo(DONANTE)).thenReturn(Tipo.PERSONA);
+    when(inicios.inicio(DONANTE)).thenReturn(inicio(List.of(LENTEJAS, ROPA, FIDEOS), 2));
+    when(inicios.anio(DONANTE)).thenReturn(anio(5, List.of(LENTEJAS, ROPA, FIDEOS), true));
+
+    String html = pagina("/donante-inicio");
+    String almanaque =
+        html.substring(
+            html.indexOf("<ol class=\"almanaque\""),
+            html.indexOf("</ol>", html.indexOf("<ol class=\"almanaque\"")));
+
+    assertThat(cuantas(almanaque, "<li data-mes=")).isEqualTo(12);
+    assertThat(cuantas(almanaque, "data-mes=\"con\"")).isEqualTo(1);
+    assertThat(cuantas(almanaque, "data-mes=\"sin\"")).isEqualTo(10);
+    assertThat(cuantas(almanaque, "data-mes=\"por-venir\"")).isEqualTo(1);
+    assertThat(almanaque)
+        .contains("href=\"/donante-donaciones?mes=2026-11\"")
+        .contains(">Este mes<")
+        .contains(">5<")
+        .contains(" donaciones, 2 con la entrega confirmada entre las 3 más recientes")
+        .contains(">+2<")
+        .doesNotContain("planta-")
+        .doesNotContain("<img");
+    // Un fruto por cada una de las 2 confirmadas de noviembre.
+    assertThat(almanaque)
+        .containsPattern(
+            "<ul class=\"huerta-frutos\" data-plantas role=\"list\" aria-hidden=\"true\">"
+                + "\\s*<li></li>\\s*<li></li>\\s*</ul>");
+    assertThat(html).doesNotContain("id=\"mes-").doesNotContain("mes a mes");
+    // El mes sin donaciones, tranquilo: sin marca de falta ni racha.
+    assertThat(almanaque)
+        .contains("Sin donaciones")
+        .doesNotContain("racha")
+        .doesNotContain("falta");
   }
 
   @Test
   void sinTipoEsPersonaSinHuertaNiMisiones() throws Exception {
     when(perfiles.tipo(DONANTE)).thenReturn(Tipo.SIN_TIPO);
+    when(inicios.inicio(DONANTE)).thenReturn(inicio(List.of(SILLA), 0));
     when(inicios.anio(DONANTE)).thenReturn(ANIO_CON_SILLA);
 
     mvc.perform(get("/donante-inicio"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Este es tu 2026, mes a mes")))
+        .andExpect(content().string(containsString("id=\"anio-meses\"")))
+        // Sin la huerta, la variante b no aplica: la lámina dice que no hay nada en camino.
+        .andExpect(content().string(containsString(">Nada en camino ahora<")))
+        .andExpect(content().string(not(containsString("data-papel=\"protagonista\""))))
         .andExpect(content().string(not(containsString("Ver mi huerta"))))
         .andExpect(content().string(not(containsString("href=\"/donante-misiones\""))))
         .andExpect(content().string(not(containsString("tu empresa"))));
@@ -601,13 +734,21 @@ class DonanteInicioControllerTest {
   @Test
   void laPersonaSinDonacionesVeElEstadoVacio() throws Exception {
     when(perfiles.tipo(DONANTE)).thenReturn(Tipo.PERSONA);
+    when(inicios.inicio(DONANTE)).thenReturn(vacio());
     when(inicios.anio(DONANTE)).thenReturn(anio(0, List.of(), false));
 
-    mvc.perform(get("/donante-inicio"))
-        .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Todavía no tenés donaciones.")))
-        .andExpect(content().string(containsString("Ver mi huerta")))
-        .andExpect(content().string(not(containsString("id=\"anio-meses\""))));
+    String html = pagina("/donante-inicio");
+    assertThat(html)
+        .containsSubsequence(
+            "<h1>Hola, ",
+            "data-papel=\"protagonista\"",
+            "data-tono=\"principal\" href=\"/donante-misiones\">Ver mi huerta<",
+            "Todavía no tenés donaciones.",
+            "Cuando lleves algo al depósito y lo registren, aparece acá.",
+            "data-tono=\"secundario\" href=\"/donante-entidades\">Conocer las organizaciones<")
+        .doesNotContain("id=\"anio-meses\"")
+        .doesNotContain("En camino ahora");
+    assertThat(cuantas(html, "data-tono=\"principal\"")).isEqualTo(1);
   }
 
   @Test
@@ -617,12 +758,38 @@ class DonanteInicioControllerTest {
 
     mvc.perform(get("/donante-inicio"))
         .andExpect(status().isOk())
-        .andExpect(content().string(not(containsString("mes a mes"))));
+        .andExpect(content().string(not(containsString("id=\"anio-meses\""))));
     verify(inicios, never()).anio(any());
 
     mvc.perform(get("/donante-inicio?cuenta=persona"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Noviembre, este mes · 5 donaciones")));
+        .andExpect(content().string(containsString("Hola, Martina Ruiz")))
+        .andExpect(content().string(containsString("href=\"/donante-donaciones?mes=2026-11\"")));
+  }
+
+  private String pagina(String ruta) throws Exception {
+    return mvc.perform(get(ruta))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+  }
+
+  /** El inicio con {@code noticias} avisos, uno por carta de la silla repetida. */
+  private static DonanteInicioVista conAvisos(
+      List<DonanteDonacionVista> donaciones, int delMes, int noticias) {
+    DonanteInicioVista base = inicio(donaciones, delMes);
+    return new DonanteInicioVista(
+        donaciones,
+        IntStream.range(0, noticias).mapToObj(i -> new Aviso(SILLA, 0)).toList(),
+        1,
+        delMes,
+        base.mes(),
+        base.hoy(),
+        base.actualizado(),
+        base.desde(),
+        base.hoyIso(),
+        base.ayerIso());
   }
 
   @Test

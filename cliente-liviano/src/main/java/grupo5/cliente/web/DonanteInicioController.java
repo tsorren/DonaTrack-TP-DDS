@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.thymeleaf.context.LazyContextVariable;
 
 /**
- * El inicio del donante con los datos del puerto, en la versión de su tipo de cuenta. La empresa
- * lee {@code miInicio} (el arquetipo A04 de la guía: la donación con problema, la que viaja hoy, lo
- * que sigue en curso y lo ya confirmado, todo de sus donaciones); la persona (templates/persona/)
- * lee {@code miAnio}, su año con las cifras como números, sin la lista entera. En la empresa {@code
- * miAnio} queda diferido: solo lo lee la persona de ejemplo de la maqueta ({@code ?cuenta=persona},
- * que cambia la plantilla después del controller), así que la empresa real no lo pide nunca. Sin
- * cuenta, manda a ingresar.
+ * El inicio del donante con los datos del puerto, en la versión de su tipo de cuenta. Las dos leen
+ * {@code miInicio} (el arquetipo A04 de la guía: la donación con problema, la que viaja hoy, lo que
+ * sigue en curso y lo ya confirmado, todo de sus donaciones); la persona (templates/persona/, ficha
+ * docs/interfaz/flujos/guia-don-inicio-persona.md) lee además {@code miAnio}, su año en doce meses
+ * con las cifras como números. En la empresa {@code miAnio} queda diferido: solo lo lee la persona
+ * de ejemplo de la maqueta ({@code ?cuenta=persona}, que cambia la plantilla después del
+ * controller), así que la empresa real no lo pide nunca. Sin cuenta, manda a ingresar.
  */
 @Controller
 public class DonanteInicioController {
@@ -41,10 +41,10 @@ public class DonanteInicioController {
     }
     UUID id = donante.get();
     String vista = pantallas.mostrarDonante("donante-inicio", id, model, pedido);
+    model.addAttribute("miInicio", inicios.inicio(id));
     if (vista.startsWith("persona/")) {
       model.addAttribute("miAnio", inicios.anio(id));
     } else {
-      model.addAttribute("miInicio", inicios.inicio(id));
       model.addAttribute(
           "miAnio",
           new LazyContextVariable<DonanteAnioVista>() {

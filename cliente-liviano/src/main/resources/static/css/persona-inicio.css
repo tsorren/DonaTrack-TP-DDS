@@ -1,139 +1,66 @@
-/* El inicio de la persona que dona (templates/persona/donante-inicio.html, segunda ronda del
-   2026-11-09): su 2026 mes a mes (componente .almanaque) con la lista de cada mes debajo y, al
-   costado, el año en cifras, la próxima misión y las noticias. Hoja nueva: solo disposición, por id y
-   sin clases propias; el papel, la tierra y los colores vienen de las piezas del donante
-   (donante-inicio.css), del componente huerta y del almanaque. */
+/* El inicio de la persona que dona (templates/persona/donante-inicio.html, ficha
+   docs/interfaz/flujos/guia-don-inicio-persona.md): deriva de A04, como el de la empresa, con las
+   mismas piezas del catálogo (tarjeta, aviso, lista en filas, sello, la raíz y los frutos de huerta, la
+   etiqueta de una entrega, el marco del mapa, el almanaque y las noticias). Hoja nueva: solo dice
+   dónde va cada una, por id y sin clases propias; importa la de la empresa por la base del donante. */
 @import url("donante-inicio.css");
 
-#persona-inicio > .inicio-cabecera {
-  margin-bottom: var(--espacio-4);
+/* La lámina protagonista (la que viaja o la huerta) y la tarjeta de la huerta: su relleno; el texto y
+   el mapa de la que viaja, lado a lado cuando entran. */
+#inicio-persona > .tarjeta {
+  --espacio-relleno: var(--espacio-4);
 }
 
-#anio {
-  display: grid;
-  gap: var(--espacio-4);
+#inicio-persona > .tarjeta > .grilla {
+  --medida-grilla: 18rem;
+
   align-items: start;
 }
 
-#anio-meses {
+/* También en curso y Ya confirmadas: dos columnas cuando entran. */
+#inicio-persona > .grilla {
+  --medida-grilla: 24rem;
+
+  align-items: start;
+}
+
+/* Una entrega confirmada sin foto: la lámina con su relleno. */
+#inicio-persona > .grilla .tarjeta {
   --espacio-relleno: var(--espacio-4);
-
-  display: grid;
-  gap: var(--espacio-4);
 }
 
-#anio-meses :is(h2, h3, p) {
-  margin: 0;
-}
-
-#anio-meses > header {
-  display: grid;
-  gap: var(--espacio-1);
-}
-
-#anio-meses > header p:last-child {
-  max-width: 42rem;
-}
-
-/* Mes por mes. */
-#anio-lista section {
-  display: grid;
-  gap: var(--espacio-2);
-  scroll-margin-top: var(--espacio-5);
-}
-
-#anio-lista h3 {
-  font-size: 1.125rem;
-}
-
-#anio-lista ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-#anio-lista li {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--espacio-1) var(--espacio-2);
-}
-
-/* Cada donación del mes es un enlace al detalle: con el alto de toque mínimo. */
-#anio-lista li a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 3rem;
-}
-
-#anio-lista figure {
-  max-width: 28rem;
-  margin: 0;
-}
-
-#anio-lista figure img {
-  width: 100%;
-  height: auto;
-  border-radius: var(--radio-boton);
-}
-
-/* La columna del costado. */
-#anio-lado .huerta-cabeza {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-#anio-lado p {
-  margin: 0;
-}
-
-#anio-lado a:not(.noticia-texto) {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--medida-toque-minimo);
-  font-weight: 700;
-}
-
-#anio-cifras {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--espacio-2);
-  margin: 0;
-}
-
-#anio-cifras div {
-  display: grid;
-  gap: var(--espacio-1);
-}
-
-#anio-cifras dt {
-  font-size: 0.8125rem;
-  line-height: 1.2;
-}
-
-#anio-cifras dd {
-  order: -1;
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 850;
-  line-height: 1;
-}
-
-@media (min-width: 53.75em) {
-  #anio {
-    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+@media (min-width: 37.5em) {
+  #inicio-persona > .tarjeta {
+    --espacio-relleno: var(--espacio-5);
   }
 }
 
-/* El acceso a la huerta: el dibujo y, encima, el botón real donde la diseñadora dibujó el suyo. */
-/* La huerta, arriba de todo (R11-06): compacta, para que el año se vea enseguida. Centrada (R11-37):
-   en el celular, el título y el dibujo uno sobre otro y al medio; en pantalla ancha, el título al lado
-   del dibujo, los dos juntos y al medio de la lámina, no uno en cada punta. */
+/* El almanaque chico (DON-P2): cada mes, del alto de lo que lleva; seis por fila desde la tableta y los
+   doce en una fila desde 68,75 em, donde cada mes sigue midiendo más de 48 px. En el celular, las tres
+   columnas del componente. */
+#anio-meses .almanaque > li > :is(a, div) {
+  min-height: 0;
+}
+
+@media (min-width: 37.5em) {
+  #anio-meses .almanaque {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 68.75em) {
+  #anio-meses .almanaque {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+/* La huerta (R11-37): centrada. En el celular, el título y el dibujo uno sobre otro y al medio; en
+   pantalla ancha, el título al lado del dibujo, los dos juntos y al medio de la lámina. */
 #anio-huerta {
   display: grid;
   justify-items: center;
   gap: var(--espacio-3);
   align-items: center;
-  margin-bottom: var(--espacio-4);
   text-align: center;
 }
 

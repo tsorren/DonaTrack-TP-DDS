@@ -317,6 +317,7 @@
 # p0-persona (R11-06): las pantallas de persona. La cuenta queda en la sesión: al final, la empresa.
 /donante-inicio?cuenta=persona
 /donante-inicio?cuenta=persona&escenario=vacio
+/donante-inicio?cuenta=persona&escenario=sin-camino
 /donante-perfil?cuenta=persona
 /donante-donaciones-detalle?cuenta=persona
 /donante-seguimiento?cuenta=persona
