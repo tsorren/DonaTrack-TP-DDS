@@ -38,7 +38,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-        <!-- Filtro de traceId, adopción del X-Trace-Id en Brave, logs NDJSON y error unificado. -->
+        <!-- Filtro de traceId, adopción del X-Trace-Id en OpenTelemetry, logs NDJSON y error unificado. -->
         <dependency>
             <groupId>grupo5</groupId>
             <artifactId>common-lib</artifactId>

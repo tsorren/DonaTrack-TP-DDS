@@ -48,7 +48,7 @@ Pesos: reuso de `common-lib` 30 · encaje con el stack 25 · costo 20 · base pa
 | G3. Proxy propio con `RestClient` | 4 | 4 | 2 | 3 | 5 | 3,6 |
 | G2. SCG Server WebFlux | 1 | 2 | 3 | 5 | 4 | 2,5 |
 
-- G1 reusa sin cambios `TraceResponseHeaderFilter`, la adopción del `X-Trace-Id` en Brave (`XTraceIdPropagationFactory`), `logback-spring.xml` y el error unificado. Todo eso es servlet.
+- G1 reusa sin cambios `TraceResponseHeaderFilter`, la adopción del `X-Trace-Id` en Brave (`XTraceIdPropagationFactory`; desde E7, tarea O2, 2026-11-19, la hace `XTraceIdPropagator` sobre OpenTelemetry), `logback-spring.xml` y el error unificado. Todo eso es servlet.
 - G2 se descarta: `common-lib` trae `starter-web`, que fuerza el modo servlet, y su filtro y el MDC no corren en Reactor.
 - G3 se descarta: reinventa el reenvío de headers, el multipart y el streaming.
 
@@ -116,7 +116,7 @@ Escenario: traceId generado
 ### Recorrido de un pedido
 
 
-1. `TraceResponseHeaderFilter` (de `common-lib`) toma el `traceId`: el que adoptó Brave del `X-Trace-Id`, o uno nuevo. Lo deja en el MDC y en la respuesta.
+1. `TraceResponseHeaderFilter` (de `common-lib`) toma el `traceId`: el que adoptó Brave del `X-Trace-Id` (desde E7, tarea O2, OpenTelemetry con `XTraceIdPropagator`), o uno nuevo. Lo deja en el MDC y en la respuesta.
 2. La ruta lo copia al pedido saliente (`propagarTraceId`) y lo manda a la URL del servicio (`donatrack.gateway.servicios.*`).
 3. A la respuesta se le saca el `X-Trace-Id` del servicio para que no quede duplicado, y se escribe el log `[GATEWAY]` con el método, la ruta, el servicio y el estado.
 
