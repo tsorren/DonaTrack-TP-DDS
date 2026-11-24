@@ -722,4 +722,5 @@ Cada lote termina, además, la migración de las hojas heredadas de sus pantalla
   §10.4 sin las 3 del buzón que ORG sacó; y los otros cinco tests visuales, con la línea de base de
   §10.5. Sin el stack ni el recorrido con login: ningún lote toca un adaptador `rest`.
 - **Lo que cambia en la línea de base:** con DA-21-misiones, las dos rutas de `/donante-misiones`
-  tienen que pasar. `/donante-seguimiento` puede seguir en rojo; si pasa, se anota.
+  tienen que pasar, y también `/donante-seguimiento`, que `don-detalle` rehace como A07. Las tres salen
+  de la línea de base de §10.4 al cerrar la ola.
