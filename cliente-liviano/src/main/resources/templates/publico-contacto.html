@@ -125,10 +125,12 @@
                th:value="${conError} ? 'marta.comedor-ejemplo.test' : (${escrito} ? 'marta@comedor-ejemplo.test' : null)"
                th:attr="aria-describedby=${conError} ? 'correo-error correo-ayuda' : 'correo-ayuda',aria-invalid=${conError} ? 'true' : null" placeholder="nombre@ejemplo.com">
       </div>
-      <button id="enviar" class="boton" data-tono="principal" type="submit"
-              th:disabled="${escenario == 'lento'}"
-              th:text="${escenario == 'lento'} ? 'Enviando…' : 'Enviar mensaje'">Enviar mensaje</button>
-      <p th:replace="~{envio :: indicador('enviando-publico-contacto', 'Enviando…')}"></p>
+      <div class="racimo">
+        <button id="enviar" class="boton" data-tono="principal" type="submit"
+                th:disabled="${escenario == 'lento'}"
+                th:text="${escenario == 'lento'} ? 'Enviando…' : 'Enviar mensaje'">Enviar mensaje</button>
+        <p th:replace="~{envio :: indicador('enviando-publico-contacto', 'Enviando…')}"></p>
+      </div>
       <!--/* Lo oculto va al final: en la pila, un hijo oculto primero le sumaría al primero visible
              el espacio de arriba. La clave de envío y el campo trampa (HB-21). */-->
       <input th:if="${claveEnvio}" type="hidden" name="claveEnvio" th:value="${claveEnvio}">

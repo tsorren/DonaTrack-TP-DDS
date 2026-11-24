@@ -1216,6 +1216,13 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("<dl class=\"datos\">"))))
         .andExpect(content().string(not(containsString("class=\"huerta-cifras\""))))
         .andExpect(content().string(containsString("Actualizado el ")))
+        // Las dos acciones de A01, a los mismos registros y con los mismos rótulos que la portada.
+        .andExpect(
+            content().string(containsString("href=\"/publico-registro-donante\">Quiero donar</a>")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("href=\"/publico-registro-entidad\">Soy una organización</a>")))
         // Nosotros es Cómo funciona en el menú público, y lo marca (DA-05).
         .andExpect(
             content().string(containsString("href=\"/publico-nosotros\" aria-current=\"page\"")));
@@ -1233,14 +1240,18 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("class=\"aviso\""))));
     mvc.perform(get("/publico-para-donantes"))
         .andExpect(content().string(containsString("href=\"/publico-registro-donante\"")))
-        .andExpect(content().string(containsString("<details>")));
+        // Las preguntas frecuentes, con el plegable del catálogo, como Organizaciones y el Mapa.
+        .andExpect(content().string(containsString("<details class=\"plegable\">")))
+        .andExpect(content().string(not(containsString("<details>"))));
     mvc.perform(get("/publico-para-entidades"))
         .andExpect(content().string(containsString("href=\"/publico-registro-entidad\"")))
         // Las tarjetas de la cuenta y los datos llevan h3, bajo un título de sección, como las de
         // «Cómo se suma».
         .andExpect(content().string(containsString("<h3 id=\"cuenta-titulo\">")))
         .andExpect(content().string(containsString("<h3 id=\"datos-titulo\">")))
-        .andExpect(content().string(not(containsString("beneficiario"))));
+        .andExpect(content().string(not(containsString("beneficiario"))))
+        .andExpect(content().string(containsString("<details class=\"plegable\">")))
+        .andExpect(content().string(not(containsString("<details>"))));
   }
 
   /**

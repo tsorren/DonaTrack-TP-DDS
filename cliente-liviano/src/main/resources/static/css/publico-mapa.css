@@ -28,6 +28,19 @@
   top: 0;
 }
 
+/* En el celular, Categoría va sola en su renglón y Filtrar debajo: con «Filtrar» al lado, la columna
+   mínima del listado (tres toques) corta «Todas las categorías». Desde la tableta entran juntos; desde
+   68,75 em el listado del catálogo los pone en fila. */
+.listado[action$="/publico-mapa"] .listado-campos > * {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 37.5em) {
+  .listado[action$="/publico-mapa"] .listado-campos > * {
+    grid-column: auto;
+  }
+}
+
 .estacion-numero {
   fill: var(--color-tinta);
   font: 800 24px var(--fuente-cifra);
