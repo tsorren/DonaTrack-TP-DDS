@@ -88,9 +88,13 @@
         <!--/* El mapa: el depósito, la posición aproximada del camión y la organización, unidos por
                el recorrido (lleno lo hecho, punteado lo que falta). Sin JavaScript, el aviso; el
                recorrido de al lado tiene los mismos datos. Los puntos son sintéticos en la maqueta,
-               uno por barrio: nunca una dirección. */-->
-        <div th:if="${punto != null}" class="pila" data-espacio="1">
-          <div class="mapa-dibujo mapa-real" data-mapa data-mapa-puntos="[data-mapa-punto]" role="region"
+               uno por barrio: nunca una dirección. El mapa y su nota van juntos en
+               [data-parte="mapa"], como en publico-mapa: en pantalla ancha quedan fijos enteros. El
+               marco (.mapa-dibujo) envuelve al mapa y no va en el mismo elemento: MapLibre le pone
+               position: relative a .mapa-real y el top del fijo de .mapa-dibujo lo correría hacia
+               abajo, encima de la nota. */-->
+        <div th:if="${punto != null}" class="pila" data-espacio="1" data-parte="mapa">
+          <div class="mapa-dibujo"><div class="mapa-real" data-mapa data-mapa-puntos="[data-mapa-punto]" role="region"
                th:aria-label="|Mapa: el camión con ${d.titulo}, desde el depósito hasta ${d.destino}. El recorrido de al lado tiene los mismos datos.|"
                aria-label="Mapa: el camión con Lentejas secas, desde el depósito hasta Comedor Barrio Ejemplo. El recorrido de al lado tiene los mismos datos."
                data-maplibre="/webjars/maplibre-gl/dist/" th:data-maplibre="@{/webjars/maplibre-gl/dist/}"
@@ -104,7 +108,7 @@
             <template data-mapa-globo-deposito>
               <p>Depósito de DonaTrack. De acá salen tus donaciones hacia cada organización.</p>
             </template>
-          </div>
+          </div></div>
           <p data-tono="suave" class="texto-chico" th:text="|Posición aproximada, actualizada ${actualizado}.|">Posición
             aproximada, actualizada hoy, 15 de octubre, a las 16:25.</p>
           <script src="/js/mapa.js" th:src="@{/js/mapa.js}" defer></script>

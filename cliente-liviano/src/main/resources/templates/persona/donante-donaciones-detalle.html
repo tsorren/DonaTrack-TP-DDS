@@ -2,9 +2,11 @@
 <!--/* El detalle de una donación de la persona que dona (Martina Ruiz): la misma pantalla que la de
        la empresa (donante-donaciones-detalle :: cuerpo, DA-13), con sus tres variantes de la guía
        según el estado (A06 asignada, A07 en camino con el enlace a su seguimiento y A08 con
-       problema), dentro de los datos de la persona (persona/datos-persona). El detalle viene del
-       controller, con ?donacion=<clave>; sin parámetro, el de la maqueta (las lentejas, en
-       camino). ?escenario=error y lento, como la de la empresa. */-->
+       problema). El detalle sale de los datos de la persona (persona/datos-persona), la misma
+       fuente que su seguimiento y su lista: así el camino detalle → seguimiento → detalle muestra
+       siempre la misma donación. ?donacion=<clave>; sin parámetro, la ropa de abrigo (en camino).
+       Una clave que no está muestra "No encontramos esa donación". Figura con el nombre de la
+       cuenta. ?escenario=error y lento, como la de la empresa. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-donaciones-detalle', ~{::contenido})}">
 <head>
@@ -15,7 +17,17 @@
   <th:block th:replace="~{persona/datos-persona :: persona(~{::cuerpo})}"></th:block>
 </th:block>
 
-<th:block th:fragment="cuerpo">
+<!--/* detalle: la donación de la persona con la forma del detalle de la empresa (sus pasos, sus
+       cartas como noticias y, si llegó, su foto con la última carta de pie). */-->
+<th:block th:fragment="cuerpo"
+    th:with="pedida=${param.donacion != null ? param.donacion[0] : 'ropa'},
+             claves=${donaciones.![clave]},
+             p=${claves.contains(pedida) ? donaciones[claves.indexOf(pedida)] : null},
+             detalle=${p == null ? null : {
+                 donacion: p, pasos: p.pasos, problema: null,
+                 foto: p.foto, fotoAlt: p.fotoAlt,
+                 pieFoto: p.llego == null ? null : p.cartas[0].texto,
+                 noticias: p.cartas, figuraComo: cuenta.nombre } }">
   <th:block th:replace="~{donante-donaciones-detalle :: cuerpo}"></th:block>
 </th:block>
 </body>

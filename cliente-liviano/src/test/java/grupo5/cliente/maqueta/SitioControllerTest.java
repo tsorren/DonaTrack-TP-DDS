@@ -37,6 +37,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -234,6 +235,41 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Volver a intentar")));
     mvc.perform(get("/donante-seguimiento?escenario=lento"))
         .andExpect(content().string(containsString("aria-busy=\"true\"")));
+  }
+
+  /**
+   * La persona recorre su detalle en camino, el enlace a su seguimiento y la vuelta (DA-03a y
+   * DA-13): las dos pantallas salen de sus datos (persona/datos-persona), no de los de la empresa.
+   */
+  @Test
+  void laPersonaVaDelDetalleAlSeguimientoYVuelveConSusDatos() throws Exception {
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(get("/donante-donaciones-detalle?cuenta=persona").session(sesion))
+        .andExpect(view().name("persona/donante-donaciones-detalle"))
+        .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
+        .andExpect(content().string(containsString("Donación N.º 6. Para Merendero Ejemplo Sur.")))
+        .andExpect(content().string(containsString("figurás como «Martina Ruiz».")))
+        .andExpect(content().string(not(containsString("Distribuidora Ejemplo SA"))))
+        .andExpect(content().string(containsString("href=\"/donante-seguimiento?donacion=ropa\"")));
+    mvc.perform(get("/donante-seguimiento?donacion=ropa").session(sesion))
+        .andExpect(view().name("persona/donante-seguimiento"))
+        .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
+        .andExpect(content().string(not(containsString("No encontramos esa donación en camino."))))
+        .andExpect(
+            content().string(containsString("href=\"/donante-donaciones-detalle?donacion=ropa\"")));
+    mvc.perform(get("/donante-donaciones-detalle?donacion=ropa").session(sesion))
+        .andExpect(view().name("persona/donante-donaciones-detalle"))
+        .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
+        .andExpect(content().string(containsString("data-estado=\"en-camino\"")))
+        .andExpect(content().string(not(containsString("confirmó la entrega el 9 de octubre"))));
+    // Las lentejas de la persona llegaron en junio: su detalle es el de una entregada, sin enlace
+    // al seguimiento; una clave que la persona no tiene, "No encontramos esa donación".
+    mvc.perform(get("/donante-donaciones-detalle?donacion=lentejas").session(sesion))
+        .andExpect(content().string(containsString("<h1>Lentejas secas, 4 kg</h1>")))
+        .andExpect(content().string(containsString("class=\"etiqueta-entrega\"")))
+        .andExpect(content().string(not(containsString("/donante-seguimiento?donacion="))));
+    mvc.perform(get("/donante-donaciones-detalle?donacion=pan").session(sesion))
+        .andExpect(content().string(containsString("No encontramos esa donación.")));
   }
 
   /**
