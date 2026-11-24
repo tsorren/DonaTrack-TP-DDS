@@ -96,8 +96,9 @@ public class RutasGateway {
             .orElseThrow();
     return route(servicio)
         .route(predicado, http())
-        // Primero el límite (E7, ADR 20261115): un pedido sin ficha no llega al servicio.
-        .filter(limite)
+        // Primero el límite (E7, ADR 20261115): un pedido sin ficha no llega al servicio. La ruta
+        // etiqueta sus métricas (M24).
+        .filter(limite.para(servicio))
         .before(uri(url))
         .before(RutasGateway::propagarTraceId)
         // El X-Trace-Id de la respuesta lo pone el filtro de common-lib; el del servicio lo
