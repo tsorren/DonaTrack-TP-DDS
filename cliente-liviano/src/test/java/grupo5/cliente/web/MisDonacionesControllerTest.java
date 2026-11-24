@@ -146,6 +146,69 @@ class MisDonacionesControllerTest {
         .andExpect(content().string(not(containsString("Silla plegable"))));
   }
 
+  /**
+   * El arquetipo A05 de la guía (#donaciones): el título «Donaciones», la tabla que se apila con
+   * una raíz y un sello por fila, y las vistas por estado con su cuenta, que no cambia con el
+   * estado elegido y conserva los demás filtros.
+   */
+  @Test
+  void esLaTablaDeLaGuiaConUnaRaizYUnSelloPorFilaYLasVistasConSuCuenta() throws Exception {
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(get("/donante-donaciones?donante=" + DONANTE).session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("<h1>Donaciones</h1>")))
+        .andExpect(content().string(containsString("<table class=\"tabla\">")))
+        .andExpect(content().string(containsString("data-rotulo=\"Para\"")))
+        .andExpect(content().string(containsString("data-rotulo=\"Lo último\"")))
+        .andExpect(content().string(containsString("Donación 0002")))
+        .andExpect(content().string(containsString("Todavía sin organización")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "aria-label=\"El recorrido de esta donación: va por el paso 1 de 5\"")))
+        .andExpect(
+            content().string(containsString("<span class=\"estado\" data-estado=\"pendiente\">")))
+        .andExpect(content().string(containsString("Paso 1 de 5")))
+        .andExpect(content().string(containsString("aria-label=\"Donaciones por estado\"")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*href=\"/donante-donaciones\\?donante=[^\"]+\"\\s+aria-current=\"page\">"
+                            + "Todas<b>2</b>.*")))
+        .andExpect(content().string(containsString(">Pendientes<b>1</b></a>")))
+        .andExpect(content().string(containsString(">En camino<b>0</b></a>")))
+        .andExpect(content().string(not(containsString("huerta-lista"))));
+
+    // Con un estado elegido: su vista queda marcada, las cuentas no cambian y se conserva el mes.
+    mvc.perform(get("/donante-donaciones?mes=2026-10&pagina=2&estado=entregada").session(sesion))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("1 donación con esos filtros.")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "aria-label=\"El recorrido de esta donación: los 5 pasos, cumplidos\"")))
+        .andExpect(content().string(containsString("Paso 5 de 5")))
+        .andExpect(content().string(containsString("Entrega confirmada el 5 de octubre.")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/donante-donaciones?mes=2026-10&amp;estado=entregada\""
+                            + " aria-current=\"page\">Entregadas<b>1</b></a>")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/donante-donaciones?mes=2026-10&amp;estado=pendiente\">"
+                            + "Pendientes<b>1</b></a>")))
+        .andExpect(
+            content()
+                .string(containsString("href=\"/donante-donaciones?mes=2026-10\">Todas<b>2</b>")));
+  }
+
   @Test
   void conUnMesMuestraSoloLasDeEseMesYLoDice() throws Exception {
     MockHttpSession sesion = new MockHttpSession();

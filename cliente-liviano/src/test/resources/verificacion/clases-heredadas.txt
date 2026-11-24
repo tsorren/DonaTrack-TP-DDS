@@ -45,8 +45,6 @@ detalle-estado
 detalle-etapas
 detalle-foto
 detalle-noticias
-donaciones
-donaciones-pie
 donaron
 ejemplo-inicial
 ejemplos

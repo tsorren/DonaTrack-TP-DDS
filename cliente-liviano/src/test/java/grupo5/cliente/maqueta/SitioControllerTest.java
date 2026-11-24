@@ -271,6 +271,39 @@ class SitioControllerTest {
     return entradas;
   }
 
+  /**
+   * Donaciones de la persona sigue a la de la empresa (DA-13; arquetipo A05): la misma tabla, con
+   * una raíz y un sello por fila, y las vistas por estado con su cuenta sobre sus datos de ejemplo.
+   */
+  @Test
+  void lasDonacionesDeLaPersonaSonLaMismaTablaConSusDatos() throws Exception {
+    mvc.perform(get("/donante-donaciones?cuenta=persona"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("persona/donante-donaciones"))
+        .andExpect(content().string(containsString("<h1>Donaciones</h1>")))
+        .andExpect(content().string(containsString("<table class=\"tabla\">")))
+        .andExpect(content().string(containsString("Donación 0008")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "aria-label=\"El recorrido de esta donación: va por el paso 4 de 5\"")))
+        .andExpect(content().string(containsString(">Todas<b>8</b></a>")))
+        .andExpect(content().string(containsString(">Entregadas<b>5</b></a>")))
+        .andExpect(content().string(containsString(">Con problema<b>0</b></a>")));
+    mvc.perform(get("/donante-donaciones?cuenta=persona&estado=en-camino"))
+        .andExpect(content().string(containsString("1 donación con esos filtros.")))
+        .andExpect(content().string(containsString("Ropa de abrigo")))
+        .andExpect(content().string(not(containsString("Fideos secos"))))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/donante-donaciones?cuenta=persona&amp;estado=en-camino\""
+                            + " aria-current=\"page\">En camino<b>1</b></a>")))
+        .andExpect(content().string(containsString(">Todas<b>8</b></a>")));
+  }
+
   @Test
   void elDonanteRecorreSuInicioSusDonacionesEntidadesYNotificaciones() throws Exception {
     mvc.perform(get("/donante-inicio"))
