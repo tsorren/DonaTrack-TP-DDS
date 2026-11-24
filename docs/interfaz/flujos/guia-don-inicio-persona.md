@@ -83,7 +83,7 @@ tabla» como acción del mes (la persona llega a sus donaciones por el menú).
 |---|---|---|
 | Con algo en camino | Variante a | Los de A04 |
 | Sin nada en camino | Variante b; «También en curso» y «Ya confirmadas» si tienen algo | — |
-| Vacío (`?escenario=vacio`) | Saludo, la huerta como protagonista y el vacío de P19 | «Todavía no tenés donaciones.» · «Cuando lleves algo al depósito y lo registren, aparece acá.» · «Conocer las organizaciones» (los de hoy) |
+| Vacío (`?escenario=vacio`) | Saludo, la huerta como protagonista y el vacío de P19 | «Todavía no tenés donaciones.» · «Cuando lleves algo al depósito y lo registren, aparece acá.» · «Conocer las organizaciones» (los de hoy), como acción secundaria: la llena es «Ver mi huerta» |
 | Con problema | El aviso arriba, en cualquiera de las dos variantes | «<Donación>: no pudo llegar.» · el motivo · «Todavía sin fecha de nueva salida» (HG-01) |
 | Cargando, error | Los de hoy, con P19 y P13 | Sin cambios |
 | Sin tipo | Sin la huerta ni Misiones (R11-06); la variante b no aplica y el vacío queda sin lámina | Sin cambios |
@@ -127,7 +127,9 @@ Las demás heurísticas, como R11-06.
   - **DON-P2 · El almanaque:** la usuaria lo aprobó el 2026-11-09 («las personas particulares no
     donan todos los días») y DA-03c no lo nombra. Recomendada: **se queda, chico**: los 12 meses en
     una fila, con el número de donaciones de cada mes y un fruto por entrega confirmada, debajo de
-    «Ya confirmadas»; la lista mes por mes sale (la reemplazan «En curso» y «Ya confirmadas»). Otras:
+    «Ya confirmadas»; la lista mes por mes sale. Límite del dato: los frutos de cada mes salen de
+    las hasta 3 donaciones que trae `anio(id)` (con «+N» por las demás), no de una cuenta mensual
+    de confirmadas, que el adaptador no da (la reemplazan «En curso» y «Ya confirmadas»). Otras:
     sacarlo (A04 tal cual) o dejarlo como hoy.
   - **DON-P3 · Sin nada en camino:** recomendada: la huerta pasa a ser la lámina protagonista, con
     «Ver mi huerta» como acción llena. Otra: la lámina queda vacía con «No tenés donaciones en
