@@ -163,7 +163,7 @@
       <!--/* Lo ya confirmado: los frutos del mes y las 2 últimas entregas. Quién recibió no llega
              (HG-03): va la organización. Sin foto, una lámina con el mismo sello. */-->
       <section class="pila" data-espacio="3" aria-labelledby="confirmadas-titulo">
-        <h2 id="confirmadas-titulo">Ya confirmadas</h2>
+        <h2 id="confirmadas-titulo" th:text="|Ya confirmadas en ${miInicio.nombreDelMes()}|">Ya confirmadas en octubre</h2>
         <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <th:block th:if="${conDatos}">
           <div th:replace="~{componentes/huerta :: frutos(${miInicio.entregadasDelMes}, |del 1 al ${miInicio.hoy}|, false)}"></div>

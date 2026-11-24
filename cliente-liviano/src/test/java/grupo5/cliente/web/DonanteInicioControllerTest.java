@@ -586,7 +586,7 @@ class DonanteInicioControllerTest {
                             ">Seguir esta donación<",
                             ">También en curso<",
                             "Silla plegable, 1 unidad",
-                            ">Ya confirmadas<",
+                            ">Ya confirmadas en noviembre<",
                             "<strong>2 entregas confirmadas</strong> del 1 al 7 de noviembre.",
                             "Ropa de abrigo, 12 prendas",
                             "id=\"anio-huerta\"",
