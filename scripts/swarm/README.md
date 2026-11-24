@@ -9,6 +9,7 @@ Compose sigue siendo el entorno de desarrollo, del CI y de la demo pública.
 | `generar-stack.test.js` | Un test por regla de la transformación, sobre `ejemplo-compose.json` (datos sintéticos) |
 | `desplegar.sh` | Exporta el `.env`, genera `target/swarm/stack.json` y despliega con `docker-stack.override.yml` |
 | `verificar-replicas.sh` | SW2: despliega con dos réplicas, espera a que converja y deja la evidencia en `target/swarm/evidencia-replicas.md` |
+| `probar-rate-limit.sh` | R4: corre el escenario de k6 del rate limiting contra el stack desplegado y deja `target/swarm/evidencia-rate-limit.md` |
 | `../../docker-stack.override.yml` | Réplicas, límites de memoria, `hostname` de mongodb, healthchecks y `minio-init` |
 
 ## Por qué hay una transformación
@@ -115,6 +116,50 @@ converge con 2 réplicas, las comprobaciones 1, 3 y 4 dan bien, una réplica con
 con el motivo `unhealthy container`, y un servicio que no sana sale por tiempo con `FALLA`. La comprobación de la VIP
 no se pudo verificar ahí: ese kernel no tiene IPVS. `[INFERRED]` Con las imágenes reales y en Docker Desktop no se
 corrió todavía: los tiempos, la memoria y los reemplazos reales salen de esa corrida.
+
+## Rate limiting con dos réplicas (R4)
+
+```bash
+scripts/swarm/verificar-replicas.sh   # el stack con dos réplicas, si no está desplegado
+docker pull grafana/k6
+scripts/swarm/probar-rate-limit.sh
+```
+
+Corre [`tests/performance/k6/gateway-rate-limit-replicas.js`](../../tests/performance/k6/gateway-rate-limit-replicas.js)
+en un contenedor de k6 dentro de la red del stack. Es el escenario que eligió el grupo en E7-S02c (opción A): demuestra
+tres cosas y no calibra los cupos.
+
+1. **El tráfico normal pasa.** Diez clientes, cada uno con su IP, hacen un pedido por segundo durante 30 s, por el
+   nombre del servicio (la VIP). Ninguno recibe `429`.
+2. **Una ráfaga recibe `429`.** Un cliente hace el cupo más 40 pedidos seguidos. Los últimos reciben `429`.
+3. **El cupo se comparte entre las réplicas.** Un cliente hace el doble del cupo alternando entre las dos réplicas,
+   por la IP de cada una. Pasa un cupo (más lo que se recarga mientras dura la tanda, con margen de 5) y las dos
+   réplicas devuelven `429`. Si cada réplica contara por su lado pasarían todos; el informe lo dice y sugiere mirar
+   si Redis contesta (`[REDIS-NO-DISPONIBLE]` en los logs del gateway, *fail-open*).
+
+Los pedidos son `GET /api/categorias` (una lectura, sin efectos) y el cupo es el de lecturas por IP: el script lo lee
+de `GATEWAY_LIMITE_LECTURAS_IP` y `GATEWAY_LIMITE_VENTANA` del servicio, o usa los valores por defecto (120 por
+minuto). Cada cliente se distingue por `X-Forwarded-For`: k6 corre en la red del stack, que el gateway trata como
+proxy confiable (`GATEWAY_LIMITE_PROXIES_CONFIABLES` incluye `10.*`). Las IPs se sortean en cada corrida dentro de
+198.19.0.0/16 (rango de pruebas), así que se puede repetir sin esperar a que se vacíen las cubetas.
+
+Cuenta como error, y falla, un `5xx`, un `401` (la seguridad del gateway encendida) o un pedido sin respuesta. Tarda
+unos 35 s y sale con el código de k6: 0 si se cumplen las tres.
+
+`[VERIFIED]` En un Swarm de un nodo con un gateway sustituto de dos réplicas (cubetas con recarga gradual, en un
+almacén compartido o una por réplica) y k6 1.4.2: con el almacén compartido se cumplen las tres (pasaron 121 de 240,
+con `429` en las dos réplicas); con una cubeta por réplica la tercera falla (pasaron 240) y el informe muestra el
+diagnóstico. Ahí no hay IPVS, así que las demostraciones 1 y 2 fueron contra una réplica (`GATEWAY_URL`), no por la
+VIP. `[INFERRED]` Con el gateway real los pedidos son más lentos, la tanda dura más y el máximo esperado crece con
+la recarga: el escenario lo calcula con la duración medida.
+
+`[VERIFIED]` Con el stack real (24/11, Docker Desktop, dos réplicas): con el timeout de Redis por defecto (100 ms) el
+gateway no llegaba a resolver `redis` en el DNS de Swarm (`Unable to connect to redis/<unresolved>:6379`), quedaba
+en *fail-open* y fallaban la ráfaga y el cupo compartido. Además, las dos réplicas cayeron por `unhealthy` en medio
+de la prueba. Por eso el override le pone `GATEWAY_REDIS_TIMEOUT=1s` al gateway: con eso las tres demostraciones
+pasan (298 pedidos normales sin `429`, 37 `429` en la ráfaga, 125 de 240 en el cupo compartido) y no hubo caídas.
+`[INFERRED]` Las caídas bajo carga en *fail-open* no se repitieron con Redis conectado; no se investigó si el
+*fail-open* con carga tumba al gateway.
 
 ## Arranque observado
 
