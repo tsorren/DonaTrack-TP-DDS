@@ -50,14 +50,19 @@
         <header class="pila" data-espacio="1">
           <h1 th:text="${titulo}">Lentejas secas, 15 kg</h1>
           <p th:if="${d != null and escenario == ''}" data-tono="suave"
-             th:text="|Donación N.º ${d.numero}. ${d.destino != null ? 'Para ' + d.destino + '.' : 'Todavía sin destino.'} Donada el ${d.donada}.|">Donación
-            N.º 5. Para Comedor Barrio Ejemplo. Donada el 12 de octubre de 2026.</p>
+             th:text="|Donación ${#numbers.formatInteger(d.numero, 4)}. ${d.destino != null ? 'Para ' + d.destino + '.' : 'Todavía sin destino.'} Donada el ${d.donada}.|">Donación
+            0005. Para Comedor Barrio Ejemplo. Donada el 12 de octubre de 2026.</p>
         </header>
-        <!--/* La pendiente con destino ya está asignada: así la llama la guía (A06) y su raíz. */-->
+        <!--/* El sello dice lo mismo que la lista (donante-donaciones :: tabla, A05 y A06): la
+               pendiente va como registrada sin organización y como asignada con ella; la entregada,
+               «Entrega confirmada». */-->
         <span th:if="${d != null and escenario == ''}" class="estado"
-              th:data-estado="${variante == 'asignada' ? 'asignada' : tono}" data-estado="en-camino"><th:block
-            th:replace="~{componentes/sello :: sello(${variante == 'asignada' ? 'asignada' : tono})}"></th:block><th:block
-            th:text="${variante == 'asignada' ? 'Asignada' : d.estado.texto}">En camino</th:block></span>
+              th:with="sello=${tono == 'pendiente' ? (d.destino == null ? 'registrada' : 'asignada') : tono},
+                       palabra=${tono == 'pendiente' ? (d.destino == null ? 'Registrada' : 'Asignada')
+                           : (tono == 'entregada' ? 'Entrega confirmada' : d.estado.texto)}"
+              th:data-estado="${sello}" data-estado="en-camino"><th:block
+            th:replace="~{componentes/sello :: sello(${sello})}"></th:block><th:block
+            th:text="${palabra}">En camino</th:block></span>
       </div>
     </div>
 
@@ -110,7 +115,7 @@
             <h2 id="sigue-titulo">Qué sigue</h2>
             <dl th:replace="~{componentes/datos :: datos(${ {
                 {rotulo: 'Sale de nuevo', valor: variante == 'problema' ? 'Todavía sin fecha de nueva salida' : null},
-                {rotulo: 'Cómo va', valor: variante == 'problema' ? null : d.nota},
+                {rotulo: 'Cómo va', valor: variante == 'problema' ? null : (variante == 'camino' ? #strings.replace(#strings.replace(d.nota, 'Salió hoy a las ', 'En camino desde las '), 'Salió el ', 'En camino desde el ') : d.nota)},
                 {rotulo: 'Qué tenés que hacer', valor: nada ?: 'Nada. Te avisamos cuando se le asigne una organización'},
                 {rotulo: 'Última noticia', valor: ultima} } })}"></dl>
             <p th:if="${variante == 'problema'}" data-tono="suave" class="texto-chico">Cuando tenga
@@ -156,13 +161,22 @@
 </th:block>
 
 <!--/* La raíz de los 5 pasos (componentes/huerta :: raiz-pasos) con los pasos del modelo
-       (PasoRecorrido o los mapas de los datos de ejemplo): el nombre, su fecha (o «Pendiente») y su
-       avance; lo pendiente es lo que falta y, con problema, el paso actual es el que no pudo ser.
-       La página trae iconos :: signos. */-->
-<th:block th:fragment="recorrido(pasos, conProblema)">
+       (PasoRecorrido o los mapas de los datos de ejemplo): su fecha (o «Pendiente») y su avance; lo
+       pendiente es lo que falta y, con problema, el paso actual es el que no pudo ser. El nombre de
+       cada paso va por su lugar, con las mismas etapas que la tabla de Donaciones y el inicio
+       (Registrada, Asignada, Preparada, En camino, Entrega confirmada), no el del dato, que trae
+       los nombres del backend («En depósito», «Lista para entregar», «Entregada»). Si el dato no
+       trae 5 pasos, queda su nombre. La página trae iconos :: signos. */-->
+<th:block th:fragment="recorrido(pasos, conProblema)"
+    th:with="nombrados=${#lists.size(pasos) != 5 ? pasos : {
+                 {nombre: 'Registrada', detalle: pasos[0].detalle, avance: pasos[0].avance},
+                 {nombre: 'Asignada', detalle: pasos[1].detalle, avance: pasos[1].avance},
+                 {nombre: 'Preparada', detalle: pasos[2].detalle, avance: pasos[2].avance},
+                 {nombre: 'En camino', detalle: pasos[3].detalle, avance: pasos[3].avance},
+                 {nombre: 'Entrega confirmada', detalle: pasos[4].detalle, avance: pasos[4].avance} } }">
   <ol th:replace="~{componentes/huerta :: raiz-pasos(pasos=${conProblema
-        ? pasos.![{nombre: nombre, cuando: detalle, avance: avance.tono() == 'actual' ? 'problema' : (avance.tono() == 'hecho' ? 'hecho' : 'falta')}]
-        : pasos.![{nombre: nombre, cuando: detalle, avance: avance.tono() == 'pendiente' ? 'falta' : avance.tono()}]},
+        ? nombrados.![{nombre: nombre, cuando: detalle, avance: avance.tono() == 'actual' ? 'problema' : (avance.tono() == 'hecho' ? 'hecho' : 'falta')}]
+        : nombrados.![{nombre: nombre, cuando: detalle, avance: avance.tono() == 'pendiente' ? 'falta' : avance.tono()}]},
       forma=null, nombre=null, recien=false)}"></ol>
 </th:block>
 </body>

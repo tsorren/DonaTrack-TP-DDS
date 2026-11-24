@@ -31,6 +31,25 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-24 · donaciones · Arreglo después de la ola DON: la misma palabra para el mismo estado
+
+- **Decisión:** la vista se llama «Confirmadas» y la opción del filtro, «Entrega confirmada». El
+  detalle y el seguimiento usan la regla de la lista (Registrada, Asignada, Entrega confirmada) y
+  «Donación 0005»; la raíz nombra los pasos por su lugar, como la tabla. La nota del seguimiento y
+  «Cómo va» del detalle en camino dicen «En camino desde las HH:MM» (HG-02). Los datos de ejemplo de
+  Organizaciones de la persona dicen lo mismo que los de la empresa («Faltan los 20 litros», con la
+  barra vacía).
+- **Alternativas:** «En curso» en lugar de «Pendientes», como la guía; tomar el nombre del paso del
+  dato.
+- **Por qué:** la lista ya tiene la vista «En camino», y «En curso» la incluiría; el dato trae los
+  nombres del backend («En depósito», «Lista para entregar»), que no dice ninguna otra pantalla.
+- **Costo:** la raíz supone 5 pasos en el orden de la guía; si el dato trae otra cantidad, queda su
+  nombre.
+- **Quién decidió:** agente, sobre los bloqueantes de la revisión de `don-donaciones`, `don-detalle`
+  y de pantallas ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 1 a 3).
+- **Evidencia:** `MisDonacionesController.java`, `donante-donaciones-detalle.html`,
+  `donante-seguimiento.html` y sus tests.
+
 ### 2026-11-24 · navegación · El menú de quien dona: Inicio, Donaciones, Organizaciones, Misiones y Cómo donar (DA-03a, DA-03b, DA-05, DA-17)
 
 - **Decisión:** la empresa ve Inicio, Donaciones, Organizaciones y Cómo donar; la persona, además,

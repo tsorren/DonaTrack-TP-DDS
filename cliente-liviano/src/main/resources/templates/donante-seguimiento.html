@@ -48,13 +48,17 @@
         <header class="pila" data-espacio="1">
           <h1 th:text="${titulo}">Lentejas secas, 15 kg</h1>
           <p th:if="${d != null and escenario == ''}" data-tono="suave"
-             th:text="|Donación N.º ${d.numero}. Para ${d.destino}.|">Donación N.º 5. Para Comedor
+             th:text="|Donación ${#numbers.formatInteger(d.numero, 4)}. Para ${d.destino}.|">Donación 0005. Para Comedor
             Barrio Ejemplo.</p>
         </header>
-        <span th:if="${d != null and escenario == ''}" class="estado" th:data-estado="${d.estado.tono}"
-              data-estado="en-camino"><th:block
-            th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block><th:block
-            th:text="${d.estado.texto}">En camino</th:block></span>
+        <!--/* El sello dice lo mismo que la lista y el detalle: la pendiente (acá siempre con
+               organización) va como asignada. */-->
+        <span th:if="${d != null and escenario == ''}" class="estado"
+              th:with="sello=${d.estado.tono == 'pendiente' ? 'asignada' : d.estado.tono},
+                       palabra=${d.estado.tono == 'pendiente' ? 'Asignada' : d.estado.texto}"
+              th:data-estado="${sello}" data-estado="en-camino"><th:block
+            th:replace="~{componentes/sello :: sello(${sello})}"></th:block><th:block
+            th:text="${palabra}">En camino</th:block></span>
       </div>
     </div>
 
@@ -118,8 +122,12 @@
               <p>Depósito de DonaTrack. De acá salen tus donaciones hacia cada organización.</p>
             </template>
           </div></div>
-          <p data-tono="suave" class="texto-chico" th:text="|Posición aproximada, actualizada ${actualizado}.|">Posición
-            aproximada, actualizada hoy, 15 de octubre, a las 16:25.</p>
+          <!--/* La hora de salida, sin la estimada de llegada (HG-02): como en el inicio; sin nota, solo
+                 la posición. */-->
+          <p data-tono="suave" class="texto-chico"
+             th:text="${(d.nota == null ? '' : #strings.replace(#strings.replace(d.nota, 'Salió hoy a las ', 'En camino desde las '), 'Salió el ', 'En camino desde el ') + '. ')
+                       + 'Posición aproximada, actualizada ' + actualizado + '.'}">En
+            camino desde las 14:30. Posición aproximada, actualizada hoy, 15 de octubre, a las 16:25.</p>
           <link rel="stylesheet" href="/webjars/maplibre-gl/dist/maplibre-gl.css"
                 th:href="@{/webjars/maplibre-gl/dist/maplibre-gl.css}">
           <script src="/js/mapa.js" th:src="@{/js/mapa.js}" defer></script>

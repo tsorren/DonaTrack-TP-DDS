@@ -262,7 +262,7 @@ class MisDonacionesControllerTest {
                 .string(
                     containsString(
                         "href=\"/donante-donaciones?mes=2026-10&amp;estado=entregada\""
-                            + " aria-current=\"page\">Entregadas <b>1</b></a>")))
+                            + " aria-current=\"page\">Confirmadas <b>1</b></a>")))
         .andExpect(
             content()
                 .string(
@@ -426,8 +426,8 @@ class MisDonacionesControllerTest {
             content()
                 .string(
                     containsString("Comedor Barrio Ejemplo confirmó la entrega el 5 de octubre.")))
-        .andExpect(content().string(not(containsString("Figura como"))))
-        .andExpect(content().string(not(containsString("Falta confirmar la entrega"))));
+        .andExpect(content().string(not(containsString("figurás como «"))))
+        .andExpect(content().string(not(containsString("La foto de la organización"))));
 
     mvc.perform(get("/donante-donaciones-detalle?donacion=b").session(sesion))
         .andExpect(status().isOk())
@@ -447,7 +447,15 @@ class MisDonacionesControllerTest {
         .andExpect(content().string(containsString("href=\"/donante-seguimiento?donacion=c\"")))
         .andExpect(content().string(containsString("Ver dónde está el camión")))
         .andExpect(content().string(containsString("aria-current=\"step\"")))
-        .andExpect(content().string(containsString("figurás como «")));
+        .andExpect(content().string(containsString("figurás como «")))
+        // HG-02: la hora de salida con el texto de «Si no llega», como en el inicio.
+        .andExpect(content().string(containsString("En camino desde el 11 de octubre")))
+        .andExpect(content().string(not(containsString("Salió el 11 de octubre"))))
+        // La raíz nombra los pasos como la tabla de Donaciones, no como los trae el backend.
+        .andExpect(content().string(containsString("Preparada")))
+        .andExpect(content().string(containsString("Entrega confirmada")))
+        .andExpect(content().string(not(containsString("En depósito"))))
+        .andExpect(content().string(not(containsString("Lista para entregar"))));
 
     mvc.perform(get("/donante-donaciones-detalle?donacion=a").session(sesion))
         .andExpect(content().string(not(containsString("/donante-seguimiento?donacion="))));

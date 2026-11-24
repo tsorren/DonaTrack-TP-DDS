@@ -269,7 +269,7 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones-detalle?cuenta=persona").session(sesion))
         .andExpect(view().name("persona/donante-donaciones-detalle"))
         .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
-        .andExpect(content().string(containsString("Donación N.º 6. Para Merendero Ejemplo Sur.")))
+        .andExpect(content().string(containsString("Donación 0006. Para Merendero Ejemplo Sur.")))
         .andExpect(content().string(containsString("figurás como «Martina Ruiz».")))
         .andExpect(content().string(not(containsString("Distribuidora Ejemplo SA"))))
         .andExpect(content().string(containsString("href=\"/donante-seguimiento?donacion=ropa\"")));
@@ -277,6 +277,9 @@ class SitioControllerTest {
         .andExpect(view().name("persona/donante-seguimiento"))
         .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
         .andExpect(content().string(not(containsString("No encontramos esa donación en camino."))))
+        .andExpect(content().string(containsString("Donación 0006. Para Merendero Ejemplo Sur.")))
+        .andExpect(
+            content().string(containsString("En camino desde las 11:10. Posición aproximada")))
         .andExpect(
             content().string(containsString("href=\"/donante-donaciones-detalle?donacion=ropa\"")));
     mvc.perform(get("/donante-donaciones-detalle?donacion=ropa").session(sesion))
@@ -289,7 +292,32 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones-detalle?donacion=lentejas").session(sesion))
         .andExpect(content().string(containsString("<h1>Lentejas secas, 4 kg</h1>")))
         .andExpect(content().string(containsString("class=\"etiqueta-entrega\"")))
-        .andExpect(content().string(not(containsString("/donante-seguimiento?donacion="))));
+        .andExpect(content().string(not(containsString("/donante-seguimiento?donacion="))))
+        // El sello y la raíz dicen lo mismo que la lista: «Entrega confirmada», no «Entregada».
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"entregada\">"
+                            + "(?:(?!</span>\\s*</div>).)*?Entrega confirmada</span>.*")))
+        .andExpect(content().string(not(containsString("Entregada</"))))
+        .andExpect(content().string(not(containsString("En depósito"))));
+    // La que espera destino: Registrada, como en la lista, no Pendiente.
+    mvc.perform(get("/donante-donaciones-detalle?donacion=fideos").session(sesion))
+        .andExpect(content().string(containsString("data-estado=\"registrada\"")))
+        .andExpect(content().string(not(containsString("data-estado=\"pendiente\""))))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"registrada\">"
+                            + "(?:(?!</span>\\s*</div>).)*?Registrada</span>.*")));
+    // La asignada en su seguimiento: Asignada, como en la lista y el detalle, no Pendiente.
+    mvc.perform(get("/donante-seguimiento?donacion=leche").session(sesion))
+        .andExpect(content().string(containsString("<h1>Leche en polvo, 4 unidades</h1>")))
+        .andExpect(content().string(containsString("data-estado=\"asignada\"")))
+        .andExpect(content().string(not(containsString("data-estado=\"pendiente\""))))
+        .andExpect(content().string(containsString("Donación 0007. Para ")));
     mvc.perform(get("/donante-donaciones-detalle?donacion=pan").session(sesion))
         .andExpect(content().string(containsString("No encontramos esa donación.")));
   }
@@ -366,7 +394,7 @@ class SitioControllerTest {
                     containsString(
                         "aria-label=\"El recorrido de esta donación: va por el paso 4 de 5\"")))
         .andExpect(content().string(containsString(">Todas <b>8</b></a>")))
-        .andExpect(content().string(containsString(">Entregadas <b>5</b></a>")))
+        .andExpect(content().string(containsString(">Confirmadas <b>5</b></a>")))
         .andExpect(content().string(containsString(">Con problema <b>0</b></a>")))
         // El sello dice lo mismo que la raíz y el detalle (A05, A06): la pendiente sin destino,
         // registrada; con destino, asignada; la entregada, «Entrega confirmada».
@@ -374,7 +402,7 @@ class SitioControllerTest {
             content()
                 .string(
                     matchesPattern(
-                        "(?s).*<span class=\"estado\" data-estado=\"registrada\">"
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"registrada\">"
                             + "(?:(?!</td>).)*?</span>"
                             + "\\s*Registrada</span>.*")))
         .andExpect(
@@ -388,7 +416,7 @@ class SitioControllerTest {
             content()
                 .string(
                     matchesPattern(
-                        "(?s).*<span class=\"estado\" data-estado=\"entregada\">"
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"entregada\">"
                             + "(?:(?!</td>).)*?</span>"
                             + "\\s*Entrega confirmada</span>.*")))
         .andExpect(content().string(not(containsString("data-estado=\"pendiente\""))));
@@ -425,7 +453,7 @@ class SitioControllerTest {
             content()
                 .string(
                     matchesPattern(
-                        "(?s).*<span class=\"estado\" data-estado=\"registrada\">"
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"registrada\">"
                             + "(?:(?!</td>).)*?</span>"
                             + "\\s*Registrada</span>.*")))
         .andExpect(

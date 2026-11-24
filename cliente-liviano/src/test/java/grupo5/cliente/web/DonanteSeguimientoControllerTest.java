@@ -86,6 +86,13 @@ class DonanteSeguimientoControllerTest {
                         "Posición aproximada, actualizada hoy, 7 de noviembre, a las 19:40.")))
         .andExpect(content().string(containsString("data-lat=\"-34.6\"")))
         .andExpect(content().string(containsString("Para Hogar Ejemplo")))
+        // HG-02: el texto de «Si no llega», con la hora de salida, como en el inicio.
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "En camino desde el 7 de noviembre, 10:00. Posición aproximada,")))
+        .andExpect(content().string(not(containsString("Salió el 7 de noviembre"))))
         // HG-02: la hora estimada no llega del backend.
         .andExpect(content().string(not(containsString("Hora estimada"))));
   }

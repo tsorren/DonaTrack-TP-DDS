@@ -121,7 +121,7 @@ public class MisDonacionesController {
                     new Listado.Opcion("", "Todos"),
                     new Listado.Opcion(EstadoEntrega.PENDIENTE.tono(), "Pendiente"),
                     new Listado.Opcion(EstadoEntrega.EN_CAMINO.tono(), "En camino"),
-                    new Listado.Opcion(EstadoEntrega.ENTREGADA.tono(), "Entregada"),
+                    new Listado.Opcion(EstadoEntrega.ENTREGADA.tono(), "Entrega confirmada"),
                     new Listado.Opcion(EstadoEntrega.CON_PROBLEMA.tono(), "Con problema")))
             .categoria(
                 categoria == null ? "" : categoria,
@@ -177,7 +177,7 @@ public class MisDonacionesController {
     vistas.add(vista("Todas", null, donante, consulta, lista, pedido));
     vistas.add(vista("Pendientes", EstadoEntrega.PENDIENTE, donante, consulta, lista, pedido));
     vistas.add(vista("En camino", EstadoEntrega.EN_CAMINO, donante, consulta, lista, pedido));
-    vistas.add(vista("Entregadas", EstadoEntrega.ENTREGADA, donante, consulta, lista, pedido));
+    vistas.add(vista("Confirmadas", EstadoEntrega.ENTREGADA, donante, consulta, lista, pedido));
     vistas.add(vista("Con problema", EstadoEntrega.CON_PROBLEMA, donante, consulta, lista, pedido));
     return vistas;
   }
