@@ -176,7 +176,8 @@ class DonanteInicioControllerTest {
                             ">Ya confirmadas<",
                             "Ropa de abrigo, 12 prendas",
                             "Fideos secos, 8 kg")))
-            .andExpect(content().string(containsString("href=\"/donante-seguimiento\"")))
+            .andExpect(
+                content().string(containsString("href=\"/donante-seguimiento?donacion=l1\"")))
             .andExpect(
                 content()
                     .string(containsString("href=\"/donante-donaciones-detalle?donacion=u1\"")))

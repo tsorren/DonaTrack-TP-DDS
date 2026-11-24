@@ -81,8 +81,8 @@
                 th:if="${viaja.destino != null}" th:text="|, para ${viaja.destino}.|">, para Comedor
               Barrio Ejemplo.</th:block></p>
             <div class="racimo">
-              <a class="boton" data-tono="principal" href="/donante-seguimiento"
-                 th:href="@{/donante-seguimiento}">Seguir esta donación</a>
+              <a class="boton" data-tono="principal" href="/donante-seguimiento?donacion=lentejas"
+                 th:href="@{/donante-seguimiento(donacion=${viaja.clave})}">Seguir esta donación</a>
             </div>
             <div class="pila" data-espacio="1">
               <div class="racimo"><span class="estado" data-estado="en-camino"><th:block
