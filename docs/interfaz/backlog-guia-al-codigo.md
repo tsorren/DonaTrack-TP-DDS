@@ -72,6 +72,9 @@ Con DA-17, las decisiones de los menús pasan de C1 a la ola de cada rol (column
 Ronda 4 (2026-11-23, después del merge de C1): DA-04, DA-03b, DA-03c, DA-05, DA-06, DA-08, DA-13
 y la casilla del buzón, que pasa a ser DA-21. Respuesta del usuario: «Todas las recomendadas».
 G1 no entra en esta ronda: se responde por área, mirando la hoja.
+Corrida desatendida (2026-11-24): DA-09, DA-10, DA-12 y DA-14b se resuelven con la opción
+recomendada y DA-11 cambia a Opus medium, «delegada por el relevamiento del 2026-11-24» (plan
+`.claude/plan-guia-resto.md`, aprobado por el usuario).
 
 | ID | Pregunta | Recomendación | Respuesta del usuario | Fecha | Ola |
 |---|---|---|---|---|---|
@@ -85,13 +88,13 @@ G1 no entra en esta ronda: se responde por área, mirando la hoja.
 | DA-06 | ¿Página propia de respuesta solo al confirmar una recepción, y aviso breve en el resto? | Sí, es la regla de la guía | Sí («Todas las recomendadas», ronda 4) | 2026-11-23 | Roles |
 | DA-07 | Sello para «vencida», «cancelada» y «en revisión» | El par neutro, con su texto | El par neutro, con su texto («Todas las recomendadas», ronda 3) | 2026-11-22 | C1 |
 | DA-08 | Pantallas sin arquetipo: ¿ficha aprobada por el usuario o derivación del agente? | Ficha para Misiones, Ranking, inicio de la persona y buzón; el resto, derivación | Ficha para esas cuatro; el resto, derivación («Todas las recomendadas», ronda 4) | 2026-11-23 | Roles |
-| DA-09 | HG-01, la nueva salida: ¿función nueva o texto sin fecha? | Texto sin fecha; la función, después de la defensa | Pendiente | | Z |
-| DA-10 | HG-03: ¿el nombre de quien recibió se muestra en lo público? | En lo privado sí; en lo público, la organización | Pendiente | | Z |
-| DA-11 | ¿Se acepta Opus high en los lotes con pantallas, como fija el workflow? | Sí | Sí («todas las recomendadas», ronda 1) | 2026-11-22 | Todas |
-| DA-12 | ¿Los huecos de backend van como PRs sueltos a `ENTREGA_7`? | Sí | Pendiente | | Z |
+| DA-09 | HG-01, la nueva salida: ¿función nueva o texto sin fecha? | Texto sin fecha; la función, después de la defensa | Texto sin fecha; HG-01 no se construye (delegada por el relevamiento del 2026-11-24) | 2026-11-24 | Z |
+| DA-10 | HG-03: ¿el nombre de quien recibió se muestra en lo público? | En lo privado sí; en lo público, la organización | En lo público, la organización (delegada por el relevamiento del 2026-11-24) | 2026-11-24 | Z |
+| DA-11 | ¿Se acepta Opus high en los lotes con pantallas, como fija el workflow? | Sí | Sí («todas las recomendadas», ronda 1). Cambiada el 2026-11-24: desde DON, los lotes con pantallas van en Opus medium, como en C1 y ORG (delegada por el relevamiento del 2026-11-24) | 2026-11-22 | Todas |
+| DA-12 | ¿Los huecos de backend van como PRs sueltos a `ENTREGA_7`? | Sí | Sí, PRs sueltos a `ENTREGA_7` (delegada por el relevamiento del 2026-11-24) | 2026-11-24 | Z |
 | DA-13 | Las 6 plantillas de `persona/` que solo sirve la maqueta: ¿se migran con su gemela o se borran? | Se migran; borrarlas es otra decisión | Se migran («Todas las recomendadas», ronda 4) | 2026-11-23 | DON |
 | DA-14a | En C0: ¿los 10 nombres de color de hoy pasan a ser alias del token de la guía del mismo valor (sin cambiar ningún píxel) y se borran los 3 tokens que nadie usa? | Sí | Sí («todas las recomendadas», ronda 1). Corregida el 2026-11-22: se borran 3 y no 4, porque `--medida-quiebre-medio` sí se usa (ver §3.2). El usuario lo aceptó al elegir, entre tres caminos para la corrida de C0, «parar, corregir la decisión y relanzar» (su respuesta: «Opción B»). Esa «B» no tiene relación con ninguna otra lista de opciones | 2026-11-22 | C0 |
-| DA-14b | En Z: ¿se borran los alias que quedaron sin usos y los 11 tokens que no usa ninguna hoja ni plantilla y solo nombra `InterfazFitnessTest`, cambiando su lista de pares por la de la guía? | Sí | Pendiente | | Z |
+| DA-14b | En Z: ¿se borran los alias que quedaron sin usos y los 11 tokens que no usa ninguna hoja ni plantilla y solo nombra `InterfazFitnessTest`, cambiando su lista de pares por la de la guía? | Sí | Sí (delegada por el relevamiento del 2026-11-24) | 2026-11-24 | Z |
 | DA-15 | Si el 30/11 no llegó todo: ¿corte por área con la regla G2, o todo o nada? | Corte por área | Corte por área («todas las recomendadas», ronda 1) | 2026-11-22 | Z |
 | DA-16 | La excepción de toque que el cierre de C0 agregó a `VerificacionVisualTest` para la casilla del buzón en `/estilos` (`e7ba71c36`), sin consultar: ¿se mantiene o se revierte? | Ninguna: se presentaron las dos | Se mantiene («Mantenerla»). Queda en el [ADR de la excepción de toque](../adr/cliente-liviano/20261122-excepcion-de-toque-para-la-casilla-del-buzon-en-estilos.md) (`proposed`) y en [DTI-46](../adr/DEUDA_TECNICA.md#dti-46) | 2026-11-22 | C0 |
 | DA-21 | La casilla del buzón: `VerificacionVisualTest` mide el `input` de 12 px y no su etiqueta de 48 px, y ORG, DON y ADM2 rehacen el buzón. ¿Cómo pasa el toque? | Que la casilla mida 48 px de verdad, con el patrón de C1-12 (el control nativo transparente encima de todo el bloque): no cambia el test ni pide ADR. Las otras: extender la excepción de DA-16 a las rutas del buzón, o que el test mida la etiqueta (las dos cambian el test y piden ADR) | La casilla de 48 px («Todas las recomendadas», ronda 4) | 2026-11-23 | ORG, DON y ADM2 |
@@ -398,7 +401,7 @@ dato real se conecta en Z, con un lote condicional por hueco.
 
 | ID | Dato | Estado de hoy | Pantallas | Tipo | Si no llega |
 |---|---|---|---|---|---|
-| HG-01 | Fecha de la nueva salida de una entrega que no pudo llegar | No existe. Solo hay un booleano `replanificable` en el pedido: `logistica-service/src/main/java/grupo5/logistica/dto/entregas/CambioEstadoEntregaRequestDTO.java:13`; se guarda en `logistica-service/.../jpa/entities/EventoEntregaEntity.java:48-49` | A08, A11, avisos de A04 y A09, A02, A10 | Función nueva (DA-09) | «Todavía sin fecha de nueva salida» |
+| HG-01 | Fecha de la nueva salida de una entrega que no pudo llegar | No existe. Solo hay un booleano `replanificable` en el pedido: `logistica-service/src/main/java/grupo5/logistica/dto/entregas/CambioEstadoEntregaRequestDTO.java:13`; se guarda en `logistica-service/.../jpa/entities/EventoEntregaEntity.java:48-49` | A08, A11, avisos de A04 y A09, A02, A10 | No se construye: texto sin fecha (DA-09) | «Todavía sin fecha de nueva salida» |
 | HG-02 | Hora estimada de llegada | No existe. Solo `horaArribo`, la real: `logistica-service/src/main/java/grupo5/logistica/dto/entregas/SeguimientoEntregaResponseDTO.java:36` | A04, A05, A07 | Aditivo | «En camino desde las 14:30», sin hora estimada |
 | HG-03 | Nombre de quien recibió | No existe. El `actor` es el identificador de la organización: `cliente-liviano/src/main/java/grupo5/cliente/rest/EntidadConfirmarRest.java:250` | La etiqueta en A01, A04, A10 y A13 | Aditivo; dato personal (DA-10) | «Recibió: Comedor Barrio Ejemplo» |
 | HG-04 | Avance de una necesidad en unidades: llegaron, asignadas y sin asignar | Parcial: cuenta donaciones, no unidades: `donaciones-service/src/main/java/grupo5/donaciones/dto/PeriodoNecesidadDTO.java:12-19` | A02, A06, A09, A13 | Aditivo | La cuenta de donaciones, como hoy |
