@@ -26,3 +26,16 @@ main .tarjeta[data-papel="hueco"] {
   width: calc(var(--medida-toque-minimo) + 1px);
   height: calc(var(--medida-toque-minimo) + 1px);
 }
+
+/* Seguimiento en el celular: el mapa, más alto que ancho. Cuadrado, el encuadre deja poco alto entre
+   los márgenes de los botones y de la atribución, y el camión y la organización se tapan. En pantalla
+   ancha manda el alto fijo del bloque (componentes/mapa.css). */
+[data-parte="mapa"] .mapa-real {
+  aspect-ratio: 3 / 4;
+}
+
+@media (min-width: 68.75em) {
+  [data-parte="mapa"] .mapa-real {
+    aspect-ratio: auto;
+  }
+}

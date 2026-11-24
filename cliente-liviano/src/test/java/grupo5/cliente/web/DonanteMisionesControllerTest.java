@@ -191,6 +191,33 @@ class DonanteMisionesControllerTest {
         .doesNotContain("Mis donaciones");
   }
 
+  /**
+   * DON-P1: la prueba A/B de Misiones se cerró y su variante ya no se sirve. Un enlace viejo con
+   * ?variante= de una variante sin archivos (el nombre acá es inventado: fuera de docs/, ningún
+   * archivo nombra a la retirada) muestra la misma pantalla que sin el parámetro, no un error.
+   */
+  @Test
+  void unaVarianteRetiradaMuestraLaMismaPantallaQueSinElla() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(misiones.misiones(DONANTE)).thenReturn(conUnaCompleta());
+
+    String sin =
+        mvc.perform(get("/donante-misiones"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    String con =
+        mvc.perform(get("/donante-misiones").param("variante", "misiones-z"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    assertThat(sin).contains("id=\"huerta-lamina\"");
+    assertThat(con).isEqualTo(sin).doesNotContain("variantes/");
+  }
+
   @Test
   void quienNoEsUnaPersonaVeSinPermiso() throws Exception {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));

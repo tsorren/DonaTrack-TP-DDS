@@ -16,7 +16,9 @@ import org.springframework.web.servlet.ModelAndView;
 /**
  * Alternativas de diseño (skill explorar-ui). {@code ?variante=<tema>-<letra>} suma {@code
  * static/css/variantes/<variante>.css} a la pantalla o la reemplaza por {@code
- * templates/variantes/<variante>.html}.
+ * templates/variantes/<variante>.html}. Una variante que no existe (o que ya se retiró, como las de
+ * una prueba A/B cerrada) se ignora: la pantalla se muestra igual que sin el parámetro, para que un
+ * enlace viejo no termine en un error.
  */
 class VariantesInterceptor implements HandlerInterceptor {
 
@@ -43,8 +45,7 @@ class VariantesInterceptor implements HandlerInterceptor {
     Set<String> estructuras = nombres(ESTRUCTURAS);
     String nombre = existente(pedida, Stream.concat(estilos.stream(), estructuras.stream()));
     if (nombre == null) {
-      response.sendError(HttpServletResponse.SC_NOT_FOUND, "No existe esa variante");
-      return false;
+      return true;
     }
     request.setAttribute(
         ATRIBUTO, new Variante(nombre, estilos.contains(nombre), estructuras.contains(nombre)));
