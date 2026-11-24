@@ -72,7 +72,6 @@ foto
 foto-falta
 fruto
 grupo
-hito
 iconos
 inicio
 inicio-cabecera
@@ -96,8 +95,6 @@ mesa-fecha
 mesa-resumen
 necesidades
 nota
-noticias-inicio
-noticias-todas
 obligatorios
 opciones
 paginas

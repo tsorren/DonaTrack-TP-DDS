@@ -24,7 +24,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * año de la persona sale de las mismas siete, todas de octubre: el mes muestra 3 y el total. El
  * tablero corta las siete por columna con {@link Tramo#de}; con {@code ?escenario=muchas}, suma
  * donaciones de ejemplo solo al tablero (1, 5 y 48, los totales del boceto A) para ver los
- * paginadores, sin cambiar las cifras ni el hito del inicio.
+ * paginadores, sin cambiar las cifras ni el hito del inicio. Con {@code ?escenario=sin-camino}, el
+ * inicio va sin la donación en camino (A04 sin lámina protagonista).
  */
 @Component
 @ConditionalOnProperty(
@@ -48,6 +49,22 @@ class DonanteInicioMaqueta implements DonanteInicioPuerto {
           "1 de octubre",
           "2026-10-15",
           "2026-10-14");
+
+  /** El escenario de la maqueta sin nada en camino: la lámina protagonista lo dice. */
+  private static final String SIN_CAMINO = "sin-camino";
+
+  private static final DonanteInicioVista INICIO_SIN_CAMINO =
+      new DonanteInicioVista(
+          INICIO.donaciones().stream().filter(d -> d.estado() != EstadoEntrega.EN_CAMINO).toList(),
+          INICIO.avisos(),
+          INICIO.sinLeer(),
+          INICIO.entregadasDelMes(),
+          INICIO.mes(),
+          INICIO.hoy(),
+          INICIO.actualizado(),
+          INICIO.desde(),
+          INICIO.hoyIso(),
+          INICIO.ayerIso());
 
   private static final List<String> MESES =
       List.of(
@@ -169,7 +186,7 @@ class DonanteInicioMaqueta implements DonanteInicioPuerto {
 
   @Override
   public DonanteInicioVista inicio(UUID donante) {
-    return INICIO;
+    return SIN_CAMINO.equals(escenario()) ? INICIO_SIN_CAMINO : INICIO;
   }
 
   @Override

@@ -19,6 +19,7 @@ import grupo5.cliente.web.TraceIdFiltro;
 import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -174,7 +175,7 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones-prueba"))
         .andExpect(status().isOk())
         .andExpect(view().name("donante-donaciones-prueba"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(
             content().string(containsString("href=\"/donante-donaciones\" aria-current=\"page\"")));
   }
@@ -199,7 +200,10 @@ class SitioControllerTest {
     mvc.perform(get("/donante-seguimiento"))
         .andExpect(status().isOk())
         .andExpect(view().name("donante-seguimiento"))
-        .andExpect(model().attribute("seccion", "Seguimiento"))
+        // Seguimiento ya no es una sección del menú: se abre desde una donación (DA-03a).
+        .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(
+            content().string(containsString("href=\"/donante-donaciones\" aria-current=\"page\"")))
         .andExpect(content().string(containsString("3 entregas en curso")))
         .andExpect(content().string(containsString("aria-current=\"step\"")))
         .andExpect(content().string(containsString("aria-labelledby=\"lista-titulo\"")));
@@ -213,15 +217,73 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("aria-busy=\"true\"")));
   }
 
+  /**
+   * DA-03a, DA-03b y DA-05: el menú de la empresa es Inicio, Donaciones, Organizaciones y Cómo
+   * donar (Para donantes); el de la persona de ejemplo (conMisiones de CuentaDeEjemplo) suma
+   * Misiones antes de Cómo donar. Ninguno tiene Seguimiento, que sigue respondiendo.
+   */
+  @Test
+  void losMenusDeQuienDonaSonLosDeLaGuia() throws Exception {
+    String empresa =
+        mvc.perform(get("/donante-inicio?cuenta=empresa"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(
+        List.of(
+            "/donante-inicio Inicio",
+            "/donante-donaciones Donaciones",
+            "/donante-entidades Organizaciones",
+            "/publico-para-donantes Cómo donar"),
+        entradasDelMenu(empresa));
+    String persona =
+        mvc.perform(get("/donante-inicio?cuenta=persona"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(
+        List.of(
+            "/donante-inicio Inicio",
+            "/donante-donaciones Donaciones",
+            "/donante-entidades Organizaciones",
+            "/donante-misiones Misiones",
+            "/publico-para-donantes Cómo donar"),
+        entradasDelMenu(persona));
+    mvc.perform(get("/donante-seguimiento?cuenta=empresa")).andExpect(status().isOk());
+  }
+
+  private static final Pattern MENU_DE_LA_PAGINA =
+      Pattern.compile("<nav[^>]*id=\"menu\"[^>]*>(.*?)</nav>", Pattern.DOTALL);
+  private static final Pattern ENTRADA_DEL_MENU =
+      Pattern.compile("<a href=\"([^\"]+)\"[^>]*>.*?<span>([^<]+)</span></a>", Pattern.DOTALL);
+
+  /** Las entradas del menú del layout privado ({@code nav#menu}), como "dirección texto". */
+  private static List<String> entradasDelMenu(String html) {
+    Matcher nav = MENU_DE_LA_PAGINA.matcher(html);
+    assertTrue(nav.find(), "la página tiene el menú");
+    Matcher entrada = ENTRADA_DEL_MENU.matcher(nav.group(1));
+    List<String> entradas = new ArrayList<>();
+    while (entrada.find()) {
+      entradas.add(entrada.group(1) + " " + entrada.group(2));
+    }
+    return entradas;
+  }
+
   @Test
   void elDonanteRecorreSuInicioSusDonacionesEntidadesYNotificaciones() throws Exception {
     mvc.perform(get("/donante-inicio"))
         .andExpect(status().isOk())
         .andExpect(view().name("donante-inicio"))
-        .andExpect(content().string(containsString("Primera entrega confirmada: fideos secos")))
+        .andExpect(content().string(containsString("Útiles escolares, 2 cajas: no pudo llegar")))
+        .andExpect(content().string(containsString("Seguir esta donación")))
         .andExpect(content().string(containsString("aria-label=\"Notificaciones, 4 sin leer\"")));
     mvc.perform(get("/donante-inicio?escenario=lento"))
         .andExpect(content().string(containsString("aria-busy=\"true\"")));
+    mvc.perform(get("/donante-inicio?escenario=sin-camino"))
+        .andExpect(content().string(containsString("Nada en camino ahora")))
+        .andExpect(content().string(not(containsString("Seguir esta donación"))));
     mvc.perform(get("/donante-donaciones?estado=pendiente&categoria=alimentos"))
         .andExpect(content().string(containsString("2 donaciones con esos filtros.")));
     mvc.perform(get("/donante-donaciones?estado=otro"))
@@ -230,7 +292,7 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones?cuenta=persona"))
         .andExpect(content().string(containsString("Martina Ruiz")));
     mvc.perform(get("/donante-donaciones-detalle?donacion=ropa"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(content().string(containsString("confirmó la entrega el 9 de octubre")));
     mvc.perform(get("/donante-donaciones-detalle?donacion=pan"))
         .andExpect(content().string(containsString("No encontramos esa donación.")));
@@ -1420,7 +1482,7 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones").sessionAttr("cuenta", "persona"))
         .andExpect(status().isOk())
         .andExpect(view().name("persona/donante-donaciones"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(content().string(containsString("Martina Ruiz")));
     mvc.perform(get("/donante-notificaciones").sessionAttr("cuenta", "persona"))
         .andExpect(view().name("persona/donante-notificaciones"))
@@ -1432,7 +1494,7 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones-nueva").sessionAttr("cuenta", "persona"))
         .andExpect(status().isOk())
         .andExpect(view().name("aviso-persona"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(content().string(containsString("la maqueta solo muestra Misiones e insignias")))
         .andExpect(content().string(containsString("href=\"/donante-inicio?cuenta=empresa\"")));
     mvc.perform(get("/donante-inicio?cuenta=empresa").sessionAttr("cuenta", "persona"))
