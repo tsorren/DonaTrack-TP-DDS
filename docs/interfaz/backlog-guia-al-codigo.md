@@ -624,7 +624,9 @@ Cada lote termina, además, la migración de las hojas heredadas de sus pantalla
 Rama `E7_guia_ui_org`, `35af5ec8e`; 17 commits de lote sobre `8b13c79d1` (el manifiesto). Estado de
 cada ítem en §11.1: 8 hechos (ORG-01 a ORG-03 y ORG-06 a ORG-10) y 4 parciales (ORG-04, ORG-05,
 ORG-11 y ORG-12). Los parciales son los bloqueantes que dejaron `org-necesidades` y `org-confirmar`
-tras 3 rondas. Lo que queda abierto está en [DTI-48](../adr/DEUDA_TECNICA.md#dti-48); las
+tras 3 rondas. **Actualización (2026-11-23):** se arreglaron en sesión (`79b9e3f74`): los 12 ítems
+quedan hechos; `mvn clean test -pl cliente-liviano -am` pasa con 861 tests y `-Pvisual` sobre las
+rutas tocadas, sin excepciones. Lo que queda abierto está en [DTI-48](../adr/DEUDA_TECNICA.md#dti-48); las
 decisiones, en la [bitácora](bitacora.md) (2026-11-23).
 
 - `[VERIFIED]` `mvn clean test -pl cliente-liviano -am`: 860 tests, sin fallos. `InterfazFitnessTest`
