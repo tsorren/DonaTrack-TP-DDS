@@ -93,7 +93,59 @@ class PublicoEntidadesControllerTest {
         .andExpect(content().string(not(containsString("Misión:"))))
         .andExpect(content().string(not(containsString("Emergencias"))))
         .andExpect(content().string(not(containsString("Todas las categorías"))))
-        .andExpect(content().string(not(containsString("Comedor Barrio Ejemplo"))));
+        .andExpect(content().string(not(containsString("Comedor Barrio Ejemplo"))))
+        // HG-04: sin lo que falta, la cuenta va en palabras y sin barra
+        .andExpect(content().string(not(containsString("<progress"))));
+  }
+
+  private static Entidad comedor(int numero) {
+    return new Entidad(
+        "c" + numero,
+        "Comedor",
+        "Comedor Número " + numero,
+        null,
+        null,
+        null,
+        null,
+        null,
+        List.of(
+            new Pedido(
+                "Arroz", null, "Faltan 25 de 40 kg", "Se repite", 25, 40, "recurrente", false)));
+  }
+
+  @Test
+  void pasaDePaginaDeASeisConservandoLosFiltros() throws Exception {
+    datos =
+        conEntidades(
+            comedor(1), comedor(2), comedor(3), comedor(4), comedor(5), comedor(6), comedor(7));
+
+    mvc.perform(get("/publico-entidades?pedido=recurrente"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Comedor Número 6")))
+        .andExpect(content().string(not(containsString("Comedor Número 7"))))
+        .andExpect(content().string(containsString("Página 1 de 2.")))
+        .andExpect(content().string(containsString("aria-label=\"Páginas de organizaciones\"")))
+        .andExpect(
+            content().string(containsString("/publico-entidades?pedido=recurrente&amp;pagina=2")))
+        // HG-04: con lo que falta de cuánto, la barra acompaña la cuenta
+        .andExpect(content().string(containsString("aria-label=\"Arroz: faltan 25 de 40 kg\"")));
+
+    mvc.perform(get("/publico-entidades?pedido=recurrente&pagina=2"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Comedor Número 7")))
+        .andExpect(content().string(not(containsString("Comedor Número 1<"))))
+        .andExpect(content().string(containsString("Página 2 de 2.")));
+  }
+
+  @Test
+  void conUnaSolaPaginaNoHayPaginador() throws Exception {
+    datos = conEntidades(comedor(1), comedor(2));
+
+    mvc.perform(get("/publico-entidades"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Comedor Número 2")))
+        .andExpect(content().string(not(containsString("Páginas de organizaciones"))))
+        .andExpect(content().string(not(containsString("Página 1 de"))));
   }
 
   @Test

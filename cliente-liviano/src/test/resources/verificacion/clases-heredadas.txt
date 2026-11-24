@@ -36,7 +36,6 @@ ejemplo-inicial
 ejemplos
 ejemplos-lista
 enlace-campo
-entidades
 entregas
 estacion-numero
 fideos
