@@ -1,7 +1,7 @@
-/* Raíces, sitio A: lo común de las públicas que muestran datos (Entregas, Mapa y Entidades) y de los
-   registros: la cabecera de la pantalla, la cifra del período junto a su árbol, las salidas, el lugar
-   de lo que carga, el botón chico y la foto grande de una entrega (los de la portada). Entregas y el
-   Mapa (PUB1) ya no usan la barra de la pública: su listado es el del catálogo. */
+/* Raíces, sitio A: lo común de las públicas que muestran datos (Entregas y Mapa) y de los registros:
+   la cabecera de la pantalla, las salidas, el lugar de lo que carga, el botón chico y la foto grande
+   de una entrega (los de la portada). Entregas y el Mapa (PUB1) ya no usan la barra de la pública: su
+   listado es el del catálogo. */
 @import url("publico-paginas.css");
 
 .publica {
@@ -19,48 +19,6 @@
 
 .publica :is(.banner, .vacio, [role="status"]) {
   margin: 0;
-}
-
-/* --- La cifra ---------------------------------------------------------------------------------- */
-
-/* La cifra, como las de K (estética de K, 2026-11-08; antes, un fruto mandarina con la cifra adentro):
-   un árbol plano y el número grande en tinta, con lo que cuenta al lado. */
-.cifra-fruto p {
-  margin: 0;
-}
-
-.cifra-fruto > p:first-child {
-  display: flex;
-  align-items: flex-end;
-  gap: 1rem;
-  max-width: 36rem;
-  color: var(--color-tinta);
-  font-size: 1.0625rem;
-  line-height: 1.4;
-}
-
-.cifra-fruto .nota {
-  margin-top: 0.5rem;
-}
-
-.fruto {
-  display: flex;
-  flex: none;
-  align-items: flex-end;
-  gap: 0.5rem;
-  color: var(--color-tinta);
-  font: 850 3rem / 0.9 var(--fuente-cifra);
-  font-stretch: 125%;
-  letter-spacing: -0.04em;
-}
-
-.fruto::before {
-  content: "";
-  /* El manzano con su proporción (viewBox 231,87 × 260,42), apoyado abajo, junto a la cifra. */
-  flex: none;
-  height: 4.375rem;
-  aspect-ratio: 231.87 / 260.42;
-  background: url("../img/ilustraciones/arbol-redondo.svg") bottom / contain no-repeat;
 }
 
 /* --- Las salidas, lo que carga, los botones y la foto ------------------------------------------ */
