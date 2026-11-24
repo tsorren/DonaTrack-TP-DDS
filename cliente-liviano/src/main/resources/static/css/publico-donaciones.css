@@ -4,6 +4,23 @@
    públicas (el ancho del contenido y los títulos). */
 @import url("publico-listas.css");
 
+/* Arriba, el mismo aire que Organizaciones y el Mapa, sin depender del sprite de los pictogramas. */
+[data-v="entregas"] {
+  margin-block-start: var(--espacio-4);
+}
+
+/* Los bloques del catálogo (el listado y la lista) se ponen margin: 0 en su capa: el aire entre las
+   partes de la pantalla, el de las confirmadas y el de la carga lo devuelve esta hoja, con la misma
+   medida que Organizaciones (publico-entidades.css). */
+[data-v="entregas"] > * + * {
+  margin-block-start: var(--espacio-4);
+}
+
+[aria-labelledby="confirmadas-titulo"] > * + *,
+[aria-busy="true"] > * + * {
+  margin-block-start: var(--espacio-3);
+}
+
 /* Una etiqueta por entrega, en tantas columnas como entren, con la misma medida que Entregas de la
    organización; los esqueletos de la carga ocupan el mismo lugar. */
 [aria-labelledby="confirmadas-titulo"] > .lista,

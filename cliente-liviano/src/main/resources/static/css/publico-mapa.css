@@ -6,6 +6,12 @@
    componentes. Acá queda dónde va el listado y el número de las estaciones de la lista, que el sello
    del catálogo (`.estacion-sello`) no dibuja. */
 
+/* Los bloques del catálogo (el listado) se ponen margin: 0 en su capa: el aire entre las partes de
+   la pantalla lo devuelve esta hoja, con la misma medida que Organizaciones (publico-entidades.css). */
+[data-v="mapa"] > * + * {
+  margin-block-start: var(--espacio-4);
+}
+
 /* El listado del Mapa no queda fijo: el Mapa ya deja fija la columna del mapa (decisión 6 de la
    ficha), y los dos fijos se pisarían. */
 .listado[action$="/publico-mapa"] {

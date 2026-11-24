@@ -54,7 +54,7 @@
              hay=${escenario == '' and lugares > 0},
              unidad=${v.conEntidades ? (lugares == 1 ? 'organización' : 'organizaciones') : (lugares == 1 ? 'lugar' : 'lugares')}">
   <svg th:replace="~{iconos :: categorias}"></svg>
-  <div class="pila" data-espacio="5">
+  <div class="pila" data-espacio="5" data-v="mapa">
     <div class="pila" data-espacio="1">
       <nav th:replace="~{componentes/migas :: migas(pasos=${ { {texto: 'Entregas', ruta: '/publico-donaciones'} } }, actual='Mapa')}"></nav>
       <header class="pila" data-espacio="1">
