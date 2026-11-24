@@ -248,6 +248,18 @@ Ninguna pantalla nueva; Seguimiento baja de nivel 2 a nivel 3 y ninguna pasa de 
 | Guardar el perfil | Vuelve al perfil con un aviso breve; en la maqueta, `/donante-perfil-guardado` muestra el perfil con el aviso | DON-07; DA-06 |
 | Inicio de la empresa y de la persona | Sale el tablero de tres columnas (R11-25) y la lista mes por mes de la persona; el almanaque queda chico | DON-01, DON-09; DON-P2 |
 
+## Cambios de la oleada PUB1 de la guía «Huerta y galpón» (2026-11-24)
+
+Ninguna pantalla nueva ni una que pase de 3 niveles; el Mapa baja de nivel 2 a nivel 3, dentro de
+Entregas ([backlog de la guía](backlog-guia-al-codigo.md), §13):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Menú público | Inicio, Entregas, Organizaciones y Cómo funciona (`/publico-nosotros`). El Mapa sale del menú; en el Mapa queda marcada Entregas | PUB1-02; DA-01, DA-05 y DA-17 |
+| Entregas y Mapa | Entregas (`/publico-donaciones`) enlaza el Mapa (`/publico-mapa`) y el Mapa muestra las migas «Entregas / Mapa». Rutas sin cambio | PUB1-03, PUB1-04; DA-01 |
+| Nosotros, Para donantes y Para organizaciones | Se llaman Cómo funciona, Cómo donar y Ayuda, con las mismas rutas; el pie los nombra igual | PUB1-07, PUB1-08; DA-05 y DA-23 |
+| Enviar un mensaje desde Contacto | Vuelve a Contacto (con su `?volver=` si vino) con un aviso breve que lleva el número del mensaje. en la maqueta, `/publico-contacto-enviado` muestra Contacto con ese aviso | PUB1-09; DA-06 y DA-24 |
+
 ## Observaciones para el diseño
 
 - El admin tenía 9 secciones de nivel 2. Quedan 6 por tema, como el prototipo: registrar,
