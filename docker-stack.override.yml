@@ -8,8 +8,8 @@
 #   minio-init: 128M terminó en OOMKilled en la corrida de SW2; queda en 256M, sin medir su pico.
 # [PROPOSED] Healthcheck de los replicados: interval 5s, timeout 3s, retries 3 (una réplica colgada saldría
 #   en unos 15 a 25 s, [INFERRED]; con retries 20 tardó 160 s). start_period 120s porque con retries 3 un arranque lento
-#   con 14 contenedores a la vez no puede contar como falla. El test sigue siendo /actuator/health
-#   del compose: pasa a /actuator/health/liveness cuando entre K3.
+#   con 14 contenedores a la vez no puede contar como falla. El test es el del compose:
+#   /actuator/health/liveness (K3), que no mira la base ni RabbitMQ.
 version: "3.9"
 
 x-replicado: &replicado
