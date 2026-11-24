@@ -320,8 +320,8 @@ desde B3-01: sin papel, igual que antes (el usuario eligió conservar las dos l�
 Las variantes por atributo van en la misma hoja del bloque, después de la base: la capa `excepciones`
 queda para cuando una variante necesite ganarle a otro bloque. Los botones propios de la portada
 (`boton--foto`, `boton--suelo`, `boton--mapa`) son desde B3-01 variantes del bloque (`data-forma="foto"`,
-`data-zona`) o, el del mapa, solo su lugar en la hoja; `boton--google` sigue en la hoja de su pantalla
-como clase heredada, hasta la fase 3.
+`data-zona`) o, el del mapa, solo su lugar en la hoja; `boton--google` salió con Ingresar (PUB1-06,
+2026-11-24): «Continuar con Google» es un `.boton` con `data-tono="secundario"`.
 
 ## Piezas compuestas sin clase propia
 

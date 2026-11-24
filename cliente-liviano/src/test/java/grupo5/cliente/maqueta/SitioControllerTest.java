@@ -1175,6 +1175,96 @@ class SitioControllerTest {
   }
 
   /**
+   * Ingresar (PUB1-06) deriva de A12 de la guía: la columna del formulario con los campos del
+   * catálogo, una sola acción llena y las cuentas de ejemplo de la demo, en una lámina punteada.
+   */
+  @Test
+  void ingresarEsLaColumnaDelFormularioConLasCuentasDeEjemplo() throws Exception {
+    String html =
+        mvc.perform(get("/publico-ingresar"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("<h1>Ingresar</h1>")))
+            .andExpect(content().string(containsString("action=\"/donante-inicio\"")))
+            .andExpect(content().string(containsString("method=\"post\"")))
+            .andExpect(content().string(containsString("class=\"campo\"")))
+            .andExpect(content().string(containsString("autocomplete=\"current-password\"")))
+            .andExpect(content().string(containsString("href=\"/publico-recuperar\"")))
+            .andExpect(content().string(containsString("href=\"/publico-registro\"")))
+            .andExpect(content().string(containsString("Continuar con Google")))
+            .andExpect(content().string(containsString("class=\"tarjeta\" data-papel=\"hueco\"")))
+            .andExpect(content().string(containsString("Cuentas de ejemplo")))
+            .andExpect(content().string(containsString("href=\"/donante-inicio?cuenta=empresa\"")))
+            .andExpect(
+                content().string(containsString("Distribuidora Ejemplo SA, empresa donante")))
+            .andExpect(content().string(containsString("href=\"/entidad-inicio\"")))
+            .andExpect(content().string(containsString("Comedor Barrio Ejemplo, organización")))
+            .andExpect(content().string(containsString("href=\"/admin-inicio\"")))
+            .andExpect(content().string(not(containsString("aria-invalid"))))
+            .andExpect(content().string(not(containsString("role=\"alert\""))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(1, apariciones(html, "data-tono=\"principal\""), "una sola acción llena");
+    mvc.perform(get("/publico-ingresar?escenario=lento"))
+        .andExpect(content().string(containsString("aria-busy=\"true\"")))
+        .andExpect(content().string(containsString("role=\"status\">Ingresando…")));
+    mvc.perform(get("/publico-ingresar?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos ingresar en este momento.")))
+        .andExpect(content().string(containsString("role=\"alert\"")));
+    mvc.perform(get("/publico-ingresar?escenario=sin-conexion"))
+        .andExpect(content().string(containsString("Se cortó la conexión.")))
+        .andExpect(content().string(containsString("role=\"alert\"")));
+    mvc.perform(get("/publico-ingresar?escenario=bloqueado"))
+        .andExpect(content().string(containsString("Pausamos los intentos de ingreso.")))
+        .andExpect(content().string(containsString("role=\"alert\"")));
+    mvc.perform(get("/publico-ingresar?escenario=pendiente"))
+        .andExpect(content().string(containsString("Tu organización todavía está en revisión.")))
+        .andExpect(content().string(containsString("role=\"status\"")));
+    mvc.perform(get("/publico-ingresar?escenario=sesion-vencida"))
+        .andExpect(content().string(containsString("Tu sesión se cerró.")))
+        .andExpect(content().string(containsString("role=\"status\"")));
+  }
+
+  /**
+   * El error de Ingresar es un estado del mismo formulario (A12, «Con error»): el resumen arriba,
+   * con el foco y un enlace al campo; los dos campos marcados en su lugar y un solo mensaje, sin
+   * decir cuál de los dos falló (RF-04, RNF-AUTH-10). Lo escrito en el correo vuelve.
+   */
+  @Test
+  void elErrorDeIngresarMarcaLosCamposSinDecirCualFallo() throws Exception {
+    String html =
+        mvc.perform(get("/publico-ingresar-error"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("<title>No pudimos ingresar - DonaTrack")))
+            .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+            .andExpect(content().string(containsString("role=\"alert\" tabindex=\"-1\"")))
+            .andExpect(content().string(containsString("autofocus")))
+            .andExpect(content().string(containsString("href=\"#clave\"")))
+            .andExpect(content().string(containsString("El correo o la contraseña no coinciden")))
+            .andExpect(content().string(containsString("class=\"campo-error\"")))
+            .andExpect(content().string(containsString("aria-describedby=\"ingreso-error\"")))
+            .andExpect(
+                content().string(containsString("value=\"contacto@distribuidora-ejemplo.test\"")))
+            .andExpect(content().string(containsString("href=\"/publico-recuperar\"")))
+            .andExpect(content().string(containsString("Cuentas de ejemplo")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(2, apariciones(html, "data-estado=\"error\""), "los dos campos, marcados");
+    assertEquals(2, apariciones(html, "aria-invalid=\"true\""), "los dos controles, inválidos");
+    assertEquals(1, apariciones(html, "class=\"campo-error\""), "un solo mensaje");
+    assertEquals(1, apariciones(html, "data-tono=\"principal\""), "una sola acción llena");
+  }
+
+  private static int apariciones(String texto, String buscado) {
+    int cuenta = 0;
+    for (int i = texto.indexOf(buscado); i >= 0; i = texto.indexOf(buscado, i + 1)) {
+      cuenta++;
+    }
+    return cuenta;
+  }
+
+  /**
    * Activar cuenta: elegir la contraseña con un formulario real, el error de datos, el enlace
    * vencido con su remedio y el pedido de otro enlace, que no revela cuentas (RNF-AUTH-10).
    */

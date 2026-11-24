@@ -9,7 +9,6 @@ armazon-avisos-texto
 aviso-acciones
 aviso-codigo
 bajada
-boton--google
 cambiar
 campo--corto
 campos-par
@@ -24,7 +23,6 @@ contacto-cuenta
 contacto-lamina
 cuenta
 cuenta--enviada
-cuenta--ingresar
 cuenta-principal
 cuenta-salida
 decision
@@ -32,10 +30,6 @@ decision-nombres
 decisiones
 decisiones-lista
 donaron
-ejemplo-inicial
-ejemplos
-ejemplos-lista
-enlace-campo
 entregas
 estacion-numero
 fideos
@@ -88,7 +82,6 @@ resumen
 rotulo
 salidas
 saltar
-separador
 sin-dibujar
 solo-lectores
 todo
