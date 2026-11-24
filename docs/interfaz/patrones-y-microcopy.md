@@ -110,6 +110,10 @@ resumen:
     registraron 1.424 donaciones…"), y su tabla da los mismos números (R11-42).
 24. Lo que es de todo un equipo lo dice: la bandeja de la Administración es compartida, y abrir un
     aviso lo marca leído para todas las cuentas (R11-30).
+25. Lo que el servicio no da no se escribe ni se estima: una hora se dice desde lo que ya pasó
+    («En camino desde las 14:30», no una hora de llegada) y una fecha que nadie fijó, como tal
+    («Todavía sin fecha de nueva salida»). Lo que no llega se omite o va con su texto de «Si no
+    llega» ([backlog de la guía](backlog-guia-al-codigo.md), §7; oleada DON, 2026-11-24).
 
 ## Reglas generales de la revisión del 2026-11-11
 
