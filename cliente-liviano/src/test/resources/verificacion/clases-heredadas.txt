@@ -14,7 +14,6 @@ campo--corto
 campos-par
 casilla
 categoria-icono
-cifra-fruto
 clave-fila
 como-sigue
 confirmar
@@ -32,7 +31,6 @@ entregas
 estacion-numero
 fideos
 formulario
-fruto
 grupo
 iconos
 lectura
