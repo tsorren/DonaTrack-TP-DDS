@@ -8,6 +8,7 @@ Compose sigue siendo el entorno de desarrollo, del CI y de la demo pública.
 | `generar-stack.js` | Pasa `docker compose config --format json` del preprod a un archivo que acepta `docker stack` |
 | `generar-stack.test.js` | Un test por regla de la transformación, sobre `ejemplo-compose.json` (datos sintéticos) |
 | `desplegar.sh` | Exporta el `.env`, genera `target/swarm/stack.json` y despliega con `docker-stack.override.yml` |
+| `verificar-replicas.sh` | SW2: despliega con dos réplicas, espera a que converja y deja la evidencia en `target/swarm/evidencia-replicas.md` |
 | `../../docker-stack.override.yml` | Réplicas, límites de memoria, `hostname` de mongodb, healthchecks y `minio-init` |
 
 ## Por qué hay una transformación
@@ -79,6 +80,41 @@ Los servicios y la infraestructura tampoco se publican. Postman, k6 o `curl` lle
 ```bash
 docker run --rm --network donatrack_preprod-network curlimages/curl -s http://api-gateway:8086/actuator/health
 ```
+
+## Verificación con réplicas (SW2)
+
+```bash
+scripts/swarm/verificar-replicas.sh                  # despliega con DONATRACK_REPLICAS=2 y verifica
+scripts/swarm/verificar-replicas.sh --sin-desplegar  # verifica el stack que ya corre
+```
+
+Requisitos: los mismos de "Uso" (Swarm iniciado, jars, imágenes propias e imágenes de infraestructura locales) y
+`curlimages/curl` local (`docker pull curlimages/curl`), o `HELPER_IMAGEN` con otra imagen que tenga `sh` y `curl`.
+Espera hasta `ESPERA_MAX` segundos (900 por defecto). Sale con 1 si falla alguna comprobación.
+
+Qué comprueba:
+
+1. Cada servicio llega a sus réplicas en `Running`. Swarm pasa una tarea con healthcheck a `Running` recién
+   cuando está sana, así que es lo mismo que "sana". `minio-init` cuenta como lista cuando su tarea quedó `Complete`.
+2. Los seis módulos propios declaran `DONATRACK_REPLICAS` réplicas, cada contenedor contesta `/actuator/health`
+   por su IP en la red del stack, y el nombre del servicio (la VIP del *routing mesh*) también.
+3. La sesión del cliente liviano pasa de una réplica a la otra: la réplica A crea la sesión en
+   `/oauth2/authorization/keycloak`, la fila aparece en `cliente.spring_session`, y la réplica B, con esa cookie,
+   no manda una cookie nueva (Spring Session solo la manda si no encontró la sesión).
+4. Anota cuántas tareas reemplazó Swarm por servicio y el primer motivo, y una muestra de `docker stats` por servicio.
+
+Avisa, sin fallar, si falta ShedLock (SL1) o el *single active consumer* (SL2): con dos réplicas el stack arranca,
+pero las tareas `@Scheduled` corren dos veces y las colas pierden el orden. SW2 se cierra con la evidencia de que
+arranca; la defensa con dos réplicas necesita SL1 y SL2.
+
+El informe no lleva secretos y se puede pegar en el PR.
+
+`[VERIFIED]` en un Swarm de un nodo con imágenes sustitutas (servidores HTTP con los mismos nombres, puertos,
+healthchecks y campos del compose del preprod, y un Postgres falso para la sesión), con el override real:
+converge con 2 réplicas, las comprobaciones 1, 3 y 4 dan bien, una réplica con el health en rojo aparece reemplazada
+con el motivo `unhealthy container`, y un servicio que no sana sale por tiempo con `FALLA`. La comprobación de la VIP
+no se pudo verificar ahí: ese kernel no tiene IPVS. `[INFERRED]` Con las imágenes reales y en Docker Desktop no se
+corrió todavía: los tiempos, la memoria y los reemplazos reales salen de esa corrida.
 
 ## Arranque observado
 
