@@ -9,6 +9,7 @@ Compose sigue siendo el entorno de desarrollo, del CI y de la demo pública.
 | `generar-stack.test.js` | Un test por regla de la transformación, sobre `ejemplo-compose.json` (datos sintéticos) |
 | `desplegar.sh` | Exporta el `.env`, genera `target/swarm/stack.json` y despliega con `docker-stack.override.yml` |
 | `verificar-replicas.sh` | SW2: despliega con dos réplicas, espera a que converja y deja la evidencia en `target/swarm/evidencia-replicas.md` |
+| `humo-jwt.sh` | S3: prueba de humo de la cadena JWT con el Keycloak real (401, 200 y 403); evidencia en `target/swarm/evidencia-humo-jwt.md` |
 | `../../docker-stack.override.yml` | Réplicas, límites de memoria, `hostname` de mongodb, healthchecks y `minio-init` |
 
 ## Por qué hay una transformación
@@ -58,6 +59,7 @@ No se commitea ni se comparte.
 |---|---|---|
 | `ENV_FILE` | `.env` de la raíz | `.env` que se exporta y se interpola |
 | `DONATRACK_REPLICAS` | 1 | Réplicas del gateway, el cliente liviano y los cuatro servicios (2 en la defensa) |
+| `DONATRACK_SEGURIDAD` | `true` | El gateway y los cuatro servicios validan el JWT de Keycloak (E7-S04 A). `false` la apaga. Pisa un `PREPROD_SEGURIDAD` del `.env` |
 | `DONATRACK_PUBLICAR_RABBITMQ` | `false` | Publica el 5672 (consumidor espía de las pruebas desde el host) |
 | `DONATRACK_BORRAR_COLAS_SAC` | `false` | Lugar del paso que borra las siete colas con *single active consumer* (decisión D8). Hoy solo avisa y corta: el paso lo documenta SL2 en `docs/arquitectura/eventos-amqp.md` |
 
@@ -80,6 +82,44 @@ Los servicios y la infraestructura tampoco se publican. Postman, k6 o `curl` lle
 ```bash
 docker run --rm --network donatrack_preprod-network curlimages/curl -s http://api-gateway:8086/actuator/health
 ```
+
+## Cadena JWT encendida (S3)
+
+`[PROPOSED]` En Swarm la validación del JWT está **encendida por defecto** (decisión E7-S04 A): `desplegar.sh`
+exporta `PREPROD_SEGURIDAD=true` antes de generar el stack. El compose del preprod la sigue leyendo como
+`${PREPROD_SEGURIDAD:-false}`, así que el preprod de Compose y el CI no cambian (siguen con `--auth` / `PREPROD_AUTH`).
+
+Con la seguridad encendida, quien llame al gateway o a un servicio sin token recibe `401`: Postman, k6 e
+`integration-tests` necesitan `PRUEBAS_CLIENT_SECRET` (SPEC-06 E2-07). El cliente liviano ya manda el token.
+
+```bash
+scripts/swarm/humo-jwt.sh                                     # contra el stack que corre
+RED=<red-del-preprod> scripts/swarm/humo-jwt.sh               # contra el preprod de Compose (docker network ls)
+```
+
+Requisitos: el stack sano (por ejemplo, después de `verificar-replicas.sh`), `curlimages/curl` local (o
+`HELPER_IMAGEN`) y `PRUEBAS_CLIENT_SECRET` y `CLIENTE_LIVIANO_SECRET` en el `.env` con el que se importó el realm.
+
+Desde un contenedor en la red del stack pide dos tokens `client_credentials` a `keycloak:8080`: ADMIN
+(`donatrack-pruebas`) y SERVICIO (`cliente-liviano`). Por cada servicio, una ruta solo para ADMIN, directo al
+servicio y por el gateway:
+
+| Servicio | Ruta | Sin token | ADMIN | SERVICIO |
+|---|---|---|---|---|
+| Donaciones | `GET /api/personas` | 401 | 200 | 403 |
+| Incentivos | `GET /api/incentivos/admin/resumen` | 401 | 200 | 403 |
+| Logística | `GET /api/entregas` | 401 | 200 | 403 |
+| Notificaciones | `GET /api/notificaciones` | 401 | 200 | 403 |
+
+Además, `GET /api/necesidades/publicas` por el gateway y sin token tiene que dar 200 (la allowlist sigue abierta).
+Son 25 comprobaciones. El `200` prueba que el `iss` del token pedido por la red interna coincide con el que
+validan los servicios (`${KC_HOSTNAME}/realms/donatrack`). El `403` lo da el `@PreAuthorize` del servicio:
+el gateway solo exige un token válido. Los secretos y los tokens viajan por stdin y no quedan en la salida
+ni en el informe. Sale con 1 si falla alguna comprobación.
+
+`[VERIFIED]` con un `docker` falso que simula el stack (`scripts/tests/test_swarm_humo_jwt.py`): pasa con la
+cadena encendida y falla con la seguridad apagada, con un servicio que no valida el token o si Keycloak no
+entregue los tokens. `[VERIFIED]` Contra el Keycloak real del stack (2026-11-24): 25 de 25.
 
 ## Verificación con réplicas (SW2)
 
