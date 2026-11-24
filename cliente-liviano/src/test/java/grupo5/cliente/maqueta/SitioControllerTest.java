@@ -1197,9 +1197,12 @@ class SitioControllerTest {
     mvc.perform(get("/publico-nosotros"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Entregas confirmadas desde marzo de 2026")))
-        // Las cifras en árboles de K (2026-11-08; antes, la rama de frutos con data-cosecha).
-        .andExpect(content().string(containsString("class=\"huerta-cifras\"")))
-        .andExpect(content().string(containsString("Actualizado")))
+        // Las cifras como en la portada (A01): la lista de datos del catálogo, sin los árboles de
+        // K.
+        .andExpect(content().string(containsString("Cómo sabemos que llega")))
+        .andExpect(content().string(containsString("<dl class=\"datos\">")))
+        .andExpect(content().string(not(containsString("class=\"huerta-cifras\""))))
+        .andExpect(content().string(containsString("Actualizado el ")))
         // Nosotros es Cómo funciona en el menú público, y lo marca (DA-05).
         .andExpect(
             content().string(containsString("href=\"/publico-nosotros\" aria-current=\"page\"")));

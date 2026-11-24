@@ -42,7 +42,28 @@
       <ol th:replace="~{componentes/huerta :: raiz-pasos(${recorrido}, 'numerada tendida', null, false)}"></ol>
     </section>
 
-    <section th:replace="~{componentes/huerta :: cifras(${estado}, ${cifrasDeNosotros})}"></section>
+    <!--/* Las cifras como en la portada (A01): la lista de datos y la regla de conteo con la fecha. El
+           período va en el rótulo de cada cifra; la fecha, la de las entregas confirmadas. */-->
+    <section class="pila" data-espacio="3" aria-labelledby="cifras-titulo"
+             th:with="actualizado=${entregasConfirmadas?.actualizado}"
+             th:aria-busy="${estado == 'lento'} ? 'true' : null">
+      <h2 id="cifras-titulo">Cómo sabemos que llega</h2>
+      <th:block th:if="${estado == ''}"><dl
+          th:replace="~{componentes/datos :: datos(${cifrasDeNosotros != null ? cifrasDeNosotros.![{rotulo: t, valor: n}] : {}})}"></dl></th:block>
+      <p class="vacio" data-forma="filetes" th:if="${estado == 'vacio'}">
+        Todavía no hay entregas confirmadas. Se cuentan cuando cada organización confirma lo que recibe.</p>
+      <p class="cargando" role="status" th:if="${estado == 'lento'}">Cargando las cifras…</p>
+      <div th:if="${estado == 'error'}" class="aviso" data-tipo="error" role="alert">
+        <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+        <p class="aviso-titulo">No pudimos cargar las cifras.</p>
+        <p>Probá de nuevo en unos minutos.</p>
+        <p><a class="boton" data-tamano="chico" href="/publico-nosotros"
+              th:href="@{/publico-nosotros}">Volver a cargar</a></p>
+      </div>
+      <p data-tono="suave">Una entrega cuenta cuando la organización que la recibió la confirma con una
+        foto.<th:block th:if="${estado == '' and actualizado != null}" th:text="| Actualizado el ${actualizado}.|">
+        Actualizado el 15 de octubre de 2026, 14:30.</th:block> No mostramos quién donó.</p>
+    </section>
 
     <section class="grilla" data-espacio="4" aria-labelledby="somos-titulo">
       <div class="lectura">
