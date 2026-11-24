@@ -95,3 +95,13 @@ trivy image --scanners vuln --severity CRITICAL --ignore-unfixed ghcr.io/<repo>/
 ```
 
 La primera corrida descarga la base de vulnerabilidades. La validación que cuenta es la del CI.
+
+## 7. Primer corte (CI del PR 992, 2026-11-19)
+
+El primer CI cortó con 6 `CRITICAL` con arreglo. Se resolvieron subiendo versiones, sin sumar
+excepciones a `.trivyignore`:
+
+| Dónde | Hallazgo | Arreglo |
+|---|---|---|
+| `demo/seeder/requirements.txt` | 5 CVE de `Pillow` 11.0.0 | `Pillow==13.0.0` (pide Python ≥3.11; el seeder usa `python:3.12-slim`) |
+| `auth-service/Dockerfile` | 1 CVE del OpenJDK de la base de `keycloak:26.8.1` | `keycloak:26.8.2` fijado por digest del índice multi-arquitectura; el SPI compila contra 26.8.2 |

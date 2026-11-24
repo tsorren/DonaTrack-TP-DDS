@@ -18,7 +18,7 @@ En lenguaje llano:
 
 | Archivo | Contenido | Ítem del backlog | Estado |
 |---|---|---|---|
-| `Dockerfile` | Keycloak 26.8.1 fijado por digest; copia el realm y el tema, corre `kc.sh build` y arranca con `start --optimized --import-realm` | A1-01 | Hecho |
+| `Dockerfile` | Keycloak 26.8.2 fijado por digest; copia el realm y el tema, corre `kc.sh build` y arranca con `start --optimized --import-realm` | A1-01 | Hecho |
 | `realm/donatrack-realm.json` | Realm versionado: roles, políticas de clave y bloqueo, vida de los tokens, cliente `cliente-liviano`, mapper `roles`. Sin secretos. **Hoy tiene** el contrato de tokens (A1-02a), las políticas de seguridad (A1-02b) y el admin con el rol por defecto (A1-03) | A1-02, A1-03 | Hecho y verificado |
 | `.dockerignore` | Deja afuera `src`, `target` y `pom.xml` del contexto de build (que es esta carpeta) | A1-02 | Hecho |
 | `pom.xml` y `src/test/java/grupo5/auth/RealmTokenContractIT.java` | Módulo Maven de test: levanta la imagen con Testcontainers, hace el login por *authorization code* y verifica los tokens. No está en los `<modules>` del pom raíz (ver abajo) | A1-02 | 22 de 22 en verde (2026-11-06); desde entonces el IT suma un chequeo del logo oscuro, sin ejecutar |
