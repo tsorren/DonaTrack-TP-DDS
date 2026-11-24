@@ -1609,7 +1609,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Sos donante Sostenedor desde el")))
         .andExpect(
             content().string(containsString("href=\"/donante-misiones\" aria-current=\"page\"")))
-        .andExpect(content().string(containsString("aria-label=\"Gran Aporte: 12 de 50 bienes\"")))
+        .andExpect(content().string(containsString("aria-label=\"Gran Aporte: 12 de 50\"")))
         .andExpect(content().string(containsString("Completa el 3 de agosto de 2026")))
         .andExpect(
             content().string(containsString("Empieza a contar cuando completes Gran Aporte.")))
@@ -1618,10 +1618,18 @@ class SitioControllerTest {
                 .string(containsString("Sus misiones se ven cuando completes las de Sostenedor.")))
         .andExpect(content().string(containsString("aria-label=\"Tus insignias\"")))
         .andExpect(content().string(containsString("(2 de 6)")))
+        .andExpect(
+            content()
+                .string(containsString("<details class=\"plegable\" data-categoria=\"completa\">")))
+        .andExpect(content().string(containsString("Colaborador · completa")))
+        .andExpect(content().string(containsString("Ver las misiones")))
+        .andExpect(content().string(containsString("Llevás 12 de 50.")))
+        .andExpect(content().string(containsString("aria-label=\"Gran Aporte, en curso\"")))
+        .andExpect(content().string(containsString("data-papel=\"hueco\"")))
         .andExpect(content().string(not(containsString("Notificaciones, 4 sin leer"))));
     mvc.perform(get("/donante-misiones?escenario=vacio").sessionAttr("cuenta", "persona"))
         .andExpect(content().string(containsString("Todavía no tenés insignias")))
-        .andExpect(content().string(containsString("0 de 3 meses")))
+        .andExpect(content().string(containsString("Llevás 0 de 3.")))
         .andExpect(content().string(containsString("(0 de 6)")));
     mvc.perform(get("/donante-misiones?escenario=lento").sessionAttr("cuenta", "persona"))
         .andExpect(content().string(containsString("role=\"status\">Cargando tus misiones")))

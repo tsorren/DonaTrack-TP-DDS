@@ -310,6 +310,8 @@
 # F5 del roadmap de vistas: Misiones (cuenta persona), Seguir entregas y Mi perfil de la entidad.
 /donante-misiones?cuenta=persona
 /donante-misiones?cuenta=persona&escenario=vacio
+/donante-misiones?cuenta=persona&lugar=estante-izq
+/donante-misiones?cuenta=persona&lugar=mesada-medio
 /donante-misiones?cuenta=persona&escenario=lento
 /donante-misiones?cuenta=persona&escenario=error
 /donante-misiones?cuenta=empresa

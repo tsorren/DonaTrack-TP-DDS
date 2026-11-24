@@ -1,25 +1,205 @@
-/* Misiones e insignias de la persona que dona en Raíces (ficha raices-misiones): las insignias en
-   una fila que baja de renglón y las misiones de cada categoría en tarjetas, de a dos desde la
-   tableta. Hoja nueva: solo dispone, por id y sin clases propias; lo demás viene de las capas CUBE
-   (.tarjeta, .lista, .estado, .progreso, .racimo, .pila). */
+/* Misiones e insignias de la persona que dona (ficha guia-don-misiones, DA-08). Hoja de pantalla: solo
+   dispone, por id y sin clases propias; el papel, los sellos, el avance, el plegable y los avisos
+   vienen del catálogo (.tarjeta con data-papel, .estado, .progreso, .plegable, .aviso, .pila,
+   .racimo). La huerta: el invernadero vacío de fondo y, encima, cada planta o maceta "?" en su
+   lugar; las capas salen del dibujo de la diseñadora (img/ilustraciones/huerta/, viewBox de la
+   escena 141 26 1140 695) y se ubican con porcentajes de esa caja. Cada lugar es un enlace de 48 × 48
+   px como mínimo (DA-21-misiones): en el celular, una columna de lugares debajo del dibujo; desde
+   la tableta, encima de su maceta y centrado en ella. Con un lugar elegido, el resto se atenúa. */
 @import url("privado.css");
 
-/* El encabezado ocupa todo el ancho (regla general de la ronda del 2026-11-09); la bajada conserva
-   un largo de línea legible. */
-#misiones > header p {
+/* El encabezado ocupa todo el ancho; la bajada conserva un largo de línea legible. */
+#misiones > header p,
+#huerta > header p {
   max-width: 42rem;
 }
 
-#misiones h2 {
-  margin: 0 0 var(--espacio-3);
-}
-
-/* Las insignias: el sello grande y, debajo, su nombre y su fecha. */
-#insignias {
+/* --- La huerta -------------------------------------------------------------------------------- */
+#huerta {
+  display: grid;
   align-items: start;
-  padding: 0;
 }
 
+/* La lámina protagonista recorta el dibujo con sus esquinas. */
+#huerta-lamina {
+  overflow: hidden;
+}
+
+#huerta-dibujo {
+  position: relative;
+  aspect-ratio: 1140 / 695;
+}
+
+#huerta-dibujo img {
+  position: absolute;
+  max-width: none;
+  height: auto;
+}
+
+#huerta-dibujo > img:first-child,
+#huerta-dibujo [data-lugar="abejas"] {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Cada capa, en su caja del dibujo (x, y, ancho y alto en % de 1140 x 695). */
+#huerta-dibujo [data-lugar="piso-der"] { left: 78.86%; top: 39.568%; width: 11.491%; height: 47.05%; }
+#huerta-dibujo [data-lugar="mesada-der"] { left: 51.404%; top: 26.043%; width: 11.053%; height: 45.324%; }
+#huerta-dibujo [data-lugar="colgante"] { left: 36.053%; top: 6.043%; width: 17.544%; height: 25.755%; }
+#huerta-dibujo [data-lugar="estante-izq"] { left: 22.719%; top: 25.755%; width: 14.561%; height: 25.755%; }
+#huerta-dibujo [data-lugar="mesada-medio"] { left: 44.298%; top: 45.899%; width: 6.404%; height: 25.468%; }
+#huerta-dibujo [data-lugar="estante-der"] { left: 72.456%; top: 37.698%; width: 5.614%; height: 13.813%; }
+#huerta-dibujo [data-lugar="piso-izq"] { left: 2.632%; top: 23.453%; width: 27.982%; height: 62.014%; }
+#huerta-dibujo [data-lugar="mesada-izq"] { left: 38.596%; top: 56.978%; width: 5.614%; height: 14.532%; }
+
+/* Elegido un lugar: el resto del invernadero se atenúa y el elegido queda adelante. */
+#huerta[data-elegido] #huerta-dibujo img {
+  opacity: 0.28;
+}
+
+#huerta[data-elegido] #huerta-dibujo img[data-elegido] {
+  z-index: 1;
+  opacity: 1;
+}
+
+/* Los lugares en el celular: una columna debajo del dibujo; cada uno, su planta o su maceta, su
+   nombre y su estado en palabras, en un renglón de 48 px como mínimo. */
+#huerta-lugares {
+  padding: var(--espacio-3);
+}
+
+#huerta-lugares a {
+  display: grid;
+  grid-template-columns: var(--medida-toque-minimo) minmax(0, 1fr) auto;
+  gap: var(--espacio-3);
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  border-radius: var(--radio-lamina);
+  text-decoration: none;
+}
+
+#huerta-lugares img {
+  width: 100%;
+  height: var(--medida-toque-minimo);
+  object-fit: contain;
+}
+
+#huerta-lugares a > b {
+  text-decoration: underline;
+}
+
+#huerta-lugares a[aria-current] > b {
+  text-decoration-thickness: var(--borde-ancho-sello);
+}
+
+/* --- La ficha --------------------------------------------------------------------------------- */
+#huerta-ficha {
+  --espacio-relleno: var(--espacio-4);
+
+  align-content: start;
+  align-self: stretch;
+}
+
+#huerta-ficha :is(.boton, details) {
+  align-self: flex-start;
+}
+
+#huerta-ficha .estado-sello,
+#huerta-hitos .estado-sello {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+/* Los 3 hitos: el sello lleno del que pasó y el hueco del que falta, con su fecha debajo. */
+#huerta-hitos li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--espacio-2);
+  align-items: start;
+}
+
+#huerta-hitos li > :not(svg, .sello-signo) {
+  grid-column: 2;
+}
+
+#huerta-hitos .estado-sello {
+  grid-row: 1 / span 2;
+}
+
+#huerta-mensaje summary {
+  list-style: none;
+}
+
+#huerta-mensaje summary::-webkit-details-marker {
+  display: none;
+}
+
+#huerta-mensaje blockquote {
+  --espacio-relleno: var(--espacio-3);
+
+  margin: var(--espacio-3) 0 0;
+}
+
+/* Desde la tableta, cada lugar va encima de su maceta: una caja de 48 × 48 px como mínimo,
+   centrada en la del dibujo (--medida-lugar-x, -y, -ancho y -alto, en % de 1140 x 695). El nombre lo da el enlace
+   (aria-label); su contenido del celular no se ve. */
+@media (min-width: 53.75em) {
+  #huerta-escena {
+    position: relative;
+  }
+
+  #huerta-lugares {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+  }
+
+  #huerta-lugares a {
+    position: absolute;
+    z-index: 2;
+    top: calc(var(--medida-lugar-y) + var(--medida-lugar-alto) / 2);
+    left: calc(var(--medida-lugar-x) + var(--medida-lugar-ancho) / 2);
+    display: block;
+    width: max(var(--medida-lugar-ancho), var(--medida-toque-minimo));
+    height: max(var(--medida-lugar-alto), var(--medida-toque-minimo));
+    translate: -50% -50%;
+  }
+
+  #huerta-lugares a > * {
+    display: none;
+  }
+
+  #huerta-lugares a:hover {
+    outline: var(--borde-ancho-foco) dashed var(--color-texto-suave);
+    outline-offset: calc(-1 * var(--borde-ancho-foco));
+  }
+
+  #huerta-lugares [data-lugar="piso-izq"] a { --medida-lugar-x: 7.807%; --medida-lugar-y: 39.424%; --medida-lugar-ancho: 14.912%; --medida-lugar-alto: 46.043%; }
+  #huerta-lugares [data-lugar="estante-izq"] a { --medida-lugar-x: 23.158%; --medida-lugar-y: 25.755%; --medida-lugar-ancho: 13.596%; --medida-lugar-alto: 25.899%; }
+  #huerta-lugares [data-lugar="colgante"] a { --medida-lugar-x: 36.053%; --medida-lugar-y: 6.043%; --medida-lugar-ancho: 17.544%; --medida-lugar-alto: 25.755%; }
+  #huerta-lugares [data-lugar="mesada-izq"] a { --medida-lugar-x: 37.456%; --medida-lugar-y: 53.813%; --medida-lugar-ancho: 6.842%; --medida-lugar-alto: 17.986%; }
+  #huerta-lugares [data-lugar="mesada-medio"] a { --medida-lugar-x: 44.298%; --medida-lugar-y: 45.899%; --medida-lugar-ancho: 6.667%; --medida-lugar-alto: 25.899%; }
+  #huerta-lugares [data-lugar="mesada-der"] a { --medida-lugar-x: 51.404%; --medida-lugar-y: 32.23%; --medida-lugar-ancho: 11.053%; --medida-lugar-alto: 39.137%; }
+  #huerta-lugares [data-lugar="estante-der"] a { --medida-lugar-x: 69.211%; --medida-lugar-y: 33.669%; --medida-lugar-ancho: 9.298%; --medida-lugar-alto: 18.705%; }
+  #huerta-lugares [data-lugar="piso-der"] a { --medida-lugar-x: 78.86%; --medida-lugar-y: 39.568%; --medida-lugar-ancho: 11.491%; --medida-lugar-alto: 47.05%; }
+}
+
+/* En pantalla ancha, la huerta a la izquierda y la ficha al costado. */
+@media (min-width: 68.75em) {
+  #huerta {
+    grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
+    column-gap: var(--espacio-4);
+  }
+
+  #huerta > header {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --- Debajo de la huerta ---------------------------------------------------------------------- */
+/* Las insignias: el sello grande y, debajo, su nombre y su fecha. */
 #insignias > li {
   display: grid;
   justify-items: center;
@@ -34,65 +214,7 @@
   height: 3.5rem;
 }
 
-#insignias p {
-  margin: 0;
-}
-
-/* Las misiones de una categoría, con aire entre las tarjetas (usuaria, 2026-11-09: "no tienen
-   gutter en el medio"). */
-#misiones .lista {
-  --medida-columna: 22rem;
-  gap: var(--espacio-3);
-  margin-block-start: var(--espacio-3);
-}
-
-#misiones .lista .tarjeta {
-  --espacio-relleno: var(--espacio-3);
-
-  display: grid;
-  align-content: start;
-  gap: var(--espacio-2);
-  height: 100%;
-}
-
-#misiones .tarjeta :is(h3, p) {
-  margin: 0;
-}
-
-/* La categoría completa, plegada: el desplegable es una tarjeta con su resumen como renglón tocable;
-   abierto, las misiones adentro. */
-#misiones details[data-categoria="completa"] {
-  --espacio-relleno: var(--espacio-3);
-}
-
-#misiones details[data-categoria="completa"] > summary {
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-2);
-  min-height: var(--medida-toque-minimo);
-  cursor: pointer;
-}
-
-#misiones details[data-categoria="completa"] > summary span {
-  display: grid;
-  gap: var(--espacio-1);
-}
-
-/* Lo que viene: solo el nombre y cuándo se abre, junto al sello pendiente. */
+/* Lo que viene, en la lámina hueca. */
 #misiones section[data-categoria="despues"] {
   --espacio-relleno: var(--espacio-3);
-
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-3);
-}
-
-#misiones section[data-categoria="despues"] .estado-sello {
-  flex: none;
-  width: 2.5rem;
-  height: 2.5rem;
-}
-
-#misiones section[data-categoria="despues"] :is(h2, p) {
-  margin: 0;
 }
