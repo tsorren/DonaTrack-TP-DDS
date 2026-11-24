@@ -44,6 +44,31 @@ donatrack:
       conexion: ${GATEWAY_TIMEOUT_CONEXION:3s}
       lectura: ${GATEWAY_TIMEOUT_LECTURA:10s}
       subida: ${GATEWAY_TIMEOUT_SUBIDA:100s}
+    # Rate limiting (E7, requerimiento 3; ADR 20261115). Cada pedido enrutado consume una ficha de su
+    # cubeta; sin fichas, 429 con Retry-After y el pedido no llega al servicio. La cubeta es de la
+    # cuenta si el token fue validado (sub del JWT) y, si no, de la IP de origen. Lecturas (GET, HEAD,
+    # OPTIONS) y escrituras tienen cupos separados, por ventana, con recarga gradual.
+    # Dimensionado: una pantalla del cliente liviano hace hasta ~10 lecturas; el mapa público consulta
+    # cada 30 s (2 por minuto, ADR 20261106). Los healthchecks (/actuator) no pasan por acá.
+    limite-de-solicitudes:
+      habilitado: ${GATEWAY_LIMITE_HABILITADO:true}
+      ventana: ${GATEWAY_LIMITE_VENTANA:1m}
+      lecturas-por-usuario: ${GATEWAY_LIMITE_LECTURAS_USUARIO:300}
+      escrituras-por-usuario: ${GATEWAY_LIMITE_ESCRITURAS_USUARIO:60}
+      lecturas-por-ip: ${GATEWAY_LIMITE_LECTURAS_IP:120}
+      escrituras-por-ip: ${GATEWAY_LIMITE_ESCRITURAS_IP:30}
+      # Regex de las IPs de los proxies que pueden informar la IP del navegador en X-Forwarded-For (el
+      # cliente liviano). Vacía: el encabezado se ignora y cuenta la IP de la conexión. No abrirla a
+      # redes por las que entra tráfico de afuera: quien llegue desde ahí podría inventar su IP.
+      proxies-confiables: ${GATEWAY_LIMITE_PROXIES_CONFIABLES:}
+      # Dónde viven las cubetas (Q11): un Redis compartido por todas las réplicas. Si no contesta en
+      # `timeout`, el pedido pasa sin límite (fail-open, Q11b) y queda un WARN [REDIS-NO-DISPONIBLE];
+      # si no conecta, no se reintenta hasta pasado `reintento`.
+      redis:
+        host: ${GATEWAY_REDIS_HOST:localhost}
+        puerto: ${GATEWAY_REDIS_PUERTO:6379}
+        timeout: ${GATEWAY_REDIS_TIMEOUT:100ms}
+        reintento: ${GATEWAY_REDIS_REINTENTO:5s}
     # Allowlist pública (D26, RI-GW-03): con la seguridad encendida pasan sin token. Formato
     # "MÉTODO /ruta". El gateway abre la RUTA, sin distinguir método, como las `ReglasDeAcceso*` de los
     # servicios: el método lo decide el @PreAuthorize del servicio (segunda capa). Tiene que coincidir

@@ -233,6 +233,12 @@ services:
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms64m -Xmx256m
       # Validación del token de Keycloak (SPEC-06 E2-01): apagada salvo PREPROD_SEGURIDAD=true (run-preprod-tests.sh --auth)
       - GATEWAY_SEGURIDAD_HABILITADA=${PREPROD_SEGURIDAD:-false}
+      # Rate limiting (E7, ADR 20261115): el cliente liviano informa la IP del navegador en
+      # X-Forwarded-For y el gateway le cree solo si la conexión viene de la red interna de Docker. Los
+      # cupos por minuto se cambian con GATEWAY_LIMITE_* (ver api-gateway/README.md).
+      - GATEWAY_LIMITE_PROXIES_CONFIABLES=${GATEWAY_LIMITE_PROXIES_CONFIABLES:-172[.](1[6-9]|2[0-9]|3[01])[.].*|10[.].*|192[.]168[.].*}
+      - GATEWAY_LIMITE_HABILITADO=${GATEWAY_LIMITE_HABILITADO:-true}
+      - GATEWAY_REDIS_HOST=redis
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KC_HOSTNAME:-http://localhost:8180}/realms/donatrack
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/donatrack/protocol/openid-connect/certs
     depends_on:
@@ -297,6 +303,15 @@ services:
       retries: 20
       start_period: 40s
       start_interval: 1s
+    networks:
+      - preprod-network
+
+  # Contadores del rate limiting del api-gateway (E7, Q11; ADR 20261115). Sin persistencia: son
+  # descartables. Sin puerto publicado ni healthcheck del que dependa el gateway: si Redis cae, el
+  # gateway deja pasar los pedidos (fail-open, Q11b) y se reconecta solo cuando vuelve.
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
     networks:
       - preprod-network
 
