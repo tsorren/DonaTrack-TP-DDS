@@ -81,6 +81,9 @@ class DonanteInicioMaqueta implements DonanteInicioPuerto {
   private static final String RECIBIMOS = "Recibimos tu donación en el depósito.";
   private static final String PERSONA = "persona";
   private static final String CUENTA = "cuenta";
+  private static final String DE_2026 = " de 2026";
+  private static final String NUEVE_OCT = "9 de octubre";
+  private static final String CATORCE_OCT = "14 de octubre";
 
   /** Los meses del año de la maqueta, hasta octubre (antes de las donaciones, que los leen). */
   private static final List<String> MESES =
@@ -114,7 +117,7 @@ class DonanteInicioMaqueta implements DonanteInicioPuerto {
               null,
               null,
               null,
-              pasos(0, "14 de octubre"),
+              pasos(0, CATORCE_OCT),
               List.of(new Carta(RECIBIMOS, "14 de octubre, 18:10", "2026-10-14T18:10"))),
           new DonanteDonacionVista(
               "leche",
@@ -131,7 +134,7 @@ class DonanteInicioMaqueta implements DonanteInicioPuerto {
               null,
               null,
               "Sale del depósito el 16 de octubre.",
-              pasos(1, "13 de octubre", "14 de octubre"),
+              pasos(1, "13 de octubre", CATORCE_OCT),
               List.of(
                   new Carta(
                       "Asignamos tu leche en polvo a una necesidad de " + COMEDOR + ".",
@@ -154,7 +157,7 @@ class DonanteInicioMaqueta implements DonanteInicioPuerto {
               null,
               "El camión ya pasó la mitad del camino. Posición aproximada, actualizada hoy a las"
                   + " 16:25.",
-              pasos(3, "7 de octubre", "9 de octubre", "14 de octubre", "Hoy, 11:10"),
+              pasos(3, "7 de octubre", NUEVE_OCT, CATORCE_OCT, "Hoy, 11:10"),
               List.of(
                   new Carta(
                       "El camión salió a entregar tu ropa de abrigo a " + MERENDERO + ".",
@@ -171,7 +174,7 @@ class DonanteInicioMaqueta implements DonanteInicioPuerto {
                   new Carta(RECIBIMOS, "7 de octubre, 17:30", "2026-10-07T17:30"))),
           entregada(
               new Entregada("arroz", 5, "Arroz", "5 kg", ALIMENTOS, COMEDOR, "tu arroz", FOTO),
-              List.of("2 de octubre", "5 de octubre", "8 de octubre", "9 de octubre"),
+              List.of("2 de octubre", "5 de octubre", "8 de octubre", NUEVE_OCT),
               List.of("13:15", "9:20", "10:00"),
               "Los paquetes de arroz sobre la mesa de la cocina del comedor"),
           entregada(
@@ -395,8 +398,8 @@ class DonanteInicioMaqueta implements DonanteInicioPuerto {
         e.categoria(),
         texto(e.categoria()),
         e.destino(),
-        dias.get(0) + " de 2026",
-        llego + " de 2026",
+        dias.get(0) + DE_2026,
+        llego + DE_2026,
         EstadoEntrega.ENTREGADA,
         "Llegó el " + llego,
         e.foto(),
@@ -446,7 +449,7 @@ class DonanteInicioMaqueta implements DonanteInicioPuerto {
   private static DonanteAnioVista.Mes mes(int numero) {
     String nombre = MESES.get(numero - 1);
     List<DonanteDonacionVista> delMes =
-        DE_MARTINA.stream().filter(d -> d.donada().endsWith(nombre + " de 2026")).toList();
+        DE_MARTINA.stream().filter(d -> d.donada().endsWith(nombre + DE_2026)).toList();
     return new DonanteAnioVista.Mes(
         numero,
         nombre,

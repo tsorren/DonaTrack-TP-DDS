@@ -152,7 +152,7 @@
           </ul>
           <p data-tono="suave" class="texto-chico"
              th:with="total=${#lists.size(enCurso) + (viaja == null ? 0 : 1)}"
-             th:text="|${total == 1 ? '1 donación en curso' : total + ' donaciones en curso'}${viaja == null ? '' : ', contando la que viaja ahora'}. Actualizado hoy, ${miInicio.actualizado}.|">3
+             th:text="|${total == 1 ? '1 donación en curso' : total + ' donaciones en curso'}${viaja == null ? '' : ', contando la que viaja ahora'}. Actualizado hoy, ${#strings.replace(miInicio.actualizado, ', ', ', a las ')}.|">3
             donaciones en curso, contando la que viaja ahora. Actualizado hoy, 15 de octubre,
             16:25.</p>
           <p><a href="/donante-donaciones" th:href="@{/donante-donaciones}">Ver todas en
@@ -166,7 +166,7 @@
         <h2 id="confirmadas-titulo">Ya confirmadas</h2>
         <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
         <th:block th:if="${conDatos}">
-          <div th:replace="~{componentes/huerta :: frutos(${miInicio.entregadasDelMes}, |en ${miInicio.nombreDelMes()}|, false)}"></div>
+          <div th:replace="~{componentes/huerta :: frutos(${miInicio.entregadasDelMes}, |del 1 al ${miInicio.hoy}|, false)}"></div>
           <p th:if="${confirmadas.isEmpty()}">Cuando una organización confirme una entrega, la vas a
             ver acá.</p>
           <th:block th:each="d, vuelta : ${confirmadas}" th:if="${vuelta.index < 2}"
@@ -217,11 +217,11 @@
             th:attr="data-hoy=${mes == mesHoy} ? 'si' : null">
           <a th:if="${cuantas > 0}" href="/donante-donaciones?mes=2026-10"
              th:href="@{/donante-donaciones(mes=${m.clave})}">
-            <b><span aria-hidden="true" th:text="${cortos[mes - 1]}">Oct</span><span class="solo-lectores"
-               th:text="${#strings.capitalize(n)}">Octubre</span></b>
+            <b aria-hidden="true" th:text="${cortos[mes - 1]}">Oct</b><span class="solo-lectores"
+               th:text="${#strings.capitalize(n)}">Octubre</span>
             <small th:if="${mes == mesHoy}" data-hoy>Este mes</small>
             <span><th:block th:text="${cuantas}">4</th:block><span class="solo-lectores"
-                th:text="|${cuantas == 1 ? ' donación' : ' donaciones'}${frutos == 0 ? '' : (frutos == 1 ? ', 1 con la entrega confirmada' : ', ' + frutos + ' con la entrega confirmada')}${resto > 0 ? ' entre las ' + #lists.size(m.primeras) + ' más recientes' : ''}|"> donaciones,
+                th:text="|${cuantas == 1 ? ' donación' : ' donaciones'}${frutos == 0 ? '' : (frutos == 1 ? ', 1 con la entrega confirmada' : ', ' + frutos + ' con la entrega confirmada')}${resto > 0 and frutos > 0 ? ' entre las ' + #lists.size(m.primeras) + ' más recientes' : ''}|"> donaciones,
                 1 con la entrega confirmada entre las 3 más recientes</span></span>
             <ul th:if="${frutos > 0}" class="huerta-frutos" data-plantas role="list" aria-hidden="true">
               <li th:each="i : ${#numbers.sequence(1, frutos)}"></li>
@@ -229,8 +229,8 @@
             <small th:if="${resto > 0}" aria-hidden="true" th:text="|+${resto}|">+1</small>
           </a>
           <div th:unless="${cuantas > 0}">
-            <b><span aria-hidden="true" th:text="${cortos[mes - 1]}">Mar</span><span class="solo-lectores"
-               th:text="${#strings.capitalize(n)}">Marzo</span></b>
+            <b aria-hidden="true" th:text="${cortos[mes - 1]}">Mar</b><span class="solo-lectores"
+               th:text="${#strings.capitalize(n)}">Marzo</span>
             <span class="solo-lectores" th:text="${mes > mesHoy} ? 'Todavía no llegó' : 'Sin donaciones'">Sin
               donaciones</span>
           </div>

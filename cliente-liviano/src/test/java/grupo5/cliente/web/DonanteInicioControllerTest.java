@@ -587,7 +587,7 @@ class DonanteInicioControllerTest {
                             ">También en curso<",
                             "Silla plegable, 1 unidad",
                             ">Ya confirmadas<",
-                            "<strong>2 entregas confirmadas</strong> en noviembre.",
+                            "<strong>2 entregas confirmadas</strong> del 1 al 7 de noviembre.",
                             "Ropa de abrigo, 12 prendas",
                             "id=\"anio-huerta\"",
                             "data-tono=\"secundario\" href=\"/donante-misiones\">Ver mi huerta<",
@@ -712,6 +712,24 @@ class DonanteInicioControllerTest {
         .contains("Sin donaciones")
         .doesNotContain("racha")
         .doesNotContain("falta");
+  }
+
+  /** DON-P2: un mes sin confirmadas entre las que trae no lleva frutos ni dice de cuáles cuenta. */
+  @Test
+  void unMesSinConfirmadasNoLlevaFrutos() throws Exception {
+    when(perfiles.tipo(DONANTE)).thenReturn(Tipo.PERSONA);
+    when(inicios.inicio(DONANTE)).thenReturn(inicio(List.of(LENTEJAS, SILLA), 0));
+    when(inicios.anio(DONANTE)).thenReturn(anio(4, List.of(LENTEJAS, SILLA, UTILES), true));
+
+    String html = pagina("/donante-inicio");
+    int desde = html.indexOf("<ol class=\"almanaque\"");
+    String almanaque = html.substring(desde, html.indexOf("</ol>", desde));
+
+    assertThat(almanaque)
+        .containsPattern("class=\"solo-lectores\"\\s*> donaciones</span>")
+        .contains(">+1<")
+        .doesNotContain("huerta-frutos")
+        .doesNotContain("entre las");
   }
 
   @Test

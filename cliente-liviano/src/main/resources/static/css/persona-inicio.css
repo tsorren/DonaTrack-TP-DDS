@@ -90,6 +90,18 @@
   height: auto;
 }
 
+/* Con una donación en camino, la huerta es una tarjeta chica (DON-P3): el dibujo y su columna, más
+   angostos. */
+#anio-huerta:not([data-papel]) #anio-huerta-dibujo {
+  max-width: 18rem;
+}
+
+@media (min-width: 53.75em) {
+  #anio-huerta:not([data-papel]) {
+    grid-template-columns: minmax(0, 18rem) minmax(0, 18rem);
+  }
+}
+
 /* El botón, al medio del invernadero (no del dibujo entero, que suma las macetas de los costados). */
 #anio-huerta-dibujo .boton {
   position: absolute;
