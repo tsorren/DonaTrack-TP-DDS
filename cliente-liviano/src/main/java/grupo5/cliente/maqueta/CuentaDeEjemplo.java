@@ -91,7 +91,11 @@ final class CuentaDeEjemplo implements HandlerInterceptor {
     return PERSONA.equals(pedido.getSession().getAttribute(CUENTA));
   }
 
-  /** El menú de la empresa con Misiones antes de Seguimiento, la última sección (§6.2). */
+  /**
+   * El menú de la empresa con Misiones antes de Cómo donar, la última sección (DA-03b): el mismo
+   * orden que el de la persona con ingreso ({@code Pantallas}). Conserva la sección que la empresa
+   * ya marcó, como Donaciones en Seguimiento (DA-03a).
+   */
   private static List<OpcionNavegacion> conMisiones(Object empresa, String ruta) {
     List<OpcionNavegacion> menu =
         new ArrayList<>(((List<?>) empresa).stream().map(OpcionNavegacion.class::cast).toList());
@@ -101,7 +105,7 @@ final class CuentaDeEjemplo implements HandlerInterceptor {
   }
 
   private static OpcionNavegacion marcada(OpcionNavegacion o, String ruta) {
-    boolean actual = ruta.equals(o.ruta()) || ruta.startsWith(o.ruta() + "-");
+    boolean actual = o.actual() || ruta.equals(o.ruta()) || ruta.startsWith(o.ruta() + "-");
     return new OpcionNavegacion(o.texto(), o.textoCorto(), o.icono(), o.ruta(), actual);
   }
 }

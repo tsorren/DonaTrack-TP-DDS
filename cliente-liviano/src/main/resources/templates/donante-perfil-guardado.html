@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<!--/* Raíces, Mi perfil después de guardar: el aviso dice cómo te ven ahora las entidades. Sin
-       parámetro, se guardó "No mostrarlo"; con ?mostrar=si, "Mostrar mi nombre". */-->
+<!--/* Mi perfil de quien dona después de guardar, solo en la maqueta (DA-06: sin página de respuesta
+       propia). Es el envoltorio que delega en donante-perfil :: hoja(true): el mismo perfil con el
+       aviso breve de lo que se guardó (sin parámetro, "No mostrarlo"; ?mostrar=si, "Mostrar mi
+       nombre"; ?seccion=datos o avisos, la sección; la pestaña la conserva el navegador). Fuera de
+       la maqueta, el envío vuelve a donante-perfil con el aviso del servidor
+       (DonantePerfilEnvioController). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'donante-perfil', ~{::contenido})}">
 <head>

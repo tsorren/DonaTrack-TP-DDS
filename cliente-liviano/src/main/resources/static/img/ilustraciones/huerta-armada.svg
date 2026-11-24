@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- La huerta armada de Misiones (prueba misiones-a, ronda del 2026-11-09 tarde): un cielo, el sol, las lomas, el cerco y los canteros, con las plantas y los árboles de img/ilustraciones adentro. Se recorta en 4 cuadrantes iguales (400 x 300). Decorativa. -->
+<!-- La huerta armada de Misiones (primera prueba de la huerta, ronda del 2026-11-09 tarde; hoy no la usa ninguna pantalla): un cielo, el sol, las lomas, el cerco y los canteros, con las plantas y los árboles de img/ilustraciones adentro. Se recorta en 4 cuadrantes iguales (400 x 300). Decorativa. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
 <defs><linearGradient id="h-cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8e9ed"/><stop offset="1" stop-color="#fff3d1"/></linearGradient></defs>
 <rect width="800" height="600" fill="url(#h-cielo)"/>

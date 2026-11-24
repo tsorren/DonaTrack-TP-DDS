@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Mis donaciones del donante (RF-05) y el detalle de una, con los datos del puerto. Sin cuenta
@@ -33,12 +35,14 @@ import org.springframework.web.bind.annotation.RequestParam;
  * la subcategoría ({@code ?subcategoria=}, RF-05, R11-13) y la página ({@code ?pagina=2}, desde 1)
  * los resuelve el puerto: con Donaciones, en el servidor (R11-01); un estado desconocido o una
  * página mal escrita se ignoran. {@code paginador}: el componente paginas, que conserva el mes y
- * los filtros (null con una sola página).
+ * los filtros (null con una sola página). {@code vistas}: las vistas por estado del arquetipo A05
+ * (Todas y una por estado del filtro), cada una con su cuenta, que no depende del estado elegido.
  */
 @Controller
 public class MisDonacionesController {
 
   private static final String INGRESAR = "redirect:/publico-ingresar";
+  private static final String ESTADO = "estado";
   private static final DateTimeFormatter MES =
       DateTimeFormatter.ofPattern("MMMM 'de' yyyy", Locale.forLanguageTag("es-AR"));
 
@@ -87,6 +91,7 @@ public class MisDonacionesController {
     MisDonacionesVista lista = donaciones.misDonaciones(donante.get(), consulta);
     model.addAttribute("misDonaciones", lista);
     model.addAttribute("listado", listado(consulta, lista, conDestino));
+    model.addAttribute("vistas", vistas(donante.get(), consulta, lista, pedido));
     model.addAttribute(
         "paginador",
         Paginadores.de(
@@ -116,7 +121,7 @@ public class MisDonacionesController {
                     new Listado.Opcion("", "Todos"),
                     new Listado.Opcion(EstadoEntrega.PENDIENTE.tono(), "Pendiente"),
                     new Listado.Opcion(EstadoEntrega.EN_CAMINO.tono(), "En camino"),
-                    new Listado.Opcion(EstadoEntrega.ENTREGADA.tono(), "Entregada"),
+                    new Listado.Opcion(EstadoEntrega.ENTREGADA.tono(), "Entrega confirmada"),
                     new Listado.Opcion(EstadoEntrega.CON_PROBLEMA.tono(), "Con problema")))
             .categoria(
                 categoria == null ? "" : categoria,
@@ -152,6 +157,65 @@ public class MisDonacionesController {
         .orden(consulta.antiguas() ? Listado.ANTIGUAS : "", Listado.POR_FECHA)
         .sacar("/donante-donaciones")
         .listo();
+  }
+
+  /**
+   * Una vista de la lista por estado: su texto, su cuenta (con los demás filtros), su dirección (la
+   * misma consulta, con ese estado y desde la primera página), si es la que se ve y el tono del
+   * estado ("" para Todas), con el que la persona cuenta sobre sus datos de ejemplo.
+   */
+  record Vista(String texto, long cuenta, String direccion, boolean actual, String tono) {}
+
+  /**
+   * Todas y una vista por estado, en el orden del filtro. La cuenta de la elegida es el total de la
+   * lista; la de las otras, el total de la misma consulta con su estado (el puerto filtra y
+   * cuenta).
+   */
+  private List<Vista> vistas(
+      UUID donante, Consulta consulta, MisDonacionesVista lista, HttpServletRequest pedido) {
+    List<Vista> vistas = new ArrayList<>();
+    vistas.add(vista("Todas", null, donante, consulta, lista, pedido));
+    vistas.add(vista("Pendientes", EstadoEntrega.PENDIENTE, donante, consulta, lista, pedido));
+    vistas.add(vista("En camino", EstadoEntrega.EN_CAMINO, donante, consulta, lista, pedido));
+    vistas.add(vista("Confirmadas", EstadoEntrega.ENTREGADA, donante, consulta, lista, pedido));
+    vistas.add(vista("Con problema", EstadoEntrega.CON_PROBLEMA, donante, consulta, lista, pedido));
+    return vistas;
+  }
+
+  private Vista vista(
+      String texto,
+      EstadoEntrega estado,
+      UUID donante,
+      Consulta consulta,
+      MisDonacionesVista lista,
+      HttpServletRequest pedido) {
+    boolean actual = estado == consulta.estado();
+    long cuenta =
+        actual ? lista.total() : donaciones.misDonaciones(donante, con(consulta, estado)).total();
+    String tono = estado == null ? "" : estado.tono();
+    UriComponentsBuilder direccion =
+        UriComponentsBuilder.fromPath(pedido.getRequestURI())
+            .query(pedido.getQueryString())
+            .replaceQueryParam(Paginadores.PAGINA)
+            .replaceQueryParam(ESTADO);
+    if (estado != null) {
+      direccion.queryParam(ESTADO, tono);
+    }
+    return new Vista(texto, cuenta, direccion.build().toUriString(), actual, tono);
+  }
+
+  /** La misma consulta con otro estado, en la primera página. */
+  private static Consulta con(Consulta consulta, EstadoEntrega estado) {
+    return new Consulta(
+        consulta.mes(),
+        estado,
+        consulta.categoria(),
+        consulta.subcategoria(),
+        1,
+        consulta.desde(),
+        consulta.hasta(),
+        consulta.destino(),
+        consulta.antiguas());
   }
 
   private static String texto(String valor) {

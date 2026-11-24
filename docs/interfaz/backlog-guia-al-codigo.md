@@ -704,16 +704,16 @@ Suma: 1 + 2 + 4 + 2 + 4 + 1 + 1 = 15, más las 4 del buzón que ya cambiaron en 
 
 | ID | Lote | Qué | Arquetipo y decisiones | Estado |
 |---|---|---|---|---|
-| DON-01 | `don-inicio` | Inicio de la empresa | A04; HG-01 a HG-03 con su texto de reemplazo | Pendiente |
-| DON-02 | `don-inicio` | Los menús de la empresa (Inicio, Donaciones, Organizaciones y Cómo donar) y de la persona (con Misiones antes de Cómo donar) | DA-03a, DA-03b, DA-05 y DA-17 | Pendiente |
-| DON-03 | `don-donaciones` | Donaciones, de la empresa y de la persona | A05 | Pendiente |
-| DON-04 | `don-detalle` | El detalle de una donación, en sus tres variantes, con el enlace a su seguimiento | A06, A07 o A08; DA-03a; HG-01 | Pendiente |
-| DON-05 | `don-detalle` | Seguimiento, fuera del menú | A07; DA-03a; HG-02 | Pendiente |
-| DON-06 | `don-organizaciones` | Organizaciones, de la empresa y de la persona | Deriva de A02; HG-04 | Pendiente |
-| DON-07 | `don-perfil` | El perfil, y «guardado» como aviso breve | Deriva de A12; DA-06 | Pendiente |
-| DON-08 | `don-perfil` | De la hoja heredada del buzón de quien dona (`donante-notificaciones.css`) sale lo que el buzón del catálogo ya resuelve; si queda vacía, se borra | — | Pendiente |
-| DON-09 | `don-inicio-persona` | El inicio de la persona, según su ficha | Deriva de A04; DA-03c, DA-08, DON-P2 y DON-P3 | Pendiente |
-| DON-10 | `don-misiones` | Misiones, según su ficha, con lugares de 48 px y sin la variante del álbum | Sin arquetipo: ficha; DA-08, DA-21 y DON-P1 | Pendiente |
+| DON-01 | `don-inicio` | Inicio de la empresa | A04; HG-01 a HG-03 con su texto de reemplazo | Hecho (`524d86d6d`, `91f31ec86` y `2cd69d8ba`): A04 con el aviso del problema arriba, una sola lámina protagonista (la que viaja, con la raíz de 5 pasos y el mapa decorativo), «También en curso» y «Ya confirmadas en `<mes>`» con un fruto por entrega del mes. HG-01, «Todavía sin fecha de nueva salida»; HG-02, «En camino desde las `<hora>`» con la hora de la nota; sale el tablero de 3 columnas (R11-25). El escenario nuevo `?escenario=sin-camino` cubre A04 sin nada en camino. Lo que queda, en [DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 6 y 10. Sin PASS de la revisión de pantallas de la ola tras 2 rondas (§12.5) |
+| DON-02 | `don-inicio` | Los menús de la empresa (Inicio, Donaciones, Organizaciones y Cómo donar) y de la persona (con Misiones antes de Cómo donar) | DA-03a, DA-03b, DA-05 y DA-17 | Hecho (`524d86d6d`): la empresa, Inicio, Donaciones, Organizaciones y Cómo donar; la persona, con Misiones antes de Cómo donar. Cómo donar lleva a `/publico-para-donantes` con el ícono `nav-ayuda` (DA-05); Seguimiento sale del menú y queda dentro de Donaciones (`EN_LA_SECCION`, DA-03a). Los menús de la organización, el admin y lo público no cambian (DA-17). Los tests del menú se actualizaron al comportamiento nuevo. Sin PASS de la revisión de pantallas de la ola tras 2 rondas (§12.5) |
+| DON-03 | `don-donaciones` | Donaciones, de la empresa y de la persona | A05 | Parcial (`53712e382`, `d8403c8d5` y `642c1698e`): A05 con las vistas por estado y su cuenta (`.segmentos`), `componentes/listado`, la tabla con sello y raíz por fila y el paginador; el sello dice Registrada, Asignada o Entrega confirmada, como el detalle. El bloqueante de la revisión del lote tras 3 rondas se arregló después de la ola: la vista se llama «Confirmadas» y la opción del filtro, «Entrega confirmada»; «Pendientes» queda ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 1). Sin PASS de la revisión de pantallas de la ola tras 2 rondas (§12.5) |
+| DON-04 | `don-detalle` | El detalle de una donación, en sus tres variantes, con el enlace a su seguimiento | A06, A07 o A08; DA-03a; HG-01 | Parcial (`39efd6083`, `9572f7047` y `e4cc56f3f`): una plantilla con las variantes asignada (A06), en camino (A07, con «Ver dónde está el camión» a su seguimiento, DA-03a) y con problema (A08, HG-01); la entregada y la que espera destino siguen la composición de A06. La persona sale de `persona/datos-persona`, como su seguimiento. Los bloqueantes de la revisión del lote tras 3 rondas se arreglaron después de la ola: el sello y la raíz dicen lo mismo que la lista, «Donación 0005», «Cómo va» con el texto de HG-02 y las dos aserciones de `MisDonacionesControllerTest` que no podían fallar ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 2 y 3). Sin PASS de la revisión de pantallas de la ola tras 2 rondas (§12.5) |
+| DON-05 | `don-detalle` | Seguimiento, fuera del menú | A07; DA-03a; HG-02 | Parcial (`39efd6083`, `9572f7047`, `e4cc56f3f`, `2cd69d8ba` y `9b2d3e147`): A07 de una sola donación, fuera del menú, con el mapa y su recorrido sin hora estimada; el camión solo si va en camino; marcadores de 48 px y márgenes de encuadre propios (`data-mapa-margenes`); el mapa 3/4 en el celular. `/donante-seguimiento` sale de la línea de base de §10.4. Después de la ola: el sello dice Asignada, «Donación 0005» y la nota del mapa empieza con «En camino desde las `<hora>`» (HG-02). **Falta:** la decisión del usuario sobre el aviso «Todavía espera destino», que exige `DonanteDetallesTest` ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 2 y 4). Sin PASS de la revisión de pantallas de la ola tras 2 rondas (§12.5) |
+| DON-06 | `don-organizaciones` | Organizaciones, de la empresa y de la persona | Deriva de A02; HG-04 | Hecho (`f67f49d3e` y `2cd69d8ba`): deriva de A02 con una tarjeta del catálogo por organización, la necesidad con la cuenta en palabras y la barra solo con lo recibido (HG-04, «Si no llega»: sin barra con datos reales), el `.plegable` de un solo rótulo, «Cómo llega tu donación» como `.aviso` y «Ver tus donaciones». La persona usa el mismo fragmento `hoja` (DA-13). Sale `.resultado` de `donante-comun.css`. Lo que queda, en [DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 7 y 9. Sin PASS de la revisión de pantallas de la ola tras 2 rondas (§12.5) |
+| DON-07 | `don-perfil` | El perfil, y «guardado» como aviso breve | Deriva de A12; DA-06 | Hecho (`ae68989d2`): deriva de A12 como el perfil de la organización: un formulario por sección en las pestañas del catálogo, una columna, el CUIT y el documento como texto fijo; «guardado» es el aviso breve en el perfil (DA-06) y en la maqueta `/donante-perfil-guardado` muestra el perfil con el aviso. Salen las siete clases `perfil*`. Lo que queda, en [DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 7, 8 y 10. Sin PASS de la revisión de pantallas de la ola tras 2 rondas (§12.5) |
+| DON-08 | `don-perfil` | De la hoja heredada del buzón de quien dona (`donante-notificaciones.css`) sale lo que el buzón del catálogo ya resuelve; si queda vacía, se borra | — | Hecho (`ae68989d2` y `69edbeb07`): `donante-notificaciones.css` se borró y sale de `HOJAS_HEREDADAS`; las cuatro plantillas del buzón de quien dona nombran `donante-comun.css`, donde vive la `.bajada` ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 7). Sin PASS de la revisión de pantallas de la ola tras 2 rondas (§12.5) |
+| DON-09 | `don-inicio-persona` | El inicio de la persona, según su ficha | Deriva de A04; DA-03c, DA-08, DON-P2 y DON-P3 | Hecho (`d282ddcc9`, `ee9c83914`, `0e6b9a9e3` y `9d7c5990c`): según su ficha, deriva de A04: el aviso del problema arriba, una sola protagonista (la que viaja o, sin ninguna, la huerta con «Ver mi huerta» llena, DON-P3), «También en curso», «Ya confirmadas en `<mes>`» solo con las del mes, la huerta chica, el almanaque de 12 meses en una fila con frutos (DON-P2) y las 3 últimas novedades. Salen la lista mes por mes y 4 clases heredadas. Lo que queda, en [DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 7 y 10. Sin PASS de la revisión de pantallas de la ola tras 2 rondas (§12.5) |
+| DON-10 | `don-misiones` | Misiones, según su ficha, con lugares de 48 px y sin la variante del álbum | Sin arquetipo: ficha; DA-08, DA-21 y DON-P1 | Hecho (`79b073dfb`, `2cd69d8ba` y `9b2d3e147`): la huerta con las piezas de la guía, una sola lámina protagonista, sin acción llena; cada lugar mide 48 × 48 px como mínimo con el toque encima del dibujo (DA-21-misiones) y, en el celular, una columna de lugares de 48 px. Se borran `misiones-a` y `misiones-b` con sus hojas (DON-P1); fuera de `docs/` ningún archivo nombra `misiones-a`, y una variante que no existe se ignora y muestra la misma pantalla (`VariantesInterceptor`). Las dos rutas de `/donante-misiones` salen de la línea de base de §10.4. Lo que queda, en [DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 5 y 7. Sin PASS de la revisión de pantallas de la ola tras 2 rondas (§12.5) |
 
 Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5).
 
@@ -727,3 +727,61 @@ Cada lote termina, además, la migración de las hojas heredadas de sus pantalla
 - **Lo que cambia en la línea de base:** con DA-21-misiones, las dos rutas de `/donante-misiones`
   tienen que pasar, y también `/donante-seguimiento`, que `don-detalle` rehace como A07. Las tres salen
   de la línea de base de §10.4 al cerrar la ola.
+
+### 12.5 Cierre de DON (2026-11-24)
+
+Rama `E7_guia_ui_don`, `9b2d3e147`; 18 commits de lote y de la revisión de pantallas sobre
+`0d654435f` (las decisiones delegadas). Estado de cada ítem en §12.3: 7 hechos (DON-01, DON-02 y
+DON-06 a DON-10) y 3 parciales (DON-03, DON-04 y DON-05), por los bloqueantes que dejaron
+`don-donaciones` y `don-detalle` tras 3 rondas de su revisión. La revisión de pantallas de la ola
+corrió 2 rondas de arreglos (`2cd69d8ba` y `9b2d3e147`) y no llegó a PASS: queda abierta, al menos,
+la decisión del aviso «Todavía espera destino» en Seguimiento. Por eso las decisiones del usuario
+de esta ola constan como no cumplidas, aunque su comportamiento esté en el código. Lo que queda
+abierto está en [DTI-49](../adr/DEUDA_TECNICA.md#dti-49); las decisiones, en la
+[bitácora](bitacora.md) (2026-11-24).
+
+- `[VERIFIED]` `mvn clean test -pl cliente-liviano -am` en `9b2d3e147`: exit 0, 889 tests, sin
+  fallos (867 en la línea de base de la corrida; 887 en `9d7c5990c`). `InterfazFitnessTest` pasa
+  con los topes de hoy (159 y 1192). El test cambió solo en `HOJAS_HEREDADAS`: salen
+  `donante-donaciones-detalle.css`, `donante-donaciones.css`, `donante-notificaciones.css` y
+  `donante-seguimiento.css`. `clases-heredadas.txt` tiene 56 líneas menos y ninguna nueva.
+- `[VERIFIED]` Cercos con `git diff 0d654435f..HEAD`: sin cambios en `rest/`, los puertos,
+  `tokens.css`, los tests de `visual/`, `templates/componentes/` ni `static/css/componentes/`. Fuera
+  de las plantillas y hojas de sus pantallas, los lotes y la revisión tocaron las maquetas
+  (`CuentaDeEjemplo`, `DonacionesMaqueta`, `DonanteDonacionesDeEjemplo`, `DonanteInicioMaqueta`,
+  `DonanteMisionesMaqueta` y `DonanteSeguimientoMaqueta`), los controllers de sus rutas y
+  `Pantallas.java`, `layout-privado.html` (la línea de `misiones-b.css`), `static/js/mapa.js` (el
+  atributo opcional `data-mapa-margenes`), `VariantesInterceptor` con su test (una variante que no
+  existe se ignora), los tests funcionales de sus rutas (entre ellos `SitioControllerTest`, compartido),
+  `seguridad/CuentaDelTokenTest.java` (la llamada de la persona pasa a `times(5)`, una por la lista y
+  una por cada cuenta de vista; el `never()` con la otra cuenta queda igual), `paginas.txt`,
+  `clases-heredadas.txt` y `docs/interfaz/componentes.md` (la fila del mapa).
+  Se borraron `donante-seguimiento.css`, `donante-notificaciones.css` y las variantes `misiones-a` y
+  `misiones-b` (DON-P1).
+- `[VERIFIED]` `-Pvisual` sobre las 72 rutas `/donante-` de `paginas.txt`, en `9d7c5990c`: pasan
+  las 72. En `9b2d3e147`, después de la revisión de pantallas, se volvieron a pasar
+  `/donante-seguimiento` (con y sin `?cuenta=persona`) y `/donante-misiones?cuenta=persona` (con y sin
+  `escenario=vacio`): pasan las 4. **Línea de base de §10.4:** salen `/donante-seguimiento` y las dos
+  de `/donante-misiones` (DA-21-misiones); quedan 5 rutas, ninguna de quien dona
+  (`/admin-camiones`, `/admin-camiones-agregar-error`, `/admin-donantes?donante=juan` y
+  `/publico-mapa?escenario=muchas`, con y sin la página 2), que no se corrieron (DA-20).
+- `[VERIFIED]` Los otros cinco tests visuales, en `9d7c5990c`: 31 tests, 3 fallos y 1 error, todos
+  de la línea de base de §10.5 y de ORG (`ArmazonFijoTest.enElCelularConTabYShiftTabElFocoNoQuedaTapado`,
+  `AbejasYRenglonesTest.lasAbejasCambianDeCapaSoloCuandoNoSeVen`, el inestable de
+  `MenusQueSeCierranTest` y el error del lema del pie). Ningún fallo nuevo; `DonanteDetallesTest`
+  pasa sus 7. No se volvieron a correr después de la revisión de pantallas.
+- Sin stack ni recorrido con login (DA-20): ningún lote toca un adaptador `rest`. Queda para Z.
+- Revisión de los lotes: `don-donaciones` y `don-detalle` quedaron sin PASS tras 3 rondas. Para los
+  demás, el veredicto no consta en el cierre; tuvieron rondas de arreglo `don-inicio` (1),
+  `don-perfil` (1) y `don-inicio-persona` (2), y ninguna `don-organizaciones` ni `don-misiones`.
+- Commits de la ola, en hora del 2026-11-24: `f67f49d3e` (09:35), `524d86d6d` (09:38), `53712e382`
+  (09:49), `39efd6083` (09:54), `ae68989d2` (10:13), `91f31ec86` (10:43), `d8403c8d5` (10:43),
+  `69edbeb07` (10:46), `9572f7047` (10:52), `642c1698e` (11:20), `e4cc56f3f` (11:44), `d282ddcc9`
+  (12:25), `ee9c83914` (12:34), `79b073dfb` (12:34), `0e6b9a9e3` (12:49), `9d7c5990c` (13:03),
+  `2cd69d8ba` (14:17, revisión de pantallas, ronda 1) y `9b2d3e147` (15:07, ronda 2).
+- ADR: ninguno. La ola no tuvo lotes de contrato e implementa el ADR «Huerta y galpón» (§9.1,
+  Gate A); ninguna spec de `docs/specs/active/` es de esta ola, así que no se mueve ninguna.
+- Documentos: `patrones-y-microcopy.md` suma la regla 25 (lo que el servicio no da no se escribe);
+  `mapa-del-sitio.md`, los cambios de la ola; `componentes.md`, las filas que nombran a quien dona.
+  `tono-y-comunicacion.md` y [`requerimientos-e7.md`](../requerimientos/requerimientos-e7.md) no
+  cambian: los nombres de los estados ya eran los de la tabla y ningún requerimiento cambia de estado.

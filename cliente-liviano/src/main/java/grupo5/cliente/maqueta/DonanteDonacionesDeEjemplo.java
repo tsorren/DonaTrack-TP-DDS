@@ -131,7 +131,8 @@ final class DonanteDonacionesDeEjemplo {
               "8 de octubre de 2026",
               null,
               CON_PROBLEMA,
-              "No pudo llegar; sale de nuevo el 17 de octubre",
+              // Sin la fecha de la nueva salida: el backend no la tiene (HG-01).
+              "No pudo llegar. Todavía sin fecha de nueva salida",
               null,
               null,
               "El camino estaba cortado. Última noticia: 11 de octubre, 16:10.",
@@ -140,13 +141,10 @@ final class DonanteDonacionesDeEjemplo {
                   hecho(ASIGNADA, NUEVE),
                   hecho(LISTA, "10 de octubre"),
                   actual(CAMINO, "11 de octubre: no pudo llegar"),
-                  new PasoRecorrido(
-                      ENTREGADA_PASO, "Nueva salida: 17 de octubre", Avance.PENDIENTE)),
+                  falta(ENTREGADA_PASO)),
               List.of(
                   new Carta(
-                      "El camión no pudo llegar a "
-                          + ESCUELA
-                          + ": el camino estaba cortado. Sale de nuevo el 17 de octubre.",
+                      "El camión no pudo llegar a " + ESCUELA + ": el camino estaba cortado.",
                       "11 de octubre, 16:10",
                       "2026-10-11T16:10"),
                   new Carta(

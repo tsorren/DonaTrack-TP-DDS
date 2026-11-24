@@ -3,6 +3,7 @@ package grupo5.cliente.seguridad;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
@@ -84,7 +85,8 @@ class CuentaDelTokenTest {
             get("/donante-donaciones-detalle").param("donante", OTRA.toString()).with(donante()))
         .andExpect(status().isOk());
 
-    verify(donaciones).misDonaciones(eq(PERSONA), any(Consulta.class));
+    // La lista y la cuenta de las cuatro vistas por estado que no son la elegida (arquetipo A05).
+    verify(donaciones, times(5)).misDonaciones(eq(PERSONA), any(Consulta.class));
     verify(donaciones).detalle(PERSONA, null);
     verify(donaciones, never()).misDonaciones(eq(OTRA), any(Consulta.class));
     verify(donaciones, never()).detalle(OTRA, null);

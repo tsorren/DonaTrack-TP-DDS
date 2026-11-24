@@ -31,6 +31,225 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-24 · donaciones · Arreglo después de la ola DON: la misma palabra para el mismo estado
+
+- **Decisión:** la vista se llama «Confirmadas» y la opción del filtro, «Entrega confirmada». El
+  detalle y el seguimiento usan la regla de la lista (Registrada, Asignada, Entrega confirmada) y
+  «Donación 0005»; la raíz nombra los pasos por su lugar, como la tabla. La nota del seguimiento y
+  «Cómo va» del detalle en camino dicen «En camino desde las HH:MM» (HG-02). Los datos de ejemplo de
+  Organizaciones de la persona dicen lo mismo que los de la empresa («Faltan los 20 litros», con la
+  barra vacía).
+- **Alternativas:** «En curso» en lugar de «Pendientes», como la guía; tomar el nombre del paso del
+  dato.
+- **Por qué:** la lista ya tiene la vista «En camino», y «En curso» la incluiría; el dato trae los
+  nombres del backend («En depósito», «Lista para entregar»), que no dice ninguna otra pantalla.
+- **Costo:** la raíz supone 5 pasos en el orden de la guía; si el dato trae otra cantidad, queda su
+  nombre.
+- **Quién decidió:** agente, sobre los bloqueantes de la revisión de `don-donaciones`, `don-detalle`
+  y de pantallas ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 1 a 3).
+- **Evidencia:** `MisDonacionesController.java`, `donante-donaciones-detalle.html`,
+  `donante-seguimiento.html` y sus tests.
+
+### 2026-11-24 · navegación · El menú de quien dona: Inicio, Donaciones, Organizaciones, Misiones y Cómo donar (DA-03a, DA-03b, DA-05, DA-17)
+
+- **Decisión:** la empresa ve Inicio, Donaciones, Organizaciones y Cómo donar; la persona, además,
+  Misiones antes de Cómo donar. Seguimiento deja de ser una sección: se abre desde el detalle de
+  cada donación y su pantalla queda marcada en Donaciones. Cómo donar es la página de hoy Para
+  donantes (`/publico-para-donantes`), con el ícono `nav-ayuda`. Solo cambian los menús de quien dona.
+- **Alternativas:** dejar Seguimiento en el menú; Misiones al final; una página nueva de «Cómo
+  donar»; cambiar todos los menús juntos en C1.
+- **Por qué:** el seguimiento es de una donación, no de la cuenta; la página ya explica cómo donar;
+  cada ola rehace el menú con las pantallas a las que lleva.
+- **Costo:** `EN_LA_SECCION` vale ahora también para las pantallas de nivel 3 por prefijo: una ruta
+  inexistente que empiece como una de ellas muestra «sin dibujar» en vez de 404. Quien entra a Cómo
+  donar sale del área privada a una página pública.
+- **Quién decidió:** usuario (DA-03a, ronda 2 del 2026-11-22; DA-03b y DA-05, ronda 4 del
+  2026-11-23; DA-17, ronda 3 del 2026-11-22). El ícono y el prefijo de `EN_LA_SECCION`, agente
+  (lote `don-inicio`). Consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS;
+  el comportamiento está en el código y en los tests.
+- **Evidencia:** backlog §12.3 (DON-02); `Pantallas.java`, `524d86d6d`.
+
+### 2026-11-24 · inicio · El inicio de la empresa es A04 y deja el tablero de tres columnas
+
+- **Decisión:** aviso del problema arriba, una sola lámina protagonista con la donación que viaja
+  (raíz de 5 pasos y el mapa del recorrido, decorativo, en un `.marco`), «También en curso» y «Ya
+  confirmadas en `<mes>`» con un fruto por entrega del mes, del 1 a hoy. Sale el tablero de R11-25 con
+  sus paginadores, y salen las cifras con árboles, el hito, las últimas noticias, la pista y las
+  raíces acumuladas: A04 no los tiene. Las noticias siguen en la campanita. Sin nada en camino, la
+  lámina dice «Nada en camino ahora» y deja de ser protagonista (escenario nuevo `sin-camino`).
+- **Alternativas:** conservar la llamada al tablero solo por los totales; un ícono nuevo para Cómo
+  donar; los rótulos del mapa de la guía (depósito, patente, destino), que el catálogo no tiene.
+- **Por qué:** la lista del inicio ya trae todo y da los totales; una sola protagonista y una sola
+  acción llena (piso de la guía).
+- **Costo:** el método `tablero()` del puerto y sus adaptadores quedan sin uso hasta Z
+  ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 6). Los 7 tests del tablero se reescribieron como
+  tests de A04, con aserciones igual de fuertes.
+- **Quién decidió:** agente (lote `don-inicio`), sin consultar; el título con el mes, agente, al
+  arreglar la ronda 1 de la revisión de pantallas.
+- **Evidencia:** backlog §12.3 (DON-01); `524d86d6d`, `91f31ec86` y `2cd69d8ba`.
+
+### 2026-11-24 · textos · Lo que el servicio no da no se escribe: HG-01 y HG-02 con su texto de reemplazo
+
+- **Decisión:** la hora sale de la nota que ya llega: «Salió hoy a las X» se muestra «En camino desde
+  las X», sin hora estimada (HG-02). Una donación que no pudo llegar dice el motivo, la última noticia
+  y «Todavía sin fecha de nueva salida» (HG-01). En el detalle se omite lo que el adaptador no
+  entrega: «Sale del depósito», la necesidad que cubre (HG-04) y el texto de cada paso; la raíz muestra
+  la fecha de cada paso o «Pendiente». Los datos de ejemplo de Útiles escolares pierden la fecha
+  inventada de la nueva salida.
+- **Alternativas:** imprimir la nota de la maqueta («sale de nuevo el 17»); escribir en la plantilla
+  los datos de la guía.
+- **Por qué:** la regla de la ola: un dato que no llega se dice con el texto de «Si no llega» (§7).
+- **Costo:** el reemplazo depende del texto exacto de la nota; el seguimiento y el detalle en camino
+  todavía no lo usan ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 2). Quedan fechas inventadas en
+  `viaje-datos.html` y `DonanteNotificacionesMaqueta` (ítem 9).
+- **Quién decidió:** agente (lotes `don-inicio` y `don-detalle`), sin consultar.
+- **Evidencia:** backlog §7 y §12.3; `donante-inicio.html`, `DonacionesMaqueta.java`.
+
+### 2026-11-24 · inicio · El inicio de la persona deriva de A04, con la huerta (DA-03c, DA-08, DON-P2, DON-P3)
+
+- **Decisión:** como su ficha: aviso del problema arriba, una sola protagonista (la que viaja o, sin
+  ninguna, la huerta con «Ver mi huerta» llena), «También en curso», «Ya confirmadas en `<mes>`» solo
+  con las del mes, la huerta chica, el almanaque de 12 meses en una fila con un fruto por entrega
+  confirmada y las 3 últimas novedades. La lista mes por mes sale. El mes del almanaque va abreviado,
+  con el nombre completo para lectores; 3 columnas en el celular, 6 desde 37,5 em y 12 desde 68,75 em.
+  Los datos son los 8 de Martina Ruiz que ya leen su detalle y su seguimiento.
+- **Alternativas:** el ejemplo dibujado en la ficha (Arroz en camino, Ropa con problema); los nombres
+  completos de los meses en una fila; una lista propia de las confirmadas del mes en la vista.
+- **Por qué:** las mismas claves en todas las pantallas de la persona; «Septiembre» no entra a 1280 px
+  y un mes más angosto mediría menos de 48 px; la vista y el adaptador quedan fuera del lote.
+- **Costo:** los frutos de cada mes salen de las hasta 3 donaciones que trae el año, con «+N»: en la
+  maqueta, octubre muestra 0 frutos y 1 entrega confirmada ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49),
+  ítem 10). Martina no tiene donaciones con problema: el aviso se prueba con mocks.
+- **Quién decidió:** usuario (DA-03c y DA-08, ronda 4 del 2026-11-23; DON-P2 y DON-P3, ronda 5 del
+  2026-11-23, «va asi»); la disposición y los datos, agente (lote `don-inicio-persona`). Consta como
+  no cumplida: la revisión de pantallas de la ola no llegó a PASS.
+- **Evidencia:** ficha [`guia-don-inicio-persona.md`](flujos/guia-don-inicio-persona.md); backlog
+  §12.3 (DON-09); `d282ddcc9` a `9d7c5990c`.
+
+### 2026-11-24 · donaciones · Donaciones es A05, con una vista por estado del filtro
+
+- **Decisión:** vistas Todas, Pendientes, En camino, Entregadas y Con problema con su cuenta, como
+  `.segmentos` (enlaces con `aria-current`), sobre el mismo `?estado=` del filtro; la tabla lleva un
+  sello y una raíz por fila. El sello dice Registrada (pendiente sin organización), Asignada (con
+  ella) o Entrega confirmada, igual que el detalle. El paso de la raíz sale del estado y de la
+  organización. La persona usa la misma composición (DA-13).
+- **Alternativas:** `.pestanas` del catálogo, que es una pieza de paneles y sin JavaScript marca
+  siempre la primera; paneles por estado, que no se combinan con el paginador del servidor; un
+  parámetro nuevo para «En curso».
+- **Por qué:** la vista es un enlace a la misma lista filtrada; el sello no puede contradecir al
+  detalle.
+- **Costo:** las vistas se ven como pastillas y no como solapas; cada carga hace 4 pedidos más a
+  Donaciones, uno por cuenta. La vista «Entregadas» y el filtro «Entregada» no coinciden con el
+  sello «Entrega confirmada»: bloqueante abierto ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 1 y 6).
+- **Quién decidió:** agente (lote `don-donaciones`), sin consultar; DA-13 (usuario, ronda 4 del
+  2026-11-23), que consta como no cumplida: la revisión de pantallas no llegó a PASS.
+- **Evidencia:** backlog §12.3 (DON-03); `53712e382`, `d8403c8d5` y `642c1698e`.
+
+### 2026-11-24 · detalle · El detalle es una plantilla con las variantes de la guía; el seguimiento se abre desde él (DA-03a)
+
+- **Decisión:** la variante sale del estado, el destino y el problema: asignada (A06, sello
+  «Asignada»), en camino (A07, con el botón secundario «Ver dónde está el camión» a su seguimiento) y
+  con problema (A08, el motivo una vez y la última noticia en «Qué sigue»). La entregada y la que
+  espera destino siguen la composición de A06; la entregada pone la etiqueta de entrega. El detalle
+  y el seguimiento de la persona salen de `persona/datos-persona`, la misma fuente.
+- **Alternativas:** dejar «Pendiente» en la asignada; una variante nueva para la entregada; el mapa
+  dentro del detalle, que pedía otro puerto en el controller; que `DonacionesMaqueta` lea la sesión.
+- **Por qué:** el sello y el paso actual no se contradicen; el detalle lleva al lugar donde está el
+  mapa sin sumar dependencias.
+- **Costo:** quedan bloqueantes del lote: el número con «N.º», la que espera destino con «Pendiente»
+  y dos aserciones que no pueden fallar ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 2 y 3).
+- **Quién decidió:** usuario (DA-03a, ronda 2 del 2026-11-22; DA-13, ronda 4); las variantes y la
+  fuente de la persona, agente (lote `don-detalle`). Consta como no cumplida: la revisión de
+  pantallas no llegó a PASS.
+- **Evidencia:** backlog §12.3 (DON-04); `39efd6083`, `9572f7047` y `e4cc56f3f`.
+
+### 2026-11-24 · seguimiento · El mapa del seguimiento: el marco del catálogo, el camión solo si viaja y márgenes propios
+
+- **Decisión:** el mapa y su nota van en `[data-parte="mapa"]`, con `.mapa-dibujo` envolviendo a
+  `.mapa-real`; el camión aparece solo si la donación va en camino. Los marcadores miden el toque
+  mínimo más 1 px, porque MapLibre los ubica en fracciones de píxel (47,99997 px). `mapa.js` acepta
+  un atributo opcional, `data-mapa-margenes`, y el seguimiento usa 64 96 136 64 para que ningún punto
+  quede bajo los botones o la atribución; sin el atributo, todo sigue en 64. En el celular el mapa es
+  3/4. Se elige la donación con `?donacion=` o, sin él, la primera en camino.
+- **Alternativas:** un solo elemento `mapa-dibujo mapa-real`, que en pantalla ancha baja el mapa
+  sobre la nota; anular el `top` en la hoja; un mapa más alto sin cambiar el encuadre; mover las
+  coordenadas de ejemplo para pasar el chequeo.
+- **Por qué:** el arreglo queda en la pantalla o en un atributo que las demás no usan; no se fuerza
+  un verde con los datos.
+- **Costo:** el defecto del marco y la atribución de dos renglones siguen en `componentes/mapa.css`
+  para `publico-mapa` ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 7).
+- **Quién decidió:** agente (lote `don-detalle` y arreglos de la revisión de pantallas), sin consultar.
+- **Evidencia:** backlog §12.3 (DON-05); `componentes.md` (fila del mapa); `2cd69d8ba` y `9b2d3e147`.
+
+### 2026-11-24 · organizaciones · Organizaciones deriva de A02 sin atenuar las tarjetas a las que ya donaste
+
+- **Decisión:** una tarjeta del catálogo por organización; «Ya le donaste» en palabras y no con la
+  tarjeta atenuada; la necesidad sin porcentaje, con la cuenta en palabras («Faltan 30 de 40 kg este
+  mes») y la barra con su `aria-label`; «Ver N necesidades más» con el `.plegable` de un solo rótulo;
+  «Cómo llega tu donación» como `.aviso` de información, con «Ver tus donaciones». La persona usa el
+  mismo fragmento `hoja` (DA-13).
+- **Alternativas:** repintar la tarjeta atenuada en la hoja; `data-papel="tierra"`, que dice «lo que
+  va a pasar»; filas de alto igual en toda la página (`grid-auto-rows: 1fr`), que dejaba huecos.
+- **Por qué:** el catálogo no tiene una tarjeta atenuada y la hoja de una pantalla solo dispone.
+- **Costo:** la maqueta de la persona sigue con sus datos en la plantilla
+  ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 9).
+- **Quién decidió:** agente (lote `don-organizaciones`), sin consultar; DA-13, usuario, que consta
+  como no cumplida: la revisión de pantallas no llegó a PASS.
+- **Evidencia:** backlog §12.3 (DON-06); `f67f49d3e` y `2cd69d8ba`.
+
+### 2026-11-24 · perfil · El perfil de quien dona sigue al de la organización y guardar da un aviso breve (DA-06)
+
+- **Decisión:** una columna, un formulario por sección; el CUIT y el documento como texto fijo con
+  «No se cambia desde acá»; el escenario lento afecta los 3 formularios con `aria-busy` y
+  «Guardando…». Guardar vuelve al perfil con el aviso breve del catálogo (fragmento
+  `donante-perfil :: aviso`); en la maqueta, `/donante-perfil-guardado` es el perfil con el aviso. El
+  buzón de quien dona nombra `donante-comun.css`, donde vive su `.bajada`, y la hoja
+  `donante-notificaciones.css` se borra.
+- **Alternativas:** el `input readonly`, que sin estilo parece editable; los pares de campos lado a
+  lado; que el buzón nombre `privado.css`, que le sacaba el estilo a la bajada.
+- **Por qué:** las dos áreas se ven iguales con las mismas piezas; la respuesta se ve donde se hizo
+  la acción.
+- **Costo:** el buzón queda atado a una hoja heredada; la versión de la empresa no salió en las
+  capturas por la sesión de la maqueta ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 7 y 8).
+- **Quién decidió:** usuario (DA-06 y DA-13, ronda 4 del 2026-11-23); la forma, agente (lote
+  `don-perfil`). Consta como no cumplida: la revisión de pantallas no llegó a PASS.
+- **Evidencia:** backlog §12.3 (DON-07, DON-08); `ae68989d2` y `69edbeb07`.
+
+### 2026-11-24 · misiones · Misiones es la huerta, con lugares de 48 px y sin el álbum (DA-08, DA-21, DON-P1)
+
+- **Decisión:** según su ficha: la huerta en una sola lámina protagonista, sin acción llena. Cada
+  lugar mide 48 × 48 px como mínimo con el toque encima del dibujo; por debajo de 53,75 em cada lugar
+  es un renglón de 48 px con su dibujo, el nombre y el estado. Los hitos y las misiones usan el sello
+  del catálogo (completa → entregada, en curso → en camino, en espera → pendiente; las cerradas sin
+  sello) y el mensaje de la organización va en una `.tarjeta`. Se borran `misiones-a` y `misiones-b`
+  con sus hojas.
+- **Alternativas:** el área de toque superpuesta en todos los anchos, que a 360 px pisa unos 26 px
+  entre lugares; una sección aparte con la categoría actual; el ícono de categoría, cuyo estilo vive
+  en una hoja que la pantalla no carga.
+- **Por qué:** una sola Misiones que mantener; la hoja de la pantalla solo dispone.
+- **Costo:** quedan sin uso `huerta-armada.svg` y `Historia.categoria`; el contorno punteado al pasar
+  y algunas medidas siguen en la hoja ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 7 y 9).
+- **Quién decidió:** usuario (DA-08 y DA-21, ronda 4 del 2026-11-23; DON-P1, ronda 5 del 2026-11-23);
+  la disposición, agente (lote `don-misiones` y arreglos de la revisión de pantallas). Consta como no
+  cumplida: la revisión de pantallas no llegó a PASS; las dos rutas de `/donante-misiones` pasan el
+  toque.
+- **Evidencia:** ficha [`guia-don-misiones.md`](flujos/guia-don-misiones.md); backlog §12.3 (DON-10);
+  `79b073dfb`, `2cd69d8ba` y `9b2d3e147`.
+
+### 2026-11-24 · variantes · Una variante que no existe se ignora, en lugar de dar 404
+
+- **Decisión:** `?variante=<nombre>` sin archivos muestra la pantalla igual que sin el parámetro, y
+  no carga ninguna hoja de `/css/variantes/`. Así `?variante=misiones-a`, ya borrada, muestra la
+  huerta (DON-P1). El nombre de ruta y de vista sigue saliendo solo de los archivos que existen.
+- **Alternativas:** ignorar solo `misiones-a`, que obligaba a escribir el nombre en el código; aceptar
+  el 404 como «deja de servirse».
+- **Por qué:** el criterio de DON-P1 pide la misma pantalla, sin nombrar el álbum fuera de `docs/`.
+- **Costo:** vale para todas las rutas: un enlace con una variante equivocada ya no avisa con un 404.
+  Dos tests de `VariantesInterceptorTest` pasaron de afirmar el 404 a afirmar la pantalla sin la hoja.
+- **Quién decidió:** agente (arreglos de la revisión de pantallas, ronda 2), sin consultar; lo puede
+  revisar el usuario ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 5).
+- **Evidencia:** `VariantesInterceptor.java`, `9b2d3e147`.
+
 ### 2026-11-23 · donante · Fichas de DON: Misiones y el inicio de la persona con la guía
 
 - **Decisión:** las fichas [`guia-don-misiones.md`](flujos/guia-don-misiones.md) y
@@ -175,7 +394,7 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 ### 2026-11-23 · inicio · Inicio deja lo que la guía no muestra y lleva el problema arriba
 
 - **Decisión:** salen la fecha larga, la cabecera con su rótulo y el acceso a las novedades (la
-  campana ya lo da). Las entregas con problema van en un aviso arriba, titulado «<nombre>,
+  campana ya lo da). Las entregas con problema van en un aviso arriba, titulado «`<nombre>`,
   <cuánto>: con problema» (el grupo incluye las vencidas), con «Todavía sin fecha de nueva salida.»
   (HG-01) y el enlace a la página del problema. «Lo que viene» muestra solo en camino y pendientes.
 - **Alternativas:** «no pudo llegar» como título (mentiría para una vencida); conservar la fecha.

@@ -19,6 +19,7 @@ import grupo5.cliente.web.TraceIdFiltro;
 import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -174,7 +176,7 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones-prueba"))
         .andExpect(status().isOk())
         .andExpect(view().name("donante-donaciones-prueba"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(
             content().string(containsString("href=\"/donante-donaciones\" aria-current=\"page\"")));
   }
@@ -194,16 +196,60 @@ class SitioControllerTest {
     mvc.perform(post("/donante-tesoro")).andExpect(status().isNotFound());
   }
 
+  /**
+   * Seguimiento es el arquetipo A07 (DA-03a): una sola donación, la primera en camino si no se pide
+   * ninguna, con el mapa y su recorrido, y las migas que vuelven a su detalle. Sin hora estimada
+   * (HG-02). La persona sigue a la empresa (DA-13).
+   */
   @Test
   void elSeguimientoMuestraCadaEstado() throws Exception {
     mvc.perform(get("/donante-seguimiento"))
         .andExpect(status().isOk())
         .andExpect(view().name("donante-seguimiento"))
-        .andExpect(model().attribute("seccion", "Seguimiento"))
-        .andExpect(content().string(containsString("3 entregas en curso")))
+        // Seguimiento ya no es una sección del menú: se abre desde una donación (DA-03a).
+        .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(
+            content().string(containsString("href=\"/donante-donaciones\" aria-current=\"page\"")))
+        .andExpect(content().string(containsString("<h1>Lentejas secas, 15 kg</h1>")))
+        .andExpect(
+            content()
+                .string(containsString("href=\"/donante-donaciones-detalle?donacion=lentejas\"")))
+        .andExpect(content().string(containsString("data-lat=\"-34.6392\"")))
         .andExpect(content().string(containsString("aria-current=\"step\"")))
-        .andExpect(content().string(containsString("aria-labelledby=\"lista-titulo\"")));
-    mvc.perform(get("/donante-seguimiento?escenario=vacio"))
+        .andExpect(content().string(containsString("aria-labelledby=\"recorrido-titulo\"")))
+        .andExpect(content().string(not(containsString("Hora estimada"))));
+    // La que no pudo llegar: el mismo recorrido que su detalle, sin fecha de nueva salida (HG-01),
+    // y sin camión en el mapa, porque no está viajando (A08).
+    mvc.perform(get("/donante-seguimiento?donacion=utiles"))
+        .andExpect(content().string(containsString("<h1>Útiles escolares, 2 cajas</h1>")))
+        .andExpect(content().string(containsString("data-paso=\"problema\"")))
+        .andExpect(content().string(not(containsString("17 de octubre"))))
+        .andExpect(content().string(not(containsString("data-mapa-puntos"))))
+        .andExpect(content().string(not(containsString("Posición aproximada"))))
+        .andExpect(content().string(containsString("Todavía sin posición del camión")))
+        .andExpect(
+            content().string(containsString("El camión no está viajando con esta donación.")));
+    // La asignada todavía no salió: no hay camión que seguir (A06).
+    mvc.perform(get("/donante-seguimiento?donacion=leche"))
+        .andExpect(content().string(containsString("<h1>Leche en polvo")))
+        .andExpect(content().string(not(containsString("data-mapa-puntos"))))
+        .andExpect(content().string(containsString("Todavía sin posición del camión")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Cuando el camión salga del depósito, vas a ver acá por dónde va.")));
+    mvc.perform(get("/donante-seguimiento?cuenta=persona&donacion=leche"))
+        .andExpect(view().name("persona/donante-seguimiento"))
+        .andExpect(content().string(not(containsString("data-mapa-puntos"))))
+        .andExpect(content().string(containsString("Todavía sin posición del camión")));
+    mvc.perform(get("/donante-seguimiento?donacion=fideos"))
+        .andExpect(content().string(containsString("No encontramos esa donación en camino.")));
+    mvc.perform(get("/donante-seguimiento?cuenta=persona"))
+        .andExpect(view().name("persona/donante-seguimiento"))
+        .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
+        .andExpect(content().string(containsString("Todavía espera destino")));
+    mvc.perform(get("/donante-seguimiento?cuenta=empresa&escenario=vacio"))
         .andExpect(
             content().string(containsString("Ningún camión está en camino con tus donaciones")));
     mvc.perform(get("/donante-seguimiento?escenario=error"))
@@ -213,25 +259,230 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("aria-busy=\"true\"")));
   }
 
+  /**
+   * La persona recorre su detalle en camino, el enlace a su seguimiento y la vuelta (DA-03a y
+   * DA-13): las dos pantallas salen de sus datos (persona/datos-persona), no de los de la empresa.
+   */
+  @Test
+  void laPersonaVaDelDetalleAlSeguimientoYVuelveConSusDatos() throws Exception {
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(get("/donante-donaciones-detalle?cuenta=persona").session(sesion))
+        .andExpect(view().name("persona/donante-donaciones-detalle"))
+        .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
+        .andExpect(content().string(containsString("Donación 0006. Para Merendero Ejemplo Sur.")))
+        .andExpect(content().string(containsString("figurás como «Martina Ruiz».")))
+        .andExpect(content().string(not(containsString("Distribuidora Ejemplo SA"))))
+        .andExpect(content().string(containsString("href=\"/donante-seguimiento?donacion=ropa\"")));
+    mvc.perform(get("/donante-seguimiento?donacion=ropa").session(sesion))
+        .andExpect(view().name("persona/donante-seguimiento"))
+        .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
+        .andExpect(content().string(not(containsString("No encontramos esa donación en camino."))))
+        .andExpect(content().string(containsString("Donación 0006. Para Merendero Ejemplo Sur.")))
+        .andExpect(
+            content().string(containsString("En camino desde las 11:10. Posición aproximada")))
+        .andExpect(
+            content().string(containsString("href=\"/donante-donaciones-detalle?donacion=ropa\"")));
+    mvc.perform(get("/donante-donaciones-detalle?donacion=ropa").session(sesion))
+        .andExpect(view().name("persona/donante-donaciones-detalle"))
+        .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
+        .andExpect(content().string(containsString("data-estado=\"en-camino\"")))
+        .andExpect(content().string(not(containsString("confirmó la entrega el 9 de octubre"))));
+    // Las lentejas de la persona llegaron en junio: su detalle es el de una entregada, sin enlace
+    // al seguimiento; una clave que la persona no tiene, "No encontramos esa donación".
+    mvc.perform(get("/donante-donaciones-detalle?donacion=lentejas").session(sesion))
+        .andExpect(content().string(containsString("<h1>Lentejas secas, 4 kg</h1>")))
+        .andExpect(content().string(containsString("class=\"etiqueta-entrega\"")))
+        .andExpect(content().string(not(containsString("/donante-seguimiento?donacion="))))
+        // El sello y la raíz dicen lo mismo que la lista: «Entrega confirmada», no «Entregada».
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"entregada\">"
+                            + "(?:(?!</span>\\s*</div>).)*?Entrega confirmada</span>.*")))
+        .andExpect(content().string(not(containsString("Entregada</"))))
+        .andExpect(content().string(not(containsString("En depósito"))));
+    // La que espera destino: Registrada, como en la lista, no Pendiente.
+    mvc.perform(get("/donante-donaciones-detalle?donacion=fideos").session(sesion))
+        .andExpect(content().string(containsString("data-estado=\"registrada\"")))
+        .andExpect(content().string(not(containsString("data-estado=\"pendiente\""))))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"registrada\">"
+                            + "(?:(?!</span>\\s*</div>).)*?Registrada</span>.*")));
+    // La asignada en su seguimiento: Asignada, como en la lista y el detalle, no Pendiente.
+    mvc.perform(get("/donante-seguimiento?donacion=leche").session(sesion))
+        .andExpect(content().string(containsString("<h1>Leche en polvo, 4 unidades</h1>")))
+        .andExpect(content().string(containsString("data-estado=\"asignada\"")))
+        .andExpect(content().string(not(containsString("data-estado=\"pendiente\""))))
+        .andExpect(content().string(containsString("Donación 0007. Para ")));
+    mvc.perform(get("/donante-donaciones-detalle?donacion=pan").session(sesion))
+        .andExpect(content().string(containsString("No encontramos esa donación.")));
+  }
+
+  /**
+   * DA-03a, DA-03b y DA-05: el menú de la empresa es Inicio, Donaciones, Organizaciones y Cómo
+   * donar (Para donantes); el de la persona de ejemplo (conMisiones de CuentaDeEjemplo) suma
+   * Misiones antes de Cómo donar. Ninguno tiene Seguimiento, que sigue respondiendo.
+   */
+  @Test
+  void losMenusDeQuienDonaSonLosDeLaGuia() throws Exception {
+    String empresa =
+        mvc.perform(get("/donante-inicio?cuenta=empresa"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(
+        List.of(
+            "/donante-inicio Inicio",
+            "/donante-donaciones Donaciones",
+            "/donante-entidades Organizaciones",
+            "/publico-para-donantes Cómo donar"),
+        entradasDelMenu(empresa));
+    String persona =
+        mvc.perform(get("/donante-inicio?cuenta=persona"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(
+        List.of(
+            "/donante-inicio Inicio",
+            "/donante-donaciones Donaciones",
+            "/donante-entidades Organizaciones",
+            "/donante-misiones Misiones",
+            "/publico-para-donantes Cómo donar"),
+        entradasDelMenu(persona));
+    mvc.perform(get("/donante-seguimiento?cuenta=empresa")).andExpect(status().isOk());
+  }
+
+  private static final Pattern MENU_DE_LA_PAGINA =
+      Pattern.compile("<nav[^>]*id=\"menu\"[^>]*>(.*?)</nav>", Pattern.DOTALL);
+  private static final Pattern ENTRADA_DEL_MENU =
+      Pattern.compile("<a href=\"([^\"]+)\"[^>]*>.*?<span>([^<]+)</span></a>", Pattern.DOTALL);
+
+  /** Las entradas del menú del layout privado ({@code nav#menu}), como "dirección texto". */
+  private static List<String> entradasDelMenu(String html) {
+    Matcher nav = MENU_DE_LA_PAGINA.matcher(html);
+    assertTrue(nav.find(), "la página tiene el menú");
+    Matcher entrada = ENTRADA_DEL_MENU.matcher(nav.group(1));
+    List<String> entradas = new ArrayList<>();
+    while (entrada.find()) {
+      entradas.add(entrada.group(1) + " " + entrada.group(2));
+    }
+    return entradas;
+  }
+
+  /**
+   * Donaciones de la persona sigue a la de la empresa (DA-13; arquetipo A05): la misma tabla, con
+   * una raíz y un sello por fila, y las vistas por estado con su cuenta sobre sus datos de ejemplo.
+   */
+  @Test
+  void lasDonacionesDeLaPersonaSonLaMismaTablaConSusDatos() throws Exception {
+    mvc.perform(get("/donante-donaciones?cuenta=persona"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("persona/donante-donaciones"))
+        .andExpect(content().string(containsString("<h1>Donaciones</h1>")))
+        .andExpect(content().string(containsString("<table class=\"tabla\">")))
+        .andExpect(content().string(containsString("Donación 0008")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "aria-label=\"El recorrido de esta donación: va por el paso 4 de 5\"")))
+        .andExpect(content().string(containsString(">Todas <b>8</b></a>")))
+        .andExpect(content().string(containsString(">Confirmadas <b>5</b></a>")))
+        .andExpect(content().string(containsString(">Con problema <b>0</b></a>")))
+        // El sello dice lo mismo que la raíz y el detalle (A05, A06): la pendiente sin destino,
+        // registrada; con destino, asignada; la entregada, «Entrega confirmada».
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"registrada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Registrada</span>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"asignada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Asignada</span>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"entregada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Entrega confirmada</span>.*")))
+        .andExpect(content().string(not(containsString("data-estado=\"pendiente\""))));
+    mvc.perform(get("/donante-donaciones?cuenta=persona&estado=en-camino"))
+        .andExpect(content().string(containsString("1 donación con esos filtros.")))
+        .andExpect(content().string(containsString("Ropa de abrigo")))
+        .andExpect(content().string(not(containsString("Fideos secos"))))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/donante-donaciones?cuenta=persona&amp;estado=en-camino\""
+                            + " aria-current=\"page\">En camino <b>1</b></a>")))
+        .andExpect(content().string(containsString(">Todas <b>8</b></a>")));
+  }
+
   @Test
   void elDonanteRecorreSuInicioSusDonacionesEntidadesYNotificaciones() throws Exception {
     mvc.perform(get("/donante-inicio"))
         .andExpect(status().isOk())
         .andExpect(view().name("donante-inicio"))
-        .andExpect(content().string(containsString("Primera entrega confirmada: fideos secos")))
+        .andExpect(content().string(containsString("Útiles escolares, 2 cajas: no pudo llegar")))
+        .andExpect(content().string(containsString("Seguir esta donación")))
         .andExpect(content().string(containsString("aria-label=\"Notificaciones, 4 sin leer\"")));
     mvc.perform(get("/donante-inicio?escenario=lento"))
         .andExpect(content().string(containsString("aria-busy=\"true\"")));
+    mvc.perform(get("/donante-inicio?escenario=sin-camino"))
+        .andExpect(content().string(containsString("Nada en camino ahora")))
+        .andExpect(content().string(not(containsString("Seguir esta donación"))));
     mvc.perform(get("/donante-donaciones?estado=pendiente&categoria=alimentos"))
-        .andExpect(content().string(containsString("2 donaciones con esos filtros.")));
+        .andExpect(content().string(containsString("2 donaciones con esos filtros.")))
+        // Arroz sin destino va registrada; Leche, con destino, asignada, como en su detalle.
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"registrada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Registrada</span>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"asignada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Asignada</span>.*")));
     mvc.perform(get("/donante-donaciones?estado=otro"))
         .andExpect(content().string(containsString("7 donaciones, de la más reciente")));
     // Mis donaciones tiene su controller, pero ?cuenta= sigue cambiando la cuenta de ejemplo.
     mvc.perform(get("/donante-donaciones?cuenta=persona"))
         .andExpect(content().string(containsString("Martina Ruiz")));
     mvc.perform(get("/donante-donaciones-detalle?donacion=ropa"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
-        .andExpect(content().string(containsString("confirmó la entrega el 9 de octubre")));
+        .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(content().string(containsString("confirmó la entrega el 9 de octubre")))
+        .andExpect(content().string(containsString("class=\"etiqueta-entrega\"")));
+    // Las tres variantes de la guía: asignada (A06), en camino (A07, con el enlace a su
+    // seguimiento, DA-03a) y con problema (A08, sin fecha de nueva salida, HG-01).
+    mvc.perform(get("/donante-donaciones-detalle?donacion=leche"))
+        .andExpect(content().string(containsString("data-estado=\"asignada\"")))
+        .andExpect(content().string(not(containsString("/donante-seguimiento?donacion="))));
+    mvc.perform(get("/donante-donaciones-detalle?donacion=lentejas"))
+        .andExpect(
+            content().string(containsString("href=\"/donante-seguimiento?donacion=lentejas\"")));
+    mvc.perform(get("/donante-donaciones-detalle?donacion=utiles"))
+        .andExpect(content().string(containsString("<dd>Todavía sin fecha de nueva salida</dd>")))
+        .andExpect(content().string(not(containsString("17 de octubre"))));
     mvc.perform(get("/donante-donaciones-detalle?donacion=pan"))
         .andExpect(content().string(containsString("No encontramos esa donación.")));
     mvc.perform(get("/donante-entidades?nombre=zzz"))
@@ -1386,7 +1637,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Sos donante Sostenedor desde el")))
         .andExpect(
             content().string(containsString("href=\"/donante-misiones\" aria-current=\"page\"")))
-        .andExpect(content().string(containsString("aria-label=\"Gran Aporte: 12 de 50 bienes\"")))
+        .andExpect(content().string(containsString("aria-label=\"Gran Aporte: 12 de 50\"")))
         .andExpect(content().string(containsString("Completa el 3 de agosto de 2026")))
         .andExpect(
             content().string(containsString("Empieza a contar cuando completes Gran Aporte.")))
@@ -1395,10 +1646,18 @@ class SitioControllerTest {
                 .string(containsString("Sus misiones se ven cuando completes las de Sostenedor.")))
         .andExpect(content().string(containsString("aria-label=\"Tus insignias\"")))
         .andExpect(content().string(containsString("(2 de 6)")))
+        .andExpect(
+            content()
+                .string(containsString("<details class=\"plegable\" data-categoria=\"completa\">")))
+        .andExpect(content().string(containsString("Colaborador · completa")))
+        .andExpect(content().string(containsString("Ver las misiones")))
+        .andExpect(content().string(containsString("Llevás 12 de 50.")))
+        .andExpect(content().string(containsString("aria-label=\"Gran Aporte, en curso\"")))
+        .andExpect(content().string(containsString("data-papel=\"hueco\"")))
         .andExpect(content().string(not(containsString("Notificaciones, 4 sin leer"))));
     mvc.perform(get("/donante-misiones?escenario=vacio").sessionAttr("cuenta", "persona"))
         .andExpect(content().string(containsString("Todavía no tenés insignias")))
-        .andExpect(content().string(containsString("0 de 3 meses")))
+        .andExpect(content().string(containsString("Llevás 0 de 3.")))
         .andExpect(content().string(containsString("(0 de 6)")));
     mvc.perform(get("/donante-misiones?escenario=lento").sessionAttr("cuenta", "persona"))
         .andExpect(content().string(containsString("role=\"status\">Cargando tus misiones")))
@@ -1420,7 +1679,7 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones").sessionAttr("cuenta", "persona"))
         .andExpect(status().isOk())
         .andExpect(view().name("persona/donante-donaciones"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(content().string(containsString("Martina Ruiz")));
     mvc.perform(get("/donante-notificaciones").sessionAttr("cuenta", "persona"))
         .andExpect(view().name("persona/donante-notificaciones"))
@@ -1432,7 +1691,7 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones-nueva").sessionAttr("cuenta", "persona"))
         .andExpect(status().isOk())
         .andExpect(view().name("aviso-persona"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(content().string(containsString("la maqueta solo muestra Misiones e insignias")))
         .andExpect(content().string(containsString("href=\"/donante-inicio?cuenta=empresa\"")));
     mvc.perform(get("/donante-inicio?cuenta=empresa").sessionAttr("cuenta", "persona"))

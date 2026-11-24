@@ -12,6 +12,7 @@
 /donante-seguimiento?escenario=vacio
 /donante-seguimiento?escenario=error
 /donante-seguimiento?escenario=lento
+/donante-seguimiento?donacion=utiles
 /donante-donaciones
 /entidad-seguimiento-confirmar
 /entidad-seguimiento-confirmar?entrega=ropa
@@ -88,6 +89,7 @@
 /donante-perfil?escenario=sin-conexion
 /donante-perfil-guardado
 /donante-perfil-guardado?mostrar=si
+/donante-perfil-guardado?seccion=datos
 /publico-donaciones
 /publico-donaciones?periodo=semana
 /publico-donaciones?escenario=vacio
@@ -144,9 +146,8 @@
 /donante-inicio?escenario=vacio
 /donante-inicio?escenario=error
 /donante-inicio?escenario=lento
-# El tablero con los totales del boceto A (1, 5 y 48) y una página del medio (R11-25).
-/donante-inicio?escenario=muchas
-/donante-inicio?escenario=muchas&camino=2&llego=8
+# A04 sin nada en camino: la lámina lo dice y no es protagonista (DON-01).
+/donante-inicio?escenario=sin-camino
 /donante-donaciones?estado=pendiente&categoria=alimentos
 /donante-donaciones?estado=con-problema&categoria=ropa
 /donante-donaciones?escenario=vacio
@@ -162,6 +163,7 @@
 /donante-donaciones-detalle?donacion=pan
 /donante-donaciones-detalle?escenario=lento
 /donante-donaciones-detalle?escenario=error
+/donante-donaciones-detalle?donacion=leche
 /donante-entidades
 /donante-entidades?nombre=zzz
 /donante-entidades?pagina=2
@@ -308,6 +310,8 @@
 # F5 del roadmap de vistas: Misiones (cuenta persona), Seguir entregas y Mi perfil de la entidad.
 /donante-misiones?cuenta=persona
 /donante-misiones?cuenta=persona&escenario=vacio
+/donante-misiones?cuenta=persona&lugar=estante-izq
+/donante-misiones?cuenta=persona&lugar=mesada-medio
 /donante-misiones?cuenta=persona&escenario=lento
 /donante-misiones?cuenta=persona&escenario=error
 /donante-misiones?cuenta=empresa
@@ -315,7 +319,11 @@
 # p0-persona (R11-06): las pantallas de persona. La cuenta queda en la sesión: al final, la empresa.
 /donante-inicio?cuenta=persona
 /donante-inicio?cuenta=persona&escenario=vacio
+/donante-inicio?cuenta=persona&escenario=sin-camino
 /donante-perfil?cuenta=persona
+/donante-donaciones-detalle?cuenta=persona
+/donante-seguimiento?cuenta=persona
+/donante-perfil-guardado?cuenta=persona
 /donante-entidades?cuenta=persona&ya=si
 # R11-18: la segunda página de la maqueta, con los nombres largos.
 /donante-entidades?cuenta=persona&pagina=2

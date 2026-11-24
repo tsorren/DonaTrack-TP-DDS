@@ -29,11 +29,11 @@ flowchart LR
     IS --> AC[Activar cuenta]
   end
   subgraph Donante
-    ID[Inicio] --> MD[Mis donaciones] --> DD[Detalle de donación]
-    ID --> BE[Beneficiarios]
-    ID --> MI[Misiones e insignias]
-    ID --> SD[Seguir entregas]
-    ID --> ND[Notificaciones]
+    ID[Inicio] --> MD[Donaciones] --> DD[Detalle de donación] --> SD[Seguimiento]
+    ID --> BE[Organizaciones]
+    ID --> MI[Misiones: solo la persona]
+    ID --> CD[Cómo donar: Para donantes]
+    ID --> ND[Novedades]
     ID --> PD[Mi perfil]
   end
   subgraph Entidad["Organización"]
@@ -234,6 +234,19 @@ niveles ([backlog de la guía](backlog-guia-al-codigo.md), §11):
 | Entregas → Entrega con problema | Página nueva, `/entidad-entrega-problema?entrega=`: qué pasó, los pasos y «Todavía sin fecha de nueva salida». Se llega también desde el aviso de Inicio | ORG-08 |
 | Publicar, cambiar o dar de baja una necesidad; guardar el perfil | Terminan en la misma pantalla con un aviso breve; en la maqueta, las rutas de respuesta siguen y muestran Necesidades o el perfil con el aviso. Solo confirmar una recepción tiene página de respuesta | ORG-05, ORG-06; DA-06 |
 | Notificaciones de los tres roles | Se titulan «Novedades» (la organización, «Tus novedades»); las rutas no cambian | ORG-01; DA-08 |
+
+## Cambios de la oleada DON de la guía «Huerta y galpón» (2026-11-24)
+
+Ninguna pantalla nueva; Seguimiento baja de nivel 2 a nivel 3 y ninguna pasa de 3 niveles
+([backlog de la guía](backlog-guia-al-codigo.md), §12):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Menú de quien dona | La empresa: Inicio, Donaciones, Organizaciones y Cómo donar. La persona: Inicio, Donaciones, Organizaciones, Misiones y Cómo donar. Cómo donar lleva a Para donantes (`/publico-para-donantes`). Los menús de la organización, el admin y lo público no cambian | DON-02; DA-03a, DA-03b, DA-05 y DA-17 |
+| Seguimiento (`/donante-seguimiento`) | Sale del menú: se abre desde el detalle de una donación en camino («Ver dónde está el camión») o desde Inicio («Seguir esta donación»), con `?donacion=`; en el menú queda marcada Donaciones | DON-04, DON-05; DA-03a |
+| Misiones | La huerta es la única Misiones; `?variante=misiones-a` ya no existe y muestra la misma pantalla | DON-10; DON-P1 |
+| Guardar el perfil | Vuelve al perfil con un aviso breve; en la maqueta, `/donante-perfil-guardado` muestra el perfil con el aviso | DON-07; DA-06 |
+| Inicio de la empresa y de la persona | Sale el tablero de tres columnas (R11-25) y la lista mes por mes de la persona; el almanaque queda chico | DON-01, DON-09; DON-P2 |
 
 ## Observaciones para el diseño
 

@@ -100,6 +100,21 @@ class DonanteNotificacionesControllerTest {
         .andExpect(content().string(not(containsString("Páginas de novedades"))));
   }
 
+  /**
+   * DON-08: el buzón es el del catálogo; su hoja heredada salió y la pantalla nombra
+   * donante-comun.css, que estiliza la bajada e importa privado.css.
+   */
+  @Test
+  void elBuzonNoUsaLaHojaHeredada() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(notificaciones.bandeja(eq(DONANTE), any(ConsultaBandeja.class))).thenReturn(dos(2));
+
+    mvc.perform(get("/donante-notificaciones"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("href=\"/css/donante-comun.css\"")))
+        .andExpect(content().string(not(containsString("donante-notificaciones.css"))));
+  }
+
   @Test
   void losFiltrosYLaPaginaDeLaDireccionLleganAlPuertoYHayPaginador() throws Exception {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
