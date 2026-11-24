@@ -1,7 +1,7 @@
 package grupo5.logistica.infrastructure.persistencia.mongo; // NOSONAR
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import grupo5.common.testing.DisabledIfDockerUnavailable;
 import grupo5.logistica.LogisticaServiceApplication;
@@ -48,6 +48,8 @@ class ContextoMongoIT {
 
   @Test
   void lasTareasProgramadasTienenLockEnMongo() {
-    assertNotNull(lockProvider, "sin LockProvider, @SchedulerLock no tiene efecto");
+    // MongoLockProvider.create devuelve la variante con el reloj de Mongo, del mismo paquete.
+    assertEquals(
+        "net.javacrumbs.shedlock.provider.mongo", lockProvider.getClass().getPackageName());
   }
 }

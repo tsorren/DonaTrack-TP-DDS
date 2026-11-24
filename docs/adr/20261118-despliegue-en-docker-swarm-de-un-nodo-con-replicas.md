@@ -127,7 +127,8 @@ Elegidas **Docker** (E7-S01), **Swarm de un nodo con los seis módulos propios r
     (`OutboxRetryScheduler`): cada réplica tiene su propio store y no hay trabajo compartido que
     proteger. Una regla de ArchUnit en cada servicio exige el lock en todo `@Scheduled`, con esa
     única excepción;
-  - dos dependencias nuevas (`shedlock-spring` y `shedlock-provider-jdbc-template`), aprobadas por
+  - dos dependencias nuevas para el lock con JDBC (`shedlock-spring` y
+    `shedlock-provider-jdbc-template`), aprobadas por
     el grupo al elegir la opción (AGENTS.md §6, a confirmar en el PR). `common-lib` las declara
     `optional`: no llegan al gateway, al cliente ni a Notificaciones, y las declaran los tres
     servicios que las usan;
