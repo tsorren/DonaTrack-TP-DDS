@@ -90,12 +90,12 @@
              seguridad, después del error vuelve vacía. */-->
       <div class="campo" th:data-estado="${conError} ? 'error'">
         <label for="clave">Contraseña</label>
-        <p th:if="${conError}" id="ingreso-error" class="campo-error">El correo o la contraseña no
-          coinciden. Escribí la contraseña de nuevo.</p>
+        <p th:if="${conError}" id="ingreso-error" class="campo-error"><svg
+            th:replace="~{componentes/sello :: signo('problema')}"></svg><span>El correo o la contraseña no coinciden. Escribí
+          la contraseña de nuevo.</span></p>
         <div class="racimo">
           <input id="clave" name="clave" type="password" required autocomplete="current-password"
-                 th:attr="aria-describedby=${error},aria-invalid=${conError} ? 'true' : null"
-                 placeholder="Al menos 8 caracteres">
+                 th:attr="aria-describedby=${error},aria-invalid=${conError} ? 'true' : null">
           <button class="boton" data-tono="secundario" type="button" data-mostrar aria-controls="clave"
                   aria-pressed="false" hidden>Mostrar</button>
         </div>

@@ -1286,7 +1286,14 @@ class SitioControllerTest {
             .andExpect(content().string(containsString("href=\"#clave\"")))
             .andExpect(content().string(containsString("El correo o la contraseña no coinciden")))
             .andExpect(content().string(containsString("class=\"campo-error\"")))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*id=\"ingreso-error\" class=\"campo-error\">\\s*<svg[^>]*"
+                                + "data-signo=\"e-problema\".*")))
             .andExpect(content().string(containsString("aria-describedby=\"ingreso-error\"")))
+            .andExpect(content().string(not(containsString("Al menos 8 caracteres"))))
             .andExpect(
                 content().string(containsString("value=\"contacto@distribuidora-ejemplo.test\"")))
             .andExpect(content().string(containsString("href=\"/publico-recuperar\"")))
