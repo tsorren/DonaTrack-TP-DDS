@@ -105,3 +105,21 @@ excepciones a `.trivyignore`:
 |---|---|---|
 | `demo/seeder/requirements.txt` | 5 CVE de `Pillow` 11.0.0 | `Pillow==13.0.0` (pide Python ≥3.11; el seeder usa `python:3.12-slim`) |
 | `auth-service/Dockerfile` | 1 CVE del OpenJDK de la base de `keycloak:26.8.1` | `keycloak:26.8.2` fijado por digest del índice multi-arquitectura; el SPI compila contra 26.8.2 |
+
+### 7.1 Segundo corte (CI 45331324591, 2026-11-24)
+
+Con la rama al día con ENTREGA_7, los 6 `docker-build` cortaron por `CRITICAL` de las librerías
+del `app.jar`. También se resolvieron subiendo versiones, sin `.trivyignore`:
+
+| Dónde | Hallazgo | Arreglo |
+|---|---|---|
+| `pom.xml` raíz | `tomcat-embed-core` 11.0.22, `spring-webmvc` y `spring-webflux` 7.0.8, `netty-handler` 4.2.15 (del BOM de Spring Boot 4.0.7) | Spring Boot 4.0.10: Tomcat 11.0.27, Spring 7.0.11, Netty 4.2.20 |
+| `pom.xml` raíz | `bcprov-jdk18on` 1.78.1 (por `io.minio` 8.5.17) y 1.81 (en `api-gateway`) | `bcprov-jdk18on` 1.85 fijado en `dependencyManagement`; quitarlo cuando llegue solo |
+
+Keycloak 26.8.2 trae además un cambio incompatible: la Admin API exige el scope `kc-admin-api`
+(CVE-2026-19688, guía de upgrade de 26.8.2). Sin él, el token de servicio del sitio recibía `401`
+y fallaban 3 tests de `RealmTokenContractIT`. El realm le da a `cliente-liviano` ese scope como
+opcional y el registro `servicio` del sitio lo pide; el detalle está en
+[`auth-service/README.md`](../../auth-service/README.md). Un realm ya importado en una base
+persistente no se reimporta (`--import-realm`): ahí hay que asignar el scope a mano o recrear el
+realm.
