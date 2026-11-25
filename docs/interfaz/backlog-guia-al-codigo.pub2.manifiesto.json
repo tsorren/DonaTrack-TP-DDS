@@ -1,0 +1,159 @@
+{
+  "formato": "oleada-ui/1",
+  "version": "1.0.0",
+  "nombre": "guia",
+  "fecha": "2026-11-24",
+  "backlog": "docs/interfaz/backlog-guia-al-codigo.md",
+  "prefijoCommit": "E7: guía al código",
+  "comoLeerlo": "Manifiesto de la ola PUB2: las 19 plantillas de PUB2 de la sección 5 del backlog (14 de lo público y 5 comunes: error/403, error/404, error/5xx, sin-dibujar y aviso-persona) y las dos que PUB1 dejó anotadas para esta ola (sección 13.2): error/429 y pagina-error, la pieza que comparten las páginas de error. Los ítems, con su arquetipo, están en la sección 15 del backlog; las decisiones del usuario, en la sección 2.2; el arquetipo de cada plantilla, en la sección 5. Son 4 lotes en una sola tanda: ninguna plantilla la tocan dos lotes, y los archivos que comparten se reparten por líneas (regla 4). No lleva fichas: el registro en una sola página y las páginas de estado son derivación del agente (DA-08), así que todos los lotes van con disenio ninguno. Ningún menú cambia: el público cambió en PUB1 (DA-17). Se escribió el 2026-11-24 en la corrida desatendida (plan C:/IdeaProjects/DonaTrack-TP-DDS/.claude/plan-guia-resto.md), mientras corría ADM1: el reparto y DA-32 van con la opción recomendada, delegada por el relevamiento del 2026-11-24, y no los aprobó el usuario. En rutasVisuales va una ruta por plantilla (DA-20); pagina-error no tiene ruta propia y se ve en las cuatro de error. Las de pub2-estado son las de ?respuesta= de paginas.txt más dos que el lote suma (/entidad-seguimiento-tesoro y /donante-donaciones-nueva?cuenta=persona). Ninguna ruta de PUB2 está en la línea de base de toque de la sección 10.4. La regla 5 es solo para el cierre: esta ola no levanta el stack (plan de la corrida, punto 5; DA-20). DA-19 y DA-20 son decisiones del plan y no de un lote. Requisito para lanzarla: este manifiesto integrado en E7_guia_ui, con ADM1 ya mergeada o pusheada en su rama.",
+  "ramas": {
+    "base": "E7_guia_ui",
+    "destino": "E7_guia_ui",
+    "prefijoOla": "E7_guia_ui_"
+  },
+  "topes": {
+    "constructoresEnParalelo": 4,
+    "rondasDeReparacion": 3
+  },
+  "modelos": {
+    "juicio": {
+      "model": "opus",
+      "effort": "medium"
+    },
+    "mecanico": {
+      "model": "sonnet",
+      "effort": "high"
+    }
+  },
+  "olas": [
+    "PUB2"
+  ],
+  "reglas": [
+    "Cada pantalla se rehace con su arquetipo de la guía (docs/interfaz/guia/partes/50-pantallas.html, el ancla de la sección 4 del backlog: #confirmar para A12) y con las piezas que C1 dejó en el catálogo (docs/interfaz/componentes.md y /estilos): no se copia el marcado ni las clases de la guía, se usan los fragmentos y las clases del catálogo. Una plantilla que «deriva» de A12 sigue la columna del formulario que PUB1 dejó en Ingresar y en Contacto (templates/publico-ingresar.html y publico-contacto.html), igual en todos los lotes: un .pila con el h1 y la bajada; el resumen del error arriba, en un .aviso data-tipo=\"error\" con el foco y un enlace a cada campo; los campos del catálogo (.campo, con su .campo-error y el signo de componentes/sello); los avisos de cada estado como en Ingresar (el .banner del catálogo para lento, sin conexión o error del servicio) y una sola acción llena. La respuesta a un envío (DA-32) es el aviso en la página del catálogo con data-tipo=\"exito\" (.aviso, con el signo confirmada y role=\"status\"; docs/interfaz/componentes.md, fila .aviso). Las 7 plantillas de cuenta usan la hoja publico-ingresar, que ya dispone esa columna (main > .pila). Las pantallas sin arquetipo son derivación del agente, sin ficha (DA-08). El registro en una sola página usa componentes/registro tal como está en el catálogo: la cabeza, las tarjetas del tipo de cuenta, el índice de pasos y el formulario .registro-formulario con una .registro-seccion por paso. Las páginas de estado (error/, pagina-error, sin-dibujar y aviso-persona) siguen la composición de lectura de la huerta: el rótulo, el h1, la bajada y, si tienen, una sola acción llena. Si una pantalla necesita una pieza que el catálogo no tiene, es un bloqueante del lote y se informa: no se crea una pieza nueva dentro de una hoja de pantalla. Cada lote termina la migración de las hojas heredadas de sus pantallas: lo que la pieza del catálogo ya resuelve sale de la hoja de la pantalla, y una hoja que queda vacía se borra con su import, salvo publico-ingresar.css, publico-registro.css, publico-listas.css, publico-paginas.css y privado.css, que también usan pantallas de PUB1, de los roles o /estilos (regla 4).",
+    "Los cercos no se mueven: ningún tope de InterfazFitnessTest cambia (ni sube ni baja), la lista de clases heredadas no crece (si un lote deja sin uso una clase heredada, borra su línea de cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt y lo anota), tokens.css no se toca y nadie edita un test de cliente-liviano/src/test/java/grupo5/cliente/visual/ ni le suma una excepción. El tope de medidas literales no tiene margen: cada lote deja el conteo de sus hojas igual o menor; una medida que la guía escribe como número pasa al token más cercano o se compensa en las hojas del lote, y la diferencia se anota. Las listas LISTAS, HOJAS_HEREDADAS y BARRAS_EXCEPTUADAS de InterfazFitnessTest no son topes: ninguna plantilla de PUB2 está en LISTAS, y ninguna de las hojas de PUB2 sale de HOJAS_HEREDADAS en esta ola, porque todas las usan también pantallas de otras olas; si un lote borra una plantilla o una hoja que nombran, la reemplaza por la que la sucede o saca su línea. Los tests funcionales que afirman un texto o una ruta que esta ola cambia por una decisión (DA-06, DA-32) se actualizan al comportamiento nuevo, con aserciones igual de fuertes; ninguno se borra ni se debilita.",
+    "El alcance es lo de PUB2: las 19 plantillas de la sección 5 (PUB2), error/429 y pagina-error, con lo que la sección 15.2 del backlog asigna. Las pantallas de PUB1 (Ingresar, Contacto, Legales, la portada, Entregas, Organizaciones, el Mapa y las tres de conocer) no cambian, ni las de los roles. Ningún menú cambia (DA-17): templates/navegacion-publica.html, templates/pie.html, java/grupo5/cliente/web/Pantallas.java y java/grupo5/cliente/maqueta/CuentaDeEjemplo.java no se editan. Una pantalla que no es de la ola no se rediseña ni se arregla: quien construye y quien revisa la anotan como menor, nunca como bloqueante. Ningún lote cambia un adaptador de cliente-liviano/src/main/java/grupo5/cliente/rest/ ni un puerto de cliente-liviano/src/main/java/grupo5/cliente/puertos/: ninguna pantalla de PUB2 muestra un hueco de la sección 7 del backlog, y si a una le falta un dato, usa el texto de «Si no llega» de esa sección o lo anota como deuda del lote; no se inventa ni se escribe en la plantilla un dato de la guía. Los datos de ejemplo nuevos van en las clases de cliente-liviano/src/main/java/grupo5/cliente/maqueta/. En el stack real, Recuperar y el error de los registros son de Keycloak (AccesoController los sirve solo en la maqueta): el tema de auth-service y scripts/sincronizar_tema.py no se tocan.",
+    "Algunos archivos los tocan varios lotes. cliente-liviano/src/test/resources/verificacion/paginas.txt: cada lote, solo las líneas de sus rutas; pub2-estado suma /entidad-seguimiento-tesoro junto a las de ?respuesta= y /donante-donaciones-nueva?cuenta=persona en el bloque de la persona, antes de /donante-inicio?cuenta=empresa. SitioControllerTest.java, NombresVisiblesTest.java, SeguridadTest.java, CompletarPerfilTest.java, PerfilPendienteTest.java, PortadaConSesionTest.java y PortadaConSesionMaquetaTest.java: cada lote, solo los casos de sus rutas; ErroresConSesionTest.java es de pub2-estado, salvo conSesionContactoUsaElMarcoPrivadoYSinSesionElPublico, que es de Contacto (PUB1) y no cambia. clases-heredadas.txt: cada lote, solo las líneas de las clases que deja sin uso. java/grupo5/cliente/web/AccesoController.java: pub2-registro-donante, solo los métodos de publico-registro-donante; pub2-registro-entidad, solo los de publico-registro-entidad, la corrección y la solicitud enviada; ingresar, soloEnLaMaqueta y formulario (/publico-registro{tipo}), que usan Ingresar, Recuperar y los dos registros, no cambian. java/grupo5/cliente/web/SolicitudEntidadController.java y maqueta/SolicitudEntidadMaqueta.java son de pub2-registro-entidad; web/MarcoDeLasPaginasDeError.java, web/ErroresHttp.java y maqueta/RespuestaDeEjemplo.java, de pub2-estado, si la pantalla lo pide. Hojas: static/css/publico-ingresar.css la toca solo pub2-cuenta, solo en las reglas de .cuenta-principal; las de main > .pila son de Ingresar (PUB1) y no cambian. static/css/publico-registro.css: pub2-registro-donante y pub2-registro-entidad, cada uno solo las reglas que usan nada más que sus pantallas; la importa publico-ingresar.css, así que lo que usa Ingresar se queda. static/css/publico-paginas.css y publico-listas.css: cada lote, solo las reglas que usan nada más que sus pantallas; .recibido la usan pub2-cuenta y pub2-registro-entidad, ninguno la borra, y si queda sin uso se anota para Z. static/css/publico-error.css es de pub2-estado. static/css/privado.css: pub2-estado, solo la regla .sin-dibujar; .aviso-codigo la usan pantallas del admin y queda. templates/componentes/ (registro incluido), static/css/componentes/, static/js/, templates/datos-publicos.html, templates/layout-publico.html, templates/layout-privado.html, templates/iconos.html, templates/estilos.html, docs/interfaz/componentes.md, maqueta/SitioController.java y maqueta/AreaDeLaSesionMaqueta.java no se editan en esta ola: son del catálogo, del armazón o de otras olas. templates/persona/ (persona/datos-persona.html incluido: no es una pantalla, son los datos de ejemplo de la persona, de DON), templates/datos-donante.html, viaje-datos.html y piezas-entidad.html tampoco se editan. InterfazFitnessTest.java: ningún lote debería tocarlo, porque ninguna plantilla de PUB2 está en LISTAS y ninguna hoja de PUB2 sale de HOJAS_HEREDADAS (regla 2); si un lote borra una hoja o una plantilla que nombra, toca solo esa línea. Si al integrar chocan dos lotes en líneas vecinas, se conservan los dos cambios.",
+    "Solo para quien cierra la ola; no es criterio de revisión de ningún lote. (1) No levantes el stack ni hagas el recorrido con login (pasos 2, 3 y 5 del cierre): el recorrido real se hace una sola vez, en Z, y ningún lote de PUB2 cambia un adaptador rest (plan C:/IdeaProjects/DonaTrack-TP-DDS/.claude/plan-guia-resto.md, punto 5; decisión DA-20, backlog, sección 2.2). IngresoConKeycloakRealTest necesita el stack: corre en Z. (2) Después de los gates corré una vez -Pvisual sobre las rutas de la ola, no sobre las 320: la pasada completa es de C1 y de Z (DA-20, puntos 1 y 4). Son las 40 líneas de PUB2 de cliente-liviano/src/test/resources/verificacion/paginas.txt (las de /publico-recuperar, -activar y -registro, las de ?respuesta= y las dos que suma pub2-estado), sin la barra inicial y separadas por comas: rm -rf cliente-liviano/target/capturas; R=$(grep -E '^/(publico-(recuperar|activar|registro)|[a-z-]+\\?respuesta=|entidad-seguimiento-tesoro|donante-donaciones-nueva)' cliente-liviano/src/test/resources/verificacion/paginas.txt | sed 's#^/##' | paste -sd, -); MSYS2_ARG_CONV_EXCL='-Dverificacion' mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false -Dverificacion.paginas=\"$R\". Si el filtro no da 40 líneas, anotalo con la cuenta que dio. Ninguna de esas rutas está en la línea de base de la sección 10.4 del backlog: cualquier falla es bloqueante, con el lote que la rompe. (3) Corré los otros tests visuales (mvn test -pl cliente-liviano -Pvisual -Dtest=ArmazonFijoTest,MenusQueSeCierranTest,BajoTierraRotulosTest,AbejasYRenglonesTest,DonanteDetallesTest -Dsurefire.failIfNoSpecifiedTests=false) y compará con la línea de base de las secciones 10.5, 11.3, 12.5 y 13.5 y del cierre de ADM1 (sección 14). Un fallo que ya estaba se anota. Cualquier fallo nuevo es bloqueante del lote que tocó eso, y se arregla la pantalla, nunca el test. (4) En cierre.md: cuántas rutas pasan y cuáles no, la hora de cada commit de la ola (git log) y las rondas de revisión de cada lote."
+  ],
+  "decisiones": [
+    {
+      "id": "DA-32",
+      "texto": "La parte de DA-32 que es de la cuenta, con DA-06: Recuperar (/publico-recuperar-enviado) y Pedir el enlace (/publico-activar-pedido) muestran su misma pantalla con el aviso en la página del catálogo (.aviso con data-tipo=\"exito\") en el lugar del formulario, sin página propia; Activar (/publico-activar-lista) muestra la pantalla de Activar con ese aviso, «Tu cuenta está lista», y una sola acción llena, Ingresar. Las tres rutas siguen y ninguna lleva el sello de recibido dibujado a mano (.recibido).",
+      "quien": "autor del manifiesto de PUB2, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-32 y DA-06 (ronda 4, 2026-11-23: «Todas las recomendadas»)",
+      "lote": "pub2-cuenta",
+      "criterio": "Un test de SitioControllerTest afirma, para /publico-recuperar-enviado, /publico-activar-pedido y /publico-activar-lista, que responden 200, que el texto de la respuesta va en un elemento con class=\"aviso\" y data-tipo=\"exito\", y que no hay un form con action a /publico-recuperar-enviado, /publico-activar-pedido ni /publico-activar-lista; para /publico-activar-lista, además, que hay un enlace a /publico-ingresar con data-tono=\"principal\". git grep -nE 'class=\"[^\"]*recibido' sobre las 7 plantillas de pub2-cuenta no da resultados. En las capturas a 360 y 1280 px de esas tres rutas se ve el aviso en la página, sin el sello dibujado."
+    },
+    {
+      "id": "DA-32-solicitud",
+      "texto": "La parte de DA-32 que es de la organización: «Solicitud enviada» (/publico-registro-entidad-enviada) no es una respuesta, es la página de estado de la solicitud a la que se vuelve con «Ver mi solicitud» (R11-41). Se queda como pantalla, con sus escenarios, y «Solicitud recibida» pasa al aviso en la página del catálogo (.aviso con data-tipo=\"exito\"), sin el sello de recibido dibujado a mano.",
+      "quien": "autor del manifiesto de PUB2, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-32 y DA-06 (ronda 4, 2026-11-23: «Todas las recomendadas»)",
+      "lote": "pub2-registro-entidad",
+      "criterio": "Las cinco líneas de /publico-registro-entidad-enviada de paginas.txt (sin escenario y con con-sesion-pendiente, corregida, sin-datos y aprobada) siguen y pasan el gate visual del lote. templates/publico-registro-entidad-enviada.html lleva «Solicitud recibida» dentro de un elemento con class=\"aviso\" y data-tipo=\"exito\", y git grep -nE 'class=\"[^\"]*recibido' sobre esa plantilla no da resultados. PerfilPendienteTest y PortadaConSesionTest pasan sin cambiar lo que afirman de /publico-registro-entidad-enviada, y git diff E7_guia_ui...HEAD no toca java/grupo5/cliente/web/Pantallas.java."
+    }
+  ],
+  "lotes": [
+    {
+      "id": "pub2-cuenta",
+      "ola": "PUB2",
+      "tanda": 1,
+      "items": [
+        "PUB2-01",
+        "PUB2-02",
+        "PUB2-03"
+      ],
+      "titulo": "Recuperar la contraseña y activar la cuenta",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/resources/: templates/publico-recuperar.html, publico-recuperar-enviado.html, publico-activar.html, publico-activar-pedir.html, publico-activar-pedido.html, publico-activar-lista.html y publico-activar-error.html; static/css/publico-ingresar.css (solo las reglas de .cuenta-principal; las de main > .pila son de Ingresar, regla 4) y, si hace falta, static/css/publico-registro.css, publico-listas.css y publico-paginas.css (solo las reglas que usan nada más que estas pantallas; .recibido se queda, regla 4); las líneas de /publico-recuperar y /publico-activar en cliente-liviano/src/test/resources/verificacion/paginas.txt; clases-heredadas.txt, solo las líneas de las clases que deja sin uso; y los tests de esas rutas (en SitioControllerTest, NombresVisiblesTest y CompletarPerfilTest, solo los casos de /publico-recuperar y /publico-activar). Sin Java: estas pantallas las sirve el sitio sin controller propio.",
+      "rutasVisuales": [
+        "publico-recuperar",
+        "publico-recuperar-enviado",
+        "publico-activar",
+        "publico-activar-pedir",
+        "publico-activar-pedido",
+        "publico-activar-lista",
+        "publico-activar-error"
+      ],
+      "que": "Recuperar, Activar y Pedir el enlace derivan del arquetipo A12 (#confirmar) con la columna del formulario de Ingresar (regla 1): el h1 y la bajada, los campos del catálogo, el resumen del error arriba con un enlace a cada campo y una sola acción llena; la salida a Ingresar queda como enlace. Dejan .publica, .cuenta, .cuenta-principal y .publica-cabeza por las piezas y la composición del catálogo, y la hoja publico-ingresar.css pierde las reglas de .cuenta-principal. Activar conserva lo de hoy: el correo que viene en el enlace, sin editar; un solo campo de contraseña con «Mostrar»; y sus estados (?escenario=lento, error, sin-conexion y vencido, que no dice si la cuenta existe, RNF-AUTH-10). publico-activar-error es el estado de error del mismo formulario, con el campo marcado en su lugar. Pedir el enlace conserva sus estados (error y sin conexión). Las tres respuestas siguen la decisión DA-32: Recuperar y Pedir el enlace muestran su misma pantalla con el aviso en la página (.aviso con data-tipo=\"exito\") en el lugar del formulario, con el mismo texto de hoy (el aviso no dice si el correo tiene cuenta, RNF-AUTH-10); Activar muestra la pantalla de Activar con el aviso «Tu cuenta está lista» y una sola acción llena, Ingresar. Ninguna lleva el sello de recibido dibujado a mano. Los formularios siguen siendo POST a las mismas rutas. Antes de comitear, el lote corre -Pvisual también sobre publico-ingresar y publico-ingresar-error, que comparten la hoja; si sacó reglas de publico-paginas.css o publico-listas.css, también sobre publico-contacto, publico-legales y estilos. Esas rutas no entran en la revisión ni en la hoja de contacto, y una falla nueva ahí es bloqueante del lote."
+    },
+    {
+      "id": "pub2-registro-donante",
+      "ola": "PUB2",
+      "tanda": 1,
+      "items": [
+        "PUB2-04",
+        "PUB2-05"
+      ],
+      "titulo": "Crear una cuenta y el registro de quien dona",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/publico-registro.html, publico-registro-donante.html y publico-registro-donante-error.html; resources/static/css/publico-registro.css (solo las reglas que usan nada más que estas pantallas; regla 4) y, si hace falta, publico-listas.css y publico-paginas.css (lo mismo); en java/grupo5/cliente/web/AccesoController.java, solo los métodos que guardan publico-registro-donante, si la pantalla lo pide (regla 4); las líneas de /publico-registro y /publico-registro-donante en cliente-liviano/src/test/resources/verificacion/paginas.txt; clases-heredadas.txt, solo las líneas de las clases que deja sin uso; y los tests de esas rutas (en SitioControllerTest, NombresVisiblesTest, SeguridadTest, CompletarPerfilTest, PerfilPendienteTest, PortadaConSesionTest y PortadaConSesionMaquetaTest, solo los casos de /publico-registro y /publico-registro-donante).",
+      "rutasVisuales": [
+        "publico-registro",
+        "publico-registro-donante",
+        "publico-registro-donante-error"
+      ],
+      "que": "Crear una cuenta y el registro de quien dona usan el registro en una sola página del catálogo, componentes/registro, tal como está: la cabeza (registro :: cabeza), las tres tarjetas del tipo de cuenta (registro :: tipos), el índice de pasos (registro :: indice) y el formulario .registro-formulario con una .registro-seccion por paso. Dentro del formulario, cada sección sigue la columna de A12 (regla 1): los campos del catálogo, el resumen del error arriba con un enlace a cada campo, la casilla de los términos y una sola acción llena, «Crear mi cuenta». La persona (?tipo=persona) y la empresa siguen en la misma plantilla, con sus campos de hoy y su escenario lento y de error. publico-registro-donante-error es el estado de error del mismo formulario. Con la sesión iniciada y sin perfil, «Completá tu perfil» y el botón de cerrar sesión siguen (CompletarPerfilTest). IngresoConKeycloakRealTest, de visual/ y que nadie edita, busca a.registro-tipo[href*='tipo=persona'] en /publico-registro y form.registro-formulario en /publico-registro-donante: esos selectores se quedan. Antes de comitear, el lote corre -Pvisual también sobre publico-ingresar y publico-ingresar-error, porque publico-ingresar.css importa publico-registro.css; si sacó reglas de publico-paginas.css o publico-listas.css, también sobre publico-contacto, publico-legales y estilos. Esas rutas no entran en la revisión ni en la hoja de contacto, y una falla nueva ahí es bloqueante del lote."
+    },
+    {
+      "id": "pub2-registro-entidad",
+      "ola": "PUB2",
+      "tanda": 1,
+      "items": [
+        "PUB2-06",
+        "PUB2-07"
+      ],
+      "titulo": "El registro de la organización y su solicitud",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/publico-registro-entidad.html, publico-registro-entidad-corregir.html, publico-registro-entidad-enviada.html y publico-registro-entidad-error.html; resources/static/css/publico-registro.css (solo las reglas que usan nada más que estas pantallas; regla 4) y, si hace falta, publico-listas.css y publico-paginas.css (lo mismo; .recibido se queda); java/grupo5/cliente/web/SolicitudEntidadController.java y, en AccesoController.java, solo los métodos que guardan publico-registro-entidad, la corrección y la solicitud enviada, si la pantalla lo pide (regla 4); los datos de ejemplo en java/grupo5/cliente/maqueta/SolicitudEntidadMaqueta.java, si hacen falta; las líneas de /publico-registro-entidad en cliente-liviano/src/test/resources/verificacion/paginas.txt; clases-heredadas.txt, solo las líneas de las clases que deja sin uso; y los tests de esas rutas (en SitioControllerTest, NombresVisiblesTest, SeguridadTest, CompletarPerfilTest, PerfilPendienteTest, PortadaConSesionTest y PortadaConSesionMaquetaTest, solo los casos de /publico-registro-entidad*).",
+      "rutasVisuales": [
+        "publico-registro-entidad",
+        "publico-registro-entidad-corregir",
+        "publico-registro-entidad-enviada",
+        "publico-registro-entidad-error"
+      ],
+      "que": "El registro de la organización no tiene arquetipo: es el registro en pasos (DA-08), con el registro en una sola página del catálogo (componentes/registro) tal como está, igual que el de quien dona: la cabeza, las tarjetas del tipo de cuenta, el índice de pasos y el formulario .registro-formulario con una .registro-seccion por paso. Dentro, cada sección sigue la columna de A12 (regla 1): los campos del catálogo, el resumen del error arriba con un enlace a cada campo, «Cómo sigue», la casilla de los términos y una sola acción llena. Los fragmentos hoja(conError) y comoSigue(paso) se quedan con su firma: la corrección (publico-registro-entidad-corregir, con sus escenarios error, fallo, sin-datos y lento) usa hoja, como afirma PerfilPendienteTest, y la solicitud enviada usa comoSigue. publico-registro-entidad-error es el estado de error del mismo formulario. «Cómo sigue» deja la disposición propia de su raíz (.tramo) si la raíz del catálogo (componentes/huerta :: raiz-pasos, numerada) dice lo mismo con sus pasos; si no sirve, se queda y se anota. La solicitud enviada sigue la decisión DA-32-solicitud: es la página de estado de la solicitud, a la que se vuelve con «Ver mi solicitud»; «Solicitud recibida» va en el aviso en la página (.aviso con data-tipo=\"exito\"), sin el sello dibujado a mano, y siguen sus escenarios (con-sesion-pendiente con «Lo que nos enviaste» y «Corregir los datos», corregida, sin-datos y aprobada con «Ingresar de nuevo»). IngresoConKeycloakRealTest busca a.registro-tipo y form.registro-formulario: esos selectores se quedan. Antes de comitear, el lote corre -Pvisual también sobre publico-ingresar y publico-ingresar-error, porque publico-ingresar.css importa publico-registro.css; si sacó reglas de publico-paginas.css o publico-listas.css, también sobre publico-contacto, publico-legales y estilos. Esas rutas no entran en la revisión ni en la hoja de contacto, y una falla nueva ahí es bloqueante del lote."
+    },
+    {
+      "id": "pub2-estado",
+      "ola": "PUB2",
+      "tanda": 1,
+      "items": [
+        "PUB2-08",
+        "PUB2-09"
+      ],
+      "titulo": "Las páginas de error, sin dibujar y el aviso de la persona",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/error/403.html, error/404.html, error/429.html, error/5xx.html, pagina-error.html, sin-dibujar.html y aviso-persona.html; resources/static/css/publico-error.css y, en static/css/privado.css, solo la regla .sin-dibujar (regla 4); java/grupo5/cliente/web/MarcoDeLasPaginasDeError.java, web/ErroresHttp.java y maqueta/RespuestaDeEjemplo.java, si las pantallas lo piden; en cliente-liviano/src/test/resources/verificacion/paginas.txt, las líneas de ?respuesta= y las dos que suma: /entidad-seguimiento-tesoro, junto a las de ?respuesta=, y /donante-donaciones-nueva?cuenta=persona, en el bloque de la persona antes de /donante-inicio?cuenta=empresa; clases-heredadas.txt, solo las líneas de las clases que deja sin uso (sin-dibujar, si sale); y los tests de esas pantallas (ErroresConSesionTest salvo conSesionContactoUsaElMarcoPrivadoYSinSesionElPublico, y en SitioControllerTest y SeguridadTest los casos de las páginas de error, de sin-dibujar y de aviso-persona).",
+      "rutasVisuales": [
+        "publico-donaciones?respuesta=404",
+        "entidad-inicio?respuesta=403",
+        "donante-inicio?respuesta=429",
+        "donante-inicio?respuesta=500",
+        "entidad-seguimiento-tesoro",
+        "donante-donaciones-nueva?cuenta=persona"
+      ],
+      "que": "Las páginas de error (403, 404, 429 y 5xx) no tienen arquetipo: son páginas de estado (DA-08) y su contenido está en la pieza pagina-error, que las cuatro usan con su firma de hoy (pagina(tituloAntes, tituloResaltado, texto, accion, accionHref, conInicio, contacto, contactoSin)). Siguen la composición de lectura de la huerta (regla 1): el rótulo con el código, el h1, la bajada, una sola acción llena (volver al inicio o la de cada página), el código para soporte con su enlace a Contacto (sin él con ?escenario=sin-codigo) y el dibujo de reintentar, decorativo. Van con los dos marcos de hoy: sin sesión, el público; con sesión, el privado del rol, con su menú y «Volver a mi inicio» (MarcoDeLasPaginasDeError; ErroresConSesionTest). La de 429 dice cuánto esperar como hoy. sin-dibujar (una sección del menú sin pantalla) y aviso-persona (la maqueta con la cuenta de la persona, en una pantalla sin su versión) son páginas privadas: el rótulo de la sección, el h1 y, en aviso-persona, sus dos salidas con una sola acción llena; dejan la clase .sin-dibujar por la composición del catálogo y, si queda sin uso, sale su regla de privado.css y su línea de clases-heredadas.txt. Ningún enlace del sitio lleva a sin-dibujar (SitioControllerTest.ningunEnlaceDelSitioEstaRoto) y así sigue. Para verlas, el lote suma a paginas.txt /entidad-seguimiento-tesoro y /donante-donaciones-nueva?cuenta=persona, las rutas que ya usa SitioControllerTest; la segunda va en el bloque de la persona, antes de /donante-inicio?cuenta=empresa, porque la cuenta queda en la sesión. Ninguna de las rutas del lote está en la línea de base de toque de la sección 10.4."
+    }
+  ]
+}
