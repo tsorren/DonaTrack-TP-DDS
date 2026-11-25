@@ -4,7 +4,7 @@
    (componentes/navegacion.css): el menú del celular, abajo, hasta --medida-quiebre-menu (56 em;
    criterios de la cátedra, sección 4) y, desde ahí, las secciones en la barra, después de la marca
    (guía, 15-pantallas.css:79-84). Acá solo va dónde queda cada cosa en la barra. También: el rótulo y
-   el título de cada pantalla. */
+   el título de cada pantalla, y el armazón del galpón del admin (al final). */
 @import url("app.css");
 
 /* --- Hasta 56 em: la marca y las acciones de la cuenta arriba; el menú, fijo abajo -------------- */
@@ -12,31 +12,9 @@
   padding-bottom: calc(var(--medida-menu-celular) + var(--espacio-1));
 }
 
-/* La administración no tiene barra abajo: su menú es el botón del final de la cabecera, después de
-   la campana y la cuenta (usuario, 2026-11-12). */
-.raices-privado:has(.navegacion[data-forma="panel"]) {
-  padding-bottom: 0;
-}
-
 /* El desplegable de la campanita, en el celular, cuelga de la barra entera. */
 .armazon {
   position: relative;
-}
-
-.armazon .navegacion[data-forma="panel"] {
-  order: 1;
-}
-
-/* Marca, campana, cuenta y botón de menú en una fila también a 360 px: más juntos. Desde la
-   tableta hay lugar y vuelven a separarse. */
-.armazon:has(.navegacion[data-forma="panel"]) {
-  column-gap: var(--espacio-0);
-}
-
-@media (min-width: 37.5em) {
-  .armazon:has(.navegacion[data-forma="panel"]) {
-    column-gap: var(--espacio-3);
-  }
 }
 
 /* Las acciones de la cuenta (la campanita y la foto) van a la derecha (guía: .barra-acciones). */
@@ -108,5 +86,90 @@ main h1 {
 @media (min-width: 56em) {
   .raices-privado {
     padding-bottom: 0;
+  }
+}
+
+/* --- El armazón del galpón: el admin (ADM1-02; guía, 15-pantallas.css:16-25 y 98-104) ---------- */
+/* Lo lleva solo el admin (`body[data-armazon="galpon"]`, layout-privado.html; DA-18 y DA-27): el
+   papel claro, los títulos un escalón más chicos y el contenido denso, sin tope de ancho. La barra
+   de arriba es la de la huerta, con la marca, la campana y la cuenta, en todos los anchos (DA-27: la
+   guía la saca desde 56 em). Hasta 56 em el menú es la barra del celular, abajo; desde ahí, el cajón
+   (componentes/navegacion.css) queda fijo a la izquierda, debajo de la barra, y el contenido y el
+   pie empiezan a su derecha. */
+/* --color-papel es alias de --color-fondo-pagina (tokens.css), pero se resuelve en :root: se
+   redefine acá para que lo que pinta papel (la barra fija del listado y su sombra, el panel de Más,
+   la pantalla de carga) salga del papel del galpón y no deje una franja de otro color. */
+[data-armazon="galpon"] {
+  --color-fondo-pagina: var(--color-galpon-fondo);
+  --color-papel: var(--color-galpon-fondo);
+  --color-superficie: var(--color-campo);
+}
+
+body[data-armazon="galpon"] > main {
+  max-width: none;
+  padding: var(--espacio-3) var(--espacio-3) var(--espacio-5);
+}
+
+body[data-armazon="galpon"] main h1 {
+  font-size: var(--tamano-titulo-2);
+  line-height: var(--tamano-interlinea-titulo);
+}
+
+@layer base {
+  body[data-armazon="galpon"] main h2 {
+    font-size: var(--tamano-titulo-3);
+  }
+}
+
+/* Lo que va pegado arriba de la barra del listado (el título de la lista o su frase) deja un
+   espacio: .listado lleva margin 0 y, desde 68,75 em, queda fija y pinta un filete de papel hacia
+   arriba (listado.css) que tapaba los rabos de las letras del título. */
+body[data-armazon="galpon"] main :has(+ .listado) {
+  margin-block-end: var(--espacio-2);
+}
+
+@media (min-width: 37.5em) {
+  body[data-armazon="galpon"] > .armazon {
+    padding-inline: var(--espacio-4);
+  }
+
+  body[data-armazon="galpon"] > main {
+    padding: var(--espacio-4) var(--espacio-4) var(--espacio-5);
+  }
+}
+
+/* Desde 56 em la barra de arriba queda fija también en las ventanas bajas: el cajón cuelga de ella. */
+@media (min-width: 56em) {
+  :root:has(body[data-armazon="galpon"]) {
+    --medida-cabecera-fija: 4.125rem;
+  }
+
+  body[data-armazon="galpon"] > header {
+    position: sticky;
+    top: 0;
+    z-index: var(--capa-encabezado-fijo);
+    min-height: var(--medida-cabecera-fija);
+    align-content: center;
+  }
+
+  body[data-armazon="galpon"] > header > .navegacion {
+    position: fixed;
+    inset: var(--medida-cabecera-fija) auto 0 0;
+    width: var(--medida-cajon);
+    overflow-y: auto;
+  }
+
+  body[data-armazon="galpon"] > :is(main, footer) {
+    margin-left: var(--medida-cajon);
+  }
+}
+
+/* Con el cajón, el contenido es 15 rem más angosto y la barra del listado abierta baja de renglón:
+   en Donaciones y en las decididas de Asignar, medida el 2026-11-24, 387 px a 1100 px (el ancho más
+   angosto de este quiebre) y 293,5 px a 1280 px; la más alta, redondeada hacia arriba a 1/8 rem.
+   Solo sirve para que el foco no quede debajo (app.css). */
+@media (min-width: 68.75em) and (min-height: 37.5em) {
+  :root:has(body[data-armazon="galpon"]):has(.listado) {
+    --medida-filtros-fijos: 24.25rem;
   }
 }

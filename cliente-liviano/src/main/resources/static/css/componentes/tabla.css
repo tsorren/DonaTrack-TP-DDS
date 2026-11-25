@@ -7,7 +7,7 @@
 
    Es la tabla de la huerta de la guía (10-componentes.css, `tabla--apilable`): se lee con aire, en la
    letra de siempre. Se apila por debajo de 56 em (--medida-quiebre-menu, el corte de la guía). La
-   tabla densa del galpón, con selección de filas, no es esta pieza.
+   tabla densa del galpón, con selección de filas, es su variante data-forma="seleccion", al final.
 
    Diferencias con la guía: (1) la guía pone la tabla dentro de una caja (`.tabla-caja`: borde fino,
    radio de botón y fondo de superficie); la caja pide un envoltorio en las plantillas de pantalla, que
@@ -190,5 +190,229 @@
   .tabla tr[data-atenuada] > :last-child {
     border-start-end-radius: var(--radio-boton);
     border-end-end-radius: var(--radio-boton);
+  }
+}
+
+/* La tabla del galpón, con selección (`data-forma="seleccion"`; guía 10-componentes.css:395-405 y
+   15-pantallas.css:20, P21; ADM1-04, DA-18 y DA-21): densa, en la letra de la tabla del admin, y una
+   tabla en todos los anchos (no se apila). La primera columna es la casilla sola de 48 × 48 px
+   (`label.tabla-casilla` con su `input type="checkbox"`): el control nativo, transparente, cubre la
+   casilla entera y recibe el foco y el toque; la casilla dibujada (::before) no es interactiva, como
+   la del buzón (DA-21). La fila elegida va en `--color-fila-elegida`. Las columnas con
+   `data-columna="ancha"` se esconden por debajo de 56 em: en el celular quedan la casilla, el título
+   de la fila y una columna más. En el encabezado, la casilla de elegir todas: un enlace
+   `a.tabla-casilla` que vuelve a la pantalla con todas marcadas desde el servidor (marcada, con
+   `data-estado="elegida"`). Arriba, la barra de las elegidas (`.tabla-elegidas`): cuántas se
+   eligieron y las acciones del lote. La guía mide la casilla dibujada en 1,375 rem: va con el
+   token más cercano (--espacio-4), y la tilde, con --espacio-1 y --espacio-2. */
+.tabla[data-forma="seleccion"] {
+  display: table;
+  background: var(--color-superficie);
+  font-size: var(--tamano-denso);
+  line-height: var(--tamano-interlinea-denso);
+}
+
+.tabla[data-forma="seleccion"] thead {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+}
+
+.tabla[data-forma="seleccion"] tbody {
+  display: table-row-group;
+}
+
+.tabla[data-forma="seleccion"] tbody tr {
+  display: table-row;
+  padding: 0;
+}
+
+.tabla[data-forma="seleccion"] :is(th, td) {
+  display: table-cell;
+  padding: var(--espacio-1) var(--espacio-2);
+  vertical-align: middle;
+}
+
+.tabla[data-forma="seleccion"] thead th {
+  border-bottom: var(--borde-tinta);
+  background: var(--color-galpon-cabecera);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tabla[data-forma="seleccion"] tbody th {
+  font-weight: 700;
+}
+
+.tabla[data-forma="seleccion"] tbody tr:hover {
+  background: var(--color-fila-cursor);
+}
+
+.tabla[data-forma="seleccion"] tbody tr:has(.tabla-casilla :checked) {
+  background: var(--color-fila-elegida);
+}
+
+.tabla[data-forma="seleccion"] :is(th, td):has(> .tabla-casilla),
+.tabla[data-forma="seleccion"] thead th:first-child {
+  width: var(--medida-toque-minimo);
+  padding: 0;
+}
+
+.tabla[data-forma="seleccion"] [data-columna="ancha"] {
+  display: none;
+}
+
+@media (min-width: 56em) {
+  .tabla[data-forma="seleccion"] [data-columna="ancha"] {
+    display: table-cell;
+  }
+}
+
+.tabla-casilla {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--medida-toque-minimo);
+  height: var(--medida-toque-minimo);
+  margin: 0;
+  border-radius: var(--radio-boton);
+  cursor: pointer;
+}
+
+.tabla-casilla input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.tabla-casilla::before {
+  content: "";
+  box-sizing: border-box;
+  width: var(--espacio-4);
+  height: var(--espacio-4);
+  border: var(--borde-ancho-sello) solid var(--color-tinta);
+  border-radius: var(--radio-estampa);
+  background: var(--color-campo);
+}
+
+.tabla-casilla:is(:has(:checked), [data-estado="elegida"])::before {
+  border-color: var(--color-accion-primaria);
+  background: var(--color-accion-primaria);
+}
+
+.tabla-casilla:is(:has(:checked), [data-estado="elegida"])::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--espacio-1);
+  height: var(--espacio-2);
+  border-right: var(--borde-ancho-foco) solid var(--color-texto-sobre-accion);
+  border-bottom: var(--borde-ancho-foco) solid var(--color-texto-sobre-accion);
+  translate: -50% -60%;
+  rotate: 45deg;
+}
+
+.tabla-casilla:is(:has(:focus-visible), :focus-visible) {
+  outline: var(--borde-ancho-foco) solid var(--color-foco);
+  outline-offset: calc(-1 * var(--borde-ancho-foco));
+}
+
+/* La barra de las elegidas: el texto a la izquierda y las acciones a la derecha; bajan de renglón
+   si no entran. Va después de la tabla en la página, dentro de la misma .pila, y se dibuja arriba:
+   así cuenta las casillas marcadas sin JavaScript, con un contador de CSS (`[data-parte="cuenta"]`
+   escribe el número), y no queda vieja al destildar una. Lo que dice con alguna elegida
+   (`data-elegidas="alguna"`) reemplaza a lo que dice sin ninguna (`data-elegidas="ninguna"`). */
+.tabla-elegidas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+  padding: var(--espacio-1) var(--espacio-2);
+  border: var(--borde-tinta);
+  border-radius: var(--radio-boton);
+  background: var(--color-fila-elegida);
+}
+
+.tabla-elegidas p {
+  margin: 0;
+}
+
+.pila > .tabla-elegidas {
+  order: -1;
+  margin-block: 0 var(--espacio-entre, var(--espacio-3));
+}
+
+.pila > .tabla[data-forma="seleccion"] {
+  margin-block-start: 0;
+}
+
+:has(> .tabla[data-forma="seleccion"]) {
+  counter-reset: tabla-elegidas;
+}
+
+.tabla[data-forma="seleccion"] tbody .tabla-casilla:has(:checked) {
+  counter-increment: tabla-elegidas;
+}
+
+.tabla-elegidas [data-parte="cuenta"]::before {
+  content: counter(tabla-elegidas);
+}
+
+/* La acción llena dice «Aprobar la elegida» con una y «Aprobar las N» con más (la guía): el mismo
+   contador, escrito con dos estilos de contador, porque el CSS no puede contar «exactamente una»
+   con :has() (no se anida). El artículo: «la» con 1 y «las» con más; el resto: «elegida» con 1 y
+   el número con más. */
+@counter-style tabla-articulo-varias {
+  system: cyclic;
+  symbols: "las";
+}
+
+@counter-style tabla-articulo {
+  system: fixed;
+  symbols: "la";
+  fallback: tabla-articulo-varias;
+}
+
+@counter-style tabla-cuenta-o-elegida {
+  system: fixed;
+  symbols: "elegida";
+  fallback: decimal;
+}
+
+.tabla-elegidas [data-parte="cuenta-aprobar"]::before {
+  content: counter(tabla-elegidas, tabla-articulo) " " counter(tabla-elegidas, tabla-cuenta-o-elegida);
+}
+
+.tabla-elegidas [data-elegidas="alguna"],
+:has(> .tabla[data-forma="seleccion"] tbody :checked) > .tabla-elegidas [data-elegidas="ninguna"] {
+  display: none;
+}
+
+:has(> .tabla[data-forma="seleccion"] tbody :checked) > .tabla-elegidas [data-elegidas="alguna"] {
+  display: inline;
+}
+
+/* Con los colores del sistema, la casilla elegida se pinta con el color del texto. */
+@media (forced-colors: active) {
+  .tabla-casilla::before {
+    border-color: CanvasText;
+  }
+
+  .tabla-casilla:is(:has(:checked), [data-estado="elegida"])::before {
+    background: CanvasText;
+  }
+
+  .tabla-casilla::after {
+    border-color: Canvas;
   }
 }

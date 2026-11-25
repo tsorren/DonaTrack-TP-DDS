@@ -1068,18 +1068,18 @@ Suma: 0 + 5 + 5 + 3 + 1 + 3 + 1 = 18, las 18 de §5.
 
 | ID | Lote | Qué | Arquetipo y decisiones | Estado |
 |---|---|---|---|---|
-| ADM1-01 | `adm1-galpon` | P22 · El cajón del galpón: las secciones en la tierra y la actual en papel, con su cuenta chica (la cuenta de la persona queda en la barra de arriba, DA-27); con su muestra en `/estilos` y su fila en el catálogo | Guía 417-427; DA-18 | Pendiente |
-| ADM1-02 | `adm1-galpon` | P26, la mitad del galpón · El armazón del admin: el papel claro, los títulos un escalón más chicos y el contenido denso; desde 56 em el cajón siempre abierto a la izquierda, con la barra superior fina arriba (marca, campana y cuenta); hasta 56 em, la barra del celular | 15, 16-25 y 98-104; DA-18 y DA-27 | Pendiente |
-| ADM1-03 | `adm1-galpon` | El menú del admin: Por decidir, Donaciones, Donantes, Organizaciones, Camiones y Ranking; en el celular, Por decidir, Donaciones, Camiones y Más, que abre todas. Por decidir lleva a `/admin-inicio` y queda marcada también en `/admin-asignaciones` y sus respuestas | §5.1; DA-04, DA-17 y DA-25 | Pendiente |
-| ADM1-04 | `adm1-asignaciones` | P21 · La tabla del galpón con selección: la casilla sola de 48 × 48 px (el patrón de DA-21), la de elegir todas, la fila elegida, las columnas que se esconden en el celular y la barra de las elegidas con su cuenta; con su muestra en `/estilos` y su fila en el catálogo | Guía 395-405; 15, 20; DA-18 y DA-21 | Pendiente |
-| ADM1-05 | `adm1-asignaciones` | Asignar pasa a ser la mesa de «Por decidir»: la cabecera y la barra de pestañas de A03 (en un fragmento que usa también `/admin-inicio`), Propuestas en la tabla con selección, Conflictos de a una, Destino y Decididas; las cuatro respuestas, con su aviso breve | A03; DA-25 | Pendiente |
-| ADM1-06 | `adm1-asignaciones` | Aprobar o descartar varias propuestas juntas, una por una contra el puerto de hoy, con el aviso de cuántas se decidieron | DA-26 | Pendiente |
-| ADM1-07 | `adm1-camiones` | Camiones y sus cuatro respuestas: la cabecera del galpón, la barra del listado, las vistas por estado con su cuenta y la flota con su ficha; el mapa chico con los marcadores de 48 px | Deriva de A03; la flota, sin arquetipo | Pendiente |
-| ADM1-08 | `adm1-donaciones` | Donaciones, su detalle y el detalle de una vencida, con «Vencida» en el par neutro | Deriva de A03; DA-07 | Pendiente |
-| ADM1-09 | `adm1-por-decidir` | `/admin-inicio` es «Por decidir»: la cabecera y las pestañas de A03, con Propuestas abierta (la primera página de las propuestas sin conflicto en la tabla con selección) | A03; DA-04 y DA-25 | Pendiente |
-| ADM1-10 | `adm1-por-decidir` | Debajo de la bandeja, según su ficha: «Cómo está todo» como resumen denso y los dos gráficos con su tabla | Sin arquetipo: ficha; DA-08, DA-29 y DA-30 | Pendiente |
-| ADM1-11 | `adm1-registrar` | Registrar donación y su error, en el galpón; «registrada» pasa a aviso breve en Donaciones y, en la maqueta, su ruta sigue | Deriva de A12; DA-06 | Pendiente |
-| ADM1-12 | `adm1-ranking` | Ranking, según su ficha | Sin arquetipo: ficha; DA-08, DA-28 y DA-31 | Pendiente |
+| ADM1-01 | `adm1-galpon` | P22 · El cajón del galpón: las secciones en la tierra y la actual en papel, con su cuenta chica (la cuenta de la persona queda en la barra de arriba, DA-27); con su muestra en `/estilos` y su fila en el catálogo | Guía 417-427; DA-18 | Parcial (`b5a6879f8`, `ed7631670`, `e9fbc76d2`, `2b7ef8b38`, `e90cd4bf1` y `8b0e09344`): el cajón con sus seis secciones, la actual en papel, su muestra a todo el ancho en `/estilos` y su fila en el catálogo. Falta la cuenta chica en las pantallas: tiene estilo y muestra, pero `OpcionNavegacion` no trae el número y no se tocan los puertos ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 1) |
+| ADM1-02 | `adm1-galpon` | P26, la mitad del galpón · El armazón del admin: el papel claro, los títulos un escalón más chicos y el contenido denso; desde 56 em el cajón siempre abierto a la izquierda, con la barra superior fina arriba (marca, campana y cuenta); hasta 56 em, la barra del celular | 15, 16-25 y 98-104; DA-18 y DA-27 | Hecho (`b5a6879f8`, `ed7631670`, `e9fbc76d2`, `2b7ef8b38` y `e90cd4bf1`): `body[data-armazon="galpon"]`, la barra de arriba en todos los anchos (marca, campana y cuenta), el cajón fijo a la izquierda desde 56 em y la barra del celular con Más. La barra de arriba conserva el alto de la huerta y, desde 56 em, queda fija también en ventanas bajas (desvío de R11-33, [DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 2). `ArmazonFijoTest` pasa sus 12 (en `2a5e83682`) |
+| ADM1-03 | `adm1-galpon` | El menú del admin: Por decidir, Donaciones, Donantes, Organizaciones, Camiones y Ranking; en el celular, Por decidir, Donaciones, Camiones y Más, que abre todas. Por decidir lleva a `/admin-inicio` y queda marcada también en `/admin-asignaciones` y sus respuestas | §5.1; DA-04, DA-17 y DA-25 | Hecho (`b5a6879f8`): Por decidir, Donaciones, Donantes, Organizaciones, Camiones y Ranking; en el celular, Por decidir, Donaciones, Camiones y Más. Por decidir lleva a `/admin-inicio` y queda marcada en `/admin-asignaciones` y sus respuestas. Los menús de los otros roles no cambiaron |
+| ADM1-04 | `adm1-asignaciones` | P21 · La tabla del galpón con selección: la casilla sola de 48 × 48 px (el patrón de DA-21), la de elegir todas, la fila elegida, las columnas que se esconden en el celular y la barra de las elegidas con su cuenta; con su muestra en `/estilos` y su fila en el catálogo | Guía 395-405; 15, 20; DA-18 y DA-21 | Hecho (`0fda83499`, `4bc65d917`, `a8c064a75`): `.tabla[data-forma="seleccion"]` con `.tabla-casilla` de 48 × 48 px, la fila elegida, `data-columna="ancha"` y `.tabla-elegidas`. Sin JavaScript (esta ola no edita `static/js`): elegir todas es un enlace con `?elegir=todas` que dibuja el servidor y la cuenta es un contador de CSS, que no se anuncia al marcar ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 3) |
+| ADM1-05 | `adm1-asignaciones` | Asignar pasa a ser la mesa de «Por decidir»: la cabecera y la barra de pestañas de A03 (en un fragmento que usa también `/admin-inicio`), Propuestas en la tabla con selección, Conflictos de a una, Destino y Decididas; las cuatro respuestas, con su aviso breve | A03; DA-25 | Hecho (`0fda83499`, `e88438454`, `4bc65d917`, `a8c064a75` y `e90cd4bf1`): la cabecera y las pestañas de A03 en fragmentos (`admin-asignaciones :: cabecera` y `:: pestanas`), Propuestas en la tabla con selección, Conflictos, Destino y Decididas, y las cuatro respuestas con el aviso breve con signo. Desde `e90cd4bf1` las pestañas llevan la fecha y las cuentas de Solicitudes y Por vencer del mismo origen que `/admin-inicio`. La columna «La donación vence» de A03 no se dibuja: el dato no llega ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 4) |
+| ADM1-06 | `adm1-asignaciones` | Aprobar o descartar varias propuestas juntas, una por una contra el puerto de hoy, con el aviso de cuántas se decidieron | DA-26 | Hecho (`0fda83499`, `4bc65d917` y `e90cd4bf1`): varias `propuesta` a `-aprobada` o `-descartada`, una por una contra `decidirPropuesta`; si una da 409, para y el aviso dice cuántas se decidieron; en la maqueta de error, la que falló queda en la tabla sin casilla, con el sello «problema», y se descarta desde el aviso. Otro error a mitad del lote lleva a la página de error sin la cuenta ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 4) |
+| ADM1-07 | `adm1-camiones` | Camiones y sus cuatro respuestas: la cabecera del galpón, la barra del listado, las vistas por estado con su cuenta y la flota con su ficha; el mapa chico con los marcadores de 48 px | Deriva de A03; la flota, sin arquetipo | Hecho (`57b0fe52d`, `c0a520425`, `e90cd4bf1` y `8b0e09344`): la cabecera del galpón con las cifras de la flota, el error con el `.aviso` del catálogo, los avisos con `admin-donaciones :: hecho`, el alta con error con el patrón de A12 y el mapa chico con `data-mapa-margenes="24 96 120 40"`. `/admin-camiones` y `/admin-camiones-agregar-error` salen de la línea de base de §10.4 |
+| ADM1-08 | `adm1-donaciones` | Donaciones, su detalle y el detalle de una vencida, con «Vencida» en el par neutro | Deriva de A03; DA-07 | Hecho (`341f726ee`, `b13b05eed`, `1af6d4b85`, `e90cd4bf1` y `8b0e09344`): la `.tabla` del catálogo con cada fila al detalle, en lugar de la bandeja con ficha de R11-34 (decisión de agente, [DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 5); «Vencida» con el par neutro en la lista y en el detalle (DA-07). `/admin-donaciones?donacion=` dibuja el detalle (200) para los enlaces de Decididas y de Donantes |
+| ADM1-09 | `adm1-por-decidir` | `/admin-inicio` es «Por decidir»: la cabecera y las pestañas de A03, con Propuestas abierta (la primera página de las propuestas sin conflicto en la tabla con selección) | A03; DA-04 y DA-25 | Hecho (`0dec8c01c`, `b64f154fa` y `e90cd4bf1`): `/admin-inicio` es «Por decidir» con la cabecera y las pestañas del fragmento de Asignar, Propuestas abierta en la tabla con selección y «Aprobar las N» como única acción llena. La cuenta de Propuestas sale de la vista de asignaciones, no de `Decisiones.propuestas` |
+| ADM1-10 | `adm1-por-decidir` | Debajo de la bandeja, según su ficha: «Cómo está todo» como resumen denso y los dos gráficos con su tabla | Sin arquetipo: ficha; DA-08, DA-29 y DA-30 | Hecho (`0dec8c01c` y `b64f154fa`): «Cómo está todo» como un resumen con `.datos` y su fecha, las salidas juntas debajo en un `.racimo`, y los dos gráficos con su tabla en `admin-inicio.css` con los nombres de token de la guía. «Entregas para mirar hoy» no se dibuja (DA-29, [DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 6) |
+| ADM1-11 | `adm1-registrar` | Registrar donación y su error, en el galpón; «registrada» pasa a aviso breve en Donaciones y, en la maqueta, su ruta sigue | Deriva de A12; DA-06 | Hecho (`24549de7c`, `2a5e83682`, `e90cd4bf1` y `8b0e09344`): Registrar en la composición de A12, cada bien en una tarjeta con h3, el botón fijo en el celular y «Volver sin registrar»; «registrada» es el aviso breve en Donaciones y, en la maqueta, su ruta muestra Donaciones con el aviso. Fuera de la maqueta, el error de datos sigue volviendo con un aviso breve y no con el resumen arriba ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 7) |
+| ADM1-12 | `adm1-ranking` | Ranking, según su ficha | Sin arquetipo: ficha; DA-08, DA-28 y DA-31 | Hecho (`fa55bb12b` y `8b0e09344`): la tabla del catálogo sin podio, el puesto en número, el caption para lectores, la pastilla «Mes», «Volver al último mes» y el paginador de meses debajo de la tabla, y el error con el `.aviso` del catálogo |
 
 Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5), con el
 límite de las hojas compartidas de §14.2.
@@ -1106,3 +1106,71 @@ límite de las hojas compartidas de §14.2.
   y no son bloqueantes; si pasan, también se anota. `ArmazonFijoTest` mide `/admin-donantes`,
   `/admin-donaciones`, `/admin-camiones` y `/admin-asignaciones?vista=decididas`: un fallo nuevo
   ahí es bloqueante del lote que lo rompe (DA-27).
+
+### 14.5 Cierre de ADM1 (2026-11-25)
+
+Rama `E7_guia_ui_adm1`, `8b0e09344`; 18 commits de lote y de sus arreglos sobre `5182610a0` (el
+manifiesto integrado), uno de cierre (`78518efb4`) y dos de la revisión de pantallas de la ola
+(`e90cd4bf1` y `8b0e09344`). Estado de cada ítem en §14.3: 11 hechos y ADM1-01 parcial (la cuenta
+chica del cajón no llega a ninguna pantalla). La revisión de pantallas de la ola corrió 2 rondas
+de arreglos y no llegó a PASS. Por eso las decisiones del usuario de esta ola (DA-04, DA-06, DA-07,
+DA-17, DA-18 y DA-25 a DA-31) constan como no cumplidas, aunque su comportamiento esté en el
+código y en los tests. Lo que queda abierto está en [DTI-51](../adr/DEUDA_TECNICA.md#dti-51); lo
+que ADM1 cierra de C1, en [DTI-47](../adr/DEUDA_TECNICA.md#dti-47), ítems 6 y 13; las decisiones,
+en la [bitácora](bitacora.md) (2026-11-25).
+
+- `[VERIFIED]` `mvn clean test -pl cliente-liviano -am` en `8b0e09344`: exit 0, 926 tests, sin
+  fallos. En `2a5e83682`, antes de la revisión de pantallas: 925 tests, sin fallos (903 en PUB1).
+  Spotless e `InterfazFitnessTest` incluidos: ningún tope cambió y el test no se editó.
+  `clases-heredadas.txt` pierde 10 líneas (`adm1-por-decidir`) y no suma ninguna.
+- `[VERIFIED]` Cercos con `git diff 5182610a0..HEAD`: sin cambios en `rest/`, `puertos/`,
+  `tokens.css`, los tests de `visual/`, `InterfazFitnessTest.java`, `static/js/`,
+  `templates/componentes/`, `iconos.html`, `entidad-comun.css`, `cuenta-menu.html`, `envio.html` ni
+  `pie.html`. No se borró ninguna plantilla ni hoja; el único archivo nuevo es
+  `ArmazonDelGalponTest.java`. `admin-donantes.html` (ADM2) se tocó en una ronda de `adm1-donaciones` y
+  se revirtió: su enlace y el de «La cubría» en Decididas siguen apuntando a
+  `/admin-donaciones?donacion=`, que dibuja el detalle.
+- `[VERIFIED]` `-Pvisual` sobre las 62 rutas (las 61 de ADM1 de `paginas.txt` y `/estilos`), en
+  `2a5e83682`: pasan las 62. `/admin-camiones` y `/admin-camiones-agregar-error`, de la línea de
+  base de §10.4, **ahora pasan** (`data-mapa-margenes="24 96 120 40"` y la hoja de MapLibre antes
+  del script, sin editar `mapa.js` ni `mapa.css`). Ninguna ruta pasó de verde a rojo. No se volvió
+  a correr después de las dos rondas de la revisión de pantallas.
+- `[VERIFIED]` Los otros cinco tests visuales, en `2a5e83682`: 31 tests, 3 fallos y 3 errores,
+  todos de la línea de base: `AbejasYRenglonesTest.lasAbejasCambianDeCapaSoloCuandoNoSeVen`, el
+  del lema del pie ([DTI-47](../adr/DEUDA_TECNICA.md#dti-47), ítem 5) y los tres de DA-22
+  ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 3). `ArmazonFijoTest` pasa sus 12, también
+  `enElCelularConTabYShiftTabElFocoNoQuedaTapado`, que estaba en la línea de base de §10.5: sale de
+  ella. `DonanteDetallesTest` pasa sus 7. El inestable de `MenusQueSeCierranTest` falló una vez y
+  pasó 2 de 2 al repetirlo solo. Ningún fallo nuevo. No se volvieron a correr después de la revisión
+  de pantallas.
+- Sin stack ni recorrido con login (DA-20): ningún lote cambia un adaptador `rest`. Queda para Z
+  comprobar con datos reales Por decidir, aprobar y descartar varias juntas, Camiones, Donaciones
+  con «Vencida», Registrar y Ranking.
+- Revisión de los lotes: el veredicto de cada una no consta en el cierre. Tuvieron rondas de
+  arreglo `adm1-galpon` (2), `adm1-asignaciones` (2), `adm1-donaciones` (2), `adm1-camiones` (1) y
+  `adm1-registrar` (1); `adm1-por-decidir` y `adm1-ranking`, ninguna (el segundo commit de
+  `adm1-por-decidir` corrige el resumen y el error antes de su revisión). La revisión de pantallas
+  de la ola: 2 rondas de arreglos (`e90cd4bf1`: el título separado de la barra del listado, la
+  fecha y las cuentas de la mesa del mismo origen que el inicio, los errores de Donaciones y Asignar
+  con el `.aviso`, el fragmento `admin-donaciones :: hecho`, la propuesta que no se pudo aprobar y
+  la muestra del cajón a todo el ancho; `8b0e09344`: la barra del celular del galpón en `/estilos`
+  a 360 px, el alta de camión con error en el patrón de A12, los errores de guardado con el
+  `.aviso` y el error de Camiones y Ranking con el enlace en línea), sin PASS.
+- Commits de la ola, en hora de autor (2026-11-24 y 25, -03:00): `b5a6879f8` (24, 22:32),
+  `0fda83499` (22:24), `341f726ee` (22:07), `57b0fe52d` (22:17), `e88438454` (22:37), `ed7631670`
+  (22:45), `e9fbc76d2` (23:15), `b13b05eed` (23:20), `4bc65d917` (23:33), `c0a520425` (25, 00:07),
+  `a8c064a75` (00:33), `2b7ef8b38` (00:39), `1af6d4b85` (00:41), `fa55bb12b` (01:11), `24549de7c`
+  (01:16), `0dec8c01c` (01:31), `b64f154fa` (01:40), `2a5e83682` (01:58), `78518efb4` (02:34,
+  cierre), `e90cd4bf1` (03:18, revisión de pantallas, ronda 1) y `8b0e09344` (03:55, ronda 2).
+- ADR: ninguno. La ola no tuvo lotes de contrato e implementa el ADR «Huerta y galpón» (§9.1,
+  Gate A); DA-25 a DA-31 son decisiones de pantalla y DA-26 no cambia el puerto. Ninguna spec de
+  `docs/specs/active/` es de esta ola, así que no se mueve ninguna.
+- Documentos: `mapa-del-sitio.md` suma los cambios de la ola (el menú del admin, Por decidir en
+  las dos rutas, decidir varias juntas, Donaciones como tabla y la respuesta de Registrar) y el
+  diagrama y la tabla nombran Por decidir; `componentes.md` (además de las filas del cajón, el
+  galpón y la tabla con selección que trajeron los lotes) actualiza `data-fijo`, las migas, la
+  tarjeta (sale `decision`) y la flota; `patrones-y-microcopy.md`, la regla 26 (también Registrar
+  donación) y la regla 27 (decidir varias juntas). `tono-y-comunicacion.md` y
+  [`requerimientos-e7.md`](../requerimientos/requerimientos-e7.md) no cambian: el primero no nombra
+  pantallas ni menús, y ningún requerimiento cambia de estado. Las fichas de antes de la ola que ya
+  no describen el código están en [DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 10.

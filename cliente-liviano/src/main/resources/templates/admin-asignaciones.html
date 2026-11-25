@@ -1,28 +1,45 @@
 <!DOCTYPE html>
-<!--/* Asignar donaciones del admin (RF-17, R11-24), según su ficha de flujo
-       (docs/interfaz/flujos/r11-p1-asignaciones.md, que reemplaza la sección 4.7 de la ficha del
-       admin). Tres pestañas, enlaces reales del servidor (?pestana=propuestas|conflictos|destino),
-       con la cuenta del resumen de Donaciones: Propuestas (las que se aprueban sin problemas, con el
-       filtro "Ver" por algoritmo y las 3 decididas más recientes), Conflictos (las que chocan o ya no
-       alcanzan, con su franja) y Destino (las donaciones que están en propuestas y, con ?donacion=,
-       todas las que la piden). ?vista=decididas es Todas las decididas, de a 20. Las tres pestañas
-       usan la misma tarjeta (fragmento tarjeta), que dice qué algoritmo la sugirió y en qué puesto.
-       A la derecha, desde el ancho de escritorio, el panel "Estado de la asignación" con la última
-       asignación, "Correr la asignación ahora" y la ayuda de los algoritmos. Todo llega paginado y
-       contado desde el controller (asignaciones: de la maqueta o de Donaciones); la plantilla no
-       filtra ni cuenta. Los formularios guardan de verdad fuera de la maqueta (pieza envio) y llevan
-       ocultos el nombre de la organización (para el aviso) y la pestaña (para volver).
+<!--/* Por decidir, la mesa completa del admin (RF-17, R11-24; guía, arquetipo A03 «Bandeja», #bandeja;
+       ADM1-05, DA-25 y DA-26). Arriba, la cabecera de Por decidir (el título, la fecha, la última
+       asignación, «Correr la asignación» y «Registrar donación») y la barra de pestañas con su
+       cuenta: Propuestas (a /admin-inicio, que abre Propuestas), Conflictos, Solicitudes (a
+       /admin-entidades) y Por vencer (a /admin-donaciones?vence=pronto). Las dos son fragmentos que
+       usa también /admin-inicio. Debajo, la vista pedida, con enlaces reales del servidor:
+       Propuestas (de partida o ?pestana=propuestas), paginadas en la tabla con selección (P21), para
+       aprobar o descartar varias juntas, con el filtro «Ver» por algoritmo; Conflictos
+       (?pestana=conflictos), de a una, con su tarjeta y su franja; Destino (?pestana=destino y, con
+       ?donacion=, todas las que piden esa donación); y Todas las decididas (?vista=decididas), de a
+       20. Destino y las decididas se enlazan debajo de las pestañas. Todo llega paginado y contado
+       desde el controller (asignaciones: de la maqueta o de Donaciones); la plantilla no filtra ni
+       cuenta. Los formularios guardan de verdad fuera de la maqueta (pieza envio) y llevan oculta la
+       pestaña (para volver) y, en la tarjeta, el nombre de la organización (para el aviso).
        ?escenario=vacio, lento, error y corriendo; en las pantallas de resultado de la maqueta,
        nuevas (después de correr), propia y cambio (al fallar una aprobación).
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'aprobada', 'descartada', 'error'
          o 'corrida'.
-       - tarjeta(p, pestana, fallo): una propuesta pendiente.
+       - cabecera(fecha, ultima, corriendo, volver): el título «Por decidir», la fecha (texto), la
+         frase de la última asignación (texto; '' o null no la dibuja) y las dos acciones; con
+         corriendo, el botón de correr queda apagado y dice que está corriendo; volver es la pestaña
+         oculta a la que vuelve «Correr la asignación» ('propuestas' aquí, 'inicio' en /admin-inicio).
+       - pestanas(actual, propuestas, conflictos): la barra de pestañas; actual es 'propuestas' o
+         'conflictos' (la que queda marcada; otro valor no marca ninguna) y propuestas y conflictos,
+         la cuenta de cada una (null no la dibuja). Solicitudes y Por vencer llevan la suya si quien
+         la usa define cuentaSolicitudes y cuentaPorVencer (con th:with, alrededor). Las dos rutas
+         las sacan de la misma fuente, AdminInicioVista: /admin-inicio de adminInicio y esta, de
+         inicioSolicitudes e inicioPorVencer (AdminAsignacionesController); si no llegan, van sin
+         cuenta en las dos.
+       - propuestas(filas, volver): la tabla de propuestas con selección dentro de su formulario;
+         filas son Propuesta y volver, la pestaña oculta a la que vuelven los envíos ('propuestas'
+         aquí, 'inicio' en /admin-inicio). Si quien la usa define fallo (la pantalla de error de la
+         maqueta), la propuesta que no se pudo aprobar va sin casilla y con el sello del problema:
+         no entra en la aprobación juntas, y el aviso de arriba ofrece descartarla.
+       - tarjeta(p, pestana, fallo): una propuesta pendiente, de a una (Conflictos y Destino).
        - decidida(x): una propuesta decidida, con su sello. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
-  <title>Asignar donaciones - DonaTrack</title>
+  <title>Por decidir - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
@@ -38,46 +55,70 @@
              conDatos=${escenario != 'error' and escenario != 'lento'},
              nuevas=${accion == 'corrida' and escenario == 'nuevas'},
              fallo=${accion == 'error' ? (escenario == 'propia' ? 'propia' : (escenario == 'cambio' ? 'cambio' : 'inactiva')) : ''},
-             corriendo=${escenario == 'corriendo'}">
-  <div class="mesa" data-pantalla="asignaciones">
-    <header class="mesa-cabecera">
-      <p class="rotulo">Administración</p>
-      <h1>Asignar donaciones</h1>
-    </header>
+             corriendo=${escenario == 'corriendo'},
+             cuentas=${a.cuentas},
+             ultima=${!conDatos ? '' : (accion == 'corrida' ? (nuevas ? 'Última asignación: hoy, 0:00 · generó 2 propuestas.' : 'Última asignación: hoy, 0:00 · no generó propuestas.') : (a.ultima != null ? 'Última asignación: ' + a.ultima + '.' : 'Todavía no se corrió ninguna asignación.'))}">
+  <div class="pila" data-espacio="4" data-pantalla="asignaciones">
+    <div class="pila" data-espacio="3"
+         th:with="cuentaSolicitudes=${!conDatos or inicioSolicitudes == null ? null : (vacioDeEjemplo ? 0 : inicioSolicitudes)},
+                  cuentaPorVencer=${!conDatos or inicioPorVencer == null ? null : (vacioDeEjemplo ? 0 : inicioPorVencer)}">
+      <header th:replace="~{admin-asignaciones :: cabecera(${hoy}, ${ultima}, ${corriendo}, 'propuestas')}"></header>
+      <nav th:replace="~{admin-asignaciones :: pestanas(${pestana},
+                          ${cuentas == null ? null : (vacioDeEjemplo ? 0 : cuentas.sinProblemas)},
+                          ${cuentas == null ? null : (vacioDeEjemplo ? 0 : cuentas.enConflicto)})}"></nav>
+      <p class="racimo" data-espacio="3">
+        <a href="/admin-asignaciones?pestana=destino" th:href="@{/admin-asignaciones(pestana='destino')}"
+           th:attr="aria-current=${pestana == 'destino'} ? 'page' : null" hx-boost="true">Adónde va cada donación ›</a>
+        <a href="/admin-asignaciones?vista=decididas" th:href="@{/admin-asignaciones(vista='decididas')}"
+           th:attr="aria-current=${pestana == 'decididas'} ? 'page' : null" hx-boost="true">Todas las decididas ›</a>
+      </p>
+    </div>
 
-    <!--/* Los avisos de las pantallas de resultado de la maqueta; fuera de ella llegan a #avisos. */-->
-    <p th:if="${accion == 'aprobada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Aprobaste la propuesta para Comedor Barrio Ejemplo. Las donaciones quedaron asignadas y salen
-      del depósito cuando se arme la ruta.</p>
-    <p th:if="${accion == 'descartada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Descartaste la propuesta para Merendero Ejemplo Sur. Las donaciones siguen en el depósito para
-      otra asignación.</p>
-    <p th:if="${accion == 'corrida'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus th:text="${nuevas} ? 'La asignación generó 2 propuestas nuevas.' : 'La asignación no encontró donaciones para ninguna necesidad nueva.'">La
-      asignación no encontró donaciones para ninguna necesidad nueva.</p>
-    <section th:if="${fallo != ''}" class="banner" data-estado="error" role="alert" tabindex="-1" autofocus
-             aria-labelledby="fallo-titulo">
-      <h2 id="fallo-titulo" th:switch="${fallo}">
+    <!--/* Los avisos de las pantallas de resultado de la maqueta, debajo de la cabecera y, con HTMX, en
+           la región de avisos; fuera de ella los trae el layout. hx-swap-oob="beforeend" suma a la
+           región los hijos del elemento que lo lleva: por eso va en una caja sin clase, y a la región
+           llega el aviso entero, con su signo y su cierre. */-->
+    <div th:if="${accion == 'aprobada' or accion == 'descartada' or accion == 'corrida'}"
+         hx-swap-oob="beforeend:#avisos"><div class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+        autofocus><svg th:replace="~{componentes/sello :: signo('confirmada')}"></svg><p
+        th:text="${accion == 'aprobada'} ? 'Aprobaste la propuesta para Comedor Barrio Ejemplo. Las donaciones quedaron asignadas y salen del depósito cuando se arme la ruta.' : (${accion == 'descartada'} ? 'Descartaste la propuesta para Merendero Ejemplo Sur. Las donaciones siguen en el depósito para otra asignación.' : (${nuevas} ? 'La asignación generó 2 propuestas nuevas.' : 'La asignación no encontró donaciones para ninguna necesidad nueva.'))">La
+      asignación no encontró donaciones para ninguna necesidad nueva.</p><button
+        type="button" class="aviso-cerrar" data-cerrar aria-label="Cerrar el aviso">×</button></div></div>
+    <!--/* El envío que no se pudo hacer: el aviso del catálogo, sin código ni «Volver a cargar» (no es
+           un error de carga). La propuesta que falló no entra en la aprobación juntas: acá se
+           descarta. */-->
+    <div th:if="${fallo != ''}" class="aviso" data-tipo="error" role="alert" tabindex="-1" autofocus>
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo" th:switch="${fallo}">
         <th:block th:case="'inactiva'">No se pudo aprobar: la necesidad de Merendero Ejemplo Sur ya no está activa
           (la organización la dio de baja o ya se cumplió).</th:block>
         <th:block th:case="'propia'">No se pudo aprobar: una de las donaciones es de la misma organización que la
           pidió.</th:block>
         <th:block th:case="*">Esta propuesta cambió mientras la mirabas.</th:block>
-      </h2>
-      <p th:text="${fallo == 'cambio'} ? 'Volvimos a cargar la lista.' : 'No se asignó nada; podés descartar la propuesta.'">No
-        se asignó nada; podés descartar la propuesta.</p>
-    </section>
+      </p>
+      <p th:text="${fallo == 'cambio'} ? 'Volvimos a cargar la lista.' : 'No se asignó nada. La propuesta para Merendero Ejemplo Sur (Leche en polvo) no se puede aprobar; podés descartarla.'">No
+        se asignó nada. La propuesta para Merendero Ejemplo Sur (Leche en polvo) no se puede aprobar; podés
+        descartarla.</p>
+      <form th:if="${fallo != 'cambio'}" action="/admin-asignaciones-descartada"
+            th:action="@{/admin-asignaciones-descartada}" method="post" hx-boost="true"
+            hx-indicator="#enviando-descartar-fallo" hx-select-oob="#avisos">
+        <input type="hidden" name="propuesta" value="leche">
+        <input type="hidden" name="organizacion" value="Merendero Ejemplo Sur">
+        <input type="hidden" name="pestana" value="propuestas">
+        <button class="boton" data-tono="secundario" data-tamano="chico" type="submit">Descartar la
+          propuesta</button>
+        <p th:replace="~{envio :: indicador('enviando-descartar-fallo', 'Guardando…')}"></p>
+      </form>
+    </div>
 
-    <!--/* Todas las decididas (?vista=decididas): sin pestañas ni panel. La búsqueda, los filtros y el
-           orden (R11-35, ficha r11-p2-admin-bandeja §4.3) se resuelven en Donaciones; la barra
-           es el componente listado (R11-B04; la arma AdminAsignacionesController): la fecha de la
-           decisión (desde y hasta), estado, categoría, la organización (solo si la fuente la
-           filtra aparte: con Donaciones, la búsqueda ya la cubre), "Decidió" y el orden. */-->
+    <!--/* Todas las decididas (?vista=decididas). La búsqueda, los filtros y el orden (R11-35, ficha
+           r11-p2-admin-bandeja §4.3) se resuelven en Donaciones; la barra es el componente listado
+           (R11-B04; la arma AdminAsignacionesController): la fecha de la decisión (desde y hasta),
+           estado, categoría, la organización (solo si la fuente la filtra aparte: con Donaciones, la
+           búsqueda ya la cubre), "Decidió" y el orden. */-->
     <section th:if="${pestana == 'decididas'}" class="pila" data-espacio="3" aria-labelledby="decididas-titulo"
              th:with="b=${c.decididas}, n=${vacioDeEjemplo ? 0 : a.decididas.total},
                       nTexto=${#numbers.formatInteger(n, 1, 'POINT')}">
-      <a class="boton" data-tono="secundario" href="/admin-asignaciones" th:href="@{/admin-asignaciones}"
-         hx-boost="true">← Volver a las propuestas</a>
       <h2 id="decididas-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
           th:text="${a.decididas.total > 0} ? |Decididas · ${#numbers.formatInteger(a.decididas.total, 1, 'POINT')}| : 'Decididas'">Decididas
         · 7</h2>
@@ -108,203 +149,80 @@
     </section>
 
     <th:block th:unless="${pestana == 'decididas'}"
-        th:with="cuentas=${a.cuentas},
-                 libres=${vacioDeEjemplo ? 0 : cuentas.sinProblemas},
+        th:with="libres=${vacioDeEjemplo ? 0 : cuentas.sinProblemas},
                  enConflicto=${vacioDeEjemplo ? 0 : cuentas.enConflicto},
                  pendientes=${vacioDeEjemplo ? 0 : cuentas.pendientes}">
-      <nav class="segmentos" data-forma="desliza" aria-label="Qué querés revisar" hx-boost="true">
-        <a href="/admin-asignaciones?pestana=propuestas" th:href="@{/admin-asignaciones(pestana='propuestas')}"
-           th:attr="aria-current=${pestana == 'propuestas'} ? 'page' : null">Propuestas <b
-            th:text="${#numbers.formatInteger(libres, 1, 'POINT')}">8</b></a>
-        <a href="/admin-asignaciones?pestana=conflictos" th:href="@{/admin-asignaciones(pestana='conflictos')}"
-           th:attr="aria-current=${pestana == 'conflictos'} ? 'page' : null">Conflictos <b
-            th:text="${#numbers.formatInteger(enConflicto, 1, 'POINT')}">3</b></a>
-        <a href="/admin-asignaciones?pestana=destino" th:href="@{/admin-asignaciones(pestana='destino')}"
-           th:attr="aria-current=${pestana == 'destino'} ? 'page' : null">Destino</a>
-      </nav>
+      <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando las propuestas…</p>
 
-      <div data-parte="cuerpo">
-        <div class="pila" data-espacio="3" data-parte="lista">
-          <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando las propuestas…</p>
+      <div th:if="${escenario == 'error'}" class="aviso" data-tipo="error" role="alert">
+        <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+        <p class="aviso-titulo">No pudimos cargar las propuestas.</p>
+        <p>Es un problema nuestro: no cambió ninguna decisión. Probá de nuevo en unos minutos; si sigue,
+          <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+             th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-asignaciones')}">escribinos
+            con este código</a>.</p>
+        <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+        <a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-asignaciones"
+           th:href="@{/admin-asignaciones}">Volver a cargar</a>
+      </div>
 
-          <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
-                   aria-labelledby="error-titulo">
-            <h2 id="error-titulo">No pudimos cargar las propuestas.</h2>
-            <p>Es un problema nuestro: no cambió ninguna decisión. Probá de nuevo en unos minutos; si sigue,
-              <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
-                 th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-asignaciones')}">escribinos
-                con este código</a>.</p>
-            <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-            <a class="boton" data-tono="secundario" href="/admin-asignaciones"
-               th:href="@{/admin-asignaciones}">Volver a cargar</a>
-          </section>
+      <div th:if="${escenario == 'lento'}" class="pila" data-espacio="2" aria-busy="true">
+        <div class="esqueleto" data-forma="hueco" data-tamano="alto"></div>
+        <div class="esqueleto" data-forma="hueco" data-tamano="alto"></div>
+      </div>
 
-          <div th:if="${escenario == 'lento'}" class="lista pila" data-espacio="3" data-lista="propuestas"
-               aria-busy="true">
-            <div class="esqueleto" data-forma="hueco" data-tamano="alto"></div>
-            <div class="esqueleto" data-forma="hueco" data-tamano="alto"></div>
-          </div>
+      <!--/* Propuestas: las que se aprueban sin problemas, en la tabla con selección. */-->
+      <section th:if="${conDatos and pestana == 'propuestas'}" class="pila" data-espacio="3"
+               aria-labelledby="propuestas-titulo"
+               th:with="tramo=${a.propuestas}, filas=${vacioDeEjemplo ? {} : tramo.filas},
+                        n=${vacioDeEjemplo ? 0 : tramo.total}">
+        <h2 id="propuestas-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
+            th:text="|Propuestas sin problemas · ${#numbers.formatInteger(n, 1, 'POINT')}|">Propuestas sin
+          problemas · 4</h2>
+        <th:block th:if="${pendientes > 0}"><form
+            th:replace="~{componentes/listado :: listado(${listadoPropuestas})}"></form></th:block>
+        <p th:if="${enConflicto > 0 and libres > 0}" class="aviso-breve" role="status"><span>
+          <th:block th:text="${enConflicto == 1} ? 'Hay 1 propuesta en conflicto. Se decide de a una en' : |Hay ${enConflicto} propuestas en conflicto. Se deciden de a una en|">Hay
+            4 propuestas en conflicto. Se deciden de a una en</th:block>
+          <a href="/admin-asignaciones?pestana=conflictos" th:href="@{/admin-asignaciones(pestana='conflictos')}"
+             hx-boost="true">Conflictos</a>.</span></p>
 
-          <!--/* Pestaña Propuestas: las que se aprueban sin problemas. */-->
-          <section th:if="${conDatos and pestana == 'propuestas'}" class="pila" data-espacio="3"
-                   aria-labelledby="propuestas-titulo"
-                   th:with="tramo=${a.propuestas}, filas=${vacioDeEjemplo ? {} : tramo.filas},
-                            n=${vacioDeEjemplo ? 0 : tramo.total}">
-            <h2 id="propuestas-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
-                th:text="|Propuestas sin problemas · ${#numbers.formatInteger(n, 1, 'POINT')}|">Propuestas sin
-              problemas · 8</h2>
-            <th:block th:if="${pendientes > 0}"><form
-                th:replace="~{componentes/listado :: listado(${listadoPropuestas})}"></form></th:block>
-            <p th:if="${enConflicto > 0 and libres > 0}" class="aviso-breve" role="status">
-              <th:block th:text="${enConflicto == 1} ? 'Hay 1 propuesta en conflicto. Revisala en' : |Hay ${enConflicto} propuestas en conflicto. Revisalas en|">Hay
-                3 propuestas en conflicto. Revisalas en</th:block>
-              <a href="/admin-asignaciones?pestana=conflictos" th:href="@{/admin-asignaciones(pestana='conflictos')}"
-                 hx-boost="true">Conflictos</a> antes de aprobar.</p>
+        <section th:if="${pendientes == 0}" class="vacio" aria-labelledby="vacio-titulo">
+          <h3 id="vacio-titulo">No hay propuestas que esperen tu decisión.</h3>
+          <p>La próxima asignación corre esta noche, a las 0:00, o podés correrla ahora.</p>
+        </section>
+        <section th:if="${pendientes > 0 and libres == 0 and c.algoritmo == ''}" class="vacio"
+                 aria-labelledby="todas-titulo">
+          <h3 id="todas-titulo"
+              th:text="${enConflicto == 1} ? 'La propuesta pendiente tiene un conflicto.' : |Las ${enConflicto} propuestas pendientes tienen un conflicto.|">Las
+            4 propuestas pendientes tienen un conflicto.</h3>
+          <p>Revisalas en <a href="/admin-asignaciones?pestana=conflictos"
+                             th:href="@{/admin-asignaciones(pestana='conflictos')}">Conflictos</a>.</p>
+        </section>
+        <section th:if="${pendientes > 0 and n == 0 and c.algoritmo != ''}" class="vacio"
+                 aria-labelledby="filtro-titulo">
+          <h3 id="filtro-titulo"
+              th:text="${c.algoritmo == 'las-dos'} ? 'Los dos algoritmos no sugirieron juntos ninguna de las propuestas sin problemas.' : |${a.algoritmoElegido()} no sugirió ninguna de las propuestas sin problemas.|">Quienes
+            menos recibieron no sugirió ninguna de las propuestas sin problemas.</h3>
+          <a class="boton" data-tono="secundario" href="/admin-asignaciones"
+             th:href="@{/admin-asignaciones}">Ver todas</a>
+        </section>
 
-            <section th:if="${pendientes == 0}" class="vacio" aria-labelledby="vacio-titulo">
-              <h3 id="vacio-titulo">No hay propuestas que esperen tu decisión.</h3>
-              <p>La próxima asignación corre esta noche, a las 0:00, o podés correrla ahora.</p>
-            </section>
-            <section th:if="${pendientes > 0 and libres == 0 and c.algoritmo == ''}" class="vacio"
-                     aria-labelledby="todas-titulo">
-              <h3 id="todas-titulo"
-                  th:text="${enConflicto == 1} ? 'La propuesta pendiente tiene un conflicto.' : |Las ${enConflicto} propuestas pendientes tienen un conflicto.|">Las
-                3 propuestas pendientes tienen un conflicto.</h3>
-              <p>Revisalas en <a href="/admin-asignaciones?pestana=conflictos"
-                                 th:href="@{/admin-asignaciones(pestana='conflictos')}">Conflictos</a>.</p>
-            </section>
-            <section th:if="${pendientes > 0 and n == 0 and c.algoritmo != ''}" class="vacio"
-                     aria-labelledby="filtro-titulo">
-              <h3 id="filtro-titulo"
-                  th:text="${c.algoritmo == 'las-dos'} ? 'Los dos algoritmos no sugirieron juntos ninguna de las propuestas sin problemas.' : |${a.algoritmoElegido()} no sugirió ninguna de las propuestas sin problemas.|">Quienes
-                menos recibieron no sugirió ninguna de las propuestas sin problemas.</h3>
-              <a class="boton" data-tono="secundario" href="/admin-asignaciones"
-                 th:href="@{/admin-asignaciones}">Ver todas</a>
-            </section>
+        <th:block th:if="${n > 0}"><form
+            th:replace="~{admin-asignaciones :: propuestas(${filas}, 'propuestas')}"></form></th:block>
+        <p th:if="${n > 0}" th:with="cuantas=${#lists.size(filas)},
+                                      desde=${tramo.pagina < tramo.paginas ? (tramo.pagina - 1) * cuantas + 1 : tramo.total - cuantas + 1}"
+           class="texto-chico" data-tono="suave"
+           th:text="|Mostrando ${desde} a ${desde + cuantas - 1} de ${#numbers.formatInteger(n, 1, 'POINT')} propuestas sin problemas.|">Mostrando
+          1 a 4 de 4 propuestas sin problemas.</p>
+        <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
 
-            <ul th:if="${n > 0}" class="lista" data-lista="propuestas" role="list">
-              <li th:each="p : ${filas}" th:insert="~{admin-asignaciones :: tarjeta(${p}, 'propuestas', ${fallo})}"></li>
-            </ul>
-            <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
-
-            <section class="pila" data-espacio="2" aria-labelledby="recientes-titulo">
-              <h2 id="recientes-titulo">Decididas</h2>
-              <p th:if="${#lists.isEmpty(a.recientes) or vacioDeEjemplo}">Todavía no se decidió ninguna propuesta.</p>
-              <ul th:unless="${#lists.isEmpty(a.recientes) or vacioDeEjemplo}" class="lista pila" data-espacio="2"
-                  role="list">
-                <li th:each="x : ${a.recientes}" th:insert="~{admin-asignaciones :: decidida(${x})}"></li>
-              </ul>
-              <a th:unless="${#lists.isEmpty(a.recientes) or vacioDeEjemplo}" class="boton" data-tono="secundario"
-                 href="/admin-asignaciones?vista=decididas"
-                 th:href="@{/admin-asignaciones(vista='decididas')}" hx-boost="true">Ver todas las decididas</a>
-            </section>
-          </section>
-
-          <!--/* Pestaña Conflictos: las que chocan o ya no alcanzan, juntas las que piden la misma donación. */-->
-          <section th:if="${conDatos and pestana == 'conflictos'}" class="pila" data-espacio="3"
-                   aria-labelledby="conflictos-titulo"
-                   th:with="tramo=${a.propuestas}, filas=${vacioDeEjemplo ? {} : tramo.filas},
-                            n=${vacioDeEjemplo ? 0 : tramo.total}">
-            <h2 id="conflictos-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
-                th:text="|Propuestas en conflicto · ${#numbers.formatInteger(n, 1, 'POINT')}|">Propuestas en
-              conflicto · 3</h2>
-            <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-conflictos">
-              <h3 id="sin-conflictos">No hay conflictos. Todas las propuestas pendientes se pueden aprobar.</h3>
-              <a class="boton" data-tono="secundario" href="/admin-asignaciones?pestana=propuestas"
-                 th:href="@{/admin-asignaciones(pestana='propuestas')}">Ir a Propuestas</a>
-            </section>
-            <p th:if="${n > 0}">Estas propuestas piden lo mismo que otras y no alcanza para todas, o ya no alcanza.
-              Elegí cuál aprobar; las demás, descartalas.</p>
-            <ul th:if="${n > 0}" class="lista" data-lista="propuestas" role="list">
-              <li th:each="p : ${filas}" th:insert="~{admin-asignaciones :: tarjeta(${p}, 'conflictos', ${fallo})}"></li>
-            </ul>
-            <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
-          </section>
-
-          <!--/* Pestaña Destino, paso 1: las donaciones que están en alguna propuesta pendiente. */-->
-          <section th:if="${conDatos and pestana == 'destino' and !c.conDonacion()}" class="pila" data-espacio="3"
-                   aria-labelledby="destino-titulo"
-                   th:with="tramo=${a.donaciones}, n=${vacioDeEjemplo ? 0 : tramo.total}">
-            <h2 id="destino-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}">¿Adónde va
-              cada donación?</h2>
-            <p>Elegí una para ver todas las propuestas que la piden.</p>
-            <form th:replace="~{componentes/listado :: listado(${listadoDestino})}"></form>
-            <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-donaciones">
-              <h3 id="sin-donaciones"
-                  th:text="${c.categoria == ''} ? 'Ninguna donación del depósito está en una propuesta pendiente.' : 'Ninguna donación de esa categoría está en una propuesta pendiente.'">Ninguna
-                donación del depósito está en una propuesta pendiente.</h3>
-              <p th:if="${c.categoria == ''}">Corré la asignación para buscar destinos.</p>
-              <a th:if="${c.categoria != ''}" class="boton" data-tono="secundario"
-                 href="/admin-asignaciones?pestana=destino" th:href="@{/admin-asignaciones(pestana='destino')}">Ver
-                todas las categorías</a>
-            </section>
-            <ul th:if="${n > 0}" class="lista pila" data-espacio="2" role="list">
-              <li th:each="d : ${tramo.filas}">
-                <a class="tarjeta pila" data-espacio="1" data-parte="donacion"
-                   href="/admin-asignaciones?pestana=destino&amp;donacion=arroz-ana"
-                   th:href="@{/admin-asignaciones(pestana='destino',donacion=${d.clave})}" hx-boost="true">
-                  <b th:text="${d.que}">Arroz · 25 kg</b>
-                  <span th:text="${(d.deQuien != null ? 'de ' + d.deQuien : 'De un donante que no muestra su nombre') + (d.desde != null ? ' · ' + d.desde : '')}">de
-                    Ana Ejemplo · 7 días en el depósito</span>
-                  <span class="estado" th:attr="data-estado=${d.alcanza} ? 'hecho' : 'problema'"><svg
-                      th:replace="~{componentes/sello :: sello(${d.alcanza} ? 'hecho' : 'problema')}"></svg><th:block
-                      th:text="${(d.propuestas == 1 ? '1 propuesta' : d.propuestas + ' propuestas') + (d.alcanza ? '' : ' · no alcanza')}">2
-                    propuestas · no alcanza</th:block></span>
-                </a>
-              </li>
-            </ul>
-            <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
-          </section>
-
-          <!--/* Pestaña Destino, paso 2: la donación elegida y todas las pendientes que la piden. */-->
-          <section th:if="${conDatos and c.conDonacion()}" class="pila" data-espacio="3"
-                   aria-labelledby="elegida-titulo" th:with="d=${a.elegida}">
-            <a class="boton" data-tono="secundario" href="/admin-asignaciones?pestana=destino"
-               th:href="@{/admin-asignaciones(pestana='destino')}" hx-boost="true">← Volver a las donaciones</a>
-            <th:block th:if="${d == null or vacioDeEjemplo}">
-              <section class="vacio" aria-labelledby="elegida-titulo">
-                <h2 id="elegida-titulo" tabindex="-1" autofocus
-                    th:text="'Esa donación ya no está en ninguna propuesta pendiente.'">Esa donación ya no está en
-                  ninguna propuesta pendiente.</h2>
-                <a class="boton" data-tono="secundario" href="/admin-asignaciones?pestana=destino"
-                   th:href="@{/admin-asignaciones(pestana='destino')}">Volver a las donaciones</a>
-              </section>
-            </th:block>
-            <th:block th:unless="${d == null or vacioDeEjemplo}">
-              <h2 id="elegida-titulo" tabindex="-1" autofocus
-                  th:text="${d.que + (d.deQuien != null ? ', de ' + d.deQuien : '') + (d.desde != null ? ' · ' + d.desde : '')}">Arroz
-                · 25 kg, de Ana Ejemplo · en el depósito desde el 2 de noviembre</h2>
-              <p th:text="${d.resumen}">La piden 2 propuestas y no alcanza para todas.</p>
-              <ul class="lista" data-lista="propuestas" role="list">
-                <li th:each="p : ${a.propuestas.filas}" th:insert="~{admin-asignaciones :: tarjeta(${p}, 'destino', ${fallo})}"></li>
-              </ul>
-              <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
-            </th:block>
-          </section>
-        </div>
-
-        <!--/* El panel: la última asignación, correrla ahora y la ayuda. Va después de la lista en el
-               código (el orden del foco de la ficha); desde el ancho de escritorio queda a la derecha y
-               fijo al desplazarse. */-->
-        <aside th:if="${escenario != 'error'}" class="tarjeta pila" data-espacio="3" data-parte="panel"
-               aria-labelledby="panel-titulo">
-          <h2 id="panel-titulo">Estado de la asignación</h2>
-          <p th:if="${conDatos}"
-             th:text="${accion == 'corrida'} ? (${nuevas} ? 'Última asignación: hoy, 0:00 · generó 2 propuestas.' : 'Última asignación: hoy, 0:00 · no generó propuestas.') : (${a.ultima != null} ? |Última asignación: ${a.ultima}.| : 'Todavía no se corrió ninguna asignación.')">Última
-            asignación: hoy, 0:00 · generó 12 propuestas.</p>
-          <form class="racimo" action="/admin-asignaciones-corrida" th:action="@{/admin-asignaciones-corrida}"
-                method="post" hx-boost="true" hx-indicator="#enviando-admin-asignaciones" hx-select-oob="#avisos">
-            <button class="boton" data-tono="secundario" type="submit" th:disabled="${corriendo}"
-                    th:text="${corriendo} ? 'Corriendo la asignación…' : 'Correr la asignación ahora'">Correr la
-              asignación ahora</button>
-            <span th:if="${corriendo}" class="solo-lectores" role="status">Corriendo la asignación…</span>
-            <p th:replace="~{envio :: indicador('enviando-admin-asignaciones', 'Corriendo la asignación…')}"></p>
-          </form>
-          <p class="texto-chico">La próxima corre esta noche, a las 0:00.</p>
-          <p>Los algoritmos proponen qué donaciones del depósito cubren cada necesidad de las organizaciones. Vos
-            aprobás o descartás cada propuesta.</p>
-          <details>
-            <summary class="boton" data-tono="secundario">¿Cómo eligen los algoritmos?</summary>
+        <details class="plegable">
+          <summary><span class="plegable-titulo"><b>Cómo eligen los algoritmos</b><span>Parecido con lo pedido y
+            Quienes menos recibieron</span></span><span class="plegable-ver">Ver</span></summary>
+          <div class="plegable-cuerpo pila" data-espacio="2">
+            <p>Los algoritmos proponen qué donaciones del depósito cubren cada necesidad de las organizaciones.
+              Vos aprobás o descartás cada propuesta. La próxima asignación corre esta noche, a las 0:00.</p>
             <dl class="pila" data-espacio="2">
               <dt><b>Parecido con lo pedido</b></dt>
               <dd>Busca, para cada necesidad, las donaciones de la misma subcategoría cuya descripción más se
@@ -319,17 +237,217 @@
               <dd>Si los dos algoritmos sugieren la misma necesidad, se queda esa propuesta, con las donaciones
                 que eligió Quienes menos recibieron.</dd>
             </dl>
-          </details>
-        </aside>
-      </div>
+          </div>
+        </details>
+      </section>
+
+      <!--/* Conflictos: las que chocan o ya no alcanzan, de a una, juntas las que piden la misma donación. */-->
+      <section th:if="${conDatos and pestana == 'conflictos'}" class="pila" data-espacio="3"
+               aria-labelledby="conflictos-titulo"
+               th:with="tramo=${a.propuestas}, filas=${vacioDeEjemplo ? {} : tramo.filas},
+                        n=${vacioDeEjemplo ? 0 : tramo.total}">
+        <h2 id="conflictos-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}"
+            th:text="|Propuestas en conflicto · ${#numbers.formatInteger(n, 1, 'POINT')}|">Propuestas en
+          conflicto · 4</h2>
+        <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-conflictos">
+          <h3 id="sin-conflictos">No hay conflictos. Todas las propuestas pendientes se pueden aprobar.</h3>
+          <a class="boton" data-tono="secundario" href="/admin-asignaciones?pestana=propuestas"
+             th:href="@{/admin-asignaciones(pestana='propuestas')}">Ir a Propuestas</a>
+        </section>
+        <p th:if="${n > 0}">Estas propuestas piden lo mismo que otras y no alcanza para todas, o ya no alcanza.
+          Elegí cuál aprobar; las demás, descartalas.</p>
+        <ul th:if="${n > 0}" class="lista" data-lista="propuestas" role="list">
+          <li th:each="p : ${filas}" th:insert="~{admin-asignaciones :: tarjeta(${p}, 'conflictos', ${fallo})}"></li>
+        </ul>
+        <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
+      </section>
+
+      <!--/* Destino, paso 1: las donaciones que están en alguna propuesta pendiente. */-->
+      <section th:if="${conDatos and pestana == 'destino' and !c.conDonacion()}" class="pila" data-espacio="3"
+               aria-labelledby="destino-titulo"
+               th:with="tramo=${a.donaciones}, n=${vacioDeEjemplo ? 0 : tramo.total}">
+        <h2 id="destino-titulo" tabindex="-1" th:autofocus="${paginador != null and paginador.cambio}">¿Adónde va
+          cada donación?</h2>
+        <p>Elegí una para ver todas las propuestas que la piden.</p>
+        <form th:replace="~{componentes/listado :: listado(${listadoDestino})}"></form>
+        <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-donaciones">
+          <h3 id="sin-donaciones"
+              th:text="${c.categoria == ''} ? 'Ninguna donación del depósito está en una propuesta pendiente.' : 'Ninguna donación de esa categoría está en una propuesta pendiente.'">Ninguna
+            donación del depósito está en una propuesta pendiente.</h3>
+          <p th:if="${c.categoria == ''}">Corré la asignación para buscar destinos.</p>
+          <a th:if="${c.categoria != ''}" class="boton" data-tono="secundario"
+             href="/admin-asignaciones?pestana=destino" th:href="@{/admin-asignaciones(pestana='destino')}">Ver
+            todas las categorías</a>
+        </section>
+        <ul th:if="${n > 0}" class="lista pila" data-espacio="2" role="list">
+          <li th:each="d : ${tramo.filas}">
+            <a class="tarjeta pila" data-espacio="1" data-parte="donacion"
+               href="/admin-asignaciones?pestana=destino&amp;donacion=arroz-ana"
+               th:href="@{/admin-asignaciones(pestana='destino',donacion=${d.clave})}" hx-boost="true">
+              <b th:text="${d.que}">Arroz · 25 kg</b>
+              <span th:text="${(d.deQuien != null ? 'de ' + d.deQuien : 'De un donante que no muestra su nombre') + (d.desde != null ? ' · ' + d.desde : '')}">de
+                Ana Ejemplo · 7 días en el depósito</span>
+              <span class="estado" th:attr="data-estado=${d.alcanza} ? 'hecho' : 'problema'"><svg
+                  th:replace="~{componentes/sello :: sello(${d.alcanza} ? 'hecho' : 'problema')}"></svg><th:block
+                  th:text="${(d.propuestas == 1 ? '1 propuesta' : d.propuestas + ' propuestas') + (d.alcanza ? '' : ' · no alcanza')}">2
+                propuestas · no alcanza</th:block></span>
+            </a>
+          </li>
+        </ul>
+        <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
+      </section>
+
+      <!--/* Destino, paso 2: la donación elegida y todas las pendientes que la piden. */-->
+      <section th:if="${conDatos and c.conDonacion()}" class="pila" data-espacio="3"
+               aria-labelledby="elegida-titulo" th:with="d=${a.elegida}">
+        <a class="boton" data-tono="secundario" href="/admin-asignaciones?pestana=destino"
+           th:href="@{/admin-asignaciones(pestana='destino')}" hx-boost="true">← Volver a las donaciones</a>
+        <th:block th:if="${d == null or vacioDeEjemplo}">
+          <section class="vacio" aria-labelledby="elegida-titulo">
+            <h2 id="elegida-titulo" tabindex="-1" autofocus
+                th:text="'Esa donación ya no está en ninguna propuesta pendiente.'">Esa donación ya no está en
+              ninguna propuesta pendiente.</h2>
+            <a class="boton" data-tono="secundario" href="/admin-asignaciones?pestana=destino"
+               th:href="@{/admin-asignaciones(pestana='destino')}">Volver a las donaciones</a>
+          </section>
+        </th:block>
+        <th:block th:unless="${d == null or vacioDeEjemplo}">
+          <h2 id="elegida-titulo" tabindex="-1" autofocus
+              th:text="${d.que + (d.deQuien != null ? ', de ' + d.deQuien : '') + (d.desde != null ? ' · ' + d.desde : '')}">Arroz
+            · 25 kg, de Ana Ejemplo · en el depósito desde el 2 de noviembre</h2>
+          <p th:text="${d.resumen}">La piden 2 propuestas y no alcanza para todas.</p>
+          <ul class="lista" data-lista="propuestas" role="list">
+            <li th:each="p : ${a.propuestas.filas}" th:insert="~{admin-asignaciones :: tarjeta(${p}, 'destino', ${fallo})}"></li>
+          </ul>
+          <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
+        </th:block>
+      </section>
     </th:block>
   </div>
 </th:block>
 
-<!--/* La tarjeta de propuesta, común a las tres pestañas (ficha, sección 4.1): la franja del choque
-       (si choca), quién pide qué, quién la sugirió y en qué puesto, qué donaciones la cubren, cuándo
-       se propuso y Aprobar (no en la que ya no alcanza) y Descartar. pestana: a dónde vuelve el envío;
-       fallo: el de la pantalla de error de la maqueta (la propuesta que falló solo ofrece Descartar). */-->
+<!--/* La cabecera de Por decidir (A03; DA-25): el título y, debajo, la fecha y la última asignación;
+       a la derecha (abajo en el celular), «Correr la asignación» (el POST de siempre) y «Registrar
+       donación». Ninguna va llena: la acción llena de la mesa es «Aprobar». */-->
+<header th:fragment="cabecera(fecha, ultima, corriendo, volver)" class="racimo" data-alinea="entre arriba">
+  <div class="pila" data-espacio="0">
+    <h1>Por decidir</h1>
+    <p class="texto-chico" data-tono="suave"><th:block th:text="|${fecha}.|">Martes 24 de noviembre de 2026.</th:block><th:block
+        th:if="${ultima != null and ultima != ''}" th:text="| ${ultima}|"> Última asignación: hoy, 0:00 · generó 12
+      propuestas.</th:block></p>
+  </div>
+  <div class="racimo" data-espacio="2">
+    <form action="/admin-asignaciones-corrida" th:action="@{/admin-asignaciones-corrida}" method="post"
+          hx-boost="true" hx-indicator="#enviando-admin-asignaciones" hx-select-oob="#avisos">
+      <input type="hidden" name="pestana" th:value="${volver}" value="propuestas">
+      <button class="boton" data-tamano="chico" type="submit" th:disabled="${corriendo}"
+              th:text="${corriendo} ? 'Corriendo la asignación…' : 'Correr la asignación'">Correr la
+        asignación</button>
+      <span th:if="${corriendo}" class="solo-lectores" role="status">Corriendo la asignación…</span>
+      <p th:replace="~{envio :: indicador('enviando-admin-asignaciones', 'Corriendo la asignación…')}"></p>
+    </form>
+    <a class="boton" data-tamano="chico" href="/admin-donaciones-registrar"
+       th:href="@{/admin-donaciones-registrar}">Registrar donación</a>
+  </div>
+</header>
+
+<!--/* La barra de pestañas de Por decidir (A03; DA-25), con la cuenta en b cuando llega. */-->
+<nav th:fragment="pestanas(actual, propuestas, conflictos)" class="segmentos" data-forma="desliza"
+     aria-label="Qué hay por decidir">
+  <a href="/admin-inicio" th:href="@{/admin-inicio}" th:attr="aria-current=${actual == 'propuestas'} ? 'page' : null">Propuestas<th:block th:if="${propuestas != null}"> <b th:text="${#numbers.formatInteger(propuestas, 1, 'POINT')}">4</b></th:block></a>
+  <a href="/admin-asignaciones?pestana=conflictos" th:href="@{/admin-asignaciones(pestana='conflictos')}" th:attr="aria-current=${actual == 'conflictos'} ? 'page' : null" hx-boost="true">Conflictos<th:block th:if="${conflictos != null}"> <b th:text="${#numbers.formatInteger(conflictos, 1, 'POINT')}">4</b></th:block></a>
+  <a href="/admin-entidades" th:href="@{/admin-entidades}">Solicitudes<th:block th:if="${cuentaSolicitudes != null}"> <b th:text="${#numbers.formatInteger(cuentaSolicitudes, 1, 'POINT')}">3</b></th:block></a>
+  <a href="/admin-donaciones?vence=pronto" th:href="@{/admin-donaciones(vence='pronto')}">Por vencer<th:block th:if="${cuentaPorVencer != null}"> <b th:text="${#numbers.formatInteger(cuentaPorVencer, 1, 'POINT')}">4</b></th:block></a>
+</nav>
+
+<!--/* Las propuestas sin problemas en la tabla con selección (P21; DA-26): se eligen varias y se
+       aprueban o se descartan juntas. «Aprobar» es la única acción llena; «Descartar» manda el mismo
+       formulario a otra dirección (formaction), con el motivo opcional. Cada casilla manda una
+       propuesta; el envío vuelve a la pestaña oculta (volver). En el celular se ven la casilla, la
+       donación y para quién es; el resto, desde 56 em. Todo anda sin JavaScript: la casilla de elegir
+       todas es un enlace que vuelve a la misma pantalla (/admin-inicio con volver 'inicio') con
+       ?elegir=todas, que el servidor dibuja con todas marcadas, y la conserva con el filtro y la
+       página; marcada, el enlace las saca. La cuenta de las elegidas («Elegiste N de M.» y «Aprobar
+       las N», o «Aprobar la elegida» con una) la lleva la hoja de la tabla (un contador de CSS), así que no queda vieja si se destilda
+       una. Por eso la barra va después de la tabla y la hoja la sube arriba. */-->
+<form th:fragment="propuestas(filas, volver)" class="pila" data-espacio="2" method="post"
+      action="/admin-asignaciones-aprobada" th:action="@{/admin-asignaciones-aprobada}" hx-boost="true"
+      hx-indicator="#enviando-propuestas" hx-select-oob="#avisos" hx-disinherit="hx-indicator hx-select-oob"
+      aria-label="Propuestas sin problemas"
+      th:with="todas=${param.elegir != null and param.elegir[0] == 'todas'},
+               base=${volver == 'inicio' ? '/admin-inicio' : '/admin-asignaciones'},
+               alg=${param.algoritmo != null ? param.algoritmo[0] : ''},
+               pag=${param.pagina != null ? param.pagina[0] : ''},
+               q=${(alg != '' ? '&algoritmo=' + #uris.escapeQueryParam(alg) : '') + (pag != '' ? '&pagina=' + #uris.escapeQueryParam(pag) : '')},
+               fallida=${fallo != null and fallo != '' and fallo != 'cambio' ? 'leche' : ''},
+               m=${#lists.size(filas) - (fallida != '' and #lists.contains(filas.![clave], fallida) ? 1 : 0)}">
+  <input type="hidden" name="pestana" th:value="${volver}" value="propuestas">
+  <table class="tabla" data-forma="seleccion">
+    <caption class="solo-lectores">Propuestas sin problemas</caption>
+    <thead>
+      <tr>
+        <th scope="col"><a class="tabla-casilla" href="/admin-asignaciones?elegir=todas"
+            th:href="${todas} ? @{${q == '' ? base : base + '?' + #strings.substring(q, 1)}} : @{|${base}?elegir=todas${q}|}"
+            th:attr="data-estado=${todas} ? 'elegida' : null"
+            th:aria-label="${todas} ? 'Sacar la elección de todas las propuestas' : 'Elegir todas las propuestas'"
+            aria-label="Elegir todas las propuestas"></a></th>
+        <th scope="col">Donación</th>
+        <th scope="col">Para</th>
+        <th scope="col" data-columna="ancha">Cubre</th>
+        <th scope="col" data-columna="ancha">Sugerida por</th>
+        <th scope="col" data-columna="ancha">Propuesta</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="p : ${filas}">
+        <td th:if="${p.clave != fallida}"><label class="tabla-casilla"><input type="checkbox" name="propuesta" value="lentejas" th:value="${p.clave}"
+            th:checked="${todas}" th:aria-label="|Elegir: ${p.cubre}, para ${p.entidad}|"
+            aria-label="Elegir: Lentejas · 15 kg (de Juan Ejemplo), para Comedor Barrio Ejemplo"></label></td>
+        <td th:if="${p.clave == fallida}"><span class="estado" data-estado="problema"><svg
+            th:replace="~{componentes/sello :: sello('problema')}"></svg><span class="solo-lectores">No se pudo
+            aprobar</span></span></td>
+        <th scope="row"><th:block th:text="${p.cubre}">Lentejas · 15 kg (de Juan Ejemplo)</th:block><small
+            th:if="${p.clave == fallida}">No se pudo aprobar: descartala en el aviso de arriba.</small></th>
+        <td><th:block th:text="${p.entidad}">Comedor Barrio Ejemplo</th:block><small
+            th:text="|Pide ${p.pide}|">Pide Lentejas, 15 kg</small></td>
+        <td data-columna="ancha" th:text="${p.alcance}">Cubre la necesidad completa.</td>
+        <td data-columna="ancha"><th:block th:each="s, i : ${p.sugeridaPor}"><th:block
+            th:text="|${s.algoritmo} · ${s.puesto}|">Quienes menos recibieron · 1.º de 6</th:block><br
+            th:unless="${i.last}"></th:block><small th:if="${p.nota != null}" th:text="${p.nota}">Las
+            donaciones son las que eligió Quienes menos recibieron.</small></td>
+        <td data-columna="ancha" th:text="${p.nueva} ? |De ${p.cuando}| : |Del ${p.cuando}|">Del 15 de octubre</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="tabla-elegidas">
+    <p><span data-elegidas="ninguna">Elegí las que quieras decidir juntas.</span><b data-elegidas="alguna">Elegiste
+      <span data-parte="cuenta"></span> de <th:block th:text="${m}">4</th:block>.</b></p>
+    <div class="racimo" data-espacio="1">
+      <button class="boton" data-tamano="chico" type="submit" formaction="/admin-asignaciones-descartada"
+              th:formaction="@{/admin-asignaciones-descartada}">Descartar</button>
+      <button class="boton" data-tono="principal" data-tamano="chico" type="submit"><span
+          data-elegidas="ninguna">Aprobar las elegidas</span><span
+          data-elegidas="alguna">Aprobar <span data-parte="cuenta-aprobar"></span></span></button>
+      <p th:replace="~{envio :: indicador('enviando-propuestas', 'Guardando…')}"></p>
+    </div>
+  </div>
+  <details>
+    <summary class="boton" data-tono="secundario" data-tamano="chico">Escribir un motivo para descartar</summary>
+    <div class="campo">
+      <label for="motivo-propuestas">Motivo (opcional)</label>
+      <textarea id="motivo-propuestas" name="motivo" rows="3" maxlength="500"
+                aria-describedby="motivo-propuestas-ayuda" placeholder="Contanos el motivo"></textarea>
+      <small id="motivo-propuestas-ayuda">Se guarda con cada propuesta que descartes. Lo ven solo las cuentas de
+        administración.</small>
+    </div>
+  </details>
+</form>
+
+<!--/* La tarjeta de propuesta, de a una (Conflictos y Destino; ficha, sección 4.1): la franja del
+       choque (si choca), quién pide qué, quién la sugirió y en qué puesto, qué donaciones la cubren,
+       cuándo se propuso y Aprobar (no en la que ya no alcanza) y Descartar. pestana: a dónde vuelve el
+       envío; fallo: el de la pantalla de error de la maqueta (la propuesta que falló solo ofrece
+       Descartar). */-->
 <article th:fragment="tarjeta(p, pestana, fallo)" class="tarjeta pila" data-espacio="3"
          th:id="|propuesta-${p.clave}|" th:aria-labelledby="|propuesta-${p.clave}-titulo|"
          th:with="sinAprobar=${!p.aprobable() or (fallo != '' and fallo != 'cambio' and p.clave == 'leche')}">

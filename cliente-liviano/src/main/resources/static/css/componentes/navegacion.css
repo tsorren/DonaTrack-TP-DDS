@@ -5,10 +5,11 @@
    (`data-zona="publica"`) lleva así solo su lista de secciones (`.navegacion-barra`, con
    `.navegacion-icono`) y deja Ingresar y Crear cuenta arriba, en la cabecera (`.navegacion-acceso`).
    Desde --medida-quiebre-menu (56 em) las secciones pasan a la barra superior, sin íconos: cada una
-   con el fondo salvia bajo el cursor y la actual en tinta. Con más de 5 secciones (la
-   administración, `data-forma="panel"`), no hay barra: un botón de menú (`.navegacion-abrir`, la
-   hamburguesa) abre todas las secciones en un panel de pantalla completa (`.navegacion-hoja`, un
-   popover: anda sin JavaScript; usuario, 2026-11-12). Se carga en la capa `bloques` desde app.css.
+   con el fondo salvia bajo el cursor y la actual en tinta. El admin lleva el cajón del galpón
+   (`data-forma="cajon"`, solo dentro de `[data-armazon="galpon"]`; ADM1-01, más abajo): la misma
+   barra del celular con cuatro celdas, una de ellas Más, que abre todas las secciones en un panel
+   de pantalla completa (`.navegacion-hoja`, un popover: anda sin JavaScript), y desde 56 em el
+   cajón, en la tierra, a la izquierda. Se carga en la capa `bloques` desde app.css.
    Dónde va dentro de la cabecera (el orden y el ancho de la fila) lo dice la hoja de la pantalla.
    Catálogo: docs/interfaz/componentes.md. */
 
@@ -16,8 +17,9 @@
 /* La barra es el menú entero en las privadas y, en las públicas, solo la lista de las secciones. En
    la guía es `position: sticky` al pie de la pantalla; acá el menú vive dentro de la cabecera, así
    que queda fijo. Mide --medida-menu-celular con la línea de paja incluida. */
-.navegacion:not([data-zona="publica"], [data-forma="panel"]),
-.navegacion-barra {
+.navegacion:not([data-zona="publica"], [data-forma="cajon"]),
+.navegacion-barra,
+[data-armazon="galpon"] .navegacion[data-forma="cajon"] {
   position: fixed;
   inset: auto 0 0;
   /* Encima de la barra de filtros y del botón fijos (R11-33) y de lo que se mueve o flota en la
@@ -62,7 +64,8 @@
    sin achicar la letra (guía, 10-componentes.css:445). Si igual no entra, se corta en sílabas (el
    sitio está en es-AR) y, si el navegador no sabe cortar, en cualquier letra. */
 .navegacion-barra a,
-.navegacion:not([data-zona="publica"], [data-forma="panel"]) a {
+.navegacion:not([data-zona="publica"], [data-forma="cajon"]) a,
+[data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul :is(a, button) {
   flex-direction: column;
   gap: 0.125rem;
   min-height: calc(var(--medida-menu-celular) - var(--espacio-0));
@@ -79,21 +82,23 @@
    «Organizaciones» bajaban a un segundo renglón y estiraban la barra (C1, medido): en esa barra la
    letra va todavía más angosta y más junta, el mismo tamaño. Desde 56 em lo pisa la regla de 5
    secciones de la barra superior. */
-.navegacion:not([data-zona="publica"], [data-forma="panel"]) ul:has(> li:nth-child(5)) a {
+.navegacion:not([data-zona="publica"], [data-forma="cajon"]) ul:has(> li:nth-child(5)) a {
   padding-inline: 0;
   font-stretch: 75%;
   letter-spacing: -0.02em;
 }
 
 .navegacion-barra a:hover,
-.navegacion:not([data-zona="publica"], [data-forma="panel"]) a:hover {
+.navegacion:not([data-zona="publica"], [data-forma="cajon"]) a:hover,
+[data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul :is(a, button):hover {
   text-decoration: underline;
   text-underline-offset: 0.3em;
 }
 
 /* La sección actual, en papel (criterios de la cátedra: pestañas). */
 .navegacion-barra a[aria-current="page"],
-.navegacion:not([data-zona="publica"], [data-forma="panel"]) a[aria-current="page"] {
+.navegacion:not([data-zona="publica"], [data-forma="cajon"]) a[aria-current="page"],
+[data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul a[aria-current="page"] {
   background: var(--color-fondo-pagina);
   color: var(--color-texto);
   font-weight: 750;
@@ -101,14 +106,16 @@
 
 /* Sobre la tierra, el aro es de paja y va por dentro de la celda; en la actual, de tinta. */
 .navegacion-barra a:focus-visible,
-.navegacion:not([data-zona="publica"], [data-forma="panel"]) a:focus-visible {
+.navegacion:not([data-zona="publica"], [data-forma="cajon"]) a:focus-visible,
+[data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul :is(a, button):focus-visible {
   outline-color: var(--color-foco-sobre-suelo);
   outline-offset: -5px;
   box-shadow: none;
 }
 
 .navegacion-barra a[aria-current="page"]:focus-visible,
-.navegacion:not([data-zona="publica"], [data-forma="panel"]) a[aria-current="page"]:focus-visible {
+.navegacion:not([data-zona="publica"], [data-forma="cajon"]) a[aria-current="page"]:focus-visible,
+[data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul a[aria-current="page"]:focus-visible {
   outline-color: var(--color-foco);
 }
 
@@ -177,34 +184,7 @@
   white-space: nowrap;
 }
 
-/* --- Con más de 5 secciones: el botón de menú y el panel de pantalla completa ------------------ */
-.navegacion-abrir {
-  display: grid;
-  place-items: center;
-  width: var(--medida-toque-minimo);
-  height: var(--medida-toque-minimo);
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radio-boton);
-  background: none;
-  color: var(--color-texto);
-  cursor: pointer;
-}
-
-.navegacion-abrir:hover {
-  background: var(--color-salvia);
-}
-
-.navegacion-abrir svg {
-  width: var(--espacio-4);
-  height: var(--espacio-4);
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-}
-
+/* --- El panel de todas las secciones del admin (Más, en el cajón del galpón) ------------------- */
 /* El panel: la pantalla entera, lisa, de papel; arriba la marca y Cerrar, debajo las secciones. */
 .navegacion-hoja {
   inset: 0;
@@ -295,27 +275,12 @@
   outline-offset: -4px;
 }
 
-/* Sin ventanas del navegador (popover, navegadores de antes de 2024), el botón no abriría nada: no
-   se ve, y la lista queda a la vista en la cabecera. */
-@supports not selector(:popover-open) {
-  .navegacion-abrir,
-  .navegacion-hoja-cabecera {
-    display: none;
-  }
-
-  .navegacion-hoja {
-    position: static;
-    padding: 0;
-    background: none;
-  }
-}
-
 /* --- Desde 56 em, las secciones en la barra superior (guía, 15-pantallas.css:79-84) ------------ */
 /* Las privadas y las públicas cortan en el mismo ancho: el menú del celular deja de verse y las
    secciones van en la cabecera, después de la marca, sin íconos ni Inicio en las públicas (la marca
    lleva a la portada). */
 @media (min-width: 56em) {
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]),
+  .navegacion:not([data-zona="publica"], [data-forma="cajon"]),
   .navegacion[data-zona="publica"] .navegacion-barra {
     position: static;
     border-top: 0;
@@ -327,7 +292,7 @@
     gap: var(--espacio-3);
   }
 
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul,
+  .navegacion:not([data-zona="publica"], [data-forma="cajon"]) ul,
   .navegacion[data-zona="publica"] ul {
     display: flex;
     /* En la barra entran en una fila (C1, medido: la persona con 5 secciones a 896, 1000 y 1100 px,
@@ -339,7 +304,7 @@
   }
 
   .navegacion-barra a,
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) a {
+  .navegacion:not([data-zona="publica"], [data-forma="cajon"]) a {
     flex-direction: row;
     min-height: var(--medida-toque-minimo);
     padding: 0 var(--espacio-2);
@@ -353,13 +318,13 @@
   }
 
   .navegacion-barra a:hover,
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) a:hover {
+  .navegacion:not([data-zona="publica"], [data-forma="cajon"]) a:hover {
     background: var(--color-salvia);
     text-decoration: none;
   }
 
   .navegacion-barra a[aria-current="page"],
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) a[aria-current="page"] {
+  .navegacion:not([data-zona="publica"], [data-forma="cajon"]) a[aria-current="page"] {
     background: var(--color-tinta);
     color: var(--color-fondo-pagina);
     font-weight: 600;
@@ -367,15 +332,15 @@
 
   /* Sobre el papel, el aro de siempre: tinta, afuera, con el filete de papel (app.css). */
   .navegacion-barra a:focus-visible,
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) a:focus-visible,
+  .navegacion:not([data-zona="publica"], [data-forma="cajon"]) a:focus-visible,
   .navegacion-barra a[aria-current="page"]:focus-visible,
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) a[aria-current="page"]:focus-visible {
+  .navegacion:not([data-zona="publica"], [data-forma="cajon"]) a[aria-current="page"]:focus-visible {
     outline-color: var(--color-foco);
     outline-offset: 2px;
     box-shadow: 0 0 0 2px var(--color-foco-separador);
   }
 
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) .navegacion-icono,
+  .navegacion:not([data-zona="publica"], [data-forma="cajon"]) .navegacion-icono,
   .navegacion[data-zona="publica"] .navegacion-icono,
   .navegacion[data-zona="publica"] .navegacion-inicio {
     display: none;
@@ -399,11 +364,11 @@
   /* Con 5 secciones (la persona que dona, con Misiones), en la guía no hay un menú tan largo: a 56 em
      la fila medía 609 px y no entraba con la marca y las acciones (C1, medido a 900 px). Hasta
      --medida-quiebre-ancho, las secciones van más juntas y en la letra densa. */
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul:has(> li:nth-child(5)) {
+  .navegacion:not([data-zona="publica"], [data-forma="cajon"]) ul:has(> li:nth-child(5)) {
     gap: 0;
   }
 
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul:has(> li:nth-child(5)) a {
+  .navegacion:not([data-zona="publica"], [data-forma="cajon"]) ul:has(> li:nth-child(5)) a {
     padding-inline: var(--espacio-1);
     font-size: var(--tamano-denso);
     font-stretch: normal;
@@ -412,11 +377,11 @@
 }
 
 @media (min-width: 68.75em) {
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul:has(> li:nth-child(5)) {
+  .navegacion:not([data-zona="publica"], [data-forma="cajon"]) ul:has(> li:nth-child(5)) {
     gap: var(--espacio-0);
   }
 
-  .navegacion:not([data-zona="publica"], [data-forma="panel"]) ul:has(> li:nth-child(5)) a {
+  .navegacion:not([data-zona="publica"], [data-forma="cajon"]) ul:has(> li:nth-child(5)) a {
     padding-inline: var(--espacio-2);
     font-size: var(--tamano-base);
   }
@@ -507,5 +472,134 @@
 
 .navegacion-cuenta-menu a[aria-current="page"] {
   color: var(--color-acento);
+}
+
+/* --- El cajón del galpón: el menú del admin (ADM1-01; guía, 10-componentes.css:417-427) -------- */
+/* `data-forma="cajon"`, solo dentro del armazón del galpón (`[data-armazon="galpon"]`, que lleva el
+   admin; DA-18 y DA-27). Hasta 56 em es el menú del celular de arriba, con cuatro celdas: las
+   secciones con `data-celular="si"` (Por decidir, Donaciones y Camiones) y Más (`.navegacion-mas`),
+   que abre todas en el panel (`.navegacion-hoja`). Si la sección actual no está en la barra, Más
+   queda en papel. Desde 56 em es el cajón: las seis secciones en columna, en la tierra, con su
+   ícono, la actual en papel y la de debajo del cursor en la tierra media. La cuenta no va al pie
+   del cajón, como en la guía: queda arriba, en la barra (DA-27). Dónde va en la pantalla (fijo a la
+   izquierda, debajo de la barra de arriba) lo dice privado.css. */
+[data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul > li[data-celular="no"] {
+  display: none;
+}
+
+/* La muestra del cajón en /estilos. Hasta 56 em, la barra del celular del galpón con el ancho de la
+   ficha, sin el mínimo de las otras cajas (muestra.css): sus cuatro celdas (minmax(0, 1fr)) entran
+   enteras, Más incluida, sin desplazarse de costado (DA-27). Desde 56 em, el cajón con su ancho de
+   la pantalla (--medida-cajon, más el borde de la caja): en la ficha de la grilla no entraba y
+   partía «Donaciones» y «Organizaciones» con guion. */
+.muestra-demo [data-ventana][data-armazon="galpon"] {
+  min-width: 0;
+}
+
+/* En la ficha de 360 px cada celda mide unos 58 px y «Donaciones» se partía con guion: la letra va
+   más angosta y más junta, como en la barra de cinco celdas. Con :where(), desde 56 em la pisa el
+   cajón (su font, su padding y su letter-spacing). */
+:where(.muestra-demo [data-ventana])[data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul :is(a, button) {
+  padding-inline: 0;
+  font-stretch: 75%;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 56em) {
+  .muestra-demo [data-ventana][data-armazon="galpon"] {
+    width: calc(var(--medida-cajon) + 2 * var(--espacio-2));
+    min-width: calc(var(--medida-cajon) + 2 * var(--espacio-2));
+  }
+}
+
+/* La cuenta chica solo va en el cajón (desde 56 em); en la celda del celular no entra. */
+[data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul a b {
+  display: none;
+}
+
+[data-armazon="galpon"] .navegacion[data-forma="cajon"] .navegacion-mas button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+[data-armazon="galpon"] .navegacion[data-forma="cajon"]:has(li[data-celular="no"] [aria-current="page"]) .navegacion-mas button {
+  background: var(--color-fondo-pagina);
+  color: var(--color-texto);
+  font-weight: 750;
+}
+
+[data-armazon="galpon"] .navegacion[data-forma="cajon"]:has(li[data-celular="no"] [aria-current="page"]) .navegacion-mas button:focus-visible {
+  outline-color: var(--color-foco);
+}
+
+@media (min-width: 56em) {
+  [data-armazon="galpon"] .navegacion[data-forma="cajon"] {
+    position: static;
+    padding: var(--espacio-3) var(--espacio-2);
+    border-top: 0;
+  }
+
+  [data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul {
+    grid-auto-flow: row;
+    gap: var(--espacio-0);
+  }
+
+  [data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul > li[data-celular="no"] {
+    display: block;
+  }
+
+  [data-armazon="galpon"] .navegacion[data-forma="cajon"] .navegacion-mas {
+    display: none;
+  }
+
+  [data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul a {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--espacio-2);
+    min-height: var(--medida-toque-minimo);
+    padding: 0 var(--espacio-2);
+    border-radius: var(--radio-boton);
+    font: 600 var(--tamano-base) / 1.2 var(--fuente-texto);
+    letter-spacing: normal;
+    text-align: left;
+  }
+
+  /* La cuenta chica de una sección (un b después del nombre, como en las pestañas): a la derecha,
+     en la letra chica. */
+  [data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul a b {
+    display: inline;
+    margin-left: auto;
+    font-size: var(--tamano-chico);
+    font-weight: 700;
+  }
+
+  [data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul a:hover {
+    background: var(--color-suelo-medio);
+    text-decoration: none;
+  }
+
+  [data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul a[aria-current="page"] {
+    background: var(--color-fondo-pagina);
+    color: var(--color-texto);
+    font-weight: 700;
+  }
+}
+
+/* Sin ventanas del navegador (popover, navegadores de antes de 2024), Más no abriría nada: no se
+   ve, el panel tampoco, y la barra del celular lleva las seis secciones. */
+@supports not selector(:popover-open) {
+  [data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul > li[data-celular="no"] {
+    display: block;
+  }
+
+  [data-armazon="galpon"] .navegacion[data-forma="cajon"] :is(.navegacion-mas, .navegacion-hoja) {
+    display: none;
+  }
 }
 

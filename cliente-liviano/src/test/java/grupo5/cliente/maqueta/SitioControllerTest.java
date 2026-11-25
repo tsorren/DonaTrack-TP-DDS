@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import grupo5.cliente.vistas.OpcionNavegacion;
 import grupo5.cliente.web.TraceIdFiltro;
 import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
@@ -1473,6 +1474,44 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("data-zona=\"publica\"")));
   }
 
+  /**
+   * «Por decidir» en la maqueta (ADM1-09, DA-04 y DA-25): la pestaña Propuestas abierta con las 4
+   * propuestas sin problemas de ejemplo y una casilla por fila; con ?escenario=vacio, todas las
+   * cuentas en 0 y el vacío de la pestaña; con ?escenario=error-camiones, solo la fila de camiones
+   * muestra su aviso.
+   */
+  @Test
+  void elInicioDelAdminEsPorDecidirConLasPropuestasDeEjemplo() throws Exception {
+    String html =
+        mvc.perform(get("/admin-inicio"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    assertTrue(html.contains("<h1>Por decidir</h1>"), html);
+    assertTrue(
+        Pattern.compile("aria-current=\"page\">Propuestas <b>4</b></a>").matcher(html).find(),
+        "Propuestas con la cuenta de la tabla");
+    assertTrue(html.contains(">Conflictos <b>4</b></a>"), "Conflictos");
+    assertTrue(html.contains(">Solicitudes <b>3</b></a>"), "Solicitudes");
+    assertTrue(html.contains(">Por vencer <b>4</b></a>"), "Por vencer");
+    assertEquals(5, html.split("name=\"propuesta\"", -1).length, "una casilla por propuesta");
+    assertTrue(html.contains("name=\"pestana\" value=\"inicio\""), "vuelve a Por decidir");
+    assertFalse(html.contains("Entregas para mirar hoy"));
+
+    mvc.perform(get("/admin-inicio?escenario=vacio"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("aria-current=\"page\">Propuestas <b>0</b>")))
+        .andExpect(content().string(containsString(">Solicitudes <b>0</b></a>")))
+        .andExpect(content().string(containsString("No hay propuestas que esperen tu decisión.")))
+        .andExpect(content().string(not(containsString("name=\"propuesta\""))));
+    mvc.perform(get("/admin-inicio?escenario=error-camiones"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No pudimos cargar los camiones.")))
+        .andExpect(content().string(containsString("<dt>Camiones</dt>")))
+        .andExpect(content().string(not(containsString(">Ver camiones</a>"))));
+  }
+
   /** Solo el menú de más de 5 secciones (la administración) lleva "Más" en el celular. */
   @Test
   void soloLaAdministracionLlevaElMenuCompleto() throws Exception {
@@ -1480,6 +1519,58 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("popovertarget=\"menu-completo\"")));
     mvc.perform(get("/donante-inicio"))
         .andExpect(content().string(not(containsString("menu-completo"))));
+  }
+
+  /**
+   * El menú del admin (DA-04, DA-17 y DA-25): Por decidir, Donaciones, Donantes, Organizaciones,
+   * Camiones y Ranking. Por decidir lleva al inicio y queda marcada también en Asignar y en sus
+   * respuestas; ya no hay Inicio ni Asignar donaciones.
+   */
+  @Test
+  void elMenuDelAdminEsElDelGalpon() throws Exception {
+    List<String> textos =
+        List.of("Por decidir", "Donaciones", "Donantes", "Organizaciones", "Camiones", "Ranking");
+    List<String> rutas =
+        List.of(
+            "/admin-inicio",
+            "/admin-donaciones",
+            "/admin-donantes",
+            "/admin-entidades",
+            "/admin-camiones",
+            "/admin-ranking");
+    for (String ruta :
+        List.of("/admin-inicio", "/admin-asignaciones", "/admin-asignaciones-aprobada")) {
+      MvcResult resultado =
+          mvc.perform(get(ruta))
+              .andExpect(status().isOk())
+              .andExpect(model().attribute("seccion", "Por decidir"))
+              .andReturn();
+      List<OpcionNavegacion> menu = menuDe(resultado);
+      assertEquals(textos, menu.stream().map(OpcionNavegacion::texto).toList(), ruta);
+      assertEquals(rutas, menu.stream().map(OpcionNavegacion::ruta).toList(), ruta);
+      assertEquals(
+          List.of(true, false, false, false, false, false),
+          menu.stream().map(OpcionNavegacion::actual).toList(),
+          ruta);
+      String html = resultado.getResponse().getContentAsString(StandardCharsets.UTF_8);
+      String nav = html.substring(html.indexOf("<nav id=\"menu\""), html.indexOf("</nav>"));
+      assertTrue(
+          Pattern.compile("<a\\s+href=\"/admin-inicio\"[^>]*aria-current=\"page\"")
+              .matcher(nav)
+              .find(),
+          ruta + ": Por decidir marcada");
+      assertFalse(nav.contains("Asignar donaciones"), ruta);
+      assertFalse(nav.contains("<span>Inicio</span>"), ruta);
+    }
+    MvcResult donaciones = mvc.perform(get("/admin-donaciones")).andReturn();
+    assertEquals(
+        List.of(false, true, false, false, false, false),
+        menuDe(donaciones).stream().map(OpcionNavegacion::actual).toList());
+  }
+
+  @SuppressWarnings("unchecked")
+  private static List<OpcionNavegacion> menuDe(MvcResult resultado) {
+    return (List<OpcionNavegacion>) resultado.getModelAndView().getModel().get("navegacion");
   }
 
   /** Las pantallas dibujadas de verdad (no caen en "sin dibujar"). */
@@ -1674,22 +1765,27 @@ class SitioControllerTest {
         .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(content().string(containsString("7 en el depósito · 4 asignadas · 1 en camino")))
         .andExpect(content().string(containsString("Al 15 de octubre de 2026, 18:30.")))
-        // R11-34: una bandeja; la ficha de partida es la de la primera y en el celular no se abre
-        // sola
-        .andExpect(content().string(containsString("data-elegido=\"partida\"")))
+        // ADM1-08 (A03): la tabla del catálogo; cada fila lleva a su detalle, con el sello de su
+        // estado (en el depósito, el de registrada), y ya no hay bandeja con ficha
+        .andExpect(content().string(containsString("<table class=\"tabla\">")))
+        .andExpect(
+            content().string(containsString("href=\"/admin-donaciones-detalle?donacion=leche\"")))
         .andExpect(
             content()
-                .string(containsString("href=\"/admin-donaciones?donacion=leche#donacion-leche\"")))
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"registrada\">.*"
+                            + "En el depósito</span><small>Vence el 17 de octubre, en 2"
+                            + " días</small>.*")))
+        .andExpect(content().string(not(containsString("class=\"maestro\""))))
+        .andExpect(content().string(not(containsString("Cerrar la ficha"))))
         .andExpect(content().string(containsString("Buscar por lo que se donó")))
-        .andExpect(content().string(containsString("Mostrando 1 a 5 de 14 donaciones.")))
-        .andExpect(content().string(containsString("Ver las propuestas que la piden")));
-    mvc.perform(get("/admin-donaciones?donacion=arroz"))
-        .andExpect(content().string(containsString("aria-current=\"true\"")))
-        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
-    // La pedida que no está en la página (los fideos están en la segunda) igual muestra su ficha
-    mvc.perform(get("/admin-donaciones?donacion=fideos"))
-        .andExpect(content().string(containsString("Cerrar la ficha")))
-        .andExpect(content().string(containsString("Solo se puede marcar como vencida")));
+        .andExpect(content().string(containsString("Mostrando 1 a 5 de 14 donaciones.")));
+    // Los fideos están en la segunda página: su fila lleva a su detalle
+    mvc.perform(get("/admin-donaciones?pagina=2"))
+        .andExpect(
+            content().string(containsString("href=\"/admin-donaciones-detalle?donacion=fideos\"")))
+        .andExpect(content().string(containsString("data-estado=\"asignada\"")));
     mvc.perform(get("/admin-donaciones?buscar=leche&categoria=alimentos"))
         .andExpect(content().string(containsString("Coincide 1 donación.")))
         .andExpect(content().string(containsString("Sacar los filtros")));
@@ -1719,6 +1815,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("No pudimos cargar las donaciones.")));
     mvc.perform(get("/admin-donaciones-detalle"))
         .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(content().string(containsString("Ver las propuestas que la piden")))
         .andExpect(content().string(containsString("¿Marcar Leche en polvo como vencida?")))
         .andExpect(content().string(containsString("popover")))
         .andExpect(
@@ -1731,34 +1828,107 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("cambió mientras la mirabas")));
     mvc.perform(post("/admin-donaciones-detalle-vencida"))
         .andExpect(redirectedUrl("/admin-donaciones-detalle-vencida"));
+    // DA-07: la vencida lleva el par neutro con su palabra, no el sello del problema
     mvc.perform(get("/admin-donaciones-detalle-vencida"))
         .andExpect(content().string(containsString("La marcaste como vencida el 15 de octubre")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"vencida\">.*Vencida</span>.*")))
+        .andExpect(content().string(not(containsString("data-estado=\"problema\""))))
         .andExpect(content().string(not(containsString("¿Marcar Leche en polvo como vencida?"))));
   }
 
   @Test
   void registrarDonacionEligeAlDonanteYSumaBienes() throws Exception {
-    mvc.perform(get("/admin-donaciones-registrar"))
-        .andExpect(content().string(containsString("Buscar por nombre o documento")))
-        .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
-        .andExpect(content().string(containsString("formnovalidate")))
-        .andExpect(content().string(not(containsString("Bien 2"))));
+    // ADM1-11: deriva de A12, en el galpón: las migas a Donaciones, una sola acción llena y la
+    // salida sin registrar
+    String formulario =
+        mvc.perform(get("/admin-donaciones-registrar"))
+            .andExpect(status().isOk())
+            .andExpect(model().attribute("seccion", "Donaciones"))
+            .andExpect(content().string(containsString("Buscar por nombre o documento")))
+            .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
+            .andExpect(content().string(containsString("formnovalidate")))
+            .andExpect(content().string(containsString("data-pantalla=\"registrar-donacion\"")))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*<nav class=\"migas\" aria-label=\"Dónde estás\">\\s*<ol"
+                                + " role=\"list\">\\s*<li><a href=\"/admin-donaciones\">"
+                                + "Donaciones</a>.*<li aria-current=\"page\">Registrar"
+                                + " donación</li>.*")))
+            .andExpect(content().string(containsString("data-fijo=\"celular\"")))
+            .andExpect(content().string(containsString(">Volver sin registrar</a>")))
+            .andExpect(content().string(not(containsString(">Cancelar</a>"))))
+            .andExpect(content().string(not(containsString("class=\"mesa"))))
+            .andExpect(content().string(not(containsString("Bien 2"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    // El formulario del registro lleva una sola acción llena; la barra de Quién dona (el
+    // componente listado) trae su propio «Buscar»
+    String registro =
+        formulario.substring(formulario.indexOf("action=\"/admin-donaciones-registrada\""));
+    assertEquals(
+        1,
+        registro.split("data-tono=\"principal\"", -1).length - 1,
+        "Registrar donación lleva una sola acción llena");
     mvc.perform(get("/admin-donaciones-registrar?donante=ana-ejemplo&bienes=2"))
         .andExpect(content().string(containsString("<b>Ana Ejemplo</b>")))
         .andExpect(content().string(containsString("Bien 2")))
         .andExpect(content().string(containsString("value=\"ana-ejemplo\"")));
     mvc.perform(get("/admin-donaciones-registrar?buscar=ejemplo"))
         .andExpect(content().string(containsString("2 donantes coinciden con la búsqueda.")));
+    // El error es un estado del mismo formulario: el resumen arriba y el campo marcado en su lugar
     mvc.perform(get("/admin-donaciones-registrar-error"))
-        .andExpect(content().string(containsString("Revisá 2 datos para seguir.")))
-        .andExpect(content().string(containsString("aria-invalid=\"true\"")));
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("<p class=\"aviso-titulo\">Revisá 2 datos para seguir.</p>")))
+        .andExpect(content().string(containsString("href=\"#cantidad-2\"")))
+        .andExpect(
+            content().string(containsString("id=\"cantidad-2-error\" class=\"campo-error\"")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")))
+        .andExpect(content().string(containsString("data-pantalla=\"registrar-donacion\"")));
     mvc.perform(get("/admin-donaciones-registrar-error?escenario=inactivo"))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
         .andExpect(
             content().string(containsString("Pedro Ejemplo está dado de baja como donante")));
+    mvc.perform(get("/admin-donaciones-registrar?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos guardar: no cambió nada.")))
+        .andExpect(content().string(containsString("Código: <code>a1b2c3d4e5f6</code>")));
     mvc.perform(post("/admin-donaciones-registrada"))
         .andExpect(redirectedUrl("/admin-donaciones-registrada"));
+    // DA-06: «registrada» es Donaciones con el aviso breve, sin página propia ni el banner de hoy;
+    // el paginador sigue en Donaciones
     mvc.perform(get("/admin-donaciones-registrada"))
-        .andExpect(content().string(containsString("Caja de alimentos, 3 bienes.")));
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(content().string(containsString("data-pantalla=\"donaciones\"")))
+        .andExpect(content().string(containsString("<h1>Donaciones</h1>")))
+        .andExpect(content().string(containsString("class=\"aviso-breve\" data-estado=\"hecho\"")))
+        // U1: el aviso de la acción hecha va debajo de la cabecera, con el signo, como en la ola
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<h1>Donaciones</h1>.*<div hx-swap-oob=\"beforeend:#avisos\"><div"
+                            + " class=\"aviso-breve\".*data-signo=\"e-confirmada\".*"
+                            + "Registraste la donación.*")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Registraste la donación: Caja de alimentos, 3 bienes. Quedó en el"
+                            + " Depósito Central.")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))))
+        .andExpect(content().string(not(containsString("Registrar otra"))))
+        .andExpect(content().string(not(containsString("href=\"/admin-donaciones-registrada"))));
     mvc.perform(get("/admin-donaciones-detalle?donacion=caja"))
         .andExpect(content().string(containsString("Caja de alimentos")))
         .andExpect(content().string(containsString("Los 3 bienes de la donación")))
@@ -1768,16 +1938,62 @@ class SitioControllerTest {
   @Test
   void lasPropuestasSeApruebanODescartan() throws Exception {
     mvc.perform(get("/admin-asignaciones"))
-        .andExpect(model().attribute("seccion", "Asignar donaciones"))
+        .andExpect(model().attribute("seccion", "Por decidir"))
         .andExpect(content().string(containsString("Propuestas sin problemas · 4")))
         .andExpect(content().string(containsString("Cubre 10 de 12 unidades")))
         .andExpect(
             content()
                 .string(
                     containsString(
-                        "aria-label=\"Aprobar: propuesta para Comedor Barrio Ejemplo\"")))
+                        "name=\"propuesta\" value=\"lentejas\" aria-label=\"Elegir: Lentejas · 15"
+                            + " kg (de Juan Ejemplo), para Comedor Barrio Ejemplo\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("data-elegidas=\"ninguna\">Aprobar las elegidas</span><span")))
+        // «Aprobar las N», o «Aprobar la elegida» con una: lo escribe la hoja de la tabla
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "data-elegidas=\"alguna\">Aprobar <span data-parte=\"cuenta-aprobar\">"
+                            + "</span></span></button>")))
+        .andExpect(
+            content().string(containsString("<span data-parte=\"cuenta\"></span> de 4.</b>")))
+        // ADM1-04: la casilla de elegir todas es un enlace que vuelve con todas marcadas
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<a class=\"tabla-casilla\" href=\"/admin-asignaciones?elegir=todas\"")))
+        .andExpect(
+            content().string(containsString("aria-label=\"Elegir todas las propuestas\"></a>")))
+        .andExpect(content().string(not(containsString("checked=\"checked\"></label>"))))
+        .andExpect(
+            content().string(containsString("formaction=\"/admin-asignaciones-descartada\"")))
         .andExpect(content().string(containsString("Hay 4 propuestas en conflicto.")))
-        .andExpect(content().string(containsString("Ver todas las decididas")));
+        .andExpect(
+            content().string(containsString("href=\"/admin-asignaciones?vista=decididas\"")));
+    mvc.perform(get("/admin-asignaciones?elegir=todas"))
+        .andExpect(
+            content()
+                .string(
+                    containsString("para Comedor Barrio Ejemplo\" checked=\"checked\"></label>")))
+        .andExpect(
+            content()
+                .string(containsString("<a class=\"tabla-casilla\" href=\"/admin-asignaciones\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "aria-label=\"Sacar la elección de todas las propuestas\""
+                            + " data-estado=\"elegida\"></a>")));
+    mvc.perform(get("/admin-asignaciones?algoritmo=las-dos&pagina=1"))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/admin-asignaciones?elegir=todas&amp;algoritmo=las-dos&amp;pagina=1\"")));
     mvc.perform(get("/admin-asignaciones?escenario=vacio"))
         .andExpect(content().string(containsString("No hay propuestas que esperen tu decisión.")));
     mvc.perform(get("/admin-asignaciones?escenario=corriendo"))
@@ -1827,10 +2043,33 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Propuestas sin problemas · 3")));
     mvc.perform(get("/admin-asignaciones-descartada"))
         .andExpect(content().string(containsString("Descartaste la propuesta para Merendero")));
+    // U4/U7: la que no se pudo aprobar va sin casilla (fuera de la aprobación juntas), con su
+    // sello,
+    // y el aviso del catálogo ofrece descartarla
     mvc.perform(get("/admin-asignaciones-error"))
         .andExpect(content().string(containsString("ya no está activa")))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(not(containsString("value=\"leche\" aria-label=\"Elegir:"))))
+        .andExpect(content().string(containsString("value=\"lentejas\" aria-label=\"Elegir:")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*Elegiste\\s+<span data-parte=\"cuenta\"></span> de 3\\..*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<input type=\"hidden\" name=\"propuesta\" value=\"leche\">.*"
+                            + "Descartar la\\s+propuesta</button>.*")))
         .andExpect(
             content().string(not(containsString("Aprobar: propuesta para Merendero Ejemplo Sur"))));
+    // U1/U6 (DA-25): la mesa lleva la fecha y las cuentas de /admin-inicio
+    mvc.perform(get("/admin-asignaciones"))
+        .andExpect(content().string(containsString("Jueves 15 de octubre de 2026.")))
+        .andExpect(content().string(containsString("Solicitudes <b>3</b>")))
+        .andExpect(content().string(containsString("Por vencer <b>4</b>")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
     mvc.perform(get("/admin-asignaciones-error?escenario=propia"))
         .andExpect(content().string(containsString("de la misma organización que la")));
     mvc.perform(get("/admin-asignaciones-error?escenario=cambio"))
@@ -1893,7 +2132,11 @@ class SitioControllerTest {
         .andExpect(
             content().string(containsString("Calculado el 30 de septiembre de 2026, 23:59.")))
         .andExpect(content().string(containsString("hx-boost=\"true\"")))
-        .andExpect(content().string(containsString("<caption>")));
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<caption class=\"solo-lectores\">Donantes de septiembre de 2026")));
     mvc.perform(get("/admin-ranking?mes=2026-08"))
         .andExpect(content().string(containsString("Ranking de donantes de agosto de 2026")))
         .andExpect(content().string(containsString("value=\"2026-08\" checked")))

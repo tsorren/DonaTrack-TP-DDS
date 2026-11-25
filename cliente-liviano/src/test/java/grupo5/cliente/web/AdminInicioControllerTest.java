@@ -1,14 +1,25 @@
 package grupo5.cliente.web;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import grupo5.cliente.puertos.AdminOperacionPuerto;
 import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.puertos.CuentasDelMenu;
+import grupo5.cliente.vistas.AdminAsignacionesVista;
+import grupo5.cliente.vistas.AdminAsignacionesVista.Cuentas;
+import grupo5.cliente.vistas.AdminAsignacionesVista.Propuesta;
+import grupo5.cliente.vistas.AdminAsignacionesVista.Sugerencia;
 import grupo5.cliente.vistas.AdminInicioVista;
 import grupo5.cliente.vistas.AdminInicioVista.Camiones;
 import grupo5.cliente.vistas.AdminInicioVista.Cifras;
@@ -16,7 +27,10 @@ import grupo5.cliente.vistas.AdminInicioVista.Decisiones;
 import grupo5.cliente.vistas.AdminInicioVista.Evolucion;
 import grupo5.cliente.vistas.AdminInicioVista.Fila;
 import grupo5.cliente.vistas.AdminInicioVista.Mes;
+import grupo5.cliente.vistas.ConsultaAsignaciones;
 import grupo5.cliente.vistas.CuentaVista;
+import grupo5.cliente.vistas.Tramo;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,8 +42,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.ResourceAccessException;
 
-/** El inicio del admin, por temas (R11-21), con lo que dan las APIs y no tiene la maqueta. */
+/**
+ * El inicio del admin, «Por decidir» (A03, DA-04 y DA-25): la cabecera y las pestañas de la mesa,
+ * la primera página de las propuestas sin problemas en la tabla con selección y, debajo, «Cómo está
+ * todo» como un solo resumen (DA-29) y los gráficos (R11-42, DA-30), con lo que dan las APIs y no
+ * tiene la maqueta.
+ */
 @WebMvcTest(AdminInicioController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @Import({Pantallas.class, AdminDonantesControllerTest.Keycloak.class})
@@ -55,8 +75,10 @@ class AdminInicioControllerTest {
           20_530,
           new Camiones(1, 2));
   private static final Decisiones NADA = new Decisiones(0, List.of(), 0, 0, 0, null, 0);
+  private static final Decisiones TRES_Y_CUATRO = new Decisiones(3, List.of(), 0, 7, 4, null, 9);
 
   @MockitoBean private AdminPersonasPuerto personas;
+  @MockitoBean private AdminOperacionPuerto operacion;
   @MockitoBean private CuentasDelMenu cuentas;
   @Autowired private MockMvc mvc;
 
@@ -64,6 +86,7 @@ class AdminInicioControllerTest {
   void armar() {
     when(cuentas.de("admin"))
         .thenReturn(Optional.of(new CuentaVista("Leo", "Administración", null)));
+    when(operacion.asignaciones(any(), eq(""))).thenReturn(asignaciones(2, 1, 1));
   }
 
   private static AdminInicioVista inicio(Decisiones decisiones, String resumen, Cifras cifras) {
@@ -75,118 +98,214 @@ class AdminInicioControllerTest {
         cifras);
   }
 
+  private static Propuesta propuesta(String clave, String cubre) {
+    return new Propuesta(
+        clave,
+        "Comedor Barrio Ejemplo",
+        "Lentejas, 15 kg",
+        "15 de octubre",
+        cubre,
+        "Cubre la necesidad completa.",
+        false,
+        List.of(new Sugerencia("Quienes menos recibieron", "1.º de 6")),
+        null,
+        "libre",
+        null,
+        null);
+  }
+
+  /** La pestaña Propuestas: {@code total} sin problemas (como mucho 2 en la página). */
+  private static AdminAsignacionesVista asignaciones(long total, long enConflicto, int paginas) {
+    List<Propuesta> filas =
+        total == 0
+            ? List.of()
+            : List.of(
+                propuesta("lentejas", "Lentejas · 15 kg (de Juan Ejemplo)"),
+                propuesta("arroz", "Arroz · 25 kg (de Ana Ejemplo)"));
+    return new AdminAsignacionesVista(
+        ConsultaAsignaciones.primera(),
+        new Cuentas(total + enConflicto, total, enConflicto),
+        "hoy, 0:00 · generó 7 propuestas",
+        new Tramo<>(filas, total, 1, paginas),
+        List.of(),
+        null,
+        List.of(),
+        null,
+        null);
+  }
+
+  private String html(String ruta) throws Exception {
+    return mvc.perform(get(ruta))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString(StandardCharsets.UTF_8);
+  }
+
   @Test
-  void sinNadaQueDecidirMuestraElVacioYLasCuatroTarjetas() throws Exception {
-    when(personas.inicio()).thenReturn(inicio(NADA, null, CIFRAS));
+  void esPorDecidirConLaCabeceraLasCuatroPestanasYLaTablaDePropuestas() throws Exception {
+    when(personas.inicio()).thenReturn(inicio(TRES_Y_CUATRO, null, CIFRAS));
 
     mvc.perform(get("/admin-inicio"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Martes 10 de noviembre de 2026")))
-        .andExpect(content().string(containsString("Hoy no hay nada que espere tu decisión.")))
-        .andExpect(content().string(not(containsString("mesa-resumen"))))
-        .andExpect(content().string(containsString("Al 10 de noviembre de 2026, 18:30.")))
-        .andExpect(content().string(containsString("Donaciones, por estado")))
-        .andExpect(content().string(containsString("Entregas confirmadas")))
-        .andExpect(content().string(containsString("La red")))
-        .andExpect(content().string(containsString("aria-labelledby=\"registro-camiones\"")))
-        .andExpect(content().string(not(containsString("null"))));
-  }
-
-  @Test
-  void cadaCifraLlevaSeparadorDeMilesYSuPeriodo() throws Exception {
-    when(personas.inicio()).thenReturn(inicio(NADA, null, CIFRAS));
-
-    mvc.perform(get("/admin-inicio"))
-        .andExpect(content().string(containsString(">1.207</dd>")))
-        .andExpect(content().string(containsString(">1.284</dd>")))
-        .andExpect(content().string(containsString(">20.412</dd>")))
-        .andExpect(content().string(containsString("donantes activos, de 20.530 registrados")))
-        .andExpect(content().string(containsString("en noviembre, del 1 al 10")))
-        .andExpect(content().string(containsString("en total, desde la primera registrada")))
-        .andExpect(content().string(containsString("<p>ahora</p>")))
-        .andExpect(
-            content().string(containsString("aria-label=\"Ver las donaciones en el depósito\"")))
-        .andExpect(content().string(containsString("Ver las donaciones vencidas en el depósito")))
-        // En camino da 0: se muestra con su 0 y sin «Ver ›».
-        .andExpect(content().string(not(containsString("Ver las donaciones en camino"))))
-        .andExpect(content().string(containsString("Las confirma cada organización con su foto.")));
-  }
-
-  @Test
-  void soloMuestraLoQueEsperaConComoMuchoTresNombres() throws Exception {
-    when(personas.inicio())
-        .thenReturn(
-            inicio(
-                new Decisiones(
-                    1_015,
-                    List.of("Hogar Ejemplo", "Club Ejemplo", "Merendero Ejemplo"),
-                    1_012,
-                    0,
-                    0,
-                    null,
-                    1),
-                "Hoy esperan tu decisión 1.015 organizaciones y 1 propuesta de asignación.",
-                CIFRAS));
-
-    mvc.perform(get("/admin-inicio"))
+        .andExpect(content().string(containsString("<title>Por decidir - DonaTrack</title>")))
+        .andExpect(content().string(matchesPattern("(?s).*<h1[^>]*>Por decidir</h1>.*")))
+        .andExpect(content().string(containsString("Martes 10 de noviembre de 2026.")))
+        .andExpect(content().string(containsString("Última asignación: hoy, 0:00 · generó 7")))
         .andExpect(
             content()
                 .string(
-                    containsString(
-                        "Hoy esperan tu decisión 1.015 organizaciones y 1 propuesta de"
-                            + " asignación.")))
-        .andExpect(content().string(containsString("1.015 piden sumarse")))
-        .andExpect(content().string(containsString("Merendero Ejemplo")))
-        .andExpect(content().string(containsString("y 1.012 más")))
-        .andExpect(content().string(containsString("Revisar organizaciones")))
-        .andExpect(content().string(containsString("1 espera tu revisión")))
-        .andExpect(content().string(not(containsString("decision-sin-asignar"))))
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-inicio\"[^>]*aria-current=\"page\">Propuestas"
+                            + " <b>2</b></a>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-asignaciones\\?pestana=conflictos\"[^>]*>Conflictos"
+                            + " <b>1</b></a>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-entidades\"[^>]*>Solicitudes <b>3</b></a>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-donaciones\\?vence=pronto\"[^>]*>Por vencer"
+                            + " <b>4</b></a>.*")))
+        .andExpect(content().string(containsString("Propuestas sin problemas · 2")))
+        .andExpect(content().string(containsString("action=\"/admin-asignaciones-aprobada\"")))
+        .andExpect(content().string(containsString("name=\"pestana\" value=\"inicio\"")))
+        .andExpect(content().string(containsString("name=\"propuesta\" value=\"lentejas\"")))
+        .andExpect(content().string(containsString("name=\"propuesta\" value=\"arroz\"")))
+        .andExpect(content().string(containsString("Lentejas · 15 kg (de Juan Ejemplo)")))
+        .andExpect(
+            content().string(containsString("Mostrando 1 a 2 de 2 propuestas sin problemas.")))
+        // Una sola página: no hace falta ir a la lista.
+        .andExpect(content().string(not(containsString("Ver las 2 propuestas"))))
+        .andExpect(content().string(not(containsString("Hola, Leo"))))
+        .andExpect(content().string(not(containsString("Lo que espera tu decisión"))))
+        .andExpect(content().string(not(containsString("tarjeta decision"))))
+        .andExpect(content().string(not(containsString("null"))));
+    // La única acción llena de la pantalla es «Aprobar» de la tabla.
+    assertThat(html("/admin-inicio").split("data-tono=\"principal\"", -1)).hasSize(2);
+    verify(operacion, org.mockito.Mockito.atLeastOnce())
+        .asignaciones(
+            argThat(c -> ConsultaAsignaciones.PROPUESTAS.equals(c.pestana()) && c.pagina() == 1),
+            eq(""));
+  }
+
+  @Test
+  void conMasDeUnaPaginaLlevaALaListaDePropuestas() throws Exception {
+    when(personas.inicio()).thenReturn(inicio(NADA, null, CIFRAS));
+    when(operacion.asignaciones(any(), eq(""))).thenReturn(asignaciones(1_234, 0, 124));
+
+    mvc.perform(get("/admin-inicio"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Propuestas sin problemas · 1.234")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-asignaciones\"[^>]*>Ver las 1.234"
+                            + " propuestas</a>.*")));
+  }
+
+  @Test
+  void sinNadaQueDecidirLaPestanaMuestraSuVacioYElRestoSigue() throws Exception {
+    when(personas.inicio()).thenReturn(inicio(NADA, null, CIFRAS));
+    when(operacion.asignaciones(any(), eq(""))).thenReturn(asignaciones(0, 0, 0));
+
+    mvc.perform(get("/admin-inicio"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No hay propuestas que esperen tu decisión.")))
+        .andExpect(content().string(not(containsString("name=\"propuesta\""))))
+        .andExpect(content().string(containsString("Al 10 de noviembre de 2026, 18:30.")))
+        .andExpect(content().string(containsString("Cómo está todo")))
         .andExpect(content().string(not(containsString("null"))));
   }
 
   @Test
-  void lasDonacionesSinAsignarLlevanALasQueVencenOAlDeposito() throws Exception {
-    when(personas.inicio())
-        .thenReturn(
-            inicio(
-                new Decisiones(
-                    0, List.of(), 0, 7, 4, "La primera vence el 12 de noviembre, en 2 días.", 0),
-                "Hay 7 donaciones sin asignar en el depósito; 4 vencen en los próximos 7 días.",
-                CIFRAS));
+  void siLasPropuestasNoLlegaronLaPestanaMuestraSuAvisoYElRestoSigue() throws Exception {
+    when(personas.inicio()).thenReturn(inicio(TRES_Y_CUATRO, null, CIFRAS));
+    when(operacion.asignaciones(any(), eq("")))
+        .thenThrow(new ResourceAccessException("Donaciones no respondió"));
 
     mvc.perform(get("/admin-inicio"))
-        .andExpect(content().string(containsString("7 en el depósito")))
-        .andExpect(content().string(containsString("4 vencen en los próximos 7 días.")))
-        .andExpect(content().string(containsString("Ver las que vencen")))
-        .andExpect(content().string(containsString("Ver las 7 del depósito")))
-        .andExpect(content().string(not(containsString("decision-propuestas"))));
+        .andExpect(status().isOk())
+        .andExpect(content().string(matchesPattern("(?s).*<h1[^>]*>Por decidir</h1>.*")))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(containsString("No pudimos cargar las propuestas.")))
+        .andExpect(content().string(not(containsString("name=\"propuesta\""))))
+        // Sin la vista de asignaciones, Propuestas y Conflictos van sin cuenta; las otras, con la
+        // suya.
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-inicio\"[^>]*aria-current=\"page\">Propuestas</a>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-entidades\"[^>]*>Solicitudes <b>3</b></a>.*")))
+        .andExpect(content().string(containsString("<dd>1.207</dd>")))
+        .andExpect(content().string(containsString("Cómo está todo")))
+        .andExpect(content().string(not(containsString("null"))));
+  }
 
-    when(personas.inicio())
-        .thenReturn(
-            inicio(
-                new Decisiones(0, List.of(), 0, 7, 0, null, 0),
-                "Hay 7 donaciones sin asignar en el depósito.",
-                CIFRAS));
-    mvc.perform(get("/admin-inicio"))
-        .andExpect(content().string(containsString("Ninguna vence en los próximos 7 días.")))
-        .andExpect(content().string(containsString("Ver las del depósito")))
-        .andExpect(content().string(not(containsString("Ver las que vencen"))));
+  // DA-29: «Cómo está todo» es un solo resumen con la lista de datos, su fecha y sus salidas
+  @Test
+  void elResumenEsUnaListaDeDatosConSuFechaYSusSalidas() throws Exception {
+    when(personas.inicio()).thenReturn(inicio(NADA, null, CIFRAS));
+
+    String html = html("/admin-inicio");
+    String resumen = html.substring(html.indexOf("id=\"todo-titulo\""));
+    resumen = resumen.substring(0, resumen.indexOf("</section>"));
+    assertThat(resumen)
+        .contains("Cómo está todo", "Al 10 de noviembre de 2026, 18:30.", "<dl class=\"datos\">")
+        .contains("<dt>En el depósito, sin asignar</dt>", "<dd>1.207</dd>")
+        .contains("<dt>Asignadas, por salir</dt>", "<dt>En camino o en la puerta</dt>")
+        .contains("<dt>No se pudo entregar</dt>", "<dt>Vencidas en el depósito</dt>")
+        .contains("<dt>Entregas confirmadas en noviembre, del 1 al 10</dt>")
+        .contains("<dt>Entregas confirmadas en total</dt>", "<dd>1.284</dd>")
+        .contains("<dt>La red</dt>")
+        .contains("<dd>1 organización activa · 20.412 donantes activos, de 20.530 registrados</dd>")
+        .contains("<dt>Camiones</dt>", "<dd>1 en ruta, 2 libres</dd>")
+        .contains(">Ver las donaciones en el depósito</a>")
+        .contains(">Ver las donaciones asignadas</a>")
+        .contains(">Ver las donaciones vencidas en el depósito</a>")
+        .contains(">Ver todas las donaciones</a>", ">Ver donantes</a>", ">Ver camiones</a>")
+        .contains("Las confirma cada organización con su foto.")
+        // En camino da 0: se muestra con su 0 y sin su salida.
+        .doesNotContain("Ver las donaciones en camino");
+    assertThat(html)
+        .doesNotContain("registro-mesa")
+        .doesNotContain("Entregas para mirar hoy")
+        .doesNotContain("null");
   }
 
   @Test
-  void siLogisticaNoRespondioSoloLaTarjetaCamionesMuestraSuAviso() throws Exception {
+  void siLogisticaNoRespondioSoloLaFilaDeCamionesMuestraSuAviso() throws Exception {
     Cifras sinCamiones =
         new Cifras(7, 4, 1, 1, 2, 0, "en noviembre, del 1 al 10", 0, 46, 86, 92, null);
     when(personas.inicio()).thenReturn(inicio(NADA, null, sinCamiones));
 
-    mvc.perform(get("/admin-inicio"))
-        .andExpect(status().isOk())
-        .andExpect(content().string(containsString("No pudimos cargar los camiones.")))
-        .andExpect(content().string(containsString("El resto de las cifras está al día.")))
-        .andExpect(content().string(not(containsString("Ver camiones"))))
-        .andExpect(content().string(containsString(">46</dd>")))
-        .andExpect(content().string(containsString("Todavía no hay entregas confirmadas.")))
-        .andExpect(content().string(containsString("Se ve entre las asignadas.")));
+    String html = html("/admin-inicio");
+    String camiones = html.substring(html.indexOf("<dt>Camiones</dt>"));
+    camiones = camiones.substring(0, camiones.indexOf("</dd>"));
+    assertThat(camiones)
+        .contains("class=\"aviso\" data-tipo=\"error\"", "No pudimos cargar los camiones.")
+        .contains("El resto de las cifras está al día.");
+    assertThat(html.split("No pudimos cargar los camiones.", -1)).hasSize(2);
+    assertThat(html).doesNotContain("No pudimos cargar las propuestas.");
+    assertThat(html)
+        .doesNotContain(">Ver camiones</a>")
+        .contains("<dd>46 organizaciones activas · 86 donantes activos, de 92 registrados</dd>")
+        .contains("Todavía no hay entregas confirmadas.")
+        .contains("Se ve entre las asignadas.");
   }
 
   // R11-42: los gráficos, con su tabla al lado, el mes en curso marcado y sus estados
@@ -240,6 +359,9 @@ class AdminInicioControllerTest {
                     containsString(
                         "<caption>Donaciones registradas y entregas confirmadas, mes a"
                             + " mes</caption>")))
+        // Las tablas de los gráficos son la tabla del catálogo (P20), con su rótulo por dato.
+        .andExpect(content().string(containsString("<table class=\"tabla\">")))
+        .andExpect(content().string(containsString("data-rotulo=\"Entregas confirmadas\"")))
         .andExpect(content().string(containsString("<th scope=\"row\">Otras 3 categorías</th>")))
         .andExpect(content().string(containsString("aria-hidden=\"true\"")))
         .andExpect(content().string(containsString("Noviembre todavía no terminó.")))
@@ -248,7 +370,7 @@ class AdminInicioControllerTest {
   }
 
   @Test
-  void sinDonacionesLaTarjetaLoDiceSinDibujo() throws Exception {
+  void sinDonacionesLaLaminaLoDiceSinDibujo() throws Exception {
     when(personas.inicio()).thenReturn(conGraficos(Evolucion.SIN_DONACIONES));
 
     mvc.perform(get("/admin-inicio"))
@@ -257,18 +379,18 @@ class AdminInicioControllerTest {
             content()
                 .string(containsString("Los gráficos aparecen cuando se registre la primera.")))
         .andExpect(content().string(not(containsString("Por categoría"))))
-        .andExpect(content().string(not(containsString("<caption>"))));
+        .andExpect(content().string(not(containsString("<caption>Donaciones registradas"))));
   }
 
   @Test
-  void siLaEvolucionNoLlegoSoloSuTarjetaMuestraElAviso() throws Exception {
+  void siLaEvolucionNoLlegoSoloSuLaminaMuestraElAviso() throws Exception {
     when(personas.inicio()).thenReturn(conGraficos(null));
 
     mvc.perform(get("/admin-inicio"))
         .andExpect(content().string(containsString("Los últimos 12 meses")))
         .andExpect(content().string(containsString("No pudimos cargar los gráficos.")))
         .andExpect(content().string(containsString("Las cifras de arriba están al día.")))
-        .andExpect(content().string(containsString(">20.412</dd>")))
+        .andExpect(content().string(containsString("20.412 donantes activos")))
         .andExpect(content().string(not(containsString("Mes a mes"))));
   }
 }

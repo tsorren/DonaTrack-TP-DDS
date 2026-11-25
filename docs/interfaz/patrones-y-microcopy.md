@@ -117,7 +117,14 @@ resumen:
 26. Un envío termina en la misma pantalla, con un aviso breve que dice qué pasó y, si hay, el número
     que le sirve a la persona («Recibimos tu mensaje. Su número es 7.»), sin página de respuesta
     propia. Si llegó desde otra pantalla (`?volver=`), ofrece «Volver a …» con su nombre; si no,
-    no inventa una salida (DA-06 y DA-24; oleada PUB1, 2026-11-24).
+    no inventa una salida (DA-06 y DA-24; oleada PUB1, 2026-11-24). Lo mismo al registrar una donación en el
+    admin: vuelve a Donaciones con «Registraste la donación: …» (DA-06; oleada ADM1, 2026-11-25).
+27. Decidir varias cosas juntas se hace de a una y en orden. Si una falla, se para ahí: el aviso
+    dice cuántas se decidieron, por qué no la siguiente y que las demás quedaron sin decidir
+    («Aprobaste 2 de las 4 propuestas. No se pudo aprobar la siguiente: … Las demás quedaron sin
+    decidir.»). Con una sola, el aviso de siempre.
+    La cuenta de lo elegido se lee en la barra y en el botón («Elegiste 2 de 4.», «Aprobar las 2»,
+    «Aprobar la elegida»), nunca «Aprobar las 1» (DA-26; oleada ADM1, 2026-11-25).
 
 ## Reglas generales de la revisión del 2026-11-11
 

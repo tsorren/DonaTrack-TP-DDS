@@ -28,7 +28,7 @@ public class AdminCamionesController {
 
   private static final List<Listado.Opcion> CAPACIDADES =
       List.of(
-          new Listado.Opcion("", "Todas las capacidades"),
+          new Listado.Opcion("", "Todas"),
           new Listado.Opcion("chico", "Hasta 1.500 kg"),
           new Listado.Opcion("mediano", "De 1.500 a 3.000 kg"),
           new Listado.Opcion("grande", "Más de 3.000 kg"));

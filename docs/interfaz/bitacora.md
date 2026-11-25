@@ -31,6 +31,302 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-25 · galpón · Los errores y los avisos del galpón con las piezas del catálogo
+
+- **Decisión:** el error de carga de una lista del galpón (Donaciones, Asignar, Camiones, Ranking y
+  el inicio) es el `.aviso` de error del catálogo, con su signo, el texto de siempre, el enlace en
+  línea «escribinos con este código» y un solo «Volver a cargar» chico. El error de un envío
+  (aprobar, guardar un registro, el cambio del detalle de una donación) usa el mismo aviso, sin
+  código ni «Volver a cargar». Lo hecho se avisa con un fragmento, `admin-donaciones :: hecho`: el
+  aviso breve con el signo «confirmada» y el botón de cerrar, debajo de la cabecera, que usan
+  Registrar, marcar vencida, Camiones y, con la misma forma, Asignar.
+- **Alternativas:** dejar el `.banner` heredado en Donaciones y Asignar; un botón secundario
+  «Escribinos» (lo usaron Camiones y Ranking hasta la segunda ronda); `envio :: aviso`, que esta ola
+  no edita.
+- **Por qué:** la misma situación se veía de tres maneras en pantallas vecinas; el catálogo ya
+  dice cómo se muestra una lista con error, y con `hx-swap-oob` en el `<p>` el aviso llegaba sin su
+  caja.
+- **Costo:** el aviso real del servidor (`envio :: aviso`) sigue sin signo; los avisos ocultos de
+  corte de conexión siguen con el `.banner`, porque los muestra `static/js/interfaz.js`
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítems 7 y 8).
+- **Quién decidió:** agente (revisión de pantallas de la ola, rondas 1 y 2, y lote `adm1-camiones`).
+- **Evidencia:** `e90cd4bf1` y `8b0e09344`; backlog §14.5.
+
+### 2026-11-25 · camiones · Camiones deriva de A03 con la flota del catálogo
+
+- **Decisión:** la cabecera del galpón (`header.racimo` con `data-alinea="entre arriba"` y una
+  `.pila`) en lugar de `.mesa`, sin el rótulo «Administración», con las cifras de la flota
+  (`.flota-resumen`) adentro y «Agregar camión» chico y sin llenar. Los botones de la ficha, chicos;
+  los del diálogo, de su tamaño. El alta con error sigue el patrón de A12 (aviso con signo, «Los
+  datos con * son obligatorios.» y «Volver sin agregar» como enlace). El mapa chico lleva
+  `data-mapa-margenes="24 96 120 40"` y la hoja de MapLibre antes del script.
+- **Alternativas:** dejar «Agregar camión» lleno; pasar las cifras a `.datos` (son cifras grandes de
+  la flota); los márgenes de Seguimiento de quien dona (`40 96 136 40`), que a 360 px amontonaban
+  los marcadores y sumaban cuatro fallas de toque; dar más alto al mapa desde la hoja (pisa
+  `componentes/flota`).
+- **Por qué:** en A03 solo la acción del lote va llena; con esos márgenes los tres marcadores
+  quedan fuera de la atribución y de los botones, y `/admin-camiones` y
+  `/admin-camiones-agregar-error` salen de la línea de base de §10.4.
+- **Costo:** a 360 px los marcadores se tocan entre sí, por el alto de la pieza
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 8).
+- **Quién decidió:** agente (lote `adm1-camiones` y revisión de pantallas).
+- **Evidencia:** `57b0fe52d`, `c0a520425` y `8b0e09344`; backlog §14.3 (ADM1-07).
+
+### 2026-11-25 · ranking · El mes se elige como hoy (DA-31)
+
+- **Decisión:** la pastilla «Mes» de `componentes/filtros`, «Volver al último mes» y el paginador de
+  meses, que pasa debajo de la tabla, como en el dibujo de la ficha. La pastilla sale llena porque
+  siempre hay un mes elegido: es el estado del filtro, no una acción; la única acción llena es
+  «Mostrar resultados», dentro de su menú.
+- **Alternativas:** pestañas por mes (A03 usa pestañas para lo que hay por decidir, y doce meses no
+  entran a 360 px).
+- **Por qué:** el filtro ya existía y anda sin JavaScript.
+- **Costo:** el paginador de meses no se ve en la maqueta, que manda todos los meses en una página.
+- **Quién decidió:** usuario (DA-31, la recomendada, delegada por el relevamiento del 2026-11-24).
+  La posición del paginador, agente (lote `adm1-ranking`). Consta como no cumplida: la revisión de
+  pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `fa55bb12b`; ficha [`guia-adm-ranking.md`](flujos/guia-adm-ranking.md).
+
+### 2026-11-25 · ranking · Ranking con la tabla del catálogo, sin podio (DA-28)
+
+- **Decisión:** Ranking sigue su ficha: la `.tabla` del catálogo con el encabezado del galpón, sin
+  selección, el puesto en número y ningún color, dibujo ni podio para los tres primeros. El caption
+  y el h2 «Los puestos del mes» van para lectores; el rótulo «Administración» (`p.rotulo`) queda
+  arriba del h1, como pide la ficha.
+- **Alternativas:** un podio dibujado (una pieza que el catálogo no tiene, y el tono pide no
+  comparar donantes más allá del criterio); dejar el caption visible.
+- **Por qué:** el criterio ya va visible arriba de la tabla; apilada en el celular, el caption de la
+  tabla se parte en una palabra por renglón, como en las otras tablas del admin.
+- **Costo:** el caption no se ve en las capturas, y Ranking es la única pantalla del galpón con el
+  rótulo ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 9).
+- **Quién decidió:** usuario (DA-28, la recomendada, delegada por el relevamiento del 2026-11-24).
+  El caption, el h2 y el rótulo, agente (lote `adm1-ranking`). Consta como no cumplida: la revisión
+  de pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `fa55bb12b` y `8b0e09344`; backlog §14.3 (ADM1-12).
+
+### 2026-11-25 · registrar · Registrar donación en A12, con la respuesta en Donaciones (DA-06)
+
+- **Decisión:** registrar una donación vuelve a Donaciones con el aviso breve («Registraste la
+  donación: …»), sin página propia; en la maqueta, `/admin-donaciones-registrada` muestra Donaciones
+  con ese aviso. La pantalla sigue a A12: cada bien es una tarjeta con su h3 y la grilla de campos
+  como `role="group"` (sin fieldset), el botón principal va en `data-fijo="celular"` y «Cancelar»
+  pasa a ser el enlace «Volver sin registrar», fuera del formulario.
+- **Alternativas:** pasar el aviso como atributo desde el controller (deja un texto de ejemplo en
+  `web/`); dar estilo a la `legend` en la hoja; migrar la foto de cada bien a `.subida` (es para
+  varias fotos, una por formulario).
+- **Por qué:** cada envío termina en la misma pantalla (regla 26 de patrones); A12 pide una sola
+  acción llena y la salida como enlace.
+- **Costo:** fuera de la maqueta, el error de datos sigue volviendo como aviso breve; se ven dos
+  botones llenos (el «Buscar» del listado tiene el tono fijo); la grilla de cada bien queda en una
+  columna a 1280 px ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 7).
+- **Quién decidió:** usuario (DA-06, «Todas las recomendadas», ronda 4 del 2026-11-23). La
+  composición, agente (lote `adm1-registrar`). Consta como no cumplida: la revisión de pantallas de
+  la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `24549de7c` y `2a5e83682`; backlog §14.3 (ADM1-11).
+
+### 2026-11-25 · donaciones · Donaciones pasa de la bandeja con ficha a una tabla
+
+- **Decisión:** la lista de Donaciones del admin deja la bandeja con la ficha al costado (R11-34) y
+  pasa a la `.tabla` del catálogo, derivada de A03: cada fila lleva a
+  `/admin-donaciones-detalle?donacion=`. Las columnas son Donación, Donó, Registrada y Estado.
+  `/admin-donaciones?donacion=<clave>` dibuja el detalle con 200, para los enlaces de Decididas y
+  de Donantes que siguen apuntando ahí.
+- **Alternativas:** una fila que se despliega con la ficha (pide CSS nuevo en una hoja de pantalla);
+  redirigir `?donacion=` al detalle (rompe `ningunEnlaceDelSitioEstaRoto`, que exige 200); cambiar
+  esos enlaces en `admin-donantes.html` y en Decididas (son de ADM2 y de otro lote; se revirtió);
+  la columna «Para» (la fila no trae la organización en todos los estados).
+- **Por qué:** A03 no tiene ficha al costado, y la ficha dentro de la tabla era una pieza nueva.
+- **Costo:** revierte una decisión de la revisión del 2026-11-11 sin una DA: la puede vetar el
+  usuario. La misma pantalla tiene dos URL y queda código sin uso en `vistas/`
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 5).
+- **Quién decidió:** agente (lote `adm1-donaciones`).
+- **Evidencia:** `341f726ee`, `b13b05eed` y `1af6d4b85`; backlog §14.3 (ADM1-08).
+
+### 2026-11-25 · donaciones · «Vencida» con el par neutro (DA-07)
+
+- **Decisión:** en la lista y en el detalle de Donaciones, una vencida lleva `data-estado="vencida"`
+  con la palabra «Vencida», en el par neutro, sin el sello de problema, sin el botón de marcar y sin
+  el aviso de «Solo se puede». Los sellos de los demás estados pasan a los nombres de la guía
+  (C1-14): `registrada`, `asignada`, `en-camino` y `confirmada`, con las mismas palabras.
+- **Alternativas:** sumar una vencida a los datos de ejemplo (cambiaba cuentas que afirman otros
+  tests); dejarla como problema.
+- **Por qué:** vencer no es un error de nadie: la guía no le da sello.
+- **Costo:** ninguno; DTI-47, ítem 6, queda saldado en esa parte.
+- **Quién decidió:** usuario (DA-07, «Todas las recomendadas», ronda 3 del 2026-11-22). Los nombres
+  de los sellos, agente (lote `adm1-donaciones`). Consta como no cumplida: la revisión de pantallas
+  de la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `341f726ee`; test `unaVencidaLlevaElParNeutroEnLaListaYEnElDetalle`.
+
+### 2026-11-25 · inicio · Los gráficos se quedan en la hoja del inicio (DA-30)
+
+- **Decisión:** «Mes a mes» y «Por categoría» siguen como parte de `admin-inicio`, en
+  `admin-inicio.css`, con su tabla al lado desde 68,75 em (antes, desde 53,75 em) y debajo en lo
+  más angosto. Sus reglas usan los nombres de token de la guía con el mismo valor, y las medidas
+  sueltas pasan al token más cercano: las medidas literales de la hoja bajan de 86 a 29.
+- **Alternativas:** una pieza nueva del catálogo con su muestra en `/estilos` (la usa una sola
+  pantalla).
+- **Por qué:** la tabla del catálogo no se parte, y entre 1024 y 1280 px desbordaba al lado del
+  gráfico.
+- **Costo:** `.tabla` no tiene reglas para `tfoot`; apilada, la tabla de Mes a mes son 12 bloques y
+  a 360 px los meses se apiñan ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 6).
+- **Quién decidió:** usuario (DA-30, la recomendada, delegada por el relevamiento del 2026-11-24).
+  El quiebre y los tokens, agente (lote `adm1-por-decidir`). Consta como no cumplida: la revisión de
+  pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `0dec8c01c` y `b64f154fa`.
+
+### 2026-11-25 · inicio · «Cómo está todo» en un solo resumen (DA-29)
+
+- **Decisión:** debajo de la bandeja, las cuatro tarjetas pasan a un resumen con la lista de datos
+  del catálogo (`.datos`) y su fecha, con las mismas cifras. Las salidas («Ver las donaciones en el
+  depósito», etc.) van juntas debajo, en un `.racimo`, con su texto completo y 48 px de alto. En el
+  celular el resumen va en una columna (una regla de disposición en la hoja). «Entregas para mirar
+  hoy» no se dibuja.
+- **Alternativas:** conservar las cuatro tarjetas (la densidad de la huerta en el galpón); armar
+  «Entregas para mirar hoy» con datos de la maqueta (en el sitio real quedaría vacía); «Ver ›» con
+  `aria-label` fuera de su fila.
+- **Por qué:** `AdminInicioVista` trae cuentas, no entregas; la lista de datos no tiene lugar para
+  una salida en la fila.
+- **Costo:** quien administra pierde la lista de las entregas del día, y dejan de verse los nombres
+  de las organizaciones que piden sumarse y la primera que vence
+  ([DTI-47](../adr/DEUDA_TECNICA.md#dti-47), ítem 13; [DTI-51](../adr/DEUDA_TECNICA.md#dti-51),
+  ítem 6).
+- **Quién decidió:** usuario (DA-29, la recomendada, delegada por el relevamiento del 2026-11-24).
+  Las salidas debajo y la columna del celular, agente (lote `adm1-por-decidir`). Consta como no
+  cumplida: la revisión de pantallas de la ola no llegó a PASS; el comportamiento está en el código
+  y en los tests.
+- **Evidencia:** `0dec8c01c` y `b64f154fa`; ficha [`guia-adm-inicio-graficos.md`](flujos/guia-adm-inicio-graficos.md).
+
+### 2026-11-25 · inicio · `/admin-inicio` es «Por decidir» (DA-04)
+
+- **Decisión:** `/admin-inicio` lleva la cabecera y las pestañas del fragmento de Asignar, con
+  Propuestas abierta: la primera página de las propuestas sin conflicto en la tabla con selección,
+  con «Aprobar las N» como única acción llena, y debajo lo de su ficha. Los errores (del inicio, de
+  las propuestas, de los camiones y de los gráficos) son el `.aviso` de error. Si falla el pedido de
+  propuestas, el resto de la pantalla sigue y Propuestas y Conflictos quedan sin cuenta.
+- **Alternativas:** dejar el saludo y las tarjetas de decisión de antes.
+- **Por qué:** «Por decidir» reemplaza a Inicio y a Asignar (DA-04 y DA-25).
+- **Costo:** el bloque de Propuestas está dos veces (inicio y mesa); dos enlaces a la mesa llevan
+  `hx-boost`, y el controller atrapa también los 401 y 403
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítems 4 y 6).
+- **Quién decidió:** usuario (DA-04, «Todas las recomendadas», ronda 4 del 2026-11-23). El manejo
+  de los errores, agente (lote `adm1-por-decidir`). Consta como no cumplida: la revisión de
+  pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `0dec8c01c` y `b64f154fa`; backlog §14.3 (ADM1-09).
+
+### 2026-11-25 · asignaciones · Aprobar o descartar varias juntas, sin cambiar el puerto (DA-26)
+
+- **Decisión:** el formulario manda varias `propuesta` a `-aprobada` o `-descartada` y
+  `AdminAsignacionesEnvios` llama a `decidirPropuesta` una vez por propuesta, en orden. Un 409 corta
+  el lote y el aviso dice cuántas se decidieron y por qué no la siguiente (regla 27 de patrones);
+  con ninguna elegida, «Elegí al menos una propuesta para aprobar.» y no se llama al puerto. Con una
+  sola, el aviso de siempre, sin el nombre de la organización si se eligió desde la tabla. En la
+  maqueta de error, la que no se pudo aprobar queda en la tabla sin casilla, con el sello de
+  problema y «No se pudo aprobar: descartala en el aviso de arriba.», y se descarta desde el aviso.
+- **Alternativas:** un botón por fila, sin selección; un pedido en lote nuevo (cambia el puerto y el
+  adaptador); un campo oculto con la organización por fila (viaja también en las no elegidas).
+- **Por qué:** A03 dibuja la selección y la ola no toca puertos.
+- **Costo:** solo el 409 corta con la cuenta; otro error a mitad del lote lleva a la página de error
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 4).
+- **Quién decidió:** usuario (DA-26, la recomendada, delegada por el relevamiento del 2026-11-24).
+  Lo demás, agente (lote `adm1-asignaciones` y revisión de pantallas). Consta como no cumplida: la
+  revisión de pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los
+  tests.
+- **Evidencia:** `0fda83499`, `4bc65d917` y `e90cd4bf1`; backlog §14.3 (ADM1-06).
+
+### 2026-11-25 · asignaciones · Inicio y Asignar con la misma cabecera y las mismas pestañas (DA-25)
+
+- **Decisión:** las dos rutas llevan la cabecera de A03 (título «Por decidir», la fecha, la última
+  asignación, «Correr la asignación» y «Registrar donación») y la barra de pestañas con su cuenta
+  (Propuestas, Conflictos, Solicitudes y Por vencer), en los fragmentos
+  `admin-asignaciones :: cabecera` y `:: pestanas`. `/admin-asignaciones` es la mesa completa. La
+  fecha y las cuentas de Solicitudes y Por vencer salen, en las dos, de `AdminPersonasPuerto.inicio()`
+  (en la mesa, por un `ObjectProvider`); la de Propuestas, de las propuestas sin conflicto. La
+  cabecera recibe `volver`, para que «Correr la asignación» vuelva al inicio. Salen el panel
+  «Estado de la asignación» (lo que tenía pasó a la cabecera y a un `.plegable`) y la lista de las 3
+  decididas más nuevas.
+- **Alternativas:** una sola ruta que redirige a la otra (rompe tests y rutas de `paginas.txt`);
+  Solicitudes y Por vencer como listas dentro del inicio; tomar la cuenta de Propuestas de
+  `Decisiones.propuestas` (incluye las de conflicto y contradecía la tabla); cambiar la firma de
+  `pestanas`.
+- **Por qué:** la persona ve la misma barra donde esté, y la cuenta coincide con lo que hay debajo.
+- **Costo:** la mesa pide además todo el inicio para la fecha y dos cuentas, y `pestanas` lee dos
+  variables del contexto sin parámetro ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 4).
+- **Quién decidió:** usuario (DA-25, la recomendada, delegada por el relevamiento del 2026-11-24).
+  Lo demás, agente (lotes `adm1-asignaciones` y `adm1-por-decidir`, y revisión de pantallas).
+  Consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS; el comportamiento
+  está en el código y en los tests.
+- **Evidencia:** `0fda83499`, `0dec8c01c` y `e90cd4bf1`; backlog §14.3 (ADM1-05 y ADM1-09).
+
+### 2026-11-25 · tabla · La tabla del galpón con selección, sin JavaScript (DA-18 y DA-21)
+
+- **Decisión:** la variante `.tabla[data-forma="seleccion"]` entra al catálogo, con
+  `.tabla-casilla` (la casilla sola de 48 × 48 px: el control nativo transparente encima de la
+  dibujada, que mide `--espacio-4`), la fila elegida, `data-columna="ancha"` para lo que se esconde
+  en el celular y `.tabla-elegidas` con su cuenta. Elegir todas es un enlace con `?elegir=todas` que
+  dibuja el servidor; la cuenta es un contador de CSS con `@counter-style`: «Elegiste N de M.»,
+  «Aprobar las N» o «Aprobar la elegida»; sin ninguna, «Elegí las que quieras decidir juntas.» y
+  «Aprobar las elegidas».
+- **Alternativas:** un bloque `Alpine.data` (esta ola no edita `static/js`); una casilla de todas
+  sin JavaScript (no marca nada); un campo «todas» pintado con `:has` (los lectores no oyen las
+  filas marcadas); la cuenta solo del servidor (queda vieja al destildar); «N elegidas» y «Aprobar
+  las N» de la guía (con una saldría «Aprobar las 1»).
+- **Por qué:** con lo que el catálogo y el navegador ya tienen, la cuenta no queda vieja y el
+  español es correcto para cualquier N.
+- **Costo:** la cuenta no se anuncia al marcar; la barra va después de la tabla en el DOM y se
+  dibuja arriba, así que el foco no sigue el orden visual; la casilla de arriba sigue al servidor
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 3).
+- **Quién decidió:** usuario (DA-18 y DA-21, rondas del 2026-11-22 y 2026-11-23). La forma sin
+  JavaScript, los nombres y los textos, agente (lote `adm1-asignaciones`). Consta como no cumplida:
+  la revisión de pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los
+  tests.
+- **Evidencia:** `0fda83499`, `4bc65d917` y `a8c064a75`; [catálogo](componentes.md), fila `.tabla`.
+
+### 2026-11-25 · armazón · El galpón: la barra de arriba en todos los anchos y el cajón desde 56 em (DA-18 y DA-27)
+
+- **Decisión:** el admin se dibuja con `body[data-armazon="galpon"]`, que pone `layout-privado`
+  cuando Mi perfil es el del admin. La barra de arriba (marca, campana y cuenta) se queda en todos
+  los anchos, con el alto de la huerta; desde 56 em las secciones van en el cajón (`data-forma=
+  "cajon"`), fijo a la izquierda y debajo de la barra, con el contenido y el pie corridos a su
+  derecha; hasta 56 em, la barra del celular con Por decidir, Donaciones, Camiones y Más, que abre
+  todas en un panel (popover). Desde 56 em la barra de arriba queda fija también en ventanas bajas.
+  El papel del galpón redefine `--color-papel` dentro del armazón. Sale el panel con hamburguesa
+  (`.navegacion-abrir`).
+- **Alternativas:** la guía tal cual, sin barra arriba desde 56 em (cambia el lugar de la campana y
+  arriesga `ArmazonFijoTest`); una clase en lugar del atributo (suma al catálogo y al tope de clases
+  de un solo uso); `body` como grilla (la cabecera dejaría de quedar fija); afinar la barra
+  (dependen de su alto la cabecera fija y la barra del listado).
+- **Por qué:** la campana queda donde está en los otros roles y `ArmazonFijoTest` pasa sus 12,
+  también el que estaba en la línea de base.
+- **Costo:** fijar la barra en ventanas bajas es un desvío de R11-33 para el admin, decidido por el
+  agente; la cuenta chica del cajón no llega a ninguna pantalla
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítems 1 y 2).
+- **Quién decidió:** usuario (DA-18, ronda 3 del 2026-11-22; DA-27, la recomendada, delegada por el
+  relevamiento del 2026-11-24). Lo demás, agente (lote `adm1-galpon` y revisión de pantallas).
+  Consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS; el comportamiento
+  está en el código y en los tests.
+- **Evidencia:** `b5a6879f8`, `ed7631670`, `e9fbc76d2`, `2b7ef8b38`, `e90cd4bf1` y `8b0e09344`;
+  test `ArmazonDelGalponTest`.
+
+### 2026-11-25 · navegación · El menú del admin: Por decidir, Donaciones, Donantes, Organizaciones, Camiones y Ranking (DA-04, DA-17 y DA-25)
+
+- **Decisión:** el menú del admin es Por decidir, Donaciones, Donantes, Organizaciones, Camiones y
+  Ranking. Por decidir reemplaza a Inicio y a Asignar donaciones, lleva a `/admin-inicio` y queda
+  marcada también en `/admin-asignaciones` y sus respuestas. En el celular van Por decidir,
+  Donaciones, Camiones y Más; las tres se eligen en el layout con una lista de rutas. Los íconos son
+  los `i-*` de `iconos :: comunes`, una vez por pantalla desde el layout. Solo cambia el menú del
+  admin.
+- **Alternativas:** sumar el dato del celular a `OpcionNavegacion` (`vistas/` no era del lote);
+  cambiar todos los menús juntos.
+- **Por qué:** lo que hay por decidir es la primera tarea del admin; cada ola rehace el menú de su
+  rol.
+- **Costo:** las 22 pantallas de ADM2 se ven con el menú y el armazón nuevos y su contenido de
+  antes (menor).
+- **Quién decidió:** usuario (DA-04, ronda 4 del 2026-11-23; DA-17, ronda 3 del 2026-11-22; DA-25,
+  la recomendada, delegada por el relevamiento del 2026-11-24). La lista del celular y los íconos,
+  agente (lote `adm1-galpon`). Consta como no cumplida: la revisión de pantallas de la ola no llegó
+  a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `b5a6879f8`; `Pantallas.java`, `layout-privado.html`.
+
 ### 2026-11-24 · navegación · El menú público: Inicio, Entregas, Organizaciones y Cómo funciona (DA-01, DA-05, DA-17)
 
 - **Decisión:** el menú público es Inicio, Entregas, Organizaciones y Cómo funciona
