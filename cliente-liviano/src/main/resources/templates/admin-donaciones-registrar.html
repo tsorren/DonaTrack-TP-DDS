@@ -1,15 +1,20 @@
 <!DOCTYPE html>
-<!--/* Raíces, Registrar donación del admin (RF-15), según su ficha de flujo
-       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.6). Tres pasos: quién dona, qué
-       llegó y dónde quedó. "Quién dona" es un formulario aparte (GET, el componente listado de
-       R11-B04, solo con Buscar): ?buscar=<texto> muestra los donantes que coinciden y ?donante=<clave> deja uno elegido (así llega desde
+<!--/* Registrar donación del admin (RF-15, ADM1-11): deriva del arquetipo A12 de la guía «Huerta y
+       galpón» (docs/interfaz/guia/partes/50-pantallas.html, #confirmar), en el galpón, hecha con las
+       piezas del catálogo (docs/interfaz/componentes.md): la columna del formulario con las migas a
+       Donaciones, los avisos de error arriba, los campos, los botones y una sola acción llena, y la
+       salida sin registrar. Tres pasos: quién dona, qué llegó y dónde quedó (ficha
+       docs/interfaz/flujos/raices-admin-navegable.md, sección 4.6). "Quién dona" es un formulario
+       aparte (GET, el componente listado de R11-B04, solo con Buscar): ?buscar=<texto> muestra los
+       donantes que coinciden y ?donante=<clave> deja uno elegido (así llega desde
        admin-donantes-registrado, "en un mismo flujo" de RF-15). "Sumar otro bien" manda el formulario
        por GET con ?bienes=<n> (sin validar) y vuelve con un bien más; sumarlo en el lugar con Alpine
        queda para después: sin él, todo funciona. El registro es un formulario real (POST, multipart
        por las fotos) que lleva a admin-donaciones-registrada. Estados: ?escenario=lento y error; el
-       error de datos es admin-donaciones-registrar-error. Los donantes vienen del controller
+       error de datos (el resumen arriba y el campo marcado en su lugar) y el donante dado de baja son
+       admin-donaciones-registrar-error (?escenario=inactivo). Los donantes vienen del controller
        (registro: de la maqueta o de Donaciones); fuera de la maqueta el registro guarda de verdad
-       (pieza envio) y vuelve a Donaciones con el aviso.
+       (pieza envio) y vuelve a Donaciones con el aviso breve (DA-06).
        Fragmentos:
        - hoja(conError): la pantalla entera. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -33,27 +38,32 @@
              buscado=${param.buscar != null ? param.buscar[0] : null},
              pedidos=${param.bienes != null ? param.bienes[0] : ''},
              bienes=${escrito or pedidos == '3' ? 3 : (pedidos == '2' ? 2 : 1)}">
-  <div class="mesa">
-    <header class="mesa-cabecera">
-      <p class="rotulo"><a href="/admin-donaciones" th:href="@{/admin-donaciones}">Donaciones</a> ›
-        Registrar donación</p>
+  <div class="pila" data-espacio="4" data-pantalla="registrar-donacion">
+    <div class="pila" data-espacio="1">
+      <nav th:replace="~{componentes/migas :: migas(pasos=${ { {texto: 'Donaciones', ruta: '/admin-donaciones'} } }, actual='Registrar donación')}"></nav>
       <h1>Registrar donación</h1>
-    </header>
+      <p>Quién dona, qué llegó y en qué depósito quedó.</p>
+    </div>
 
-    <section th:if="${datos}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
-             autofocus aria-labelledby="resumen-titulo">
-      <h2 id="resumen-titulo">Revisá 2 datos para seguir.</h2>
-      <ul>
+    <!--/* Error de datos: el resumen arriba, con el foco, un enlace a cada problema y lo demás como
+           se escribió. */-->
+    <div th:if="${datos}" class="aviso" data-tipo="error" role="alert" tabindex="-1" id="resumen"
+         autofocus>
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo">Revisá 2 datos para seguir.</p>
+      <ul role="list">
         <li><a href="#descripcion">Falta la descripción</a></li>
         <li><a href="#cantidad-2">La cantidad del bien 2 tiene que ser un número</a></li>
       </ul>
-    </section>
-    <section th:if="${inactivo}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
-             autofocus aria-labelledby="inactivo-titulo">
-      <h2 id="inactivo-titulo">Pedro Ejemplo está dado de baja como donante: no se le pueden registrar
-        donaciones.</h2>
+      <p class="texto-chico">Lo demás quedó como lo escribiste.</p>
+    </div>
+    <div th:if="${inactivo}" class="aviso" data-tipo="error" role="alert" tabindex="-1" id="resumen"
+         autofocus>
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo">Pedro Ejemplo está dado de baja como donante: no se le pueden registrar
+        donaciones.</p>
       <p>Si volvió, registralo de nuevo en <a href="/admin-donantes" th:href="@{/admin-donantes}">Donantes</a>.</p>
-    </section>
+    </div>
     <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
              aria-labelledby="error-titulo">
       <h2 id="error-titulo">No pudimos guardar: no cambió nada.</h2>
@@ -96,20 +106,19 @@
       </th:block>
     </section>
 
-    <form class="formulario" action="/admin-donaciones-registrada" th:action="@{/admin-donaciones-registrada}"
+    <form class="pila" data-espacio="4" action="/admin-donaciones-registrada" th:action="@{/admin-donaciones-registrada}"
           method="post" enctype="multipart/form-data" th:aria-busy="${escenario == 'lento'} ? 'true' : null"
           hx-boost="true" hx-indicator="#enviando-admin-donaciones-registrar" hx-select-oob="#avisos"
           hx-disinherit="hx-indicator hx-select-oob">
-      <input th:if="${donante != null}" type="hidden" name="donante" th:value="${donante.clave}"
-             value="ana-ejemplo">
-      <p class="obligatorios">* obligatorio</p>
+      <p class="texto-chico" data-tono="suave">Los datos con * son obligatorios.</p>
 
       <h2>2. Qué llegó</h2>
       <div class="campo" th:data-estado="${datos} ? 'error'">
         <label for="descripcion">Descripción *</label>
         <small id="descripcion-ayuda">Por ejemplo: "Caja de alimentos del supermercado Ejemplo".</small>
-        <p th:if="${datos}" id="descripcion-error" class="campo-error">Falta la descripción. Por ejemplo: "Caja
-          de alimentos".</p>
+        <p th:if="${datos}" id="descripcion-error" class="campo-error"><svg
+            th:replace="~{componentes/sello :: signo('problema')}"></svg><span>Falta la descripción. Por
+          ejemplo: "Caja de alimentos".</span></p>
         <input id="descripcion" name="descripcion" type="text" required autocomplete="off"
                th:value="${escrito and !datos} ? 'Caja de alimentos' : null"
                th:attr="aria-describedby=${datos} ? 'descripcion-error descripcion-ayuda' : 'descripcion-ayuda',aria-invalid=${datos} ? 'true' : null" placeholder="Por ejemplo: leche en polvo, 10 cajas">
@@ -127,8 +136,9 @@
           </div>
           <div class="campo" th:data-estado="${enError} ? 'error'">
             <label th:for="|cantidad-${n}|" for="cantidad-1">Cantidad *</label>
-            <p th:if="${enError}" th:id="|cantidad-${n}-error|" class="campo-error">La cantidad tiene que ser un
-              número. Por ejemplo: 20.</p>
+            <p th:if="${enError}" th:id="|cantidad-${n}-error|" class="campo-error"><svg
+                th:replace="~{componentes/sello :: signo('problema')}"></svg><span>La cantidad tiene que
+              ser un número. Por ejemplo: 20.</span></p>
             <input th:id="|cantidad-${n}|" id="cantidad-1" th:name="|bienes[${n - 1}].cantidad|" type="text"
                    inputmode="numeric" required autocomplete="off"
                    th:value="${escrito} ? (${enError} ? 'veinte' : '10') : null"
@@ -174,14 +184,22 @@
         </div>
       </div>
 
-      <div class="racimo">
+      <!--/* La única acción llena. En el celular, el botón y su indicador quedan pegados abajo,
+             encima del menú, hasta llegar al final del formulario (data-fijo de app.css). */-->
+      <div data-fijo="celular">
         <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
                 th:text="${escenario == 'lento'} ? 'Registrando…' : 'Registrar donación'">Registrar donación</button>
-        <a class="boton" data-tono="secundario" href="/admin-donaciones" th:href="@{/admin-donaciones}">Cancelar</a>
+        <p th:replace="~{envio :: indicador('enviando-admin-donaciones-registrar', 'Registrando la donación…')}"></p>
       </div>
       <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Registrando la donación…</p>
-      <p th:replace="~{envio :: indicador('enviando-admin-donaciones-registrar', 'Registrando la donación…')}"></p>
+      <!--/* Lo oculto va al final: en la pila, un hijo oculto primero le sumaría al primero visible
+             el espacio de arriba. */-->
+      <input th:if="${donante != null}" type="hidden" name="donante" th:value="${donante.clave}"
+             value="ana-ejemplo">
     </form>
+
+    <!--/* La salida: un enlace, no otro botón. */-->
+    <p><a href="/admin-donaciones" th:href="@{/admin-donaciones}">Volver sin registrar</a></p>
   </div>
 </th:block>
 </body>

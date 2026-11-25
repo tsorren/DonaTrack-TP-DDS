@@ -1842,27 +1842,85 @@ class SitioControllerTest {
 
   @Test
   void registrarDonacionEligeAlDonanteYSumaBienes() throws Exception {
-    mvc.perform(get("/admin-donaciones-registrar"))
-        .andExpect(content().string(containsString("Buscar por nombre o documento")))
-        .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
-        .andExpect(content().string(containsString("formnovalidate")))
-        .andExpect(content().string(not(containsString("Bien 2"))));
+    // ADM1-11: deriva de A12, en el galpón: las migas a Donaciones, una sola acción llena y la
+    // salida sin registrar
+    String formulario =
+        mvc.perform(get("/admin-donaciones-registrar"))
+            .andExpect(status().isOk())
+            .andExpect(model().attribute("seccion", "Donaciones"))
+            .andExpect(content().string(containsString("Buscar por nombre o documento")))
+            .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
+            .andExpect(content().string(containsString("formnovalidate")))
+            .andExpect(content().string(containsString("data-pantalla=\"registrar-donacion\"")))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*<nav class=\"migas\" aria-label=\"Dónde estás\">\\s*<ol"
+                                + " role=\"list\">\\s*<li><a href=\"/admin-donaciones\">"
+                                + "Donaciones</a>.*<li aria-current=\"page\">Registrar"
+                                + " donación</li>.*")))
+            .andExpect(content().string(containsString("data-fijo=\"celular\"")))
+            .andExpect(content().string(containsString(">Volver sin registrar</a>")))
+            .andExpect(content().string(not(containsString(">Cancelar</a>"))))
+            .andExpect(content().string(not(containsString("class=\"mesa"))))
+            .andExpect(content().string(not(containsString("Bien 2"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    // El formulario del registro lleva una sola acción llena; la barra de Quién dona (el
+    // componente listado) trae su propio «Buscar»
+    String registro =
+        formulario.substring(formulario.indexOf("action=\"/admin-donaciones-registrada\""));
+    assertEquals(
+        1,
+        registro.split("data-tono=\"principal\"", -1).length - 1,
+        "Registrar donación lleva una sola acción llena");
     mvc.perform(get("/admin-donaciones-registrar?donante=ana-ejemplo&bienes=2"))
         .andExpect(content().string(containsString("<b>Ana Ejemplo</b>")))
         .andExpect(content().string(containsString("Bien 2")))
         .andExpect(content().string(containsString("value=\"ana-ejemplo\"")));
     mvc.perform(get("/admin-donaciones-registrar?buscar=ejemplo"))
         .andExpect(content().string(containsString("2 donantes coinciden con la búsqueda.")));
+    // El error es un estado del mismo formulario: el resumen arriba y el campo marcado en su lugar
     mvc.perform(get("/admin-donaciones-registrar-error"))
-        .andExpect(content().string(containsString("Revisá 2 datos para seguir.")))
-        .andExpect(content().string(containsString("aria-invalid=\"true\"")));
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("<p class=\"aviso-titulo\">Revisá 2 datos para seguir.</p>")))
+        .andExpect(content().string(containsString("href=\"#cantidad-2\"")))
+        .andExpect(
+            content().string(containsString("id=\"cantidad-2-error\" class=\"campo-error\"")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")))
+        .andExpect(content().string(containsString("data-pantalla=\"registrar-donacion\"")));
     mvc.perform(get("/admin-donaciones-registrar-error?escenario=inactivo"))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
         .andExpect(
             content().string(containsString("Pedro Ejemplo está dado de baja como donante")));
+    mvc.perform(get("/admin-donaciones-registrar?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos guardar: no cambió nada.")))
+        .andExpect(content().string(containsString("Código: <code>a1b2c3d4e5f6</code>")));
     mvc.perform(post("/admin-donaciones-registrada"))
         .andExpect(redirectedUrl("/admin-donaciones-registrada"));
+    // DA-06: «registrada» es Donaciones con el aviso breve, sin página propia ni el banner de hoy;
+    // el paginador sigue en Donaciones
     mvc.perform(get("/admin-donaciones-registrada"))
-        .andExpect(content().string(containsString("Caja de alimentos, 3 bienes.")));
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(content().string(containsString("data-pantalla=\"donaciones\"")))
+        .andExpect(content().string(containsString("<h1>Donaciones</h1>")))
+        .andExpect(content().string(containsString("class=\"aviso-breve\" data-estado=\"hecho\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Registraste la donación: Caja de alimentos, 3 bienes. Quedó en el"
+                            + " Depósito Central.")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))))
+        .andExpect(content().string(not(containsString("Registrar otra"))))
+        .andExpect(content().string(not(containsString("href=\"/admin-donaciones-registrada"))));
     mvc.perform(get("/admin-donaciones-detalle?donacion=caja"))
         .andExpect(content().string(containsString("Caja de alimentos")))
         .andExpect(content().string(containsString("Los 3 bienes de la donación")))

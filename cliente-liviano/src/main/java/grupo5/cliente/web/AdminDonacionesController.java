@@ -5,6 +5,7 @@ import grupo5.cliente.vistas.AdminDonacionesVista;
 import grupo5.cliente.vistas.ConsultaDonaciones;
 import grupo5.cliente.vistas.Listado;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.core.env.Environment;
@@ -145,7 +146,9 @@ public class AdminDonacionesController {
   /**
    * Registrar donación (RF-15): los donantes que coinciden con {@code ?buscar=} (hasta 10) y el
    * elegido con {@code ?donante=}. {@code -registrar-error} y {@code -registrada} son pantallas de
-   * la maqueta.
+   * la maqueta. {@code -registrada} es Donaciones con el aviso breve (DA-06, ADM1-11): la misma
+   * lista, armada como si se pidiera {@code /admin-donaciones}, para que el paginador siga ahí; el
+   * envío real ya vuelve a Donaciones con el aviso ({@code AdminDonacionesEnvios}).
    */
   @GetMapping({
     "/admin-donaciones-registrar",
@@ -160,6 +163,17 @@ public class AdminDonacionesController {
     String pantalla = pedido.getRequestURI().substring(1);
     if (!"admin-donaciones-registrar".equals(pantalla) && !maqueta) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe esa pantalla");
+    }
+    if ("admin-donaciones-registrada".equals(pantalla)) {
+      HttpServletRequest comoDonaciones =
+          new HttpServletRequestWrapper(pedido) {
+            @Override
+            public String getRequestURI() {
+              return "/admin-donaciones";
+            }
+          };
+      donaciones(null, null, null, null, null, null, null, null, null, null, model, comoDonaciones);
+      return pantallas.mostrar(pantalla, model);
     }
     String vista = pantallas.mostrar(pantalla, model);
     model.addAttribute("registro", operacion.registro(buscar, donante));

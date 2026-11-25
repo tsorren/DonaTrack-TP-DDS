@@ -153,6 +153,34 @@
   }
 }
 
+/* --- Registrar donación (A12, ADM1-11): las piezas son del catálogo (migas, aviso, banner, campo,
+   tarjeta, listado y botones); acá quedan la columna del formulario y dónde va cada cosa. -------- */
+
+[data-pantalla="registrar-donacion"] {
+  max-width: var(--medida-formulario);
+}
+
+/* Quién dona y cada bien, con el relleno chico (parámetro de .tarjeta). */
+[data-pantalla="registrar-donacion"] .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+}
+
+/* La salida sin registrar, un enlace suelto con su lugar para el dedo. */
+[data-pantalla="registrar-donacion"] > p > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+/* Desde la tableta la envoltura del botón fijo no arma caja (data-fijo de app.css): el botón toma
+   el espacio de la pila del formulario y mide lo que su texto, como en Confirmar recepción. */
+@media (min-width: 37.5em) {
+  [data-pantalla="registrar-donacion"] form > [data-fijo] > .boton {
+    align-self: start;
+    margin-block-start: var(--espacio-entre);
+  }
+}
+
 /* --- Donantes como bandeja (R11-34, ficha r11-p2-admin-bandeja; Donaciones pasó a la tabla, ADM1-08) */
 
 /* En el celular, la ficha de partida (la primera de la página, sin elegir) no se abre sola: la
