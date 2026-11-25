@@ -12,7 +12,6 @@ cambiar
 campos-par
 casilla
 categoria-icono
-clave-fila
 confirmar
 contacto
 donaron

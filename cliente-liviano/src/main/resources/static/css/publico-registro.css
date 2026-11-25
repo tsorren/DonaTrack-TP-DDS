@@ -18,23 +18,7 @@ main > .pila {
   font-weight: 700;
 }
 
-/* La contraseña y su botón "Mostrar", en una fila. */
-.clave-fila {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.clave-fila input {
-  flex: 1;
-  width: 100%;
-}
-
-.clave-fila .boton {
-  flex: none;
-  padding-inline: 1rem;
-}
-
-/* El registro de quien dona: la contraseña ocupa el renglón y "Mostrar" queda a su lado, como en
+/* Los dos registros: la contraseña ocupa el renglón y "Mostrar" queda a su lado, como en
    Ingresar (.racimo del catálogo). */
 .registro-seccion .campo > .racimo > input {
   flex: 1;
