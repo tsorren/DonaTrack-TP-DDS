@@ -197,7 +197,7 @@
           <section th:if="${e.clave == elegida}" id="ficha" class="tarjeta maestro-ficha"
                    aria-labelledby="ficha-titulo">
             <div data-parte="identidad">
-              <svg class="categoria-icono" data-tamano="grande" viewBox="0 0 100 100" aria-hidden="true"
+              <svg class="categoria-icono" viewBox="0 0 100 100" aria-hidden="true"
                    focusable="false"><use th:href="${e.cat != null} ? |#cat-${e.cat}| : null" href="#cat-alimentos"/></svg>
               <div>
                 <h2 id="ficha-titulo" th:text="${e.nombre}">Comedor Barrio Ejemplo</h2>

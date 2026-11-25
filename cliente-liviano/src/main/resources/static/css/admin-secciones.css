@@ -94,41 +94,17 @@
 }
 
 /* Los pictogramas de la lista y de la ficha, a la medida del bloque maestro: sellos.css (sin capa,
-   por entidad-comun.css) le gana a la capa de bloques con su 1,75 rem. */
+   por entidad-comun.css) le gana a la capa de bloques con su 1,75 rem. El de la ficha va a la misma
+   medida que el de la lista (sin data-tamano="grande"): en el galpón, con la identidad y el resumen
+   lado a lado, el de 4,5 rem dejaba al nombre sin ancho y lo montaba sobre el estado. */
 [data-pantalla="entidades"] .maestro .categoria-icono {
   width: 2.25rem;
   height: 2.25rem;
 }
 
-[data-pantalla="entidades"] .maestro-ficha .categoria-icono[data-tamano="grande"] {
-  width: 4.5rem;
-  height: 4.5rem;
-}
-
 [data-pantalla="entidades"] [data-lista="necesidades-ficha"] .categoria-icono {
   width: 2.75rem;
   height: 2.75rem;
-}
-
-/* En el galpón, el menú lateral y la lista dejan a la ficha sin ancho para la identidad y el resumen
-   lado a lado (el quiebre de maestro.css es por pantalla, no por lo que mide la ficha): el nombre se
-   montaba sobre el estado. Acá la ficha sigue en una columna, como en la tableta: el resumen debajo
-   de la identidad, alineado al principio y con su filete a la izquierda. */
-@media (min-width: 68.75em) {
-  [data-pantalla="entidades"] .maestro-ficha {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  [data-pantalla="entidades"] .maestro-ficha > [data-parte="resumen"] {
-    justify-items: stretch;
-    text-align: start;
-  }
-
-  [data-pantalla="entidades"] .maestro-ficha [data-parte="resumen"] > dl {
-    padding-inline: var(--espacio-2) 0;
-    border-inline-start: 0.25rem solid var(--color-acento-claro);
-    border-inline-end: 0;
-  }
 }
 
 /* --- Por decidir, la mesa (R11-24; A03, ADM1-05): la cabecera, las pestañas y la tabla con
