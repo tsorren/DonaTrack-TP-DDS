@@ -9,6 +9,7 @@ import grupo5.cliente.vistas.AdminDonantesVista.SusDonaciones;
 import grupo5.cliente.vistas.ConsultaDonantes;
 import grupo5.cliente.vistas.Listado;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
@@ -19,8 +20,11 @@ import java.util.Locale;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +32,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -70,10 +75,34 @@ public class AdminDonantesController {
 
   private final AdminPersonasPuerto personas;
   private final Pantallas pantallas;
+  private final boolean maqueta;
 
-  AdminDonantesController(AdminPersonasPuerto personas, Pantallas pantallas) {
+  AdminDonantesController(AdminPersonasPuerto personas, Pantallas pantallas, Environment entorno) {
     this.personas = personas;
     this.pantallas = pantallas;
+    this.maqueta = entorno.acceptsProfiles(Profiles.of("maqueta"));
+  }
+
+  /**
+   * El donante quedó registrado, solo en la maqueta (DA-06 y DA-33, ADM2-11): es Donantes con el
+   * aviso breve, armada como si se pidiera {@code /admin-donantes}, para que la barra, el paginador
+   * y la ficha sigan ahí. El envío real ya vuelve a Donantes con el aviso ({@code
+   * AdminDonantesEnvioController}); fuera de la maqueta esta pantalla no existe.
+   */
+  @GetMapping("/" + DONANTES + "-registrado")
+  String registrado(HttpServletRequest pedido, HttpSession sesion, Model model) {
+    if (!maqueta) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe esa pantalla");
+    }
+    HttpServletRequest comoDonantes =
+        new HttpServletRequestWrapper(pedido) {
+          @Override
+          public String getRequestURI() {
+            return "/" + DONANTES;
+          }
+        };
+    donantes(null, null, null, null, null, null, null, comoDonantes, sesion, model);
+    return pantallas.mostrar(DONANTES + "-registrado", model);
   }
 
   @GetMapping("/" + DONANTES)

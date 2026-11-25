@@ -462,6 +462,12 @@ class AdminDonantesControllerTest {
   }
 
   @Test
+  void registradoNoEsUnaPantallaFueraDeLaMaqueta() throws Exception {
+    // DA-06 y DA-33: fuera de la maqueta la respuesta al registro es el aviso breve en Donantes
+    mvc.perform(get("/admin-donantes-registrado").with(admin())).andExpect(status().isNotFound());
+  }
+
+  @Test
   void registrarUnaOrganizacionLlevaSuTipoDelContratoYSuDireccion() throws Exception {
     mvc.perform(
             post("/admin-donantes-registrado")

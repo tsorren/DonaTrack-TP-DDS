@@ -259,3 +259,37 @@
     display: none;
   }
 }
+
+/* --- Registrar donante (A12, ADM2-10): deriva de Registrar donación; las piezas son del catálogo
+   (migas, aviso, opciones, campo, tarjeta y botones). Acá quedan la columna del formulario y dónde
+   va cada cosa. ---------------------------------------------------------------------------------- */
+
+[data-pantalla="registrar-donante"] {
+  max-width: var(--medida-formulario);
+}
+
+/* Quién dona, con el relleno chico (parámetro de .tarjeta). */
+[data-pantalla="registrar-donante"] .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+}
+
+/* Cada campo de la grilla empieza arriba de su celda: el vecino de un campo con error o con ayuda
+   no estira su control, como en Agregar camión. */
+[data-pantalla="registrar-donante"] form > .grilla {
+  align-items: start;
+}
+
+/* La salida sin registrar, un enlace suelto con su lugar para el dedo. */
+[data-pantalla="registrar-donante"] > p > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+/* Desde la tableta, «Registrar donante» mide lo que su texto, como en Registrar donación. */
+@media (min-width: 37.5em) {
+  [data-pantalla="registrar-donante"] form > [data-fijo] > .boton {
+    align-self: start;
+    margin-block-start: var(--espacio-entre);
+  }
+}
