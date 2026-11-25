@@ -1616,3 +1616,11 @@ cumplidas, aunque su comportamiento está en el código y en los tests. Lo que q
   [requerimientos de E6](../requerimientos/requerimientos-e6.md)) sigue, con el paso de más de DA-33
   ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 1). Las fichas de antes de la ola que ya no
   describen el código están en [DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 6.
+
+Después de la ola (2026-11-25, `3637d358c`): un arreglo de los bloqueantes de la ronda 3 (la acción
+principal antes de «Cancelar» en los diálogos de Administradores, la ayuda plegada de Importaciones
+y Actividad, la ficha de Organizaciones con `data-tamano="grande"` y Mi perfil con
+`componentes/datos`). Los gates dieron verde (spotless, 942 tests, `-Pvisual` sobre las 23 rutas
+de la ola, incluida `/admin-donantes?donante=juan`, de la línea de base, y `agent-check` PASS 271),
+y la revisión independiente de `revisar-ui` dio PASS. Lo que queda sigue en
+[DTI-53](../adr/DEUDA_TECNICA.md#dti-53).
