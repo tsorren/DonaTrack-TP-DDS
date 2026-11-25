@@ -1383,3 +1383,10 @@ las decisiones, en la [bitácora](bitacora.md) (2026-11-25).
   `.enlace-campo`, `.campo-rotulo` y `.casilla-enlace`, sin uso. El resumen doble con JavaScript
   sigue abierto: solo se cierra en `static/js/publico.js`, fuera de esta ola
   ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 1). Gates `[VERIFIED]`: `mvn clean test -pl cliente-liviano -am`, exit 0, 934 tests sin fallos; `-Pvisual` sobre las 20 rutas del pedido del arreglo más `/publico-registro-donante?tipo=persona`, exit 0, 84 capturas y `reporte.json` vacío.
+
+Después de la ola (2026-11-25, `6c8f677c1`): los gates del paso posterior dieron verde (spotless,
+934 tests, `-Pvisual` sobre las 20 rutas de la ola y `agent-check` PASS 270). La revisión
+independiente de `revisar-ui` dio CHANGES_REQUIRED, con dos bloqueantes: el resumen doble con
+JavaScript ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 1) y la firma de `comoSigue`, que pasó a
+`comoSigue(paso, nivel)` aunque la regla de `pub2-registro-entidad` la fijaba (ítem 9). La rama se
+mergeó en `E7_guia_ui` por la regla del gate (gates en verde); los dos quedan para Z o el PR final.
