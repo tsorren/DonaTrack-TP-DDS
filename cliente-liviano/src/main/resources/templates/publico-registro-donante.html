@@ -96,7 +96,7 @@
                      th:value="${completarPerfil} ? ${param.nombre} : (${escrito} ? 'Ana Ejemplo' : null)">
             </div>
           </th:block>
-          <div th:if="${persona}" class="campos-par">
+          <div th:if="${persona}" class="grilla">
             <div class="campo">
               <label for="nombre">Nombre</label>
               <input id="nombre" name="nombre" type="text" required autocomplete="given-name"

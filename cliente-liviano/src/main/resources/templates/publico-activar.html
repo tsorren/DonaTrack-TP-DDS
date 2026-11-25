@@ -28,8 +28,7 @@
              lento=${escenario == 'lento'}">
   <div class="pila" data-espacio="4">
     <div class="pila" data-espacio="1">
-      <h1 th:if="${lista or vencido}">Activá tu cuenta</h1>
-      <h1 th:unless="${lista or vencido}">Elegí tu contraseña</h1>
+      <h1>Activá tu cuenta</h1>
       <p th:unless="${lista or vencido}">El equipo de DonaTrack creó tu cuenta de donante con este correo.
         Elegí una contraseña para entrar.</p>
     </div>
@@ -85,7 +84,7 @@
             th:action="@{/publico-activar-lista}" method="post" data-enviando="Activando…"
             th:aria-busy="${lento} ? 'true' : null">
         <div class="campo">
-          <label for="correo">Correo</label>
+          <label for="correo">Correo electrónico</label>
           <small id="correo-ayuda">Viene en el enlace del correo; no se cambia.</small>
           <input id="correo" name="correo" type="email" readonly value="martina.ruiz@ejemplo.test"
                  autocomplete="username" aria-describedby="correo-ayuda">

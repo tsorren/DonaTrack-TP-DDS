@@ -31,6 +31,25 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-25 · registro y cuenta · Nombre y Apellido en la grilla, y un solo título en Activar
+
+- **Decisión:** en el registro de la persona, Nombre y Apellido van en la `.grilla` del catálogo,
+  como Calle y Altura en el de la organización, y sale `.campos-par`. Activar lleva un solo h1,
+  «Activá tu cuenta», en el formulario, el error, la respuesta y el enlace vencido, y el campo se
+  llama «Correo electrónico», como en Ingresar, Recuperar y Pedir otro enlace.
+- **Alternativas:** dejar `.campos-par` (dos piezas para lo mismo en los dos registros); conservar
+  «Elegí tu contraseña» también en la respuesta (un pedido de algo que ya se hizo, arriba de «Tu
+  cuenta está lista»); volver a `aviso resumen` en los dos registros para que `publico.js` saque el
+  resumen del servidor (vuelve el estilo heredado de `formularios.css`, que la ola ya descartó dos
+  veces).
+- **Por qué:** la revisión de pantallas de la ola (ronda 3) marcó las dos pantallas del registro
+  distintas para el mismo caso y una respuesta que contradecía el estado.
+- **Costo:** el resumen doble con JavaScript sigue hasta que una ola toque `static/js`
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 1); la ficha de Activar todavía dibuja «Elegí tu
+  contraseña» (ítem 7).
+- **Quién decidió:** agente (arreglo posterior a la ola PUB2), con la opción que propuso la revisión.
+- **Evidencia:** backlog §15.5; capturas de `-Pvisual` sobre las rutas de la ola.
+
 ### 2026-11-25 · estados · Las páginas de estado con la composición de lectura de PUB1
 
 - **Decisión:** las páginas de error (403, 404, 429 y 5xx, con su pieza `pagina-error`),

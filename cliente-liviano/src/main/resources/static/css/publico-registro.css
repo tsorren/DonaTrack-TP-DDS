@@ -17,19 +17,13 @@ main > .pila > .tarjeta {
   margin: 0;
 }
 
-.campo-rotulo {
-  margin: 0;
-  color: var(--color-tinta);
-  font-weight: 700;
-}
-
 /* Los dos registros: la contraseña ocupa el renglón y "Mostrar" queda a su lado, como en
    Ingresar (.racimo del catálogo). */
 .registro-seccion .campo > .racimo > input {
   flex: 1;
 }
 
-/* Dos campos en un renglón (Calle y Altura): abajo, para que un error de uno no estire al otro y
+/* Dos campos en un renglón (Calle y Altura, Nombre y Apellido): abajo, para que un error de uno no estire al otro y
    los dos cuadros queden en la misma línea y con el mismo alto. */
 .registro-seccion > .grilla {
   align-items: end;
@@ -38,19 +32,6 @@ main > .pila > .tarjeta {
 /* La salida a Ingresar, centrada como la cabeza: el texto corrido tiene ancho máximo (app.css). */
 .registro-salida {
   margin-inline: auto;
-}
-
-.enlace-campo {
-  display: inline-flex;
-  align-items: center;
-  justify-self: start;
-  min-height: var(--medida-toque-minimo);
-  font-weight: 700;
-}
-
-.campos-par {
-  display: grid;
-  gap: 1.25rem;
 }
 
 .opciones small {
@@ -123,18 +104,7 @@ main > .pila > .tarjeta {
   cursor: pointer;
 }
 
-.casilla-enlace {
-  margin: 0;
-  padding-left: 2.25rem;
-}
-
 .aviso--nombre {
   border-color: var(--color-acento);
   color: var(--color-tinta);
-}
-
-@media (min-width: 37.5em) {
-  .campos-par {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }

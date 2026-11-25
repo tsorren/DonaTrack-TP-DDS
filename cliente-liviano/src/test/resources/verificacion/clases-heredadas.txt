@@ -9,7 +9,6 @@ armazon-avisos-texto
 aviso-codigo
 bajada
 cambiar
-campos-par
 casilla
 categoria-icono
 confirmar
