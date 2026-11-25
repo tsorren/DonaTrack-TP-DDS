@@ -2107,7 +2107,9 @@ class SitioControllerTest {
                             + "<p>Registraste a Ana Ejemplo como donante.</p>.*")))
         .andExpect(content().string(containsString("Registrar una donación")))
         .andExpect(content().string(not(containsString("Registrar su donación"))))
-        .andExpect(content().string(not(containsString("class=\"banner"))));
+        .andExpect(content().string(not(containsString("class=\"banner"))))
+        // La barra y el paginador siguen en Donantes, no en la respuesta
+        .andExpect(content().string(not(containsString("href=\"/admin-donantes-registrado"))));
     mvc.perform(get("/admin-donantes-registrado?escenario=ya-era"))
         .andExpect(status().isOk())
         .andExpect(
@@ -2118,7 +2120,8 @@ class SitioControllerTest {
                             + " data-estado=\"hecho\".*"
                             + "<p>Ana Ejemplo ya era donante. No cambiamos nada.</p>.*")))
         .andExpect(content().string(not(containsString("Registraste a Ana Ejemplo"))))
-        .andExpect(content().string(not(containsString("Registrar su donación"))));
+        .andExpect(content().string(not(containsString("Registrar su donación"))))
+        .andExpect(content().string(not(containsString("href=\"/admin-donantes-registrado"))));
   }
 
   @Test
