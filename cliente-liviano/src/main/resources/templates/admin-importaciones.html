@@ -5,11 +5,11 @@
        (docs/interfaz/componentes.md). Arriba, la cabecera del galpón: el título, cuántas siguen en
        curso (un número de la fuente) y cuándo se leyeron las cifras, e «Importar CSV» (la única acción
        llena); debajo, las pestañas Donantes · Importaciones (.segmentos). Después, la ayuda plegada
-       (.plegable); la búsqueda por nombre del archivo y los filtros (Subida, de ?desde= a ?hasta=,
-       Estado y Ordenar) en el componente listado, con «Ver solo las que están en curso» y «Actualizar
+       (un details con su botón chico, como Actividad); la búsqueda por nombre del archivo y los
+       filtros (Subida, de ?desde= a ?hasta=, Estado y Ordenar) en el componente listado, con «Ver solo las que están en curso» y «Actualizar
        las cifras»; y la lista, de a 20, en la tabla del catálogo, con el paginador (componentes/paginas).
        La lista llega ya buscada, filtrada y ordenada (adminImportaciones.importaciones, un
-       vistas.Tramo): la plantilla no filtra ni cuenta. Cada fila lleva a su avance o a su resultado;
+       vistas.Tramo): la plantilla no filtra ni cuenta. Cada fila lleva a su avance o a su resultado desde el nombre del archivo;
        la que no leyó ninguna fila dice por qué y no lleva a ningún lado. Las importaciones viejas, sin
        nombre ni fecha guardados, lo dicen.
        Lo que la dirección pidió y no se entendió (adminImportaciones.consulta.avisos) se avisa arriba
@@ -50,15 +50,12 @@
       <nav th:replace="~{admin-importaciones :: pestanas('importaciones')}"></nav>
     </div>
 
-    <!--/* La ayuda, plegada (componente plegable). */-->
-    <details class="plegable">
-      <summary><span class="plegable-titulo"><b>¿Qué muestra esta lista?</b></span><span
-          class="plegable-ver">Ver la ayuda</span></summary>
-      <div class="plegable-cuerpo">
-        <p>Acá están todos los archivos de donantes que se importaron, los que siguen importándose y
-          los que no terminaron. Abrí uno para ver su avance o sus filas con error. Para seguir una
-          importación en vivo, abrí su avance: esta lista no se actualiza sola.</p>
-      </div>
+    <!--/* La ayuda, plegada en un botón chico, como en Actividad (la otra pestaña del galpón). */-->
+    <details>
+      <summary class="boton" data-tono="secundario" data-tamano="chico">¿Qué muestra esta lista?</summary>
+      <p>Acá están todos los archivos de donantes que se importaron, los que siguen importándose y
+        los que no terminaron. Abrí uno para ver su avance o sus filas con error. Para seguir una
+        importación en vivo, abrí su avance: esta lista no se actualiza sola.</p>
     </details>
 
     <section th:if="${vacia}" class="vacio" aria-labelledby="vacio-titulo">
@@ -86,7 +83,7 @@
       <!--/* Lo que la dirección pidió y no se entendió: el aviso en la página; ese filtro no se aplica. */-->
       <div th:each="aviso : ${c.avisos}" class="aviso" data-tipo="advertencia" role="status">
         <svg th:replace="~{componentes/sello :: signo('atencion')}"></svg>
-        <p th:text="${aviso}">No entendimos la fecha pedida: te mostramos todas las fechas.</p>
+        <p class="aviso-titulo" th:text="${aviso}">No entendimos la fecha pedida: te mostramos todas las fechas.</p>
       </div>
 
       <p th:if="${n > 0}" aria-live="polite" th:text="${n == 1} ? 'Coincide 1 importación.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} importaciones.|">Coinciden
@@ -108,13 +105,17 @@
             <th scope="col">Subido</th>
             <th scope="col">Estado</th>
             <th scope="col">Filas</th>
-            <th scope="col"><span class="solo-lectores">Qué se puede hacer</span></th>
           </tr>
         </thead>
         <tbody>
           <tr th:each="f : ${tramo.filas}"
               th:with="nombre=${f.archivo != null ? f.archivo : 'Archivo sin nombre guardado'}">
-            <th scope="row" th:text="${nombre}">donantes-octubre.csv</th>
+            <!--/* El enlace al avance o al resultado va en el título de la fila, como en la .tabla
+                   del catálogo y en Donaciones (ADM1); su nombre dice cuál de los dos abre. */-->
+            <th scope="row"><a th:if="${f.enlace != null}" th:href="@{${f.enlace}}"
+                href="/admin-donantes-importado" th:aria-label="|${f.accion} de ${nombre}|"
+                th:text="${nombre}">donantes-octubre.csv</a><th:block th:if="${f.enlace == null}"
+                th:text="${nombre}">prueba.csv</th:block></th>
             <td data-rotulo="Subido">
               <time th:if="${f.subido != null}" th:datetime="${f.subidoIso}" th:text="${f.subido}"
                     datetime="2026-10-15T18:02:00">15 oct 2026, 18:02</time>
@@ -126,12 +127,6 @@
                 774 actualizados y 126 con error</th:block>
               <th:block th:if="${f.filas == null and f.detalle == null}">—</th:block>
               <th:block th:if="${f.detalle != null}" th:text="${f.detalle}">El archivo no se pudo leer.</th:block>
-            </td>
-            <td data-rotulo="">
-              <a th:if="${f.enlace != null}" class="boton" data-tono="secundario"
-                 th:href="@{${f.enlace}}" href="/admin-donantes-importado"
-                 th:aria-label="|${f.accion} de ${nombre}|"
-                 th:text="|${f.accion} ›|">Ver el resultado ›</a>
             </td>
           </tr>
         </tbody>
