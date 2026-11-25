@@ -15,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Donaciones del admin (RF-15 y RF-16), de a una página (R11-01), y el detalle de una, con los
@@ -51,8 +52,18 @@ public class AdminDonacionesController {
       @RequestParam(required = false) String hasta,
       @RequestParam(required = false) String quien,
       @RequestParam(required = false) String donante,
+      @RequestParam(required = false) String donacion,
       Model model,
       HttpServletRequest pedido) {
+    if (donacion != null && !donacion.isBlank()) {
+      // Un enlace a una donación (como «La cubría» de Decididas) va a su detalle, que resuelve
+      // la que no existe
+      return "redirect:"
+          + UriComponentsBuilder.fromPath("/" + DETALLE)
+              .queryParam("donacion", donacion)
+              .encode()
+              .toUriString();
+    }
     String vista = pantallas.mostrar("admin-donaciones", model);
     LocalDate[] rango = Listado.rango(desde, hasta);
     ConsultaDonaciones consulta =

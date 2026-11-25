@@ -49,7 +49,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
 
 /**
  * Donaciones fuera de la maqueta: el detalle de una donación que está (y el 404 de una que no),
@@ -162,21 +161,19 @@ class AdminDonacionesEnviosTest {
     verify(operacion, never()).donacion(any(), any());
   }
 
-  // ADM1-08: sin la ficha, ?donacion= (un enlace viejo, como «La cubría» de Decididas) ya no lee
-  // ninguna donación: una que no existe o no carga no cambia la lista
+  // ADM1-08: sin la ficha, ?donacion= (un enlace como «La cubría» de Decididas) lleva al detalle
+  // de esa donación, con la clave codificada; el detalle avisa si no existe
   @Test
-  void unaDonacionPedidaQueNoExisteNoCambiaLaLista() throws Exception {
-    when(operacion.donaciones(any(), any())).thenAnswer(i -> pagina2(i.getArgument(0)));
-    when(operacion.donacion("caida", "")).thenThrow(new ResourceAccessException("caída"));
-    mvc.perform(get("/admin-donaciones?donacion=caida"))
-        .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Leche en polvo · 10 u")))
-        .andExpect(content().string(not(containsString("No pudimos cargar la ficha"))));
-    mvc.perform(get("/admin-donaciones?donacion=otra"))
-        .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Leche en polvo · 10 u")))
-        .andExpect(content().string(not(containsString("No encontramos esa donación."))));
-    verify(operacion, never()).donacion(any(), any());
+  void unaDonacionPedidaEnLaListaLlevaASuDetalle() throws Exception {
+    mvc.perform(get("/admin-donaciones?donacion=" + ID))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl("/admin-donaciones-detalle?donacion=" + ID));
+    mvc.perform(get("/admin-donaciones?estado=deposito&donacion=arroz y fideos"))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl("/admin-donaciones-detalle?donacion=arroz%20y%20fideos"));
+    verify(operacion, never()).donaciones(any(), any());
+    when(operacion.donacion("otra", "")).thenReturn(null);
+    mvc.perform(get("/admin-donaciones-detalle?donacion=otra")).andExpect(status().isNotFound());
   }
 
   // DA-07: una vencida lleva el par neutro con su palabra, en la lista y en el detalle, nunca el
