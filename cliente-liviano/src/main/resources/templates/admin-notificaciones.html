@@ -61,7 +61,7 @@
 
     <div th:if="${escenario == 'lento'}" aria-busy="true">
       <p class="cargando" role="status">Cargando las notificaciones…</p>
-      <div class="esqueleto" data-forma="hueco" aria-hidden="true"></div>
+      <div class="esqueleto" aria-hidden="true"><i></i><i></i><i></i></div>
     </div>
 
     <div th:if="${escenario == 'error'}" class="aviso" data-tipo="error" role="alert">

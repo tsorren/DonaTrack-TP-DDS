@@ -54,6 +54,13 @@ class AdminNotificacionesMaquetaTest {
         // ADM2-09: el aviso breve con signo del galpón (admin-donaciones :: hecho), con su cierre.
         .andExpect(content().string(containsString("data-signo=\"e-confirmada\"")))
         .andExpect(content().string(containsString("aria-label=\"Cerrar el aviso\"")));
+    mvc.perform(get("/admin-notificaciones-leidas").param("marcadas", "a1"))
+        .andExpect(content().string(containsString("Listo: marcaste la notificación como leída.")))
+        .andExpect(content().string(containsString("data-signo=\"e-confirmada\"")));
+    mvc.perform(get("/admin-notificaciones-leidas").param("marcadas", "").param("noLeidas", "a4"))
+        .andExpect(
+            content().string(containsString("Listo: marcaste la notificación como no leída.")))
+        .andExpect(content().string(containsString("data-signo=\"e-confirmada\"")));
   }
 
   @Test
@@ -95,7 +102,13 @@ class AdminNotificacionesMaquetaTest {
         .andExpect(content().string(not(containsString("class=\"banner\""))));
     mvc.perform(get("/admin-notificaciones").param("escenario", "lento"))
         .andExpect(content().string(containsString("class=\"cargando\"")))
-        .andExpect(content().string(containsString("class=\"esqueleto\"")))
+        .andExpect(content().string(containsString("aria-busy=\"true\"")))
+        // La lista que viene, como en la organización y en quien dona: tres renglones.
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<div class=\"esqueleto\" aria-hidden=\"true\"><i></i><i></i><i></i></div>")))
         .andExpect(content().string(not(containsString("Mostrando"))));
     mvc.perform(get("/admin-notificaciones").param("escenario", "vacio"))
         .andExpect(
