@@ -2101,7 +2101,11 @@ class SitioControllerTest {
         .andExpect(
             content().string(containsString("Calculado el 30 de septiembre de 2026, 23:59.")))
         .andExpect(content().string(containsString("hx-boost=\"true\"")))
-        .andExpect(content().string(containsString("<caption>")));
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<caption class=\"solo-lectores\">Donantes de septiembre de 2026")));
     mvc.perform(get("/admin-ranking?mes=2026-08"))
         .andExpect(content().string(containsString("Ranking de donantes de agosto de 2026")))
         .andExpect(content().string(containsString("value=\"2026-08\" checked")))
