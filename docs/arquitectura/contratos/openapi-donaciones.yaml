@@ -2495,7 +2495,7 @@ components:
       type: object
       description: >
         Entrada y salida de `/api/necesidades` (HB-18, ADR 20261102). `estaSatisfecha`, `estado`,
-        `unidad` y `ultimoCambio` son solo de salida: si llegan, se ignoran. `fechaFin` está
+        `unidad`, `ultimoCambio` y `avance` (HG-04) son solo de salida: si llegan, se ignoran. `fechaFin` está
         deprecado como entrada (se ignora); en la salida es el fin del período en curso.
       required: [tipo, idSubcategoria, cantidadNecesitada, descripcion]
       properties:
@@ -2563,7 +2563,10 @@ components:
               type: string
               format: date
         avance:
-          $ref: '#/components/schemas/AvanceNecesidadDTO'
+          allOf:
+            - $ref: '#/components/schemas/AvanceNecesidadDTO'
+          readOnly: true
+          description: Solo salida (HG-04). Si llega en el cuerpo del `POST` o del `PUT`, se ignora.
     AvanceNecesidadDTO:
       type: object
       nullable: true

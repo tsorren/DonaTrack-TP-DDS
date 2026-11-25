@@ -132,11 +132,20 @@ Escenario: se asignó más de lo pedido
 mismo mecanismo de acumulados por consulta que ya decidió DTI-06 y sale como campo aditivo de
 salida, en contratos que ya existen. Sin Gate A no se evalúa Gate B: **sin ADR**.
 
-**Plan TDD.** Primero los tests de la tabla de abajo (escritos antes del código de producción;
-la corrida en rojo no se registró aparte), después `AvanceNecesidadDTO`, el acumulado
+**Plan TDD.** Primero los tests de la tabla de abajo (escritos antes del código de producción),
+después `AvanceNecesidadDTO`, el acumulado
 `sinLlegar` en el puerto, la memoria y JPA, y el cálculo en `NecesidadesService`. Las dos
 expectativas de igualdad de record completo que ya existían (`listarPublicas_devuelveSoloLas…` y
 `listarPeriodos_deUnaRecurrente…`) suman el `avance` esperado: siguen comparando todo el record.
+
+**Corrida en rojo** `[VERIFIED]` (2026-11-25, registrada después, en la pre-auditoría): con el
+código de producción de `origin/ENTREGA_7` (`git checkout origin/ENTREGA_7 --
+donaciones-service/src/main`, sin `AvanceNecesidadDTO.java`) y los tests de este cambio,
+`mvn test -pl donaciones-service -am -Dtest=NecesidadesServiceTest,DonacionIndependienteCantidadRecibidaTest,DonacionesIndependientesRepositoryJpaTest,OpenApiContractDriftTest -Dsurefire.failIfNoSpecifiedTests=false -Dspotless.check.skip=true`
+sale con 1 en `testCompile`: `NecesidadesServiceTest.java:[12,29] cannot find symbol: class
+AvanceNecesidadDTO`. El rojo es de compilación: los tests nuevos usan símbolos que la base no
+tiene (`AvanceNecesidadDTO`, `sumarCantidadSinLlegar`), así que no hay un rojo por aserción.
+Con el código restaurado, la misma corrida pasa (§8).
 
 ## 8. Validation
 
