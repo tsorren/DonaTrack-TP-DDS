@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <!--/* El registro de actividad de administración (R11-26), según su ficha de flujo
        (docs/interfaz/flujos/r11-p2-actividad.md, secciones 4.1, 5 y 6). Es la pestaña Actividad de
-       la sección Administradores (Pantallas la marca así): arriba, las pestañas Cuentas · Actividad;
-       después, el título, la ayuda plegada "¿Qué se registra?" y cuándo se leyó, con "Actualizar";
+       la sección Administradores (Pantallas la marca así). Desde la guía al código (ADM2-06), deriva
+       del arquetipo A03 (docs/interfaz/guia/partes/50-pantallas.html, #bandeja), en el galpón y con
+       las piezas del catálogo: arriba, la cabecera (el título y la bajada con cuándo se leyó, y
+       "Actualizar") y las pestañas Cuentas · Actividad (.segmentos); después, la ayuda plegada
+       "¿Qué se registra?";
        la búsqueda por administrador y los filtros (la fecha, de ?desde= a ?hasta=, Quién y Acción) en
        el componente listado; y
-       la lista, de a 20, de la más reciente a la más vieja, con el paginador.
+       la lista, de a 20, de la más reciente a la más vieja, en la tabla del catálogo (.tabla), con el
+       paginador (componentes/paginas).
        La lista llega ya filtrada (adminActividad.acciones, un vistas.Tramo, con el total de
        Donaciones): la plantilla no filtra ni cuenta. El nombre de cada fila filtra por esa cuenta;
        "Ver…" va solo donde la acción tiene pantalla propia.
-       Lo que no se entendió o no se pudo aplicar (adminActividad.avisos) se avisa arriba de la lista.
+       Lo que no se entendió o no se pudo aplicar (adminActividad.avisos) se avisa arriba de la lista,
+       con el aviso en la página (.aviso data-tipo="advertencia").
        En la maqueta, ?escenario=vacia, sin-resultados, sin-nombres y muchas. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
@@ -25,19 +30,24 @@
              vacia=${n == 0 and !datos.filtrada},
              inicio=${(tramo.pagina - 1) * 20 + 1},
              fin=${(tramo.pagina - 1) * 20 + #lists.size(tramo.filas)}">
-  <div class="mesa">
-    <nav th:replace="~{admin-actividad :: pestanas('actividad')}"></nav>
-
-    <header class="mesa-cabecera">
-      <div>
-        <p class="rotulo">Administradores</p>
-        <h1>Actividad de administración</h1>
-        <p>Quién hizo qué y cuándo en el sitio.</p>
-      </div>
-    </header>
+  <div class="pila" data-espacio="4" data-pantalla="actividad">
+    <div class="pila" data-espacio="3">
+      <header class="racimo" data-alinea="entre arriba">
+        <div class="pila" data-espacio="0">
+          <h1>Actividad de administración</h1>
+          <p class="texto-chico" data-tono="suave">Quién hizo qué y cuándo en el sitio. <span
+              th:text="|Leída el ${datos.al}.|">Leída el 12 de noviembre de 2026, 18:34.</span></p>
+        </div>
+        <div class="racimo">
+          <a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-actividad"
+             th:href="${actualizar}" hx-boost="true">Actualizar</a>
+        </div>
+      </header>
+      <nav th:replace="~{admin-actividad :: pestanas('actividad')}"></nav>
+    </div>
 
     <details>
-      <summary class="boton" data-tono="secundario">¿Qué se registra?</summary>
+      <summary class="boton" data-tono="secundario" data-tamano="chico">¿Qué se registra?</summary>
       <p>Cada vez que alguien de administración aprueba o descarta una propuesta, corre la asignación,
         registra una donación o un donante, marca una donación como vencida, importa un archivo, aprueba
         o registra una organización, da de alta a otro administrador, genera otra contraseña provisoria
@@ -46,13 +56,14 @@
         propuestas aprobadas o descartadas.</p>
     </details>
 
-    <p class="texto-chico">
-      <span th:text="|Leída el ${datos.al}.|">Leída el 12 de noviembre de 2026, 18:34.</span>
-      <a href="/admin-actividad" th:href="${actualizar}" hx-boost="true">Actualizar</a>
-    </p>
-
-    <p th:if="${vacia}" th:each="aviso : ${datos.avisos}" class="aviso-breve" role="status"
-       th:text="${aviso}">No pudimos traer los nombres de las cuentas.</p>
+    <!--/* Lo que no se entendió o no se pudo aplicar: el aviso en la página, con su signo; queda
+           mientras dura la consulta (no responde a un envío). */-->
+    <th:block th:if="${vacia}">
+      <div th:each="aviso : ${datos.avisos}" class="aviso" data-tipo="advertencia" role="status">
+        <svg th:replace="~{componentes/sello :: signo('atencion')}"></svg>
+        <p class="aviso-titulo" th:text="${aviso}">No pudimos traer los nombres de las cuentas.</p>
+      </div>
+    </th:block>
 
     <section th:if="${vacia}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no hay actividad registrada.</h2>
@@ -68,13 +79,10 @@
              AdminActividadController). Enviarlo no lleva ?pagina=: vuelve a la primera. */-->
       <form th:replace="~{componentes/listado :: listado(${listado})}"></form>
 
-      <p th:each="aviso : ${datos.avisos}" class="aviso-breve" role="status" th:text="${aviso}">No
-        entendimos la fecha pedida: te mostramos todas las fechas.</p>
-
-      <div class="racimo" aria-live="polite">
-        <p th:if="${n > 0}"
-           th:text="${n == 1} ? 'Mostrando 1 a 1 de 1 acción.' : |Mostrando ${inicio} a ${fin} de ${#numbers.formatInteger(n, 1, 'POINT')} acciones.|">Mostrando
-          1 a 7 de 7 acciones.</p>
+      <div th:each="aviso : ${datos.avisos}" class="aviso" data-tipo="advertencia" role="status">
+        <svg th:replace="~{componentes/sello :: signo('atencion')}"></svg>
+        <p class="aviso-titulo" th:text="${aviso}">No entendimos la fecha pedida: te mostramos todas las
+          fechas.</p>
       </div>
 
       <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-titulo">
@@ -113,14 +121,17 @@
             </td>
             <td data-rotulo="Qué" th:text="${f.que}">Subió el archivo donantes-noviembre.csv para importar.</td>
             <td data-rotulo="">
-              <a th:if="${f.enlace != null}" class="boton" data-tono="secundario"
+              <a th:if="${f.enlace != null}" class="boton" data-tono="secundario" data-tamano="chico"
                  th:href="@{${f.enlace}}" href="/admin-donantes-importado"
                  th:aria-label="${f.lectorEnlace}" th:text="|${f.accion} ›|">Ver la importación ›</a>
             </td>
           </tr>
         </tbody>
       </table>
-      <nav th:replace="~{paginador :: paginador(${paginador})}"></nav>
+      <p th:if="${n > 0}" class="texto-chico" data-tono="suave" aria-live="polite"
+         th:text="${n == 1} ? 'Mostrando 1 a 1 de 1 acción.' : |Mostrando ${inicio} a ${fin} de ${#numbers.formatInteger(n, 1, 'POINT')} acciones.|">Mostrando
+        1 a 7 de 7 acciones.</p>
+      <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
     </section>
   </div>
 </th:block>

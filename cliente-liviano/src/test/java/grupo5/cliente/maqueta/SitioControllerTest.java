@@ -119,15 +119,34 @@ class SitioControllerTest {
     mvc.perform(get("/admin-perfil").param("escenario", "vacio"))
         .andExpect(content().string(containsString("Todavía no cargaste tu nombre.")));
     mvc.perform(get("/admin-perfil").param("escenario", "error"))
-        .andExpect(content().string(containsString("No pudimos traer tus datos ahora.")));
+        .andExpect(content().string(containsString("No pudimos traer tus datos ahora.")))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    mvc.perform(get("/admin-perfil"))
+        .andExpect(content().string(containsString("data-pantalla=\"perfil-admin\"")))
+        .andExpect(content().string(containsString("Guardar los cambios")))
+        .andExpect(content().string(containsString("href=\"/admin-actividad?autor=yo\"")));
     mvc.perform(get("/admin-administradores").param("escenario", "error"))
         .andExpect(
             content()
-                .string(containsString("No pudimos traer las cuentas de administración ahora.")));
-    mvc.perform(get("/admin-administradores-nuevo")).andExpect(status().isOk());
+                .string(containsString("No pudimos traer las cuentas de administración ahora.")))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    mvc.perform(get("/admin-administradores"))
+        .andExpect(content().string(containsString("data-pantalla=\"administradores\"")))
+        .andExpect(content().string(containsString("aria-label=\"Vistas de administradores\"")))
+        .andExpect(content().string(containsString("Dar de alta un administrador</button>")));
+    // DA-35: el alta sin JavaScript y la contraseña provisoria siguen como páginas propias.
+    mvc.perform(get("/admin-administradores-nuevo"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("id=\"alta-formulario\"")))
+        .andExpect(content().string(containsString("aria-label=\"Dónde estás\"")))
+        .andExpect(content().string(containsString("Volver sin dar de alta")));
     mvc.perform(get("/admin-administradores-alta"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("K7pQ-m4Rt-x9Wa-2Lse")));
+        .andExpect(content().string(containsString("K7pQ-m4Rt-x9Wa-2Lse")))
+        .andExpect(content().string(containsString("data-copiar=\"provisoria-valor\"")))
+        .andExpect(content().string(containsString("Volver a Administradores")));
   }
 
   @Test

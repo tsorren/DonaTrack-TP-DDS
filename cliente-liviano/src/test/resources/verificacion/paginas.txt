@@ -242,6 +242,8 @@
 /admin-actividad?buscar=zoe
 /admin-actividad?fecha=ayer&accion=otra
 /admin-administradores
+/admin-administradores-nuevo
+/admin-administradores-alta
 /admin-perfil
 /admin-entidades
 /admin-entidades?ver=pendientes

@@ -176,6 +176,44 @@
   }
 }
 
+/* --- Dar de alta un administrador, la contraseña provisoria y Mi perfil (A12, ADM2-07 y ADM2-08):
+   las piezas son del catálogo; acá quedan la columna del formulario y dónde va cada cosa. ------- */
+
+:is(
+    [data-pantalla="alta-administrador"],
+    [data-pantalla="contrasena-provisoria"],
+    [data-pantalla="perfil-admin"]
+  ) {
+  max-width: var(--medida-formulario);
+}
+
+/* El código de seguimiento del aviso de error es el traceId entero: en el celular baja de renglón
+   en lugar de ensanchar la página. */
+:is(
+    [data-pantalla="administradores"],
+    [data-pantalla="alta-administrador"],
+    [data-pantalla="perfil-admin"]
+  )
+  .aviso-codigo
+  code {
+  overflow-wrap: anywhere;
+}
+
+/* La salida sin dar de alta, un enlace suelto con su lugar para el dedo. */
+[data-pantalla="alta-administrador"] > p > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+/* Desde la tableta, «Guardar los cambios» mide lo que su texto, como en Registrar donación. */
+@media (min-width: 37.5em) {
+  [data-pantalla="perfil-admin"] form > [data-fijo] > .boton {
+    align-self: start;
+    margin-block-start: var(--espacio-entre);
+  }
+}
+
 /* --- Agregar camión (ADM1, en el diálogo o abierto con el error de datos): cada campo de la grilla
    empieza arriba de su celda; el vecino de un campo con error no estira su control. ----------- */
 

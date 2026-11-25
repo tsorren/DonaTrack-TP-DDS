@@ -254,7 +254,13 @@ class AdministradoresConIngresoTest {
             content()
                 .string(
                     containsString(
-                        "Revisá el correo: tiene que tener la forma nombre@organizacion.org.")));
+                        "Revisá el correo: tiene que tener la forma nombre@organizacion.org.")))
+        // A12 (ADM2-07): sin JavaScript, el resumen arriba con un enlace a cada campo y la salida.
+        .andExpect(content().string(containsString("id=\"alta-resumen\"")))
+        .andExpect(content().string(containsString("Revisá 2 datos para seguir.")))
+        .andExpect(content().string(containsString("href=\"#alta-nombre\"")))
+        .andExpect(content().string(containsString("href=\"#alta-correo\"")))
+        .andExpect(content().string(containsString("Volver sin dar de alta")));
     verify(directorio).alta(any(), anyString(), anyString());
   }
 
@@ -300,7 +306,9 @@ class AdministradoresConIngresoTest {
         .andExpect(header().string("HX-Retarget", "#alta-formulario"))
         .andExpect(content().string(containsString("Escribí el nombre.")))
         .andExpect(content().string(containsString("aria-invalid=\"true\"")))
-        .andExpect(content().string(containsString("value=\"bruno.ejemplo.org\"")));
+        .andExpect(content().string(containsString("value=\"bruno.ejemplo.org\"")))
+        // En la ventana, el foco va al campo: sin el resumen de la página aparte.
+        .andExpect(content().string(not(containsString("alta-resumen"))));
   }
 
   // C4, con HTMX: el error del servicio también queda en la ventana abierta.
@@ -418,7 +426,11 @@ class AdministradoresConIngresoTest {
                 .string(
                     containsString(
                         "El nombre no puede llevar signos como &lt; &gt; &amp; o comillas.")))
-        .andExpect(content().string(containsString("Escribí tu apellido.")));
+        .andExpect(content().string(containsString("Escribí tu apellido.")))
+        // A12 (ADM2-08): el resumen arriba, con un enlace a cada campo.
+        .andExpect(content().string(containsString("Revisá 2 datos para seguir.")))
+        .andExpect(content().string(containsString("href=\"#nombre\"")))
+        .andExpect(content().string(containsString("href=\"#apellido\"")));
     verify(directorio, never()).cambiarNombre(anyString(), anyString(), anyString());
   }
 
