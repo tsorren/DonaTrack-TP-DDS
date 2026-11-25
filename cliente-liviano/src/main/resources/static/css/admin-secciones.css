@@ -110,6 +110,27 @@
   height: 2.75rem;
 }
 
+/* En el galpón, el menú lateral y la lista dejan a la ficha sin ancho para la identidad y el resumen
+   lado a lado (el quiebre de maestro.css es por pantalla, no por lo que mide la ficha): el nombre se
+   montaba sobre el estado. Acá la ficha sigue en una columna, como en la tableta: el resumen debajo
+   de la identidad, alineado al principio y con su filete a la izquierda. */
+@media (min-width: 68.75em) {
+  [data-pantalla="entidades"] .maestro-ficha {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-pantalla="entidades"] .maestro-ficha > [data-parte="resumen"] {
+    justify-items: stretch;
+    text-align: start;
+  }
+
+  [data-pantalla="entidades"] .maestro-ficha [data-parte="resumen"] > dl {
+    padding-inline: var(--espacio-2) 0;
+    border-inline-start: 0.25rem solid var(--color-acento-claro);
+    border-inline-end: 0;
+  }
+}
+
 /* --- Por decidir, la mesa (R11-24; A03, ADM1-05): la cabecera, las pestañas y la tabla con
    selección son del catálogo; acá quedan las tarjetas de Conflictos y de Destino. ---------------- */
 
