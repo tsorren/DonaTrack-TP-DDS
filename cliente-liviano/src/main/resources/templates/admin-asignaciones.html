@@ -24,8 +24,9 @@
          oculta a la que vuelve «Correr la asignación» ('propuestas' aquí, 'inicio' en /admin-inicio).
        - pestanas(actual, propuestas, conflictos): la barra de pestañas; actual es 'propuestas' o
          'conflictos' (la que queda marcada; otro valor no marca ninguna) y propuestas y conflictos,
-         la cuenta de cada una (null no la dibuja). Solicitudes y Por vencer van sin cuenta: hoy no
-         llega.
+         la cuenta de cada una (null no la dibuja). Solicitudes y Por vencer llevan la suya si quien
+         la usa define cuentaSolicitudes y cuentaPorVencer (con th:with, alrededor; lo hace
+         /admin-inicio, que las trae de AdminInicioVista); aquí no llegan y van sin cuenta.
        - propuestas(filas, volver): la tabla de propuestas con selección dentro de su formulario;
          filas son Propuesta y volver, la pestaña oculta a la que vuelven los envíos ('propuestas'
          aquí, 'inicio' en /admin-inicio).
@@ -335,8 +336,8 @@
      aria-label="Qué hay por decidir">
   <a href="/admin-inicio" th:href="@{/admin-inicio}" th:attr="aria-current=${actual == 'propuestas'} ? 'page' : null">Propuestas<th:block th:if="${propuestas != null}"> <b th:text="${#numbers.formatInteger(propuestas, 1, 'POINT')}">4</b></th:block></a>
   <a href="/admin-asignaciones?pestana=conflictos" th:href="@{/admin-asignaciones(pestana='conflictos')}" th:attr="aria-current=${actual == 'conflictos'} ? 'page' : null" hx-boost="true">Conflictos<th:block th:if="${conflictos != null}"> <b th:text="${#numbers.formatInteger(conflictos, 1, 'POINT')}">4</b></th:block></a>
-  <a href="/admin-entidades" th:href="@{/admin-entidades}">Solicitudes</a>
-  <a href="/admin-donaciones?vence=pronto" th:href="@{/admin-donaciones(vence='pronto')}">Por vencer</a>
+  <a href="/admin-entidades" th:href="@{/admin-entidades}">Solicitudes<th:block th:if="${cuentaSolicitudes != null}"> <b th:text="${#numbers.formatInteger(cuentaSolicitudes, 1, 'POINT')}">3</b></th:block></a>
+  <a href="/admin-donaciones?vence=pronto" th:href="@{/admin-donaciones(vence='pronto')}">Por vencer<th:block th:if="${cuentaPorVencer != null}"> <b th:text="${#numbers.formatInteger(cuentaPorVencer, 1, 'POINT')}">4</b></th:block></a>
 </nav>
 
 <!--/* Las propuestas sin problemas en la tabla con selección (P21; DA-26): se eligen varias y se

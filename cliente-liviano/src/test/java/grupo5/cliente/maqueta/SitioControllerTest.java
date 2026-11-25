@@ -1474,6 +1474,44 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("data-zona=\"publica\"")));
   }
 
+  /**
+   * «Por decidir» en la maqueta (ADM1-09, DA-04 y DA-25): la pestaña Propuestas abierta con las 4
+   * propuestas sin problemas de ejemplo y una casilla por fila; con ?escenario=vacio, todas las
+   * cuentas en 0 y el vacío de la pestaña; con ?escenario=error-camiones, solo la fila de camiones
+   * muestra su aviso.
+   */
+  @Test
+  void elInicioDelAdminEsPorDecidirConLasPropuestasDeEjemplo() throws Exception {
+    String html =
+        mvc.perform(get("/admin-inicio"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    assertTrue(html.contains("<h1>Por decidir</h1>"), html);
+    assertTrue(
+        Pattern.compile("aria-current=\"page\">Propuestas <b>4</b></a>").matcher(html).find(),
+        "Propuestas con la cuenta de la tabla");
+    assertTrue(html.contains(">Conflictos <b>4</b></a>"), "Conflictos");
+    assertTrue(html.contains(">Solicitudes <b>3</b></a>"), "Solicitudes");
+    assertTrue(html.contains(">Por vencer <b>4</b></a>"), "Por vencer");
+    assertEquals(5, html.split("name=\"propuesta\"", -1).length, "una casilla por propuesta");
+    assertTrue(html.contains("name=\"pestana\" value=\"inicio\""), "vuelve a Por decidir");
+    assertFalse(html.contains("Entregas para mirar hoy"));
+
+    mvc.perform(get("/admin-inicio?escenario=vacio"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("aria-current=\"page\">Propuestas <b>0</b>")))
+        .andExpect(content().string(containsString(">Solicitudes <b>0</b></a>")))
+        .andExpect(content().string(containsString("No hay propuestas que esperen tu decisión.")))
+        .andExpect(content().string(not(containsString("name=\"propuesta\""))));
+    mvc.perform(get("/admin-inicio?escenario=error-camiones"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No pudimos cargar los camiones.")))
+        .andExpect(content().string(containsString("<dt>Camiones</dt>")))
+        .andExpect(content().string(not(containsString(">Ver camiones</a>"))));
+  }
+
   /** Solo el menú de más de 5 secciones (la administración) lleva "Más" en el celular. */
   @Test
   void soloLaAdministracionLlevaElMenuCompleto() throws Exception {

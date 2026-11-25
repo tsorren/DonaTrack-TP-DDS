@@ -22,10 +22,6 @@ cuenta
 cuenta--enviada
 cuenta-principal
 cuenta-salida
-decision
-decision-nombres
-decisiones
-decisiones-lista
 donaron
 entregas
 estacion-numero
@@ -39,8 +35,6 @@ legales
 marca
 mesa
 mesa-cabecera
-mesa-fecha
-mesa-resumen
 necesidades
 nota
 obligatorios
@@ -70,16 +64,12 @@ raices-privado
 raices-publico
 recibido
 recibido-sello
-registro-mesa
-registros
 resumen
 rotulo
 salidas
 saltar
 sin-dibujar
 solo-lectores
-todo
-todo-fecha
 tramo
 tramo-aca
 tramo-numero
