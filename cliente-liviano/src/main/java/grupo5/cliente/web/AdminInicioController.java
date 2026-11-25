@@ -3,6 +3,8 @@ package grupo5.cliente.web;
 import grupo5.cliente.puertos.AdminOperacionPuerto;
 import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.vistas.ConsultaAsignaciones;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +19,8 @@ import org.springframework.web.client.RestClientException;
  */
 @Controller
 public class AdminInicioController {
+
+  private static final Logger LOG = LoggerFactory.getLogger(AdminInicioController.class);
 
   private final AdminPersonasPuerto personas;
   private final AdminOperacionPuerto operacion;
@@ -38,6 +42,7 @@ public class AdminInicioController {
           "asignaciones", operacion.asignaciones(ConsultaAsignaciones.primera(), ""));
     } catch (RestClientException noRespondio) {
       // La pestaña Propuestas muestra su aviso; las cuentas y las cifras siguen.
+      LOG.warn("No se pudieron leer las propuestas del inicio", noRespondio);
     }
     return vista;
   }

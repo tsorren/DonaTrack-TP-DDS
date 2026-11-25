@@ -28,6 +28,20 @@
   min-height: var(--medida-toque-minimo);
 }
 
+/* El resumen en el celular, en una columna: cada rótulo arriba de su dato (ficha, sección 4); desde
+   el quiebre chico, las dos columnas de la lista de datos del catálogo. */
+[data-pantalla="inicio"] .datos > div {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-0);
+}
+
+@media (min-width: 37.5em) {
+  [data-pantalla="inicio"] .datos > div {
+    grid-template-columns: revert-layer;
+    gap: revert-layer;
+  }
+}
+
 /* --- R11-42 y DA-30: los gráficos de los últimos 12 meses, cada uno en su lámina ---------------- */
 [data-pantalla="inicio"] [data-tema="grafico"] {
   --espacio-relleno: var(--espacio-3) var(--espacio-2);
