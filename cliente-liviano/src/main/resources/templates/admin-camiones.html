@@ -438,12 +438,12 @@
         kg carga. Por ejemplo: 2000.</span></p>
       <input id="capacidad" name="capacidadKG" type="number" min="1" step="any" inputmode="decimal"
              required autocomplete="off"
-             th:attr="aria-describedby=${conError} ? 'capacidad-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: 3500">
+             th:attr="aria-describedby=${conError} ? 'capacidad-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="3500">
     </div>
     <div class="campo">
       <label for="volumen">Volumen en m³ *</label>
       <input id="volumen" name="capacidadVolumen" type="number" min="0.1" step="any" inputmode="decimal"
-             required autocomplete="off" th:value="${conError} ? '12' : null" placeholder="Por ejemplo: 20">
+             required autocomplete="off" th:value="${conError} ? '12' : null" placeholder="20">
     </div>
     <div class="campo" th:data-estado="${conError} ? 'error'">
       <label for="altura">Altura en m *</label>
@@ -452,7 +452,7 @@
         que 0. Por ejemplo: 2,8.</span></p>
       <input id="altura" name="altura" type="number" min="0.1" step="any" inputmode="decimal"
              required autocomplete="off" th:value="${conError} ? '0' : null"
-             th:attr="aria-describedby=${conError} ? 'altura-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: 2,8">
+             th:attr="aria-describedby=${conError} ? 'altura-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="2,8">
     </div>
   </div>
   <th:block th:if="${enDialogo}"><section th:replace="~{:: corte}"></section></th:block>

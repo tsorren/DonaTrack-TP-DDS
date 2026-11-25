@@ -181,6 +181,13 @@
   }
 }
 
+/* --- Agregar camión (ADM1, en el diálogo o abierto con el error de datos): cada campo de la grilla
+   empieza arriba de su celda; el vecino de un campo con error no estira su control. ----------- */
+
+#agregar-titulo + form > .grilla {
+  align-items: start;
+}
+
 /* --- Donantes como bandeja (R11-34, ficha r11-p2-admin-bandeja; Donaciones pasó a la tabla, ADM1-08) */
 
 /* En el celular, la ficha de partida (la primera de la página, sin elegir) no se abre sola: la
