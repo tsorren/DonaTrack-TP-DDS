@@ -108,7 +108,7 @@
            th:text="|Elegí una para ver su ficha. Al ${adminEntidades.al}.|">Elegí una para ver su ficha. Al 15 de
           octubre de 2026, 18:30.</p>
       </div>
-      <div class="racimo" data-espacio="1">
+      <div th:if="${escenario != 'error'}" class="racimo" data-espacio="1">
         <a class="boton" data-tono="principal" data-tamano="chico" href="/admin-entidades-registrar"
            th:href="@{/admin-entidades-registrar}">Registrar organización</a>
       </div>

@@ -75,6 +75,14 @@
   padding-block: 0;
 }
 
+/* Desde la tableta, la ficha con el relleno grande (.mesa .tarjeta le pone el chico). La usan las
+   pantallas que siguen en la mesa (Donantes). */
+@media (min-width: 53.75em) {
+  .mesa .maestro-ficha {
+    --espacio-relleno: var(--espacio-4);
+  }
+}
+
 /* --- Organizaciones (A03, ADM2-04): la cabecera, el listado, la bandeja con ficha (.maestro y
    .maestro-ficha), el aviso y el paginador son del catálogo; acá queda lo que la pieza no resuelve. */
 
@@ -100,15 +108,6 @@
 [data-pantalla="entidades"] [data-lista="necesidades-ficha"] .categoria-icono {
   width: 2.75rem;
   height: 2.75rem;
-}
-
-/* En el galpón la ficha es más angosta que la pantalla (el cajón ocupa su columna): la identidad no
-   baja de lo que mide su palabra más larga, así el nombre no se mete debajo del resumen (el bloque
-   maestro le da minmax(0, 1fr)). */
-@media (min-width: 68.75em) {
-  [data-pantalla="entidades"] .maestro-ficha {
-    grid-template-columns: minmax(min-content, 1fr) fit-content(50%);
-  }
 }
 
 /* --- Por decidir, la mesa (R11-24; A03, ADM1-05): la cabecera, las pestañas y la tabla con
