@@ -7,8 +7,8 @@
        error arriba en el aviso del catálogo (.aviso data-tipo="error", con el foco y un enlace a cada
        campo), los campos del catálogo (.campo, con su .campo-error y el signo del problema), el banner
        para el error del servicio, "Cómo sigue" (la raíz numerada de la huerta), la casilla de los
-       términos y una sola acción llena. El resumen lleva solo la clase del catálogo, como Ingresar y
-       el registro de quien dona.
+       términos y una sola acción llena. El resumen está dentro del form y lleva además la clase
+       resumen, como el registro de quien dona: publico.js lo busca así para sacarlo al poner el suyo.
        Es un formulario real (POST) que lleva a publico-registro-entidad-enviada. Estados:
        ?escenario=lento y error; el error de datos es publico-registro-entidad-error. Con una sesión
        sin perfil (completarPerfil, de #955) no pide correo ni contraseña, guarda en esta misma
@@ -87,7 +87,7 @@
           th:data-enviando="${corregir} ? 'Guardando los cambios…' : 'Enviando la solicitud…'"
           th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <!--/* Error de datos: el resumen arriba, con el foco y un enlace a cada campo (A12). */-->
-      <div th:if="${!#lists.isEmpty(marcados)}" class="aviso" data-tipo="error" role="alert"
+      <div th:if="${!#lists.isEmpty(marcados)}" class="aviso resumen" data-tipo="error" role="alert"
            tabindex="-1" id="resumen" autofocus>
         <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
         <p class="aviso-titulo"
