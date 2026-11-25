@@ -115,6 +115,16 @@ public interface IDonacionesIndependientesRepository
   /** Lo mismo que {@link #sumarCantidadRecibida(UUID, UUID)} para varias necesidades. */
   Map<UUID, Integer> sumarCantidadRecibida(Map<UUID, UUID> periodoPorNecesidad);
 
+  /**
+   * Lo que tiene destino en la necesidad y todavía no llegó (HG-04): la cantidad de las donaciones
+   * con ese destino que no están {@code ENTREGADA}. {@code periodoId} como en {@link
+   * #sumarCantidadAsignada(UUID, UUID)}.
+   */
+  int sumarCantidadSinLlegar(UUID necesidadId, UUID periodoId);
+
+  /** Lo mismo que {@link #sumarCantidadSinLlegar(UUID, UUID)} para varias necesidades. */
+  Map<UUID, Integer> sumarCantidadSinLlegar(Map<UUID, UUID> periodoPorNecesidad);
+
   /** Cuántas donaciones asignadas a cada entidad se registraron después de {@code desde}. */
   Map<UUID, Integer> contarPorEntidadRegistradasDesde(LocalDateTime desde);
 

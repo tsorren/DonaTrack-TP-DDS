@@ -7,16 +7,22 @@ import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.fixtures.BienMother;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.SolicitudCambioEstadoDonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.necesidades.DestinoAsignacion;
 import grupo5.donaciones.models.repositories.impl.DonacionesIndependientesRepositoryEnMemoria;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 
 /** HB-17: la necesidad cuenta lo que llegó, no lo que salió (DTI-29). */
 class DonacionIndependienteCantidadRecibidaTest {
+
+  private static final String ACTOR = "admin@ejemplo.org";
 
   private final BienNormalizado bien =
       BienMother.aceptado(BienMother.prendaRopa("Campera"), UUID.randomUUID());
@@ -66,6 +72,42 @@ class DonacionIndependienteCantidadRecibidaTest {
     repo.save(completa);
 
     assertEquals(24, repo.sumarCantidadAsignada(necesidadId, null));
+  }
+
+  /** HG-04: lo que no llegó todavía son las donaciones con destino que no están entregadas. */
+  @Test
+  void elRepositorioEnMemoriaSumaLoQueTodaviaNoLlego() {
+    DonacionesIndependientesRepositoryEnMemoria repo =
+        new DonacionesIndependientesRepositoryEnMemoria();
+    UUID necesidadId = UUID.randomUUID();
+    DestinoAsignacion destino = new DestinoAsignacion(necesidadId, null, UUID.randomUUID());
+    DonacionIndependiente entregada = donacionDe15();
+    entregada.asignar(ACTOR, destino);
+    entregada.planificarRuta(ACTOR);
+    entregada.iniciarRecorrido(ACTOR);
+    entregada.cambiarEstado(
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.ENTREGADA, null, null, null, "AB123CD", null, ACTOR));
+    entregada.registrarCantidadRecibida(12);
+    DonacionIndependiente enCamino = donacionDe15();
+    enCamino.asignar(ACTOR, destino);
+    // La que no pudo llegar conserva el destino hasta volver al depósito: sigue sin llegar
+    DonacionIndependiente fallida = donacionDe15();
+    fallida.asignar(ACTOR, destino);
+    fallida.planificarRuta(ACTOR);
+    fallida.iniciarRecorrido(ACTOR);
+    fallida.registrarFalla("Dirección inexistente", ACTOR);
+    repo.save(entregada);
+    repo.save(enCamino);
+    repo.save(fallida);
+    repo.save(donacionDe15());
+
+    assertEquals(30, repo.sumarCantidadSinLlegar(necesidadId, null));
+    Map<UUID, UUID> sinPeriodo = new HashMap<>();
+    sinPeriodo.put(necesidadId, null);
+    assertEquals(Map.of(necesidadId, 30), repo.sumarCantidadSinLlegar(sinPeriodo));
+    assertEquals(0, repo.sumarCantidadSinLlegar(UUID.randomUUID(), null));
+    assertEquals(42, repo.sumarCantidadAsignada(necesidadId, null));
   }
 
   @Test

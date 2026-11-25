@@ -4,6 +4,7 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.AvanceNecesidadDTO;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.dto.PeriodoNecesidadDTO;
 import grupo5.donaciones.dto.publico.NecesidadPublicaDTO;
@@ -60,11 +61,12 @@ public class NecesidadesService implements INecesidadesService {
         necesidad,
         acumulados.asignadoA(necesidad),
         acumulados.recibidoPor(necesidad),
+        acumulados.sinLlegarA(necesidad),
         unidadesPorSubcategoria());
   }
 
   private static NecesidadDTO toDTO(
-      Necesidad n, int asignado, int recibido, Map<UUID, Unidad> unidades) {
+      Necesidad n, int asignado, int recibido, int sinLlegar, Map<UUID, Unidad> unidades) {
     NecesidadDTO.UltimoCambio ultimoCambio =
         n.muestraUltimoCambio()
             ? new NecesidadDTO.UltimoCambio(n.getCantidadAnterior(), n.getFechaUltimoCambio())
@@ -84,7 +86,8 @@ public class NecesidadesService implements INecesidadesService {
         n instanceof NecesidadExtraordinaria e ? e.getFechaLimite() : null,
         n instanceof NecesidadRecurrente r ? r.getPeriodicidad() : null,
         unidades.get(n.getSubcategoriaId()),
-        ultimoCambio);
+        ultimoCambio,
+        AvanceNecesidadDTO.de(n.getCantidadNecesitada(), asignado, sinLlegar));
   }
 
   /**
@@ -135,6 +138,7 @@ public class NecesidadesService implements INecesidadesService {
             .toList();
     Map<UUID, Integer> asignado = acumulados.asignadoA(necesidades);
     Map<UUID, Integer> recibido = acumulados.recibidoPor(necesidades);
+    Map<UUID, Integer> sinLlegar = acumulados.sinLlegarA(necesidades);
     Map<UUID, Unidad> unidades = unidadesPorSubcategoria();
     return necesidades.stream()
         .map(
@@ -143,6 +147,7 @@ public class NecesidadesService implements INecesidadesService {
                     n,
                     asignado.getOrDefault(n.getId(), 0),
                     recibido.getOrDefault(n.getId(), 0),
+                    sinLlegar.getOrDefault(n.getId(), 0),
                     unidades))
         .filter(dto -> estados == null || estados.isEmpty() || estados.contains(dto.estado()))
         .toList();
@@ -157,6 +162,7 @@ public class NecesidadesService implements INecesidadesService {
             .filter(n -> entidadId == null || entidadId.equals(n.getEntidadId()))
             .toList();
     Map<UUID, Integer> asignado = acumulados.asignadoA(necesidades);
+    Map<UUID, Integer> sinLlegar = acumulados.sinLlegarA(necesidades);
     return necesidades.stream()
         .filter(n -> !n.estaSatisfechaCon(asignado.getOrDefault(n.getId(), 0)))
         .map(
@@ -168,7 +174,11 @@ public class NecesidadesService implements INecesidadesService {
                     n.getDescripcion(),
                     n.getCantidadNecesitada(),
                     n.getTipoNecesidad().name(),
-                    n.finDelPeriodoActual()))
+                    n.finDelPeriodoActual(),
+                    AvanceNecesidadDTO.de(
+                        n.getCantidadNecesitada(),
+                        asignado.getOrDefault(n.getId(), 0),
+                        sinLlegar.getOrDefault(n.getId(), 0))))
         .toList();
   }
 
@@ -191,19 +201,22 @@ public class NecesidadesService implements INecesidadesService {
     }
     List<PeriodoNecesidad> periodos = recurrente.getPeriodos();
     PeriodoNecesidad actual = recurrente.obtenerPeriodoActual();
-    // ponytail: dos consultas por período; una agrupada si las historias se alargan
+    // ponytail: tres consultas por período; una agrupada si las historias se alargan
     return periodos.stream()
         .map(
             p -> {
               int recibido = acumulados.recibidoEn(id, p.id());
+              int asignado = acumulados.asignadoEn(id, p.id());
               return new PeriodoNecesidadDTO(
                   p.id(),
                   recurrente.inicioDe(p),
                   p.fechaFin(),
                   p.cantidadObjetivo(),
-                  acumulados.asignadoEn(id, p.id()),
+                  asignado,
                   recibido,
-                  resultado(p, recibido, p.equals(actual)));
+                  resultado(p, recibido, p.equals(actual)),
+                  AvanceNecesidadDTO.de(
+                      p.cantidadObjetivo(), asignado, acumulados.sinLlegarEn(id, p.id())));
             })
         .toList();
   }

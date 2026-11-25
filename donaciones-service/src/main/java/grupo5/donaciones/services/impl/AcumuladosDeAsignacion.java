@@ -54,6 +54,24 @@ public class AcumuladosDeAsignacion {
     return donacionesIndependientes.sumarCantidadRecibida(periodoPorNecesidad);
   }
 
+  /** Lo que tiene destino en la necesidad y todavía no llegó (HG-04), en su período actual. */
+  public int sinLlegarA(Necesidad necesidad) {
+    return donacionesIndependientes.sumarCantidadSinLlegar(
+        necesidad.getId(), necesidad.periodoActualId());
+  }
+
+  /** Lo que todavía no llegó a cada necesidad, en una sola consulta. */
+  public Map<UUID, Integer> sinLlegarA(List<Necesidad> necesidades) {
+    Map<UUID, UUID> periodoPorNecesidad = new HashMap<>();
+    necesidades.forEach(n -> periodoPorNecesidad.put(n.getId(), n.periodoActualId()));
+    return donacionesIndependientes.sumarCantidadSinLlegar(periodoPorNecesidad);
+  }
+
+  /** Lo que todavía no llegó en un período de la necesidad. */
+  public int sinLlegarEn(UUID necesidadId, UUID periodoId) {
+    return donacionesIndependientes.sumarCantidadSinLlegar(necesidadId, periodoId);
+  }
+
   /** Lo asignado a un período de la necesidad. */
   public int asignadoEn(UUID necesidadId, UUID periodoId) {
     return donacionesIndependientes.sumarCantidadAsignada(necesidadId, periodoId);

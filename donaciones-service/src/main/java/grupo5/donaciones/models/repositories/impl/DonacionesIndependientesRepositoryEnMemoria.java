@@ -373,6 +373,31 @@ public class DonacionesIndependientesRepositoryEnMemoria
   }
 
   @Override
+  public int sumarCantidadSinLlegar(UUID necesidadId, UUID periodoId) {
+    if (necesidadId == null) {
+      return 0;
+    }
+    return storage.values().stream()
+        .filter(d -> necesidadId.equals(d.getNecesidadId()))
+        .filter(d -> Objects.equals(periodoId, d.getPeriodoId()))
+        .filter(
+            d ->
+                d.getEstadoActual() == null
+                    || d.getEstadoActual().getTipo() != TipoEstadoDonacion.ENTREGADA)
+        .mapToInt(DonacionIndependiente::getCantidad)
+        .sum();
+  }
+
+  @Override
+  public Map<UUID, Integer> sumarCantidadSinLlegar(Map<UUID, UUID> periodoPorNecesidad) {
+    Map<UUID, Integer> sumas = new HashMap<>();
+    periodoPorNecesidad.forEach(
+        (necesidadId, periodoId) ->
+            sumas.put(necesidadId, sumarCantidadSinLlegar(necesidadId, periodoId)));
+    return sumas;
+  }
+
+  @Override
   public Map<UUID, Integer> sumarCantidadRecibida(Map<UUID, UUID> periodoPorNecesidad) {
     Map<UUID, Integer> sumas = new HashMap<>();
     periodoPorNecesidad.forEach(

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Donaciones Service API
-  version: 1.13.0
+  version: 1.14.0
   description: >-
     API REST para gestión de donaciones independientes (máquina de 8 estados; EN_PUERTA desde
     1.8.0, HB-22), necesidades de entidades beneficiarias, donantes y propuestas de asignación
@@ -34,6 +34,9 @@ info:
     admin: registradas y entregas confirmadas de los últimos 12 meses, por mes y por categoría.
     Desde 1.13.0 (R11-34), `GET /donaciones-independientes` acepta `venceHasta` y `orden=VENCE`,
     y `GET /api/donantes` acepta `altaDesde` y `altaHasta` (cambios aditivos, todos opcionales).
+    Desde 1.14.0 (HG-04) `NecesidadDTO`, `NecesidadPublicaDTO` y `PeriodoNecesidadDTO` traen
+    `avance`, opcional y solo de salida: lo que llegó, lo asignado que todavía no llegó y lo que
+    falta asignar, en las unidades de la necesidad.
 servers:
   - url: http://localhost:8080
     description: Servidor local de desarrollo
@@ -623,7 +626,8 @@ paths:
       summary: Historia de períodos de una necesidad recurrente
       description: >
         HB-18. Por período: inicio, fin, objetivo, lo asignado, lo recibido (donaciones `ENTREGADA`)
-        y el resultado. Una extraordinaria devuelve la lista vacía. Las donaciones que cubren la
+        y el resultado, todo en las unidades de la necesidad; desde 1.14.0 (HG-04), también el
+        `avance`. Una extraordinaria devuelve la lista vacía. Las donaciones que cubren la
         necesidad salen de `GET /donaciones-independientes?necesidadId=`.
       operationId: listarPeriodosDeNecesidad
       parameters:
@@ -2558,6 +2562,30 @@ components:
             fecha:
               type: string
               format: date
+        avance:
+          $ref: '#/components/schemas/AvanceNecesidadDTO'
+    AvanceNecesidadDTO:
+      type: object
+      nullable: true
+      description: >
+        Solo salida (HG-04, desde 1.14.0). El avance en las unidades de la necesidad: el del período
+        (en `PeriodoNecesidadDTO`), el del período en curso de una recurrente o el total de una
+        extraordinaria. Mientras no se pase del objetivo, las tres cifras suman el objetivo.
+      required: [llegaron, asignadas]
+      properties:
+        llegaron:
+          type: integer
+          minimum: 0
+          description: Lo que llegó (donaciones `ENTREGADA`), menos lo que la entidad contó que no llegó (HB-17).
+        asignadas:
+          type: integer
+          minimum: 0
+          description: Lo que tiene destino en la necesidad y todavía no llegó (asignada, preparada, en camino, en la puerta o con una entrega que no pudo llegar y conserva el destino hasta volver al depósito).
+        sinAsignar:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Lo que falta asignar para llegar al objetivo; 0 si ya se asignó todo o más. Nulo sin objetivo.
     PeriodoNecesidadDTO:
       type: object
       required: [id, inicio, fin, objetivo, asignado, recibido, resultado]
@@ -2575,14 +2603,16 @@ components:
           type: integer
         asignado:
           type: integer
-          description: Las donaciones con destino en el período.
+          description: La cantidad de las donaciones con destino en el período, en las unidades de la necesidad.
         recibido:
           type: integer
-          description: Las donaciones del período que llegaron (`ENTREGADA`).
+          description: La cantidad de las donaciones del período que llegaron (`ENTREGADA`).
         resultado:
           type: string
           enum: [EN_CURSO, CUMPLIDO, INCOMPLETO]
           description: '`CUMPLIDO` apenas lo recibido llega al objetivo, también en el período en curso.'
+        avance:
+          $ref: '#/components/schemas/AvanceNecesidadDTO'
     NecesidadPublicaDTO:
       type: object
       description: Necesidad vigente para rutas públicas (D26). `fechaFin` es el fin del período actual en las recurrentes y nulo en las extraordinarias.
@@ -2609,6 +2639,8 @@ components:
           type: string
           format: date
           nullable: true
+        avance:
+          $ref: '#/components/schemas/AvanceNecesidadDTO'
     SolicitudSubidaFotoInputDTO:
       type: object
       required: [tipoContenido]
