@@ -8,7 +8,10 @@ import grupo5.cliente.vistas.ConsultaDecididas;
 import grupo5.cliente.vistas.Listado;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
@@ -38,6 +41,10 @@ import org.springframework.web.server.ResponseStatusException;
 public class AdminAsignacionesController {
 
   private static final String LISTA = "admin-asignaciones";
+  private static final Locale ES = Locale.forLanguageTag("es-AR");
+  private static final ZoneId ARGENTINA = ZoneId.of("America/Argentina/Buenos_Aires");
+  private static final DateTimeFormatter FECHA =
+      DateTimeFormatter.ofPattern("EEEE d 'de' MMMM 'de' yyyy", ES);
 
   private final AdminOperacionPuerto operacion;
   private final ObjectProvider<AdministradorActual> administrador;
@@ -120,7 +127,17 @@ public class AdminAsignacionesController {
     model.addAttribute("listadoPropuestas", propuestas(consulta, datos));
     model.addAttribute("listadoDestino", destino(consulta, datos));
     model.addAttribute("paginador", paginador(pedido, datos));
+    model.addAttribute("hoy", hoy());
     return plantilla;
+  }
+
+  /**
+   * La fecha de la cabecera de Por decidir (A03, DA-25), en palabras: «Martes 24 de noviembre de
+   * 2026». La usa también {@code /admin-inicio}, que lleva la misma cabecera.
+   */
+  static String hoy() {
+    String fecha = LocalDate.now(ARGENTINA).format(FECHA);
+    return fecha.substring(0, 1).toUpperCase(ES) + fecha.substring(1);
   }
 
   /**

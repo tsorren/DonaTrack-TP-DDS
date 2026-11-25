@@ -1651,6 +1651,30 @@
           </table>
         </th:block>
       </div>
+      <!--/* La tabla del galpón con selección (ADM1-04, DA-18 y DA-21), también a todo el ancho. */-->
+      <div th:replace="~{componentes/muestra :: muestra('.tabla[data-forma=&quot;seleccion&quot;], .tabla-casilla y .tabla-elegidas', 'La tabla del galpón con selección: densa y una tabla en todos los anchos. Cada fila empieza con su casilla sola de 48 × 48 px (label.tabla-casilla con el input checkbox, transparente, encima de la casilla dibujada); la fila elegida se pinta. Arriba, la barra de las elegidas con sus acciones: una sola llena. Las columnas con data-columna=&quot;ancha&quot; se esconden en el celular. Achicá la ventana para verlo.', ~{::demo-tabla-seleccion})}">
+        <th:block th:fragment="demo-tabla-seleccion">
+          <form class="pila" data-espacio="2" action="#tabla-seleccion" aria-label="Propuestas de ejemplo">
+            <div class="tabla-elegidas">
+              <p>Elegí las que quieras decidir juntas.</p>
+              <div class="racimo" data-espacio="1">
+                <button class="boton" data-tamano="chico" type="button">Descartar</button>
+                <button class="boton" data-tono="principal" data-tamano="chico" type="button">Aprobar las elegidas</button>
+              </div>
+            </div>
+            <table class="tabla" data-forma="seleccion" id="tabla-seleccion">
+              <caption class="solo-lectores">Propuestas de ejemplo</caption>
+              <thead>
+                <tr><th scope="col"><span class="solo-lectores">Elegir</span></th><th scope="col">Donación</th><th scope="col">Para</th><th scope="col" data-columna="ancha">Cubre</th><th scope="col" data-columna="ancha">Sugerida por</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><label class="tabla-casilla"><input type="checkbox" name="muestra-propuesta" value="arroz" checked aria-label="Elegir: Arroz largo fino · 10 kg, para Comedor Barrio Ejemplo"></label></td><th scope="row">Arroz largo fino · 10 kg (de Distribuidora Ejemplo SA)</th><td>Comedor Barrio Ejemplo<small>Pide Arroz, 25 kg</small></td><td data-columna="ancha">Cubre 10 de 25 kg; el resto sigue pendiente.</td><td data-columna="ancha">Quienes menos recibieron · 1.º de 6</td></tr>
+                <tr><td><label class="tabla-casilla"><input type="checkbox" name="muestra-propuesta" value="yogur" aria-label="Elegir: Yogur · 24 unidades, para Merendero Ejemplo Sur"></label></td><th scope="row">Yogur · 24 unidades (de Fundación Ejemplo Sur)</th><td>Merendero Ejemplo Sur<small>Pide Yogur, 24 unidades</small></td><td data-columna="ancha">Cubre la necesidad completa.</td><td data-columna="ancha">Parecido con lo pedido · 2.º de 10</td></tr>
+              </tbody>
+            </table>
+          </form>
+        </th:block>
+      </div>
       <!--/* Fuera de la grilla, a todo el ancho: la forma larga necesita el ancho de una lista. */-->
       <div th:replace="~{componentes/muestra :: muestra('.paginas', 'El único paginador del sitio (componentes/paginas :: paginas(p), con p un vistas.Paginador que arma web.Paginadores.de), debajo de todo listado completo y centrado. Desde 37,5 em, la forma larga: « ‹ 1 2 3 … 9 › », con la primera y la última siempre (.paginas-extremo), tres números seguidos alrededor de la actual (.paginas-numero, la actual con aria-current=&quot;page&quot;, llena de tinta) y un hueco (.paginas-hueco) que nunca esconde una sola página. En el celular, o con data-forma=&quot;corta&quot; (componentes/paginas :: corta(p), para una columna angosta), ‹ 3 de 9 › (.paginas-lugar). Cada casilla, sin contorno y en letra grande, de 48 px o más; se pinta al pasar. Lo que no sigue se ve apagado (data-estado=&quot;apagado&quot;) y no es un enlace. Los enlaces son direcciones reales que conservan la búsqueda y los filtros: anda sin JavaScript. Con una sola página no se dibuja. Achicá la ventana para ver la forma corta; los de esta muestra vuelven acá.', ~{::demo-paginas})}">
         <th:block th:fragment="demo-paginas">

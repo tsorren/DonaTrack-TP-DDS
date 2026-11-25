@@ -1828,9 +1828,14 @@ class SitioControllerTest {
             content()
                 .string(
                     containsString(
-                        "aria-label=\"Aprobar: propuesta para Comedor Barrio Ejemplo\"")))
+                        "name=\"propuesta\" value=\"lentejas\" aria-label=\"Elegir: Lentejas · 15"
+                            + " kg (de Juan Ejemplo), para Comedor Barrio Ejemplo\"")))
+        .andExpect(content().string(containsString(">Aprobar las elegidas</button>")))
+        .andExpect(
+            content().string(containsString("formaction=\"/admin-asignaciones-descartada\"")))
         .andExpect(content().string(containsString("Hay 4 propuestas en conflicto.")))
-        .andExpect(content().string(containsString("Ver todas las decididas")));
+        .andExpect(
+            content().string(containsString("href=\"/admin-asignaciones?vista=decididas\"")));
     mvc.perform(get("/admin-asignaciones?escenario=vacio"))
         .andExpect(content().string(containsString("No hay propuestas que esperen tu decisión.")));
     mvc.perform(get("/admin-asignaciones?escenario=corriendo"))

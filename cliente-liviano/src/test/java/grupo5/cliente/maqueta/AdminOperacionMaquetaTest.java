@@ -57,7 +57,7 @@ class AdminOperacionMaquetaTest {
         .andExpect(content().string(containsString("Propuestas sin problemas · 6")));
     mvc.perform(get("/admin-asignaciones-aprobada"))
         .andExpect(content().string(containsString("Propuestas sin problemas · 3")))
-        .andExpect(content().string(containsString("Lentejas, 15 kg para Comedor Barrio Ejemplo")));
+        .andExpect(content().string(not(containsString("Lentejas · 15 kg (de Juan Ejemplo)"))));
     mvc.perform(get("/admin-asignaciones?pestana=conflictos"))
         .andExpect(content().string(containsString("Propuestas en conflicto · 4")))
         .andExpect(content().string(containsString("Ya no alcanza: Azúcar · 15 kg")));

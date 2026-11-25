@@ -115,15 +115,8 @@
   }
 }
 
-/* --- Asignar donaciones (R11-24, ficha r11-p1-asignaciones) ------------------------------------- */
-
-/* La lista y el panel: uno debajo del otro en el celular; desde el ancho de escritorio, el panel a
-   la derecha, fijo al desplazarse. */
-[data-pantalla="asignaciones"] [data-parte="cuerpo"] {
-  display: grid;
-  gap: var(--espacio-4);
-  align-items: start;
-}
+/* --- Por decidir, la mesa (R11-24; A03, ADM1-05): la cabecera, las pestañas y la tabla con
+   selección son del catálogo; acá quedan las tarjetas de Conflictos y de Destino. ---------------- */
 
 [data-pantalla="asignaciones"] [data-lista="propuestas"] {
   gap: var(--espacio-3);
@@ -142,34 +135,16 @@
   min-height: var(--medida-toque-minimo);
 }
 
-[data-pantalla="asignaciones"] dd {
-  margin: 0;
-}
-
 /* Los enlaces con forma de botón (volver, ver todas) miden lo que su texto. */
 [data-pantalla="asignaciones"] .pila > a.boton {
   align-self: flex-start;
 }
 
+/* Dos tarjetas por fila desde el ancho de escritorio. */
 @media (min-width: 68.75em) {
-  [data-pantalla="asignaciones"] [data-parte="cuerpo"] {
-    grid-template-columns: minmax(0, 1fr) 20rem;
-  }
-
-  [data-pantalla="asignaciones"] [data-parte="panel"] {
-    position: sticky;
-    top: calc(var(--medida-cabecera-fija) + var(--espacio-4));
-  }
-
-  /* Dos tarjetas por fila. */
   [data-pantalla="asignaciones"] [data-lista="propuestas"] {
     --medida-columna: 22rem;
   }
-}
-
-/* Todas las decididas (R11-35): cada renglón, con la categoría al lado de lo que pedía. */
-[data-pantalla="asignaciones"] [data-parte="decidida-cabeza"] {
-  margin: 0;
 }
 
 /* --- Donaciones y Donantes como bandeja (R11-34, ficha r11-p2-admin-bandeja) ------------------- */
