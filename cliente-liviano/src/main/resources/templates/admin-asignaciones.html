@@ -498,7 +498,7 @@
            th:text="${x.motivo == ''} ? 'Sin motivo anotado.' : |Motivo: «${x.motivo}»|">Motivo: «El merendero cerró
       por vacaciones.»</small>
     <small th:unless="${#lists.isEmpty(x.cubria)}">La cubría: <th:block th:each="d, i : ${x.cubria}"><a
-        href="/admin-donaciones-detalle?donacion=arroz" th:href="@{/admin-donaciones-detalle(donacion=${d.clave})}"
+        href="/admin-donaciones?donacion=arroz" th:href="@{/admin-donaciones(donacion=${d.clave})}"
         th:text="${d.texto}">Arroz · 25 kg (de Ana Ejemplo)</a><th:block th:unless="${i.last}">, </th:block></th:block></small>
   </div>
 </th:block>

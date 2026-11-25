@@ -259,8 +259,8 @@
     <p th:if="${s.cargaron and s.total == 0}">Todavía no tiene donaciones registradas.</p>
     <ul th:if="${s.cargaron and !#lists.isEmpty(s.recientes)}" class="lista pila" data-espacio="1"
         role="list">
-      <li th:each="r : ${s.recientes}"><a href="/admin-donaciones-detalle?donacion=arroz"
-          th:href="@{/admin-donaciones-detalle(donacion=${r.clave})}"
+      <li th:each="r : ${s.recientes}"><a href="/admin-donaciones?donante=ana"
+          th:href="@{/admin-donaciones(donante=${d.clave},donacion=${r.clave})}"
           th:text="|${r.que} — ${palabras[r.estado]} — ${r.registrada}|">Arroz · 25 kg — En el depósito —
         11 de octubre</a></li>
     </ul>

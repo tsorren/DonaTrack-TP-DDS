@@ -161,18 +161,25 @@ class AdminDonacionesEnviosTest {
     verify(operacion, never()).donacion(any(), any());
   }
 
-  // ADM1-08: sin la ficha, ?donacion= (un enlace como «La cubría» de Decididas) lleva al detalle
-  // de esa donación, con la clave codificada; el detalle avisa si no existe
+  // ADM1-08: sin la ficha, ?donacion= (un enlace como «La cubría» de Decididas o la ficha de
+  // Donantes, que conserva el donante) muestra ahí mismo el detalle de esa donación, sin
+  // redirigir (ningún enlace del sitio responde con una redirección); avisa si no existe
   @Test
-  void unaDonacionPedidaEnLaListaLlevaASuDetalle() throws Exception {
+  void unaDonacionPedidaEnLaListaMuestraSuDetalle() throws Exception {
     mvc.perform(get("/admin-donaciones?donacion=" + ID))
-        .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrl("/admin-donaciones-detalle?donacion=" + ID));
-    mvc.perform(get("/admin-donaciones?estado=deposito&donacion=arroz y fideos"))
-        .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrl("/admin-donaciones-detalle?donacion=arroz%20y%20fideos"));
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Leche en polvo")))
+        .andExpect(content().string(containsString("Marcar como vencida")))
+        .andExpect(content().string(containsString("name=\"donacion\" value=\"" + ID + "\"")))
+        .andExpect(
+            content().string(containsString("<title>Detalle - Donaciones - DonaTrack</title>")))
+        .andExpect(content().string(not(containsString("Buscar y filtrar las donaciones"))));
+    mvc.perform(get("/admin-donaciones?donante=ana&donacion=" + ID))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Leche en polvo")));
     verify(operacion, never()).donaciones(any(), any());
     when(operacion.donacion("otra", "")).thenReturn(null);
+    mvc.perform(get("/admin-donaciones?donacion=otra")).andExpect(status().isNotFound());
     mvc.perform(get("/admin-donaciones-detalle?donacion=otra")).andExpect(status().isNotFound());
   }
 
