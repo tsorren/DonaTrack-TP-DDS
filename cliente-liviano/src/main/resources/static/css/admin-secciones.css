@@ -202,6 +202,11 @@
   display: none;
 }
 
+/* El renglón no lleva pictograma: el texto toma lo que sobra y el estado mide lo que su palabra. */
+[data-pantalla="donantes"] .maestro > li > a {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
 [data-pantalla="donantes"] .maestro > li > a > span:not(.estado) {
   gap: var(--espacio-1);
 }
