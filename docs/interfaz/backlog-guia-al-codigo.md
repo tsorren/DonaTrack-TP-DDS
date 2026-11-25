@@ -1428,8 +1428,11 @@ límite de las hojas compartidas de §16.2.
   fija y el foco con Tab) y el gate visual del workflow corre solo `VerificacionVisualTest`. Se
   compara con la línea de base de §14.5; un fallo nuevo es bloqueante del lote. Esos tests no
   entran en su revisión ni en la hoja de contacto.
-- **Mientras dura la tanda 1:** Registrar donante y Registrar organización ven la lista nueva con
-  su formulario de hoy. No es hallazgo de esos lotes.
+- **Mientras dura la tanda 1:** desde la lista nueva, «Registrar donante» y «Registrar
+  organización» llevan al formulario de hoy, que rehacen los lotes de la tanda 2. No es hallazgo
+  de `adm2-donantes` ni de `adm2-organizaciones`.
+- **En la tanda 2:** `adm2-registrar-donante` y `adm2-registrar-organizacion` parten de lo que
+  integró la tanda 1: ven la lista nueva y rehacen el formulario de hoy.
 - **Al cierre:** `-Pvisual` sobre las 49 rutas de ADM2 de `paginas.txt`: las que empiezan con
   `/admin-donantes`, `-importaciones`, `-entidades`, `-administradores`, `-actividad`,
   `-notificaciones` y `-perfil`. `[VERIFIED]` Hoy el mismo filtro da 47 líneas: faltan las dos que
