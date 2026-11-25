@@ -96,8 +96,12 @@ main h1 {
    guía la saca desde 56 em). Hasta 56 em el menú es la barra del celular, abajo; desde ahí, el cajón
    (componentes/navegacion.css) queda fijo a la izquierda, debajo de la barra, y el contenido y el
    pie empiezan a su derecha. */
+/* --color-papel es alias de --color-fondo-pagina (tokens.css), pero se resuelve en :root: se
+   redefine acá para que lo que pinta papel (la barra fija del listado y su sombra, el panel de Más,
+   la pantalla de carga) salga del papel del galpón y no deje una franja de otro color. */
 [data-armazon="galpon"] {
   --color-fondo-pagina: var(--color-galpon-fondo);
+  --color-papel: var(--color-galpon-fondo);
   --color-superficie: var(--color-campo);
 }
 
