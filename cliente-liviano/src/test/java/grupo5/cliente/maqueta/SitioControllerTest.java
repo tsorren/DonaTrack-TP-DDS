@@ -974,6 +974,51 @@ class SitioControllerTest {
     }
   }
 
+  /**
+   * PUB2-08 y PUB2-09: las páginas de estado no tienen arquetipo (DA-08) y siguen la composición de
+   * lectura de la huerta, con las piezas del catálogo: el rótulo, el título, la bajada y una sola
+   * acción llena. Sin las clases heredadas de antes (lectura, lectura-bajada y sin-dibujar).
+   */
+  @Test
+  void lasPaginasDeEstadoTienenLaComposicionDeLecturaDeLaHuerta() throws Exception {
+    for (int codigo : List.of(403, 404, 429, 500)) {
+      String principal = principal(error(codigo, "/donante-inicio", ""));
+      assertTrue(
+          principal.contains("<p class=\"huerta-rotulo\">Error " + codigo + "</p>"), principal);
+      assertTrue(principal.matches("(?s).*</p>\\s*<h1>.*</h1>\\s*<p>.*"), principal);
+      assertEquals(1, cuantasVeces(principal, "data-tono=\"principal\""), principal);
+      assertTrue(!principal.matches("(?s).*class=\"[^\"]*\\blectura(-bajada)?\\b.*"), principal);
+      assertTrue(principal.contains("data-dibujo=\"error\""), principal);
+    }
+
+    String sinDibujar =
+        principal(
+            mvc.perform(get("/entidad-seguimiento-tesoro"))
+                .andExpect(view().name("sin-dibujar"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8));
+    assertTrue(sinDibujar.contains("<p class=\"huerta-rotulo\">Entregas</p>"), sinDibujar);
+    assertTrue(sinDibujar.contains("<h1>Esta pantalla todavía no está dibujada.</h1>"), sinDibujar);
+    assertTrue(!sinDibujar.contains("class=\"sin-dibujar\""), sinDibujar);
+
+    String avisoPersona =
+        principal(
+            mvc.perform(get("/donante-donaciones-nueva").sessionAttr("cuenta", "persona"))
+                .andExpect(view().name("aviso-persona"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8));
+    assertTrue(avisoPersona.contains("<p class=\"huerta-rotulo\">Donaciones</p>"), avisoPersona);
+    assertTrue(avisoPersona.matches("(?s).*</p>\\s*<h1>.*</h1>\\s*<p>.*"), avisoPersona);
+    assertEquals(1, cuantasVeces(avisoPersona, "data-tono=\"principal\""), avisoPersona);
+    assertTrue(!avisoPersona.contains("class=\"sin-dibujar\""), avisoPersona);
+  }
+
+  private static String principal(String html) {
+    return html.substring(html.indexOf("<main"), html.indexOf("</main>"));
+  }
+
   @Test
   void conSesionContactoUsaElMarcoPrivadoDelRol() throws Exception {
     mvc.perform(get("/publico-contacto?escenario=con-sesion"))
