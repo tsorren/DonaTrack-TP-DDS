@@ -327,6 +327,26 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
   a PASS; el comportamiento está en el código y en los tests.
 - **Evidencia:** `b5a6879f8`; `Pantallas.java`, `layout-privado.html`.
 
+### 2026-11-24 · publico · Manifiesto de PUB2: las respuestas de la cuenta con el aviso en la página
+
+- **Decisión:** Recuperar la contraseña, Pedir el enlace y Activar la cuenta responden en su misma
+  pantalla con el aviso en la página del catálogo, sin página propia y sin el sello de recibido.
+  «Solicitud enviada», de la organización, se queda como la página de estado de la solicitud, con
+  «Solicitud recibida» como aviso en la página (DA-32). Reparto en 4 lotes de una tanda, sin fichas;
+  el registro en una página usa `componentes/registro` como está
+  ([backlog, sección 15](backlog-guia-al-codigo.md)).
+- **Alternativas:** el aviso breve que se va solo, como Contacto; llevar Activar a Ingresar con un
+  aviso breve; pasar «Solicitud enviada» a un aviso breve.
+- **Por qué:** el aviso dice qué hacer después, y si se va, queda el formulario vacío y la persona
+  vuelve a pedir el enlace. Ingresar es una pantalla de PUB1. A «Solicitud enviada» se vuelve con
+  «Ver mi solicitud».
+- **Costo:** las tres rutas de respuesta siguen en la maqueta. `.recibido` puede quedar sin uso en
+  `publico-paginas.css`; si queda, la borra el integrador de la tanda 1, con su línea de
+  `clases-heredadas.txt`.
+- **Quién decidió:** el autor del manifiesto, con la opción recomendada, delegada por el
+  relevamiento del 2026-11-24 (corrida desatendida, rama = gate; plan `.claude/plan-guia-resto.md`).
+  El usuario no la respondió.
+
 ### 2026-11-24 · navegación · El menú público: Inicio, Entregas, Organizaciones y Cómo funciona (DA-01, DA-05, DA-17)
 
 - **Decisión:** el menú público es Inicio, Entregas, Organizaciones y Cómo funciona

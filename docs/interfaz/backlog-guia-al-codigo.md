@@ -82,6 +82,8 @@ queda en la columna de la recomendación.
 Manifiesto de ADM1 (2026-11-24, misma corrida): DA-25 a DA-31 son decisiones nuevas que el usuario
 no respondió, con la misma regla y la misma nota. DA-28 a DA-31 son las preguntas de las dos fichas
 de la ola ([Ranking](flujos/guia-adm-ranking.md) y [los gráficos del inicio](flujos/guia-adm-inicio-graficos.md)).
+Manifiesto de PUB2 (2026-11-24, misma corrida): DA-32 es una decisión nueva que el usuario no
+respondió, con la misma regla y la misma nota.
 
 | ID | Pregunta | Recomendación | Respuesta del usuario | Fecha | Ola |
 |---|---|---|---|---|---|
@@ -115,6 +117,7 @@ de la ola ([Ranking](flujos/guia-adm-ranking.md) y [los gráficos del inicio](fl
 | DA-29 | Los gráficos del inicio (ficha): debajo de la bandeja, ¿qué pasa con las cuatro tarjetas de «Cómo está todo» y con «Entregas para mirar hoy», que dibuja A03? | Las cuatro tarjetas pasan a un solo resumen denso, «Cómo está todo», con la lista de datos del catálogo (P23) y su fecha: las cinco cuentas de donaciones por estado, las entregas confirmadas del mes y en total, la red y los camiones (o su aviso), con las salidas de hoy. «Entregas para mirar hoy» no se dibuja: `AdminInicioVista` trae cuentas y no las entregas; se anota como deuda. Descartadas: conservar las cuatro tarjetas (es la densidad de la huerta en el galpón); armar «Entregas para mirar hoy» con datos de la maqueta (en el sitio real quedaría vacía) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | ADM1 |
 | DA-30 | Los gráficos del inicio (ficha): «Mes a mes» y «Por categoría», ¿se quedan como parte de la pantalla o pasan al catálogo? | Se quedan como parte de `admin-inicio`, en `admin-inicio.css`, debajo del resumen y con su tabla al lado (debajo en el celular), como hoy. Sus reglas dejan los nombres de antes de la guía (`--color-acento`, `--color-acento-claro`, `--color-tinta-suave`) por los de la guía con el mismo valor (DA-14a), así no cambia ningún píxel y Z puede retirar esos alias. Descartada: una pieza nueva del catálogo con su muestra en `/estilos` (la usa una sola pantalla y pediría un lote de catálogo en la tanda 1) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | ADM1 |
 | DA-31 | Ranking (ficha): ¿cómo se elige el mes? | Como hoy: la pastilla «Mes» de `componentes/filtros`, «Volver al último mes» y el paginador de meses (R11-23 y R11-43). Descartada: pestañas por mes (A03 usa pestañas para lo que hay por decidir, y doce meses no entran a 360 px) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | ADM1 |
+| DA-32 | Las respuestas de la cuenta: con DA-06 (página propia solo al confirmar una recepción), ¿cómo responden Recuperar la contraseña, Pedir el enlace de activación y Activar la cuenta? ¿Y «Solicitud enviada», de la organización? | Recuperar (`/publico-recuperar-enviado`) y Pedir el enlace (`/publico-activar-pedido`) muestran su misma pantalla con el aviso en la página del catálogo (`.aviso` con `data-tipo="exito"`, P13) en el lugar del formulario, como hoy, sin página propia. Activar (`/publico-activar-lista`) muestra la pantalla de Activar con ese aviso, «Tu cuenta está lista», y una sola acción llena, Ingresar. Las tres rutas siguen y ninguna lleva el sello de recibido dibujado a mano (`.recibido`). «Solicitud enviada» (`/publico-registro-entidad-enviada`) no es una respuesta: es la página de estado de la solicitud, a la que se vuelve con «Ver mi solicitud» (R11-41). Se queda como pantalla, con sus escenarios, y «Solicitud recibida» pasa al mismo aviso en la página. Descartadas: el aviso breve que se va solo, como Contacto (DA-24), porque el aviso dice qué hacer después («Revisá tu bandeja de entrada») y, cuando se va, queda el formulario vacío y la persona vuelve a pedir el enlace; llevar Activar a Ingresar con un aviso breve (edita `publico-ingresar.html`, una pantalla de PUB1); pasar «Solicitud enviada» a un aviso breve (rompe «Ver mi solicitud» y los escenarios de R11-41) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | PUB2 |
 | G0 | Con la medida de C0 (§3.4): ¿el plan sigue con todo el sitio o se recorta al recorrido de la demo? | Recorte al recorrido de la demo (ORG, DON y PUB1), con ADM1 por decidir en G1 | Todo el sitio («Quiero todo el sitio», ronda 3). Quedan 8 corridas: C1, ORG, DON, PUB1, ADM1, PUB2, ADM2 y Z | 2026-11-22 | Todas |
 | G1 | Con la hoja de G1 (16 pantallas de hoy, §10.3): ¿cada área se puede mostrar así? | Ninguna: lo decide el usuario mirando la hoja | Las cuatro áreas se pueden mostrar así («Las 4 se muestran»). G2 permite que un área entre a medias. Es una excepción a la regla del piso del plan (§10: un área con una pantalla sin rehacer que falla el piso queda en «no»): las 11 rutas en rojo de la línea de base (§10.4), que tocan las cuatro áreas, fallan solo por toque, no por contraste. El usuario la mantuvo al conocer la regla («Mantener, excepción») | 2026-11-23 | Todas |
 | DA-17 | ¿El menú de cada rol cambia en la ola de ese rol, y no todos juntos en C1? | Sí: si una ola no llega, su área queda con el menú de hoy | Sí («Todas las recomendadas», ronda 3) | 2026-11-22 | PUB1, DON, ORG y ADM1 |
@@ -1181,3 +1184,121 @@ base, y `agent-check`), y la revisión independiente de `revisar-ui` dio PASS. S
   [`requerimientos-e7.md`](../requerimientos/requerimientos-e7.md) no cambian: el primero no nombra
   pantallas ni menús, y ningún requerimiento cambia de estado. Las fichas de antes de la ola que ya
   no describen el código están en [DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 10.
+
+## 15. Ola PUB2: registro, cuenta y páginas de estado
+
+Rehace las 19 plantillas de PUB2 de §5 (14 de lo público y 5 comunes) y las dos que PUB1 dejó
+anotadas para esta ola (§13.2): `error/429.html` y `pagina-error.html`, la pieza que comparten las
+páginas de error. No lleva fichas: el registro en una sola página y las páginas de estado son
+derivación del agente (DA-08). Ningún menú cambia: el público cambió en PUB1 (DA-17). Manifiesto:
+[`backlog-guia-al-codigo.pub2.manifiesto.json`](backlog-guia-al-codigo.pub2.manifiesto.json). Se
+escribió el 2026-11-24 en la corrida desatendida, mientras corría ADM1: el reparto y DA-32 no los
+aprobó el usuario y van con la opción recomendada (§2.2). Se lanza desde la `E7_guia_ui` que deje
+ADM1. PUB2 no comparte pantallas con ADM1. Comparte `privado.css`, y de esa hoja toca solo la regla
+`.sin-dibujar` (regla 4).
+
+### 15.1 Decisiones de la ola
+
+| ID | Qué decide | Lote |
+|---|---|---|
+| DA-06 y DA-32 | Recuperar, Pedir el enlace y Activar responden con el aviso en la página, en su misma pantalla y sin el sello de recibido | `pub2-cuenta` |
+| DA-06 y DA-32 | «Solicitud enviada» se queda como la página de estado de la solicitud, con «Solicitud recibida» como aviso en la página | `pub2-registro-entidad` |
+
+DA-32 es nueva de esta ola; su opción descartada está en §2.2. DA-08 (sin fichas) y DA-17 (ningún
+menú cambia) son reglas del manifiesto (1 y 3), no decisiones de un lote.
+
+### 15.2 Reparto
+
+Una sola tanda, con 4 lotes. Ninguna plantilla la tocan dos lotes. Los archivos que comparten se
+reparten por líneas (regla 4): las hojas de la cadena de lo público, `AccesoController.java`,
+`paginas.txt` y los tests de varias rutas.
+
+| Lote | Tanda | Plantillas | Arquetipo y decisiones | Ficha |
+|---|:-:|---|---|---|
+| `pub2-cuenta` | 1 | `publico-recuperar`, `-recuperar-enviado`, `publico-activar`, `-activar-pedir`, `-activar-pedido`, `-activar-lista` y `-activar-error` | Deriva de A12, con la columna del formulario de Ingresar; DA-06 y DA-32 | No |
+| `pub2-registro-donante` | 1 | `publico-registro`, `publico-registro-donante` y `-donante-error` | Deriva de A12, dentro del registro en una página del catálogo (`componentes/registro`) | No |
+| `pub2-registro-entidad` | 1 | `publico-registro-entidad`, `-corregir`, `-enviada` y `-error` | Sin arquetipo: el registro en pasos, con `componentes/registro` y la columna de A12 (DA-08); DA-06 y DA-32 | No |
+| `pub2-estado` | 1 | `error/403`, `error/404`, `error/429`, `error/5xx`, `pagina-error`, `sin-dibujar` y `aviso-persona` | Sin arquetipo: páginas de estado (DA-08) | No |
+
+Suma: 7 + 3 + 4 + 7 = 21. Son las 19 de §5 (14 y 5 comunes), más `error/429` y `pagina-error`.
+
+**Plantillas y hojas del área que no son pantallas de PUB2:**
+
+| Plantilla u hoja | En PUB2 |
+|---|---|
+| `persona/datos-persona.html` | Fuera: no es una pantalla, son los datos de ejemplo de la persona (§5); los usan las pantallas de `persona/` (DON) |
+| `componentes/registro.html` y `static/css/componentes/registro.css` | Fuera: son del catálogo, y los dos registros los usan tal como están. `IngresoConKeycloakRealTest` (de `visual/`, que nadie edita) busca `a.registro-tipo` y `form.registro-formulario` |
+| `datos-publicos.html` | Fuera: `avisoError` lo usan también pantallas de PUB1; se usa sin editarlo |
+| `navegacion-publica.html`, `pie.html`, `layout-publico.html` y `layout-privado.html` | Fuera: son de PUB1, de C1 y de ADM1; no se editan (DA-17) |
+| `cuenta-menu`, `interaccion`, `envio`, `cerrar-sesion`, `paginador`, `iconos` y el resto de `componentes/` | Fuera: son comunes a los cuatro roles o del catálogo; no se editan |
+| `datos-donante.html`, `viaje-datos.html`, `piezas-entidad.html` y el resto de `persona/` | Fuera: son de DON y de ORG; no se editan |
+| `estilos.html` y `docs/interfaz/componentes.md` | Fuera: PUB2 no suma ni cambia piezas del catálogo, así que no tiene muestra ni fila que tocar |
+| `publico-ingresar.css` | Compartida: es la hoja de Ingresar (PUB1) y de las 7 plantillas de `pub2-cuenta`. Ese lote saca solo las reglas de `.cuenta-principal`, que usan nada más que sus pantallas. Las de `main > .pila`, de Ingresar, no cambian. No se borra |
+| `publico-registro.css` | Compartida: es la hoja de los dos registros y la importa `publico-ingresar.css`. Cada lote de registro saca solo las reglas que usan nada más que sus pantallas. No se borra |
+| `publico-paginas.css` y `publico-listas.css` | Compartidas con PUB1 y `/estilos`. Una regla que usan solo pantallas de PUB2 la saca su lote. `.recibido` y `.publica` las usan `pub2-cuenta` y `pub2-registro-entidad`: ninguno de los dos las borra; las borra el integrador de la tanda 1 (abajo) |
+| `publico-error.css` | De `pub2-estado`: es la hoja de las páginas de error y solo dispone |
+| `privado.css` | Compartida con todo lo privado y con ADM1: `pub2-estado` toca solo la regla `.sin-dibujar`. `.aviso-codigo` la usan también pantallas del admin, así que queda |
+
+Ninguna de las hojas de PUB2 sale de `HOJAS_HEREDADAS` en esta ola, porque las cinco las usan
+también pantallas de otras olas. Si una queda sin reglas heredadas, se anota para Z.
+
+**Las clases heredadas que comparten varios lotes.** En `clases-heredadas.txt` cada lote borra solo
+las líneas de las clases que deja sin uso. Una clase heredada que usan plantillas de dos o más lotes
+de PUB2, y ninguna de fuera de la ola, no la puede borrar ningún lote en su rama, porque la plantilla
+del otro todavía la usa. `[OBSERVED]` Hoy son siete: `publica` y `cuenta` (las cuatro de
+`pub2-cuenta` con `.publica` y `publico-registro-entidad-enviada`), `recibido`
+(`publico-activar-lista` y `publico-registro-entidad-enviada`), `campos-par` y `casilla`
+(`publico-registro-donante` y `publico-registro-entidad`), `clave-fila` (`publico-activar` y los
+dos registros) y `lectura-bajada` (tres de `pub2-cuenta`, `publico-registro-entidad-enviada` y
+`pagina-error`). Si al integrar la tanda 1 alguna queda sin uso,
+`InterfazFitnessTest.clasesDeLasPlantillasEstanEnElCatalogoOEnLasHeredadas` da rojo. Es un choque
+entre lotes y lo arregla el integrador de la tanda (su paso 4): borra cada línea que ya no usa
+ninguna plantilla y, con cada una, las reglas que quedan sin uso en las hojas compartidas (por
+ejemplo `.recibido` en `publico-paginas.css`, `.publica` en `publico-listas.css` y
+`.cuenta .formulario` en `publico-registro.css`). Lo dice la regla 4.
+
+### 15.3 Ítems
+
+| ID | Lote | Qué | Arquetipo y decisiones | Estado |
+|---|---|---|---|---|
+| PUB2-01 | `pub2-cuenta` | Recuperar la contraseña: la columna del formulario de Ingresar, con su campo, una sola acción llena y la salida a Ingresar | Deriva de A12 | Pendiente |
+| PUB2-02 | `pub2-cuenta` | Activar la cuenta y Pedir el enlace, con sus estados (lento, error, sin conexión y vencido) y el error de datos (`publico-activar-error`), en la misma columna | Deriva de A12 | Pendiente |
+| PUB2-03 | `pub2-cuenta` | Las tres respuestas (`-recuperar-enviado`, `-activar-pedido` y `-activar-lista`) con el aviso en la página, en su misma pantalla y sin el sello de recibido | DA-06 y DA-32 | Pendiente |
+| PUB2-04 | `pub2-registro-donante` | Crear una cuenta: la cabeza y las tres tarjetas del tipo de cuenta del catálogo (`registro :: cabeza` y `:: tipos`), con su salida a Ingresar | Deriva de A12 | Pendiente |
+| PUB2-05 | `pub2-registro-donante` | El registro de quien dona (persona y empresa) y su error: el índice de pasos y el formulario del catálogo, el resumen del error arriba y una sola acción llena | Deriva de A12 | Pendiente |
+| PUB2-06 | `pub2-registro-entidad` | El registro de la organización, su corrección y su error, con el mismo formulario; `hoja` y `comoSigue` siguen como fragmentos | Sin arquetipo: el registro en pasos (DA-08) | Pendiente |
+| PUB2-07 | `pub2-registro-entidad` | Solicitud enviada, la página de estado de la solicitud (R11-41), con sus cinco escenarios y «Solicitud recibida» como aviso en la página | DA-06 y DA-32 | Pendiente |
+| PUB2-08 | `pub2-estado` | Las páginas de error 403, 404, 429 y 5xx y su pieza `pagina-error`, sin sesión (el marco público) y con sesión (el privado del rol) | Sin arquetipo: página de estado (DA-08) | Pendiente |
+| PUB2-09 | `pub2-estado` | `sin-dibujar` y `aviso-persona`, con la composición de lectura de la huerta; el lote suma sus dos rutas a `paginas.txt` | Sin arquetipo: página de estado (DA-08) | Pendiente |
+
+Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5), con el
+límite de las hojas compartidas de §15.2.
+
+### 15.4 Qué se verifica (DA-20)
+
+- **En cada lote:** los gates y `-Pvisual` sobre sus `rutasVisuales`, una por plantilla. En
+  `pub2-estado` son las rutas `?respuesta=` de `paginas.txt` y dos que el lote suma:
+  `/entidad-seguimiento-tesoro`, una sección sin pantalla que muestra `sin-dibujar` (como en
+  `SitioControllerTest.unaSeccionSinPantallaMuestraQueNoEstaDibujada`), y
+  `/donante-donaciones-nueva?cuenta=persona`, que muestra `aviso-persona` (como en
+  `SitioControllerTest.conLaPersonaLasOtrasDelDonanteMuestranSuVersionOElAviso`). La segunda va en el
+  bloque de la persona de `paginas.txt`, antes de `/donante-inicio?cuenta=empresa`, porque la cuenta
+  queda en la sesión. En `pub2-registro-entidad`, la solicitud enviada entra a `rutasVisuales` solo
+  sin escenario; sus cinco rutas (sin escenario y con `con-sesion-pendiente`, `corregida`,
+  `sin-datos` y `aprobada`) las afirma un test de `SitioControllerTest` (200 y la vista
+  `publico-registro-entidad-enviada`), que es el criterio de DA-32 de ese lote, y las mira
+  `-Pvisual` al cierre.
+- **Las hojas compartidas, antes de comitear:** un lote que saca reglas de `publico-ingresar.css` o
+  de `publico-registro.css` corre además `-Pvisual` sobre `/publico-ingresar` y
+  `/publico-ingresar-error`. Uno que saca reglas de `publico-paginas.css` o de `publico-listas.css`
+  lo corre también sobre `/publico-contacto`, `/publico-legales` y `/estilos`. Esas rutas no entran
+  en su revisión ni en la hoja de contacto. Una falla nueva ahí es bloqueante del lote.
+- **Al cierre:** `-Pvisual` sobre las 40 rutas de PUB2 de `paginas.txt`: las 33 de
+  `/publico-recuperar`, `-activar` y `-registro`, las 5 de `?respuesta=` y las 2 que suma
+  `pub2-estado`. `[VERIFIED]` Hoy el mismo filtro da 38 líneas: faltan las dos que suma el lote.
+  Ninguna está en la línea de base de §10.4, así que cualquier falla es bloqueante, con el lote que
+  la rompe. Corren también los otros cinco tests visuales, y se comparan con la línea de base de
+  §10.5, §11.3, §12.5, §13.5 y del cierre de ADM1 (§14). Un fallo que no esté en esa línea de base
+  es bloqueante. No se levantan el stack ni el recorrido con login: los hace Z, y ningún lote cambia
+  un adaptador `rest` (plan de la corrida, punto 5). `IngresoConKeycloakRealTest` necesita el
+  stack y corre en Z.
