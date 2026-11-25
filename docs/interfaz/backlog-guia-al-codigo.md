@@ -862,13 +862,13 @@ saca solo las reglas que usan nada más que sus pantallas.
 
 | ID | Lote | Qué | Arquetipo y decisiones | Estado |
 |---|---|---|---|---|
-| PUB1-01 | `pub1-portada` | La portada, en el orden de A01: el título con la trama, el dibujo con un fruto por entrega confirmada del mes, la última entrega confirmada con su foto y su sello, las cifras, «Cómo funciona» con la raíz numerada de 5 pasos y las entregas confirmadas del mes. Los datos salen del puerto que ya existe (`cifrasDePortada` y `entregasConfirmadas`) | A01; DA-22; HG-03 con su texto de reemplazo (DA-10) | Parcial (`26ebd4af3`, `1878a1e39`, `33e1c7284` y `5556086f0`). Falta el estado de error de «Entregas confirmadas del último mes»: con `?escenario=error` la sección queda con el título y «Ver todas», y el dibujo, sin leyenda (`publico-portada.html:55` y `:127-148`); bloqueante de la revisión del lote tras 3 rondas ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 1) |
+| PUB1-01 | `pub1-portada` | La portada, en el orden de A01: el título con la trama, el dibujo con un fruto por entrega confirmada del mes, la última entrega confirmada con su foto y su sello, las cifras, «Cómo funciona» con la raíz numerada de 5 pasos y las entregas confirmadas del mes. Los datos salen del puerto que ya existe (`cifrasDePortada` y `entregasConfirmadas`) | A01; DA-22; HG-03 con su texto de reemplazo (DA-10) | Hecho (`26ebd4af3`, `1878a1e39`, `33e1c7284`, `5556086f0` y el arreglo después de la ola). Con `?escenario=error`, «Entregas confirmadas del último mes» dice qué falta en un renglón entre filetes, sin repetir el banner; el dibujo queda sin leyenda, porque sin datos los frutos dirían 0 ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 1) |
 | PUB1-02 | `pub1-portada` | El menú público: Inicio, Entregas, Organizaciones y Cómo funciona (a `/publico-nosotros`), sin el Mapa; en el Mapa queda marcada Entregas | DA-01, DA-05 y DA-17 | Hecho (`26ebd4af3`). Revisión de pantallas de la ola sin PASS (13.5) |
 | PUB1-03 | `pub1-entregas` | Entregas: las entregas confirmadas, cada una con su foto, su etiqueta y quién la recibió, y un enlace al Mapa | Deriva de A10; DA-01, DA-10 y HG-03 | Hecho (`8cfbaab5d`, `a56418c53` y `60a4c976f`). Revisión de pantallas de la ola sin PASS (13.5) |
 | PUB1-04 | `pub1-entregas` | El Mapa, dentro de Entregas: el mapa con su lista y las migas a Entregas | Deriva de A07; DA-01 | Hecho (`8cfbaab5d`, `60a4c976f` y `fb9e34317`). Revisión de pantallas de la ola sin PASS (13.5) |
 | PUB1-05 | `pub1-organizaciones` | Organizaciones: tarjetas sobre la lámina, con el avance de cada necesidad y la barra de `componentes/listado` | Deriva de A02; HG-04 | Hecho (`375608498`, `a1cb6457c` y `8cef6d2ee`). Con datos reales la cuenta de cada necesidad va en palabras, sin barra (HG-04). Revisión de pantallas de la ola sin PASS (13.5) |
 | PUB1-06 | `pub1-ingresar` | Ingresar y su error, la puerta de la demo | Deriva de A12 | Hecho (`5ce687f2d` y `09942eb6c`). Revisión de pantallas de la ola sin PASS (13.5) |
-| PUB1-07 | `pub1-conocer` | Cómo funciona, Cómo donar y Ayuda: las páginas de hoy, con su nombre nuevo y la composición de A01 | Deriva de A01; DA-05 | Parcial (`6c5dc109c`, `7da9a7374`, `9738e96df`, `3b08f925f`, `fb9e34317` y `5556086f0`). Falta armar «Qué ves con tu cuenta» de Cómo donar como «Tu cuenta y tus datos» de Ayuda (tarjetas con su título bajo un título de sección): hoy es una lista suelta (`publico-para-donantes.html:61-70`); bloqueante de la revisión del lote tras 3 rondas ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 2) |
+| PUB1-07 | `pub1-conocer` | Cómo funciona, Cómo donar y Ayuda: las páginas de hoy, con su nombre nuevo y la composición de A01 | Deriva de A01; DA-05 | Hecho (`6c5dc109c`, `7da9a7374`, `9738e96df`, `3b08f925f`, `fb9e34317`, `5556086f0` y el arreglo después de la ola). «Qué ves con tu cuenta» de Cómo donar es una tarjeta con h3 bajo el título de sección «Tu cuenta», como en Ayuda ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 2) |
 | PUB1-08 | `pub1-conocer` | El pie nombra esas tres páginas con su nombre nuevo | DA-23 | Hecho (`6c5dc109c`). Revisión de pantallas de la ola sin PASS (13.5) |
 | PUB1-09 | `pub1-contacto` | Contacto y su error; la respuesta pasa a aviso breve en Contacto, con el número del mensaje | Deriva de A12; DA-06 y DA-24 | Hecho (`35f6c8307` y `fb9e34317`). Revisión de pantallas de la ola sin PASS (13.5) |
 | PUB1-10 | `pub1-contacto` | Términos y privacidad, una página de lectura | Sin arquetipo: derivación (DA-08) | Hecho (`35f6c8307`). Revisión de pantallas de la ola sin PASS (13.5) |
@@ -960,6 +960,13 @@ aunque su comportamiento esté en el código y en los tests. Lo que queda abiert
   `09942eb6c` (18:51), `1878a1e39` (18:52), `9738e96df` (19:03), `33e1c7284` (19:30), `8cef6d2ee`
   (19:34), `3b08f925f` (19:37), `d548de261` (20:08, cierre), `fb9e34317` (20:27, revisión de
   pantallas, ronda 1) y `5556086f0` (20:49, ronda 2).
+- Arreglo después de la ola (2026-11-24, un commit sobre `8e4a77b02`): el error de las entregas del
+  mes en la portada (PUB1-01), la tarjeta de la cuenta en Cómo donar (PUB1-07), la lógica de
+  Organizaciones del controller a `vistas.ConsultaOrganizaciones` con su test (DTI-50, ítem 4, la
+  primera mitad), el paso «Viaja» con el mismo texto en la portada y en Cómo funciona («Ves en tu
+  cuenta por dónde anda el camión.») y, mientras el catálogo no tenga el título sobre la trama
+  (DTI-50, ítem 6a), la portada y las tres páginas de conocer dejan el h1 como lo da el sistema: sus
+  hojas ya no declaran la caja de la trama, ni la letra, ni medidas literales.
 - ADR: ninguno. La ola no tuvo lotes de contrato e implementa el ADR «Huerta y galpón» (§9.1,
   Gate A); DA-22 a DA-24 son decisiones de pantalla. Ninguna spec de `docs/specs/active/` es de esta
   ola, así que no se mueve ninguna.

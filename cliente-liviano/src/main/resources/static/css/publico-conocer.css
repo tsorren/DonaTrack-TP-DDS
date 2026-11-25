@@ -1,17 +1,9 @@
 /* Cómo funciona, Cómo donar y Ayuda (antes Nosotros, Para donantes y Para organizaciones; DA-05):
    derivan del arquetipo A01 de la guía. Toman de publico-paginas.css el ancho de la página y el de
    lectura; los bloques (rótulo, bajada, trama, raíz de 5 pasos, cifras, tarjeta, lista, botón) y la
-   composición (pila, grilla, racimo) son del catálogo. Esta hoja solo dispone: el aire del título sobre
-   la trama, el relleno de las tarjetas y las columnas de las preguntas (plegables del catálogo). */
+   composición (pila, grilla, racimo) son del catálogo. Esta hoja solo dispone: el margen del título,
+   el relleno de las tarjetas y las columnas de las preguntas (plegables del catálogo). */
 @import url("publico-paginas.css");
-
-/* El título sobre la trama, como en la portada de la guía: la caja de puntos sobresale un poco a los
-   costados del título. */
-main header > div:has(> h1) {
-  margin-inline: calc(-1 * var(--espacio-2));
-  padding: var(--espacio-3) var(--espacio-2);
-  border-radius: var(--radio-estampa);
-}
 
 main header h1 {
   margin: 0;

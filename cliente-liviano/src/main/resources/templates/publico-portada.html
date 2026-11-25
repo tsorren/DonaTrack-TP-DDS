@@ -34,7 +34,7 @@
     <!--/* Arriba: qué es DonaTrack, con el dibujo del recorrido y los frutos del mes. */-->
     <section class="grilla" data-espacio="5" id="portada-arriba" aria-labelledby="portada-titulo">
       <div class="pila" data-espacio="3">
-        <div class="trama" id="portada-trama">
+        <div class="trama">
           <h1 id="portada-titulo">Seguí tu donación hasta que la organización la confirma</h1>
         </div>
         <p class="texto-grande">Llevás tu donación al depósito. El equipo la registra a tu nombre y vos
@@ -121,7 +121,7 @@
                {nombre: 'Llevás tu donación', avance: 'hecho', detalle: 'Al depósito. El equipo la registra a tu nombre.'},
                {nombre: 'Se asigna', avance: 'hecho', detalle: 'A una organización que pidió eso mismo.'},
                {nombre: 'Se prepara', avance: 'hecho', detalle: 'En el depósito, para salir en el próximo viaje.'},
-               {nombre: 'Viaja', avance: 'hecho', detalle: 'Ves en el mapa por dónde anda el camión.'},
+               {nombre: 'Viaja', avance: 'hecho', detalle: 'Ves en tu cuenta por dónde anda el camión.'},
                {nombre: 'La confirman', avance: 'hecho', detalle: 'La organización sube la foto y vos la ves.'}
              } }">
       <h2 id="portada-como">Cómo funciona</h2>
@@ -149,6 +149,10 @@
       </ul>
       <p th:if="${conDatos and cuantas == 1}">Por ahora, la última es la única entrega confirmada del mes.</p>
       <p th:if="${sinEntregas}">Cuando una organización confirme una entrega, aparece acá con su foto.</p>
+      <!--/* El error de la carga ya lo avisa el banner de «La última entrega confirmada»; acá se dice qué
+             falta, sin repetir el banner ni su alerta. */-->
+      <p th:if="${estado == 'error'}" class="vacio" data-forma="filetes">
+        No pudimos cargar las entregas del mes. Probá de nuevo en unos minutos.</p>
       <div th:if="${estado == 'lento'}" class="esqueleto" data-forma="hueco" data-tamano="bajo"></div>
     </section>
   </div>

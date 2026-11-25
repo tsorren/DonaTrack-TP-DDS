@@ -23,20 +23,6 @@
   align-items: start;
 }
 
-/* El título sobre la trama, con su aire, y en la letra de la portada. */
-#portada-trama {
-  padding: var(--espacio-3) var(--espacio-2);
-  margin-inline: calc(-1 * var(--espacio-2));
-  border-radius: var(--radio-estampa);
-}
-
-#portada-titulo {
-  font-size: var(--tamano-titulo-portada);
-  font-stretch: var(--fuente-ancho-portada);
-  line-height: 1.12;
-  letter-spacing: -0.015em;
-}
-
 /* El dibujo del recorrido, a todo el ancho de su columna. */
 #portada-dibujo svg {
   width: 100%;

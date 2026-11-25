@@ -58,15 +58,25 @@
       </ul>
     </section>
 
-    <section aria-labelledby="cuenta-titulo" class="lectura">
-      <h2 id="cuenta-titulo">Qué ves con tu cuenta</h2>
-      <ul class="lista" role="list">
-        <li>Tus donaciones y en qué estado está cada una.</li>
-        <li>Por dónde va el camión, con la hora de la última actualización.</li>
-        <li>Qué organización la recibió, cuando lo confirma.</li>
-        <li>Las organizaciones del mapa y lo que piden.</li>
-      </ul>
-      <p>Si donás como persona, también tenés misiones: metas para sumar donaciones con otras personas.</p>
+    <!--/* Como en Ayuda: un título de sección afuera y h3 en la tarjeta. La lista va dentro de un div para
+           que la pila deje su aire entre el título y la lista (.lista reinicia el margen). */-->
+    <section class="pila" data-espacio="3" aria-labelledby="cuenta-seccion-titulo">
+      <h2 id="cuenta-seccion-titulo">Tu cuenta</h2>
+      <div class="grilla" data-espacio="3">
+        <section class="tarjeta pila" data-espacio="2" aria-labelledby="cuenta-titulo">
+          <h3 id="cuenta-titulo">Qué ves con tu cuenta</h3>
+          <div>
+            <ul class="lista" role="list">
+              <li>Tus donaciones y en qué estado está cada una.</li>
+              <li>Por dónde va el camión, con la hora de la última actualización.</li>
+              <li>Qué organización la recibió, cuando lo confirma.</li>
+              <li>Las organizaciones del mapa y lo que piden.</li>
+            </ul>
+          </div>
+          <p>Si donás como persona, también tenés misiones: metas para sumar donaciones con otras
+            personas.</p>
+        </section>
+      </div>
     </section>
 
     <section aria-labelledby="preguntas-titulo" class="lectura pila" data-espacio="2">

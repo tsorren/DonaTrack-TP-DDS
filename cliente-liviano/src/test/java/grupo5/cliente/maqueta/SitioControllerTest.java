@@ -1200,7 +1200,13 @@ class SitioControllerTest {
                         "href=\"/publico-contacto?codigo=a1b2c3d4e5f6&amp;volver=/publico-portada\"")))
         .andExpect(content().string(not(containsString("data-forma=\"filetes\" role=\"alert\""))))
         .andExpect(content().string(not(containsString("class=\"aviso\" data-tipo=\"error\""))))
-        .andExpect(content().string(not(containsString("<strong>1.284</strong>"))));
+        .andExpect(content().string(not(containsString("<strong>1.284</strong>"))))
+        // Las del mes dicen qué falta, sin repetir el banner (U4).
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "No pudimos cargar las entregas del mes. Probá de nuevo en unos minutos.")));
   }
 
   /**
@@ -1269,6 +1275,8 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("class=\"aviso\""))));
     mvc.perform(get("/publico-para-donantes"))
         .andExpect(content().string(containsString("href=\"/publico-registro-donante\"")))
+        // La tarjeta de la cuenta lleva h3, bajo un título de sección, como en Ayuda (U1).
+        .andExpect(content().string(containsString("<h3 id=\"cuenta-titulo\">")))
         // Las preguntas frecuentes, con el plegable del catálogo, como Organizaciones y el Mapa.
         .andExpect(content().string(containsString("<details class=\"plegable\">")))
         .andExpect(content().string(not(containsString("<details>"))));
