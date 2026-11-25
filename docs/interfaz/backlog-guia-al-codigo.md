@@ -1331,7 +1331,10 @@ pantallas (regla 4).
 | DA-06 y DA-33 | «Registrado» pasa a aviso breve en Donantes; registrar su donación sigue desde la ficha del donante | `adm2-registrar-donante` |
 | DA-06 | «Registrada» pasa a aviso breve en Organizaciones | `adm2-registrar-organizacion` |
 
-DA-33 a DA-35 son nuevas de esta ola; su opción descartada está en §2.2. DA-08 (sin fichas),
+DA-33 a DA-35 son nuevas de esta ola; su opción descartada está en §2.2. En `adm2-organizaciones`
+(ADM2-05) y `adm2-novedades` (ADM2-09), DA-06 ya se cumple hoy: sus respuestas son un aviso breve
+en la lista, y el lote solo les pone el signo del aviso breve del galpón; por eso no llevan una
+decisión en el manifiesto. DA-08 (sin fichas),
 DA-17 (ningún menú cambia) y DA-21 (la casilla del buzón, que ORG-02 ya dejó en 48 × 48 px) son
 reglas del manifiesto (1 y 3) o trabajo ya hecho, no decisiones de un lote.
 

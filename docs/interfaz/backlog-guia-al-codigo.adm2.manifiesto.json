@@ -42,7 +42,7 @@
       "quien": "autor del manifiesto de ADM2, por delegación del relevamiento del 2026-11-24",
       "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-34",
       "lote": "adm2-donantes",
-      "criterio": "templates/admin-donantes.html sigue con ul.maestro y section.maestro-ficha, y no hay ninguna plantilla nueva admin-donantes-detalle*. AdminDonantesControllerTest afirma que /admin-donantes?donante=juan responde 200, con aria-current=\"true\" en el renglón de juan y, en su ficha, un enlace a /admin-donaciones-registrar?donante=juan. El gate visual del lote no reporta ninguna falla en /admin-donantes?donante=juan (sale de la línea de base de toque de la sección 10.4), y git diff E7_guia_ui...HEAD no toca puertos/ ni rest/."
+      "criterio": "templates/admin-donantes.html sigue con ul.maestro y section.maestro-ficha, y no hay ninguna plantilla nueva admin-donantes-detalle*. Un caso de SitioControllerTest (la maqueta, donde existe el donante juan) o de AdminDonantesControllerTest (con el puerto simulado) afirma que /admin-donantes?donante=<clave> responde 200, con aria-current=\"true\" en el renglón de ese donante y, en su ficha, un enlace a /admin-donaciones-registrar?donante=<clave>. El gate visual del lote no reporta ninguna falla en /admin-donantes?donante=juan (sale de la línea de base de toque de la sección 10.4), y git diff E7_guia_ui...HEAD no toca puertos/ ni rest/."
     },
     {
       "id": "DA-34-organizaciones",
@@ -50,7 +50,7 @@
       "quien": "autor del manifiesto de ADM2, por delegación del relevamiento del 2026-11-24",
       "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-34",
       "lote": "adm2-organizaciones",
-      "criterio": "templates/admin-entidades.html sigue con ul.maestro y section.maestro-ficha, y no hay ninguna plantilla nueva admin-entidades-detalle*. AdminEntidadesControllerTest afirma que /admin-entidades?entidad=hogar (una de las que piden sumarse en la maqueta) responde 200 con su ficha, un formulario que manda a /admin-entidades-aprobada y las acciones Pedir corrección y Rechazar; /admin-entidades sin parámetros sigue respondiendo 200 (la pestaña Solicitudes de Por decidir llega ahí, DA-25)."
+      "criterio": "templates/admin-entidades.html sigue con ul.maestro y section.maestro-ficha, y no hay ninguna plantilla nueva admin-entidades-detalle*. Un caso de SitioControllerTest (la maqueta) o de AdminEntidadesControllerTest (con el puerto simulado) afirma que /admin-entidades?entidad=<una que pide sumarse> (en la maqueta, hogar) responde 200 con su ficha, un formulario que manda a /admin-entidades-aprobada y las acciones Pedir corrección y Rechazar; /admin-entidades sin parámetros sigue respondiendo 200 (la pestaña Solicitudes de Por decidir llega ahí, DA-25)."
     },
     {
       "id": "DA-35",
@@ -58,7 +58,7 @@
       "quien": "autor del manifiesto de ADM2, por delegación del relevamiento del 2026-11-24",
       "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-35 y DA-06 (ronda 4, 2026-11-23: «Todas las recomendadas»)",
       "lote": "adm2-administradores",
-      "criterio": "AdministradoresConIngresoTest pasa sin cambiar lo que afirma de /admin-administradores-alta (200 con Cache-Control no-store y la contraseña cuando llega en el flash; laContrasenaRecargadaYaNoSeMuestra, que sin ella redirige a /admin-administradores). Un caso de SitioControllerTest afirma que, en la maqueta, /admin-administradores-alta tiene un solo elemento con data-tono=\"principal\", el enlace a /admin-administradores, y ningún aviso-breve, y que /admin-administradores-nuevo responde 200 con el formulario id=\"alta-formulario\". paginas.txt tiene /admin-administradores-nuevo y /admin-administradores-alta, y las dos están en rutasVisuales del lote."
+      "criterio": "AdministradoresConIngresoTest pasa sin cambiar lo que afirma de /admin-administradores-alta (200 con Cache-Control no-store y la contraseña cuando llega en el flash; laContrasenaRecargadaYaNoSeMuestra, que sin ella redirige a /admin-administradores). En templates/admin-administradores-alta.html, git grep -c 'data-tono=\"principal\"' da 1 (el enlace a /admin-administradores) y git grep 'aviso-breve' no da resultados; un caso de SitioControllerTest afirma que, en la maqueta, /admin-administradores-alta responde 200 con la contraseña de ejemplo y /admin-administradores-nuevo responde 200 con el formulario id=\"alta-formulario\". paginas.txt tiene /admin-administradores-nuevo y /admin-administradores-alta, y las dos están en rutasVisuales del lote."
     },
     {
       "id": "DA-33",
@@ -66,7 +66,7 @@
       "quien": "autor del manifiesto de ADM2, por delegación del relevamiento del 2026-11-24",
       "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-33 y DA-06 (ronda 4, 2026-11-23: «Todas las recomendadas»)",
       "lote": "adm2-registrar-donante",
-      "criterio": "Un caso de SitioControllerTest o de AdminDonantesControllerTest afirma que /admin-donantes-registrado responde 200 con el h1 «Donantes» y la lista, y con «Registraste a Ana Ejemplo como donante.» dentro de un aviso-breve con data-estado=\"hecho\"; con ?escenario=ya-era, «Ana Ejemplo ya era donante. No cambiamos nada.»; en los dos casos, sin .banner y sin el texto «Registrar su donación». Un test afirma que el POST a /admin-donantes-registrado sigue redirigiendo a /admin-donantes con el aviso «Registraste a … como donante.». git diff E7_guia_ui...HEAD no toca puertos/ ni rest/."
+      "criterio": "Un caso de SitioControllerTest o de AdminDonantesControllerTest afirma que /admin-donantes-registrado responde 200 con el h1 «Donantes» y la lista, y con «Registraste a Ana Ejemplo como donante.» dentro de un aviso-breve con data-estado=\"hecho\"; con ?escenario=ya-era, «Ana Ejemplo ya era donante. No cambiamos nada.»; en los dos, la respuesta no contiene «Registrar su donación». En templates/admin-donantes-registrado.html, git grep -nE 'class=\"[^\"]*banner' no da resultados. Un test afirma que el POST a /admin-donantes-registrado sigue redirigiendo a /admin-donantes con el aviso «Registraste a … como donante.». git diff E7_guia_ui...HEAD no toca puertos/ ni rest/."
     },
     {
       "id": "DA-06-registrada",
@@ -74,7 +74,7 @@
       "quien": "usuario",
       "ok": "Ronda 4 de decisiones, 2026-11-23: «Todas las recomendadas» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-06)",
       "lote": "adm2-registrar-organizacion",
-      "criterio": "Un caso de SitioControllerTest o de AdminEntidadesControllerTest afirma que /admin-entidades-registrada responde 200 con el h1 «Organizaciones» y la lista, y con «Registraste a Escuela Ejemplo N.º 5.» dentro de un aviso-breve con data-estado=\"hecho\", sin .banner. Un test afirma que el POST a /admin-entidades-registrada sigue redirigiendo a /admin-entidades con su aviso. Ninguna ruta de paginas.txt responde 404."
+      "criterio": "Un caso de SitioControllerTest o de AdminEntidadesControllerTest afirma que /admin-entidades-registrada responde 200 con el h1 «Organizaciones» y la lista, y con «Registraste a Escuela Ejemplo N.º 5.» dentro de un aviso-breve con data-estado=\"hecho\"; en templates/admin-entidades-registrada.html, git grep -nE 'class=\"[^\"]*banner' no da resultados. Un test afirma que el POST a /admin-entidades-registrada sigue redirigiendo a /admin-entidades con su aviso. Ninguna ruta de paginas.txt responde 404."
     }
   ],
   "lotes": [
