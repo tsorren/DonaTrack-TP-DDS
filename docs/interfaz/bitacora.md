@@ -31,6 +31,194 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-25 · donantes · Donantes sigue como bandeja con ficha, en el galpón (DA-34)
+
+- **Decisión:** Donantes sigue como bandeja con ficha (`.maestro` y `.maestro-ficha`): cada renglón
+  elige su donante con `?donante=`, en la misma página, y la ficha lleva a sus donaciones, a
+  «Registrar una donación» y, cada donación reciente, a `/admin-donaciones-detalle?donacion=`. La
+  pantalla va en el `.pila` del galpón, con «Registrar donante» como única acción llena e «Importar
+  CSV»; con importar abierto, la llena es «Importar». La de partida lleva `aria-current` y
+  `data-elegido="partida"`, y en el celular no se abre sola. La ficha ya no queda fija al
+  desplazarse desde la tableta: con el `sticky`, su `top` la empujaba hacia abajo.
+- **Alternativas:** la `.tabla` con una página de detalle por fila, como Donaciones en ADM1; dos
+  acciones llenas en la cabecera; conservar el `sticky` con otro `top` o sin `max-height` (una ficha
+  fija más alta que la ventana esconde sus acciones); abrir la ficha en el celular (lo descartó la
+  ficha `r11-p2-admin-bandeja`).
+- **Por qué:** la ficha es donde sigue el donante, y `?donante=` sigue siendo su dirección; la
+  ficha de Organizaciones, que no es fija, era la referencia del arreglo.
+- **Costo:** la ficha fija de R11-33 (regla general 5) deja de valer en Donantes; la ficha
+  `r11-p2-admin-bandeja` ya no describe el código ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 6).
+- **Quién decidió:** usuario (DA-34, la recomendada, delegada por el relevamiento del 2026-11-24).
+  La acción llena, la de partida y la ficha sin `sticky`, agente (lote `adm2-donantes` y revisión de
+  pantallas de la ola). Consta como no cumplida: la revisión de pantallas de la ola no llegó a
+  PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `83b7c34f8`, `0431c7005` y `dffc1947e`; backlog §16.3 (ADM2-01).
+
+### 2026-11-25 · importaciones · El avance, el resultado e Importaciones con las piezas del catálogo
+
+- **Decisión:** los estados que no responden a un envío (la importación de la sesión, «terminada»,
+  «cortada», «No pudimos actualizar el avance» y los «No entendimos…» de la lista) van con el
+  `.aviso` en la página. El campo del archivo es el `.campo` con su `.campo-error`. El avance lleva
+  las migas Donantes › Importaciones › archivo. En la tabla, el enlace de cada importación va en el
+  `th scope="row"`, con «Ver el avance de X» o «Ver el resultado de X», y sale la columna «Qué se
+  puede hacer». «Coinciden N importaciones.» solo con filtros; debajo de la lista, «Mostrando X a Y
+  de N». Textos nuevos: «No pudimos leer el archivo. No se importó ninguna fila.», «Tiene que ser
+  un CSV de hasta 50 MB. Elegí el archivo de nuevo.», «Actualizar las cifras» y «Ver la ayuda».
+- **Alternativas:** el aviso breve (es solo para las respuestas); `.subida` (es el campo de fotos);
+  `data-tamano="chico"` o `nowrap` en los botones de cada fila (el texto se partía en dos
+  renglones); mover las regiones vivas del avance para sacar el espacio de más (el aviso quedaba
+  lejos del bloque).
+- **Por qué:** el catálogo ya resuelve cada caso, y la tabla del catálogo pone el enlace en el
+  encabezado de la fila, como Donaciones de ADM1.
+- **Costo:** la franja de la importación de la sesión no tiene captura; la cubre un test de HTML
+  ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 5).
+- **Quién decidió:** agente (lote `adm2-donantes` y revisión de pantallas de la ola), sin consultar.
+- **Evidencia:** `83b7c34f8`, `275f60a40`, `0431c7005` y `dffc1947e`; backlog §16.3 (ADM2-02 y
+  ADM2-03).
+
+### 2026-11-25 · galpón · La ayuda plegada de Importaciones y Actividad es el `.plegable` del catálogo
+
+- **Decisión:** las dos pestañas hermanas del galpón muestran su ayuda con el `.plegable`
+  (`.plegable-titulo`, «Ver la ayuda» y `.plegable-cuerpo`), igual que Por decidir. El texto de la
+  ayuda no cambia.
+- **Alternativas:** un `details` con el `summary.boton` secundario chico en las dos (lo tuvieron
+  Importaciones en la ronda 1 y Actividad en la ronda 2). Los lotes `adm2-donantes` y
+  `adm2-administradores` se cruzaron: cada uno copió la versión anterior del otro y quedaron
+  distintos tras tres revisiones.
+- **Por qué:** es una pieza del catálogo, y la misma ayuda tiene que verse igual en las pestañas de
+  una sección.
+- **Costo:** ninguno pendiente.
+- **Quién decidió:** agente (revisión de pantallas de la ola, ronda 1), sin consultar.
+- **Evidencia:** `0431c7005`, `d40c3d5d6` y `dffc1947e`.
+
+### 2026-11-25 · organizaciones · Organizaciones sigue como bandeja con ficha, con la ficha apilada en el galpón (DA-34)
+
+- **Decisión:** Organizaciones sigue como bandeja con ficha: cada renglón elige su organización
+  (`?entidad=`) y la ficha de una que pide sumarse lleva lo que mandó, con
+  `componentes/sello :: signo` y la palabra, y sus tres acciones. «Registrar organización» es la
+  única acción llena y Aprobar pasa a secundario. Con la ficha de menos de 45 rem (en el galpón, a
+  1280 px), el resumen va apilado bajo la identidad, con una consulta de contenedor en
+  `admin-secciones.css`; el pictograma de la identidad queda a la medida de la lista. «Mostrando X a
+  Y de N» reemplaza el texto del orden y la cuenta de las activas; «Coinciden» solo con filtros.
+- **Alternativas:** la tabla con una página de detalle por fila; ✓ y ✗ escritos a mano; un
+  `@media` en la hoja de la pantalla (repetía la grilla y un color del catálogo; salió en
+  `36dbafa92`); una grilla `auto-fit`; una variante de `.maestro` en el catálogo (fuera de esta
+  ola). El lote había descartado la consulta de contenedor por usar una medida fuera de los
+  quiebres de `tokens.css`; la revisión de pantallas la tomó igual.
+- **Por qué:** en la ficha se decide la solicitud. Lado a lado, en el galpón, el nombre ocupaba tres
+  renglones y la bolita del estado quedaba lejos de su palabra; el único quiebre mayor es el de
+  68,75 em, que es por pantalla.
+- **Costo:** el pictograma no es el grande que pide la pieza, y la disposición vive en la hoja de la
+  pantalla y no en el catálogo ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 4). Se pierden
+  «por nombre, de la A a la Z» y «46 están activas»: las cifras por estado siguen en el filtro.
+- **Quién decidió:** usuario (DA-34, la recomendada, delegada por el relevamiento del 2026-11-24).
+  La ficha apilada, el pictograma y «Mostrando», agente (lote `adm2-organizaciones` y revisión de
+  pantallas de la ola). Consta como no cumplida: la revisión de pantallas de la ola no llegó a
+  PASS.
+- **Evidencia:** `6e073d8fa`, `a2da2489d`, `36dbafa92` y `dffc1947e`; backlog §16.3 (ADM2-04 y
+  ADM2-05).
+
+### 2026-11-25 · administradores · La contraseña provisoria sigue como página propia, en A12 (DA-35)
+
+- **Decisión:** `/admin-administradores-alta` se queda como página propia, con `Cache-Control:
+  no-store` (recargarla lleva a Administradores), las migas a Administradores, el correo en
+  `.datos` y «Volver a Administradores» como única acción llena. `/admin-administradores-nuevo`, el
+  alta sin JavaScript, sigue como página aparte, con el resumen del error arriba, el foco en él y
+  «Volver sin dar de alta» como salida (sale el botón Cancelar). En la ventana con HTMX no hay
+  resumen: el foco va al primer campo con error. Las pestañas Cuentas · Actividad van debajo de la
+  cabecera, como A03.
+- **Alternativas:** el aviso breve (se va solo y la contraseña no se vuelve a mostrar); el resumen
+  también en la ventana (duplica los mensajes de un formulario corto); las pestañas arriba, como
+  antes.
+- **Por qué:** la contraseña se ve una sola vez y hay que anotarla con calma (regla 21 de
+  [patrones](patrones-y-microcopy.md)).
+- **Costo:** los diálogos no tienen captura; las fichas `r11-p1-admins` y `r11-p2-actividad` ya no
+  describen la composición ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítems 5 y 6).
+- **Quién decidió:** usuario (DA-35, la recomendada, delegada por el relevamiento del 2026-11-24).
+  El resumen, la salida, las pestañas y las migas, agente (lote `adm2-administradores` y revisión de
+  pantallas de la ola, ronda 2). Consta como no cumplida: la revisión de pantallas de la ola no
+  llegó a PASS.
+- **Evidencia:** `94df0d9a0`, `5bd85e8e3` y `f1454822d`; backlog §16.3 (ADM2-06 a ADM2-08).
+
+### 2026-11-25 · administradores · Actividad y Mi perfil con los avisos en la página
+
+- **Decisión:** en Actividad, «No entendimos la fecha pedida» y «No pudimos traer los nombres…»
+  pasan del aviso breve al `.aviso` de advertencia con su signo; «Actualizar» va en la cabecera y
+  «Leída el …», en la bajada. En Mi perfil, el correo es texto fijo, «Todavía no cargaste tu
+  nombre» es un `.aviso` informativo y los errores de campo llevan el signo del problema. Textos
+  nuevos: «Revisá N datos para seguir.», «Lo demás quedó como lo escribiste.» y «Es un problema
+  nuestro: lo que escribiste sigue acá.». El código de seguimiento se corta con `overflow-wrap` en la
+  hoja de la pantalla.
+- **Alternativas:** `admin-donaciones :: hecho` (es solo para acciones hechas); el correo en una
+  fila de `.datos` (en el celular separa el rótulo de la nota); un renglón suelto para «Actualizar».
+- **Por qué:** describen la consulta, no responden a un envío; así lo hace la cabecera de ADM1.
+- **Costo:** el corte del código largo sería del `.aviso` del catálogo
+  ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 7).
+- **Quién decidió:** agente (lote `adm2-administradores`), sin consultar.
+- **Evidencia:** `94df0d9a0` y `5bd85e8e3`.
+
+### 2026-11-25 · novedades · Las Novedades del admin con los estados de lista del catálogo
+
+- **Decisión:** la pantalla va en el `.pila` del galpón con `data-pantalla="novedades"`, la cifra y
+  la bajada de la bandeja compartida en dos `p.texto-chico`. Cargando es la región `aria-busy` con
+  `.cargando` y el esqueleto de tres renglones, como en la organización y quien dona; el error, el
+  `.aviso` con «Volver a cargar» chico, como el resto del galpón. Marcar responde con
+  `admin-donaciones :: hecho(texto)` y los tres textos de antes.
+- **Alternativas:** `data-pantalla="notificaciones"` (la pantalla se titula Novedades); la bajada
+  fundida con la cifra; el `data-forma="hueco"` de Donaciones; «Volver a intentar», como la ficha
+  R11-14.
+- **Por qué:** la ficha del buzón de ORG pide los estados de lista del catálogo, y el galpón ya dice
+  «Volver a cargar».
+- **Costo:** queda distinto de quien dona, que sigue con «Volver a intentar», y de la ficha
+  `r11-p1-notificaciones` ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 6). Con datos reales, el
+  aviso de marcar sale de `envio :: aviso`, sin signo ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51)).
+- **Quién decidió:** usuario (DA-06: la respuesta ya era un aviso breve). Lo demás, agente (lote
+  `adm2-novedades`), sin consultar.
+- **Evidencia:** `cfcb65a52` y `ba4ddb2f0`; backlog §16.3 (ADM2-09).
+
+### 2026-11-25 · registrar · Registrar un donante responde en Donantes, sin «Registrar su donación» (DA-06 y DA-33)
+
+- **Decisión:** registrar un donante responde con el aviso breve en Donantes («Registraste a Ana
+  Ejemplo como donante.» y, con `?escenario=ya-era`, «Ana Ejemplo ya era donante. No cambiamos
+  nada.»). En la maqueta, `/admin-donantes-registrado` sigue (404 fuera de ella) y muestra Donantes
+  con el aviso. Sale «Registrar su donación»: la donación se registra desde la ficha del donante. El
+  formulario deriva de A12 como Registrar donación: migas, columna de `--medida-formulario`, la
+  bajada «Una persona, una empresa, una ONG o una institución. Le llega un correo para que active su
+  cuenta.», «Quién dona» en su tarjeta con «Cambiar» secundario, «Registrar donante» como única
+  llena y «Volver sin registrar». La dirección (opcional) va abierta bajo un h2.
+- **Alternativas:** conservar la página con sus dos acciones (contradice DA-06); un enlace en el
+  aviso breve (el puerto no dice quién quedó registrado); la ruta en `SitioController` (no carga la
+  lista); la dirección plegada en un `details` (su regla de ancho colgaba de `.mesa`); «organización»
+  en la bajada (en el sitio, la organización es quien recibe).
+- **Por qué:** el envío real ya terminaba en Donantes con el aviso.
+- **Costo:** registrar la donación de un donante nuevo pide buscarlo en la lista; dos textos de
+  ADM1 en `admin-donaciones-registrar.html` dejaron de ser ciertos
+  ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítems 1 y 6).
+- **Quién decidió:** usuario (DA-06; DA-33, la recomendada, delegada por el relevamiento del
+  2026-11-24). El formulario, la bajada y la ruta de la maqueta, agente (lote
+  `adm2-registrar-donante`). Consta como no cumplida: la revisión de pantallas de la ola no llegó a
+  PASS.
+- **Evidencia:** `e1a960a63` y `f21c0d6a6`; backlog §16.3 (ADM2-10 y ADM2-11).
+
+### 2026-11-25 · registrar · Registrar una organización responde en Organizaciones (DA-06)
+
+- **Decisión:** registrar una organización responde con el aviso breve en Organizaciones
+  («Registraste a Escuela Ejemplo N.º 5. Queda activa: la registraste vos, no necesita
+  aprobación.»), sin el banner ni página propia. En la maqueta, `/admin-entidades-registrada` sigue
+  y da 404 fuera de ella. El formulario deriva de A12; los rótulos pasan a «Responsable», «Nombre y
+  apellido» y «Correo», y el ejemplo de razón social, a «Comedor Ejemplo». En el error se marca solo
+  la calle, con el texto de antes.
+- **Alternativas:** sumar «registrada» a las respuestas de la lista (con datos reales mostraría el
+  aviso de ejemplo); marcar los cinco campos de la dirección (el contrato devuelve un solo error);
+  conservar «Le enviamos un correo…» (ese correo no se manda).
+- **Por qué:** es la parte de DA-06 de esta pantalla; la de ADM1 ya respondía igual en Donaciones.
+- **Costo:** `?escenario=lento` no tiene aserción ni captura propia
+  ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 5).
+- **Quién decidió:** usuario (DA-06). Los rótulos, el error y la ruta de la maqueta, agente (lote
+  `adm2-registrar-organizacion`). Consta como no cumplida en esta parte: la revisión de pantallas
+  de la ola no llegó a PASS.
+- **Evidencia:** `668bc5231`; backlog §16.3 (ADM2-12 y ADM2-13).
+
 ### 2026-11-25 · registro y cuenta · Nombre y Apellido en la grilla, y un solo título en Activar
 
 - **Decisión:** en el registro de la persona, Nombre y Apellido van en la `.grilla` del catálogo,

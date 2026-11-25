@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -90,8 +91,12 @@ class AdminEntidadesControllerTest {
     mvc.perform(get("/admin-entidades?entidad=cuenta-1"))
         .andExpect(content().string(containsString("ONG · pidió sumarse")))
         .andExpect(content().string(containsString("Pendiente de aprobación")))
-        .andExpect(content().string(containsString("CUIT 30-00000011-0")))
-        .andExpect(content().string(not(containsString("data-tono=\"error\"><span"))))
+        .andExpect(content().string(containsString("</span> CUIT 30-00000011-0")))
+        .andExpect(content().string(containsString("data-signo=\"e-confirmada\"")))
+        // Sin la falta: ni el renglón del problema ni el texto prellenado de la corrección
+        .andExpect(content().string(not(matchesPattern("(?s).*</svg>\\s*Falta la constancia.*"))))
+        .andExpect(content().string(not(containsString("data-signo=\"e-problema\""))))
+        .andExpect(content().string(not(containsString("Falta la constancia de domicilio.</"))))
         .andExpect(content().string(containsString("name=\"entidad\" value=\"cuenta-1\"")))
         .andExpect(content().string(containsString("hx-indicator=\"#enviando-aprobar-cuenta-1\"")));
     mvc.perform(get("/admin-entidades?entidad=e1"))
@@ -125,7 +130,13 @@ class AdminEntidadesControllerTest {
                 .param("pagina", "2"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Página 2 de 3")))
+        // El paginador del catálogo (componentes/paginas), con su nombre
+        .andExpect(
+            content()
+                .string(
+                    containsString("class=\"paginas\" aria-label=\"Páginas de organizaciones\"")))
         .andExpect(content().string(containsString("Coinciden 45 organizaciones.")))
+        .andExpect(content().string(containsString("Mostrando 21 a 21 de 45 organizaciones.")))
         .andExpect(content().string(containsString("Buscar por nombre</label>")))
         .andExpect(content().string(containsString("pagina=3")))
         // R11-43: los filtros vuelven, con las cifras de la fuente (no las de la página)
@@ -194,5 +205,14 @@ class AdminEntidadesControllerTest {
                     "Calle Ejemplo", 123, null, "Localidad Ejemplo", "Buenos Aires", "Argentina"),
                 new PersonaNueva.Humana("Clara María", "Ejemplo", "escuela5@ejemplo.org"),
                 "escuela5@ejemplo.org"));
+  }
+
+  /**
+   * DA-06 (ADM2-13): fuera de la maqueta, «registrada» no es una página; la respuesta es el aviso
+   * breve en Organizaciones, adonde vuelve el envío.
+   */
+  @Test
+  void registradaNoEsUnaPaginaFueraDeLaMaqueta() throws Exception {
+    mvc.perform(get("/admin-entidades-registrada")).andExpect(status().isNotFound());
   }
 }

@@ -1,25 +1,9 @@
 /* Hoja compartida del admin: la importa admin-secciones.css, así que la ven todas sus pantallas.
-   Arriba, la mesa de las pantallas del admin que todavía la usan (.mesa y su cabecera). Debajo, lo
-   propio de «Por decidir» (admin-inicio; ADM1-09 y ADM1-10): la bandeja y el resumen «Cómo está
+   Lo propio de «Por decidir» (admin-inicio; ADM1-09 y ADM1-10): la bandeja y el resumen «Cómo está
    todo» son piezas del catálogo y acá solo se dispone el toque de sus salidas; los gráficos de los
    últimos 12 meses (R11-42) son parte de esta pantalla y viven acá (DA-30), cada uno en su lámina a
    todo el ancho con su tabla al lado. */
 @import url("entidad-comun.css");
-
-.mesa {
-  max-width: none;
-}
-
-.mesa-cabecera {
-  margin: 0 0 2rem;
-}
-
-/* La bajada, a todo el ancho que permite una línea legible (ronda 2026-11-09, regla general 1). */
-.mesa-cabecera p:not(.rotulo) {
-  max-width: 70ch;
-  margin: 0;
-  font-size: 1.125rem;
-}
 
 /* --- Por decidir: las salidas del resumen, juntas debajo de la lista de datos, con su toque de 48 px */
 [data-pantalla="inicio"] [data-parte="salidas"] a {

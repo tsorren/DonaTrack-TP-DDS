@@ -1,11 +1,20 @@
 <!DOCTYPE html>
 <!--/* Raíces, Entidades del admin (RF-21 y RF-15), según su ficha de flujo
-       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.3). Una entidad a la vez: la prueba
+       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.3). Desde ADM2-04 deriva del
+       arquetipo A03 de la guía «Huerta y galpón» (#bandeja), en el galpón y con las piezas del
+       catálogo, como Donaciones y Camiones de ADM1: la pantalla en un .pila con data-pantalla, la
+       cabecera del galpón (header.racimo: el h1, la bajada con su fecha y «Registrar organización»
+       como única acción llena), el aviso breve con signo de admin-donaciones :: hecho en las tres
+       respuestas (DA-06, ADM2-05), el error en el aviso en la página y el paginador
+       componentes/paginas. Sigue como bandeja con ficha (.maestro y .maestro-ficha, DA-34). Lo que
+       mandó una pendiente lleva el signo de la guía (componentes/sello :: signo). Una entidad a la vez: la prueba
        admin-entidades-c (ronda del 2026-11-09, tarde), rehecha en la ronda del 2026-11-10:
        - Una sola lista (.maestro) con todas las entidades, por nombre de la A a la Z: cada renglón es un
          enlace real con su ícono, el nombre, una línea según su estado y el estado como bolita (círculo
          con anillo y punto, y la palabra; .estado data-forma="punto"). La elegida (?entidad=<clave>, de
          partida la primera) se marca con fondo, sombra y un indicador a la izquierda, sin borde verde.
+         La de partida (sin pedir ninguna) lleva data-elegido="partida", como en Donantes: en el
+         celular su ficha no se abre sola.
        - Arriba, la búsqueda (?buscar=, nombre o localidad) y los filtros en el componente listado
          (R11-B04, componentes/listado; lo arma AdminEntidadesController): Estado
          (?estado=activas|pendientes|inactivas; sin él, todas; cada opción con su cuenta, que pone
@@ -20,7 +29,7 @@
          derecha; debajo, a todo el ancho, lo que sigue según el estado:
          · activa: entregas confirmadas en el mes y desde la activación, el contacto y sus necesidades
            vigentes en dos columnas.
-         · pendiente: lo que mandó (cada dato con su tilde o su cruz), sus datos y, al pie, sus tres
+         · pendiente: lo que mandó (cada dato con su signo (el de confirmada o el del problema)), sus datos y, al pie, sus tres
            acciones: Aprobar (POST, sin pregunta extra), Pedir corrección y Rechazar (diálogos del
            navegador, popover, con su campo obligatorio). Cada acción lleva a admin-entidades-aprobada,
            -correccion o -rechazada.
@@ -41,10 +50,10 @@
        ?escenario=vacio (nadie pide sumarse), lento y error.
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'aprobada', 'correccion' o
-         'rechazada'.
+         'rechazada'. Si quien la usa define avisoHecho (th:with, alrededor), muestra ese aviso breve.
        - estado(e): la bolita de un renglón.
        - acciones(e): las tres acciones de una pendiente.
-       - documentos(e): lo que mandó, cada dato con su tilde o su cruz y la palabra. */-->
+       - documentos(e): lo que mandó, cada dato con su signo (el de confirmada o el del problema) y la palabra. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
@@ -79,7 +88,6 @@
              cuantasPendientes=${paginada ? adminEntidades.enPaginas.pendientes : #lists.size(vigentes.?[estado == 'pendiente'])},
              cuantasInactivas=${paginada ? adminEntidades.enPaginas.inactivas : #lists.size(vigentes.?[estado == 'inactiva'])},
              cuantasTodas=${cuantasActivas + cuantasPendientes + cuantasInactivas},
-             cuantasDelEstado=${fVer == 'activas' ? cuantasActivas : (fVer == 'pendientes' ? cuantasPendientes : (fVer == 'inactivas' ? cuantasInactivas : cuantasTodas))},
              porFiltros=${paginada ? vigentes : vigentes.?[('__${fEstado}__' == '' or estado == '__${fEstado}__')
                  and ('__${fPedidos}__' == '' or ('__${fPedidos}__' == 'con') == !necesidades.isEmpty())
                  and ('__${fTipo}__' == '' or tipo == '__${fTipo}__')]},
@@ -88,44 +96,45 @@
              filtrado=${fVer != '' or otrosFiltros},
              pedida=${param.entidad != null ? param.entidad[0] : (accion == 'correccion' ? 'merendero-este' : (accion == 'aprobada' ? 'hogar' : ''))},
              elegida=${lista.^[clave == #root.pedida] != null ? pedida : (#lists.isEmpty(lista) ? '' : lista[0].clave)},
+             partida=${elegida != pedida},
              consulta=${(fVer != '' ? '&estado=' + fVer : '') + (fPedidos != '' ? '&pedido=' + fPedidos : '')
                  + (fTipo != '' ? '&tipo=' + #uris.escapeQueryParam(fTipo) : '')
                  + (q != '' ? '&buscar=' + #uris.escapeQueryParam(q) : '')
                  + (paginada and adminEntidades.enPaginas.registradas.pagina > 1 ? '&pagina=' + adminEntidades.enPaginas.registradas.pagina : '')}">
   <svg th:replace="~{iconos :: categorias}"></svg>
-  <div class="mesa">
-    <header class="mesa-cabecera">
-      <div>
-        <p class="rotulo">Administración</p>
+  <div class="pila" data-espacio="4" data-pantalla="entidades">
+    <header class="racimo" data-alinea="entre arriba">
+      <div class="pila" data-espacio="0">
         <h1>Organizaciones</h1>
-        <p th:if="${conDatos}" th:text="|Elegí una para ver su ficha. Al ${adminEntidades.al}.|">Elegí una para ver su ficha. Al 15 de octubre de 2026, 18:30.</p>
+        <p th:if="${conDatos}" class="texto-chico" data-tono="suave"
+           th:text="|Elegí una para ver su ficha. Al ${adminEntidades.al}.|">Elegí una para ver su ficha. Al 15 de
+          octubre de 2026, 18:30.</p>
       </div>
-      <div class="racimo">
-        <a class="boton" data-tono="principal" href="/admin-entidades-registrar"
+      <div th:if="${escenario != 'error'}" class="racimo" data-espacio="1">
+        <a class="boton" data-tono="principal" data-tamano="chico" href="/admin-entidades-registrar"
            th:href="@{/admin-entidades-registrar}">Registrar organización</a>
       </div>
     </header>
 
-    <p th:if="${accion == 'aprobada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Aprobaste a Hogar Ejemplo Norte. Ya puede publicar sus necesidades y recibir donaciones. Le
-      avisamos por correo.</p>
-    <p th:if="${accion == 'correccion'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Le pedimos a Merendero Ejemplo Este que corrija su solicitud. Sigue en la lista hasta que
-      la vuelva a enviar.</p>
-    <p th:if="${accion == 'rechazada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Rechazaste la solicitud de Comedor Ejemplo Oeste. Le enviamos el motivo por correo.</p>
+    <!--/* La respuesta a una acción: el aviso breve con signo del galpón (admin-donaciones :: hecho).
+           Quien usa la hoja puede poner el suyo con avisoHecho (th:with, alrededor). */-->
+    <th:block th:with="textoHecho=${avisoHecho != null ? avisoHecho
+        : (accion == 'aprobada' ? 'Aprobaste a Hogar Ejemplo Norte. Ya puede publicar sus necesidades y recibir donaciones. Le avisamos por correo.'
+        : (accion == 'correccion' ? 'Le pedimos a Merendero Ejemplo Este que corrija su solicitud. Sigue en la lista hasta que la vuelva a enviar.'
+        : (accion == 'rechazada' ? 'Rechazaste la solicitud de Comedor Ejemplo Oeste. Le enviamos el motivo por correo.' : null)))}"><th:block
+        th:if="${textoHecho != null}"><div th:replace="~{admin-donaciones :: hecho(${textoHecho})}"></div></th:block></th:block>
 
-    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
-             aria-labelledby="error-titulo">
-      <h2 id="error-titulo">No pudimos cargar las organizaciones.</h2>
+    <div th:if="${escenario == 'error'}" class="aviso" data-tipo="error" role="alert">
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo">No pudimos cargar las organizaciones.</p>
       <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
         <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-entidades')}">escribinos
           con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-      <a class="boton" data-tono="secundario" href="/admin-entidades"
+      <a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-entidades"
          th:href="@{/admin-entidades}">Volver a cargar</a>
-    </section>
+    </div>
 
     <section th:if="${escenario != 'error'}" class="pila" data-espacio="3" aria-labelledby="lista-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
@@ -146,14 +155,13 @@
               {valor: 'inactivas', texto: 'Inactivas · ' + cuantasInactivas} } }"><form
           th:replace="~{componentes/listado :: listado(${listado.conEstados(estados, '' + cuantasTodas)})}"></form></th:block>
 
-      <p th:if="${conDatos and paginada and !#lists.isEmpty(lista)}" role="status"
-         th:with="n=${adminEntidades.enPaginas.total}, activasTexto=${#numbers.formatInteger(adminEntidades.activas, 1, 'POINT')}"
-         th:text="${filtrado} ? (${n == 1} ? 'Coincide 1 organización.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} organizaciones.|) : |Se ven ${#lists.size(lista)} de las ${#numbers.formatInteger(n, 1, 'POINT')} organizaciones; ${activasTexto} están activas. Primero, las que piden sumarse; después, por nombre, de la A a la Z.|">Se
-        ven 20 de las 152 organizaciones; 46 están activas. Primero, las que piden sumarse; después, por nombre, de la A a la
-        Z.</p>
-      <p th:if="${conDatos and !paginada and !#lists.isEmpty(lista)}" role="status"
-         th:text="${otrosFiltros} ? (${#lists.size(lista) == 1} ? |Coincide 1 de ${cuantasDelEstado}.| : |Coinciden ${#lists.size(lista)} de ${cuantasDelEstado}.|) : |Se ven ${#lists.size(lista)} de las ${cuantasDelEstado}, por nombre, de la A a la Z.|">Se
-        ven 14 de las 52, por nombre, de la A a la Z.</p>
+      <!--/* Cuántas coinciden, solo con algo buscado o elegido (como Donantes y Donaciones); cuántas se
+             ven, debajo de la lista. De a una página, el total es el de la fuente; en la maqueta, la
+             lista entera. */-->
+      <p th:if="${conDatos and filtrado and !#lists.isEmpty(lista)}" role="status"
+         th:with="n=${paginada ? adminEntidades.enPaginas.total : #lists.size(lista)}"
+         th:text="${n == 1} ? 'Coincide 1 organización.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} organizaciones.|">Coinciden
+        3 organizaciones.</p>
 
       <section th:if="${conDatos and #lists.isEmpty(lista)}" class="vacio" aria-labelledby="vacio-titulo">
         <h3 id="vacio-titulo"
@@ -167,6 +175,7 @@
 
       <ul th:if="${conDatos and !#lists.isEmpty(lista)}" class="maestro" role="list">
         <li th:each="e : ${lista}" th:id="|entidad-${e.clave}|"
+            th:attr="data-elegido=${e.clave == elegida and partida} ? 'partida' : null"
             th:with="enCorreccion=${accion == 'correccion' and e.clave == 'merendero-este'}">
           <!--/* Sin JavaScript, el enlace recarga y el ancla lleva al renglón; con HTMX, hx-get pide la
                  misma dirección sin el ancla, así la página no se mueve. */-->
@@ -270,8 +279,16 @@
           </section>
         </li>
       </ul>
+      <!--/* La página 1 trae antes las que piden sumarse, que la fuente cuenta en el total. */-->
+      <p th:if="${conDatos and !#lists.isEmpty(lista)}" class="texto-chico" data-tono="suave"
+         th:with="n=${paginada ? adminEntidades.enPaginas.total : #lists.size(lista)},
+                  p=${paginada ? adminEntidades.enPaginas.registradas.pagina : 1},
+                  desde=${p == 1 ? 1 : (p - 1) * 20 + (n - adminEntidades.enPaginas.registradas.total) + 1},
+                  hasta=${desde + #lists.size(lista) - 1}"
+         th:text="${n == 1} ? 'Mostrando 1 a 1 de 1 organización.' : |Mostrando ${desde} a ${hasta} de ${#numbers.formatInteger(n, 1, 'POINT')} organizaciones.|">Mostrando
+        1 a 14 de 14 organizaciones.</p>
       <th:block th:if="${conDatos}">
-        <nav th:replace="~{paginador :: paginador(${paginador})}"></nav>
+        <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
       </th:block>
     </section>
   </div>
@@ -291,7 +308,7 @@
     <form action="/admin-entidades-aprobada" th:action="@{/admin-entidades-aprobada}" method="post"
           hx-boost="true" th:hx-indicator="|#enviando-aprobar-${e.clave}|" hx-select-oob="#avisos">
       <input type="hidden" name="entidad" th:value="${e.clave}" value="hogar">
-      <button class="boton" data-tono="principal" type="submit" th:aria-label="|Aprobar: ${e.nombre}|">Aprobar</button>
+      <button class="boton" data-tono="secundario" type="submit" th:aria-label="|Aprobar: ${e.nombre}|">Aprobar</button>
       <p th:replace="~{envio :: indicador(|enviando-aprobar-${e.clave}|, 'Aprobando…')}"></p>
     </form>
     <button type="button" class="boton" data-tono="secundario" th:popovertarget="|corregir-${e.clave}|"
@@ -342,14 +359,18 @@
   </dialog>
 </th:block>
 
-<!--/* Lo que mandó la entidad: cada dato con su tilde o su cruz, y la palabra. */-->
+<!--/* Lo que mandó la entidad: cada dato con su signo (el de confirmada o el del problema), y la palabra. */-->
 <ul th:fragment="documentos(e)" class="pila" data-espacio="1" data-lista="documentos" role="list">
-  <li th:if="${e.cuit != null}"><span aria-hidden="true" data-tono="exito">✓</span> CUIT <th:block th:text="${e.cuit}">30-00000011-0</th:block></li>
-  <li th:if="${e.direccion != null}"><span aria-hidden="true" data-tono="exito">✓</span> Dirección</li>
-  <li th:if="${e.responsable != null}"><span aria-hidden="true" data-tono="exito">✓</span> Responsable y correo</li>
-  <li th:if="${e.constancia != null}"><span aria-hidden="true" data-tono="exito">✓</span> Constancia de domicilio</li>
-  <li th:if="${e.constancia == null and e.falta != null}" data-tono="error"><span aria-hidden="true">✗</span> Falta la constancia de
-    domicilio</li>
+  <li th:if="${e.cuit != null}" class="racimo" data-espacio="1"><span data-tono="exito"><svg
+      th:replace="~{componentes/sello :: signo('confirmada')}"></svg></span> CUIT <th:block th:text="${e.cuit}">30-00000011-0</th:block></li>
+  <li th:if="${e.direccion != null}" class="racimo" data-espacio="1"><span data-tono="exito"><svg
+      th:replace="~{componentes/sello :: signo('confirmada')}"></svg></span> Dirección</li>
+  <li th:if="${e.responsable != null}" class="racimo" data-espacio="1"><span data-tono="exito"><svg
+      th:replace="~{componentes/sello :: signo('confirmada')}"></svg></span> Responsable y correo</li>
+  <li th:if="${e.constancia != null}" class="racimo" data-espacio="1"><span data-tono="exito"><svg
+      th:replace="~{componentes/sello :: signo('confirmada')}"></svg></span> Constancia de domicilio</li>
+  <li th:if="${e.constancia == null and e.falta != null}" class="racimo" data-espacio="1" data-tono="error"><svg
+      th:replace="~{componentes/sello :: signo('problema')}"></svg> Falta la constancia de domicilio</li>
 </ul>
 </body>
 </html>

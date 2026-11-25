@@ -1,34 +1,22 @@
 <!DOCTYPE html>
-<!--/* Raíces, el donante quedó registrado (docs/interfaz/flujos/raices-admin-navegable.md, sección
-       4.2). "Registrar su donación" lleva a registrar la donación con el donante ya elegido: así se
-       cumple "en un mismo flujo" de RF-15 (esa pantalla es de F3). ?escenario=ya-era: el documento ya
-       era de un donante y no se duplica. */-->
+<!--/* El donante quedó registrado, solo en la maqueta (DA-06 y DA-33, ADM2-11: sin página de respuesta
+       propia). Es Donantes (admin-donantes :: hoja('')) con el aviso breve del registro; los datos de
+       la lista los arma AdminDonantesController como en /admin-donantes. ?escenario=ya-era: el
+       documento ya era de un donante y no se duplica. La donación se registra desde la ficha del
+       donante («Registrar una donación»). Fuera de la maqueta, el envío vuelve a /admin-donantes con
+       el aviso del servidor (AdminDonantesEnvioController), con el mismo texto. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
   <title>Donante registrado - Donantes - DonaTrack</title>
 </head>
 <body>
-<th:block th:fragment="contenido"
-    th:with="yaEra=${param.escenario != null and param.escenario[0] == 'ya-era'}">
-  <div class="mesa">
-    <header class="mesa-cabecera">
-      <p class="rotulo"><a href="/admin-donantes" th:href="@{/admin-donantes}">Donantes</a> ›
-        Registrar donante</p>
-      <h1>Registrar donante</h1>
-    </header>
-    <section class="banner" role="status" tabindex="-1" autofocus aria-labelledby="hecho-titulo">
-      <h2 id="hecho-titulo" th:text="${yaEra} ? 'Ana Ejemplo ya era donante. No cambiamos nada.' : 'Registraste a Ana Ejemplo como donante.'">Registraste
-        a Ana Ejemplo como donante.</h2>
-      <p th:unless="${yaEra}">Le enviamos un correo a ana@ejemplo.org para que active su cuenta.</p>
-      <div class="racimo">
-        <a class="boton" data-tono="principal" href="/admin-donaciones-registrar?donante=ana-ejemplo"
-           th:href="@{/admin-donaciones-registrar(donante='ana-ejemplo')}">Registrar su donación</a>
-        <a class="boton" data-tono="secundario" href="/admin-donantes"
-           th:href="@{/admin-donantes}">Volver a Donantes</a>
-      </div>
-    </section>
-  </div>
+<th:block th:fragment="contenido">
+  <!--/* El aviso breve, debajo de la cabecera de Donantes como en las otras respuestas de la ola
+         (admin-donaciones :: hecho, que lee avisoHecho). */-->
+  <th:block th:with="avisoHecho=${param.escenario != null and param.escenario[0] == 'ya-era'} ? 'Ana Ejemplo ya era donante. No cambiamos nada.' : 'Registraste a Ana Ejemplo como donante.'">
+    <th:block th:replace="~{admin-donantes :: hoja('')}"></th:block>
+  </th:block>
 </th:block>
 </body>
 </html>

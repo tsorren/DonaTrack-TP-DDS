@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <!--/* Mi perfil de la administración (R11-10, ficha docs/interfaz/flujos/r11-p1-admins.md §4.1): el
        nombre y el apellido de la cuenta, que es el que queda en lo que aprueba; el correo y la fecha
-       de alta como texto (el correo es el ingreso y no se cambia desde acá); el enlace a cambiar la
-       contraseña (la consola de la cuenta del proveedor de ingreso, como el menú) y a Administradores.
+       de alta como texto fijo (el correo es el ingreso y no se cambia desde acá); el enlace a cambiar
+       la contraseña (la consola de la cuenta del proveedor de ingreso, como el menú), a
+       Administradores y a la actividad propia. Desde la guía al código (ADM2-08), deriva del
+       arquetipo A12 (docs/interfaz/guia/partes/50-pantallas.html, #confirmar), en el galpón y como el
+       perfil de la organización (ORG-06): una columna, con el título y la bajada arriba, los avisos
+       en la página (el error al traer y el error al guardar, .aviso data-tipo="error"), los campos
+       del catálogo con el resumen del error arriba y una sola acción llena, «Guardar los cambios».
        El modelo (web.AdminPerfilController): miPerfil (DirectorioDeAdministradores.Administrador, o
        null si no se pudo traer), nombre y apellido (lo escrito o lo guardado), errores (por campo),
        creada (la fecha de alta, en texto), errorCarga, errorGuardar y codigo (el de
@@ -15,87 +20,107 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <div class="mesa"
+  <div class="pila" data-espacio="4" data-pantalla="perfil-admin"
        th:with="sinNombre=${miPerfil != null and miPerfil.nombreCompleto() == null},
-                eNombre=${errores['nombre']}, eApellido=${errores['apellido']}">
-    <header class="mesa-cabecera">
-      <div>
-        <p class="rotulo">Administración</p>
-        <h1>Mi perfil</h1>
-        <p>Tus datos de administración. Tu nombre es el que queda en lo que aprobás.</p>
-      </div>
-    </header>
+                eNombre=${errores['nombre']}, eApellido=${errores['apellido']},
+                cuantos=${(eNombre != null ? 1 : 0) + (eApellido != null ? 1 : 0)}">
+    <div class="pila" data-espacio="0">
+      <h1>Mi perfil</h1>
+      <p class="texto-chico" data-tono="suave">Tus datos de administración. Tu nombre es el que queda en
+        lo que aprobás.</p>
+    </div>
 
-    <section th:if="${errorCarga}" class="banner" data-estado="error" role="alert"
-             aria-labelledby="error-carga-titulo">
-      <h2 id="error-carga-titulo">No pudimos traer tus datos ahora.</h2>
+    <div th:if="${errorCarga}" class="aviso" data-tipo="error" role="alert">
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo">No pudimos traer tus datos ahora.</p>
       <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
         <a href="/publico-contacto" th:href="@{/publico-contacto(codigo=${codigo},volver='/admin-perfil')}">escribinos
           con este código</a>.</p>
       <p th:if="${codigo}" class="aviso-codigo">Código: <code th:text="${codigo}">a1b2c3d4e5f6</code></p>
-      <a class="boton" data-tono="secundario" href="/admin-perfil" th:href="@{/admin-perfil}">Volver a
-        cargar</a>
-    </section>
+      <a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-perfil"
+         th:href="@{/admin-perfil}">Volver a cargar</a>
+    </div>
 
-    <section th:if="${errorGuardar}" class="banner" data-estado="error" role="alert" tabindex="-1" autofocus
-             aria-labelledby="error-guardar-titulo">
-      <h2 id="error-guardar-titulo">No pudimos guardar tus datos. Siguen como estaban.</h2>
-      <p>Probá de nuevo en unos minutos; si sigue,
+    <div th:if="${errorGuardar}" class="aviso" data-tipo="error" role="alert" tabindex="-1" autofocus>
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo">No pudimos guardar tus datos. Siguen como estaban.</p>
+      <p>Es un problema nuestro: lo que escribiste sigue acá. Probá de nuevo en unos minutos; si sigue,
         <a href="/publico-contacto" th:href="@{/publico-contacto(codigo=${codigo},volver='/admin-perfil')}">escribinos
           con este código</a>.</p>
       <p th:if="${codigo}" class="aviso-codigo">Código: <code th:text="${codigo}">a1b2c3d4e5f6</code></p>
-    </section>
+    </div>
 
-    <form th:if="${miPerfil != null}" class="formulario tarjeta pila" data-espacio="3"
+    <!--/* Error de datos: el resumen arriba, con el foco y un enlace a cada campo. */-->
+    <div th:if="${cuantos > 0}" class="aviso" data-tipo="error" role="alert" tabindex="-1" id="resumen"
+         autofocus>
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo"
+         th:text="${cuantos == 1} ? 'Revisá 1 dato para seguir.' : |Revisá ${cuantos} datos para seguir.|">Revisá
+        1 dato para seguir.</p>
+      <ul role="list">
+        <li th:if="${eNombre}"><a href="#nombre" th:text="${eNombre}">Escribí tu nombre.</a></li>
+        <li th:if="${eApellido}"><a href="#apellido" th:text="${eApellido}">Escribí tu apellido.</a></li>
+      </ul>
+      <p class="texto-chico">Lo demás quedó como lo escribiste.</p>
+    </div>
+
+    <div th:if="${sinNombre and errores.isEmpty()}" class="aviso">
+      <svg th:replace="~{componentes/sello :: signo('info')}"></svg>
+      <p class="aviso-titulo">Todavía no cargaste tu nombre.</p>
+      <p>Con él vamos a mostrar quién aprobó cada cosa.</p>
+    </div>
+
+    <form th:if="${miPerfil != null}" class="pila" data-espacio="4"
           action="/admin-perfil" th:action="@{/admin-perfil}" method="post" hx-boost="true"
-          hx-indicator="#enviando-admin-perfil" hx-select-oob="#avisos" novalidate
-          aria-labelledby="datos-titulo">
+          hx-indicator="#enviando-admin-perfil" hx-select-oob="#avisos"
+          hx-disinherit="hx-indicator hx-select-oob" novalidate aria-labelledby="datos-titulo">
       <h2 id="datos-titulo">Tus datos</h2>
-      <p th:if="${sinNombre and errores.isEmpty()}" class="nota">Todavía no cargaste tu nombre. Con él vamos a
-        mostrar quién aprobó cada cosa.</p>
-      <div class="grilla" data-espacio="3">
-        <div class="campo" th:data-estado="${eNombre != null} ? 'error'">
-          <label for="nombre">Nombre</label>
-          <p th:if="${eNombre}" id="nombre-error" class="campo-error" th:text="${eNombre}">Escribí tu nombre.</p>
-          <input id="nombre" name="nombre" type="text" required maxlength="255" autocomplete="given-name"
-                 th:value="${nombre}" th:autofocus="${eNombre != null}"
-                 th:attr="aria-describedby=${eNombre != null} ? 'nombre-error' : null,aria-invalid=${eNombre != null} ? 'true' : null">
-        </div>
-        <div class="campo" th:data-estado="${eApellido != null} ? 'error'">
-          <label for="apellido">Apellido</label>
-          <p th:if="${eApellido}" id="apellido-error" class="campo-error" th:text="${eApellido}">Escribí tu apellido.</p>
-          <input id="apellido" name="apellido" type="text" required maxlength="255" autocomplete="family-name"
-                 th:value="${apellido}" th:autofocus="${eNombre == null and eApellido != null}"
-                 th:attr="aria-describedby=${eApellido != null} ? 'apellido-error' : null,aria-invalid=${eApellido != null} ? 'true' : null">
+      <div class="campo" th:data-estado="${eNombre != null} ? 'error'">
+        <label for="nombre">Nombre</label>
+        <p th:if="${eNombre}" id="nombre-error" class="campo-error"><svg
+            th:replace="~{componentes/sello :: signo('problema')}"></svg><span th:text="${eNombre}">Escribí tu
+          nombre.</span></p>
+        <input id="nombre" name="nombre" type="text" required maxlength="255" autocomplete="given-name"
+               th:value="${nombre}"
+               th:attr="aria-describedby=${eNombre != null} ? 'nombre-error' : null,aria-invalid=${eNombre != null} ? 'true' : null">
+      </div>
+      <div class="campo" th:data-estado="${eApellido != null} ? 'error'">
+        <label for="apellido">Apellido</label>
+        <p th:if="${eApellido}" id="apellido-error" class="campo-error"><svg
+            th:replace="~{componentes/sello :: signo('problema')}"></svg><span th:text="${eApellido}">Escribí tu
+          apellido.</span></p>
+        <input id="apellido" name="apellido" type="text" required maxlength="255" autocomplete="family-name"
+               th:value="${apellido}"
+               th:attr="aria-describedby=${eApellido != null} ? 'apellido-error' : null,aria-invalid=${eApellido != null} ? 'true' : null">
+      </div>
+      <!--/* El correo y la fecha de alta, fijos: la lista de datos del catálogo (como el Correo de
+             admin-administradores-alta), no un campo desactivado; sin fecha, solo el correo. El grupo
+             lleva su pila adentro de una caja: así el espacio entre los grupos es el del formulario. */-->
+      <div>
+        <div class="pila" data-espacio="1">
+          <dl th:replace="~{componentes/datos :: datos(${ { {rotulo: 'Correo', valor: miPerfil.correo},
+                                                            {rotulo: 'Cuenta creada', valor: creada} } })}"></dl>
+          <p class="texto-chico" data-tono="suave">Es el correo con el que entrás. No se cambia desde acá.</p>
         </div>
       </div>
-      <dl class="pila" data-espacio="1">
-        <dt>Correo</dt>
-        <dd><b th:text="${miPerfil.correo}">ana.perez@ejemplo.org</b><br>
-          <small>Es el correo con el que entrás. No se cambia desde acá.</small></dd>
-      </dl>
-      <p th:if="${creada != null}" th:text="|Cuenta creada el ${creada}.|">Cuenta creada el 12 de noviembre
-        de 2026.</p>
-      <div class="racimo">
+      <div data-fijo="celular">
         <button class="boton" data-tono="principal" type="submit">Guardar los cambios</button>
+        <p th:replace="~{envio :: indicador('enviando-admin-perfil', 'Guardando…')}"></p>
       </div>
-      <p th:replace="~{envio :: indicador('enviando-admin-perfil', 'Guardando…')}"></p>
     </form>
 
-    <section class="pila" data-espacio="2" aria-labelledby="contrasena-titulo">
-      <h2 id="contrasena-titulo">Contraseña</h2>
-      <p th:if="${cuenta != null and cuenta.cambiarClave != null}"><a th:href="${cuenta.cambiarClave}"
+    <section aria-labelledby="cuenta-titulo">
+      <div class="pila" data-espacio="2">
+        <h2 id="cuenta-titulo">Tu cuenta</h2>
+        <p th:if="${cuenta != null and cuenta.cambiarClave != null}"><a th:href="${cuenta.cambiarClave}"
             href="#">Cambiar la contraseña</a></p>
-      <p th:unless="${cuenta != null and cuenta.cambiarClave != null}">La contraseña se cambia desde la
-        página de tu cuenta, al entrar con tu correo.</p>
-    </section>
-
-    <section class="pila" data-espacio="2" aria-labelledby="administracion-titulo">
-      <h2 id="administracion-titulo">Administración</h2>
-      <p><a href="/admin-administradores" th:href="@{/admin-administradores}">Ver quiénes administran
-        DonaTrack</a></p>
-      <p><a href="/admin-actividad?autor=yo" th:href="@{/admin-actividad(autor='yo')}">Ver mi
-        actividad</a></p>
+        <p th:unless="${cuenta != null and cuenta.cambiarClave != null}">La contraseña se cambia desde la
+          página de tu cuenta, al entrar con tu correo.</p>
+        <p><a href="/admin-administradores" th:href="@{/admin-administradores}">Ver quiénes administran
+          DonaTrack</a></p>
+        <p><a href="/admin-actividad?autor=yo" th:href="@{/admin-actividad(autor='yo')}">Ver mi
+          actividad</a></p>
+      </div>
     </section>
   </div>
 </th:block>

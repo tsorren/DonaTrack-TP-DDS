@@ -5,10 +5,14 @@ import grupo5.cliente.vistas.AdminEntidadesVista;
 import grupo5.cliente.vistas.Listado;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Entidades del admin (RF-21 y RF-15) con los datos del puerto, y las pantallas que comparten su
@@ -46,10 +50,12 @@ public class AdminEntidadesController {
 
   private final AdminPersonasPuerto personas;
   private final Pantallas pantallas;
+  private final boolean maqueta;
 
-  AdminEntidadesController(AdminPersonasPuerto personas, Pantallas pantallas) {
+  AdminEntidadesController(AdminPersonasPuerto personas, Pantallas pantallas, Environment entorno) {
     this.personas = personas;
     this.pantallas = pantallas;
+    this.maqueta = entorno.acceptsProfiles(Profiles.of("maqueta"));
   }
 
   @GetMapping("/" + ENTIDADES)
@@ -60,6 +66,19 @@ public class AdminEntidadesController {
   @GetMapping("/" + ENTIDADES + "-{accion:aprobada|correccion|rechazada}")
   String despues(@PathVariable String accion, Model model, HttpServletRequest pedido) {
     return mostrar(ENTIDADES + "-" + accion, model, pedido);
+  }
+
+  /**
+   * La organización quedó registrada, solo en la maqueta (DA-06, ADM2-13): Organizaciones con el
+   * aviso breve del registro. Fuera de ella no existe: el envío real ya vuelve a Organizaciones con
+   * el aviso ({@code AdminEntidadesEnvioController}).
+   */
+  @GetMapping("/" + ENTIDADES + "-registrada")
+  String registrada(Model model, HttpServletRequest pedido) {
+    if (!maqueta) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe esa pantalla");
+    }
+    return mostrar(ENTIDADES + "-registrada", model, pedido);
   }
 
   /**

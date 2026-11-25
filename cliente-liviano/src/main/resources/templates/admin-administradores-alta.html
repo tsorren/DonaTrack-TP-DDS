@@ -1,8 +1,11 @@
 <!DOCTYPE html>
-<!--/* La contraseña provisoria (R11-10, ficha docs/interfaz/flujos/r11-p1-admins.md §4.4): se muestra
-       una sola vez, después del alta o de "Generar otra contraseña provisoria". Página aparte, no un
-       aviso que se va solo: hay que leerla y anotarla con calma. Va en un bloque monoespaciado, en
-       grupos de 4 separados por guiones (que son parte de la contraseña), para leerla en voz alta.
+<!--/* La contraseña provisoria (R11-10, ficha docs/interfaz/flujos/r11-p1-admins.md §4.4; DA-35): se
+       muestra una sola vez, después del alta o de "Generar otra contraseña provisoria". Página propia,
+       no un aviso que se va solo: hay que leerla y anotarla con calma. Desde la guía al código
+       (ADM2-07), deriva del arquetipo A12 (docs/interfaz/guia/partes/50-pantallas.html, #confirmar),
+       en el galpón: el título, el correo (componentes/datos), la contraseña en su bloque
+       monoespaciado, en grupos de 4 separados por guiones (que son parte de la contraseña), para
+       leerla en voz alta, el texto de cómo pasarla y una sola acción llena, volver a la lista.
        "Copiar" es una mejora con JavaScript (js/copiar.js): sin él, el botón no aparece y la
        contraseña se selecciona a mano. La respuesta va con Cache-Control: no-store y recargarla lleva
        a Administradores con el aviso de que ya se mostró. El modelo: provisoria (nombre, correo,
@@ -10,39 +13,39 @@
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
-  <title>Contraseña provisoria - DonaTrack</title>
+  <title>Contraseña provisoria - Administradores - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <div class="mesa">
-    <section class="formulario tarjeta pila" data-espacio="3" aria-labelledby="provisoria-titulo">
+  <section class="pila" data-espacio="4" data-pantalla="contrasena-provisoria"
+           aria-labelledby="provisoria-titulo">
+    <div class="pila" data-espacio="1">
+      <nav th:replace="~{componentes/migas :: migas(pasos=${ { {texto: 'Administradores', ruta: '/admin-administradores'} } }, actual='Contraseña provisoria')}"></nav>
       <h1 id="provisoria-titulo" tabindex="-1" autofocus
           th:text="${provisoria.otra} ? |Nueva contraseña provisoria para ${provisoria.nombre}| : |Diste de alta a ${provisoria.nombre}|">Diste
         de alta a Bruno Díaz</h1>
-      <dl class="pila" data-espacio="2">
-        <div>
-          <dt>Correo:</dt>
-          <dd th:text="${provisoria.correo}">bruno.diaz@ejemplo.org</dd>
+    </div>
+    <dl th:replace="~{componentes/datos :: datos(${ { {rotulo: 'Correo', valor: provisoria.correo} } })}"></dl>
+    <!--/* La contraseña, con su pila adentro de una caja: el espacio de afuera es el de la página. */-->
+    <div>
+      <div class="pila" data-espacio="1">
+        <p id="provisoria-rotulo"><b>Contraseña provisoria</b></p>
+        <div class="racimo" data-espacio="2">
+          <code id="provisoria-valor" class="texto-grande" aria-labelledby="provisoria-rotulo provisoria-valor"
+                th:text="${provisoria.contrasena}">K7pQ-m4Rt-x9Wa-2Lse</code>
+          <button type="button" class="boton" data-tono="secundario" data-tamano="chico" hidden
+                  data-copiar="provisoria-valor" data-copiado="provisoria-copiada">Copiar</button>
+          <small id="provisoria-copiada" aria-live="polite"></small>
         </div>
-        <div>
-          <dt id="provisoria-rotulo">Contraseña provisoria:</dt>
-          <dd class="racimo">
-            <code id="provisoria-valor" class="texto-grande" aria-labelledby="provisoria-rotulo provisoria-valor"
-                  th:text="${provisoria.contrasena}">K7pQ-m4Rt-x9Wa-2Lse</code>
-            <button type="button" class="boton" data-tono="secundario" data-tamano="chico" hidden
-                    data-copiar="provisoria-valor" data-copiado="provisoria-copiada">Copiar</button>
-            <small id="provisoria-copiada" aria-live="polite"></small>
-          </dd>
-        </div>
-      </dl>
-      <p>Pasásela por un medio seguro: en persona o por teléfono, no por un grupo de chat. No la vamos a volver
-        a mostrar. Cuando entre por primera vez, DonaTrack le va a pedir que elija su propia contraseña.</p>
-      <div class="racimo">
-        <a class="boton" data-tono="principal" href="/admin-administradores"
-           th:href="@{/admin-administradores}">Volver a Administradores</a>
       </div>
-    </section>
-  </div>
+    </div>
+    <p>Pasásela por un medio seguro: en persona o por teléfono, no por un grupo de chat. No la vamos a volver
+      a mostrar. Cuando entre por primera vez, DonaTrack le va a pedir que elija su propia contraseña.</p>
+    <div class="racimo">
+      <a class="boton" data-tono="principal" href="/admin-administradores"
+         th:href="@{/admin-administradores}">Volver a Administradores</a>
+    </div>
+  </section>
   <script src="/js/copiar.js" th:src="@{/js/copiar.js}" defer></script>
 </th:block>
 </body>

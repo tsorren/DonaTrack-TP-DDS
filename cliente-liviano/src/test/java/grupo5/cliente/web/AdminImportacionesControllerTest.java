@@ -158,7 +158,9 @@ class AdminImportacionesControllerTest {
         .andExpect(content().string(containsString("1 importación en curso.")))
         .andExpect(
             content().string(containsString("Cifras leídas el 10 de noviembre de 2026, 18:30.")))
-        .andExpect(content().string(containsString("Coinciden 23 importaciones.")))
+        // Sin filtros no dice "Coinciden"; debajo de la tabla, cuántas se ven (como Donantes)
+        .andExpect(content().string(not(containsString("Coinciden"))))
+        .andExpect(content().string(containsString("Mostrando 1 a 3 de 23 importaciones.")))
         .andExpect(
             content().string(containsString("href=\"/admin-donantes-importando?archivo=a1\"")))
         .andExpect(content().string(containsString("Ver el avance de donantes-noviembre.csv")))
@@ -201,6 +203,7 @@ class AdminImportacionesControllerTest {
                     containsString(
                         "href=\"/admin-importaciones?buscar=octubre&amp;estado=terminadas"
                             + "&amp;subida=7-dias&amp;pagina=2\"")))
+        .andExpect(content().string(containsString("Coinciden 23 importaciones.")))
         .andExpect(content().string(containsString("Sacar los filtros")));
     verify(personas)
         .importaciones(
@@ -226,7 +229,31 @@ class AdminImportacionesControllerTest {
             content()
                 .string(
                     containsString(
-                        "No entendimos la fecha pedida: te mostramos todas las fechas.")));
+                        "No entendimos la fecha pedida: te mostramos todas las fechas.")))
+        // ADM2-03: el aviso en la página del catálogo, no el aviso breve de una respuesta
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"advertencia\"")))
+        .andExpect(content().string(containsString("<p class=\"aviso-titulo\">")))
+        .andExpect(content().string(not(containsString("class=\"aviso-breve\""))));
+  }
+
+  // ADM2-03: en el galpón, con la cabecera, la ayuda plegada, la tabla y el paginador del catálogo
+  @Test
+  void importacionesEstaEnElGalponConLasPiezasDelCatalogo() throws Exception {
+    mvc.perform(get("/admin-importaciones").with(admin()))
+        .andExpect(content().string(containsString("data-pantalla=\"importaciones\"")))
+        .andExpect(content().string(containsString("data-alinea=\"entre arriba\"")))
+        .andExpect(content().string(containsString("<details class=\"plegable\">")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<span class=\"plegable-titulo\"><b>¿Qué muestra esta lista?</b></span>")))
+        .andExpect(content().string(containsString("class=\"plegable-ver\">Ver la ayuda</span>")))
+        .andExpect(content().string(containsString("<div class=\"plegable-cuerpo\">")))
+        .andExpect(content().string(not(containsString("<summary class=\"boton\""))))
+        .andExpect(content().string(containsString("class=\"tabla\"")))
+        .andExpect(content().string(containsString("class=\"paginas\"")))
+        .andExpect(content().string(not(containsString("class=\"mesa"))));
   }
 
   @Test
