@@ -55,7 +55,7 @@
       <p>La solicitud sigue en revisión: no se perdió nada. Probá de nuevo en unos minutos.</p>
     </section>
 
-    <section th:replace="~{publico-registro-entidad :: comoSigue(2)}"></section>
+    <section th:replace="~{publico-registro-entidad :: comoSigue(2, 2)}"></section>
 
     <section th:if="${solicitud != null}" class="tarjeta pila" data-espacio="3"
              aria-labelledby="enviado-titulo">

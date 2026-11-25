@@ -7,9 +7,8 @@
        error arriba en el aviso del catálogo (.aviso data-tipo="error", con el foco y un enlace a cada
        campo), los campos del catálogo (.campo, con su .campo-error y el signo del problema), el banner
        para el error del servicio, "Cómo sigue" (la raíz numerada de la huerta), la casilla de los
-       términos y una sola acción llena. El resumen está dentro del form y lleva además la clase
-       resumen, como el registro de quien dona: publico.js lo busca así para sacarlo al poner el suyo.
-       Es un formulario real (POST) que lleva a publico-registro-entidad-enviada. Estados:
+       términos y una sola acción llena. El resumen está dentro del form, con el mismo marcado que
+       el del registro de quien dona y el de Ingresar (solo .aviso). Es un formulario real (POST) que lleva a publico-registro-entidad-enviada. Estados:
        ?escenario=lento y error; el error de datos es publico-registro-entidad-error. Con una sesión
        sin perfil (completarPerfil, de #955) no pide correo ni contraseña, guarda en esta misma
        dirección y conserva lo escrito si falla (fallo). Con modo='corregir' en el contexto
@@ -22,8 +21,9 @@
        "Volver a la solicitud sin guardar".
        Fragmentos:
        - hoja(conError): la pantalla entera.
-       - comoSigue(paso): los tres pasos en la raíz numerada (componentes/huerta :: raiz-pasos), con
-         el actual (1 o 2) marcado y dicho en palabras. */-->
+       - comoSigue(paso, nivel): los tres pasos en la raíz numerada (componentes/huerta :: raiz-pasos),
+         con el actual (1 o 2) marcado y dicho en palabras; nivel es el del título: 2 en la
+         solicitud enviada, 3 dentro de la sección Confirmar del registro. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-registro', ~{::contenido})}">
 <head>
@@ -87,7 +87,7 @@
           th:data-enviando="${corregir} ? 'Guardando los cambios…' : 'Enviando la solicitud…'"
           th:aria-busy="${escenario == 'lento'} ? 'true' : null">
       <!--/* Error de datos: el resumen arriba, con el foco y un enlace a cada campo (A12). */-->
-      <div th:if="${!#lists.isEmpty(marcados)}" class="aviso resumen" data-tipo="error" role="alert"
+      <div th:if="${!#lists.isEmpty(marcados)}" class="aviso" data-tipo="error" role="alert"
            tabindex="-1" id="resumen" autofocus>
         <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
         <p class="aviso-titulo"
@@ -259,7 +259,7 @@
 
       <section th:unless="${corregir}" class="registro-seccion" id="confirmar" aria-labelledby="confirmar-titulo">
         <h2 id="confirmar-titulo">Confirmar</h2>
-        <section th:replace="~{:: comoSigue(1)}"></section>
+        <section th:replace="~{:: comoSigue(1, 3)}"></section>
         <div class="campo">
           <label class="casilla" for="terminos"><input id="terminos" name="terminos" type="checkbox" required
                  data-falta="Para enviar la solicitud, aceptá los términos y la política de privacidad."
@@ -298,8 +298,9 @@
 <!--/* Cómo sigue: los tres pasos de la solicitud en la raíz numerada de la huerta. El paso actual va
        marcado (aria-current); en el paso 1, además, "Estás acá"; lo cumplido dice "Hecho.". El ol va
        en una caja para que la pila le dé su espacio (la raíz anula su margen). */-->
-<section th:fragment="comoSigue(paso)" class="pila" data-espacio="3" aria-labelledby="como-sigue-titulo">
-  <h2 id="como-sigue-titulo">Cómo sigue</h2>
+<section th:fragment="comoSigue(paso, nivel)" class="pila" data-espacio="3" aria-labelledby="como-sigue-titulo">
+  <h2 th:if="${nivel == 2}" id="como-sigue-titulo">Cómo sigue</h2>
+  <h3 th:unless="${nivel == 2}" id="como-sigue-titulo">Cómo sigue</h3>
   <div><ol th:replace="~{componentes/huerta :: raiz-pasos(${ {
       {nombre: 'Completás la solicitud.', avance: (paso > 1 ? 'hecho' : 'actual'),
        detalle: (paso > 1 ? 'Hecho.' : 'Estás acá.')},

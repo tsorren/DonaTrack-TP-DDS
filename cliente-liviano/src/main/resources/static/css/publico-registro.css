@@ -24,6 +24,17 @@ main > .pila {
   flex: 1;
 }
 
+/* Dos campos en un renglón (Calle y Altura): abajo, para que un error de uno no estire al otro y
+   los dos cuadros queden en la misma línea y con el mismo alto. */
+.registro-seccion > .grilla {
+  align-items: end;
+}
+
+/* La salida a Ingresar, centrada como la cabeza: el texto corrido tiene ancho máximo (app.css). */
+.registro-salida {
+  margin-inline: auto;
+}
+
 .enlace-campo {
   display: inline-flex;
   align-items: center;

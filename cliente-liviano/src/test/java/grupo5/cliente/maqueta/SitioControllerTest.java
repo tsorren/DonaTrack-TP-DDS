@@ -1155,9 +1155,7 @@ class SitioControllerTest {
         .andExpect(status().isOk())
         .andExpect(view().name("publico-registro-entidad-error"))
         .andExpect(
-            content()
-                .string(
-                    containsString("class=\"aviso resumen\" data-tipo=\"error\" role=\"alert\"")))
+            content().string(containsString("class=\"aviso\" data-tipo=\"error\" role=\"alert\"")))
         .andExpect(content().string(containsString("id=\"resumen\" autofocus")))
         .andExpect(content().string(containsString("href=\"#que-es\"")))
         .andExpect(content().string(containsString("href=\"#calle\"")))
