@@ -31,6 +31,193 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-24 · navegación · El menú público: Inicio, Entregas, Organizaciones y Cómo funciona (DA-01, DA-05, DA-17)
+
+- **Decisión:** el menú público es Inicio, Entregas, Organizaciones y Cómo funciona
+  (`/publico-nosotros`). El Mapa sale del menú y, en el Mapa, queda marcada Entregas. Entregas va sin
+  «confirmadas», como en la guía. Cómo funciona lleva el ícono `#i-brote`, incluido como símbolo en un
+  `svg.iconos` dentro del menú, sin editar `iconos.html`. En la barra de arriba, Inicio se ve desde
+  68,75 em; en el celular, siempre. Solo cambia el menú público.
+- **Alternativas:** dejar el Mapa en el menú; mostrar Inicio desde 56 em; traer entero
+  `iconos :: comunes`; cambiar todos los menús juntos.
+- **Por qué:** el Mapa es una vista de las entregas; entre 56 y 68,75 em la fila con Inicio no entra
+  en un renglón y rompía `ArmazonFijoTest`; cada ola rehace el menú de su rol.
+- **Costo:** entre 56 y 68,75 em Inicio no está en la barra (se llega por el logo).
+- **Quién decidió:** usuario (DA-01, DA-05 y DA-17, rondas del 2026-11-22 y del 2026-11-23). El ancho
+  de Inicio, el ícono y «Entregas», agente (lote `pub1-portada`). Consta como no cumplida: la revisión
+  de pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** backlog §13.3 (PUB1-02); `navegacion-publica.html`, `26ebd4af3`.
+
+### 2026-11-24 · portada · La portada sigue a A01, sin las abejas, el corte bajo tierra ni el cierre de hoy (DA-22)
+
+- **Decisión:** la portada usa `layout-publico.html` y va en el orden de A01: el título sobre la
+  trama (sin el papel debajo de cada letra), el dibujo con un fruto por entrega confirmada, la última
+  entrega con su foto y su sello, las cifras, «Cómo funciona» con la raíz numerada de 5 pasos y hasta
+  3 entregas más del último mes con «Ver todas». «Quiero donar» lleva a `/publico-registro-donante` y
+  «Soy una organización» a `/publico-registro-entidad`. La última entrega dice «<organización>
+  confirmó la entrega con una foto.», sin «Ver las 2 fotos». El título del mes es «Entregas
+  confirmadas del último mes», porque el puerto trae un mes corrido. El texto del dibujo no cuenta
+  frutos (el SVG dibuja 9 fijos): la cuenta va en los frutos de debajo. El pie de cada entrega lleva
+  el año.
+- **Alternativas:** seguir con la cabecera propia de la portada; conservar las piezas de hoy debajo de
+  A01 (descartada en DA-22); «Ver las N» de A01; mandar «Quiero donar» a Cómo donar.
+- **Por qué:** sin lámina a todo el ancho, el armazón ya trae el salto al contenido, el indicador de
+  carga y la precarga de las letras; no hay un detalle público de una entrega ni la cuenta de sus
+  fotos; los registros son lo que ya enlazaba la portada.
+- **Costo:** fallan `AbejasYRenglonesTest.conReducirMovimientoLasAbejasQuedanQuietasDelanteYEnteras` y
+  los dos de `BajoTierraRotulosTest`, que miden piezas que la portada ya no tiene: los decide el
+  usuario. La etiqueta de la última entrega no tiene el marco protagonista de A01. La sección del mes
+  no tiene estado de error, bloqueante del lote ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítems 1, 3
+  y 6).
+- **Quién decidió:** usuario (DA-22, sin respuesta: la opción recomendada, delegada por el relevamiento del 2026-11-24). Lo
+  demás, agente (lote `pub1-portada`), sin consultar. Consta como no cumplida: la revisión de
+  pantallas de la ola no llegó a PASS.
+- **Evidencia:** backlog §13.3 (PUB1-01); `publico-portada.html`, `26ebd4af3`, `1878a1e39` y
+  `33e1c7284`.
+
+### 2026-11-24 · portada · Las cifras van en una frase, en la portada y en Cómo funciona
+
+- **Decisión:** bajo «Cómo sabemos que llega», las cifras son una frase con cada número en `<strong>`
+  y `.texto-grande` («Hasta hoy, 1.284 entregas confirmadas, …»), con los rótulos del puerto en
+  minúscula y la fecha `actualizado` del puerto («Actualizado el …», solo con datos). Cómo funciona
+  copia el mismo marcado con `cifrasDeNosotros`. El vacío va con `.vacio data-forma="filetes"`.
+- **Alternativas:** `huerta :: cifras` (otro título, árboles que no entran en media columna y una fecha
+  fija); la lista de datos (`componentes/datos`), que fue la primera versión, con las columnas
+  `minmax(0,1fr) auto` para que «Organizaciones» no se montara sobre el número a 360 px; informar una
+  variante de `.datos` como pieza faltante; la fecha fija en la plantilla.
+- **Por qué:** A01 no usa una lista de datos y las cifras no son «lo asentado»; la fecha fija sería un
+  dato de ejemplo escrito en la plantilla.
+- **Costo:** con el adaptador real los rótulos de Cómo funciona no llevan período (`PublicoRest`);
+  `huerta :: cifras` quedó sin llamadores ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 6).
+- **Quién decidió:** agente (lotes `pub1-portada` y `pub1-conocer`, en sus rondas de arreglo), sin
+  consultar.
+- **Evidencia:** `publico-portada.html`, `publico-nosotros.html`; `33e1c7284` y `3b08f925f`.
+
+### 2026-11-24 · estados · Los errores de carga de lo público son el banner con el código
+
+- **Decisión:** en la portada y en Cómo funciona, un error de carga es el banner de error
+  (`data-estado="error"`) con «Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
+  escribinos con este código.», el enlace a Contacto con el código y la vuelta, `.aviso-codigo` y
+  «Volver a cargar», como en Entregas, el Mapa y Organizaciones. Las cifras de la portada llevan el
+  banner en línea, con su propio id (`cifras-error-titulo`).
+- **Alternativas:** el renglón de filetes con `role="alert"` (la versión de las rondas de los lotes);
+  dos `avisoError` en la misma página; cambiar el fragmento `avisoError`.
+- **Por qué:** lo que se parece se comporta igual (U1, U4); `avisoError` tiene fijo `id="error-titulo"`
+  y dos repetirían el id, y su firma no cambia porque lo usan pantallas de PUB2.
+- **Costo:** la sección de las entregas del mes de la portada sigue sin estado de error
+  ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 1).
+- **Quién decidió:** agente (revisión de pantallas de la ola, ronda 2), sin consultar.
+- **Evidencia:** `publico-portada.html`; `5556086f0`.
+
+### 2026-11-24 · entregas · Entregas y el Mapa: frutos, la etiqueta de cada entrega y quién la recibió (DA-01, DA-10)
+
+- **Decisión:** Entregas cuenta en frutos (`componentes/huerta :: frutos`, uno por entrega) y muestra
+  cada entrega con la etiqueta del catálogo, con «Recibió: <la organización>» (nunca una persona) y
+  la categoría y el barrio en el lugar («Muebles · Centro Ejemplo»); «Foto de ejemplo» cuando la foto
+  no es una dirección http(s); «Ver la foto de la entrega» fuera de la etiqueta. Un período sin
+  entregas muestra solo los frutos en cero. Entregas enlaza el Mapa, y el Mapa vuelve por sus migas
+  «Entregas / Mapa», sin rótulo ni parte en otra tinta en el título. La cuenta del Mapa va en texto,
+  con la cifra en `<b>`. El listado del Mapa no queda fijo. `publico-mapa.css` corrige que MapLibre
+  corra el mapa 82 px desde 68,75 em (`top: 0`). A 360 px, Categoría va en su renglón y Filtrar
+  debajo. En Cómo funciona, «Cuidamos los datos» dice que lo publicado nunca muestra quién donó.
+- **Alternativas:** la cifra heredada con árbol (`.cifra-fruto`); frutos en el Mapa (con el tope de
+  Logística pueden ser cientos); el pictograma de la categoría, que la etiqueta no tiene; columnas de
+  22 rem (daban tres a 1280 px); `grid-template-columns: 1fr` en el listado a 360 px.
+- **Por qué:** como A10 y Entregas de la organización; la etiqueta del catálogo no tiene lugar para el
+  pictograma; en lo público quien recibe es la organización (HG-03).
+- **Costo:** el número dentro del sello del Mapa (`.estacion-numero`) sigue heredado, y con él
+  `publico-mapa.css` en `HOJAS_HEREDADAS`; el arreglo del mapa es de disposición y el de fondo es del
+  catálogo ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 6). Con datos reales llegan hasta 50
+  frutos; no se probó cómo se ven.
+- **Quién decidió:** usuario (DA-01 y DA-10). Lo demás, agente (lote `pub1-entregas` y revisión de
+  pantallas de la ola, rondas 1 y 2). Consta como no cumplida: la revisión de pantallas de la ola no
+  llegó a PASS.
+- **Evidencia:** backlog §13.3 (PUB1-03, PUB1-04); `8cfbaab5d`, `a56418c53`, `60a4c976f`,
+  `fb9e34317` y `5556086f0`.
+
+### 2026-11-24 · organizaciones · Organizaciones públicas: tarjetas por grupo, de a 6, filtradas en el controller
+
+- **Decisión:** los filtros y las páginas pasan de la plantilla a `PublicoEntidadesController`, sobre
+  la lista que ya da el puerto: se ordena por grupo, se corta la página de 6 y se agrupa la página
+  (Comedores y merenderos, etc.). El total de cada organización va en el atributo `vigentes`
+  (pedidos sin filtrar). Lo satisfecho va en palabras en el pie de la tarjeta, sin barra; el
+  plegable, solo para las necesidades que pasan de 3, y la misión en `.recorte`, fuera del plegable.
+  Las salidas son dos botones, «Quiero donar» y «Sumar mi organización». El fragmento `pantalla`
+  conserva su firma.
+- **Alternativas:** paginar en la plantilla (Thymeleaf no arma el paginador); sumar un campo al record
+  `Entidad` del puerto; una vista propia; sacar los grupos, que A02 no tiene; la salida heredada
+  `.salidas` con «¿Ya tenés cuenta? Ingresar».
+- **Por qué:** el paginador necesita el total ya filtrado; ninguna decisión autoriza sacar los grupos y
+  los tests los afirman; dos barras en la misma tarjeta confundían; sin anidar `details` (DTI-48).
+- **Costo:** el controller tiene lógica (busca, filtra, ordena y pagina), contra lo que pide
+  `cliente-liviano/AGENTS.md`; con la API paginada, la búsqueda solo ve la primera respuesta; las
+  ramas `yaDonadas` del fragmento ya no las usa nadie ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50),
+  ítems 4 y 5).
+- **Quién decidió:** agente (lote `pub1-organizaciones`), sin consultar.
+- **Evidencia:** backlog §13.3 (PUB1-05); `375608498`, `a1cb6457c` y `8cef6d2ee`.
+
+### 2026-11-24 · ingresar · Ingresar es la columna del formulario de A12
+
+- **Decisión:** una sola columna, con el h1 «Ingresar» y su bajada, y las cuentas de ejemplo debajo
+  del formulario en una tarjeta `data-papel="hueco"`. El error es un solo mensaje (`.campo-error`, con
+  el signo del catálogo) en la contraseña, con los dos campos marcados y el resumen enlazado a
+  `#clave`. Salen el «o» con filetes, los discos con la inicial del rol y `boton--google`: «Continuar
+  con Google» es un `.boton` secundario junto a Ingresar. La contraseña con «Mostrar» va en un
+  `.racimo`, sin placeholder. El estado lento lleva `aria-busy` y «Ingresando…», sin `disabled`.
+- **Alternativas:** las dos columnas de antes; conservar el rótulo y `.publica-cabeza`; un mensaje por
+  campo; «Mostrar» chico o en otro renglón; `disabled` en el envío.
+- **Por qué:** el arquetipo es la columna del formulario; dos mensajes repetían el texto y uno sugería
+  cuál falló (RNF-AUTH-10); el ingreso no valida el largo de la contraseña.
+- **Costo:** los selectores nuevos de `publico-ingresar.css` son estructurales y los heredarán activar
+  y recuperar (PUB2) cuando migren; `data-papel="hueco"` estira el sentido de «lo que falta»;
+  `.enlace-campo` de `publico-registro.css` quedó sin uso ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50),
+  ítem 7).
+- **Quién decidió:** agente (lote `pub1-ingresar`), sin consultar.
+- **Evidencia:** backlog §13.3 (PUB1-06); `5ce687f2d` y `09942eb6c`.
+
+### 2026-11-24 · conocer · Cómo funciona, Cómo donar y Ayuda, con la composición de A01 (DA-05, DA-23)
+
+- **Decisión:** Nosotros, Para donantes y Para organizaciones se llaman Cómo funciona, Cómo donar y
+  Ayuda, con las rutas de hoy, y el pie los nombra igual. Las tres llevan el título sobre la trama
+  (sin la máscara de papel y sin `<em>`) y la raíz de 5 pasos con el texto de su público. Cómo
+  funciona sube sus dos salidas a la cabecera, a los registros con los rótulos de la portada («Quiero
+  donar» y «Soy una organización»), y pierde la sección «Sumate». Cómo donar y Ayuda tienen una sola
+  acción llena y las preguntas frecuentes en `.plegable`, con «Ver» oculto a lectores. En Ayuda,
+  «Tu cuenta y tus datos» son dos tarjetas con su h3.
+- **Alternativas:** el botón repetido al final, en secundario; «Cómo donar» y «Ayuda para
+  organizaciones» como salidas de Cómo funciona; `details` sin clase; la lista en párrafos.
+- **Por qué:** una sola acción llena por página; cada rótulo lleva a un solo lugar en todo el sitio;
+  lo que se parece se comporta igual.
+- **Costo:** «Qué ves con tu cuenta» de Cómo donar sigue como lista suelta, distinta de Ayuda
+  (bloqueante del lote tras 3 rondas, [DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 2). Las fichas de
+  flujo conservan los nombres viejos (ítem 8).
+- **Quién decidió:** usuario (DA-05, ronda 4 del 2026-11-23; DA-23, sin respuesta: la recomendada, delegada por el
+  relevamiento del 2026-11-24). La composición, agente (lote `pub1-conocer` y revisión de pantallas
+  de la ola, ronda 1). Consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS.
+- **Evidencia:** backlog §13.3 (PUB1-07, PUB1-08); `6c5dc109c`, `9738e96df`, `3b08f925f` y
+  `fb9e34317`.
+
+### 2026-11-24 · contacto · El envío de Contacto termina en Contacto, con el número en el aviso (DA-06, DA-24)
+
+- **Decisión:** enviar vuelve a Contacto con un aviso breve que lleva el número («Recibimos tu
+  mensaje. Su número es 7.»); el campo trampa da el aviso sin número. Con `?volver=`, Contacto ofrece
+  «Volver a …», un botón secundario, antes y después de enviar. Ya no hay «Volver a mi inicio» ni «Ir
+  a la portada». Sale la lámina «Cuándo escribirnos» con su ilustración. «Enviar mensaje» va en un
+  racimo, como «Ingresar». En Legales, el aviso de texto de ejemplo es `.aviso data-tipo="info"`
+  («Texto de ejemplo»).
+- **Alternativas:** una página de respuesta propia; «Volver a …» como enlace suelto; conservar la lámina
+  al costado; un número inventado para el spam.
+- **Por qué:** A12 es una sola columna de formulario; con sesión, el menú del marco ya lleva al
+  inicio; para spam no se inventa un número.
+- **Costo:** la lámina venía del A/B aprobado el 2026-11-04: si vuelve, lo decide el usuario. Si el
+  envío real se rechaza, se pierde el `?volver=`. La maqueta muestra un aviso más rico que el envío
+  real ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 9).
+- **Quién decidió:** usuario (DA-06, ronda 4 del 2026-11-23; DA-24, sin respuesta: la recomendada, delegada por el relevamiento del
+  2026-11-24). Lo demás, agente (lote `pub1-contacto` y revisión de pantallas, ronda 1). Consta como no
+  cumplida: la revisión de pantallas de la ola no llegó a PASS.
+- **Evidencia:** backlog §13.3 (PUB1-09, PUB1-10); `35f6c8307` y `fb9e34317`;
+  `ErroresConSesionTest` actualizado al comportamiento nuevo.
+
 ### 2026-11-24 · donaciones · Arreglo después de la ola DON: la misma palabra para el mismo estado
 
 - **Decisión:** la vista se llama «Confirmadas» y la opción del filtro, «Entrega confirmada». El

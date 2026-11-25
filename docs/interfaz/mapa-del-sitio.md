@@ -258,7 +258,7 @@ Entregas ([backlog de la guía](backlog-guia-al-codigo.md), §13):
 | Menú público | Inicio, Entregas, Organizaciones y Cómo funciona (`/publico-nosotros`). El Mapa sale del menú; en el Mapa queda marcada Entregas | PUB1-02; DA-01, DA-05 y DA-17 |
 | Entregas y Mapa | Entregas (`/publico-donaciones`) enlaza el Mapa (`/publico-mapa`) y el Mapa muestra las migas «Entregas / Mapa». Rutas sin cambio | PUB1-03, PUB1-04; DA-01 |
 | Nosotros, Para donantes y Para organizaciones | Se llaman Cómo funciona, Cómo donar y Ayuda, con las mismas rutas; el pie los nombra igual | PUB1-07, PUB1-08; DA-05 y DA-23 |
-| Enviar un mensaje desde Contacto | Vuelve a Contacto (con su `?volver=` si vino) con un aviso breve que lleva el número del mensaje. en la maqueta, `/publico-contacto-enviado` muestra Contacto con ese aviso | PUB1-09; DA-06 y DA-24 |
+| Enviar un mensaje desde Contacto | Vuelve a Contacto (con su `?volver=` si vino) con un aviso breve que lleva el número del mensaje. En la maqueta, `/publico-contacto-enviado` muestra Contacto con ese aviso | PUB1-09; DA-06 y DA-24 |
 
 ## Observaciones para el diseño
 
