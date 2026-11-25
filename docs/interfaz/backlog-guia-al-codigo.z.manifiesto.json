@@ -1,0 +1,222 @@
+{
+  "formato": "oleada-ui/1",
+  "version": "1.0.0",
+  "nombre": "guia",
+  "fecha": "2026-11-25",
+  "backlog": "docs/interfaz/backlog-guia-al-codigo.md",
+  "prefijoCommit": "E7: guía al código",
+  "comoLeerlo": "Manifiesto de la ola Z, el cierre de la guía al código. Z no rehace ninguna pantalla. Retira los 10 alias y los tokens sin uso, cambia la lista de pares de contraste, saca del cerco lo que ya no hace falta, baja los dos topes de InterfazFitnessTest, conecta el dato real de cada hueco de la sección 7 cuyo PR esté mergeado y pone al día la documentación. Los ítems Z-01 a Z-14 están en la sección 17 del backlog; las decisiones, en la sección 2.2; lo que no entra en Z, en la sección 17.5. Son 6 lotes en 5 tandas (sección 17.2). La tanda 1 lleva z-tokens y z-hg02. Los tres lotes HG van en las tandas 1, 2 y 3 porque comparten plantillas. z-cerco va en la tanda 4 (mide los topes al final) y z-docs en la 5. z-hg02, z-hg03 y z-hg04 llevan condicion: corren solo si la sesión pasa HG-02, HG-03 o HG-04 en condiciones (regla 3). Lo más probable es que no corra ninguno, y entonces quedan las tandas 1, 4 y 5. DA-10 es del lote z-hg03: si ese lote no corre, el workflow la informa como no cumplida, y eso es lo esperado. HG-01 no tiene lote: no se construye (DA-09, regla 3). Todos los lotes van con disenio ninguno: Z no tiene fichas. Se escribió el 2026-11-25 en la corrida desatendida (plan C:/IdeaProjects/DonaTrack-TP-DDS/.claude/plan-guia-resto.md), antes de que corriera ADM2. El reparto y DA-36 a DA-38 van con la opción recomendada, delegada por el relevamiento del 2026-11-24; no los aprobó el usuario. La regla 1 es solo para el cierre: Z es la única ola que intenta el stack y la única, con C1, que pasa -Pvisual por todas las rutas (DA-20). Requisito para lanzarla: este manifiesto integrado en E7_guia_ui, con ADM2 ya mergeada o pusheada en su rama.",
+  "ramas": {
+    "base": "E7_guia_ui",
+    "destino": "E7_guia_ui",
+    "prefijoOla": "E7_guia_ui_"
+  },
+  "topes": {
+    "constructoresEnParalelo": 4,
+    "rondasDeReparacion": 3
+  },
+  "modelos": {
+    "juicio": {
+      "model": "opus",
+      "effort": "medium"
+    },
+    "mecanico": {
+      "model": "sonnet",
+      "effort": "high"
+    }
+  },
+  "olas": [
+    "Z"
+  ],
+  "reglas": [
+    "Solo para quien cierra la ola; no es criterio de revisión de ningún lote. (1) Z es la única ola que intenta el stack propio con login real: pasos 2, 3 y 5 del cierre (DA-20, punto 2; plan C:/IdeaProjects/DonaTrack-TP-DDS/.claude/plan-guia-resto.md). Si Docker no responde o el stack no levanta en el segundo intento, anotá [DEFERRED_NO_DOCKER] en cierre.md y en stack, con el error, y seguí con los demás pasos. No es un bloqueante, y no se arregla editando los compose del repo. Con el stack arriba, el recorrido con una cuenta por rol del seeder cubre las pantallas de los lotes de Z que corrieron y lo que las olas dejaron para Z: con quien dona, el inicio, Donaciones, el detalle y Seguimiento (DTI-49); lo público, con y sin sesión (DTI-50); con el admin, Por decidir con varias aprobadas o descartadas juntas, Camiones, Donaciones con «Vencida», Registrar donación y Ranking con otro mes (DTI-51), y además Donantes, una importación, Organizaciones con una solicitud, el alta de un administrador y los dos registros del admin (sección 16.4); los dos registros públicos, Recuperar y Activar con Keycloak y las páginas de error con sesión de cada rol (DTI-52). Corré también IngresoConKeycloakRealTest con INGRESO_REAL_URL apuntando a ese stack. Sus variables están en su Javadoc. Las claves salen del .env: no las escribas en ningún archivo ni en tu respuesta. (2) Después de los gates, corré -Pvisual sobre todas las rutas de cliente-liviano/src/test/resources/verificacion/paginas.txt, la pasada completa de DA-20, punto 1 (345 líneas el 2026-11-25). Sin la propiedad verificacion.paginas, el test recorre todo el archivo: rm -rf cliente-liviano/target/capturas; mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false. (3) Corré los otros tests visuales: mvn test -pl cliente-liviano -Pvisual -Dtest=ArmazonFijoTest,MenusQueSeCierranTest,BajoTierraRotulosTest,AbejasYRenglonesTest,DonanteDetallesTest -Dsurefire.failIfNoSpecifiedTests=false. (4) Compará (2) y (3) con la línea de base de las secciones 10.4 y 10.5 del backlog, menos lo que sacaron los cierres de las secciones 11.3 a 16. Una falla que ya estaba se anota. Una falla nueva en una pantalla que ningún lote de Z tocó va a los pendientes de su ola y no se arregla en Z (regla 5). Una falla nueva en lo que tocó un lote de Z es bloqueante de ese lote, y se arregla en el lote, nunca en el test. (5) En cierre.md: cuántas rutas pasan y cuáles no, el resultado del stack y del recorrido (o [DEFERRED_NO_DOCKER]), los dos topes con su valor final, la hora de cada commit de la ola (git log) y las rondas de revisión de cada lote.",
+    "Z sí mueve los cercos, pero solo para abajo. z-cerco baja los dos topes de InterfazFitnessTest (TOPE_DE_CLASES_DE_UN_SOLO_USO y TOPE_DE_MEDIDAS_LITERALES) al valor medido. También saca de HOJAS_HEREDADAS entidad-recibidas.css, que ya no existe (DTI-48, ítem 3), y lo que pide DA-38. z-tokens retira de tokens.css los 10 alias de la sección 3.2 y los 11 tokens de DA-14b; de movimiento.css, los dos de DTI-47, ítem 8, que no son alias (el tercero, --color-sombra-grano, es uno de los 10 alias). Además cambia la lista PARES con DA-37. Lo que no se hace: ningún tope sube; ninguna lista del cerco crece (HOJAS_HEREDADAS, clases-heredadas.txt, LISTAS ni BARRAS_EXCEPTUADAS); ningún test se borra ni pierde una aserción; ningún mínimo de contraste baja; nadie edita un test de cliente-liviano/src/test/java/grupo5/cliente/visual/; y la verificación visual no suma ninguna excepción. Un test que usa un alias retirado como token (InterfazFitnessTest y scripts/tests/test_auth_theme.py) pasa al token de la guía del mismo valor, con la misma aserción. La aserción que dice que un alias no aparece (EstilosBaseTest.java:64) queda como está. Un gate en rojo nunca se arregla tocando un test, un tope o una excepción: si eso fuera lo único que lo destraba, es un bloqueante del lote.",
+    "Un lote condicional por hueco: z-hg02, z-hg03 y z-hg04 llevan condicion HG-02, HG-03 y HG-04. La sesión pasa esa condición solo cuando el PR del hueco está mergeado en ENTREGA_7 y ENTREGA_7 está mergeada en E7_guia_ui (sección 7 del backlog; DA-12). Cada lote conecta el dato real que trae ese PR y retira de sus plantillas el texto de «Si no llega» de la sección 7, con los comentarios que lo explican. El nombre y la forma del campo se leen del DTO y de la spec del PR mergeado; no se inventan. Si el campo no está en la rama, es un bloqueante del lote, y el lote no toca ningún servicio. En el cliente el cambio es aditivo: un campo opcional en la vista del puerto (cliente-liviano/src/main/java/grupo5/cliente/puertos/), su lectura en el adaptador de rest/, su dato de ejemplo en maqueta/ y sus tests. HG-01 no tiene lote: no se construye (DA-09, el texto sin fecha), y «Todavía sin fecha de nueva salida» queda como está.",
+    "La documentación es parte de la ola. z-docs pone al día docs/interfaz/backlog-migracion-componentes.md, docs/README.md y docs/ESTADO_DOCUMENTACION.md, y estos dos últimos indexan docs/interfaz/guia/ y este backlog con sus manifiestos. También pone al día docs/adr/DEUDA_TECNICA.md: los ítems que Z salda y una DTI nueva con lo que Z deja. Después corre python scripts/validate_docs_links.py, sin enlaces rotos nuevos. Los registros históricos no se reescriben: la bitácora, los cierres de las secciones 3 a 16 del backlog y los ADR quedan como están, y lo que cambió se anota como actualización con su fecha. El estado de cada ítem Z-NN lo marca la documentación de cierre del workflow, como en las otras olas.",
+    "Z no rediseña ninguna pantalla: lo visual de las olas ya está. Retirar un alias o un token cambia un nombre y no un valor, así que ningún color calculado cambia. Un lote HG cambia el texto o el dato de una pantalla con las piezas que ya tiene. No toca hojas de estilo, no cambia la composición y no suma piezas: si necesita una pieza que la pantalla no tiene, es un bloqueante del lote. Una pantalla que se ve inconsistente, o una falla de la verificación visual en una pantalla que Z no tocó, se anota como menor o como pendiente de su ola, nunca como bloqueante de Z, y no se arregla en Z. En /estilos, z-tokens toca solo la ficha «Color: los nombres de antes»: lo demás de esa página (por ejemplo, DTI-47, ítem 10) se anota como menor. Lo que no cambia: ningún menú, ninguna ruta, ninguna ficha de flujo, ningún puerto (salvo el campo aditivo de la regla 3) y ninguna pieza del catálogo (templates/componentes/ y static/css/componentes/), salvo el cambio de nombre de un alias. Lo que la sección 17.5 del backlog deja fuera de Z no se toca."
+  ],
+  "decisiones": [
+    {
+      "id": "DA-14b",
+      "texto": "Salen de tokens.css los 10 alias de la sección 3.2 del backlog y los 11 tokens que no usa ninguna hoja ni plantilla y solo nombra InterfazFitnessTest. Cada uso de un alias pasa al token de la guía del mismo valor (su definición en tokens.css), así que ningún color calculado cambia.",
+      "quien": "relevamiento del 2026-11-24 (corrida desatendida), por delegación del usuario",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-14b",
+      "lote": "z-tokens",
+      "criterio": "git grep -nE -- '--color-(papel|tinta-suave|acento|acento-hondo|acento-claro|suelo-hondo|destacado|titulo|sombra|sombra-grano)([^-a-z0-9]|$)' -- cliente-liviano/src/main auth-service/themes cliente-liviano/src/test/java/grupo5/cliente/InterfazFitnessTest.java scripts/tests/test_auth_theme.py no da resultados. git grep -nE -- '--(color-fondo|color-marca|color-marca-alterna|color-marca-brillante|color-marca-texto|color-destacado-fondo|color-destacado-fondo-alto|color-destacado-texto|color-destacado-texto-suave|color-texto-sobre-error|movimiento-retraso-ninguno|movimiento-animacion-ola|movimiento-animacion-vuelo-carga)\\s*:' -- cliente-liviano/src/main auth-service/themes no da resultados. En git diff E7_guia_ui...HEAD, cada línea que deja de nombrar un alias nombra en su lugar el token de su definición en tokens.css de E7_guia_ui (tokens.css:177-183, 221 y 274-275), sin otro cambio en esa línea. EstilosBaseTest pasa sin cambios y /estilos conserva sus 14 fichas de tokens. mvn clean test -pl cliente-liviano -am pasa."
+    },
+    {
+      "id": "DA-36",
+      "texto": "El tema de Keycloak también deja los alias: donatrack.css usa el token de la guía del mismo valor, scripts/tests/test_auth_theme.py nombra esos tokens con las mismas aserciones y los mismos mínimos, y la copia de tokens.css se vuelve a sincronizar con scripts/sincronizar_tema.py.",
+      "quien": "autor del manifiesto de Z, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-36",
+      "lote": "z-tokens",
+      "criterio": "git grep -nE -- '--color-(papel|tinta-suave|acento|acento-hondo|acento-claro|suelo-hondo|destacado|titulo|sombra|sombra-grano)([^-a-z0-9]|$)' -- auth-service/themes no da resultados. python scripts/sincronizar_tema.py --verificar sale con 0. python -m unittest discover -s scripts/tests -p test_auth_theme.py pasa con la misma cantidad de tests que en E7_guia_ui (el lote pega las dos salidas). git diff E7_guia_ui...HEAD -- scripts/tests/test_auth_theme.py solo cambia nombres de tokens: ningún método sale, ninguna aserción sale y ningún mínimo de ContrasteWcagAATests.PARES baja."
+    },
+    {
+      "id": "DA-37",
+      "texto": "De la lista PARES de InterfazFitnessTest salen solo los 16 pares que nombran un token retirado. El del título sobre el papel pasa a --color-accion-primaria sobre --color-fondo-pagina, con el mismo 4,5. Los demás se quedan con su mínimo. La lista pasa de 51 a 35 pares y conserva los 29 pares con piso de la guía.",
+      "quien": "autor del manifiesto de Z, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-37",
+      "lote": "z-tokens",
+      "criterio": "En cliente-liviano/src/test/java/grupo5/cliente/InterfazFitnessTest.java, git grep -c 'new Par(\"' da 35. git diff E7_guia_ui...HEAD de ese archivo solo saca pares que nombran --color-fondo, --color-destacado-*, --color-marca* o --color-texto-sobre-error (16), y cambia new Par(\"--color-titulo\", \"--color-fondo-pagina\", 4.5) por new Par(\"--color-accion-primaria\", \"--color-fondo-pagina\", 4.5). Ningún otro par cambia ni baja su mínimo. Cada uno de los 29 pares con mínimo mayor que 0 de docs/interfaz/guia/partes/90-script.html:216-245 está en la lista. InterfazFitnessTest pasa."
+    },
+    {
+      "id": "DA-38",
+      "texto": "Sale de HOJAS_HEREDADAS entidad-recibidas.css, que ya no existe. Una hoja de la lista que quedó sin reglas se borra, con lo que la nombra. Sale de la lista toda hoja que el cerco acepta como hoja de pantalla nueva (sin color, fondo, fuente ni @keyframes). templates/paginador.html se borra si no lo nombra ningún archivo de cliente-liviano/src. Ninguna hoja con reglas se reescribe para salir de la lista.",
+      "quien": "autor del manifiesto de Z, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-38",
+      "lote": "z-cerco",
+      "criterio": "En InterfazFitnessTest.java, HOJAS_HEREDADAS no nombra entidad-recibidas.css, y cada hoja que nombra existe en cliente-liviano/src/main/resources/static/css/. Para cada hoja que queda en la lista, git grep -nP '(?<![\\w-])(?:color|background(?:-color|-image)?|font(?:-family)?)\\s*:|@keyframes' -- cliente-liviano/src/main/resources/static/css/<hoja> da al menos una línea fuera de un comentario: es la que la retiene, y el informe del lote la cita. Una hoja o una plantilla que el lote borró no aparece en git grep -n '<nombre>' -- cliente-liviano/src. git diff E7_guia_ui...HEAD no saca ninguna regla de una hoja que sigue existiendo, salvo el @import de una hoja borrada. InterfazFitnessTest pasa."
+    },
+    {
+      "id": "DA-10",
+      "texto": "Con HG-03: en lo privado (quien dona y la organización), la etiqueta de una entrega confirmada lleva el nombre de quien recibió; en lo público (la portada y Entregas), sigue la organización, nunca una persona.",
+      "quien": "relevamiento del 2026-11-24 (corrida desatendida), por delegación del usuario",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-10",
+      "lote": "z-hg03",
+      "criterio": "Un test con el puerto simulado afirma que, con una entrega confirmada que trae el nombre de quien recibió, /donante-inicio y /entidad-seguimiento-sellada muestran ese nombre en la etiqueta. Otro test afirma que, con el mismo dato, /publico-portada y /publico-donaciones no contienen ese nombre y sí el de la organización. En git diff E7_guia_ui...HEAD, el adaptador de lo público (rest/PublicoRest.java o el que arme esas vistas) no lee el campo nuevo."
+    }
+  ],
+  "lotes": [
+    {
+      "id": "z-tokens",
+      "ola": "Z",
+      "tanda": 1,
+      "items": [
+        "Z-01",
+        "Z-02",
+        "Z-03",
+        "Z-04"
+      ],
+      "titulo": "Los alias, los tokens sin uso, la lista de pares y el tema de Keycloak",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/resources/: static/css/tokens.css; static/css/movimiento.css; cada hoja de static/css/ y static/css/componentes/ que nombra un alias, solo para el cambio de nombre (34 hojas el 2026-11-25); templates/estilos.html, solo la ficha «Color: los nombres de antes» (estilos.html:292-305). cliente-liviano/src/test/java/grupo5/cliente/InterfazFitnessTest.java, solo PARES. docs/interfaz/componentes.md, solo «Los nombres de antes» (componentes.md:203-212) y las frases que nombran un token retirado (:129 y :164). auth-service/themes/donatrack/login/resources/css/donatrack.css, solo el cambio de nombre; la copia auth-service/themes/donatrack/login/resources/css/tokens.css, solo con python scripts/sincronizar_tema.py. scripts/tests/test_auth_theme.py, solo los nombres de los alias.",
+      "rutasVisuales": [
+        "estilos"
+      ],
+      "que": "Retira los alias y los tokens sin uso de DA-14b cambiando un nombre por otro del mismo valor: ningún color calculado cambia. (1) Cada uso de un alias en las hojas, en estilos.html y en el tema de Keycloak pasa al token de su definición en tokens.css. --color-papel pasa a --color-fondo-pagina; --color-tinta-suave, a --color-texto-suave; --color-acento y --color-titulo, a --color-accion-primaria; --color-acento-hondo, a --color-accion-primaria-activa; --color-acento-claro, a --color-salvia; --color-suelo-hondo y --color-sombra-grano, a --color-tinta; --color-sombra, a --color-hoja; --color-destacado, a --color-raiz (backlog, sección 3.2; tokens.css:177-183, 221 y 274-275). Después salen sus 10 definiciones. (2) Salen los 11 tokens que no usa ninguna hoja ni plantilla y solo nombra InterfazFitnessTest: --color-fondo, --color-marca, --color-marca-alterna, --color-marca-brillante, --color-marca-texto, --color-destacado-fondo, --color-destacado-fondo-alto, --color-destacado-texto, --color-destacado-texto-suave, --color-texto-sobre-error y --movimiento-retraso-ninguno. El caso de InterfazFitnessTest.java:664-668 que escribe --movimiento-retraso-ninguno en un texto de prueba no se toca: prueba la regla, no el token. Un valor base --p-* que quede sin ninguna referencia sale también y se anota, como en C0. (3) De DTI-47, ítem 8: --color-sombra-grano es uno de los 10 alias. Los otros dos, --movimiento-animacion-ola y --movimiento-animacion-vuelo-carga, salen de movimiento.css (:53 y :56). @keyframes mov-ola (:235) sale con el primero si nada más lo nombra; mov-vuelo se queda, porque lo usa --movimiento-animacion-vuelo. (4) La lista PARES de InterfazFitnessTest cambia con DA-37. (5) El tema de Keycloak, con DA-36: donatrack.css usa los nombres de la guía; python scripts/sincronizar_tema.py copia tokens.css; y python scripts/sincronizar_tema.py --verificar y python -m unittest discover -s scripts/tests -p test_auth_theme.py pasan. Ese test no corre en los gates del workflow: el lote lo corre y pega la salida. (6) La ficha «Color: los nombres de antes» de /estilos se queda, porque EstilosBaseTest cuenta 14 fichas (EstilosBaseTest.java:44) y no se edita. Su bajada pasa a decir que esos nombres se retiraron en la ola Z (DA-14b) y que cada hoja usa el de la guía. Su lista deja de nombrar los alias: muestra el token de la guía que quedó en cada caso. componentes.md dice lo mismo y deja de nombrar los tokens retirados. Se quedan los tokens que hoy no nombra ninguna hoja pero son parte del sistema: --medida-quiebre-medio (vale por su valor en 39 media queries, sección 3.2), los tres -ambiente de movimiento.css y --medida-pagina. docs/interfaz/guia/ no se toca ni se vuelve a armar (encabezado del backlog). Ninguna otra regla de ninguna hoja cambia."
+    },
+    {
+      "id": "z-hg02",
+      "ola": "Z",
+      "tanda": 1,
+      "condicion": "HG-02",
+      "items": [
+        "Z-05"
+      ],
+      "titulo": "HG-02: la hora estimada de llegada",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/donante-inicio.html, persona/donante-inicio.html, donante-donaciones-detalle.html y donante-seguimiento.html, solo el texto del paso en camino y sus comentarios HG-02; java/grupo5/cliente/rest/, la lectura del seguimiento de Logística (LogisticaApi.java) y los adaptadores que arman esas vistas (DonanteInicioRest.java, DonanteDonaciones.java y DonanteSeguimientoRest.java); java/grupo5/cliente/puertos/, solo el campo opcional en las vistas de esas pantallas; java/grupo5/cliente/maqueta/ (DonanteInicioMaqueta.java, DonanteDonacionesDeEjemplo.java y DonanteSeguimientoMaqueta.java), solo el dato de ejemplo. Y los tests de esas vistas y de esas rutas.",
+      "rutasVisuales": [
+        "donante-inicio",
+        "donante-inicio?cuenta=persona",
+        "donante-donaciones-detalle",
+        "donante-seguimiento"
+      ],
+      "que": "Conecta HG-02, la hora estimada de llegada (sección 7 del backlog), con el PR del hueco ya en la rama (regla 3). En el inicio de quien dona (la empresa y la persona), en el detalle de una donación en camino y en Seguimiento, la pantalla dice la hora estimada con el texto que dibuja la guía en A04 y A07 (docs/interfaz/guia/partes/50-pantallas.html, #inicio-donante y #seguimiento). Va en el lugar donde hoy está «En camino desde las <hora>» como reemplazo (donante-inicio.html:92-95, persona/donante-inicio.html:103-106, donante-seguimiento.html:125-128 y donante-donaciones-detalle.html:118). Si el contrato del PR permite que una entrega venga sin hora estimada, en ese caso la pantalla muestra lo de hoy, sin decir que el dato no llega. Salen los comentarios HG-02 que explican el reemplazo (donante-inicio.html:7 y :92, persona/donante-inicio.html:6 y :103, donante-seguimiento.html:9 y :125). Donaciones (A05) no muestra la hora hoy y no se le agrega (regla 5). Un test con el puerto simulado afirma que, con el campo, cada una de las cuatro pantallas muestra la hora estimada; otro, que la maqueta muestra el dato de ejemplo."
+    },
+    {
+      "id": "z-hg03",
+      "ola": "Z",
+      "tanda": 2,
+      "condicion": "HG-03",
+      "items": [
+        "Z-06"
+      ],
+      "titulo": "HG-03: el nombre de quien recibió",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/donante-inicio.html, persona/donante-inicio.html, entidad-seguimiento.html, entidad-seguimiento-confirmar.html y entidad-seguimiento-sellada.html, solo quién recibió y sus comentarios HG-03; publico-portada.html y publico-donaciones.html, solo sus comentarios HG-03 (siguen con la organización, DA-10); java/grupo5/cliente/rest/, los adaptadores que arman esas vistas de quien dona y de la organización (EntidadConfirmarRest.java, EntidadSeguimientoRest.java, RecibidasRest.java y DonanteInicioRest.java, con la lectura de Logística o Donaciones que traiga el campo); java/grupo5/cliente/puertos/, solo el campo opcional en esas vistas; java/grupo5/cliente/maqueta/, solo el dato de ejemplo. Y los tests de esas vistas y de esas rutas. componentes/etiqueta-entrega.html se usa sin editarlo: su parámetro pie ya lleva quién recibió.",
+      "rutasVisuales": [
+        "donante-inicio",
+        "donante-inicio?cuenta=persona",
+        "entidad-seguimiento",
+        "entidad-seguimiento-confirmar",
+        "entidad-seguimiento-sellada",
+        "publico-portada",
+        "publico-donaciones"
+      ],
+      "que": "Conecta HG-03, el nombre de quien recibió (sección 7 del backlog), con el PR del hueco ya en la rama (regla 3) y con DA-10. En lo privado, la etiqueta de una entrega confirmada lleva el nombre de quien recibió, con el pie de componentes/etiqueta-entrega («Recibió Marta el 5 de octubre», etiqueta-entrega.html:13): en el inicio de quien dona (la empresa y la persona), en Entregas y en Recepción confirmada de la organización. Hoy va la organización como reemplazo (EntidadConfirmarRest.java:250). En lo público (la portada y Entregas) sigue la organización, nunca una persona: el adaptador de lo público no lee el campo. Confirmar recepción cambia solo su comentario. Si el contrato del PR pide el nombre al confirmar, el lote no suma el campo al formulario (regla 5): frena y lo informa como bloqueante, que va al PR final. Salen los comentarios HG-03 que explican el reemplazo; los de lo público pasan a citar solo DA-10. Si el contrato permite que venga vacío, en ese caso va la organización, como hoy."
+    },
+    {
+      "id": "z-hg04",
+      "ola": "Z",
+      "tanda": 3,
+      "condicion": "HG-04",
+      "items": [
+        "Z-07"
+      ],
+      "titulo": "HG-04: el avance de una necesidad en unidades",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/entidad-necesidades.html, entidad-inicio.html, donante-entidades.html, publico-entidades.html, donante-donaciones-detalle.html, entidad-entrega-problema.html y entidad-seguimiento-sellada.html, solo el avance de la necesidad y sus comentarios HG-04; java/grupo5/cliente/rest/, la lectura de las necesidades de Donaciones (DonacionesApi.java) y los adaptadores que arman esas vistas (EntidadNecesidadesRest.java, EntidadInicioRest.java, DonanteEntidadesRest.java, PublicoEntidadesRest.java, DonanteDonaciones.java y EntidadConfirmarRest.java); java/grupo5/cliente/puertos/, solo el campo opcional en esas vistas; java/grupo5/cliente/maqueta/, solo el dato de ejemplo. Y los tests de esas vistas y de esas rutas.",
+      "rutasVisuales": [
+        "entidad-necesidades",
+        "entidad-inicio",
+        "donante-entidades",
+        "publico-entidades",
+        "donante-donaciones-detalle",
+        "entidad-entrega-problema",
+        "entidad-seguimiento-sellada"
+      ],
+      "que": "Conecta HG-04, el avance de una necesidad en unidades (llegaron, asignadas y sin asignar; sección 7 del backlog), con el PR del hueco ya en la rama (regla 3). Donde hoy va la cuenta de donaciones como reemplazo, la pantalla muestra el avance en unidades con el .progreso del catálogo y la cuenta en palabras, como dibuja la guía en A02, A06, A09 y A13 (docs/interfaz/guia/partes/50-pantallas.html). Son Necesidades, el inicio de la organización, Organizaciones de quien dona (la empresa y la persona, con el mismo fragmento hoja), Organizaciones de lo público, el detalle de una donación, Llegó con un problema y Recepción confirmada. Si una necesidad viene sin el dato, va la cuenta de hoy y la barra solo cuando se sabe, como ahora. Salen los comentarios HG-04 que explican el reemplazo (por ejemplo, entidad-necesidades.html:11 y :230, entidad-inicio.html:10 y :204, donante-entidades.html:10 y :189, publico-entidades.html:13 y :227). Un test con el puerto simulado afirma que, con el dato, cada pantalla muestra las unidades; otro, que la maqueta muestra el dato de ejemplo."
+    },
+    {
+      "id": "z-cerco",
+      "ola": "Z",
+      "tanda": 4,
+      "items": [
+        "Z-08",
+        "Z-09",
+        "Z-10"
+      ],
+      "titulo": "El cerco: HOJAS_HEREDADAS, las hojas vacías, paginador.html y los dos topes",
+      "rol": "mecanico",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "cliente-liviano/src/test/java/grupo5/cliente/InterfazFitnessTest.java, solo HOJAS_HEREDADAS, TOPE_DE_CLASES_DE_UN_SOLO_USO y TOPE_DE_MEDIDAS_LITERALES. Las hojas de cliente-liviano/src/main/resources/static/css/ que nombra HOJAS_HEREDADAS y quedaron sin reglas, para borrarlas, con la línea <link> o @import que las nombra. cliente-liviano/src/main/resources/templates/paginador.html, solo para borrarlo si nada lo nombra. cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt, solo si borrar una hoja deja una clase sin uso.",
+      "rutasVisuales": [],
+      "que": "Corre después de todos los cambios de hojas de Z, en la tanda 4. (1) DA-38: sale de HOJAS_HEREDADAS entidad-recibidas.css, que ORG borró (DTI-48, ítem 3). Una hoja de la lista sin ninguna regla (solo comentarios, o vacía) se borra, junto con la línea que la carga en una plantilla o un @import en otra hoja. Después prueba sacar de la lista cada una de las otras hojas, de a una: si InterfazFitnessTest.hojasDePantallaNuevasSoloDisponen pasa sin ella, sale, porque la lista dice que solo baja con cada hoja migrada (InterfazFitnessTest.java:268-272). Si no pasa, se queda, y el informe cita la línea que la retiene. ADM2 dejó para Z la pregunta de admin-inicio.css: esta prueba la responde. Ninguna regla de una hoja que sigue existiendo cambia para que salga: eso es la migración B3 (backlog-migracion-componentes.md). (2) templates/paginador.html se borra si git grep -n 'paginador ::\\|paginador.html' -- cliente-liviano/src no da resultados; si lo nombra algo, se queda y se anota (sección 16.2). (3) Al final mide los dos conteos con todo lo de Z integrado: las clases de un solo uso de las hojas heredadas y las medidas literales. Para leer cada valor, deja el tope un momento en 0 y lo toma del mensaje del test, o usa la réplica de la sección 10.4. Después deja TOPE_DE_CLASES_DE_UN_SOLO_USO (hoy 159, :253) y TOPE_DE_MEDIDAS_LITERALES (hoy 1192, :561) en el valor medido. Si un conteo da más que su tope, es un bloqueante: el tope no sube. El informe lleva los dos valores, antes y después."
+    },
+    {
+      "id": "z-docs",
+      "ola": "Z",
+      "tanda": 5,
+      "items": [
+        "Z-11",
+        "Z-12",
+        "Z-13",
+        "Z-14"
+      ],
+      "titulo": "La documentación de Z",
+      "rol": "juicio",
+      "ruta": "QUICK",
+      "disenio": "ninguno",
+      "modulos": [],
+      "archivos": "docs/interfaz/backlog-migracion-componentes.md; docs/README.md; docs/ESTADO_DOCUMENTACION.md; docs/adr/DEUDA_TECNICA.md.",
+      "rutasVisuales": [],
+      "que": "Pone al día la documentación con lo que dejaron los lotes de Z integrados (regla 4); solo documentos. (1) backlog-migracion-componentes.md: la fase 3 (B3-02 a B3-06, :246-250) y el registro de avance (:252 en adelante) dicen qué hojas migraron las olas de la guía, cuáles salieron de HOJAS_HEREDADAS y cuáles se borraron, con la ola y el commit. Sale de InterfazFitnessTest y de git log en la rama. Lo que sigue pendiente queda pendiente. (2) docs/README.md: el árbol de docs/interfaz/ (:127-140) suma guia/ (la guía versionada) y backlog-guia-al-codigo.md con sus manifiestos, y la línea de la guía (:203) suma la deuda de Z. (3) docs/ESTADO_DOCUMENTACION.md: el mapa de la sección 2 suma docs/interfaz/guia/ y el backlog; la fila de la guía (:428) dice qué hizo Z. (4) docs/adr/DEUDA_TECNICA.md: cada ítem que Z salda lleva una actualización con la fecha y «saldado en la ola Z»: los alias y los tokens de DTI-46 y DTI-47 (DA-14b), DTI-47 ítem 8 y DTI-48 ítem 3. Una DTI nueva, con el número libre siguiente, junta lo que Z deja: cada hueco sin conectar con su PR y lo de la sección 17.5 del backlog. El resultado del stack y de la pasada completa lo suma la documentación de cierre del workflow, después del cierre. (5) python scripts/validate_docs_links.py, sin enlaces rotos nuevos. La bitácora y los cierres de las secciones 3 a 16 del backlog no se reescriben."
+    }
+  ]
+}

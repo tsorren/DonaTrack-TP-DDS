@@ -86,6 +86,8 @@ Manifiesto de PUB2 (2026-11-24, misma corrida): DA-32 es una decisión nueva que
 respondió, con la misma regla y la misma nota.
 Manifiesto de ADM2 (2026-11-25, misma corrida): DA-33 a DA-35 son decisiones nuevas que el usuario
 no respondió, con la misma regla y la misma nota.
+Manifiesto de Z (2026-11-25, misma corrida): DA-36 a DA-38 son decisiones nuevas que el usuario no
+respondió, con la misma regla y la misma nota (§17.1).
 
 | ID | Pregunta | Recomendación | Respuesta del usuario | Fecha | Ola |
 |---|---|---|---|---|---|
@@ -123,6 +125,9 @@ no respondió, con la misma regla y la misma nota.
 | DA-33 | Registrar donante: con DA-06, «registrado» pasa a aviso breve en Donantes. La página de hoy ofrece «Registrar su donación» (RF-15, «en un mismo flujo»), y el puerto no dice quién quedó registrado (`AdminPersonasPuerto.registrarDonante` devuelve `void`). ¿Dónde queda esa salida? | La respuesta es el aviso breve en Donantes, con el texto de hoy («Registraste a Ana Ejemplo como donante.» y, con `?escenario=ya-era`, «Ana Ejemplo ya era donante. No cambiamos nada.»), como ya hace el envío real (`AdminDonantesEnvioController.registrar` termina en `/admin-donantes` con el aviso). Registrar su donación sigue desde la ficha del donante en la lista, que ya tiene «Registrar una donación». En la maqueta, `/admin-donantes-registrado` sigue y muestra Donantes con el aviso. El paso de más (buscar al donante en la lista) se anota como deuda. Descartadas: conservar la página con sus dos acciones (contradice DA-06, y el envío real ya no la muestra); un enlace dentro del aviso breve (el aviso breve no pide nada, P13, y el envío real no sabe la clave del donante nuevo sin cambiar el puerto) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-25 | ADM2 |
 | DA-34 | Donantes y Organizaciones son hoy una bandeja con ficha (`.maestro` y `.maestro-ficha`, R11-34), y ADM1 pasó Donaciones a la `.tabla` del catálogo con cada fila a su detalle (decisión del agente, [DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 5). ¿Donantes y Organizaciones siguen como bandeja con ficha o pasan a tabla? | Siguen como bandeja con ficha, que es una pieza del catálogo, en el galpón: la ficha es donde se decide una solicitud (Aprobar, Pedir corrección y Rechazar) y donde sigue el donante (sus donaciones y «Registrar una donación»), y `?donante=` y `?entidad=` siguen siendo la dirección de cada ficha. Descartada: la tabla con una página de detalle por fila, como Donaciones (pide rutas nuevas, lleva las acciones de una solicitud a otra pantalla y obliga a cambiar los enlaces que llegan a cada ficha) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-25 | ADM2 |
 | DA-35 | Administradores: con DA-06, ¿«Contraseña provisoria» (`/admin-administradores-alta`), lo que ve el admin después de dar de alta a otro, pasa a aviso breve? | No: se queda como página propia, como en su ficha ([`flujos/r11-p1-admins.md`](flujos/r11-p1-admins.md) §4.4). No es solo una respuesta: muestra una contraseña que se ve una sola vez (la página va con `Cache-Control: no-store` y recargarla lleva a Administradores) y hay que anotarla con calma. Va en el galpón con la composición de A12 y una sola acción llena, «Volver a Administradores». `/admin-administradores-nuevo`, el formulario del alta sin JavaScript, sigue como página aparte: es un estado del formulario. Descartada: el aviso breve (se va solo y la contraseña no se vuelve a mostrar) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-25 | ADM2 |
+| DA-36 | Z retira los 10 alias (DA-14b). El tema de Keycloak lleva una copia idéntica de `tokens.css` (`auth-service/README.md:126`), y su hoja `donatrack.css` usa 6 de esos alias en 9 lugares: `--color-acento`, `-acento-hondo`, `-acento-claro`, `--color-papel`, `--color-sombra` y `--color-titulo`. También los nombra `scripts/tests/test_auth_theme.py`. ¿Qué pasa con el tema? | El tema también deja los alias. `donatrack.css` pasa al token de la guía del mismo valor (la tabla de §3.2), y `test_auth_theme.py` nombra esos tokens con las mismas aserciones y los mismos mínimos. La copia se vuelve a sincronizar con `scripts/sincronizar_tema.py`. Descartadas: conservar en `tokens.css` los alias que usa el tema (DA-14b no se cumpliría y quedarían alias vivos solo para otra imagen); que la copia del tema conserve los alias y deje de ser idéntica (rompe la regla de la copia y el `--verificar` del script) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-25 | Z |
+| DA-37 | DA-14b cambia la lista de pares de `InterfazFitnessTest` «por la de la guía». Al pie de la letra, saldrían también 6 pares de tokens que siguen en uso y que la guía no mide: el título sobre el papel, el texto sobre el botón secundario, éxito, info, advertencia y el foco sobre una lámina. ¿Qué pares salen? | Salen solo los 16 que nombran un token retirado. El del título sobre el papel pasa a `--color-accion-primaria` sobre `--color-fondo-pagina`, con el mismo 4,5. Los demás se quedan con su mínimo, y la lista ya tiene los 29 pares con piso de la guía (`guia/partes/90-script.html:216-245`): pasa de 51 a 35 pares. Descartada: la lista de la guía tal cual, con 29 pares. El cerco dejaría de medir 6 pares que están en uso, y eso lo debilita (`AGENTS.md` §4.3) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-25 | Z |
+| DA-38 | El plan saca del cerco `entidad-recibidas.css`, que ya no existe, y retira las hojas vacías. `HOJAS_HEREDADAS` «solo baja: una hoja migrada por completo sale de acá» (`InterfazFitnessTest.java:268-272`). ADM2 deja para Z dos preguntas: si `admin-inicio.css` puede salir de la lista y si `paginador.html` queda sin uso. ¿Qué sale? | Sale `entidad-recibidas.css`. Una hoja sin reglas se borra, con lo que la nombra. Sale de la lista toda hoja que el cerco acepta como hoja de pantalla nueva, es decir, sin color, fondo, fuente ni `@keyframes`: el test pasa sin ella. `paginador.html` se borra si no lo nombra ningún archivo de `cliente-liviano/src`. Ninguna hoja con reglas se reescribe para que salga: eso es la migración B3 (`backlog-migracion-componentes.md`). Descartada: sacar solo `entidad-recibidas.css`, que deja en la lista hojas que ya cumplen, cuando la lista dice que baja con cada una | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-25 | Z |
 | G0 | Con la medida de C0 (§3.4): ¿el plan sigue con todo el sitio o se recorta al recorrido de la demo? | Recorte al recorrido de la demo (ORG, DON y PUB1), con ADM1 por decidir en G1 | Todo el sitio («Quiero todo el sitio», ronda 3). Quedan 8 corridas: C1, ORG, DON, PUB1, ADM1, PUB2, ADM2 y Z | 2026-11-22 | Todas |
 | G1 | Con la hoja de G1 (16 pantallas de hoy, §10.3): ¿cada área se puede mostrar así? | Ninguna: lo decide el usuario mirando la hoja | Las cuatro áreas se pueden mostrar así («Las 4 se muestran»). G2 permite que un área entre a medias. Es una excepción a la regla del piso del plan (§10: un área con una pantalla sin rehacer que falla el piso queda en «no»): las 11 rutas en rojo de la línea de base (§10.4), que tocan las cuatro áreas, fallan solo por toque, no por contraste. El usuario la mantuvo al conocer la regla («Mantener, excepción») | 2026-11-23 | Todas |
 | DA-17 | ¿El menú de cada rol cambia en la ola de ese rol, y no todos juntos en C1? | Sí: si una ola no llega, su área queda con el menú de hoy | Sí («Todas las recomendadas», ronda 3) | 2026-11-22 | PUB1, DON, ORG y ADM1 |
@@ -1533,3 +1538,116 @@ límite de las hojas compartidas de §16.2.
   cambia un adaptador `rest` (plan de la corrida, punto 5). Queda para Z comprobar con datos reales
   Donantes, la importación, Organizaciones con una solicitud, el alta de un administrador y los dos
   registros.
+
+## 17. Ola Z: el cierre
+
+Z no rehace ninguna pantalla: lo visual de las olas ya está. Retira los 10 alias de §3.2 y los
+tokens sin uso: los 11 de DA-14b y los dos de [DTI-47](../adr/DEUDA_TECNICA.md#dti-47), ítem 8, que
+no son alias. Cambia la lista de pares de contraste, saca del cerco lo que ya no hace falta, baja
+los dos topes de `InterfazFitnessTest`, conecta el dato real de cada hueco de §7 cuyo PR esté
+mergeado y pone al día la documentación. Es la única ola que intenta el stack propio con login real
+y la única, con C1, que pasa `-Pvisual` por todas las rutas de `paginas.txt` (DA-20). Manifiesto:
+[`backlog-guia-al-codigo.z.manifiesto.json`](backlog-guia-al-codigo.z.manifiesto.json).
+
+Se escribió el 2026-11-25 en la corrida desatendida, antes de que corriera ADM2: el reparto y DA-36
+a DA-38 no los aprobó el usuario y van con la opción recomendada (§2.2). Se lanza desde la
+`E7_guia_ui` que deje ADM2. Sus `condiciones` son los huecos cuyo PR esté mergeado en `ENTREGA_7`,
+con `ENTREGA_7` ya mergeada en `E7_guia_ui` (regla 3).
+
+### 17.1 Decisiones de la ola
+
+| ID | Qué decide | Lote |
+|---|---|---|
+| DA-14b | Salen los 10 alias y los 11 tokens que solo nombra `InterfazFitnessTest`; cada uso de un alias pasa al token de la guía del mismo valor | `z-tokens` |
+| DA-36 | El tema de Keycloak también deja los alias: su hoja y `test_auth_theme.py` pasan a los nombres de la guía | `z-tokens` |
+| DA-37 | De la lista de pares salen solo los 16 que nombran un token retirado; el del título pasa a `--color-accion-primaria` con el mismo mínimo | `z-tokens` |
+| DA-38 | Sale `entidad-recibidas.css`; se borran las hojas vacías; sale de `HOJAS_HEREDADAS` toda hoja que el cerco ya acepta | `z-cerco` |
+| DA-10 | En lo público, quien recibió es la organización; en lo privado, la persona | `z-hg03`, solo si corre |
+
+DA-36 a DA-38 son nuevas de esta ola; su opción descartada está en §2.2. DA-10 es de un lote
+condicional: si HG-03 no corre, el workflow la informa como «no cumplida: el lote no corrió», y eso
+es lo esperado. DA-09 (HG-01 no se construye) no tiene lote: la cubre la regla 3. DA-12 (PRs
+sueltos) y DA-15 (corte por área) tampoco son de un lote: son del plan y de G2.
+
+### 17.2 Reparto
+
+Cinco tandas. Lo más probable es que corran solo tres. Los huecos son lo último en la cola de cuota
+y nadie mergea sus PRs antes del tope (plan de la corrida, punto 3). Por eso los lotes
+condicionales se omiten y sus tandas quedan vacías.
+
+- `z-tokens` va con `z-hg02` en la tanda 1: toca hojas, `tokens.css`, `/estilos`, el tema y
+  `PARES`, y ningún lote HG toca una hoja de estilo (regla 5).
+- Los tres lotes HG van en tandas distintas porque comparten plantillas:
+  - HG-02 y HG-03: `donante-inicio.html` y `persona/donante-inicio.html`.
+  - HG-02 y HG-04: `donante-donaciones-detalle.html`.
+  - HG-03 y HG-04: `entidad-seguimiento-sellada.html`.
+- `z-cerco` va en la tanda 4, después de todos los cambios de hojas. Mide los topes al final y puede
+  borrar una hoja junto con su `<link>` en una plantilla que tocó un lote HG.
+- `z-docs` va último, en la tanda 5, para escribir lo que dejaron los otros cuatro.
+
+| Lote | Tanda | Qué | Condición | Rutas |
+|---|:-:|---|---|---|
+| `z-tokens` | 1 | Los alias, los tokens sin uso, la lista de pares y el tema de Keycloak | — | `/estilos` |
+| `z-hg02` | 1 | HG-02, la hora estimada de llegada | `HG-02` | 4 de quien dona |
+| `z-hg03` | 2 | HG-03, el nombre de quien recibió | `HG-03` | 7 de quien dona, la organización y lo público |
+| `z-hg04` | 3 | HG-04, el avance de una necesidad en unidades | `HG-04` | 7 de la organización, quien dona y lo público |
+| `z-cerco` | 4 | `HOJAS_HEREDADAS`, las hojas vacías, `paginador.html` y los dos topes | — | Ninguna |
+| `z-docs` | 5 | `backlog-migracion-componentes.md`, `docs/README.md`, `ESTADO_DOCUMENTACION.md` y `DEUDA_TECNICA.md` | — | Ninguna |
+
+### 17.3 Ítems
+
+| ID | Lote | Qué | Evidencia y decisiones | Estado |
+|---|---|---|---|---|
+| Z-01 | `z-tokens` | Los 10 alias: cada uso en las hojas pasa al token de su definición y salen sus 10 definiciones. `--color-papel` pasa a `--color-fondo-pagina`; `--color-tinta-suave`, a `--color-texto-suave`; `--color-acento` y `--color-titulo`, a `--color-accion-primaria`; `--color-acento-hondo`, a `--color-accion-primaria-activa`; `--color-acento-claro`, a `--color-salvia`; `--color-suelo-hondo` y `--color-sombra-grano`, a `--color-tinta`; `--color-sombra`, a `--color-hoja`; `--color-destacado`, a `--color-raiz`. La ficha «Color: los nombres de antes» de `/estilos` se queda, porque `EstilosBaseTest` cuenta 14 fichas, y pasa a decir que se retiraron en Z. `componentes.md` dice lo mismo | §3.2; `tokens.css:177-183, 221, 274-275`; `estilos.html:292-305`; `componentes.md:203-212`; `EstilosBaseTest.java:44`. `[VERIFIED]` 2026-11-25: los usan 34 hojas, `estilos.html` y la hoja del tema. DA-14b | Pendiente |
+| Z-02 | `z-tokens` | Los 11 tokens que no usa ninguna hoja ni plantilla: `--color-fondo`, `--color-marca`, `-marca-alterna`, `-marca-brillante` y `-marca-texto`, los cuatro `--color-destacado-*`, `--color-texto-sobre-error` y `--movimiento-retraso-ninguno`. Salen, junto con todo valor base `--p-*` que quede sin referencia. La lista `PARES` pasa de 51 a 35 pares | §3.2; `InterfazFitnessTest.java:57-112`; pares de la guía en `guia/partes/90-script.html:216-245`. El caso de `InterfazFitnessTest.java:664-668` no se toca: es un texto de prueba de la regla. DA-14b y DA-37 | Pendiente |
+| Z-03 | `z-tokens` | Los dos de DTI-47, ítem 8, que no son alias: `--movimiento-animacion-ola` y `--movimiento-animacion-vuelo-carga` salen de `movimiento.css`. Con el primero sale `@keyframes mov-ola`, si nada más lo nombra. `mov-vuelo` se queda, porque lo usa `--movimiento-animacion-vuelo` | `movimiento.css:53, 56, 235`; [DTI-47](../adr/DEUDA_TECNICA.md#dti-47), ítem 8. El tercero, `--color-sombra-grano`, es uno de los 10 alias (Z-01) | Pendiente |
+| Z-04 | `z-tokens` | El tema de Keycloak: `donatrack.css` usa los nombres de la guía, la copia de `tokens.css` se vuelve a sincronizar y `test_auth_theme.py` nombra los tokens de la guía, con las mismas aserciones y los mismos mínimos | `auth-service/themes/donatrack/login/resources/css/donatrack.css` (9 usos de 6 alias); `scripts/tests/test_auth_theme.py:201-203, 216-219, 236, 262-300`; `scripts/sincronizar_tema.py`. DA-36 | Pendiente |
+| Z-05 | `z-hg02` | Con el PR de HG-02 mergeado, la hora estimada de llegada va en el inicio de quien dona (la empresa y la persona), en el detalle en camino y en Seguimiento. Reemplaza a «En camino desde las …», que era el texto de reemplazo. Salen los comentarios HG-02 que explican ese reemplazo | §7; A04 y A07; `donante-inicio.html:7, 92`, `persona/donante-inicio.html:6, 103`, `donante-seguimiento.html:9, 125`, `donante-donaciones-detalle.html:118`. A05 no la muestra hoy y no se le agrega (regla 5) | Pendiente |
+| Z-06 | `z-hg03` | Con el PR de HG-03 mergeado, en lo privado la etiqueta lleva el nombre de quien recibió («Recibió Marta el 5 de octubre», `componentes/etiqueta-entrega.html:13`). En lo público sigue la organización. Confirmar recepción cambia solo su comentario: si el PR pide el nombre al confirmar, el campo nuevo del formulario no entra en Z (regla 5) y va al PR final | §7; A01, A04, A10 y A13; `EntidadConfirmarRest.java:250`; los comentarios HG-03 de `donante-inicio.html`, `persona/donante-inicio.html`, `entidad-seguimiento*.html`, `publico-portada.html:12` y `publico-donaciones.html:7`. DA-10 | Pendiente |
+| Z-07 | `z-hg04` | Con el PR de HG-04 mergeado, el avance de una necesidad va en unidades (llegaron, asignadas y sin asignar) con el `.progreso` del catálogo. Reemplaza a la cuenta de donaciones | §7; A02, A06, A09 y A13; los comentarios HG-04 de `entidad-necesidades.html`, `entidad-inicio.html`, `donante-entidades.html`, `publico-entidades.html`, `donante-donaciones-detalle.html`, `entidad-entrega-problema.html` y `entidad-seguimiento-sellada.html`; `PeriodoNecesidadDTO.java:12-19` | Pendiente |
+| Z-08 | `z-cerco` | `HOJAS_HEREDADAS`: sale `entidad-recibidas.css`, que ya no existe. Una hoja sin reglas se borra, con todo lo que la nombra. Sale también toda hoja que el cerco acepta como hoja de pantalla nueva | `InterfazFitnessTest.java:268-294` (la lista dice que solo baja) y `:390-409` (`hojasDePantallaNuevasSoloDisponen`); [DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 3; §16.2 (`admin-inicio.css`). `[VERIFIED]` 2026-11-25: la lista tiene 20 hojas y la única que no existe es `entidad-recibidas.css`. DA-38 | Pendiente |
+| Z-09 | `z-cerco` | `templates/paginador.html` se borra si, después de ADM2, ningún archivo de `cliente-liviano/src` lo nombra. Si lo nombra uno, se queda y se anota | §16.2 (fila de `paginador.html`). DA-38 | Pendiente |
+| Z-10 | `z-cerco` | Los dos topes de `InterfazFitnessTest` bajan al valor medido con todo lo de Z integrado: clases de un solo uso (hoy 159) y medidas literales (hoy 1192). Si un conteo da más que su tope, es bloqueante: el tope no sube | `InterfazFitnessTest.java:253, 561`; los mensajes de `:386` y `:608` («solo baja»); §10.2 (fila de los topes) | Pendiente |
+| Z-11 | `z-docs` | `backlog-migracion-componentes.md`: la fase 3 (B3-02 a B3-06) y el registro de avance dicen qué hojas migraron las olas de la guía, cuáles salieron de `HOJAS_HEREDADAS` y cuáles se borraron, con la ola y el commit | `backlog-migracion-componentes.md:184-252` | Pendiente |
+| Z-12 | `z-docs` | `docs/README.md`: el árbol de `interfaz/` suma `guia/` y este backlog con sus manifiestos; la línea de la guía suma la deuda de Z | `docs/README.md:127-140, 203` | Pendiente |
+| Z-13 | `z-docs` | `docs/ESTADO_DOCUMENTACION.md`: el mapa de la sección 2 suma `docs/interfaz/guia/` y este backlog; la fila de la guía dice qué hizo Z | `ESTADO_DOCUMENTACION.md:21-153, 428` | Pendiente |
+| Z-14 | `z-docs` | `docs/adr/DEUDA_TECNICA.md`: lo que Z salda va como actualización de su ítem (los alias y los tokens de DTI-46 y DTI-47, DTI-47 ítem 8 y DTI-48 ítem 3). Una DTI nueva junta lo que Z deja: los huecos sin conectar, con su PR, y lo de §17.5 | `DEUDA_TECNICA.md:819-1000` | Pendiente |
+
+### 17.4 Qué se verifica (DA-20)
+
+- **En cada lote:** los gates y `-Pvisual` sobre sus `rutasVisuales`, una por plantilla.
+  - `z-tokens` corre además `python scripts/sincronizar_tema.py --verificar` y
+    `python -m unittest discover -s scripts/tests -p test_auth_theme.py`, y pega las dos salidas.
+    El gate del workflow no corre los tests de Python.
+  - `z-cerco` y `z-docs` no tienen rutas: no cambian nada que se vea.
+  - `z-docs` corre `python scripts/validate_docs_links.py`.
+- **Ningún color cambia:** Z cambia nombres y no valores. La pasada completa del cierre aplica el
+  piso (contraste, desborde y toque) sobre todas las rutas.
+- **Al cierre (regla 1):**
+  - El stack propio, el seed y el recorrido con login real. Si Docker no levanta, va
+    `[DEFERRED_NO_DOCKER]` y el cierre sigue.
+  - `IngresoConKeycloakRealTest`, contra ese stack.
+  - `-Pvisual` sobre todas las rutas de `paginas.txt`. `[VERIFIED]` El 2026-11-25 eran 345 líneas.
+  - Los otros cinco tests visuales.
+  - Todo se compara con la línea de base de §10.4 y §10.5, menos lo que sacaron los cierres de
+    §11.3 a §16.
+  - Una falla nueva en una pantalla que Z no tocó va a los pendientes de su ola y no se arregla en Z
+    (regla 5). Una falla que rompió un lote de Z es bloqueante de ese lote.
+- **Lo que cambia en la línea de base:** nada, fuera de lo que las olas ya sacaron. Z no suma
+  ninguna excepción a la verificación visual (regla 2).
+
+### 17.5 Qué queda fuera de Z
+
+Son los puntos de las DTI de la guía que dicen «en Z», pero piden algo que Z no hace. Van a la lista
+de pendientes del PR final y a la DTI nueva de Z-14.
+
+| Qué | Dónde consta | Por qué no entra en Z |
+|---|---|---|
+| `DonanteInicioPuerto.tablero()`, `DonanteTableroVista` y sus implementaciones, sin uso | [DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 6 | Retirarlos borra su test (`DonanteInicioRestTest.java:252`, `elTableroPideUnaPaginaDeTresPorColumnaYLasQueEsperanDestinoComoCifra`), y en Z ningún test se borra (regla 2). Lo decide el usuario |
+| «Entregas para mirar hoy» y los otros datos que el puerto del admin no da | [DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítems 1, 6 y 7 | Piden cambiar un puerto o un adaptador fuera de la guía. Lo decide el usuario |
+| La barra de arriba en el celular, el lema del pie y los tests de las abejas y del corte «bajo tierra» | [DTI-47](../adr/DEUDA_TECNICA.md#dti-47), ítems 4 y 5; [DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 3 (DA-22) | Piden editar un test de `visual/`, y eso lo decide el usuario |
+| El resumen doble con JavaScript de los dos registros y la firma de `comoSigue` | [DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítems 1 y 9 | Son arreglos de pantallas de PUB2, y Z no rehace pantallas (regla 5). Van al PR final |
+| El aviso «Todavía espera destino» en Seguimiento | [DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 2 y 4 | Es una decisión del usuario, pendiente desde DON |
+| `raices-pie.svg`, `grano-sombra.svg` y las reglas de `.vacio` pisadas en `aviso.css` | [DTI-47](../adr/DEUDA_TECNICA.md#dti-47), ítem 8 | No son tokens, y la regla de Z retira tokens. Además, `aviso.css` es del catálogo |
+| La migración de las hojas heredadas que todavía tienen reglas (B3-02 a B3-06) | `backlog-migracion-componentes.md:246-250` | Es reescribir hojas de pantalla. Z solo saca de la lista las que el cerco ya acepta (DA-38) |
+| HG-01, la fecha de la nueva salida | §7; DA-09 | No se construye: queda el texto sin fecha |
