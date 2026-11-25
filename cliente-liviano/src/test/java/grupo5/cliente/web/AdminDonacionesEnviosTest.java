@@ -1,11 +1,13 @@
 package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -142,50 +144,84 @@ class AdminDonacionesEnviosTest {
         "1 en el depósito.");
   }
 
-  // R11-34 (ficha r11-p2-admin-bandeja §4): elegir un renglón de la página 2 la conserva
+  // ADM1-08 (A03): en la página 2, cada fila lleva a su detalle y el paginador conserva los
+  // filtros; la lista ya no lee la ficha de ninguna donación (la bandeja de R11-34 salió)
   @Test
-  void elegirUnRenglonDeLaPagina2NoVuelveALaPrimera() throws Exception {
+  void cadaFilaLlevaASuDetalleYLaListaNoLeeFichas() throws Exception {
     when(operacion.donaciones(any(), any())).thenAnswer(i -> pagina2(i.getArgument(0)));
-    mvc.perform(get("/admin-donaciones?estado=deposito&pagina=2&donacion=" + ID))
+    mvc.perform(get("/admin-donaciones?estado=deposito&pagina=2"))
         .andExpect(status().isOk())
+        .andExpect(content().string(containsString("<table class=\"tabla\">")))
         .andExpect(
             content()
-                .string(
-                    containsString(
-                        "href=\"/admin-donaciones?estado=deposito&amp;pagina=2&amp;donacion="
-                            + ID
-                            + "#donacion-"
-                            + ID
-                            + "\"")))
-        .andExpect(
-            content()
-                .string(
-                    containsString(
-                        "href=\"/admin-donaciones?estado=deposito&amp;pagina=2&amp;#donacion-"
-                            + ID
-                            + "\"")))
-        .andExpect(content().string(containsString("aria-current=\"true\"")));
+                .string(containsString("href=\"/admin-donaciones-detalle?donacion=" + ID + "\"")))
+        .andExpect(content().string(containsString("<tr id=\"donacion-" + ID + "\">")))
+        .andExpect(content().string(containsString("Página 2 de 3")))
+        .andExpect(content().string(not(containsString("Cerrar la ficha"))))
+        .andExpect(content().string(not(containsString("aria-current=\"true\""))));
+    verify(operacion, never()).donacion(any(), any());
   }
 
-  // R11-34 (§5): la pedida que no existe o no se pudo leer se avisa en el lugar de la ficha
+  // ADM1-08: sin la ficha, ?donacion= (un enlace viejo, como «La cubría» de Decididas) ya no lee
+  // ninguna donación: una que no existe o no carga no cambia la lista
   @Test
-  void unaDonacionQueNoExisteONoCargaSeAvisaEnElLugarDeLaFicha() throws Exception {
+  void unaDonacionPedidaQueNoExisteNoCambiaLaLista() throws Exception {
     when(operacion.donaciones(any(), any())).thenAnswer(i -> pagina2(i.getArgument(0)));
-    mvc.perform(get("/admin-donaciones?donacion=otra"))
-        .andExpect(status().isOk())
-        .andExpect(content().string(containsString("No encontramos esa donación.")))
-        .andExpect(
-            content()
-                .string(containsString("Puede que el enlace esté mal; elegí una de la lista.")))
-        .andExpect(content().string(containsString("Leche en polvo")))
-        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
     when(operacion.donacion("caida", "")).thenThrow(new ResourceAccessException("caída"));
     mvc.perform(get("/admin-donaciones?donacion=caida"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("No pudimos cargar la ficha de esta donación.")))
-        .andExpect(
-            content().string(containsString("La lista sigue a mano; probá elegirla de nuevo.")))
-        .andExpect(content().string(containsString("Leche en polvo")));
+        .andExpect(content().string(containsString("Leche en polvo · 10 u")))
+        .andExpect(content().string(not(containsString("No pudimos cargar la ficha"))));
+    mvc.perform(get("/admin-donaciones?donacion=otra"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Leche en polvo · 10 u")))
+        .andExpect(content().string(not(containsString("No encontramos esa donación."))));
+    verify(operacion, never()).donacion(any(), any());
+  }
+
+  // DA-07: una vencida lleva el par neutro con su palabra, en la lista y en el detalle, nunca el
+  // sello del problema; y no se puede marcar de nuevo
+  @Test
+  void unaVencidaLlevaElParNeutroEnLaListaYEnElDetalle() throws Exception {
+    Donacion vencida =
+        new Donacion(
+            ID,
+            "Leche en polvo",
+            "10 unidades",
+            "10 u",
+            "Ana Ejemplo",
+            "8 de noviembre",
+            "vencida",
+            "9 de noviembre",
+            false,
+            "Nuevo",
+            "Depósito Central",
+            null,
+            false,
+            null,
+            List.of("10 de noviembre: la marcaste como vencida."));
+    when(operacion.donaciones(any(), any()))
+        .thenReturn(
+            new AdminDonacionesVista(
+                new Tramo<>(List.of(vencida), 1, 1, 1),
+                new ConsultaDonaciones("vencida", false, "", 1),
+                List.of(new AdminDonacionesVista.Criterio("", "Más recientes", "Recientes.")),
+                false,
+                null,
+                "1 vencida."));
+    when(operacion.donacion(ID, "")).thenReturn(vencida);
+    String estado = "(?s).*<span class=\"estado\" data-estado=\"vencida\">.*Vencida</span>.*";
+
+    mvc.perform(get("/admin-donaciones?estado=vencida"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(matchesPattern(estado)))
+        .andExpect(content().string(not(containsString("data-estado=\"problema\""))));
+    mvc.perform(get("/admin-donaciones-detalle?donacion=" + ID))
+        .andExpect(status().isOk())
+        .andExpect(content().string(matchesPattern(estado)))
+        .andExpect(content().string(not(containsString("data-estado=\"problema\""))))
+        .andExpect(content().string(not(containsString("popovertarget=\"vencida\""))))
+        .andExpect(content().string(not(containsString("Solo se puede marcar como vencida"))));
   }
 
   @Test

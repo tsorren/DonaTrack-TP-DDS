@@ -259,7 +259,7 @@
 /admin-donaciones?escenario=error
 /admin-donaciones?vence=pronto
 /admin-donaciones?vence=pronto&escenario=vacio
-/admin-donaciones?donacion=fideos
+/admin-donaciones?estado=asignada
 /admin-donaciones?buscar=leche&categoria=alimentos
 /admin-donaciones?donante=ana
 /admin-donaciones-detalle

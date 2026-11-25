@@ -1727,22 +1727,27 @@ class SitioControllerTest {
         .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(content().string(containsString("7 en el depósito · 4 asignadas · 1 en camino")))
         .andExpect(content().string(containsString("Al 15 de octubre de 2026, 18:30.")))
-        // R11-34: una bandeja; la ficha de partida es la de la primera y en el celular no se abre
-        // sola
-        .andExpect(content().string(containsString("data-elegido=\"partida\"")))
+        // ADM1-08 (A03): la tabla del catálogo; cada fila lleva a su detalle, con el sello de su
+        // estado (en el depósito, el de registrada), y ya no hay bandeja con ficha
+        .andExpect(content().string(containsString("<table class=\"tabla\">")))
+        .andExpect(
+            content().string(containsString("href=\"/admin-donaciones-detalle?donacion=leche\"")))
         .andExpect(
             content()
-                .string(containsString("href=\"/admin-donaciones?donacion=leche#donacion-leche\"")))
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"registrada\">.*"
+                            + "En el depósito</span><small>Vence el 17 de octubre, en 2"
+                            + " días</small>.*")))
+        .andExpect(content().string(not(containsString("class=\"maestro\""))))
+        .andExpect(content().string(not(containsString("Cerrar la ficha"))))
         .andExpect(content().string(containsString("Buscar por lo que se donó")))
-        .andExpect(content().string(containsString("Mostrando 1 a 5 de 14 donaciones.")))
-        .andExpect(content().string(containsString("Ver las propuestas que la piden")));
-    mvc.perform(get("/admin-donaciones?donacion=arroz"))
-        .andExpect(content().string(containsString("aria-current=\"true\"")))
-        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
-    // La pedida que no está en la página (los fideos están en la segunda) igual muestra su ficha
-    mvc.perform(get("/admin-donaciones?donacion=fideos"))
-        .andExpect(content().string(containsString("Cerrar la ficha")))
-        .andExpect(content().string(containsString("Solo se puede marcar como vencida")));
+        .andExpect(content().string(containsString("Mostrando 1 a 5 de 14 donaciones.")));
+    // Los fideos están en la segunda página: su fila lleva a su detalle
+    mvc.perform(get("/admin-donaciones?pagina=2"))
+        .andExpect(
+            content().string(containsString("href=\"/admin-donaciones-detalle?donacion=fideos\"")))
+        .andExpect(content().string(containsString("data-estado=\"asignada\"")));
     mvc.perform(get("/admin-donaciones?buscar=leche&categoria=alimentos"))
         .andExpect(content().string(containsString("Coincide 1 donación.")))
         .andExpect(content().string(containsString("Sacar los filtros")));
@@ -1772,6 +1777,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("No pudimos cargar las donaciones.")));
     mvc.perform(get("/admin-donaciones-detalle"))
         .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(content().string(containsString("Ver las propuestas que la piden")))
         .andExpect(content().string(containsString("¿Marcar Leche en polvo como vencida?")))
         .andExpect(content().string(containsString("popover")))
         .andExpect(
@@ -1784,8 +1790,15 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("cambió mientras la mirabas")));
     mvc.perform(post("/admin-donaciones-detalle-vencida"))
         .andExpect(redirectedUrl("/admin-donaciones-detalle-vencida"));
+    // DA-07: la vencida lleva el par neutro con su palabra, no el sello del problema
     mvc.perform(get("/admin-donaciones-detalle-vencida"))
         .andExpect(content().string(containsString("La marcaste como vencida el 15 de octubre")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"vencida\">.*Vencida</span>.*")))
+        .andExpect(content().string(not(containsString("data-estado=\"problema\""))))
         .andExpect(content().string(not(containsString("¿Marcar Leche en polvo como vencida?"))));
   }
 
