@@ -36,6 +36,8 @@
 /donante-inicio?respuesta=429
 /donante-inicio?respuesta=500
 /donante-inicio?respuesta=500&escenario=sin-codigo
+# PUB2-09: una sección del menú sin pantalla (sin-dibujar).
+/entidad-seguimiento-tesoro
 /entidad-necesidades
 /entidad-necesidades?escenario=vacio
 /entidad-necesidades?escenario=error
@@ -328,6 +330,8 @@
 /donante-entidades?cuenta=persona&ya=si
 # R11-18: la segunda página de la maqueta, con los nombres largos.
 /donante-entidades?cuenta=persona&pagina=2
+# PUB2-09: una pantalla del donante sin versión de la persona (aviso-persona).
+/donante-donaciones-nueva?cuenta=persona
 /donante-inicio?cuenta=empresa
 /entidad-seguimiento
 /entidad-seguimiento?escenario=vacio

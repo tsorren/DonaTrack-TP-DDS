@@ -17,40 +17,10 @@
   max-width: 42rem;
 }
 
-.lectura-bajada {
-  margin: 0 0 1.5rem;
-  font-size: 1.125rem;
-}
-
 /* --- Contacto (PUB1-09): deriva de A12 de la guía; las piezas son del catálogo. Solo la columna
    del formulario. ------------------------------------------------------------------------------ */
 .contacto {
   max-width: var(--medida-formulario);
-}
-
-/* El sello de recibido, como el de una entrega confirmada: lo usan Activar cuenta y la solicitud de
-   la organización enviada (PUB2), que traen esta hoja. */
-.recibido {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  margin: 0 0 1.5rem;
-}
-
-.recibido svg {
-  flex: none;
-  width: 4.5rem;
-  height: 4.5rem;
-}
-
-.recibido p {
-  margin: 0;
-}
-
-.recibido b {
-  color: var(--color-tinta);
-  font: 900 1.5rem/1 var(--fuente-cifra);
-  font-stretch: 125%;
 }
 
 /* --- Términos y privacidad (PUB1-10): una página de lectura, en el ancho de lectura. -------- */

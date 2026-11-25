@@ -273,6 +273,19 @@ Por decidir ([backlog de la guía](backlog-guia-al-codigo.md), §14):
 | Donaciones del admin | Una tabla: cada fila lleva al detalle (`/admin-donaciones-detalle?donacion=`); sale la ficha al costado de R11-34. `/admin-donaciones?donacion=` muestra el detalle, para los enlaces que llegan de Decididas y de Donantes | ADM1-08 |
 | Registrar una donación | Vuelve a Donaciones con un aviso breve; en la maqueta, `/admin-donaciones-registrada` muestra Donaciones con ese aviso | ADM1-11; DA-06 |
 
+## Cambios de la oleada PUB2 de la guía «Huerta y galpón» (2026-11-25)
+
+Ninguna pantalla nueva ni una que pase de 3 niveles; ninguna ruta ni menú cambia
+([backlog de la guía](backlog-guia-al-codigo.md), §15):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Recuperar la contraseña, Activar la cuenta y Pedir el enlace | La columna del formulario de Ingresar, con una sola acción llena. Sus rutas de estado (`/publico-activar?escenario=`, `-pedir?escenario=`) siguen | PUB2-01, PUB2-02 |
+| Respuestas de la cuenta | `/publico-recuperar-enviado`, `/publico-activar-pedido` y `/publico-activar-lista` muestran su misma pantalla con el aviso de éxito en la página, sin página propia y sin el sello de recibido. Las tres rutas siguen | PUB2-03; DA-06 y DA-32 |
+| Crear una cuenta y los registros | Crear una cuenta lleva la cabeza y las tarjetas del tipo de cuenta del catálogo; el registro de quien dona y el de la organización, el índice de pasos y el formulario del catálogo, con el resumen del error arriba | PUB2-04 a PUB2-06 |
+| Solicitud enviada | `/publico-registro-entidad-enviada` es la página de estado de la solicitud, con «Solicitud recibida» como aviso de éxito en la página y sus cinco escenarios | PUB2-07; DA-32 |
+| Páginas de error, la pantalla «Esta pantalla todavía no está dibujada» y el aviso de la persona | La composición de lectura de la huerta: rótulo, título, bajada y una sola acción llena, con y sin sesión | PUB2-08, PUB2-09 |
+
 ## Observaciones para el diseño
 
 - El admin tenía 9 secciones de nivel 2. Quedan 6 por tema, como el prototipo: registrar,

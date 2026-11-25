@@ -67,10 +67,6 @@ main h1 {
   font-weight: 700;
 }
 
-.sin-dibujar {
-  max-width: 38rem;
-}
-
 @media (min-width: 37.5em) {
   /* El borde de la barra, alineado con el contenido (main, hasta 82 rem). */
   .armazon {

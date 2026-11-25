@@ -974,6 +974,51 @@ class SitioControllerTest {
     }
   }
 
+  /**
+   * PUB2-08 y PUB2-09: las páginas de estado no tienen arquetipo (DA-08) y siguen la composición de
+   * lectura de la huerta, con las piezas del catálogo: el rótulo, el título, la bajada y una sola
+   * acción llena. Sin las clases heredadas de antes (lectura, lectura-bajada y sin-dibujar).
+   */
+  @Test
+  void lasPaginasDeEstadoTienenLaComposicionDeLecturaDeLaHuerta() throws Exception {
+    for (int codigo : List.of(403, 404, 429, 500)) {
+      String principal = principal(error(codigo, "/donante-inicio", ""));
+      assertTrue(
+          principal.contains("<p class=\"huerta-rotulo\">Error " + codigo + "</p>"), principal);
+      assertTrue(principal.matches("(?s).*</p>\\s*<h1>.*</h1>\\s*<p>.*"), principal);
+      assertEquals(1, cuantasVeces(principal, "data-tono=\"principal\""), principal);
+      assertTrue(!principal.matches("(?s).*class=\"[^\"]*\\blectura(-bajada)?\\b.*"), principal);
+      assertTrue(principal.contains("data-dibujo=\"error\""), principal);
+    }
+
+    String sinDibujar =
+        principal(
+            mvc.perform(get("/entidad-seguimiento-tesoro"))
+                .andExpect(view().name("sin-dibujar"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8));
+    assertTrue(sinDibujar.contains("<p class=\"huerta-rotulo\">Entregas</p>"), sinDibujar);
+    assertTrue(sinDibujar.contains("<h1>Esta pantalla todavía no está dibujada.</h1>"), sinDibujar);
+    assertTrue(!sinDibujar.contains("class=\"sin-dibujar\""), sinDibujar);
+
+    String avisoPersona =
+        principal(
+            mvc.perform(get("/donante-donaciones-nueva").sessionAttr("cuenta", "persona"))
+                .andExpect(view().name("aviso-persona"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8));
+    assertTrue(avisoPersona.contains("<p class=\"huerta-rotulo\">Donaciones</p>"), avisoPersona);
+    assertTrue(avisoPersona.matches("(?s).*</p>\\s*<h1>.*</h1>\\s*<p>.*"), avisoPersona);
+    assertEquals(1, cuantasVeces(avisoPersona, "data-tono=\"principal\""), avisoPersona);
+    assertTrue(!avisoPersona.contains("class=\"sin-dibujar\""), avisoPersona);
+  }
+
+  private static String principal(String html) {
+    return html.substring(html.indexOf("<main"), html.indexOf("</main>"));
+  }
+
   @Test
   void conSesionContactoUsaElMarcoPrivadoDelRol() throws Exception {
     mvc.perform(get("/publico-contacto?escenario=con-sesion"))
@@ -1049,6 +1094,76 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("href=\"/publico-registro-donante\"")))
         .andExpect(content().string(containsString("href=\"/publico-registro-entidad\"")))
         .andExpect(content().string(not(containsString("href=\"/prototipo/"))));
+  }
+
+  /**
+   * Solicitud enviada (PUB2-07, DA-32-solicitud): la página de estado de la solicitud, con sus
+   * cinco escenarios. «Solicitud recibida» es el aviso en la página del catálogo, sin el sello
+   * dibujado a mano, y «Cómo sigue» es la raíz numerada de la huerta.
+   */
+  @Test
+  void laSolicitudEnviadaEsLaPaginaDeEstadoConElAvisoDelCatalogo() throws Exception {
+    String aviso = "class=\"aviso\" data-tipo=\"exito\" role=\"status\"";
+    for (String escenario : List.of("", "con-sesion-pendiente", "corregida", "sin-datos")) {
+      String consulta = escenario.isEmpty() ? "" : "?escenario=" + escenario;
+      mvc.perform(get("/publico-registro-entidad-enviada" + consulta))
+          .andExpect(status().isOk())
+          .andExpect(view().name("publico-registro-entidad-enviada"))
+          .andExpect(content().string(containsString(aviso)))
+          .andExpect(content().string(containsString("Solicitud recibida</p>")))
+          .andExpect(content().string(containsString("class=\"huerta-raiz-pasos\"")))
+          .andExpect(content().string(not(containsString("class=\"recibido"))))
+          .andExpect(content().string(not(containsString("class=\"tramo"))));
+    }
+    mvc.perform(get("/publico-registro-entidad-enviada?escenario=con-sesion-pendiente"))
+        .andExpect(content().string(containsString("Lo que nos enviaste")))
+        .andExpect(content().string(containsString("<dl class=\"datos\">")))
+        .andExpect(content().string(containsString("Corregir los datos")));
+    mvc.perform(get("/publico-registro-entidad-enviada?escenario=corregida"))
+        .andExpect(content().string(containsString("Guardamos los cambios")));
+    mvc.perform(get("/publico-registro-entidad-enviada?escenario=sin-datos"))
+        .andExpect(content().string(containsString("Ahora no podemos mostrarte los datos")))
+        .andExpect(content().string(not(containsString("Corregir los datos"))));
+    mvc.perform(get("/publico-registro-entidad-enviada?escenario=aprobada"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("publico-registro-entidad-enviada"))
+        .andExpect(content().string(containsString("El equipo ya aprobó tu solicitud.")))
+        .andExpect(content().string(not(containsString("Solicitud recibida</p>"))))
+        .andExpect(content().string(not(containsString("Estás acá"))))
+        .andExpect(content().string(not(containsString("Cómo sigue"))))
+        .andExpect(content().string(not(containsString("unos días hábiles"))))
+        .andExpect(content().string(not(containsString("Mientras tanto"))))
+        .andExpect(content().string(containsString("Ingresar de nuevo")))
+        .andExpect(content().string(not(containsString("Lo que nos enviaste"))));
+  }
+
+  /**
+   * El registro de la organización (PUB2-06): el registro en pasos del catálogo, con la columna de
+   * A12 en cada sección: el resumen del error arriba en el aviso del catálogo, con un enlace a cada
+   * campo, y el error de cada campo con su signo.
+   */
+  @Test
+  void elRegistroDeLaOrganizacionUsaLasPiezasDelCatalogo() throws Exception {
+    mvc.perform(get("/publico-registro-entidad"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("publico-registro-entidad"))
+        .andExpect(content().string(containsString("class=\"tarjeta registro-tipo\"")))
+        .andExpect(content().string(containsString("class=\"tarjeta registro-formulario\"")))
+        .andExpect(content().string(containsString("class=\"registro-seccion\" id=\"la-entidad\"")))
+        .andExpect(content().string(containsString("class=\"huerta-raiz-pasos\"")))
+        .andExpect(content().string(containsString("Enviar la solicitud")))
+        .andExpect(content().string(not(containsString("class=\"grupo"))))
+        .andExpect(content().string(not(containsString("class=\"tramo"))));
+    mvc.perform(get("/publico-registro-entidad-error"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("publico-registro-entidad-error"))
+        .andExpect(
+            content().string(containsString("class=\"aviso\" data-tipo=\"error\" role=\"alert\"")))
+        .andExpect(content().string(containsString("id=\"resumen\" autofocus")))
+        .andExpect(content().string(containsString("href=\"#que-es\"")))
+        .andExpect(content().string(containsString("href=\"#calle\"")))
+        .andExpect(content().string(containsString("data-signo=\"e-problema\"")))
+        .andExpect(content().string(not(containsString("class=\"banner resumen\""))));
   }
 
   /**
@@ -1381,6 +1496,121 @@ class SitioControllerTest {
     assertEquals(1, apariciones(html, "data-tono=\"principal\""), "una sola acción llena");
   }
 
+  /**
+   * Crear una cuenta (PUB2-04): la cabeza y las tres tarjetas del tipo de cuenta del catálogo
+   * (componentes/registro), sin ninguna elegida, y la salida a Ingresar.
+   */
+  @Test
+  void crearUnaCuentaMuestraLasTresTarjetasYLaSalidaAIngresar() throws Exception {
+    String html =
+        mvc.perform(get("/publico-registro"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("class=\"registro-cabeza\"")))
+            .andExpect(content().string(containsString("Sumate a DonaTrack")))
+            .andExpect(
+                content().string(containsString("href=\"/publico-registro-donante?tipo=persona\"")))
+            .andExpect(content().string(containsString("href=\"/publico-registro-entidad\"")))
+            .andExpect(content().string(containsString("href=\"/publico-ingresar\">Ingresar</a>")))
+            .andExpect(content().string(not(containsString("registro-tipo\" aria-current"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(3, apariciones(html, "class=\"tarjeta registro-tipo\""), "las tres tarjetas");
+  }
+
+  /**
+   * El registro de quien dona (PUB2-05): el índice de pasos y el formulario del catálogo, con una
+   * sección por paso, los campos del catálogo, la casilla de los términos y una sola acción llena.
+   * La persona y la empresa van en la misma plantilla, cada una con sus campos.
+   */
+  @Test
+  void elRegistroDeQuienDonaUsaElFormularioDelCatalogoConUnaSolaAccionLlena() throws Exception {
+    String empresa =
+        mvc.perform(get("/publico-registro-donante"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("class=\"registro-indice\"")))
+            .andExpect(content().string(containsString("class=\"tarjeta registro-formulario\"")))
+            .andExpect(content().string(containsString("id=\"empresa\"")))
+            .andExpect(content().string(containsString("class=\"casilla\"")))
+            .andExpect(content().string(containsString("Crear mi cuenta")))
+            .andExpect(content().string(not(containsString("clave-fila"))))
+            .andExpect(content().string(not(containsString("class=\"nota\""))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(3, apariciones(empresa, "class=\"registro-seccion\""), "una sección por paso");
+    assertEquals(1, apariciones(empresa, "data-tono=\"principal\""), "una sola acción llena");
+    assertEquals(0, apariciones(empresa, "data-estado=\"error\""), "sin errores");
+
+    String persona =
+        mvc.perform(get("/publico-registro-donante?tipo=persona"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("id=\"apellido\"")))
+            .andExpect(content().string(not(containsString("id=\"empresa\""))))
+            .andExpect(content().string(containsString("class=\"texto-chico\"")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(1, apariciones(persona, "data-tono=\"principal\""), "una sola acción llena");
+  }
+
+  /**
+   * Lento y error del servicio, como en Ingresar: el botón dice qué pasa y está ocupado (sin
+   * desactivarse), y el error del servicio es el banner del catálogo, con lo escrito.
+   */
+  @Test
+  void elRegistroDeQuienDonaMuestraLentoYElErrorDelServicioComoIngresar() throws Exception {
+    mvc.perform(get("/publico-registro-donante?escenario=lento"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<button class=\"boton\" data-tono=\"principal\" type=\"submit\""
+                            + "\\s+aria-busy=\"true\">Creando tu cuenta…</button>.*")))
+        .andExpect(content().string(containsString("role=\"status\">Creando tu cuenta…")))
+        .andExpect(content().string(not(containsString("disabled"))));
+    mvc.perform(get("/publico-registro-donante?escenario=error"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("class=\"banner\" data-estado=\"error\"")))
+        .andExpect(content().string(containsString("No pudimos crear tu cuenta.")))
+        .andExpect(content().string(containsString("value=\"Distribuidora Ejemplo SA\"")));
+  }
+
+  /**
+   * El error de datos del registro es un estado del mismo formulario (A12, «Con error»): el resumen
+   * arriba, en el aviso del catálogo, con el foco y un enlace a cada campo; cada campo marcado en
+   * su lugar, con el signo del problema, y una sola acción llena.
+   */
+  @Test
+  void elErrorDelRegistroDeQuienDonaResumeArribaYMarcaCadaCampo() throws Exception {
+    String html =
+        mvc.perform(get("/publico-registro-donante-error"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("class=\"tarjeta registro-formulario\"")))
+            .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+            .andExpect(content().string(containsString("role=\"alert\" tabindex=\"-1\"")))
+            .andExpect(content().string(containsString("autofocus")))
+            .andExpect(content().string(containsString("class=\"aviso-titulo\"")))
+            .andExpect(content().string(containsString("href=\"#empresa\"")))
+            .andExpect(content().string(containsString("href=\"#correo\"")))
+            .andExpect(content().string(containsString("href=\"#terminos\"")))
+            .andExpect(content().string(not(containsString("banner resumen"))))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*id=\"correo-error\" class=\"campo-error\">\\s*<svg[^>]*"
+                                + "data-signo=\"e-problema\".*")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(3, apariciones(html, "class=\"campo-error\">"), "un mensaje por campo");
+    assertEquals(4, apariciones(html, "data-signo=\"e-problema\""), "el resumen y los tres campos");
+    assertEquals(3, apariciones(html, "aria-invalid=\"true\""), "los tres controles, inválidos");
+    assertEquals(1, apariciones(html, "data-tono=\"principal\""), "una sola acción llena");
+  }
+
   private static int apariciones(String texto, String buscado) {
     int cuenta = 0;
     for (int i = texto.indexOf(buscado); i >= 0; i = texto.indexOf(buscado, i + 1)) {
@@ -1404,14 +1634,14 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("readonly")));
     mvc.perform(post(lista)).andExpect(redirectedUrl(lista));
     mvc.perform(get(lista))
-        .andExpect(content().string(containsString("Tu cuenta <em>está lista</em>")))
+        .andExpect(content().string(containsString("Tu cuenta está lista")))
         .andExpect(content().string(containsString("href=\"/publico-ingresar\"")));
     mvc.perform(get("/publico-activar-error"))
         .andExpect(content().string(containsString("Revisá la contraseña")))
         .andExpect(content().string(containsString("aria-invalid=\"true\"")));
     mvc.perform(get("/publico-activar?escenario=vencido"))
         .andExpect(content().string(containsString("Este enlace ya no sirve.")))
-        .andExpect(content().string(containsString("Activá <em>tu cuenta</em>")))
+        .andExpect(content().string(containsString("<h1>Activá tu cuenta</h1>")))
         .andExpect(content().string(containsString("href=\"/publico-activar-pedir\"")))
         .andExpect(content().string(not(containsString("action=\"/publico-activar-lista\""))));
     mvc.perform(get("/publico-activar?escenario=error"))
@@ -1443,6 +1673,62 @@ class SitioControllerTest {
         .andExpect(
             content().string(containsString("Si hay una cuenta con ese correo, te mandamos")))
         .andExpect(content().string(not(containsString("vence en"))));
+  }
+
+  /**
+   * DA-32 y DA-06, la parte de la cuenta: Recuperar, Pedir el enlace y Activar responden en su
+   * misma pantalla con el aviso en la página del catálogo (.aviso con data-tipo="exito") en el
+   * lugar del formulario, sin el sello de recibido; Activar deja una sola acción llena, Ingresar.
+   */
+  @Test
+  void lasRespuestasDeLaCuentaSonElAvisoEnLaPaginaSinFormulario() throws Exception {
+    List<List<String>> respuestas =
+        List.of(
+            List.of("/publico-recuperar-enviado", "Si hay una cuenta con ese correo, te mandamos"),
+            List.of("/publico-activar-pedido", "Si hay una cuenta con ese correo, te mandamos"),
+            List.of("/publico-activar-lista", "Tu cuenta está lista"));
+    for (List<String> respuesta : respuestas) {
+      String ruta = respuesta.get(0);
+      String html =
+          mvc.perform(get(ruta))
+              .andExpect(status().isOk())
+              .andReturn()
+              .getResponse()
+              .getContentAsString(StandardCharsets.UTF_8);
+      Matcher aviso =
+          Pattern.compile(
+                  "<div class=\"aviso\" data-tipo=\"exito\"[^>]*>(.*?)</div>", Pattern.DOTALL)
+              .matcher(html);
+      assertTrue(aviso.find(), ruta + " no muestra el aviso de éxito");
+      assertTrue(
+          aviso.group(1).contains(respuesta.get(1)), ruta + " no dice su respuesta en el aviso");
+      assertTrue(
+          aviso.group(0).contains("role=\"status\""), ruta + " no anuncia el aviso (role=status)");
+      for (String accion :
+          List.of(
+              "/publico-recuperar-enviado", "/publico-activar-pedido", "/publico-activar-lista")) {
+        assertFalse(
+            html.contains("action=\"" + accion + "\""), ruta + " todavía muestra el formulario");
+      }
+      assertFalse(
+          Pattern.compile("class=\"[^\"]*\\brecibido\\b").matcher(html).find(),
+          ruta + " lleva el sello de recibido");
+    }
+    String lista =
+        mvc.perform(get("/publico-activar-lista"))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    assertTrue(
+        Pattern.compile(
+                "<a class=\"boton\" data-tono=\"principal\" href=\"/publico-ingresar\">Ingresar</a>")
+            .matcher(lista)
+            .find(),
+        "Activar no lleva a Ingresar con la acción llena");
+    assertEquals(
+        1,
+        Pattern.compile("data-tono=\"principal\"").matcher(lista).results().count(),
+        "Activar lleva más de una acción llena");
   }
 
   /**

@@ -1261,15 +1261,15 @@ ejemplo `.recibido` en `publico-paginas.css`, `.publica` en `publico-listas.css`
 
 | ID | Lote | Qué | Arquetipo y decisiones | Estado |
 |---|---|---|---|---|
-| PUB2-01 | `pub2-cuenta` | Recuperar la contraseña: la columna del formulario de Ingresar, con su campo, una sola acción llena y la salida a Ingresar | Deriva de A12 | Pendiente |
-| PUB2-02 | `pub2-cuenta` | Activar la cuenta y Pedir el enlace, con sus estados (lento, error, sin conexión y vencido) y el error de datos (`publico-activar-error`), en la misma columna | Deriva de A12 | Pendiente |
-| PUB2-03 | `pub2-cuenta` | Las tres respuestas (`-recuperar-enviado`, `-activar-pedido` y `-activar-lista`) con el aviso en la página, en su misma pantalla y sin el sello de recibido | DA-06 y DA-32 | Pendiente |
-| PUB2-04 | `pub2-registro-donante` | Crear una cuenta: la cabeza y las tres tarjetas del tipo de cuenta del catálogo (`registro :: cabeza` y `:: tipos`), con su salida a Ingresar | Deriva de A12 | Pendiente |
-| PUB2-05 | `pub2-registro-donante` | El registro de quien dona (persona y empresa) y su error: el índice de pasos y el formulario del catálogo, el resumen del error arriba y una sola acción llena | Deriva de A12 | Pendiente |
-| PUB2-06 | `pub2-registro-entidad` | El registro de la organización, su corrección y su error, con el mismo formulario; `hoja` y `comoSigue` siguen como fragmentos | Sin arquetipo: el registro en pasos (DA-08) | Pendiente |
-| PUB2-07 | `pub2-registro-entidad` | Solicitud enviada, la página de estado de la solicitud (R11-41), con sus cinco escenarios y «Solicitud recibida» como aviso en la página | DA-06 y DA-32 | Pendiente |
-| PUB2-08 | `pub2-estado` | Las páginas de error 403, 404, 429 y 5xx y su pieza `pagina-error`, sin sesión (el marco público) y con sesión (el privado del rol) | Sin arquetipo: página de estado (DA-08) | Pendiente |
-| PUB2-09 | `pub2-estado` | `sin-dibujar` y `aviso-persona`, con la composición de lectura de la huerta; el lote suma sus dos rutas a `paginas.txt` | Sin arquetipo: página de estado (DA-08) | Pendiente |
+| PUB2-01 | `pub2-cuenta` | Recuperar la contraseña: la columna del formulario de Ingresar, con su campo, una sola acción llena y la salida a Ingresar | Deriva de A12 | Hecho (`d03df922f` y `3f23221bb`): el `.pila` con el h1 y la bajada, el correo con su `.campo`, «Mandame el enlace» como única acción llena y «Volver a Ingresar» como enlace. Con la respuesta se va la bajada que pide el correo (`3f23221bb`) |
+| PUB2-02 | `pub2-cuenta` | Activar la cuenta y Pedir el enlace, con sus estados (lento, error, sin conexión y vencido) y el error de datos (`publico-activar-error`), en la misma columna | Deriva de A12 | Hecho (`d03df922f` y `3f23221bb`): la columna de Ingresar, con la contraseña y «Mostrar» en un `.racimo` (sale `.clave-fila`), el resumen del error en el `.aviso` con el foco, el banner de enlace vencido con «Pedir otro enlace» como acción llena y el estado lento con `aria-busy` y sin `disabled`, como Ingresar (`3f23221bb`). El correo de solo lectura se ve igual que uno editable ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 4). Después de la ola, un solo h1, «Activá tu cuenta», en todos los estados, y el campo «Correo electrónico», como Ingresar y Recuperar (arreglo posterior a la ola, §15.5) |
+| PUB2-03 | `pub2-cuenta` | Las tres respuestas (`-recuperar-enviado`, `-activar-pedido` y `-activar-lista`) con el aviso en la página, en su misma pantalla y sin el sello de recibido | DA-06 y DA-32 | Hecho (`d03df922f` y `3f23221bb`): las tres muestran su misma pantalla con el `.aviso` `data-tipo="exito"` en el lugar del formulario; en `-activar-lista`, «Tu cuenta está lista» es el título del aviso, el h1 sigue «Activá tu cuenta» e Ingresar es la única acción llena. Las tres rutas siguen y ninguna usa `.recibido`. DA-32 consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS (§15.5) |
+| PUB2-04 | `pub2-registro-donante` | Crear una cuenta: la cabeza y las tres tarjetas del tipo de cuenta del catálogo (`registro :: cabeza` y `:: tipos`), con su salida a Ingresar | Deriva de A12 | Hecho (`57ca07271`, arreglos `df357b740`, `f36b98e39` y `40083290f`): `registro :: cabeza` y `:: tipos` como están en el catálogo; la salida a Ingresar, centrada con una regla de disposición de `publico-registro.css` (`40083290f`) |
+| PUB2-05 | `pub2-registro-donante` | El registro de quien dona (persona y empresa) y su error: el índice de pasos y el formulario del catálogo, el resumen del error arriba y una sola acción llena | Deriva de A12 | Parcial (`57ca07271`, arreglos `df357b740` y `f36b98e39`): el índice de pasos y `.registro-formulario` con una `.registro-seccion` por paso, la contraseña en un `.racimo`, el resumen del error en el `.aviso` dentro del formulario y el botón en un `.racimo`; lento con `aria-busy`. Nombre y Apellido de la persona en la `.grilla` del catálogo, como Calle y Altura en el de la organización (sale `.campos-par`; arreglo posterior a la ola, §15.5). Falta: con JavaScript, un reenvío con errores sobre `-donante-error` muestra dos resúmenes, porque el del servidor ya no lleva `.resumen` y `publico.js` no lo saca; la revisión del lote lo dejó como bloqueante tras 3 rondas ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 1) |
+| PUB2-06 | `pub2-registro-entidad` | El registro de la organización, su corrección y su error, con el mismo formulario; `hoja` y `comoSigue` siguen como fragmentos | Sin arquetipo: el registro en pasos (DA-08) | Parcial (`1dd71c308`, arreglos `21f7d3ae3`, `8e0e7f0be`, `40083290f` y `3f23221bb`): los pasos como `section.registro-seccion` con h2, la dirección en `.grilla` con los campos alineados abajo, «Volver a la solicitud sin guardar» como botón secundario, `comoSigue(paso, nivel)` con h3 dentro de Confirmar y el resumen del error con el mismo marcado que el del donante (`40083290f`); lento con `aria-busy` y sin `disabled` (`3f23221bb`). Falta lo mismo que en PUB2-05: el resumen doble con JavaScript ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 1) |
+| PUB2-07 | `pub2-registro-entidad` | Solicitud enviada, la página de estado de la solicitud (R11-41), con sus cinco escenarios y «Solicitud recibida» como aviso en la página | DA-06 y DA-32 | Hecho (`1dd71c308`, arreglos `21f7d3ae3`, `8e0e7f0be`, `40083290f` y `3f23221bb`): sigue como pantalla, con la hoja `publico-registro` y la columna de Ingresar; «Solicitud recibida» (y «Guardamos los cambios» en `corregida`) en el `.aviso` `data-tipo="exito"`, sin `.recibido`; «Cómo sigue» con `huerta :: raiz-pasos`. En `aprobada` se ocultan el aviso, la bajada, «Cómo sigue» y «Mientras tanto», y queda el banner con «Ingresar de nuevo» (`3f23221bb`). DA-32 consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS (§15.5) |
+| PUB2-08 | `pub2-estado` | Las páginas de error 403, 404, 429 y 5xx y su pieza `pagina-error`, sin sesión (el marco público) y con sesión (el privado del rol) | Sin arquetipo: página de estado (DA-08) | Hecho (`492548f78`): `pagina-error` con la composición de Términos y privacidad (el `.huerta-rotulo`, el h1, la bajada en un `p` simple y un solo botón lleno), el código para soporte en su propia pila; las cuatro páginas conservan la firma `pagina(...)` y 429 sigue diciendo «Esperá un minuto» |
+| PUB2-09 | `pub2-estado` | `sin-dibujar` y `aviso-persona`, con la composición de lectura de la huerta; el lote suma sus dos rutas a `paginas.txt` | Sin arquetipo: página de estado (DA-08) | Hecho (`492548f78`): la misma composición, sin la regla `.sin-dibujar` de `privado.css`; el texto de `aviso-persona` no cambia. Sin ese tope, su h1 corre casi todo el ancho a 1280 px ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 5) |
 
 Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5), con el
 límite de las hojas compartidas de §15.2.
@@ -1302,3 +1302,84 @@ límite de las hojas compartidas de §15.2.
   es bloqueante. No se levantan el stack ni el recorrido con login: los hace Z, y ningún lote cambia
   un adaptador `rest` (plan de la corrida, punto 5). `IngresoConKeycloakRealTest` necesita el
   stack y corre en Z.
+
+### 15.5 Cierre de PUB2 (2026-11-25)
+
+Rama `E7_guia_ui_pub2`, `3f23221bb`. Cuatro lotes en una tanda sobre `8b6608abd` (el manifiesto
+integrado): `pub2-cuenta`, `pub2-registro-donante`, `pub2-registro-entidad` y `pub2-estado`, más
+la integración de la tanda (`e2232c725`), cuatro commits de arreglos de la revisión de los lotes,
+uno de cierre (`0118e666e`) y dos de la revisión de pantallas de la ola (`40083290f` y
+`3f23221bb`). Estado de cada ítem en §15.3: 7 hechos, y PUB2-05 y PUB2-06 parciales (el resumen
+doble con JavaScript en los dos registros). La revisión de pantallas de la ola corrió 2 rondas de
+arreglos y no llegó a PASS. Por eso DA-32, la decisión de esta ola (delegada por el relevamiento
+del 2026-11-24, §2.2), consta como no cumplida en sus dos partes, aunque su comportamiento esté en
+el código y en los tests. Lo que queda abierto está en [DTI-52](../adr/DEUDA_TECNICA.md#dti-52);
+las decisiones, en la [bitácora](bitacora.md) (2026-11-25).
+
+- `[VERIFIED]` `mvn clean test -pl cliente-liviano -am` en `3f23221bb`, después de las dos rondas
+  de la revisión de pantallas: exit 0, 934 tests, sin fallos (log en la carpeta de la corrida,
+  `PUB2/gate-doc.log`). En `8e0e7f0be`, antes de esas rondas: exit 0, 934 tests,
+  sin fallos (926 en ADM1). `InterfazFitnessTest` pasa sin editarse: ningún tope cambió.
+  `clases-heredadas.txt` pierde 23 líneas y no suma ninguna.
+- `[VERIFIED]` `-Pvisual` sobre las 40 rutas de PUB2 de `paginas.txt`, en `8e0e7f0be`: el filtro
+  da 40 líneas, las 38 de antes más `/entidad-seguimiento-tesoro` y
+  `/donante-donaciones-nueva?cuenta=persona`. Pasan las 40 (160 capturas, 4 anchos por ruta;
+  `reporte.json` y `excepciones.json` vacíos). Ninguna estaba en la línea de base de §10.4.
+  `[VERIFIED]` En `3f23221bb`, después de la revisión de pantallas, la misma pasada sobre las 40
+  rutas más las cinco de las hojas compartidas de §15.4 (`/publico-ingresar`,
+  `/publico-ingresar-error`, `/publico-contacto`, `/publico-legales` y `/estilos`): exit 0, 8
+  tests, pasan las 45 (180 capturas; `reporte.json` y `excepciones.json` vacíos). Cubre también
+  el gate de `pub2-cuenta`, que había quedado NOT_VERIFIED por no correr esas rutas.
+- `[VERIFIED]` Los otros cinco tests visuales, en `8e0e7f0be`: 31 tests, 3 fallos y 3 errores,
+  todos de la línea de base: `AbejasYRenglonesTest.lasAbejasCambianDeCapaSoloCuandoNoSeVen`,
+  `AbejasYRenglonesTest.conReducirMovimientoLasAbejasQuedanQuietasDelanteYEnteras` y el del lema
+  del pie ([DTI-47](../adr/DEUDA_TECNICA.md#dti-47)), y los dos de `BajoTierraRotulosTest` (DA-22,
+  [DTI-50](../adr/DEUDA_TECNICA.md#dti-50)). `MenusQueSeCierranTest.lasPastillasDeFiltroSeCierranTocandoAfueraYConEsc`,
+  el inestable conocido, falló esta vez. `ArmazonFijoTest` pasa sus 12 y `DonanteDetallesTest`
+  sus 7. Ningún fallo nuevo. No se volvieron a correr después de la revisión de pantallas.
+- Sin stack ni recorrido con login (DA-20): ningún lote cambia un adaptador `rest`. Queda para Z
+  comprobar con datos reales el registro de quien dona y de la organización (incluida la
+  corrección y la solicitud enviada con sus escenarios), Recuperar y Activar, y las páginas de error
+  con sesión de cada rol. `IngresoConKeycloakRealTest` también corre en Z.
+- Cercos `[VERIFIED]` (`git diff 46c1f4708..HEAD`, en `3f23221bb`): sin cambios en `rest/`,
+  `puertos/`, `tokens.css`, los tests de `visual/`, `InterfazFitnessTest.java`,
+  `templates/componentes/`, `static/css/componentes/`, `static/js/`, `auth-service/`, los menús
+  (`navegacion-publica.html`, `pie.html`, `Pantallas.java`, `CuentaDeEjemplo.java`) ni
+  `AGENTS.md`. Ninguna plantilla ni hoja borrada. El código Java de `cliente-liviano/src/main` no
+  cambió: solo plantillas, hojas y tests (`SitioControllerTest` y `PerfilPendienteTest`, con
+  aserciones igual de fuertes).
+- Revisión de los lotes: el constructor de `pub2-registro-entidad` declaró que no leyó §15.2, las
+  skills `implement-task` y `construir-ui` ni `tono-y-comunicacion.md`, y aplicó las reglas del
+  pedido de la corrida. `pub2-registro-donante` y `pub2-registro-entidad` tuvieron 2 rondas de
+  arreglos cada uno y quedaron con bloqueantes tras la tercera revisión: el resumen doble con
+  JavaScript, los dos registros con el resumen distinto y el h2 «Cómo sigue» dentro del h2
+  «Confirmar». La revisión de pantallas arregló los dos últimos (`40083290f`); el primero sigue
+  abierto ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 1). `pub2-cuenta` y `pub2-estado`, sin
+  rondas. La revisión de pantallas de la ola: 2 rondas de arreglos (`40083290f`: el mismo resumen
+  en los dos registros, `comoSigue(paso, nivel)`, Calle y Altura en la misma línea y la salida a
+  Ingresar centrada; `3f23221bb`: el relleno de «Lo que nos enviaste», `aprobada` sin la bajada,
+  «Cómo sigue» ni «Mientras tanto», la bajada de Recuperar y Pedir que se va con la respuesta, el
+  estado lento con `aria-busy` y sin `disabled` en Activar y en el registro de la organización, y
+  el texto de cada campo en el resumen de la organización), sin PASS.
+- Commits de la ola, en hora de autor (2026-11-25, -03:00): `8b6608abd` (05:46, manifiesto
+  integrado), `57ca07271` (06:04), `d03df922f` (06:12), `492548f78` (06:12), `1dd71c308` (06:13),
+  `e2232c725` (06:27, integración de la tanda), `df357b740` (06:46), `21f7d3ae3` (06:49),
+  `f36b98e39` (07:04), `8e0e7f0be` (07:05), `0118e666e` (07:27, cierre), `40083290f` (07:52,
+  revisión de pantallas, ronda 1) y `3f23221bb` (08:13, ronda 2).
+- ADR: ninguno. La ola no tuvo lotes de contrato e implementa el ADR «Huerta y galpón» (§9.1,
+  Gate A); DA-32 es una decisión de pantalla. Ninguna spec de `docs/specs/active/` es de esta ola,
+  así que no se mueve ninguna.
+- Documentos: `mapa-del-sitio.md` ya suma los cambios de la ola (desde `0118e666e`) y sigue
+  valiendo; `patrones-y-microcopy.md` suma la regla 28 (la respuesta que dice qué hacer después
+  queda en la página); `componentes.md` saca `aviso-acciones` de las clases heredadas (ya no la usa
+  ninguna plantilla). `tono-y-comunicacion.md` y
+  [`requerimientos-e7.md`](../requerimientos/requerimientos-e7.md) no cambian: el primero no nombra
+  pantallas, y ningún requerimiento cambia de estado. Las fichas de antes de la ola que ya no
+  describen el código están en [DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 7.
+- Arreglo posterior a la ola (2026-11-25), sobre los bloqueantes de la revisión de pantallas
+  (ronda 3): Nombre y Apellido del registro de la persona pasan a la `.grilla` del catálogo y
+  `.campos-par` sale de `publico-registro.css` y de `clases-heredadas.txt`; Activar lleva un solo
+  h1, «Activá tu cuenta», y rotula el campo «Correo electrónico»; salen de `publico-registro.css`
+  `.enlace-campo`, `.campo-rotulo` y `.casilla-enlace`, sin uso. El resumen doble con JavaScript
+  sigue abierto: solo se cierra en `static/js/publico.js`, fuera de esta ola
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 1). Gates `[VERIFIED]`: `mvn clean test -pl cliente-liviano -am`, exit 0, 934 tests sin fallos; `-Pvisual` sobre las 20 rutas del pedido del arreglo más `/publico-registro-donante?tipo=persona`, exit 0, 84 capturas y `reporte.json` vacío.
