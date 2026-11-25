@@ -158,7 +158,9 @@ class AdminImportacionesControllerTest {
         .andExpect(content().string(containsString("1 importación en curso.")))
         .andExpect(
             content().string(containsString("Cifras leídas el 10 de noviembre de 2026, 18:30.")))
-        .andExpect(content().string(containsString("Coinciden 23 importaciones.")))
+        // Sin filtros no dice "Coinciden"; debajo de la tabla, cuántas se ven (como Donantes)
+        .andExpect(content().string(not(containsString("Coinciden"))))
+        .andExpect(content().string(containsString("Mostrando 1 a 3 de 23 importaciones.")))
         .andExpect(
             content().string(containsString("href=\"/admin-donantes-importando?archivo=a1\"")))
         .andExpect(content().string(containsString("Ver el avance de donantes-noviembre.csv")))
@@ -201,6 +203,7 @@ class AdminImportacionesControllerTest {
                     containsString(
                         "href=\"/admin-importaciones?buscar=octubre&amp;estado=terminadas"
                             + "&amp;subida=7-dias&amp;pagina=2\"")))
+        .andExpect(content().string(containsString("Coinciden 23 importaciones.")))
         .andExpect(content().string(containsString("Sacar los filtros")));
     verify(personas)
         .importaciones(

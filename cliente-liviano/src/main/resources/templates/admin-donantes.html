@@ -20,8 +20,9 @@
        DA-34 (R11-34): la lista sigue como bandeja con ficha (.maestro y .maestro-ficha): cada renglón
        elige su donante (?donante=<clave>, en la misma página, con los filtros), con el estado de la
        cuenta en palabras y su sello, y su ficha va dentro del renglón; desde 53,75 em, a la derecha,
-       entera y alineada con la lista, como en Organizaciones. Sin pedir ninguno, la ficha es la del primero (data-elegido="partida"): en
-       el celular no se abre sola. La ficha muestra el contacto (d.contacto) y sus 3 donaciones más
+       entera y alineada con la lista, como en Organizaciones. Sin pedir ninguno, la ficha es la del primero (data-elegido="partida"),
+       marcado como elegido (aria-current), igual que en Organizaciones: en el celular su ficha no se
+       abre sola. La ficha muestra el contacto (d.contacto) y sus 3 donaciones más
        recientes con el total (susDonaciones, una página de 3 pedida aparte; si no cargó, lo dice),
        cada una en una fila de la lista del catálogo (.lista data-forma="filas") que lleva a su detalle
        (admin-donaciones-detalle?donacion=<clave>); y lleva a «Ver sus donaciones»
@@ -212,7 +213,7 @@
             th:attr="data-elegido=${d.clave == donanteElegido and donantePartida} ? 'partida' : null">
           <a href="#" th:href="@{|${base}donante=${d.clave}|} + |#donante-${d.clave}|"
              th:hx-get="@{|${base}donante=${d.clave}|}" hx-push-url="true"
-             th:aria-current="${d.clave == donanteElegido and !donantePartida} ? 'true' : null">
+             th:aria-current="${d.clave == donanteElegido} ? 'true' : null">
             <span><b th:text="${d.nombre}">Ana Ejemplo</b>
               <small th:text="|${d.tipoTexto} · ${d.documento}|">Persona · DNI 20.000.001</small>
               <small th:if="${d.alta != null}" th:text="|Alta: ${d.alta}|">Alta: 14 de octubre</small></span>

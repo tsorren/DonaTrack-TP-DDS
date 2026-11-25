@@ -136,6 +136,7 @@ class AdminEntidadesControllerTest {
                 .string(
                     containsString("class=\"paginas\" aria-label=\"Páginas de organizaciones\"")))
         .andExpect(content().string(containsString("Coinciden 45 organizaciones.")))
+        .andExpect(content().string(containsString("Mostrando 21 a 21 de 45 organizaciones.")))
         .andExpect(content().string(containsString("Buscar por nombre</label>")))
         .andExpect(content().string(containsString("pagina=3")))
         // R11-43: los filtros vuelven, con las cifras de la fuente (no las de la página)

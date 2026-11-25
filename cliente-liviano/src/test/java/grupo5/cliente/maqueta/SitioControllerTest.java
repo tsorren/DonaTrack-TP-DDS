@@ -2129,6 +2129,7 @@ class SitioControllerTest {
     // Una sola lista, de la A a la Z; el estado es un filtro al lado de la búsqueda.
     mvc.perform(get("/admin-entidades?entidad=comedor"))
         .andExpect(model().attribute("seccion", "Organizaciones"))
+        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))))
         .andExpect(content().string(containsString("Activas · 46")))
         .andExpect(content().string(containsString("Pendientes · 3")))
         .andExpect(content().string(containsString("Inactivas · 3")))
@@ -2191,7 +2192,20 @@ class SitioControllerTest {
                 + " href=\"/admin-entidades-registrar\">Registrar organización</a>.*"),
         "la acción llena es Registrar organización");
     // La pestaña Solicitudes de Por decidir (DA-25) llega a la lista sin parámetros
-    mvc.perform(get("/admin-entidades")).andExpect(status().isOk());
+    // La de partida se marca como elegida (aria-current) y no se abre sola en el celular, como en
+    // Donantes; con una pedida, no es de partida. Sin filtros, cuántas se ven va debajo de la
+    // lista.
+    mvc.perform(get("/admin-entidades"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*data-elegido=\"partida\">\\s*<a [^>]*aria-current=\"true\".*")))
+        .andExpect(content().string(not(containsString("Coinciden"))))
+        .andExpect(
+            content()
+                .string(matchesPattern("(?s).*Mostrando 1 a \\d+ de \\d+ organizaciones\\..*")));
     mvc.perform(get("/admin-entidades?ver=inactivas"))
         .andExpect(content().string(containsString("Inactiva desde el 20 de agosto")));
     mvc.perform(get("/admin-entidades?escenario=vacio&ver=pendientes"))

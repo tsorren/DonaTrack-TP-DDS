@@ -5,7 +5,7 @@
        del arquetipo A03 (docs/interfaz/guia/partes/50-pantallas.html, #bandeja), en el galpón y con
        las piezas del catálogo: arriba, la cabecera (el título y la bajada con cuándo se leyó, y
        "Actualizar") y las pestañas Cuentas · Actividad (.segmentos); después, la ayuda plegada
-       "¿Qué se registra?";
+       "¿Qué se registra?" (componente plegable, como en Importaciones);
        la búsqueda por administrador y los filtros (la fecha, de ?desde= a ?hasta=, Quién y Acción) en
        el componente listado; y
        la lista, de a 20, de la más reciente a la más vieja, en la tabla del catálogo (.tabla), con el
@@ -46,15 +46,19 @@
       <nav th:replace="~{admin-actividad :: pestanas('actividad')}"></nav>
     </div>
 
-    <!--/* La ayuda, plegada en un botón chico, como en Importaciones (la otra pestaña del galpón). */-->
-    <details>
-      <summary class="boton" data-tono="secundario" data-tamano="chico">¿Qué se registra?</summary>
+    <!--/* La ayuda, plegada en el componente plegable del catálogo; Importaciones (la otra sección
+           con pestañas) la arma igual. */-->
+    <details class="plegable">
+      <summary><span class="plegable-titulo"><b>¿Qué se registra?</b></span><span
+          class="plegable-ver">Ver la ayuda</span></summary>
+      <div class="plegable-cuerpo">
       <p>Cada vez que alguien de administración aprueba o descarta una propuesta, corre la asignación,
         registra una donación o un donante, marca una donación como vencida, importa un archivo, aprueba
         o registra una organización, da de alta a otro administrador, genera otra contraseña provisoria
         o cambia un camión, queda acá con su nombre y la hora. Lo que se hace directo en la consola de
         Keycloak no aparece. El registro empezó con esta versión del sitio: de antes, solo están las
         propuestas aprobadas o descartadas.</p>
+      </div>
     </details>
 
     <!--/* Lo que no se entendió o no se pudo aplicar: el aviso en la página, con su signo; queda

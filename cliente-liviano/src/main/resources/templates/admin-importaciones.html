@@ -5,7 +5,7 @@
        (docs/interfaz/componentes.md). Arriba, la cabecera del galpón: el título, cuántas siguen en
        curso (un número de la fuente) y cuándo se leyeron las cifras, e «Importar CSV» (la única acción
        llena); debajo, las pestañas Donantes · Importaciones (.segmentos). Después, la ayuda plegada
-       (un details con su botón chico, como Actividad); la búsqueda por nombre del archivo y los
+       (componente plegable, como Actividad); la búsqueda por nombre del archivo y los
        filtros (Subida, de ?desde= a ?hasta=, Estado y Ordenar) en el componente listado, con «Ver solo las que están en curso» y «Actualizar
        las cifras»; y la lista, de a 20, en la tabla del catálogo, con el paginador (componentes/paginas).
        La lista llega ya buscada, filtrada y ordenada (adminImportaciones.importaciones, un
@@ -50,7 +50,8 @@
       <nav th:replace="~{admin-importaciones :: pestanas('importaciones')}"></nav>
     </div>
 
-    <!--/* La ayuda, plegada (componente plegable), como en Actividad (la otra sección con pestañas). */-->
+    <!--/* La ayuda, plegada en el componente plegable del catálogo; Actividad (la otra sección con
+           pestañas) la arma igual. */-->
     <details class="plegable">
       <summary><span class="plegable-titulo"><b>¿Qué muestra esta lista?</b></span><span
           class="plegable-ver">Ver la ayuda</span></summary>
@@ -89,8 +90,10 @@
         <p class="aviso-titulo" th:text="${aviso}">No entendimos la fecha pedida: te mostramos todas las fechas.</p>
       </div>
 
-      <p th:if="${n > 0}" aria-live="polite" th:text="${n == 1} ? 'Coincide 1 importación.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} importaciones.|">Coinciden
-        23 importaciones.</p>
+      <!--/* Cuántas coinciden, solo con algo buscado o elegido (como Donantes y Donaciones); cuántas se
+             ven, debajo de la tabla. */-->
+      <p th:if="${filtrado and n > 0}" role="status" th:text="${n == 1} ? 'Coincide 1 importación.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} importaciones.|">Coinciden
+        3 importaciones.</p>
 
       <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-titulo">
         <h3 id="sin-titulo">Ninguna importación coincide con la búsqueda y los filtros elegidos.</h3>
@@ -134,6 +137,10 @@
           </tr>
         </tbody>
       </table>
+      <p th:if="${n > 0}" class="texto-chico" data-tono="suave"
+         th:with="desde=${(tramo.pagina - 1) * 20 + 1}, hasta=${desde + #lists.size(tramo.filas) - 1}"
+         th:text="${n == 1} ? 'Mostrando 1 a 1 de 1 importación.' : |Mostrando ${desde} a ${hasta} de ${#numbers.formatInteger(n, 1, 'POINT')} importaciones.|">Mostrando
+        1 a 20 de 23 importaciones.</p>
       <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
     </section>
   </div>

@@ -13,6 +13,8 @@
          enlace real con su ícono, el nombre, una línea según su estado y el estado como bolita (círculo
          con anillo y punto, y la palabra; .estado data-forma="punto"). La elegida (?entidad=<clave>, de
          partida la primera) se marca con fondo, sombra y un indicador a la izquierda, sin borde verde.
+         La de partida (sin pedir ninguna) lleva data-elegido="partida", como en Donantes: en el
+         celular su ficha no se abre sola.
        - Arriba, la búsqueda (?buscar=, nombre o localidad) y los filtros en el componente listado
          (R11-B04, componentes/listado; lo arma AdminEntidadesController): Estado
          (?estado=activas|pendientes|inactivas; sin él, todas; cada opción con su cuenta, que pone
@@ -86,7 +88,6 @@
              cuantasPendientes=${paginada ? adminEntidades.enPaginas.pendientes : #lists.size(vigentes.?[estado == 'pendiente'])},
              cuantasInactivas=${paginada ? adminEntidades.enPaginas.inactivas : #lists.size(vigentes.?[estado == 'inactiva'])},
              cuantasTodas=${cuantasActivas + cuantasPendientes + cuantasInactivas},
-             cuantasDelEstado=${fVer == 'activas' ? cuantasActivas : (fVer == 'pendientes' ? cuantasPendientes : (fVer == 'inactivas' ? cuantasInactivas : cuantasTodas))},
              porFiltros=${paginada ? vigentes : vigentes.?[('__${fEstado}__' == '' or estado == '__${fEstado}__')
                  and ('__${fPedidos}__' == '' or ('__${fPedidos}__' == 'con') == !necesidades.isEmpty())
                  and ('__${fTipo}__' == '' or tipo == '__${fTipo}__')]},
@@ -95,6 +96,7 @@
              filtrado=${fVer != '' or otrosFiltros},
              pedida=${param.entidad != null ? param.entidad[0] : (accion == 'correccion' ? 'merendero-este' : (accion == 'aprobada' ? 'hogar' : ''))},
              elegida=${lista.^[clave == #root.pedida] != null ? pedida : (#lists.isEmpty(lista) ? '' : lista[0].clave)},
+             partida=${elegida != pedida},
              consulta=${(fVer != '' ? '&estado=' + fVer : '') + (fPedidos != '' ? '&pedido=' + fPedidos : '')
                  + (fTipo != '' ? '&tipo=' + #uris.escapeQueryParam(fTipo) : '')
                  + (q != '' ? '&buscar=' + #uris.escapeQueryParam(q) : '')
@@ -153,14 +155,13 @@
               {valor: 'inactivas', texto: 'Inactivas · ' + cuantasInactivas} } }"><form
           th:replace="~{componentes/listado :: listado(${listado.conEstados(estados, '' + cuantasTodas)})}"></form></th:block>
 
-      <p th:if="${conDatos and paginada and !#lists.isEmpty(lista)}" role="status"
-         th:with="n=${adminEntidades.enPaginas.total}, activasTexto=${#numbers.formatInteger(adminEntidades.activas, 1, 'POINT')}"
-         th:text="${filtrado} ? (${n == 1} ? 'Coincide 1 organización.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} organizaciones.|) : |Se ven ${#lists.size(lista)} de las ${#numbers.formatInteger(n, 1, 'POINT')} organizaciones; ${activasTexto} están activas. Primero, las que piden sumarse; después, por nombre, de la A a la Z.|">Se
-        ven 20 de las 152 organizaciones; 46 están activas. Primero, las que piden sumarse; después, por nombre, de la A a la
-        Z.</p>
-      <p th:if="${conDatos and !paginada and !#lists.isEmpty(lista)}" role="status"
-         th:text="${otrosFiltros} ? (${#lists.size(lista) == 1} ? |Coincide 1 de ${cuantasDelEstado}.| : |Coinciden ${#lists.size(lista)} de ${cuantasDelEstado}.|) : |Se ven ${#lists.size(lista)} de las ${cuantasDelEstado}, por nombre, de la A a la Z.|">Se
-        ven 14 de las 52, por nombre, de la A a la Z.</p>
+      <!--/* Cuántas coinciden, solo con algo buscado o elegido (como Donantes y Donaciones); cuántas se
+             ven, debajo de la lista. De a una página, el total es el de la fuente; en la maqueta, la
+             lista entera. */-->
+      <p th:if="${conDatos and filtrado and !#lists.isEmpty(lista)}" role="status"
+         th:with="n=${paginada ? adminEntidades.enPaginas.total : #lists.size(lista)}"
+         th:text="${n == 1} ? 'Coincide 1 organización.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} organizaciones.|">Coinciden
+        3 organizaciones.</p>
 
       <section th:if="${conDatos and #lists.isEmpty(lista)}" class="vacio" aria-labelledby="vacio-titulo">
         <h3 id="vacio-titulo"
@@ -174,6 +175,7 @@
 
       <ul th:if="${conDatos and !#lists.isEmpty(lista)}" class="maestro" role="list">
         <li th:each="e : ${lista}" th:id="|entidad-${e.clave}|"
+            th:attr="data-elegido=${e.clave == elegida and partida} ? 'partida' : null"
             th:with="enCorreccion=${accion == 'correccion' and e.clave == 'merendero-este'}">
           <!--/* Sin JavaScript, el enlace recarga y el ancla lleva al renglón; con HTMX, hx-get pide la
                  misma dirección sin el ancla, así la página no se mueve. */-->
@@ -277,6 +279,14 @@
           </section>
         </li>
       </ul>
+      <!--/* La página 1 trae antes las que piden sumarse, que la fuente cuenta en el total. */-->
+      <p th:if="${conDatos and !#lists.isEmpty(lista)}" class="texto-chico" data-tono="suave"
+         th:with="n=${paginada ? adminEntidades.enPaginas.total : #lists.size(lista)},
+                  p=${paginada ? adminEntidades.enPaginas.registradas.pagina : 1},
+                  desde=${p == 1 ? 1 : (p - 1) * 20 + (n - adminEntidades.enPaginas.registradas.total) + 1},
+                  hasta=${desde + #lists.size(lista) - 1}"
+         th:text="${n == 1} ? 'Mostrando 1 a 1 de 1 organización.' : |Mostrando ${desde} a ${hasta} de ${#numbers.formatInteger(n, 1, 'POINT')} organizaciones.|">Mostrando
+        1 a 14 de 14 organizaciones.</p>
       <th:block th:if="${conDatos}">
         <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
       </th:block>

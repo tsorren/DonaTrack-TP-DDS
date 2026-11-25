@@ -26,17 +26,37 @@
 }
 
 /* Los pictogramas de la lista y de la ficha, a la medida del bloque maestro: sellos.css (sin capa,
-   por entidad-comun.css) le gana a la capa de bloques con su 1,75 rem. El de la ficha va a la misma
-   medida que el de la lista (sin data-tamano="grande"): en el galpón, con la identidad y el resumen
-   lado a lado, el de 4,5 rem dejaba al nombre sin ancho y lo montaba sobre el estado. */
+   por entidad-comun.css) le gana a la capa de bloques con su 1,75 rem; revert-layer vuelve a la
+   medida de maestro.css (2,25 rem; 2,75 rem en las necesidades). El de la ficha va a la misma medida
+   que el de la lista (sin data-tamano="grande"). */
 [data-pantalla="entidades"] .maestro .categoria-icono {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: revert-layer;
+  height: revert-layer;
 }
 
-[data-pantalla="entidades"] [data-lista="necesidades-ficha"] .categoria-icono {
-  width: 2.75rem;
-  height: 2.75rem;
+/* La ficha mide su propio ancho: con menos de 45 rem (en el galpón, a 1280 px), el resumen va
+   apilado debajo de la identidad, alineado al inicio y con su filete a la izquierda, como en el
+   celular; lado a lado, el nombre quedaba en tres renglones y la bolita lejos de su palabra. Con
+   ancho, la disposición de maestro.css (identidad a la izquierda, resumen a la derecha). */
+[data-pantalla="entidades"] .maestro-ficha {
+  container-type: inline-size;
+}
+
+@container (width < 45rem) {
+  [data-pantalla="entidades"] .maestro-ficha > :is([data-parte="identidad"], [data-parte="resumen"]) {
+    grid-column: 1 / -1;
+  }
+
+  [data-pantalla="entidades"] .maestro-ficha > [data-parte="resumen"] {
+    justify-items: start;
+    text-align: start;
+  }
+
+  [data-pantalla="entidades"] .maestro-ficha [data-parte="resumen"] > dl {
+    padding-inline: var(--espacio-2) 0;
+    border-inline-start: 0.25rem solid var(--color-acento-claro);
+    border-inline-end: 0;
+  }
 }
 
 /* --- Por decidir, la mesa (R11-24; A03, ADM1-05): la cabecera, las pestañas y la tabla con
@@ -194,8 +214,8 @@
 }
 
 /* En el celular, la ficha de partida (la primera de la página, sin elegir) no se abre sola: la
-   lista se ve primero. "Cerrar la ficha" vuelve al renglón. */
-[data-pantalla="donantes"] .maestro > li[data-elegido="partida"] > .maestro-ficha {
+   lista se ve primero. Igual en Donantes y en Organizaciones. "Cerrar la ficha" vuelve al renglón. */
+:is([data-pantalla="donantes"], [data-pantalla="entidades"]) .maestro > li[data-elegido="partida"] > .maestro-ficha {
   display: none;
 }
 
@@ -211,7 +231,7 @@
 /* Desde la tableta: la ficha a la derecha, entera y alineada con la lista, como en Organizaciones;
    la de partida se ve y "Cerrar la ficha" ya no hace falta. */
 @media (min-width: 53.75em) {
-  [data-pantalla="donantes"] .maestro > li[data-elegido="partida"] > .maestro-ficha {
+  :is([data-pantalla="donantes"], [data-pantalla="entidades"]) .maestro > li[data-elegido="partida"] > .maestro-ficha {
     display: grid;
   }
 
