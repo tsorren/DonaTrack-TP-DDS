@@ -401,6 +401,9 @@ class AdminAsignacionesEnviosTest {
   // Desde Por decidir (/admin-inicio) el formulario manda pestana=inicio y vuelve ahí
   @Test
   void desdeElInicioVuelvenAlInicio() throws Exception {
+    when(operacion.correrAsignacion()).thenReturn(0);
+    mvc.perform(post("/admin-asignaciones-corrida").param("pestana", "inicio"))
+        .andExpect(redirectedUrl("/admin-inicio"));
     when(operacion.decidirPropuesta("p-1", true, null)).thenThrow(conflicto("ERR-EST-520"));
 
     mvc.perform(

@@ -18,9 +18,10 @@
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'aprobada', 'descartada', 'error'
          o 'corrida'.
-       - cabecera(fecha, ultima, corriendo): el título «Por decidir», la fecha (texto), la frase de la
-         última asignación (texto; '' o null no la dibuja) y las dos acciones; con corriendo, el botón
-         de correr queda apagado y dice que está corriendo.
+       - cabecera(fecha, ultima, corriendo, volver): el título «Por decidir», la fecha (texto), la
+         frase de la última asignación (texto; '' o null no la dibuja) y las dos acciones; con
+         corriendo, el botón de correr queda apagado y dice que está corriendo; volver es la pestaña
+         oculta a la que vuelve «Correr la asignación» ('propuestas' aquí, 'inicio' en /admin-inicio).
        - pestanas(actual, propuestas, conflictos): la barra de pestañas; actual es 'propuestas' o
          'conflictos' (la que queda marcada; otro valor no marca ninguna) y propuestas y conflictos,
          la cuenta de cada una (null no la dibuja). Solicitudes y Por vencer van sin cuenta: hoy no
@@ -54,7 +55,7 @@
              ultima=${!conDatos ? '' : (accion == 'corrida' ? (nuevas ? 'Última asignación: hoy, 0:00 · generó 2 propuestas.' : 'Última asignación: hoy, 0:00 · no generó propuestas.') : (a.ultima != null ? 'Última asignación: ' + a.ultima + '.' : 'Todavía no se corrió ninguna asignación.'))}">
   <div class="pila" data-espacio="4" data-pantalla="asignaciones">
     <div class="pila" data-espacio="3">
-      <header th:replace="~{admin-asignaciones :: cabecera(${hoy}, ${ultima}, ${corriendo})}"></header>
+      <header th:replace="~{admin-asignaciones :: cabecera(${hoy}, ${ultima}, ${corriendo}, 'propuestas')}"></header>
       <nav th:replace="~{admin-asignaciones :: pestanas(${pestana},
                           ${cuentas == null ? null : (vacioDeEjemplo ? 0 : cuentas.sinProblemas)},
                           ${cuentas == null ? null : (vacioDeEjemplo ? 0 : cuentas.enConflicto)})}"></nav>
@@ -307,7 +308,7 @@
 <!--/* La cabecera de Por decidir (A03; DA-25): el título y, debajo, la fecha y la última asignación;
        a la derecha (abajo en el celular), «Correr la asignación» (el POST de siempre) y «Registrar
        donación». Ninguna va llena: la acción llena de la mesa es «Aprobar las elegidas». */-->
-<header th:fragment="cabecera(fecha, ultima, corriendo)" class="racimo" data-alinea="entre arriba">
+<header th:fragment="cabecera(fecha, ultima, corriendo, volver)" class="racimo" data-alinea="entre arriba">
   <div class="pila" data-espacio="0">
     <h1>Por decidir</h1>
     <p data-tono="suave"><th:block th:text="|${fecha}.|">Martes 24 de noviembre de 2026.</th:block><th:block
@@ -317,6 +318,7 @@
   <div class="racimo" data-espacio="2">
     <form action="/admin-asignaciones-corrida" th:action="@{/admin-asignaciones-corrida}" method="post"
           hx-boost="true" hx-indicator="#enviando-admin-asignaciones" hx-select-oob="#avisos">
+      <input type="hidden" name="pestana" th:value="${volver}" value="propuestas">
       <button class="boton" data-tamano="chico" type="submit" th:disabled="${corriendo}"
               th:text="${corriendo} ? 'Corriendo la asignación…' : 'Correr la asignación'">Correr la
         asignación</button>

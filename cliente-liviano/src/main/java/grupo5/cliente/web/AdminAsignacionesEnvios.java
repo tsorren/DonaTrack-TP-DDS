@@ -45,7 +45,7 @@ class AdminAsignacionesEnvios {
   }
 
   @PostMapping("/admin-asignaciones-corrida")
-  String correr(RedirectAttributes atributos) {
+  String correr(@RequestParam(required = false) String pestana, RedirectAttributes atributos) {
     int nuevas = operacion.correrAsignacion();
     String aviso;
     if (nuevas == 0) {
@@ -56,7 +56,7 @@ class AdminAsignacionesEnvios {
               ? "La asignación generó 1 propuesta nueva."
               : "La asignación generó " + nuevas + " propuestas nuevas.";
     }
-    return Envios.listo(LISTA, aviso, atributos);
+    return Envios.listo(volver(pestana), aviso, atributos);
   }
 
   @PostMapping("/admin-asignaciones-aprobada")

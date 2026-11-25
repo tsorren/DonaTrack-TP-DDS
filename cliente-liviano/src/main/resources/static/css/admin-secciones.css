@@ -118,6 +118,12 @@
 /* --- Por decidir, la mesa (R11-24; A03, ADM1-05): la cabecera, las pestañas y la tabla con
    selección son del catálogo; acá quedan las tarjetas de Conflictos y de Destino. ---------------- */
 
+/* Cada tarjeta (una propuesta de Conflictos o de Destino, una donación), con su relleno (parámetro
+   de .tarjeta), como en la mesa. */
+[data-pantalla="asignaciones"] .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+}
+
 [data-pantalla="asignaciones"] [data-lista="propuestas"] {
   gap: var(--espacio-3);
 }
