@@ -353,7 +353,8 @@ su gemela de la empresa (DA-13).
 | `admin-importaciones` | Deriva de A03 | |
 | `admin-entidades`, `admin-entidades-aprobada`, `admin-entidades-correccion`, `admin-entidades-rechazada` | Deriva de A03 | |
 | `admin-entidades-registrar`, `admin-entidades-registrada`, `admin-entidades-registrar-error` | Deriva de A12 | |
-| `admin-administradores`, `admin-administradores-nuevo`, `admin-administradores-alta`, `admin-actividad` | Deriva de A03 | |
+| `admin-administradores`, `admin-actividad` | Deriva de A03 | |
+| `admin-administradores-nuevo`, `admin-administradores-alta` | Deriva de A12 | Páginas propias, en el galpón (DA-35) |
 | `admin-notificaciones`, `admin-notificaciones-leidas` | Sin arquetipo | El buzón |
 | `admin-perfil` | Deriva de A12 | |
 
