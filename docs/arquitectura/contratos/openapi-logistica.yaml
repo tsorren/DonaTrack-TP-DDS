@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Logística Service API
-  version: 1.11.0
+  version: 1.12.0
   description: API REST para planificación de rutas de transporte, seguimiento por paradas planificadas, asignación de choferes, mapa público de donaciones entregadas y trazabilidad de entregas.
 servers:
   - url: http://localhost:8083
@@ -1244,6 +1244,11 @@ components:
               type: string
               format: date-time
               description: Hora de origen del dato; es la "última actualización" del marcador.
+        horaEstimadaLlegada:
+          type: string
+          format: date-time
+          nullable: true
+          description: Hora estimada de llegada al destino mientras la entrega va EN_TRASLADO (HG-02), desde la última posición del camión de esta ruta, en línea recta a 20 km/h y con 10 minutos por cada parada pendiente anterior. Es null cuando la entrega no está EN_TRASLADO, la ruta no está EN_TRASLADO, no hay posición de esta ruta o el destino no tiene coordenadas. Puede quedar en el pasado si la posición es vieja. Campo aditivo desde 1.12.0.
     CambioEstadoEntregaResponseDTO:
       type: object
       required:
