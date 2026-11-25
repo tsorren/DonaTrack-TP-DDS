@@ -22,8 +22,6 @@ iconos
 lectura
 legales
 marca
-mesa
-mesa-cabecera
 necesidades
 nota
 obligatorios
