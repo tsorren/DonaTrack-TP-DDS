@@ -248,14 +248,13 @@ class JavaYPomTests(unittest.TestCase):
                     self.assertNotIn("@SessionScope", texto, a)
 
     def test_los_flash_attributes_son_solo_los_conocidos(self):
-        # Los flash attributes van a la sesión y se serializan. Hoy: el aviso (texto, Envios), el número del
-        # mensaje de contacto (long), "guardado" (boolean, AccesoController), "recien" (boolean,
+        # Los flash attributes van a la sesión y se serializan. Hoy: el aviso (texto, Envios; desde PUB1 lleva
+        # también el número del mensaje de contacto, DA-24), "guardado" (boolean, AccesoController), "recien" (boolean,
         # EntidadEnviosController) y la contraseña provisoria, que
         # viaja cifrada como texto (CifradoDeLaSesion). Uno nuevo, o de otro tipo, tiene que revisarse a
         # propósito (y sumarse a SesionSerializableTest).
         esperadas = {
             "Envios.java": 1,
-            "PublicoContactoEnvioController.java": 1,
             "AccesoController.java": 1,
             "AdminAdministradoresController.java": 2,
             "EntidadEnviosController.java": 1,
