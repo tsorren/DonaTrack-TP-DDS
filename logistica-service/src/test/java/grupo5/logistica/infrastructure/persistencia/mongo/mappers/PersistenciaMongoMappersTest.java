@@ -44,6 +44,8 @@ import org.springframework.dao.OptimisticLockingFailureException;
 
 class PersistenciaMongoMappersTest {
 
+  private static final String QUIEN_RECIBIO = "Persona Sintetica";
+
   private static final LocalDate FECHA_SOLICITUD = LocalDate.of(2026, 10, 11);
 
   private final CamionMongoMapper camionMapper = new CamionMongoMapper();
@@ -157,6 +159,19 @@ class PersistenciaMongoMappersTest {
     Entrega reconstituida = entregaMapper.toDomain(doc);
     assertEquals("R-2", reconstituida.getNumeroRemito());
     assertEquals(reporte, reconstituida.getReporteRecepcion());
+  }
+
+  @Test
+  void entregaMapper_deberiaMapearIdaYVueltaQuienRecibio() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    Direccion dir = new Direccion("Av. Cordoba", 2100, 2, "C", "1120", caba);
+    Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 12.5f, 1.1f);
+    entrega.iniciarRuta("Chofer");
+    entrega.confirmarEntrega("Comedor", List.of("https://f/1.jpg"), null, null, QUIEN_RECIBIO);
+
+    EntregaDocument doc = entregaMapper.toDocument(entrega);
+    assertEquals(QUIEN_RECIBIO, doc.getRecibidoPor());
+    assertEquals(QUIEN_RECIBIO, entregaMapper.toDomain(doc).getRecibidoPor());
   }
 
   @Test

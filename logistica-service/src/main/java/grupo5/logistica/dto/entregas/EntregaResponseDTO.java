@@ -22,7 +22,45 @@ public record EntregaResponseDTO(
     float volumenTotalM3,
     List<CambioEstadoEntregaResponseDTO> historialEstado,
     String numeroRemito,
-    ReporteRecepcionDTO reporte) {
+    ReporteRecepcionDTO reporte,
+    String recibidoPor) {
+
+  /** Entrega sin quien recibió. */
+  @SuppressWarnings("java:S107")
+  public EntregaResponseDTO(
+      UUID id,
+      UUID idRuta,
+      UUID idDonacion,
+      UUID idBeneficiaria,
+      DireccionDTO destino,
+      EstadoEntrega estadoActual,
+      Instant horaSalida,
+      Instant horaArribo,
+      String fotoRecepcionUrl,
+      List<String> fotosRecepcion,
+      float pesoTotalKG,
+      float volumenTotalM3,
+      List<CambioEstadoEntregaResponseDTO> historialEstado,
+      String numeroRemito,
+      ReporteRecepcionDTO reporte) {
+    this(
+        id,
+        idRuta,
+        idDonacion,
+        idBeneficiaria,
+        destino,
+        estadoActual,
+        horaSalida,
+        horaArribo,
+        fotoRecepcionUrl,
+        fotosRecepcion,
+        pesoTotalKG,
+        volumenTotalM3,
+        historialEstado,
+        numeroRemito,
+        reporte,
+        null);
+  }
 
   @SuppressWarnings("java:S107")
   public EntregaResponseDTO(
@@ -53,6 +91,7 @@ public record EntregaResponseDTO(
         pesoTotalKG,
         volumenTotalM3,
         historialEstado,
+        null,
         null,
         null);
   }

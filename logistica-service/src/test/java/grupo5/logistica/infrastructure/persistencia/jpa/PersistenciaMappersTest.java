@@ -42,6 +42,8 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 class PersistenciaMappersTest {
 
+  private static final String QUIEN_RECIBIO = "Persona Sintetica";
+
   private final CamionPersistenciaMapper camionMapper = new CamionPersistenciaMapper();
   private final ChoferPersistenciaMapper choferMapper = new ChoferPersistenciaMapper();
   private final RutaPersistenciaMapper rutaMapper = new RutaPersistenciaMapper();
@@ -169,6 +171,30 @@ class PersistenciaMappersTest {
 
     entity.setReporteMotivo(null);
     assertNull(entregaMapper.toDomain(entity).getReporteRecepcion());
+  }
+
+  @Test
+  void entregaMapper_deberiaMapearIdaYVueltaQuienRecibio() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    Direccion dir = new Direccion("Av. Cordoba", 2100, 2, "C", "1120", caba);
+    Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 12.5f, 1.1f);
+    entrega.iniciarRuta("Chofer");
+    entrega.confirmarEntrega("Comedor", List.of("https://f/1.jpg"), null, null, QUIEN_RECIBIO);
+
+    PaisEntity pais = new PaisEntity(UUID.randomUUID(), "Argentina");
+    LocalidadEntity localidad =
+        new LocalidadEntity(
+            UUID.randomUUID(),
+            new ProvinciaEntity(UUID.randomUUID(), pais, "Buenos Aires"),
+            "CABA");
+    EntregaEntity entity =
+        entregaMapper.toEntity(
+            entrega, null, entregaMapper.construirDireccionNueva(dir, localidad));
+    assertEquals(QUIEN_RECIBIO, entity.getRecibidoPor());
+    assertEquals(QUIEN_RECIBIO, entregaMapper.toDomain(entity).getRecibidoPor());
+
+    entity.setRecibidoPor(null);
+    assertNull(entregaMapper.toDomain(entity).getRecibidoPor());
   }
 
   @Test

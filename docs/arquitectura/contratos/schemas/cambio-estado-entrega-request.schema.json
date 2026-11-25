@@ -36,6 +36,11 @@
       "pattern": "\\S",
       "description": "Opcional (HB-17, DTI-29): número de remito al pasar a ENTREGADA; no se publica."
     },
+    "recibidoPor": {
+      "type": ["string", "null"],
+      "maxLength": 80,
+      "description": "Opcional (HG-03): nombre de la persona que recibió, al pasar a ENTREGADA; en blanco queda sin nombre. Dato personal: no se publica en el mapa ni en los eventos."
+    },
     "reporte": {
       "type": ["object", "null"],
       "description": "Opcional (HB-17, DTI-29): problema contado al pasar a ENTREGADA; la entrega queda ENTREGADA igual.",

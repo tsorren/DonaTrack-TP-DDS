@@ -94,6 +94,10 @@ public class EntregaEntity {
   @Column(name = "reporte_cantidad_recibida")
   private Double reporteCantidadRecibida;
 
+  /** Nombre de quien recibió (HG-03): dato personal, privado. */
+  @Column(name = "recibido_por", length = 80)
+  private String recibidoPor;
+
   @Column(name = "volumen_total_m3", nullable = false)
   private Double volumenTotalM3;
 

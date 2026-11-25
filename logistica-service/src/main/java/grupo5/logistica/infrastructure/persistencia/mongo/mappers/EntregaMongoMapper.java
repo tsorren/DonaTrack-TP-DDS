@@ -66,6 +66,7 @@ public class EntregaMongoMapper {
     doc.setDonanteId(domain.getDonanteId());
     doc.setEstado(domain.getEstadoActual());
     doc.setNumeroRemito(domain.getNumeroRemito());
+    doc.setRecibidoPor(domain.getRecibidoPor());
     ReporteRecepcion reporte = domain.getReporteRecepcion();
     doc.setReporteMotivo(reporte != null ? reporte.motivo() : null);
     doc.setReporteDetalle(reporte != null ? reporte.detalle() : null);
@@ -154,7 +155,8 @@ public class EntregaMongoMapper {
         doc.getReporteMotivo() != null
             ? new ReporteRecepcion(
                 doc.getReporteMotivo(), doc.getReporteDetalle(), doc.getReporteCantidadRecibida())
-            : null);
+            : null,
+        doc.getRecibidoPor());
     entrega.registrarDonante(doc.getDonanteId());
     return entrega;
   }

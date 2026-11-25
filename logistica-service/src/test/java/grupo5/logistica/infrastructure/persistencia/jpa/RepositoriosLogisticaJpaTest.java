@@ -290,6 +290,26 @@ class RepositoriosLogisticaJpaTest {
   }
 
   @Test
+  void deberiaPersistirYRecuperarQuienRecibio() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    Entrega entrega =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new Direccion("Av. Belgrano", 901, null, null, "1092", caba),
+            15.0f,
+            1.5f);
+    entrega.iniciarRuta("Chofer Juan");
+    entrega.confirmarEntrega(
+        "Comedor", List.of("https://f/1.jpg"), null, null, "a".repeat(Entrega.MAX_RECIBIDO_POR));
+
+    entregasRepository.save(entrega);
+    Entrega recuperada = entregasRepository.findById(entrega.getId()).orElseThrow();
+
+    assertEquals("a".repeat(Entrega.MAX_RECIBIDO_POR), recuperada.getRecibidoPor());
+  }
+
+  @Test
   void deberiaPersistirEntregaReutilizandoPaisProvinciaLocalidadSinDuplicarDireccion() {
     Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
     Direccion dir1 = new Direccion("Av. Rivadavia", 1200, 1, "A", "1033", caba);

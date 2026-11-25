@@ -60,6 +60,7 @@ public class EntregaDocument {
   private MotivoReporte reporteMotivo;
   private String reporteDetalle;
   private Double reporteCantidadRecibida;
+  private String recibidoPor;
   private Double volumenTotalM3;
   private Double pesoTotalKg;
 

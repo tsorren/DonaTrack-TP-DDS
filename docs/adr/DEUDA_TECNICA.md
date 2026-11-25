@@ -813,3 +813,19 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 10. **Regex nueva de `SitioControllerTest`.** `[OBSERVED]` Confirmar en el próximo análisis que Sonar no la vuelve a marcar (`S8786`).
 11. **`Pantallas.NOMBRE` y las plantillas de Contacto ya no son la misma expresión.** `[OBSERVED]` Para sacar el bug `S5998` la regex de Java perdió el grupo repetido `(?:-[a-z]+)+`; acepta `admin--x`, que las plantillas `publico-contacto.html` y `publico-contacto-enviado.html` (con la forma vieja) rechazan, y el Javadoc de `SitioController` todavía dice que usan la misma. No es explotable (`?volver=/admin--x` es una ruta interna que da 404); está probado en `PantallasTest.laDiferenciaAceptadaSonLosGuionesDobles`. Falta igualar las plantillas o el Javadoc.
 12. **Menores de la auditoría de cierre.** `[OBSERVED]` `Pantallas` usa `ICONO_INICIO` como clave del atributo `inicio` del modelo (mismo valor, nombre engañoso); `PantallasTest` lee `src/main/resources/templates` por ruta relativa y solo anda con Maven.
+
+---
+
+## DTI-55 — El nombre de quien recibió una entrega no se puede suprimir
+<a id="dti-55"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261125-nombre-de-quien-recibio-la-entrega](./logistica-service/20261125-nombre-de-quien-recibio-la-entrega.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `entrega.recibido_por` (Postgres) y `recibidoPor` (Mongo) se guardan en claro; no hay borrado ni cifrado |
+| Target | logistica-service (prioridad media) |
+| Cuándo se saldará | Con la implementación del [crypto-shredding](./20260901-estrategia-de-crypto-shredding-para-supresion-de-datos-personales.md) o con una baja propia del dato; lo decide el equipo |
+
+1. **Supresión.** `[OBSERVED]` Quien recibe no tiene `persona_id`, así que la clave por persona del crypto-shredding no le aplica tal como está escrita. Hace falta otra clave (por entrega u organización) o un borrado del campo a pedido.
+2. **Quien dona lo ve.** `[INFERRED]` DA-10 fija solo lo público; los seguimientos por donación y por donante devuelven el nombre. Si el revisor lo quiere solo para la organización, es un filtro en esas lecturas.

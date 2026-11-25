@@ -18,6 +18,9 @@ import java.util.UUID;
  *
  * <p>{@code posicionCamion} es la última posición conocida del camión, exacta (ADR-E6-07); es
  * {@code null} cuando la ruta no está {@code EN_TRASLADO} o la fuente todavía no informó ninguna.
+ *
+ * <p>{@code recibidoPor} es el nombre de quien recibió, si la organización lo dijo al confirmar
+ * (HG-03): un dato personal, solo para estas lecturas privadas (DA-10).
  */
 public record SeguimientoEntregaResponseDTO(
     UUID idEntrega,
@@ -36,7 +39,49 @@ public record SeguimientoEntregaResponseDTO(
     @JsonFormat(shape = JsonFormat.Shape.STRING) Instant horaArribo,
     @JsonFormat(shape = JsonFormat.Shape.STRING) Instant ultimaActualizacion,
     List<ParadaSeguimientoDTO> paradas,
-    PosicionCamionDTO posicionCamion) {
+    PosicionCamionDTO posicionCamion,
+    String recibidoPor) {
+
+  /** Seguimiento sin quien recibió. */
+  @SuppressWarnings("java:S107")
+  public SeguimientoEntregaResponseDTO(
+      UUID idEntrega,
+      UUID idDonacion,
+      EstadoEntrega estadoEntrega,
+      boolean rutaAsignada,
+      UUID idRuta,
+      LocalDate fechaRuta,
+      EstadoRuta estadoRuta,
+      String patenteCamion,
+      Integer ordenVisita,
+      int totalParadas,
+      int paradasEntregadas,
+      int paradasProcesadas,
+      Instant horaSalida,
+      Instant horaArribo,
+      Instant ultimaActualizacion,
+      List<ParadaSeguimientoDTO> paradas,
+      PosicionCamionDTO posicionCamion) {
+    this(
+        idEntrega,
+        idDonacion,
+        estadoEntrega,
+        rutaAsignada,
+        idRuta,
+        fechaRuta,
+        estadoRuta,
+        patenteCamion,
+        ordenVisita,
+        totalParadas,
+        paradasEntregadas,
+        paradasProcesadas,
+        horaSalida,
+        horaArribo,
+        ultimaActualizacion,
+        paradas,
+        posicionCamion,
+        null);
+  }
 
   /** Seguimiento sin posición del camión. */
   @SuppressWarnings("java:S107")
@@ -74,6 +119,7 @@ public record SeguimientoEntregaResponseDTO(
         horaArribo,
         ultimaActualizacion,
         paradas,
+        null,
         null);
   }
 }

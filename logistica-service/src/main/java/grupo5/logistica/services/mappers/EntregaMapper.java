@@ -69,7 +69,8 @@ public class EntregaMapper {
         entrega.getVolumenTotalM3(),
         entrega.getHistorialEstado().stream().map(this::toCambioEstadoResponseDTO).toList(),
         entrega.getNumeroRemito(),
-        ReporteRecepcionDTO.de(entrega.getReporteRecepcion()));
+        ReporteRecepcionDTO.de(entrega.getReporteRecepcion()),
+        entrega.getRecibidoPor());
   }
 
   public EntregaMapaPublicoResponseDTO toMapaPublicoResponseDTO(Entrega entrega) {

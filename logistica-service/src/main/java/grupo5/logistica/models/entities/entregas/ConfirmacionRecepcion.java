@@ -7,11 +7,21 @@ public record ConfirmacionRecepcion(
     String actor,
     List<String> fotosRecepcion,
     String numeroRemito,
-    ReporteRecepcion reporte)
+    ReporteRecepcion reporte,
+    String recibidoPor)
     implements SolicitudTransicionEntrega {
 
   public ConfirmacionRecepcion {
     fotosRecepcion = fotosRecepcion != null ? List.copyOf(fotosRecepcion) : List.of();
+  }
+
+  public ConfirmacionRecepcion(
+      Entrega entrega,
+      String actor,
+      List<String> fotosRecepcion,
+      String numeroRemito,
+      ReporteRecepcion reporte) {
+    this(entrega, actor, fotosRecepcion, numeroRemito, reporte, null);
   }
 
   public ConfirmacionRecepcion(Entrega entrega, String actor, List<String> fotosRecepcion) {

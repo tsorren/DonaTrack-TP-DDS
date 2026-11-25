@@ -484,7 +484,9 @@ public class EntregasService implements IEntregasService {
           aInstantUtc(entrega.getHoraSalida()),
           aInstantUtc(entrega.getHoraArribo()),
           calcularUltimaActualizacion(entrega, null, List.of()),
-          List.of());
+          List.of(),
+          null,
+          entrega.getRecibidoPor());
     }
 
     Camion camion = camionDe(ruta, camiones);
@@ -545,7 +547,8 @@ public class EntregasService implements IEntregasService {
         aInstantUtc(entrega.getHoraArribo()),
         ultimaActualizacion,
         List.copyOf(paradas),
-        posicionCamion(ruta, camion));
+        posicionCamion(ruta, camion),
+        entrega.getRecibidoPor());
   }
 
   private static PosicionCamionDTO posicionCamion(Ruta ruta, @Nullable Camion camion) {
@@ -618,7 +621,8 @@ public class EntregasService implements IEntregasService {
             request.actor(),
             request.obtenerFotosRecepcion(),
             request.numeroRemito(),
-            request.reporte() != null ? request.reporte().aDominio() : null);
+            request.reporte() != null ? request.reporte().aDominio() : null,
+            request.recibidoPor());
 
     GestorDeEntregas.cambiarEstado(solicitud);
     return solicitud;

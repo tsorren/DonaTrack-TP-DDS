@@ -25,6 +25,9 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
   static final int MAX_REMITO = 40;
 
+  /** Largo máximo del nombre de quien recibió (HG-03). */
+  public static final int MAX_RECIBIDO_POR = 80;
+
   private final UUID id;
   private UUID idRuta;
   private final UUID idDonacion;
@@ -54,6 +57,13 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
   /** Problema contado al confirmar; {@code null} si llegó bien. */
   private ReporteRecepcion reporteRecepcion;
+
+  /**
+   * Nombre de la persona que recibió, dicho por la organización al confirmar (HG-03). Es un dato
+   * personal: solo sale en las lecturas privadas, nunca en el mapa público ni en los eventos
+   * (DA-10). El {@code actor} del historial sigue siendo la organización.
+   */
+  private String recibidoPor;
 
   private final float pesoTotalKG;
   private final float volumenTotalM3;
@@ -167,8 +177,15 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
   /** Hidrata remito y reporte desde la persistencia, sin validar. */
   public void reconstituirRecepcion(String numeroRemito, ReporteRecepcion reporte) {
+    reconstituirRecepcion(numeroRemito, reporte, null);
+  }
+
+  /** Hidrata remito, reporte y quién recibió desde la persistencia, sin validar. */
+  public void reconstituirRecepcion(
+      String numeroRemito, ReporteRecepcion reporte, String recibidoPor) {
     this.numeroRemito = numeroRemito;
     this.reporteRecepcion = reporte;
+    this.recibidoPor = recibidoPor;
   }
 
   /** Registra el donante al crear o reconstituir la entrega; {@code null} la deja sin donante. */
@@ -215,9 +232,23 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
    */
   public void confirmarEntrega(
       String entidad, List<String> fotosRecepcion, String numeroRemito, ReporteRecepcion reporte) {
+    confirmarEntrega(entidad, fotosRecepcion, numeroRemito, reporte, null);
+  }
+
+  /**
+   * Confirma la recepción con, además, el nombre de quien recibió (HG-03): opcional; en blanco
+   * queda sin nombre y con más de {@value #MAX_RECIBIDO_POR} caracteres se rechaza.
+   */
+  public void confirmarEntrega(
+      String entidad,
+      List<String> fotosRecepcion,
+      String numeroRemito,
+      ReporteRecepcion reporte,
+      String recibidoPor) {
     validarActor(entidad);
     List<String> fotosNormalizadas = normalizarFotosObligatorias(fotosRecepcion);
     String remitoNormalizado = normalizarRemito(numeroRemito);
+    String nombreNormalizado = normalizarRecibidoPor(recibidoPor);
 
     validarEnViajeOEnPuerta();
 
@@ -225,6 +256,7 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     this.fotosRecepcion.addAll(fotosNormalizadas);
     this.numeroRemito = remitoNormalizado;
     this.reporteRecepcion = reporte;
+    this.recibidoPor = nombreNormalizado;
     actualizarEstado(EstadoEntrega.ENTREGADA, entidad);
     this.horaArribo = LocalDateTime.now(ZoneId.of("UTC"));
     registrarEvento(
@@ -380,6 +412,17 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
     return remito;
+  }
+
+  private static String normalizarRecibidoPor(String recibidoPor) {
+    if (recibidoPor == null || recibidoPor.isBlank()) {
+      return null;
+    }
+    String nombre = recibidoPor.strip();
+    if (nombre.length() > MAX_RECIBIDO_POR) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    return nombre;
   }
 
   private static void validarJustificacion(String justificacion) {

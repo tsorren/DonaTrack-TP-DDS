@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Logística Service API
-  version: 1.11.0
+  version: 1.12.0
   description: API REST para planificación de rutas de transporte, seguimiento por paradas planificadas, asignación de choferes, mapa público de donaciones entregadas y trazabilidad de entregas.
 servers:
   - url: http://localhost:8083
@@ -937,6 +937,15 @@ components:
           maxLength: 40
           pattern: '\S'
           description: Número de remito al pasar a ENTREGADA (HB-17, DTI-29). Opcional durante la migración; no se publica en el mapa ni en los eventos.
+        recibidoPor:
+          type: string
+          nullable: true
+          maxLength: 80
+          description: >-
+            Nombre de la persona que recibió, al pasar a ENTREGADA (HG-03, desde 1.12.0). Opcional;
+            en blanco queda sin nombre y, sin los espacios de los bordes, con más de 80 caracteres
+            da 400. Es un dato personal: sale solo en las lecturas privadas de la entrega, nunca en
+            el mapa público ni en los eventos (DA-10). El actor sigue siendo la organización.
         reporte:
           type: object
           nullable: true
@@ -1052,6 +1061,10 @@ components:
           type: string
           nullable: true
           description: Remito cargado al confirmar (HB-17); nulo si no se cargó.
+        recibidoPor:
+          type: string
+          nullable: true
+          description: Nombre de quien recibió, si la organización lo dijo al confirmar (HG-03, desde 1.12.0); nulo si no lo dijo. Dato personal, privado.
         reporte:
           type: object
           nullable: true
@@ -1244,6 +1257,10 @@ components:
               type: string
               format: date-time
               description: Hora de origen del dato; es la "última actualización" del marcador.
+        recibidoPor:
+          type: string
+          nullable: true
+          description: Nombre de quien recibió, si la organización lo dijo al confirmar (HG-03, desde 1.12.0); nulo si no lo dijo. Dato personal, privado; el mapa público no lo tiene.
     CambioEstadoEntregaResponseDTO:
       type: object
       required:
