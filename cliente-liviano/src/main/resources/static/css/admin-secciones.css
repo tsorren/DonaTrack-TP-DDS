@@ -211,6 +211,34 @@
   }
 }
 
+/* --- Registrar organización y su error de datos (A12, ADM2-12): las piezas son del catálogo; acá
+   quedan la columna del formulario y dónde va cada cosa, como en Registrar donación. ----------- */
+
+[data-pantalla="registrar-organizacion"] {
+  max-width: var(--medida-formulario);
+}
+
+/* Cada campo de la grilla empieza arriba de su celda: el vecino de la calle con error no estira
+   su control. */
+[data-pantalla="registrar-organizacion"] .grilla {
+  align-items: start;
+}
+
+/* La salida sin registrar, un enlace suelto con su lugar para el dedo. */
+[data-pantalla="registrar-organizacion"] > p > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+/* Desde la tableta, «Registrar organización» mide lo que su texto, como en Registrar donación. */
+@media (min-width: 37.5em) {
+  [data-pantalla="registrar-organizacion"] form > [data-fijo] > .boton {
+    align-self: start;
+    margin-block-start: var(--espacio-entre);
+  }
+}
+
 /* --- Agregar camión (ADM1, en el diálogo o abierto con el error de datos): cada campo de la grilla
    empieza arriba de su celda; el vecino de un campo con error no estira su control. ----------- */
 

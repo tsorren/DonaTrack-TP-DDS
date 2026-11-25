@@ -2248,10 +2248,96 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("pidió sumarse el 14 de octubre"))));
     mvc.perform(post("/admin-entidades-rechazada"))
         .andExpect(redirectedUrl("/admin-entidades-rechazada"));
+  }
+
+  /**
+   * ADM2-12: Registrar organización deriva de A12 en el galpón, como Registrar donación; el error
+   * de datos es un estado del mismo formulario. ADM2-13 (DA-06): «registrada» es Organizaciones con
+   * el aviso breve, sin página propia ni el banner de antes.
+   */
+  @Test
+  void registrarOrganizacionEsElFormularioDelGalponYRegistradaEsLaListaConElAviso()
+      throws Exception {
+    String formulario =
+        mvc.perform(get("/admin-entidades-registrar"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("data-pantalla=\"registrar-organizacion\"")))
+            .andExpect(content().string(containsString("<h1>Registrar organización</h1>")))
+            .andExpect(
+                content().string(containsString("href=\"/admin-entidades\">Organizaciones</a>")))
+            .andExpect(
+                content()
+                    .string(
+                        containsString(
+                            "<p><a href=\"/admin-entidades\">Volver sin registrar</a></p>")))
+            .andExpect(content().string(containsString("name=\"calle\"")))
+            .andExpect(content().string(containsString("name=\"responsable\"")))
+            .andExpect(content().string(not(containsString("class=\"mesa"))))
+            .andExpect(content().string(not(containsString("class=\"banner\""))))
+            .andExpect(content().string(not(containsString("<p class=\"rotulo\">"))))
+            .andExpect(content().string(not(containsString("class=\"campo-error\""))))
+            .andExpect(content().string(not(containsString(">Cancelar<"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    String registro =
+        formulario.substring(formulario.indexOf("action=\"/admin-entidades-registrada\""));
+    assertEquals(
+        1,
+        apariciones(registro, "data-tono=\"principal\""),
+        "Registrar organización lleva una sola acción llena");
+    // El error de datos: el resumen arriba con un enlace al campo, y el campo marcado en su lugar
     mvc.perform(get("/admin-entidades-registrar-error"))
-        .andExpect(content().string(containsString("Falta la dirección: la usamos para")));
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("data-pantalla=\"registrar-organizacion\"")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<div class=\"aviso\" data-tipo=\"error\" role=\"alert\" tabindex=\"-1\""
+                            + " id=\"resumen\"\\s+autofocus>\\s*<svg[^>]*data-signo=\"e-problema\".*"
+                            + "<p class=\"aviso-titulo\">Revisá 1 dato para seguir\\.</p>.*"
+                            + "href=\"#calle\">Falta la dirección</a>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<div class=\"campo\" data-estado=\"error\">\\s*<label"
+                            + " for=\"calle\">Calle \\*</label>\\s*<p id=\"calle-error\""
+                            + " class=\"campo-error\">.*Falta la dirección: la usamos para.*"
+                            + "aria-describedby=\"calle-error\" aria-invalid=\"true\".*")))
+        .andExpect(content().string(containsString("value=\"Escuela Ejemplo N.º 5\"")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    // El error del servicio es el aviso en la página, con el código
+    mvc.perform(get("/admin-entidades-registrar?escenario=error"))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<div class=\"aviso\" data-tipo=\"error\" role=\"alert\">\\s*<svg"
+                            + "[^>]*data-signo=\"e-problema\".*<p class=\"aviso-titulo\">No"
+                            + " pudimos guardar: no cambió nada\\.</p>.*escribinos\\s+con este"
+                            + " código.*")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    mvc.perform(post("/admin-entidades-registrada"))
+        .andExpect(redirectedUrl("/admin-entidades-registrada"));
     mvc.perform(get("/admin-entidades-registrada"))
-        .andExpect(content().string(containsString("necesita aprobación.")));
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("data-pantalla=\"entidades\"")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<h1>Organizaciones</h1>.*<div hx-swap-oob=\"beforeend:#avisos\">"
+                            + "<div class=\"aviso-breve\" data-estado=\"hecho\".*"
+                            + "data-signo=\"e-confirmada\".*<p>"
+                            + Pattern.quote(
+                                "Registraste a Escuela Ejemplo N.º 5. Queda activa: la registraste"
+                                    + " vos, no necesita aprobación.")
+                            + "</p>.*class=\"maestro\".*")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))))
+        .andExpect(content().string(not(containsString("class=\"mesa"))))
+        .andExpect(content().string(not(containsString("href=\"/admin-entidades-registrada"))));
   }
 
   @Test

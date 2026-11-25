@@ -205,4 +205,13 @@ class AdminEntidadesControllerTest {
                 new PersonaNueva.Humana("Clara María", "Ejemplo", "escuela5@ejemplo.org"),
                 "escuela5@ejemplo.org"));
   }
+
+  /**
+   * DA-06 (ADM2-13): fuera de la maqueta, «registrada» no es una página; la respuesta es el aviso
+   * breve en Organizaciones, adonde vuelve el envío.
+   */
+  @Test
+  void registradaNoEsUnaPaginaFueraDeLaMaqueta() throws Exception {
+    mvc.perform(get("/admin-entidades-registrada")).andExpect(status().isNotFound());
+  }
 }
