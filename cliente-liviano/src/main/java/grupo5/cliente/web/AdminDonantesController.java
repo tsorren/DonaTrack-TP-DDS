@@ -192,7 +192,9 @@ public class AdminDonantesController {
       if (sondeo) {
         redirigirAlError(archivo, respuesta);
       }
-      lista(personas.donantes(ConsultaDonantes.primera()), pedido, model);
+      AdminDonantesVista datos = personas.donantes(ConsultaDonantes.primera());
+      lista(datos, pedido, model);
+      elegido(datos, null, model);
     } else {
       avance(importacion, etapa, sondeo, pedido, model);
     }

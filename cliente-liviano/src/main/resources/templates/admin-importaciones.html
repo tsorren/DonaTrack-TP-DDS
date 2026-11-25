@@ -50,12 +50,15 @@
       <nav th:replace="~{admin-importaciones :: pestanas('importaciones')}"></nav>
     </div>
 
-    <!--/* La ayuda, plegada en un botón chico, como en Actividad (la otra pestaña del galpón). */-->
-    <details>
-      <summary class="boton" data-tono="secundario" data-tamano="chico">¿Qué muestra esta lista?</summary>
-      <p>Acá están todos los archivos de donantes que se importaron, los que siguen importándose y
+    <!--/* La ayuda, plegada (componente plegable), como en Actividad (la otra sección con pestañas). */-->
+    <details class="plegable">
+      <summary><span class="plegable-titulo"><b>¿Qué muestra esta lista?</b></span><span
+          class="plegable-ver">Ver la ayuda</span></summary>
+      <div class="plegable-cuerpo">
+        <p>Acá están todos los archivos de donantes que se importaron, los que siguen importándose y
         los que no terminaron. Abrí uno para ver su avance o sus filas con error. Para seguir una
         importación en vivo, abrí su avance: esta lista no se actualiza sola.</p>
+      </div>
     </details>
 
     <section th:if="${vacia}" class="vacio" aria-labelledby="vacio-titulo">

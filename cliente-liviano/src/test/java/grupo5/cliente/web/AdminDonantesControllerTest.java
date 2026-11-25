@@ -524,7 +524,10 @@ class AdminDonantesControllerTest {
     mvc.perform(multipart("/admin-donantes-importando").file(vacio).with(admin()).with(csrf()))
         .andExpect(redirectedUrl("/admin-donantes-importar-error"));
     mvc.perform(get("/admin-donantes-importar-error").with(admin()))
-        .andExpect(content().string(containsString("No se importó ninguna fila.")));
+        .andExpect(content().string(containsString("No se importó ninguna fila.")))
+        // Es un estado del mismo formulario: la bandeja trae la ficha de partida, como la lista
+        .andExpect(content().string(containsString("class=\"tarjeta maestro-ficha\"")))
+        .andExpect(content().string(containsString("data-elegido=\"partida\"")));
   }
 
   // --- R11-20 --------------------------------------------------------------------------------

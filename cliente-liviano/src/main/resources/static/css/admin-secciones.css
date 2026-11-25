@@ -245,6 +245,13 @@
 /* --- Donantes como bandeja (R11-34, ficha r11-p2-admin-bandeja; Donaciones pasó a la tabla, ADM1-08)
    y el avance de una importación (ADM2-01 y ADM2-02, en el galpón) ------------------------------ */
 
+/* El aviso de una actualización que no llegó, vacío, no suma un espacio de la pila entre las migas
+   y el avance (#avance-etapa es solo para lectores y no ocupa lugar). Sigue en la página, porque es
+   una región que se lee sola. */
+[data-pantalla="importacion"] > #avance-aviso:empty {
+  margin-block-start: 0;
+}
+
 /* Importar y las cifras del avance, con el relleno chico (parámetro de .tarjeta). */
 :is([data-pantalla="donantes"], #avance) > .tarjeta {
   --espacio-relleno: var(--espacio-3);
@@ -265,21 +272,11 @@
   gap: var(--espacio-1);
 }
 
-/* Desde la tableta: la ficha a la derecha, fija al desplazarse (el renglón elegido no queda fijo);
+/* Desde la tableta: la ficha a la derecha, entera y alineada con la lista, como en Organizaciones;
    la de partida se ve y "Cerrar la ficha" ya no hace falta. */
 @media (min-width: 53.75em) {
   [data-pantalla="donantes"] .maestro > li[data-elegido="partida"] > .maestro-ficha {
     display: grid;
-  }
-
-  [data-pantalla="donantes"] .maestro-ficha {
-    position: sticky;
-    /* Debajo de la cabecera y de la barra de filtros fijas (R11-33). */
-    top: calc(var(--medida-cabecera-fija) + var(--medida-filtros-fijos) + var(--espacio-4));
-    max-height: calc(
-      100vh - 2 * var(--espacio-4) - var(--medida-cabecera-fija) - var(--medida-filtros-fijos)
-    );
-    overflow-y: auto;
   }
 
   [data-pantalla="donantes"] [data-parte="cerrar"] {

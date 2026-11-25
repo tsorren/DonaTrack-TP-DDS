@@ -239,13 +239,15 @@ class AdminImportacionesControllerTest {
     mvc.perform(get("/admin-importaciones").with(admin()))
         .andExpect(content().string(containsString("data-pantalla=\"importaciones\"")))
         .andExpect(content().string(containsString("data-alinea=\"entre arriba\"")))
+        .andExpect(content().string(containsString("<details class=\"plegable\">")))
         .andExpect(
             content()
                 .string(
                     containsString(
-                        "<summary class=\"boton\" data-tono=\"secundario\""
-                            + " data-tamano=\"chico\">¿Qué muestra esta lista?</summary>")))
-        .andExpect(content().string(not(containsString("class=\"plegable\""))))
+                        "<span class=\"plegable-titulo\"><b>¿Qué muestra esta lista?</b></span>")))
+        .andExpect(content().string(containsString("class=\"plegable-ver\">Ver la ayuda</span>")))
+        .andExpect(content().string(containsString("<div class=\"plegable-cuerpo\">")))
+        .andExpect(content().string(not(containsString("<summary class=\"boton\""))))
         .andExpect(content().string(containsString("class=\"tabla\"")))
         .andExpect(content().string(containsString("class=\"paginas\"")))
         .andExpect(content().string(not(containsString("class=\"mesa"))));
