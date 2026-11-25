@@ -437,6 +437,29 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
   revisar el usuario ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 5).
 - **Evidencia:** `VariantesInterceptor.java`, `9b2d3e147`.
 
+### 2026-11-24 · admin · Manifiesto de ADM1: Por decidir en dos rutas y el galpón con barra arriba
+
+- **Decisión:** `/admin-inicio` y `/admin-asignaciones` llevan la misma cabecera y la misma barra
+  de pestañas de A03; el inicio abre Propuestas y debajo lleva el resumen y los gráficos (DA-25).
+  La tabla con selección aprueba o descarta varias propuestas, una por una contra el puerto de hoy
+  (DA-26). El galpón conserva la barra superior fina en todos los anchos y lleva las secciones al
+  cajón (DA-27). Fichas: [Ranking](flujos/guia-adm-ranking.md), sin podio y con el mes como hoy
+  (DA-28 y DA-31), y [los gráficos del inicio](flujos/guia-adm-inicio-graficos.md), con un solo
+  resumen denso, sin «Entregas para mirar hoy», y los gráficos en la pantalla (DA-29 y DA-30).
+  Reparto en 7 lotes de 2 tandas ([backlog, sección 14](backlog-guia-al-codigo.md)).
+- **Alternativas:** una sola ruta que redirige a la otra; selección sin envío conjunto o un pedido
+  en lote nuevo a Donaciones; la guía tal cual, sin barra arriba en escritorio; un podio; conservar
+  las cuatro tarjetas; los gráficos como pieza del catálogo. La opción descartada de cada una está
+  en §2.2 del backlog.
+- **Por qué:** los tests y el ingreso del admin llegan a las dos rutas; el puerto y el adaptador
+  `rest` no cambian en una ola de rol; `ArmazonFijoTest` mide la cabecera del admin y nadie lo edita;
+  el resto sigue la densidad del galpón sin piezas nuevas.
+- **Costo:** Solicitudes y Por vencer llevan a otras pantallas en lugar de abrirse en la bandeja; la
+  barra superior del galpón se aparta de la guía en escritorio; falta «Entregas para mirar hoy».
+- **Quién decidió:** el autor del manifiesto, con la opción recomendada, delegada por el
+  relevamiento del 2026-11-24 (corrida desatendida, rama = gate; plan `.claude/plan-guia-resto.md`).
+  El usuario no las respondió.
+
 ### 2026-11-24 · publico · Manifiesto de PUB1: la portada de A01 sin las abejas
 
 - **Decisión:** la portada sigue al arquetipo A01, sin las abejas, el corte «bajo tierra» ni el

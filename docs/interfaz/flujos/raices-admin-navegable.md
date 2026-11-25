@@ -1,5 +1,9 @@
 # Flujo: El admin opera la plataforma, en Raíces navegable
 
+> **Desde el 2026-11-24,** la ficha [`guia-adm-ranking.md`](guia-adm-ranking.md) (ola ADM1 de la
+> guía «Huerta y galpón») manda sobre §4.9 en cómo se ve Ranking en el galpón. Los datos, los
+> estados y los textos de esta ficha siguen.
+
 > **Estado:** aprobado · **Fecha:** 2026-11-07 · **Aprobó:** usuario (2026-11-07), después de `revision-ui` PASS en la ronda 3
 > Ficha de la skill `ux-flujo`, fase F1 del [roadmap de las vistas](../roadmap-vistas-enunciado.md).
 > Es una sola ficha para todo el recorrido del admin, con importar CSV y asignar incluidos (decisión

@@ -79,6 +79,9 @@ Manifiesto de PUB1 (2026-11-24, misma corrida): DA-22, DA-23 y DA-24 son decisio
 usuario no respondió. Van con la opción recomendada, «Delegada por el relevamiento del 2026-11-24
 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md)»; la opción descartada
 queda en la columna de la recomendación.
+Manifiesto de ADM1 (2026-11-24, misma corrida): DA-25 a DA-31 son decisiones nuevas que el usuario
+no respondió, con la misma regla y la misma nota. DA-28 a DA-31 son las preguntas de las dos fichas
+de la ola ([Ranking](flujos/guia-adm-ranking.md) y [los gráficos del inicio](flujos/guia-adm-inicio-graficos.md)).
 
 | ID | Pregunta | Recomendación | Respuesta del usuario | Fecha | Ola |
 |---|---|---|---|---|---|
@@ -105,6 +108,13 @@ queda en la columna de la recomendación.
 | DA-22 | Portada: A01 no dibuja las abejas, el corte «bajo tierra» ni el cierre de la portada de hoy (la variante K), y el ADR «Huerta y galpón» deja abierto qué pasa con ellas. ¿La portada sigue a A01 sin esas piezas, o las conserva debajo de A01? | A01 sin esas piezas. `AbejasYRenglonesTest` y `BajoTierraRotulosTest`, que las miden en `/publico-portada`, no se editan: sus fallos se anotan para que decida el usuario, como el lema del pie en C1 (§10.5, [DTI-47](../adr/DEUDA_TECNICA.md#dti-47)). `static/js/abejas.js` y los fragmentos de `componentes/huerta.html` que la portada deja de usar no se borran en PUB1. Descartada: conservarlas debajo de A01 (los tests siguen pasando, pero una pantalla «directa» deja de ser fiel a su arquetipo y suma composición que la guía no tiene) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | PUB1 |
 | DA-23 | El pie: con DA-05, Nosotros, Para donantes y Para organizaciones pasan a llamarse «Cómo funciona», «Cómo donar» y «Ayuda». La guía dibuja el pie con los nombres de hoy. ¿El pie los nombra con el nombre nuevo? | Sí: cambia solo el texto de esos tres enlaces de `pie.html`; las rutas y el orden siguen. Descartada: el pie con los nombres de hoy (cada enlace llevaría a una página que se llama de otra forma) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | PUB1 |
 | DA-24 | Contacto: con DA-06, la respuesta es un aviso breve. ¿Adónde lleva el envío y dónde queda el número del mensaje? | A Contacto (`/publico-contacto`, con su `?volver=` si vino), con el aviso breve que lleva el número («Recibimos tu mensaje. Su número es 4821. Te respondemos por correo.»). Con `?volver=`, Contacto ofrece la salida «Volver a …» que hoy tiene la página de enviado. En la maqueta, `/publico-contacto-enviado` sigue y muestra Contacto con el aviso. Descartada: llevar a la pantalla de `?volver=` (la portada no tiene la región `#avisos` y el aviso se perdería) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | PUB1 |
+| DA-25 | Admin: con DA-04, «Por decidir» reemplaza a Inicio y a Asignar, y §5 da A03 directo a `admin-inicio` y a `admin-asignaciones`. ¿Cómo se reparten las dos rutas? | Las dos siguen y llevan la misma cabecera de A03 (el título «Por decidir», la fecha y la última asignación, «Correr la asignación» y «Registrar donación») y la misma barra de pestañas con su cuenta: Propuestas (a `/admin-inicio`), Conflictos (a `/admin-asignaciones?pestana=conflictos`), Solicitudes (a `/admin-entidades`, de ADM2, que no cambia) y Por vencer (a `/admin-donaciones?vence=pronto`). `/admin-inicio` abre Propuestas: la primera página de las propuestas sin conflicto en la tabla con selección y, debajo, lo de su ficha. `/admin-asignaciones` es la mesa completa: Propuestas paginadas, Conflictos de a una, Destino y Decididas. La entrada del menú lleva a `/admin-inicio` y queda marcada en las dos y en las cuatro respuestas. Descartadas: una sola ruta que redirige a la otra (rompe los tests y las rutas de `paginas.txt` que llegan a cada una, y el ingreso del admin cae en `/admin-inicio`); Solicitudes y Por vencer como listas dentro de `/admin-inicio` (traen al inicio las listas de Organizaciones, de ADM2, y de Donaciones) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | ADM1 |
+| DA-26 | La tabla con selección de A03 aprueba o descarta varias propuestas juntas, y el puerto decide de a una (`AdminOperacionPuerto.decidirPropuesta`). ¿Cómo se hace sin cambiar el puerto? | El formulario manda varias `propuesta` a `/admin-asignaciones-aprobada` o `-descartada` (un botón con `formaction` cada uno) y `AdminAsignacionesEnvios` llama al puerto una vez por propuesta, en orden. Si una falla, para: el aviso dice cuántas se decidieron y por qué no la siguiente, y las demás quedan sin decidir. Con una sola, el aviso de hoy. Los Conflictos se siguen decidiendo de a una, como dice A03. Descartadas: cada fila con su botón, sin selección (A03 dibuja la selección); un pedido en lote nuevo a Donaciones (cambia el puerto y el adaptador `rest`) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | ADM1 |
+| DA-27 | El galpón en escritorio: la guía saca la barra superior y lleva la marca, la campana y la cuenta al cajón (`15-pantallas.css:98-101`). `ArmazonFijoTest` mide la cabecera (`body > header`) y la barra del listado en `/admin-donantes` y `/admin-donaciones`, y nadie edita ese test. ¿Qué se hace? | La barra superior se queda en todos los anchos, fina, con la marca, la campana y la cuenta; las secciones van al cajón, siempre abierto desde 56 em, a la izquierda y debajo de la barra. Hasta 56 em, la barra del celular de la guía (Por decidir, Donaciones, Camiones y Más). La diferencia con la guía se declara. Descartada: la guía tal cual (sin barra arriba desde 56 em), que cambia el lugar de la campana respecto de los otros roles y arriesga `laCabeceraYLaBarraQuedanFijasSinHuecoEntreEllas` y `conTabElFocoNoQuedaDebajoDeLaCabeceraNiDeLaBarra` | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | ADM1 |
+| DA-28 | Ranking (ficha): ¿cómo se marcan los primeros puestos? | La tabla del catálogo con el encabezado del galpón, sin selección; el puesto en número, sin color, dibujo ni podio para los tres primeros. Descartada: un podio dibujado con los tres primeros (es una pieza que el catálogo no tiene, y el tono pide no comparar donantes más allá del criterio que va arriba de la tabla) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | ADM1 |
+| DA-29 | Los gráficos del inicio (ficha): debajo de la bandeja, ¿qué pasa con las cuatro tarjetas de «Cómo está todo» y con «Entregas para mirar hoy», que dibuja A03? | Las cuatro tarjetas pasan a un solo resumen denso, «Cómo está todo», con la lista de datos del catálogo (P23) y su fecha: las cinco cuentas de donaciones por estado, las entregas confirmadas del mes y en total, la red y los camiones (o su aviso), con las salidas de hoy. «Entregas para mirar hoy» no se dibuja: `AdminInicioVista` trae cuentas y no las entregas; se anota como deuda. Descartadas: conservar las cuatro tarjetas (es la densidad de la huerta en el galpón); armar «Entregas para mirar hoy» con datos de la maqueta (en el sitio real quedaría vacía) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | ADM1 |
+| DA-30 | Los gráficos del inicio (ficha): «Mes a mes» y «Por categoría», ¿se quedan como parte de la pantalla o pasan al catálogo? | Se quedan como parte de `admin-inicio`, en `admin-inicio.css`, debajo del resumen y con su tabla al lado (debajo en el celular), como hoy. Sus reglas dejan los nombres de antes de la guía (`--color-acento`, `--color-acento-claro`, `--color-tinta-suave`) por los de la guía con el mismo valor (DA-14a), así no cambia ningún píxel y Z puede retirar esos alias. Descartada: una pieza nueva del catálogo con su muestra en `/estilos` (la usa una sola pantalla y pediría un lote de catálogo en la tanda 1) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | ADM1 |
+| DA-31 | Ranking (ficha): ¿cómo se elige el mes? | Como hoy: la pastilla «Mes» de `componentes/filtros`, «Volver al último mes» y el paginador de meses (R11-23 y R11-43). Descartada: pestañas por mes (A03 usa pestañas para lo que hay por decidir, y doce meses no entran a 360 px) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | ADM1 |
 | G0 | Con la medida de C0 (§3.4): ¿el plan sigue con todo el sitio o se recorta al recorrido de la demo? | Recorte al recorrido de la demo (ORG, DON y PUB1), con ADM1 por decidir en G1 | Todo el sitio («Quiero todo el sitio», ronda 3). Quedan 8 corridas: C1, ORG, DON, PUB1, ADM1, PUB2, ADM2 y Z | 2026-11-22 | Todas |
 | G1 | Con la hoja de G1 (16 pantallas de hoy, §10.3): ¿cada área se puede mostrar así? | Ninguna: lo decide el usuario mirando la hoja | Las cuatro áreas se pueden mostrar así («Las 4 se muestran»). G2 permite que un área entre a medias. Es una excepción a la regla del piso del plan (§10: un área con una pantalla sin rehacer que falla el piso queda en «no»): las 11 rutas en rojo de la línea de base (§10.4), que tocan las cuatro áreas, fallan solo por toque, no por contraste. El usuario la mantuvo al conocer la regla («Mantener, excepción») | 2026-11-23 | Todas |
 | DA-17 | ¿El menú de cada rol cambia en la ola de ese rol, y no todos juntos en C1? | Sí: si una ola no llega, su área queda con el menú de hoy | Sí («Todas las recomendadas», ronda 3) | 2026-11-22 | PUB1, DON, ORG y ADM1 |
@@ -979,3 +989,120 @@ aunque su comportamiento esté en el código y en los tests. Lo que queda abiert
   tiene «Volver a mi inicio»). `tono-y-comunicacion.md` y
   [`requerimientos-e7.md`](../requerimientos/requerimientos-e7.md) no cambian: el primero no nombra
   páginas ni menús, y ningún requerimiento cambia de estado.
+
+## 14. Ola ADM1: el admin, la operación
+
+Rehace las 18 plantillas de ADM1 de §5, el menú del admin (§5.1; DA-04 y DA-17) y las piezas del
+galpón que DA-18 pasó de C1 a esta ola: la tabla con selección (P21), con la casilla sola de
+48 × 48 px que C1-12 dejó para acá, el cajón (P22) y el armazón del galpón (la mitad de P26).
+Lleva dos fichas, aprobadas por delegación (DA-08): [`flujos/guia-adm-ranking.md`](flujos/guia-adm-ranking.md)
+(Ranking) y [`flujos/guia-adm-inicio-graficos.md`](flujos/guia-adm-inicio-graficos.md) (lo que va
+debajo de la bandeja en `admin-inicio`, DA-04). Manifiesto:
+[`backlog-guia-al-codigo.adm1.manifiesto.json`](backlog-guia-al-codigo.adm1.manifiesto.json). Se
+escribió el 2026-11-24 en la corrida desatendida, mientras corría PUB1: el reparto, las fichas y
+DA-25 a DA-31 no los aprobó el usuario y van con la opción recomendada (§2.2). Se lanza desde la
+`E7_guia_ui` que deje PUB1.
+
+### 14.1 Decisiones de la ola
+
+| ID | Qué decide | Lote |
+|---|---|---|
+| DA-04 | «Por decidir» reemplaza a Inicio y a Asignar en el menú; los gráficos van debajo de la bandeja, con ficha | `adm1-galpon` (menú) y `adm1-por-decidir` (la bandeja y los gráficos) |
+| DA-17 | Cambia solo el menú del admin | `adm1-galpon` |
+| DA-18 y DA-27 | El cajón y el armazón del galpón, con la barra superior en todos los anchos | `adm1-galpon` |
+| DA-18 y DA-21 | La tabla con selección, con la casilla de 48 × 48 px | `adm1-asignaciones` |
+| DA-25 | Cómo se reparten `/admin-inicio` y `/admin-asignaciones`: la misma cabecera y la misma barra de pestañas | `adm1-asignaciones` (la cabecera y las pestañas, como fragmento) y `adm1-por-decidir` (`/admin-inicio`) |
+| DA-26 | Aprobar o descartar varias propuestas juntas, sin cambiar el puerto | `adm1-asignaciones` |
+| DA-07 | «Vencida» con el par neutro, no como problema | `adm1-donaciones` |
+| DA-06 | «Registrada» pasa a aviso breve en Donaciones | `adm1-registrar` |
+| DA-08, DA-29 y DA-30 | La ficha de los gráficos: el resumen denso y los gráficos como parte de la pantalla | `adm1-por-decidir` |
+| DA-08, DA-28 y DA-31 | La ficha de Ranking: la tabla sin podio y el mes como hoy | `adm1-ranking` |
+
+DA-25 a DA-31 son nuevas de esta ola; su opción descartada está en §2.2.
+
+### 14.2 Reparto
+
+Dos tandas. La primera trae las piezas del galpón y las pantallas que no las necesitan para
+construirse; la segunda, las que usan la tabla con selección o el armazón nuevo, y las que tocan
+un archivo que en la primera es de otro lote.
+
+- `adm1-por-decidir` va en la tanda 2 porque usa la cabecera, las pestañas y la tabla de
+  propuestas que deja `adm1-asignaciones` (tanda 1), y el armazón de `adm1-galpon`.
+- `adm1-registrar` va en la tanda 2 porque toca `AdminDonacionesController.java` y
+  `AdminDonacionesEnvios.java`, que en la tanda 1 toca `adm1-donaciones`, y porque «registrada»
+  muestra Donaciones con el aviso breve (DA-06).
+- `adm1-ranking` va en la tanda 2 para revisarse con el armazón del galpón; no depende de otro lote.
+
+| Lote | Tanda | Plantillas | Arquetipo y decisiones | Ficha |
+|---|:-:|---|---|---|
+| `adm1-galpon` | 1 | Ninguna pantalla: `layout-privado.html` (solo lo del admin) y el menú del admin | P22 y la mitad de P26; DA-04, DA-17, DA-18 y DA-27 | No |
+| `adm1-asignaciones` | 1 | `admin-asignaciones`, `-aprobada`, `-corrida`, `-descartada` y `-error` | A03 directo; P21; DA-18, DA-21, DA-25 y DA-26 | No |
+| `adm1-camiones` | 1 | `admin-camiones`, `-agregado`, `-agregar-error`, `-deshabilitado` y `-habilitado` | Deriva de A03; la flota, sin arquetipo, con `componentes/flota` | No |
+| `adm1-donaciones` | 1 | `admin-donaciones`, `-detalle` y `-detalle-vencida` | Deriva de A03; DA-07 | No |
+| `adm1-por-decidir` | 2 | `admin-inicio` | A03 directo; los gráficos, sin arquetipo; DA-04, DA-25, DA-29 y DA-30 | Sí |
+| `adm1-registrar` | 2 | `admin-donaciones-registrar`, `-registrar-error` y `-registrada` | Deriva de A12, en el galpón; DA-06 | No |
+| `adm1-ranking` | 2 | `admin-ranking` | Sin arquetipo; DA-28 y DA-31 | Sí |
+
+Suma: 0 + 5 + 5 + 3 + 1 + 3 + 1 = 18, las 18 de §5.
+
+**Plantillas y hojas del área que no son pantallas de ADM1:**
+
+| Plantilla u hoja | En ADM1 |
+|---|---|
+| `layout-privado.html` | `adm1-galpon`, solo lo que dibuja para el admin: el armazón de la huerta de quien dona y de la organización no cambia |
+| `estilos.html` y `docs/interfaz/componentes.md` | Compartidos (regla 4): `adm1-galpon`, la muestra y la fila del cajón y del galpón; `adm1-asignaciones`, las de la tabla con selección |
+| `static/css/componentes/navegacion.css` y `privado.css` | `adm1-galpon`, solo lo del galpón |
+| `static/css/componentes/tabla.css` | `adm1-asignaciones`, solo la variante con selección: la tabla de hoy no cambia para quien dona ni para las listas del admin |
+| Las demás hojas y fragmentos de `componentes/` (entre ellas `flota`, `mapa`, `filtros`, `listado`, `pestanas`, `segmentos`, `sello` y `datos`) y `static/js/` | Fuera: son del catálogo; se usan sin editarlos |
+| `iconos.html` | Fuera: los íconos del cajón salen de `iconos :: comunes` (`i-bandeja`, `i-caja`, `i-cuenta`, `i-gente`, `i-camion`, `i-podio` e `i-puntos`), como hizo PUB1 con `i-brote` |
+| `admin-secciones.css` | Compartida: es la hoja de las 39 pantallas del admin que no son el inicio, también las de ADM2. Cada lote saca solo las reglas que usan nada más que sus pantallas; no se borra |
+| `admin-inicio.css` | Compartida: la importa `admin-secciones.css`, así que la ven todas las pantallas del admin. `adm1-por-decidir` saca las reglas que usa nada más que el inicio y deja los gráficos (DA-30); no se borra ni sale de `HOJAS_HEREDADAS` |
+| `entidad-comun.css` | Fuera: la importa `admin-inicio.css` y es de las pantallas de la organización (ORG); no se edita |
+| Las 22 pantallas de ADM2 (`admin-donantes*`, `admin-importaciones`, `admin-entidades*`, `admin-administradores*`, `admin-actividad`, `admin-notificaciones*` y `admin-perfil`) | Fuera: ven el armazón y el menú nuevos con su contenido de hoy; quien revisa lo anota como menor |
+| `persona/datos-persona.html`, `datos-donante.html`, `viaje-datos.html`, `piezas-entidad.html` y `datos-publicos.html` | Fuera: son de DON, ORG y lo público |
+| `cuenta-menu.html`, `interaccion.html`, `envio.html`, `cerrar-sesion.html`, `paginador.html` y `pie.html` | Fuera: son comunes a los cuatro roles; no se editan |
+| `maqueta/AdminPersonasMaqueta.java` | Compartida con ADM2: `adm1-por-decidir`, solo los datos del inicio |
+| `maqueta/AdminOperacionMaqueta.java` y `AdminOperacionDonaciones.java` | Compartidas (regla 4): cada lote, solo los datos de sus pantallas |
+
+### 14.3 Ítems
+
+| ID | Lote | Qué | Arquetipo y decisiones | Estado |
+|---|---|---|---|---|
+| ADM1-01 | `adm1-galpon` | P22 · El cajón del galpón: las secciones en la tierra y la actual en papel, con su cuenta chica (la cuenta de la persona queda en la barra de arriba, DA-27); con su muestra en `/estilos` y su fila en el catálogo | Guía 417-427; DA-18 | Pendiente |
+| ADM1-02 | `adm1-galpon` | P26, la mitad del galpón · El armazón del admin: el papel claro, los títulos un escalón más chicos y el contenido denso; desde 56 em el cajón siempre abierto a la izquierda, con la barra superior fina arriba (marca, campana y cuenta); hasta 56 em, la barra del celular | 15, 16-25 y 98-104; DA-18 y DA-27 | Pendiente |
+| ADM1-03 | `adm1-galpon` | El menú del admin: Por decidir, Donaciones, Donantes, Organizaciones, Camiones y Ranking; en el celular, Por decidir, Donaciones, Camiones y Más, que abre todas. Por decidir lleva a `/admin-inicio` y queda marcada también en `/admin-asignaciones` y sus respuestas | §5.1; DA-04, DA-17 y DA-25 | Pendiente |
+| ADM1-04 | `adm1-asignaciones` | P21 · La tabla del galpón con selección: la casilla sola de 48 × 48 px (el patrón de DA-21), la de elegir todas, la fila elegida, las columnas que se esconden en el celular y la barra de las elegidas con su cuenta; con su muestra en `/estilos` y su fila en el catálogo | Guía 395-405; 15, 20; DA-18 y DA-21 | Pendiente |
+| ADM1-05 | `adm1-asignaciones` | Asignar pasa a ser la mesa de «Por decidir»: la cabecera y la barra de pestañas de A03 (en un fragmento que usa también `/admin-inicio`), Propuestas en la tabla con selección, Conflictos de a una, Destino y Decididas; las cuatro respuestas, con su aviso breve | A03; DA-25 | Pendiente |
+| ADM1-06 | `adm1-asignaciones` | Aprobar o descartar varias propuestas juntas, una por una contra el puerto de hoy, con el aviso de cuántas se decidieron | DA-26 | Pendiente |
+| ADM1-07 | `adm1-camiones` | Camiones y sus cuatro respuestas: la cabecera del galpón, la barra del listado, las vistas por estado con su cuenta y la flota con su ficha; el mapa chico con los marcadores de 48 px | Deriva de A03; la flota, sin arquetipo | Pendiente |
+| ADM1-08 | `adm1-donaciones` | Donaciones, su detalle y el detalle de una vencida, con «Vencida» en el par neutro | Deriva de A03; DA-07 | Pendiente |
+| ADM1-09 | `adm1-por-decidir` | `/admin-inicio` es «Por decidir»: la cabecera y las pestañas de A03, con Propuestas abierta (la primera página de las propuestas sin conflicto en la tabla con selección) | A03; DA-04 y DA-25 | Pendiente |
+| ADM1-10 | `adm1-por-decidir` | Debajo de la bandeja, según su ficha: «Cómo está todo» como resumen denso y los dos gráficos con su tabla | Sin arquetipo: ficha; DA-08, DA-29 y DA-30 | Pendiente |
+| ADM1-11 | `adm1-registrar` | Registrar donación y su error, en el galpón; «registrada» pasa a aviso breve en Donaciones y, en la maqueta, su ruta sigue | Deriva de A12; DA-06 | Pendiente |
+| ADM1-12 | `adm1-ranking` | Ranking, según su ficha | Sin arquetipo: ficha; DA-08, DA-28 y DA-31 | Pendiente |
+
+Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5), con el
+límite de las hojas compartidas de §14.2.
+
+### 14.4 Qué se verifica (DA-20)
+
+- **En cada lote:** los gates y `-Pvisual` sobre sus `rutasVisuales`, una por plantilla.
+  `adm1-galpon` y `adm1-asignaciones` llevan `/estilos`. Antes de comitear, `adm1-galpon` corre
+  además `-Pvisual` sobre `/admin-inicio`, `/admin-donaciones` y `/admin-donantes` (ADM2), y los
+  tests `ArmazonFijoTest` y `MenusQueSeCierranTest`; esas rutas no entran en su revisión ni en la
+  hoja de contacto.
+- **Mientras dura la tanda 1:** `adm1-asignaciones`, `adm1-camiones` y `adm1-donaciones` ven el
+  armazón y el menú de hoy. No es hallazgo de esos lotes.
+- **Al cierre:** `-Pvisual` sobre las 61 rutas de ADM1 de `paginas.txt` (las que empiezan con
+  `/admin-inicio`, `-asignaciones`, `-donaciones`, `-camiones` y `-ranking`) y sobre `/estilos`. Se
+  compara con la línea de base de §10.4 que dejaron DON (§12.5) y PUB1. Corren también los otros
+  cinco tests visuales, con la línea de base de §10.5, §11.3, §12.5 y del cierre de PUB1. No se
+  levantan el stack ni el recorrido con login: los hace Z, y ningún lote cambia un adaptador `rest`
+  (plan de la corrida, punto 5).
+- **Lo que cambia en la línea de base:** `/admin-camiones` y `/admin-camiones-agregar-error` están en
+  la de §10.4 por el marcador del mapa chico (`button.mapa-marcador`, del catálogo). `adm1-camiones`
+  intenta sacarlas con lo que el catálogo ya tiene (el atributo `data-mapa-margenes` de
+  `static/js/mapa.js`, como DON en Seguimiento). Si siguen fallando solo por el marcador, se anotan
+  y no son bloqueantes; si pasan, también se anota. `ArmazonFijoTest` mide `/admin-donantes`,
+  `/admin-donaciones`, `/admin-camiones` y `/admin-asignaciones?vista=decididas`: un fallo nuevo
+  ahí es bloqueante del lote que lo rompe (DA-27).
