@@ -50,7 +50,34 @@ class AdminNotificacionesMaquetaTest {
         .andExpect(content().string(not(containsString("Una importación se cortó"))));
     mvc.perform(get("/admin-notificaciones-leidas"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Listo: marcaste todas como leídas.")));
+        .andExpect(content().string(containsString("Listo: marcaste todas como leídas.")))
+        // ADM2-09: el aviso breve con signo del galpón (admin-donaciones :: hecho), con su cierre.
+        .andExpect(content().string(containsString("data-signo=\"e-confirmada\"")))
+        .andExpect(content().string(containsString("aria-label=\"Cerrar el aviso\"")));
+  }
+
+  @Test
+  void laPantallaVaEnElGalponConLaCabeceraYLaBajada() throws Exception {
+    // ADM2-09: la pila del galpón con su data-pantalla, sin la mesa heredada ni el rótulo de
+    // arriba.
+    mvc.perform(get("/admin-notificaciones"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<div class=\"pila\" data-espacio=\"4\" data-pantalla=\"novedades\">")))
+        .andExpect(
+            content()
+                .string(containsString("<header class=\"racimo\" data-alinea=\"entre arriba\">")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Son los mismos para todas las cuentas de administración: si alguien")))
+        .andExpect(content().string(not(containsString("class=\"mesa"))))
+        .andExpect(content().string(not(containsString("class=\"bajada\""))))
+        .andExpect(content().string(not(containsString("<p class=\"rotulo\">Administración</p>"))));
   }
 
   @Test
@@ -60,10 +87,20 @@ class AdminNotificacionesMaquetaTest {
             content()
                 .string(
                     containsString("No pudimos cargar las notificaciones de la administración.")))
+        .andExpect(content().string(not(containsString("Mostrando"))))
+        // El error de carga es el aviso en la página del catálogo, no el banner.
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(containsString("data-signo=\"e-problema\"")))
+        .andExpect(content().string(containsString("escribinos")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    mvc.perform(get("/admin-notificaciones").param("escenario", "lento"))
+        .andExpect(content().string(containsString("class=\"cargando\"")))
+        .andExpect(content().string(containsString("class=\"esqueleto\"")))
         .andExpect(content().string(not(containsString("Mostrando"))));
     mvc.perform(get("/admin-notificaciones").param("escenario", "vacio"))
         .andExpect(
             content()
-                .string(containsString("Todavía no hay notificaciones para la administración.")));
+                .string(containsString("Todavía no hay notificaciones para la administración.")))
+        .andExpect(content().string(containsString("class=\"vacio\"")));
   }
 }
