@@ -226,7 +226,22 @@ class AdminImportacionesControllerTest {
             content()
                 .string(
                     containsString(
-                        "No entendimos la fecha pedida: te mostramos todas las fechas.")));
+                        "No entendimos la fecha pedida: te mostramos todas las fechas.")))
+        // ADM2-03: el aviso en la página del catálogo, no el aviso breve de una respuesta
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"advertencia\"")))
+        .andExpect(content().string(not(containsString("class=\"aviso-breve\""))));
+  }
+
+  // ADM2-03: en el galpón, con la cabecera, la ayuda plegada, la tabla y el paginador del catálogo
+  @Test
+  void importacionesEstaEnElGalponConLasPiezasDelCatalogo() throws Exception {
+    mvc.perform(get("/admin-importaciones").with(admin()))
+        .andExpect(content().string(containsString("data-pantalla=\"importaciones\"")))
+        .andExpect(content().string(containsString("data-alinea=\"entre arriba\"")))
+        .andExpect(content().string(containsString("class=\"plegable\"")))
+        .andExpect(content().string(containsString("class=\"tabla\"")))
+        .andExpect(content().string(containsString("class=\"paginas\"")))
+        .andExpect(content().string(not(containsString("class=\"mesa"))));
   }
 
   @Test

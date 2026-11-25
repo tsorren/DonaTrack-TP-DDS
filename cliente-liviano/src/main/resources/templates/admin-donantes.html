@@ -1,39 +1,48 @@
 <!DOCTYPE html>
-<!--/* Raíces, Donantes del admin (RF-15 y RF-20), según su ficha de flujo
-       (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.1, con R11-01 y R11-02). Arriba, la
-       cifra con su fecha y "Registrar donante"; debajo, importar donantes desde un archivo, plegado
-       (se abre con "Importar CSV", un enlace real: ?importar=abrir); al final, la búsqueda y la lista
-       en la tabla adaptable.
+<!--/* Donantes del admin (RF-15 y RF-20) y el avance de sus importaciones: derivan del arquetipo A03 de
+       la guía «Huerta y galpón» (docs/interfaz/guia/partes/50-pantallas.html, #bandeja; ADM2-01 y
+       ADM2-02), en el galpón, hechos con las piezas del catálogo (docs/interfaz/componentes.md). Arriba,
+       la cabecera del galpón: el título, la cifra de activos con su fecha, «Registrar donante» (la
+       única acción llena) e «Importar CSV» (.racimo data-alinea="entre arriba", los botones chicos);
+       debajo, las pestañas Donantes · Importaciones (admin-importaciones :: pestanas, .segmentos).
+       Si el admin subió un archivo en esta sesión y sigue importándose (o terminó y no abrió el
+       resultado), un aviso en la página (.aviso) lleva a su avance o a su resultado.
+       Importar donantes desde un archivo va plegado: se abre con «Importar CSV», un enlace real
+       (?importar=abrir); abierto, su botón es la acción llena. El archivo que no se acepta es
+       admin-donantes-importar-error: el mismo formulario con el resumen arriba (.aviso de error, con
+       un enlace al campo) y el campo marcado (.campo-error).
        R11-01: la lista llega de a una página (adminDonantes.donantes, un vistas.Tramo), con la
        búsqueda, los filtros y el orden ya resueltos por la fuente: la plantilla no filtra ni cuenta.
        La barra es el componente listado (R11-B04): ?buscar=, ?estado=, ?tipo=, ?dona=, ?alta= y
-       ?orden= (las opciones las da adminDonantes.opciones: solo las que la fuente resuelve); debajo
-       de la tabla, el paginador provisorio (pieza paginador, ?pagina=N). Cambiar la búsqueda o un
-       filtro vuelve a la página 1.
-       Si el admin subió un archivo en esta sesión y sigue importándose (o terminó y no abrió el
-       resultado), una franja arriba lleva a su avance.
+       ?orden= (las opciones las da adminDonantes.opciones: solo las que la fuente resuelve); debajo,
+       el paginador del catálogo (componentes/paginas, ?pagina=N). Cambiar la búsqueda o un filtro
+       vuelve a la página 1.
+       DA-34 (R11-34): la lista sigue como bandeja con ficha (.maestro y .maestro-ficha): cada renglón
+       elige su donante (?donante=<clave>, en la misma página, con los filtros), con el estado de la
+       cuenta en palabras y su sello, y su ficha va dentro del renglón; desde 53,75 em, a la derecha y
+       fija al desplazarse. Sin pedir ninguno, la ficha es la del primero (data-elegido="partida"): en
+       el celular no se abre sola. La ficha muestra el contacto (d.contacto) y sus 3 donaciones más
+       recientes con el total (susDonaciones, una página de 3 pedida aparte; si no cargó, lo dice),
+       cada una en una fila de la lista del catálogo (.lista data-forma="filas") que lleva a su detalle
+       (admin-donaciones-detalle?donacion=<clave>); y lleva a «Ver sus donaciones»
+       (admin-donaciones?donante=<clave>) y a «Registrar una donación». El desplegable Alta (?alta=, un
+       período fijo) se dibuja solo si la fuente filtra por fecha de alta (opciones.altas).
        R11-02: la importación tiene su página aparte (admin-donantes-importando y
-       admin-donantes-importado), sin la lista de donantes. Mientras importa, con JavaScript, el
-       bloque #avance se vuelve a pedir solo cada 3 s, únicamente con la pestaña a la vista (hx-get a
-       la misma dirección con ?etapa=), y deja de pedirse al terminar; sin JavaScript, "Ver el avance"
-       vuelve a cargar la página. Los cambios de etapa se leen en #avance-etapa; si una actualización
-       falla, quedan las cifras de antes y el aviso de #avance-aviso (fragmento no-actualizado). Al
-       terminar, el resumen y las filas con error de a 20, con el mismo paginador.
+       admin-donantes-importado), sin la lista de donantes: las migas a Importaciones, la cabecera, las
+       cifras, los avisos de cada etapa, las filas con error en la tabla del catálogo y el paginador.
+       Mientras importa, con JavaScript, el bloque #avance se vuelve a pedir solo cada 3 s, únicamente
+       con la pestaña a la vista (hx-get a la misma dirección con ?etapa=), y deja de pedirse al
+       terminar; sin JavaScript, «Ver el avance» vuelve a cargar la página. Los cambios de etapa se
+       leen en #avance-etapa; si una actualización falla, quedan las cifras de antes y el aviso de
+       #avance-aviso (fragmento no-actualizado).
        ?escenario=vacio, lento y error en la lista; en el avance de la maqueta, esperando, leyendo y
        cortada; en el resultado, sin-errores y cortada. Importar es un formulario real (POST,
-       multipart) que lleva a admin-donantes-importando; el archivo que no se acepta es
-       admin-donantes-importar-error.
-       R11-34 (ficha r11-p2-admin-bandeja §4.1): la lista es una bandeja (.maestro): cada renglón
-       elige su donante (?donante=<clave>, en la misma página, con los filtros) y su ficha va dentro
-       del renglón; desde 53,75 em, a la derecha y fija al desplazarse. Sin pedir ninguno, la ficha
-       es la del primero (data-elegido="partida"): en el celular no se abre sola. La ficha lleva a
-       sus donaciones (admin-donaciones?donante=<clave>): muestra el contacto del renglón
-       (d.contacto) y sus 3 donaciones más recientes con el total (susDonaciones, una página de 3
-       pedida aparte; si no cargó, lo dice). El desplegable Alta (?alta=, un período fijo) se dibuja
-       solo si la fuente filtra por fecha de alta (opciones.altas).
+       multipart) que lleva a admin-donantes-importando.
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'importando', 'importado' o
          'importar-error'.
+       - lista(accion): la lista; muestra el aviso breve de una acción hecha (admin-donaciones :: hecho)
+         si quien la usa define avisoHecho (con th:with, alrededor).
        - no-actualizado: la respuesta a una actualización del avance que no llegó. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
@@ -66,86 +75,102 @@
              n=${tramo.total},
              vacio=${escenario == 'vacio' or (conDatos and n == 0 and !filtrado)},
              abrirImportar=${accion == 'importar-error' or vacio or (param.importar != null and param.importar[0] == 'abrir')},
+             conError=${accion == 'importar-error'},
              estados=${ {activo: 'Activo', pendiente: 'Sin activar su cuenta', baja: 'Dado de baja'} },
-             palabras=${ {deposito: 'En el depósito', asignada: 'Asignada', camino: 'En camino',
-                          entregada: 'Entregada', vencida: 'Vencida'} },
              sellos=${ {activo: 'hecho', pendiente: 'pendiente', baja: 'falta'} },
              imp=${datos.importacion}">
-  <div class="mesa" data-pantalla="donantes">
-    <nav th:replace="~{admin-importaciones :: pestanas('donantes')}"></nav>
-    <!--/* El encabezado a todo el ancho, con las dos acciones al costado (ronda 2026-11-09); en el celular,
-           debajo. La cifra es un número de la fuente, no el largo de la lista. */-->
-    <header class="mesa-cabecera">
-      <div>
-        <p class="rotulo">Administración</p>
-        <h1>Donantes</h1>
-        <p th:if="${conDatos}" th:text="${datos.activos == 1} ? |1 donante activo, al ${datos.al}.| : |${#numbers.formatInteger(datos.activos, 1, 'POINT')} donantes activos, al ${datos.al}.|">86 donantes activos, al 15 de octubre de 2026, 18:30.</p>
-      </div>
-      <div th:if="${escenario != 'error'}" class="racimo">
-        <a class="boton" data-tono="principal" href="/admin-donantes-registrar"
-           th:href="@{/admin-donantes-registrar}">Registrar donante</a>
-        <a class="boton" data-tono="secundario" href="/admin-donantes?importar=abrir#importar"
-           th:href="@{/admin-donantes(importar='abrir')} + '#importar'">Importar CSV</a>
-      </div>
-    </header>
+  <div class="pila" data-espacio="4" data-pantalla="donantes">
+    <div class="pila" data-espacio="3">
+      <!--/* La cabecera del galpón. La cifra es un número de la fuente, no el largo de la lista. Con
+             importar abierto, su botón es la acción llena y «Registrar donante» pasa a secundario. */-->
+      <header class="racimo" data-alinea="entre arriba">
+        <div class="pila" data-espacio="0">
+          <h1>Donantes</h1>
+          <p th:if="${conDatos}" class="texto-chico" data-tono="suave"
+             th:text="${datos.activos == 1} ? |1 donante activo, al ${datos.al}.| : |${#numbers.formatInteger(datos.activos, 1, 'POINT')} donantes activos, al ${datos.al}.|">86
+            donantes activos, al 15 de octubre de 2026, 18:30.</p>
+        </div>
+        <div th:if="${escenario != 'error'}" class="racimo" data-espacio="1">
+          <a class="boton" data-tamano="chico" th:data-tono="${abrirImportar} ? 'secundario' : 'principal'"
+             href="/admin-donantes-registrar" th:href="@{/admin-donantes-registrar}">Registrar donante</a>
+          <a class="boton" data-tono="secundario" data-tamano="chico"
+             href="/admin-donantes?importar=abrir#importar"
+             th:href="@{/admin-donantes(importar='abrir')} + '#importar'">Importar CSV</a>
+        </div>
+      </header>
+      <nav th:replace="~{admin-importaciones :: pestanas('donantes')}"></nav>
+    </div>
+    <th:block th:if="${avisoHecho != null}"><div
+        th:replace="~{admin-donaciones :: hecho(${avisoHecho})}"></div></th:block>
 
-    <!--/* La importación que subió el admin en esta sesión: una franja en el contenido, no una ventana. */-->
-    <section th:if="${imp != null}" class="banner" aria-labelledby="franja-titulo"
-             th:with="archivo=${imp.archivo != null ? imp.archivo : 'el archivo'}">
-      <h2 id="franja-titulo" th:if="${imp.enCurso()}"
-          th:text="${imp.total != null} ? |Se está importando ${archivo}: ${imp.procesadas} de ${imp.total} filas.| : |Se está importando ${archivo}: ${imp.procesadas} filas leídas.|">Se
-        está importando donantes-octubre.csv: 8.400 de 20.000 filas.</h2>
-      <h2 id="franja-titulo" th:unless="${imp.enCurso()}" th:text="|Terminó la importación de ${archivo}.|">Terminó
-        la importación de donantes-octubre.csv.</h2>
-      <a class="boton" data-tono="secundario" th:href="@{${imp.avance}}" href="/admin-donantes-importando"
-         th:text="${imp.enCurso()} ? 'Ver el avance' : 'Ver el resultado'">Ver el avance</a>
-      <a href="/admin-importaciones" th:href="@{/admin-importaciones}">Ver todas las importaciones</a>
-    </section>
+    <!--/* La importación que subió el admin en esta sesión: un aviso en la página, no una ventana. */-->
+    <div th:if="${imp != null}" class="aviso" th:data-tipo="${imp.enCurso() ? 'info' : 'exito'}"
+         th:with="archivo=${imp.archivo != null ? imp.archivo : 'el archivo'}">
+      <svg th:replace="~{componentes/sello :: signo(${imp.enCurso() ? 'info' : 'confirmada'})}"></svg>
+      <p class="aviso-titulo" th:if="${imp.enCurso()}"
+         th:text="${imp.total != null} ? |Se está importando ${archivo}: ${imp.procesadas} de ${imp.total} filas.| : |Se está importando ${archivo}: ${imp.procesadas} filas leídas.|">Se
+        está importando donantes-octubre.csv: 8.400 de 20.000 filas.</p>
+      <p class="aviso-titulo" th:unless="${imp.enCurso()}" th:text="|Terminó la importación de ${archivo}.|">Terminó
+        la importación de donantes-octubre.csv.</p>
+      <p class="racimo" data-espacio="3">
+        <a class="boton" data-tono="secundario" data-tamano="chico" th:href="@{${imp.avance}}"
+           href="/admin-donantes-importando"
+           th:text="${imp.enCurso()} ? 'Ver el avance' : 'Ver el resultado'">Ver el avance</a>
+        <a href="/admin-importaciones" th:href="@{/admin-importaciones}">Ver todas las importaciones</a>
+      </p>
+    </div>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando los donantes…</p>
 
-    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
-             aria-labelledby="error-titulo">
-      <h2 id="error-titulo">No pudimos cargar los donantes.</h2>
+    <div th:if="${escenario == 'error'}" class="aviso" data-tipo="error" role="alert">
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo">No pudimos cargar los donantes.</p>
       <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
         <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-donantes')}">escribinos
           con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-      <a class="boton" data-tono="secundario" href="/admin-donantes"
+      <a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-donantes"
          th:href="@{/admin-donantes}">Volver a cargar</a>
-    </section>
+    </div>
 
     <section th:if="${vacio}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no hay donantes registrados.</h2>
       <p>Registrá el primero o importá un archivo con muchos.</p>
     </section>
 
-    <!--/* Importar: se abre con "Importar CSV" (un enlace real, ?importar=abrir), y abierto en el archivo
-           que no se aceptó. El avance y el resultado tienen su página. */-->
+    <!--/* Importar: se abre con «Importar CSV» (un enlace real, ?importar=abrir), y abierto en el archivo
+           que no se aceptó, con el resumen arriba y el campo marcado. El avance y el resultado tienen
+           su página. */-->
     <section th:if="${escenario != 'error' and abrirImportar}" id="importar" class="tarjeta pila"
              data-espacio="3" aria-labelledby="importar-titulo">
       <h2 id="importar-titulo">Importar donantes desde un archivo</h2>
 
-      <section th:if="${accion == 'importar-error'}" class="banner" data-estado="error" role="alert"
-               tabindex="-1" autofocus aria-labelledby="importar-error-titulo">
-        <h2 id="importar-error-titulo">No pudimos leer el archivo.</h2>
-        <p>Tiene que ser un CSV de hasta 50 MB. No se importó ninguna fila.</p>
-      </section>
+      <div th:if="${conError}" class="aviso" data-tipo="error" role="alert" tabindex="-1" id="resumen"
+           autofocus>
+        <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+        <p class="aviso-titulo">No pudimos leer el archivo. No se importó ninguna fila.</p>
+        <ul role="list">
+          <li><a href="#archivo">El archivo tiene que ser un CSV de hasta 50 MB</a></li>
+        </ul>
+      </div>
 
       <form class="pila" data-espacio="3" action="/admin-donantes-importando"
             th:action="@{/admin-donantes-importando}" method="post" enctype="multipart/form-data"
             hx-boost="true" hx-indicator="#enviando-admin-donantes" hx-select-oob="#avisos"
-          hx-disinherit="hx-indicator hx-select-oob">
-        <div class="campo" th:data-estado="${accion == 'importar-error'} ? 'error'">
+            hx-disinherit="hx-indicator hx-select-oob">
+        <div class="campo" th:data-estado="${conError} ? 'error'">
           <label for="archivo">Archivo de donantes</label>
           <small id="archivo-ayuda">Un archivo CSV separado por comas, con una fila de encabezado. Hasta
             50 MB. Columnas que se leen: NOMBRE, APELLIDO, TIPO_DOCUMENTO, DOCUMENTO, EMAIL, TELEFONO,
             FECHA_NACIMIENTO y TIPO_PERSONA (HUMANA o JURIDICA; para JURIDICA, RAZON_SOCIAL). Si el
             documento ya está, se actualizan sus datos; si no, se suma un donante nuevo.</small>
+          <p th:if="${conError}" id="archivo-error" class="campo-error"><svg
+              th:replace="~{componentes/sello :: signo('problema')}"></svg><span>Tiene que ser un CSV de
+            hasta 50 MB. Elegí el archivo de nuevo.</span></p>
           <input id="archivo" name="archivo" type="file" accept=".csv,text/csv" required
-                 aria-describedby="archivo-ayuda"
-                 th:attr="aria-invalid=${accion == 'importar-error'} ? 'true' : null">
+                 th:attr="aria-describedby=${conError} ? 'archivo-error archivo-ayuda' : 'archivo-ayuda',aria-invalid=${conError} ? 'true' : null"
+                 aria-describedby="archivo-ayuda">
         </div>
         <div class="racimo">
           <button class="boton" data-tono="principal" type="submit">Importar</button>
@@ -174,7 +199,8 @@
         <a class="boton" data-tono="secundario" href="/admin-donantes" th:href="@{/admin-donantes}">Ver todos</a>
       </section>
       <!--/* La bandeja (R11-34). Sin JavaScript, el enlace recarga y el ancla lleva al renglón; con
-             HTMX, hx-get pide la misma dirección sin el ancla. Cada renglón y "Cerrar la ficha" conservan la búsqueda, los filtros, el orden y la página.
+             HTMX, hx-get pide la misma dirección sin el ancla. Cada renglón y «Cerrar la ficha»
+             conservan la búsqueda, los filtros, el orden y la página.
              Si el pedido no está en la página (llega de un enlace), su ficha o el aviso de que no está
              van antes de los renglones: en el celular, arriba; desde la tableta, en su columna. */-->
       <ul th:if="${conDatos and n > 0}" class="maestro" role="list" th:with="base=${c.renglon(tramo.pagina)}">
@@ -198,7 +224,7 @@
               th:replace="~{admin-donantes :: ficha(${d}, ${base})}"></section></th:block>
         </li>
       </ul>
-      <p th:if="${conDatos and n > 0}"
+      <p th:if="${conDatos and n > 0}" class="texto-chico" data-tono="suave"
          th:with="cuantas=${#lists.size(tramo.filas)},
                   desde=${tramo.pagina < tramo.paginas ? (tramo.pagina - 1) * cuantas + 1 : tramo.total - cuantas + 1},
                   hasta=${desde + cuantas - 1}"
@@ -212,7 +238,7 @@
 </th:block>
 
 <!--/* La ficha de un donante en la bandeja (R11-34): identidad, contacto, sus donaciones y las
-       acciones. "Cerrar la ficha" solo se ve en el celular: vuelve a la lista, en la misma página. */-->
+       acciones. «Cerrar la ficha» solo se ve en el celular: vuelve a la lista, en la misma página. */-->
 <section th:fragment="ficha(d, base)" id="ficha" class="tarjeta maestro-ficha" aria-labelledby="ficha-titulo"
          th:with="estados=${ {activo: 'Activo', pendiente: 'Sin activar su cuenta', baja: 'Dado de baja'} },
                   palabras=${ {deposito: 'En el depósito', asignada: 'Asignada', camino: 'En camino',
@@ -248,7 +274,8 @@
     <p th:if="${k.sinMedios()}">Sin correo ni teléfono cargados.</p>
     <p th:if="${k.ocultaNombre}">Pidió que su nombre no se muestre a las organizaciones.</p>
   </div>
-  <!--/* Sus donaciones (R11-34): las 3 más recientes y el total, un número de Donaciones. */-->
+  <!--/* Sus donaciones (R11-34): las 3 más recientes y el total, un número de Donaciones. Cada una es
+         una fila de la lista del catálogo, con el alto de un toque, que lleva a su detalle. */-->
   <div th:if="${susDonaciones != null}" data-parte="donaciones" class="pila" data-espacio="2"
        th:with="s=${susDonaciones}">
     <h4 th:if="${s.cargaron and s.total > 0}"
@@ -257,12 +284,12 @@
     <h4 th:unless="${s.cargaron and s.total > 0}">Sus donaciones</h4>
     <p th:unless="${s.cargaron}">No pudimos cargar sus donaciones.</p>
     <p th:if="${s.cargaron and s.total == 0}">Todavía no tiene donaciones registradas.</p>
-    <ul th:if="${s.cargaron and !#lists.isEmpty(s.recientes)}" class="lista pila" data-espacio="1"
+    <ul th:if="${s.cargaron and !#lists.isEmpty(s.recientes)}" class="lista" data-forma="filas"
         role="list">
-      <li th:each="r : ${s.recientes}"><a href="/admin-donaciones?donante=ana"
-          th:href="@{/admin-donaciones(donante=${d.clave},donacion=${r.clave})}"
+      <li th:each="r : ${s.recientes}"><a href="/admin-donaciones-detalle?donacion=arroz"
+          th:href="@{/admin-donaciones-detalle(donacion=${r.clave})}"><span
           th:text="|${r.que} — ${palabras[r.estado]} — ${r.registrada}|">Arroz · 25 kg — En el depósito —
-        11 de octubre</a></li>
+        11 de octubre</span></a></li>
     </ul>
   </div>
   <div data-parte="acciones" class="racimo">
@@ -289,26 +316,27 @@
     que el enlace esté mal; elegí uno de la lista.</p>
 </section>
 
-<!--/* La página de avance de una importación (R11-02), sin la lista de donantes. #avance es lo que se
-       vuelve a pedir solo mientras importa: no contiene el foco ni una región que se lea sola. */-->
+<!--/* La página de avance de una importación (R11-02, ADM2-02), sin la lista de donantes: las migas a
+       Importaciones y el bloque que se actualiza. #avance es lo que se vuelve a pedir solo mientras
+       importa: no contiene el foco ni una región que se lea sola. */-->
 <th:block th:fragment="avance" th:with="imp=${importacion}">
-  <div class="mesa">
-    <p class="rotulo"><a href="/admin-importaciones" th:href="@{/admin-importaciones}">Importaciones</a>
-      › <th:block th:text="${imp.archivo != null} ? ${imp.archivo} : 'Archivo sin nombre guardado'">donantes-octubre.csv</th:block></p>
+  <div class="pila" data-espacio="4" data-pantalla="importacion">
+    <nav th:replace="~{componentes/migas :: migas(pasos=${ { {texto: 'Donantes', ruta: '/admin-donantes'}, {texto: 'Importaciones', ruta: '/admin-importaciones'} } }, actual=${imp.archivo != null ? imp.archivo : 'Archivo sin nombre guardado'})}"></nav>
     <p id="avance-etapa" class="solo-lectores" role="status"></p>
     <div id="avance-aviso" role="status"></div>
     <th:block th:replace="~{admin-donantes :: bloque-avance}"></th:block>
-    <p class="racimo">
-      <a class="boton" data-tono="secundario" href="/admin-importaciones"
+    <p class="racimo" data-espacio="2">
+      <a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-importaciones"
          th:href="@{/admin-importaciones}">Ver todas las importaciones</a>
-      <a class="boton" data-tono="secundario" href="/admin-donantes" th:href="@{/admin-donantes}">Volver
-        a Donantes</a>
+      <a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-donantes"
+         th:href="@{/admin-donantes}">Volver a Donantes</a>
     </p>
   </div>
 </th:block>
 
 <!--/* El bloque que se actualiza. Con la etapa que cambió (cambioDeEtapa), la respuesta trae además el
-       texto de #avance-etapa; y cada actualización limpia el aviso de una que no llegó. */-->
+       texto de #avance-etapa; y cada actualización limpia el aviso de una que no llegó. Arriba, la
+       cabecera del galpón: el título y cuándo se subió. */-->
 <div th:fragment="bloque-avance" id="avance" class="pila" data-espacio="4"
      th:with="imp=${importacion},
               archivo=${imp.archivo != null ? imp.archivo : 'el archivo'},
@@ -323,14 +351,19 @@
     la importación.</p>
   <div th:if="${sondeo}" id="avance-aviso" hx-swap-oob="innerHTML"></div>
 
-  <h1 th:if="${imp.enCurso()}" th:text="${imp.archivo != null} ? |Importando ${imp.archivo}| : 'Importando el archivo'">Importando
-    donantes-octubre.csv</h1>
-  <h1 th:if="${etapa == 'terminada'}">Importación terminada</h1>
-  <h1 th:if="${etapa == 'cortada'}" th:text="${imp.archivo != null} ? |Importación de ${archivo}| : 'Importación del archivo sin nombre guardado'">Importación de donantes-octubre.csv</h1>
-  <p th:if="${imp.subido != null}">Subido el <time th:datetime="${imp.subidoIso}" th:text="${imp.subido}"
-     datetime="2026-10-15T18:02:00">15 de octubre de 2026, 18:02</time>.</p>
+  <header class="racimo" data-alinea="entre arriba">
+    <div class="pila" data-espacio="0">
+      <h1 th:if="${imp.enCurso()}" th:text="${imp.archivo != null} ? |Importando ${imp.archivo}| : 'Importando el archivo'">Importando
+        donantes-octubre.csv</h1>
+      <h1 th:if="${etapa == 'terminada'}">Importación terminada</h1>
+      <h1 th:if="${etapa == 'cortada'}" th:text="${imp.archivo != null} ? |Importación de ${archivo}| : 'Importación del archivo sin nombre guardado'">Importación de donantes-octubre.csv</h1>
+      <p th:if="${imp.subido != null}" class="texto-chico" data-tono="suave">Subido el <time
+          th:datetime="${imp.subidoIso}" th:text="${imp.subido}" datetime="2026-10-15T18:02:00">15 de
+        octubre de 2026, 18:02</time>.</p>
+    </div>
+  </header>
 
-  <!--/* Mientras importa. */-->
+  <!--/* Mientras importa: las cifras. */-->
   <section th:if="${imp.enCurso()}" class="tarjeta pila" data-espacio="3" aria-labelledby="avance-cifras">
     <p th:if="${etapa == 'esperando'}" th:text="|Recibimos ${archivo}. Todavía no empezó a importarse: esta página cambia sola cuando empiece.|">Recibimos
       donantes-octubre.csv. Todavía no empezó a importarse: esta página cambia sola cuando empiece.</p>
@@ -351,13 +384,13 @@
     <p th:unless="${etapa == 'esperando'}"
        th:text="|Donantes nuevos: ${imp.creadas} · Actualizados: ${imp.actualizadas} · Filas con error: ${imp.conError}|">Donantes
       nuevos: 7.950 · Actualizados: 410 · Filas con error: 40</p>
-    <!--/* "Se actualiza sola" solo cuando ya llegó una actualización sola (con JavaScript): sin él, la
+    <!--/* «Se actualiza sola» solo cuando ya llegó una actualización sola (con JavaScript): sin él, la
            página no se actualiza y no se promete. */-->
-    <p class="texto-chico" th:text="${sondeo} ? |Actualizado a las ${imp.hora}. Se actualiza sola mientras importa.| : |Actualizado a las ${imp.hora}.|">Actualizado
+    <p class="texto-chico" data-tono="suave" th:text="${sondeo} ? |Actualizado a las ${imp.hora}. Se actualiza sola mientras importa.| : |Actualizado a las ${imp.hora}.|">Actualizado
       a las 18:34:12. Se actualiza sola mientras importa.</p>
     <noscript>
       <p>Tocá «Ver el avance» para ver cómo sigue.</p>
-      <p><a class="boton" data-tono="secundario" href="/admin-donantes-importando"
+      <p><a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-donantes-importando"
             th:href="@{${imp.avance}}">Ver el avance</a></p>
     </noscript>
     <p>Podés seguir usando el sitio. Para volver a este avance, entrá a Donantes.</p>
@@ -378,27 +411,28 @@
     </table>
   </section>
 
-  <!--/* Terminada. */-->
-  <th:block th:if="${etapa == 'terminada'}">
-    <p class="aviso-breve" data-estado="hecho" tabindex="-1" autofocus th:text="${imp.resultado}">20.000
-      filas leídas: 19.100 donantes nuevos, 774 actualizados y 126 filas con error.</p>
+  <!--/* Terminada: el aviso en la página con el resultado. */-->
+  <div th:if="${etapa == 'terminada'}" class="aviso" data-tipo="exito" tabindex="-1" autofocus>
+    <svg th:replace="~{componentes/sello :: signo('confirmada')}"></svg>
+    <p class="aviso-titulo" th:text="${imp.resultado}">20.000 filas leídas: 19.100 donantes nuevos, 774
+      actualizados y 126 filas con error.</p>
     <p>Los donantes nuevos reciben un correo para activar su cuenta.</p>
-  </th:block>
+  </div>
 
   <!--/* Se cortó a mitad de camino: las filas leídas quedaron guardadas. */-->
-  <section th:if="${etapa == 'cortada'}" class="banner" data-estado="error" tabindex="-1" autofocus
-           aria-labelledby="cortada-titulo">
-    <h2 id="cortada-titulo" th:text="|La importación se cortó en la fila ${imp.procesadas}.|">La importación se
-      cortó en la fila 8.400.</h2>
+  <div th:if="${etapa == 'cortada'}" class="aviso" data-tipo="error" tabindex="-1" autofocus>
+    <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+    <p class="aviso-titulo" th:text="|La importación se cortó en la fila ${imp.procesadas}.|">La importación
+      se cortó en la fila 8.400.</p>
     <p th:text="|Las ${imp.procesadas} filas leídas quedaron guardadas: ${imp.creadas} donantes nuevos, ${imp.actualizadas} actualizados y ${imp.conError} filas con error. Las demás no se importaron.|">Las
       8.400 filas leídas quedaron guardadas: 7.950 donantes nuevos, 410 actualizados y 40 filas con error. Las
       demás no se importaron.</p>
     <p>Podés volver a subir el archivo: los que ya están se actualizan, no se duplican.</p>
-    <a class="boton" data-tono="secundario" href="/admin-donantes?importar=abrir#importar"
+    <a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-donantes?importar=abrir#importar"
        th:href="@{/admin-donantes(importar='abrir')} + '#importar'">Subir el archivo de nuevo</a>
-  </section>
+  </div>
 
-  <!--/* Las filas con error, de a 20. */-->
+  <!--/* Las filas con error, de a 20, en la tabla del catálogo. */-->
   <th:block th:if="${imp.filas != null}">
     <p th:if="${etapa == 'terminada' and imp.filas.total == 0}">Todas las filas se importaron sin errores.</p>
     <section th:if="${imp.filas.total > 0}" class="pila" data-espacio="3" aria-labelledby="filas-titulo">
@@ -406,7 +440,7 @@
         <h2 id="filas-titulo" tabindex="-1" th:text="|Filas con error · ${imp.conError}|"
             th:autofocus="${paginador != null and paginador.cambio}">Filas con error · 126</h2>
         <!--/* R11-20: baja un CSV con todas las filas con error, armado de a tandas. */-->
-        <a th:if="${imp.id != null}" class="boton" data-tono="secundario" download
+        <a th:if="${imp.id != null}" class="boton" data-tono="secundario" data-tamano="chico" download
            href="/admin-donantes-importado/filas-con-error.csv"
            th:href="@{/admin-donantes-importado/filas-con-error.csv(archivo=${imp.id})}">Descargar
           las filas con error</a>
@@ -421,15 +455,18 @@
               data-rotulo="Qué pasó" th:text="${f.que}">Falta el apellido.</td></tr>
         </tbody>
       </table>
-      <nav th:replace="~{paginador :: paginador(${paginador})}"></nav>
+      <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
     </section>
   </th:block>
 </div>
 
 <!--/* Una actualización del avance que no llegó: no cambia el bloque (HX-Reswap: none), solo el aviso. */-->
 <div th:fragment="no-actualizado" id="avance-aviso" hx-swap-oob="innerHTML">
-  <p class="aviso-breve">No pudimos actualizar el avance. Lo volvemos a intentar en unos segundos; la
-    importación sigue.</p>
+  <div class="aviso" data-tipo="advertencia">
+    <svg th:replace="~{componentes/sello :: signo('atencion')}"></svg>
+    <p>No pudimos actualizar el avance. Lo volvemos a intentar en unos segundos; la importación
+      sigue.</p>
+  </div>
 </div>
 </body>
 </html>

@@ -1923,10 +1923,51 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Sus donaciones · ")))
         .andExpect(content().string(containsString("Ver sus ")))
         .andExpect(content().string(containsString("Correo:")));
+    // DA-34: sigue la bandeja con ficha, en el galpón; la ficha lleva a sus donaciones, a
+    // registrar una y cada donación reciente a su detalle (DTI-51, ítem 5)
     mvc.perform(get("/admin-donantes?donante=juan"))
-        .andExpect(content().string(containsString("aria-current=\"true\"")))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("class=\"maestro\"")))
+        .andExpect(content().string(containsString("maestro-ficha")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*id=\"donante-juan\">\\s*<a [^>]*aria-current=\"true\".*")))
         .andExpect(content().string(containsString("href=\"/admin-donaciones?donante=juan\"")))
+        .andExpect(
+            content().string(containsString("href=\"/admin-donaciones-registrar?donante=juan\"")))
+        .andExpect(content().string(containsString("href=\"/admin-donaciones-detalle?donacion=")))
+        .andExpect(content().string(not(containsString("&amp;donacion="))))
+        .andExpect(content().string(containsString("class=\"lista\" data-forma=\"filas\"")))
         .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
+    // ADM2-01: en el galpón, sin la mesa ni el banner; el error de carga es el aviso del catálogo
+    mvc.perform(get("/admin-donantes"))
+        .andExpect(content().string(containsString("data-pantalla=\"donantes\"")))
+        .andExpect(content().string(containsString("data-alinea=\"entre arriba\"")))
+        .andExpect(content().string(containsString("aria-label=\"Vistas de donantes\"")))
+        // «Registrar donante» es la única acción llena
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*data-tono=\"principal\"\\s+href=\"/admin-donantes-registrar\".*")))
+        .andExpect(content().string(not(containsString("class=\"mesa"))))
+        .andExpect(content().string(not(containsString("class=\"banner\""))))
+        .andExpect(content().string(not(containsString("<p class=\"rotulo\">"))));
+    for (String ruta : List.of("/admin-donantes", "/admin-donantes?importar=abrir")) {
+      String html =
+          mvc.perform(get(ruta))
+              .andReturn()
+              .getResponse()
+              .getContentAsString(StandardCharsets.UTF_8);
+      // Fuera del botón «Filtrar» del componente listado, que es del catálogo
+      String sinLaBarra =
+          html.replaceFirst(
+              "<button class=\"boton\" data-tono=\"principal\" type=\"submit\">Filtrar</button>",
+              "");
+      assertEquals(1, sinLaBarra.split("data-tono=\"principal\"", -1).length - 1, ruta);
+    }
     mvc.perform(get("/admin-donantes?importar=abrir"))
         .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
         .andExpect(content().string(containsString("action=\"/admin-donantes-importando\"")))
@@ -1937,7 +1978,10 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("aria-busy=\"true\"")));
     mvc.perform(get("/admin-donantes?escenario=error"))
         .andExpect(content().string(containsString("No pudimos cargar los donantes.")))
-        .andExpect(content().string(containsString("role=\"alert\"")));
+        .andExpect(
+            content().string(containsString("class=\"aviso\" data-tipo=\"error\" role=\"alert\"")))
+        .andExpect(content().string(containsString("escribinos")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
     // R11-01: la lista llega de a una página (en la maqueta, de a 5), con su paginador.
     mvc.perform(get("/admin-donantes"))
         .andExpect(content().string(containsString("Página 1 de 2")))
@@ -1968,8 +2012,22 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("every 3s"))));
     mvc.perform(get("/admin-donantes-importado?escenario=sin-errores"))
         .andExpect(content().string(containsString("Todas las filas se importaron sin errores.")));
+    // ADM2-02: el avance y el resultado son páginas de estado en el galpón, con las migas
+    mvc.perform(get("/admin-donantes-importado"))
+        .andExpect(content().string(containsString("class=\"migas\"")))
+        .andExpect(content().string(containsString("data-pantalla=\"importacion\"")))
+        .andExpect(content().string(containsString("class=\"paginas\"")))
+        .andExpect(content().string(not(containsString("class=\"mesa"))));
+    mvc.perform(get("/admin-donantes-importado?escenario=cortada"))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    // El archivo que no se acepta: el mismo formulario, con el resumen arriba y el campo marcado
     mvc.perform(get("/admin-donantes-importar-error"))
-        .andExpect(content().string(containsString("No se importó ninguna fila.")));
+        .andExpect(content().string(containsString("No se importó ninguna fila.")))
+        .andExpect(content().string(containsString("href=\"#archivo\"")))
+        .andExpect(content().string(containsString("class=\"campo-error\"")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
     mvc.perform(post("/admin-donantes-importando"))
         .andExpect(redirectedUrl("/admin-donantes-importando"));
   }

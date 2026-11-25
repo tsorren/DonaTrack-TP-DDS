@@ -188,7 +188,13 @@
   align-items: start;
 }
 
-/* --- Donantes como bandeja (R11-34, ficha r11-p2-admin-bandeja; Donaciones pasó a la tabla, ADM1-08) */
+/* --- Donantes como bandeja (R11-34, ficha r11-p2-admin-bandeja; Donaciones pasó a la tabla, ADM1-08)
+   y el avance de una importación (ADM2-01 y ADM2-02, en el galpón) ------------------------------ */
+
+/* Importar y las cifras del avance, con el relleno chico (parámetro de .tarjeta). */
+:is([data-pantalla="donantes"], #avance) > .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+}
 
 /* En el celular, la ficha de partida (la primera de la página, sin elegir) no se abre sola: la
    lista se ve primero. "Cerrar la ficha" vuelve al renglón. */

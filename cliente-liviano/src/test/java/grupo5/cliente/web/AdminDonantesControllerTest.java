@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -201,6 +202,32 @@ class AdminDonantesControllerTest {
         .andExpect(content().string(containsString("Ver sus 12 donaciones")))
         .andExpect(content().string(not(containsString("null"))));
     verify(personas).donantes(new ConsultaDonantes("", null, null, null, null, 1, "7-dias"));
+  }
+
+  // DA-34 (ADM2-01): la bandeja con ficha en el galpón; el renglón pedido queda marcado, la ficha
+  // lleva a registrar su donación y cada donación reciente, a su detalle (DTI-51, ítem 5)
+  @Test
+  void elDonantePedidoQuedaMarcadoYSuFichaLlevaARegistrarYAlDetalle() throws Exception {
+    when(personas.donacionesDe("d1"))
+        .thenReturn(
+            new SusDonaciones(
+                1,
+                List.of(new Reciente("x1", "Arroz · 25 kg", "deposito", "9 de noviembre")),
+                true));
+    mvc.perform(get("/admin-donantes?donante=d1").with(admin()))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("class=\"maestro\"")))
+        .andExpect(content().string(containsString("class=\"tarjeta maestro-ficha\"")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern("(?s).*id=\"donante-d1\">\\s*<a [^>]*aria-current=\"true\".*")))
+        .andExpect(
+            content().string(containsString("href=\"/admin-donaciones-registrar?donante=d1\"")))
+        .andExpect(
+            content().string(containsString("href=\"/admin-donaciones-detalle?donacion=x1\"")))
+        .andExpect(content().string(not(containsString("donacion=x1&amp;"))))
+        .andExpect(content().string(not(containsString("donante=d1&amp;donacion="))));
   }
 
   @Test
@@ -533,7 +560,10 @@ class AdminDonantesControllerTest {
             conId("importado", "terminada", ARCHIVO.toString(), "15 de octubre de 2026, 18:02"));
     mvc.perform(get("/admin-donantes-importado?archivo=" + ARCHIVO).with(admin()))
         .andExpect(content().string(containsString("Importaciones</a>")))
-        .andExpect(content().string(containsString("› donantes-octubre.csv")))
+        // Las migas del catálogo: Donantes › Importaciones › el archivo, que es la página actual
+        .andExpect(content().string(containsString("class=\"migas\"")))
+        .andExpect(
+            content().string(containsString("aria-current=\"page\">donantes-octubre.csv</li>")))
         .andExpect(content().string(containsString("15 de octubre de 2026, 18:02")))
         .andExpect(content().string(containsString("Ver todas las importaciones")))
         .andExpect(
