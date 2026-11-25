@@ -1,6 +1,7 @@
 package grupo5.cliente.maqueta;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -44,6 +45,42 @@ class AdminOperacionMaquetaTest {
         .andExpect(content().string(containsString("Service de frenos. Desde hoy, 18:35.")));
     mvc.perform(get("/admin-camiones-agregado"))
         .andExpect(content().string(containsString("Camión Mediano")));
+  }
+
+  /**
+   * ADM1-07: Camiones deriva de A03. La cabecera del galpón con las utilidades de composición y el
+   * botón denso, sin la cabecera heredada de la mesa; el error de la lista es el aviso del
+   * catálogo; el mapa chico deja sus márgenes para los marcadores.
+   */
+  @Test
+  void camionesDerivaDeLaBandejaDelGalpon() throws Exception {
+    mvc.perform(get("/admin-camiones"))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<header class=\"racimo\" data-alinea=\"entre arriba\">.*<h1>Camiones</h1>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*class=\"boton\" data-tamano=\"chico\""
+                            + " popovertarget=\"agregar-camion\">Agregar camión</button>.*")))
+        .andExpect(content().string(not(containsString("mesa-cabecera"))))
+        .andExpect(content().string(not(containsString("class=\"rotulo\""))))
+        .andExpect(content().string(containsString("data-mapa-margenes=\"")))
+        .andExpect(
+            content().string(containsString("<nav class=\"segmentos\" data-forma=\"desliza\"")))
+        .andExpect(content().string(containsString("<b>5</b>")));
+    mvc.perform(get("/admin-camiones?escenario=error"))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(containsString("No pudimos cargar los camiones.")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    mvc.perform(get("/admin-camiones-agregar-error"))
+        .andExpect(content().string(containsString("Revisá 2 datos para seguir.")))
+        .andExpect(
+            content()
+                .string(containsString("<header class=\"racimo\" data-alinea=\"entre arriba\">")));
   }
 
   @Test

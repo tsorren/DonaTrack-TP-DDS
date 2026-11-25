@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <!--/* Raíces, Camiones del admin (RF-18), según su ficha de flujo
        (docs/interfaz/flujos/raices-admin-navegable.md, sección 4.8). Ronda del 2026-11-10: un tablero de
-       logística (referencias 19 y 20 del usuario, con la identidad del sitio) en lugar de la tabla:
+       logística (referencias 19 y 20 del usuario, con la identidad del sitio) en lugar de la tabla.
+       Desde la guía al código (ADM1-07), deriva de la bandeja del galpón (A03): la cabecera con
+       .pila y .racimo data-alinea="entre arriba", sin clase propia; el botón denso (data-tamano=
+       "chico"); el error de la lista es el .aviso del catálogo. La flota no tiene arquetipo:
        - Arriba, el título, las cifras con su fecha y "Agregar camión", que abre un diálogo del navegador
          (popover) con el formulario (POST real a admin-camiones-agregado). Debajo, las cifras de la
          flota (capacidad total, disponible ahora y entregas de los últimos 30 días; .flota-resumen).
@@ -77,18 +80,35 @@
              consulta=${(fEstado != '' ? '&estado=' + fEstado : '') + filtros},
              conAviso=${param.camion == null and !filtrado}">
   <svg th:replace="~{iconos :: categorias}"></svg>
-  <div class="mesa">
-    <header class="mesa-cabecera">
-      <div>
-        <p class="rotulo">Administración</p>
-        <h1>Camiones</h1>
-        <p th:if="${conDatos}" th:text="|${#lists.size(camiones)} camiones: ${enRuta} en ruta · ${libres} disponibles · ${parados} ${parados == 1 ? 'deshabilitado' : 'deshabilitados'}. ${flota.al}|">5
-          camiones: 1 en ruta · 3 disponibles · 1 deshabilitado. Al 15 de octubre de 2026, 18:30.</p>
-        <p th:if="${escenario == 'vacio'}">Todavía no cargaste ningún camión.</p>
+  <!--/* La cabecera del galpón (A03): el título y las cifras de la flota con su fecha; a la derecha,
+         «Agregar camión», el botón denso. Las cifras (.flota-resumen, del catálogo de la flota) van
+         en un div: su hoja les pone margin: 0 y le ganaría al espacio de la pila. */-->
+  <div class="pila" data-espacio="4">
+    <header class="racimo" data-alinea="entre arriba">
+      <div class="pila" data-espacio="2">
+        <div class="pila" data-espacio="0">
+          <h1>Camiones</h1>
+          <p th:if="${conDatos}" class="texto-chico" data-tono="suave" th:text="|${#lists.size(camiones)} camiones: ${enRuta} en ruta · ${libres} disponibles · ${parados} ${parados == 1 ? 'deshabilitado' : 'deshabilitados'}. ${flota.al}|">5
+            camiones: 1 en ruta · 3 disponibles · 1 deshabilitado. Al 15 de octubre de 2026, 18:30.</p>
+          <p th:if="${escenario == 'vacio'}" class="texto-chico" data-tono="suave">Todavía no cargaste
+            ningún camión.</p>
+        </div>
+        <!--/* Las cifras de la flota: la capacidad total, la de los disponibles y las entregas del mes. */-->
+        <div th:if="${conDatos}">
+          <dl class="flota-resumen">
+            <div><dt>Capacidad de la flota</dt>
+              <dd th:text="|${#numbers.formatInteger(#aggregates.sum(camiones.![kg]), 1, 'POINT')} kg|">11.500 kg</dd></div>
+            <div><dt>Disponible ahora</dt>
+              <dd th:text="${libres == 0} ? '0 kg' : |${#numbers.formatInteger(#aggregates.sum(camiones.?[estado == 'disponible'].![kg]), 1, 'POINT')} kg|">6.500
+                kg</dd></div>
+            <div th:if="${flota.entregas != null}"><dt th:text="|Entregas del ${flota.periodo}|">Entregas del 16 de septiembre al 15 de octubre</dt>
+              <dd th:text="${flota.entregas}">127</dd></div>
+          </dl>
+        </div>
       </div>
-      <div th:if="${escenario != 'error' and escenario != 'lento' and !conError}" class="racimo">
-        <button type="button" class="boton" data-tono="principal" popovertarget="agregar-camion">Agregar
-          camión</button>
+      <div th:if="${escenario != 'error' and escenario != 'lento' and !conError}" class="racimo"
+           data-espacio="1">
+        <button type="button" class="boton" data-tamano="chico" popovertarget="agregar-camion">Agregar camión</button>
       </div>
     </header>
 
@@ -102,17 +122,20 @@
          autofocus>Volviste a habilitar el camión AA 999 ZZ. Queda disponible para las próximas rutas.</p>
     </th:block>
 
-    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
-             aria-labelledby="error-titulo">
-      <h2 id="error-titulo">No pudimos cargar los camiones.</h2>
-      <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
-        <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
-           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-camiones')}">escribinos
-          con este código</a>.</p>
+    <!--/* El error de la lista: el aviso del catálogo en su lugar, con el código y el próximo paso. */-->
+    <div th:if="${escenario == 'error'}" class="aviso" data-tipo="error" role="alert">
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo">No pudimos cargar los camiones.</p>
+      <p>Es un problema nuestro: los camiones siguen como estaban. Probá de nuevo en unos minutos; si
+        sigue, escribinos con este código.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-      <a class="boton" data-tono="secundario" href="/admin-camiones" th:href="@{/admin-camiones}">Volver a
-        cargar</a>
-    </section>
+      <div class="racimo">
+        <a class="boton" data-tono="secundario" href="/admin-camiones" th:href="@{/admin-camiones}">Volver
+          a cargar</a>
+        <a class="boton" data-tono="secundario" href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-camiones')}">Escribinos</a>
+      </div>
+    </div>
 
     <!--/* El alta: en un diálogo del navegador; con el error de datos, abierta debajo del encabezado. */-->
     <dialog th:if="${escenario != 'error' and escenario != 'lento' and !conError}" class="dialogo"
@@ -124,17 +147,6 @@
       <h2 id="agregar-titulo">Agregar camión</h2>
       <th:block th:replace="~{:: formulario(true, false)}"></th:block>
     </section>
-
-    <!--/* Las cifras de la flota: la capacidad total, la de los disponibles y las entregas del mes. */-->
-    <dl th:if="${conDatos}" class="flota-resumen">
-      <div><dt>Capacidad de la flota</dt>
-        <dd th:text="|${#numbers.formatInteger(#aggregates.sum(camiones.![kg]), 1, 'POINT')} kg|">11.500 kg</dd></div>
-      <div><dt>Disponible ahora</dt>
-        <dd th:text="${libres == 0} ? '0 kg' : |${#numbers.formatInteger(#aggregates.sum(camiones.?[estado == 'disponible'].![kg]), 1, 'POINT')} kg|">6.500
-          kg</dd></div>
-      <div th:if="${flota.entregas != null}"><dt th:text="|Entregas del ${flota.periodo}|">Entregas del 16 de septiembre al 15 de octubre</dt>
-        <dd th:text="${flota.entregas}">127</dd></div>
-    </dl>
 
     <section th:if="${escenario != 'error'}" class="pila" data-espacio="3" aria-labelledby="lista-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
@@ -169,7 +181,7 @@
           <b th:text="${t.n}">5</b></a>
       </nav>
 
-      <p th:if="${conDatos and filtrado and n > 0}" role="status"
+      <p th:if="${conDatos and filtrado and n > 0}" class="texto-chico" data-tono="suave" role="status"
          th:text="|${n == 1 ? 'Coincide 1 camión' : 'Coinciden ' + n + ' camiones'} de ${#lists.size(camiones)}. Elegí uno para ver su ficha.|">Coinciden
         2 camiones de 5. Elegí uno para ver su ficha.</p>
       <section th:if="${conDatos and n == 0}" class="vacio" aria-labelledby="sin-titulo">
@@ -299,13 +311,18 @@
       </th:block>
     </section>
 
-    <!--/* El mapa chico, solo en ruta: el depósito, el camión y su próxima parada (static/js/mapa.js). */-->
+    <!--/* El mapa chico, solo en ruta: el depósito, el camión y su próxima parada (static/js/mapa.js).
+           Como en Seguimiento de quien dona: la hoja de MapLibre se pide antes del script, así el mapa
+           se mide con su alto de verdad, y data-mapa-margenes deja a la derecha el ancho de los
+           botones de acercar y medio marcador, y arriba y abajo medio marcador, para que ningún
+           marcador quede fuera del mapa ni debajo de los botones. */-->
     <section th:if="${c.viaje != null}" data-parte="mapa" aria-labelledby="ficha-mapa">
       <h3 id="ficha-mapa">En el mapa</h3>
       <div class="mapa-real" data-mapa data-mapa-puntos="[data-camion-punto]" role="region"
            th:aria-label="|Mapa del camión ${c.patente}: el depósito, dónde está y su próxima parada. Datos del viaje tiene lo mismo.|"
            data-maplibre="/webjars/maplibre-gl/dist/" th:data-maplibre="@{/webjars/maplibre-gl/dist/}"
-           data-deposito-lat="-34.6365" data-deposito-lng="-58.4010" data-deposito-nombre="Depósito de DonaTrack">
+           data-deposito-lat="-34.6365" data-deposito-lng="-58.4010" data-deposito-nombre="Depósito de DonaTrack"
+           data-mapa-margenes="40 96 48 40">
         <p class="mapa-real-aviso">Para ver el mapa hace falta JavaScript. En Datos del viaje está lo mismo.</p>
         <template data-mapa-icono="deposito"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path
             d="M3 20V9l9-5 9 5v11"/><path d="M7 20v-7h10v7M7 16.5h10"/></svg></template>
@@ -318,6 +335,8 @@
           </div>
         </template>
       </div>
+      <link rel="stylesheet" href="/webjars/maplibre-gl/dist/maplibre-gl.css"
+            th:href="@{/webjars/maplibre-gl/dist/maplibre-gl.css}">
       <script src="/js/mapa.js" th:src="@{/js/mapa.js}" defer></script>
     </section>
 
@@ -355,7 +374,7 @@
     <p th:case="'ruta'">Vuelve a estar disponible cuando termina la ruta. "En ruta" lo pone la logística al
       armarla.</p>
     <th:block th:case="'disponible'">
-      <button type="button" class="boton" data-tono="quitar" th:popovertarget="|deshabilitar-${c.clave}|"
+      <button type="button" class="boton" data-tono="quitar" data-tamano="chico" th:popovertarget="|deshabilitar-${c.clave}|"
               th:aria-label="|Deshabilitar: camión ${c.patente}|">Deshabilitar</button>
       <dialog class="dialogo" data-tono="quitar" th:id="|deshabilitar-${c.clave}|" popover data-bloquea
               th:aria-labelledby="|deshabilitar-${c.clave}-titulo|">
@@ -384,7 +403,7 @@
     <form th:case="*" action="/admin-camiones-habilitado" th:action="@{/admin-camiones-habilitado}"
           method="post" hx-boost="true" hx-indicator="#enviando-admin-camiones-estado" hx-select-oob="#avisos">
       <input type="hidden" name="camion" th:value="${c.clave}">
-      <button class="boton" data-tono="secundario" type="submit"
+      <button class="boton" data-tono="secundario" data-tamano="chico" type="submit"
               th:aria-label="|Volver a habilitar: camión ${c.patente}|">Volver a habilitar</button>
       <p th:replace="~{envio :: indicador('enviando-admin-camiones-estado', 'Guardando…')}"></p>
     </form>
