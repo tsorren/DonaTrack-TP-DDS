@@ -1160,12 +1160,25 @@ Suma: 7 + 3 + 4 + 7 = 21. Son las 19 de §5 (14 y 5 comunes), más `error/429` y
 | `estilos.html` y `docs/interfaz/componentes.md` | Fuera: PUB2 no suma ni cambia piezas del catálogo, así que no tiene muestra ni fila que tocar |
 | `publico-ingresar.css` | Compartida: es la hoja de Ingresar (PUB1) y de las 7 plantillas de `pub2-cuenta`. Ese lote saca solo las reglas de `.cuenta-principal`, que usan nada más que sus pantallas. Las de `main > .pila`, de Ingresar, no cambian. No se borra |
 | `publico-registro.css` | Compartida: es la hoja de los dos registros y la importa `publico-ingresar.css`. Cada lote de registro saca solo las reglas que usan nada más que sus pantallas. No se borra |
-| `publico-paginas.css` y `publico-listas.css` | Compartidas con PUB1 y `/estilos`. Una regla que usan solo pantallas de PUB2 la saca su lote. `.recibido` la usan `pub2-cuenta` y `pub2-registro-entidad`: ninguno la borra, y si queda sin uso se anota para Z |
+| `publico-paginas.css` y `publico-listas.css` | Compartidas con PUB1 y `/estilos`. Una regla que usan solo pantallas de PUB2 la saca su lote. `.recibido` y `.publica` las usan `pub2-cuenta` y `pub2-registro-entidad`: ninguno de los dos las borra; las borra el integrador de la tanda 1 (abajo) |
 | `publico-error.css` | De `pub2-estado`: es la hoja de las páginas de error y solo dispone |
 | `privado.css` | Compartida con todo lo privado y con ADM1: `pub2-estado` toca solo la regla `.sin-dibujar`. `.aviso-codigo` la usan también pantallas del admin, así que queda |
 
 Ninguna de las hojas de PUB2 sale de `HOJAS_HEREDADAS` en esta ola, porque las cinco las usan
 también pantallas de otras olas. Si una queda sin reglas heredadas, se anota para Z.
+
+**Las clases heredadas que comparten dos lotes.** En `clases-heredadas.txt` cada lote borra solo
+las líneas de las clases que deja sin uso. `publica`, `cuenta` y `recibido` las usan plantillas de
+los dos lotes: `publica` y `cuenta`, las cuatro de `pub2-cuenta` con `.publica` y
+`publico-registro-entidad-enviada`; `recibido`, `publico-activar-lista` y
+`publico-registro-entidad-enviada`. Los dos lotes las sacan de sus plantillas (regla 1 y DA-32),
+pero ninguno puede borrar esas líneas en su rama, porque la plantilla del otro todavía las usa. Al
+integrar la tanda 1 quedan sin uso y
+`InterfazFitnessTest.clasesDeLasPlantillasEstanEnElCatalogoOEnLasHeredadas` da rojo. Es un choque
+entre lotes y lo arregla el integrador de la tanda (su paso 4): borra las de esas tres que ya no
+usa ninguna plantilla y, con cada una, las reglas que quedan sin uso (`.recibido` en
+`publico-paginas.css`, `.publica` en `publico-listas.css` y `.cuenta .formulario` en
+`publico-registro.css`). Lo dice la regla 4.
 
 ### 15.3 Ítems
 
@@ -1193,7 +1206,11 @@ límite de las hojas compartidas de §15.2.
   `/donante-donaciones-nueva?cuenta=persona`, que muestra `aviso-persona` (como en
   `SitioControllerTest.conLaPersonaLasOtrasDelDonanteMuestranSuVersionOElAviso`). La segunda va en el
   bloque de la persona de `paginas.txt`, antes de `/donante-inicio?cuenta=empresa`, porque la cuenta
-  queda en la sesión.
+  queda en la sesión. En `pub2-registro-entidad`, la solicitud enviada entra a `rutasVisuales` solo
+  sin escenario; sus cinco rutas (sin escenario y con `con-sesion-pendiente`, `corregida`,
+  `sin-datos` y `aprobada`) las afirma un test de `SitioControllerTest` (200 y la vista
+  `publico-registro-entidad-enviada`), que es el criterio de DA-32 de ese lote, y las mira
+  `-Pvisual` al cierre.
 - **Las hojas compartidas, antes de comitear:** un lote que saca reglas de `publico-ingresar.css` o
   de `publico-registro.css` corre además `-Pvisual` sobre `/publico-ingresar` y
   `/publico-ingresar-error`. Uno que saca reglas de `publico-paginas.css` o de `publico-listas.css`
