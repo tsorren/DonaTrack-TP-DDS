@@ -34,17 +34,21 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 ### 2026-11-25 · sistema · Manifiesto de Z: los alias salen también del tema, los pares solo pierden los retirados y el cerco baja con el test
 
 - **Decisión:** el tema de Keycloak deja los alias junto con el sitio (DA-36). De la lista de pares
-  de `InterfazFitnessTest` salen solo los 16 que nombran un token retirado, y el del título pasa a
-  `--color-accion-primaria` con el mismo mínimo (DA-37). Sale de `HOJAS_HEREDADAS` toda hoja que el
+  de `InterfazFitnessTest` salen los 16 que nombran un token retirado. Entran tres con el nombre de
+  la guía para los colores que siguen en uso: la raíz sobre el suelo y sobre el suelo medio, y la
+  acción primaria sobre una lámina. El del título pasa a `--color-accion-primaria`. Ningún mínimo
+  baja y la lista queda en 38 pares (DA-37). Sale de `HOJAS_HEREDADAS` toda hoja que el
   cerco ya acepta, y se borran las hojas vacías (DA-38). Son 6 lotes en 5 tandas, y tres de ellos
   son condicionales, uno por hueco ([backlog, sección 17](backlog-guia-al-codigo.md)).
 - **Alternativas:**
   - Conservar en `tokens.css` los alias que usa el tema, o que la copia del tema deje de ser
     idéntica.
   - La lista de pares de la guía tal cual.
+  - Sacar los 16 pares sin reponer ninguno.
   - Sacar del cerco solo `entidad-recibidas.css`.
 - **Por qué:** se cambia un nombre por otro del mismo valor, así que ningún color cambia. La lista
-  de la guía tal cual dejaría sin medir 6 pares en uso. `HOJAS_HEREDADAS` dice que baja con cada
+  de la guía tal cual dejaría sin medir 6 pares en uso, y sacar los 16 sin reponer dejaría sin
+  medir la raíz sobre la tierra y el verde sobre una lámina. `HOJAS_HEREDADAS` dice que baja con cada
   hoja migrada.
 - **Costo:** `test_auth_theme.py` cambia nombres de tokens y no corre en los gates del workflow: el
   lote lo corre aparte. La ficha «Color: los nombres de antes» de `/estilos` se queda, porque
