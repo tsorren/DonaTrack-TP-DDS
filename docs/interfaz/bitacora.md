@@ -173,6 +173,23 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
   comportamiento está en el código y en los tests.
 - **Evidencia:** `d03df922f` y `3f23221bb`; backlog §15.3 (PUB2-03).
 
+### 2026-11-25 · admin · Manifiesto de ADM2: las listas siguen con ficha y los registros responden en la lista
+
+- **Decisión:** Donantes y Organizaciones siguen como bandeja con ficha (`.maestro`), en el galpón
+  (DA-34). Registrar un donante y registrar una organización responden con el aviso breve en su
+  lista (DA-06); registrar la donación de un donante nuevo sigue desde su ficha (DA-33). La
+  contraseña provisoria se queda como página propia (DA-35). Reparto en 6 lotes de 2 tandas, sin
+  fichas ([backlog, sección 16](backlog-guia-al-codigo.md)).
+- **Alternativas:** Donantes y Organizaciones como tabla con una página de detalle por fila, como
+  Donaciones; conservar la página «registrado» con «Registrar su donación», o un enlace dentro del
+  aviso breve; la contraseña provisoria como aviso breve.
+- **Por qué:** en la ficha se decide una solicitud y sigue el donante, sin rutas nuevas. El envío
+  real ya termina en la lista, y el puerto no dice quién quedó registrado. La contraseña se ve una
+  sola vez y hay que anotarla con calma.
+- **Costo:** registrar la donación de un donante nuevo pide buscarlo en la lista (un paso más que
+  hoy en la maqueta). `mesa` y `mesa-cabecera` las borra el integrador de la tanda, porque las usan
+  los seis lotes.
+
 ### 2026-11-25 · galpón · Los errores y los avisos del galpón con las piezas del catálogo
 
 - **Decisión:** el error de carga de una lista del galpón (Donaciones, Asignar, Camiones, Ranking y
