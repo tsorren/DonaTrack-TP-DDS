@@ -31,6 +31,123 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-25 · migración · B3-02 y B3-04 constan como fuera de la lista, no como hechos
+
+- **Decisión:** en el [backlog de migración](backlog-migracion-componentes.md), B3-02 y B3-04
+  dicen «Fuera de `HOJAS_HEREDADAS`». B3-03 y B3-05 siguen pendientes y B3-06 queda parcial.
+- **Alternativas:** marcarlos como hechos.
+- **Por qué:** el cerco los acepta, pero su patrón (`DE_PANTALLA_PROHIBIDO`) no mira `fill` ni
+  `stroke`, y la migración de B3 queda fuera de Z (§17.5). Decir «hecho» afirmaría una migración que
+  no terminó.
+- **Costo:** algunas hojas fuera de la lista siguen pintando dibujos con `fill` y `stroke`
+  ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54), ítem 8).
+- **Quién decidió:** agente (lote `z-docs`), sin consultar.
+- **Evidencia:** `2e13dba80`; backlog §17.3 (Z-11).
+
+### 2026-11-25 · sistema · Los topes del cerco quedan en el valor medido: 37 y 532
+
+- **Decisión:** `TOPE_DE_CLASES_DE_UN_SOLO_USO` baja de 159 a 37 y `TOPE_DE_MEDIDAS_LITERALES`, de
+  1192 a 532. Se tomaron del mensaje del test con el tope en 0, con todo lo de Z integrado.
+- **Alternativas:** dejar un margen sobre el valor medido.
+- **Por qué:** los topes solo bajan, y uno con margen dejaría entrar clases o medidas nuevas sin que
+  el cerco lo note.
+- **Costo:** el cerco queda sin margen: cualquier clase de un solo uso o medida literal nueva lo
+  rompe ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54), ítem 12).
+- **Quién decidió:** agente (lote `z-cerco`), sin consultar.
+- **Evidencia:** `3ed0130d0`; con 36 y 531 el test falla en los dos (cierre, §17.6).
+
+### 2026-11-25 · sistema · Salen del cerco las hojas que ya acepta, y nada se borra ni se reescribe (DA-38)
+
+- **Decisión:** `HOJAS_HEREDADAS` pasa de 20 a 8 hojas. Sale `entidad-recibidas.css`, que ya no
+  existía, y salen las 11 que no tienen color, fondo, fuente ni `@keyframes`. Ninguna hoja de la
+  lista estaba sin reglas, así que no se borró ninguna ni se tocó un `<link>` o un `@import`.
+  `templates/paginador.html` se borró, porque nadie lo nombraba. Siguen `admin-inicio.css` (su
+  primera declaración prohibida está en la línea 78) y 7 hojas más, cada una con la suya.
+- **Alternativas:** sacar solo `entidad-recibidas.css`; reescribir las hojas que retienen una regla
+  para que salgan.
+- **Por qué:** la lista dice que baja con cada hoja que el cerco acepta. Reescribir hojas es la
+  migración de B3, que Z no hace.
+- **Costo:** quedan 8 hojas con reglas para migrar ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54),
+  ítem 8).
+- **Quién decidió:** usuario (DA-38, la recomendada, delegada por el relevamiento del 2026-11-24).
+  Cuáles salen y cuáles se quedan, agente (lote `z-cerco`), probando cada hoja con el patrón del
+  cerco. Cumplida: PASS de la revisión del lote en la ronda 1.
+- **Evidencia:** `3ed0130d0`; backlog §17.3 (Z-08 y Z-09).
+
+### 2026-11-25 · contraste · La lista de pares pierde los retirados y repone los que siguen en uso (DA-37)
+
+- **Decisión:** de `PARES` salen los 16 pares que nombran un token retirado. Vuelven tres con el
+  nombre de la guía y el mismo 4,5: la raíz sobre el suelo, la raíz sobre el suelo medio y la acción
+  primaria sobre la superficie. El del título pasa a `--color-accion-primaria` sobre
+  `--color-fondo-pagina`. La lista pasa de 51 a 38 pares y conserva los 29 con piso de la guía.
+- **Alternativas:** la lista de la guía tal cual; sacar los 16 sin reponer ninguno.
+- **Por qué:** cuatro de los 16 miden colores que siguen en uso, como los rótulos y enlaces de la
+  tierra o el nombre de una muestra. Los otros 12 ya los mide un par que se queda. Ningún mínimo
+  baja.
+- **Costo:** ninguno pendiente.
+- **Quién decidió:** usuario (DA-37, la recomendada, delegada por el relevamiento del 2026-11-24).
+  Cumplida: PASS de la revisión del lote `z-tokens` en la ronda 1.
+- **Evidencia:** `0dba3e78f`; `git grep -c 'new Par("'` da 38.
+
+### 2026-11-25 · tema · El tema de Keycloak deja los alias con el sitio (DA-36)
+
+- **Decisión:** `donatrack.css` usa el token de la guía del mismo valor, la copia de `tokens.css`
+  se vuelve a sincronizar con `sincronizar_tema.py` y `test_auth_theme.py` nombra los tokens de la
+  guía, con las mismas aserciones y los mismos mínimos. Del conjunto `cubiertos` sale el
+  `--color-fondo-pagina` que el renombre dejaba repetido; el conjunto es el mismo.
+- **Alternativas:** conservar en `tokens.css` los alias que usa el tema; dejar que la copia del
+  tema deje de ser idéntica.
+- **Por qué:** el tema y el sitio comparten los tokens, y un nombre cambia por otro del mismo
+  valor.
+- **Costo:** la tupla de un test del tema nombra dos veces `--color-accion-primaria`
+  ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54), ítem 10).
+- **Quién decidió:** usuario (DA-36, la recomendada, delegada por el relevamiento del 2026-11-24).
+  El repetido de `cubiertos`, agente (lote `z-tokens`). Cumplida: PASS de la revisión del lote en la
+  ronda 1.
+- **Evidencia:** `0dba3e78f`; `sincronizar_tema.py --verificar` sale con 0 y `test_auth_theme.py`
+  pasa sus 45 tests.
+
+### 2026-11-25 · /estilos · La ficha de los nombres de antes lista los que los reemplazaron
+
+- **Decisión:** la ficha «Color: los nombres de antes» se queda y lista los 8 tokens de la guía que
+  reemplazaron a los alias, uno por renglón, sin la flecha del alias. Conserva `muestra-tokens`.
+- **Alternativas:** nombrar cada alias con su reemplazo; borrar la ficha.
+- **Por qué:** el criterio de DA-14b no deja nombrar un alias en `src/main`, y `EstilosBaseTest`
+  cuenta 14 fichas.
+- **Costo:** el título promete los nombres de antes y la ficha ya no los muestra
+  ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54), ítem 11).
+- **Quién decidió:** agente (lote `z-tokens`), sin consultar.
+- **Evidencia:** `0dba3e78f`; `estilos.html:292-303`; capturas de `/estilos` a 360 y 1280 px.
+
+### 2026-11-25 · sistema · El galpón deja de redeclarar `--color-papel`
+
+- **Decisión:** en `privado.css` sale la redeclaración `--color-papel: var(--color-galpon-fondo)`
+  de `[data-armazon="galpon"]`, y su comentario se reescribe.
+- **Alternativas:** renombrarla y dejar dos líneas iguales.
+- **Por qué:** `--color-fondo-pagina` ya se redeclara en ese mismo bloque con el mismo valor, así que
+  el galpón se ve igual.
+- **Costo:** ninguno pendiente. Es la única definición de un alias fuera de `tokens.css`.
+- **Quién decidió:** agente (lote `z-tokens`), sin consultar.
+- **Evidencia:** `0dba3e78f`; `privado.css:99-100` antes del cambio.
+
+### 2026-11-25 · sistema · Salen los alias y los tokens sin uso (DA-14b)
+
+- **Decisión:** salen de `tokens.css` los 10 alias de §3.2 y los 11 tokens que no usa ninguna hoja
+  ni plantilla. Cada uso de un alias pasa al token de la guía del mismo valor, así que ningún color
+  calculado cambia. Con `--movimiento-retraso-ninguno` sale `--p-espera-0`, que solo lo
+  alimentaba. De `movimiento.css` salen `--movimiento-animacion-ola`,
+  `--movimiento-animacion-vuelo-carga` y `@keyframes mov-ola`, con sus comentarios.
+- **Alternativas:** conservar los alias como sinónimos.
+- **Por qué:** dos nombres para el mismo color confunden a quien construye una pantalla, y un token
+  sin uso es un nombre más que mantener.
+- **Costo:** quedan nombres retirados fuera de `tokens.css`: un comentario de `movimiento.css`,
+  `guia/armar.js` y el texto de prueba del cerco de movimiento
+  ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54), ítem 10).
+- **Quién decidió:** usuario (DA-14b, la recomendada, delegada por el relevamiento del 2026-11-24).
+  `--p-espera-0`, agente (lote `z-tokens`), como en C0. Cumplida: PASS de la revisión del lote en
+  la ronda 1.
+- **Evidencia:** `0dba3e78f`; backlog §17.3 (Z-01 a Z-03).
+
 ### 2026-11-25 · donantes · Donantes sigue como bandeja con ficha, en el galpón (DA-34)
 
 - **Decisión:** Donantes sigue como bandeja con ficha (`.maestro` y `.maestro-ficha`): cada renglón

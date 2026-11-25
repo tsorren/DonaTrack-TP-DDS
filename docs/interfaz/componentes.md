@@ -329,7 +329,7 @@ Fragmentos que arman su forma solo con piezas de este catálogo. No suman clases
 
 | Pieza | Fragmento | Parámetros | Cómo se arma | Cuándo se usa | Equivalente |
 |---|---|---|---|---|---|
-| Paginador provisorio (desde el 2026-11-11, R11-01; lotes `p0-admin-listados` y `p0-persona`). **Reemplazado por `.paginas`** el 2026-11-12 (R11-11) | `paginador :: paginador(p)` (`templates/paginador.html`) | El mismo `p` de `.paginas` | Solo un pase: dibuja `componentes/paginas :: paginas(p)`, para que las listas del admin que lo nombran cambien sin tocar sus plantillas. Las plantillas nuevas usan `.paginas` directamente; se borra cuando ninguna lo nombre | Ninguna desde la oleada ADM2 (2026-11-25): se puede borrar en Z ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 2) | Material: Data tables (paginación) |
+| Paginador provisorio (desde el 2026-11-11, R11-01; lotes `p0-admin-listados` y `p0-persona`). **Reemplazado por `.paginas`** el 2026-11-12 (R11-11) | `paginador :: paginador(p)` (`templates/paginador.html`) | El mismo `p` de `.paginas` | Solo un pase: dibuja `componentes/paginas :: paginas(p)`, para que las listas del admin que lo nombran cambien sin tocar sus plantillas. Las plantillas nuevas usan `.paginas` directamente; se borra cuando ninguna lo nombre | Ninguna desde la oleada ADM2 (2026-11-25): se puede borrar en Z ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 2). **Actualización (2026-11-25):** borrado en la ola Z (Z-09, `3ed0130d0`); esta fila queda como registro | Material: Data tables (paginación) |
 
 ## Alpine (D31)
 
