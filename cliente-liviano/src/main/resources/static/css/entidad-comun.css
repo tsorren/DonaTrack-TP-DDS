@@ -13,7 +13,7 @@
   gap: 0.625rem;
   align-content: start;
   padding: 1.125rem 1.25rem 1.25rem;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 main .acta-titulo {

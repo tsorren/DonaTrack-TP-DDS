@@ -16,7 +16,7 @@
   --pf-v5-global--primary-color--200: var(--color-accion-primaria-activa);
   --pf-v5-global--active-color--100: var(--color-enlace);
   --pf-v5-global--link--Color: var(--color-enlace);
-  --pf-v5-global--link--Color--hover: var(--color-acento-hondo);
+  --pf-v5-global--link--Color--hover: var(--color-accion-primaria-activa);
   --pf-v5-global--danger-color--100: var(--color-error-texto);
   --pf-v5-global--BorderColor--100: var(--color-filete);
 }
@@ -64,7 +64,7 @@ body#keycloak-bg,
 }
 
 #kc-header-wrapper em {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font-style: normal;
 }
 
@@ -102,7 +102,7 @@ body#keycloak-bg,
 
 #kc-page-title,
 .pf-v5-c-title {
-  color: var(--color-titulo);
+  color: var(--color-accion-primaria);
   font-family: var(--fuente-titulo);
   font-weight: 800;
   font-stretch: 112%;
@@ -137,7 +137,7 @@ body#keycloak-bg,
 }
 
 .pf-v5-c-form-control:focus-within {
-  border-color: var(--color-acento);
+  border-color: var(--color-accion-primaria);
   outline: 3px solid var(--color-foco);
   outline-offset: 2px;
 }
@@ -191,7 +191,7 @@ body#keycloak-bg,
   border: 0;
   background-color: var(--color-accion-primaria);
   color: var(--color-texto-sobre-accion);
-  box-shadow: 0.25rem 0.25rem 0 var(--color-sombra);
+  box-shadow: 0.25rem 0.25rem 0 var(--color-hoja);
 }
 
 .pf-v5-c-button.pf-m-primary:hover,
@@ -204,7 +204,7 @@ body#keycloak-bg,
 .pf-v5-c-button.pf-m-secondary,
 .pf-v5-c-button.pf-m-tertiary {
   border: 0;
-  background-color: var(--color-papel);
+  background-color: var(--color-fondo-pagina);
   color: var(--color-tinta);
   box-shadow: inset 0 0 0 2px var(--color-tinta);
 }
@@ -213,7 +213,7 @@ body#keycloak-bg,
 .pf-v5-c-button.pf-m-secondary:focus,
 .pf-v5-c-button.pf-m-tertiary:hover,
 .pf-v5-c-button.pf-m-tertiary:focus {
-  background-color: var(--color-acento-claro);
+  background-color: var(--color-salvia);
   color: var(--color-tinta);
 }
 
@@ -226,7 +226,7 @@ a {
 }
 
 a:hover {
-  color: var(--color-acento-hondo);
+  color: var(--color-accion-primaria-activa);
 }
 
 :focus-visible {
@@ -255,7 +255,7 @@ a:hover {
 
 input[type="checkbox"],
 input[type="radio"] {
-  accent-color: var(--color-acento);
+  accent-color: var(--color-accion-primaria);
 }
 
 /* Avisos: los colores de estado del sitio, siempre con texto además del color */

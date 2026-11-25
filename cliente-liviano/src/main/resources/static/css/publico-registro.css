@@ -36,7 +36,7 @@ main > .pila > .tarjeta {
 
 .opciones small {
   display: block;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.9375rem;
 }
 
@@ -66,11 +66,11 @@ main > .pila > .tarjeta {
   height: 1.5rem;
   border: 2px solid var(--color-tinta);
   border-radius: 0.25rem;
-  background: var(--color-papel);
+  background: var(--color-fondo-pagina);
 }
 
 .casilla:has(:checked)::before {
-  background: var(--color-acento);
+  background: var(--color-accion-primaria);
 }
 
 .casilla:has(:checked)::after {
@@ -80,8 +80,8 @@ main > .pila > .tarjeta {
   left: 0.5rem;
   width: 0.5rem;
   height: 0.85rem;
-  border-right: 3px solid var(--color-papel);
-  border-bottom: 3px solid var(--color-papel);
+  border-right: 3px solid var(--color-fondo-pagina);
+  border-bottom: 3px solid var(--color-fondo-pagina);
   rotate: 45deg;
 }
 
@@ -105,6 +105,6 @@ main > .pila > .tarjeta {
 }
 
 .aviso--nombre {
-  border-color: var(--color-acento);
+  border-color: var(--color-accion-primaria);
   color: var(--color-tinta);
 }

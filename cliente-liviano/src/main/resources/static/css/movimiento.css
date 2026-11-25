@@ -50,10 +50,6 @@
        sola vez y en menos de 5 s (usuario, 2026-11-09: "que no esté vibrando en una esquina"). El
        ancho y el alto de la vuelta los pone el componente (--medida-vuelo-ancho y -alto). */
     --movimiento-animacion-ronda: mov-ronda calc(var(--movimiento-duracion-trazo) * 4) var(--movimiento-curva-ambiente) var(--movimiento-retraso-entrada) both;
-    --movimiento-animacion-vuelo-carga: mov-vuelo var(--movimiento-duracion-larga) var(--movimiento-curva-ambiente) infinite alternate;
-    /* La ola del esqueleto (usuario, 2026-11-12): un brillo cruza el lugar de lo que carga, en
-       ciclo, mientras dura la carga, y se va con ella. */
-    --movimiento-animacion-ola: mov-ola calc(var(--movimiento-duracion-larga) * 2) var(--movimiento-curva-ambiente) infinite;
     /* El botón que carga (C1-03): su ruedita gira en ciclo mientras dura el envío. La guía escribe
        0,9 s; el token más cercano es la duración larga (0,75 s). */
     --movimiento-animacion-gira: mov-gira var(--movimiento-duracion-larga) linear infinite;
@@ -131,7 +127,7 @@
 
   @keyframes mov-resalta {
     from {
-      background-color: var(--color-destacado);
+      background-color: var(--color-raiz);
     }
   }
 
@@ -228,17 +224,6 @@
     from {
       opacity: 0;
       translate: 0 1.5rem;
-    }
-  }
-
-  /* La ráfaga ocupa el primer octavo del ciclo; el resto, quieto. */
-  @keyframes mov-ola {
-    from {
-      translate: -100% 0;
-    }
-
-    to {
-      translate: 100% 0;
     }
   }
 

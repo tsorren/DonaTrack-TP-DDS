@@ -46,7 +46,7 @@
 }
 
 [data-tono="acento"] {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
 }
 
 [data-tono="exito"] {

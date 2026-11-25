@@ -28,7 +28,7 @@
 }
 
 .flota-resumen dt {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
 }
 
@@ -102,7 +102,7 @@
 
 .flota [data-parte="nombre"] {
   display: block;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
   font-weight: 700;
 }
@@ -117,7 +117,7 @@
 }
 
 .flota > li > a dt {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 .flota > li > a dd {
@@ -154,7 +154,7 @@
 }
 
 .flota-dibujo [data-parte="cabina"] {
-  fill: var(--color-acento);
+  fill: var(--color-accion-primaria);
 }
 
 .flota-dibujo [data-parte="vidrio"] {
@@ -162,7 +162,7 @@
 }
 
 .flota-dibujo [data-parte="franja"] {
-  fill: var(--color-acento-claro);
+  fill: var(--color-salvia);
   stroke: none;
 }
 
@@ -172,7 +172,7 @@
 }
 
 .flota-dibujo [data-parte="llanta"] {
-  fill: var(--color-papel);
+  fill: var(--color-fondo-pagina);
   stroke: none;
 }
 
@@ -214,7 +214,7 @@
 }
 
 .flota-ficha [data-parte="identidad"] p {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 .flota-ficha [data-parte="identidad"] .flota-dibujo {
@@ -239,7 +239,7 @@
   align-content: start;
   gap: var(--espacio-1);
   padding-inline: 0.125rem;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
   line-height: 1.2;
   text-align: center;
@@ -281,8 +281,8 @@
 }
 
 .flota-etapas > li[data-paso="actual"]::before {
-  background: var(--color-acento);
-  box-shadow: 0 0 0 0.25rem var(--color-acento-claro);
+  background: var(--color-accion-primaria);
+  box-shadow: 0 0 0 0.25rem var(--color-salvia);
 }
 
 /* El tablero: las cajas del viaje, el mapa, la carga y el rendimiento, en dos columnas si entran. */
@@ -310,7 +310,7 @@
 
 .flota-ficha [data-parte="tablero"] h3 small {
   display: block;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font: 400 var(--tamano-chico) / 1.3 var(--fuente-texto);
 }
 
@@ -321,7 +321,7 @@
 }
 
 .flota-ficha [data-parte="tablero"] dt {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 .flota-ficha [data-parte="tablero"] dd {
@@ -398,7 +398,7 @@
 }
 
 .flota-barras rect:last-of-type {
-  fill: var(--color-acento);
+  fill: var(--color-accion-primaria);
 }
 
 /* El chofer: sus iniciales en un disco, el nombre y su rol, y los enlaces para llamar o escribir. */
@@ -417,7 +417,7 @@
 }
 
 .flota-ficha [data-parte="chofer"] small {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 .flota-ficha [data-parte="iniciales"] {
@@ -427,7 +427,7 @@
   width: 3rem;
   height: 3rem;
   border-radius: 50%;
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
   color: var(--color-tinta);
   font: 800 1rem / 1 var(--fuente-titulo);
 }

@@ -166,7 +166,7 @@
 }
 
 .tabla tr[data-atenuada] > :not(:last-child) {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 .tabla tr[data-atenuada] > :not(:last-child) :is(.estado, svg, img) {

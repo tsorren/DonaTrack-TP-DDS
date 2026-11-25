@@ -101,13 +101,13 @@
 }
 
 .boton[data-zona="suelo-hondo"]:not([data-tono="principal"]) {
-  background: var(--color-suelo-hondo);
+  background: var(--color-tinta);
 }
 
 .boton[data-zona="suelo"][data-tono="principal"] {
   border-color: var(--color-raiz);
   background: var(--color-raiz);
-  color: var(--color-suelo-hondo);
+  color: var(--color-tinta);
 }
 
 .boton[data-zona="suelo"][data-tono="principal"]:is(:hover, :active) {

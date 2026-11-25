@@ -12,7 +12,7 @@
 
 .muestra-nombre {
   margin: 0;
-  color: var(--color-titulo);
+  color: var(--color-accion-primaria);
   font-family: var(--fuente-titulo);
   font-size: var(--tamano-grande);
 }
@@ -33,7 +33,7 @@
 .muestra-demo [data-celda] {
   padding: var(--espacio-2);
   border-radius: var(--radio-boton);
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
   color: var(--color-tinta);
 }
 
@@ -74,7 +74,7 @@
   transform: translate(0);
   border-radius: var(--radio-boton);
   outline: 1px solid var(--color-filete);
-  background: var(--color-papel);
+  background: var(--color-fondo-pagina);
 }
 
 /* Desde la tableta, la barra es horizontal y entra en la ficha. */
@@ -93,7 +93,7 @@
 }
 
 .muestra-demo [data-fondo="suelo-hondo"] {
-  background: var(--color-suelo-hondo);
+  background: var(--color-tinta);
 }
 
 /* Las tarjetas y la lista de ejemplo: el relleno y la medida de columna que en el sitio pone la pantalla. */

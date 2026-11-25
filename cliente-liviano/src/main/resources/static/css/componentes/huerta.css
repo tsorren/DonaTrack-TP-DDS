@@ -33,7 +33,7 @@
 }
 
 :is(.huerta-cabeza, .huerta-cierre) h2 em {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
 }
 
 /* El corte va antes de la parte destacada y esta no se parte: "lo que donás" queda entero en su
@@ -44,7 +44,7 @@
 
 .huerta-rotulo {
   margin: 0;
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font: 700 0.78rem/1.2 var(--fuente-titulo);
   font-stretch: 112%;
   letter-spacing: 0.13em;
@@ -53,7 +53,7 @@
 
 .huerta-bajada {
   max-width: 48rem;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: clamp(1.05rem, 0.98rem + 0.35vw, 1.25rem);
 }
 
@@ -82,7 +82,7 @@
   border-radius: 50%;
   background: var(--color-superficie);
   box-shadow: inset 0 0 0 1.5px var(--color-filete);
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   cursor: pointer;
 }
 
@@ -102,7 +102,7 @@
 }
 
 .huerta-pausa:has(:checked) {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 .huerta-pausa-casilla {
@@ -146,7 +146,7 @@
   margin: 0.75rem 0.75rem 0;
   padding: 1rem 0.5rem 0.25rem;
   border-radius: var(--radio-boton);
-  background: radial-gradient(120% 90% at 50% 80%, var(--color-superficie), var(--color-papel));
+  background: radial-gradient(120% 90% at 50% 80%, var(--color-superficie), var(--color-fondo-pagina));
 }
 
 .huerta-marco::before {
@@ -229,7 +229,7 @@
 }
 
 .huerta-planta:has(.huerta-enlace:hover) h3 {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
 }
 
 .huerta-enlace:focus-visible {
@@ -248,7 +248,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.875rem;
   line-height: 1.3;
 }
@@ -328,7 +328,7 @@
 }
 
 .huerta-hero h1 em {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
 }
 
 .huerta-hero-texto > p:not(.huerta-rotulo) {
@@ -528,7 +528,7 @@
   width: auto;
   max-width: 100%;
   height: calc(var(--medida-alto) * var(--medida-escala-paso, 0.62px));
-  background: var(--color-papel);
+  background: var(--color-fondo-pagina);
 }
 
 .huerta-paso h3 {
@@ -540,12 +540,12 @@
 
 .huerta-paso p {
   margin: 0;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.95rem;
 }
 
 .huerta-paso .huerta-paso-numero {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font: 700 0.75rem/1 var(--fuente-titulo);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -639,7 +639,7 @@
 
 .huerta-nudo {
   fill: var(--color-raiz);
-  stroke: var(--color-suelo-hondo);
+  stroke: var(--color-tinta);
   stroke-width: 3;
 }
 
@@ -699,12 +699,12 @@
 
 .huerta-bajo-nudo {
   fill: var(--color-raiz);
-  stroke: var(--color-suelo-hondo);
+  stroke: var(--color-tinta);
   stroke-width: 10;
 }
 
 .huerta-bajo-halo {
-  fill: var(--color-suelo-hondo);
+  fill: var(--color-tinta);
   opacity: 0.45;
 }
 
@@ -745,7 +745,7 @@
   left: 0;
   width: 1.25rem;
   height: 1.25rem;
-  border: 3px solid var(--color-suelo-hondo);
+  border: 3px solid var(--color-tinta);
   border-radius: 50%;
   background: var(--color-raiz);
   content: "";
@@ -790,7 +790,7 @@
   color: var(--color-raiz);
   font-weight: 800;
   paint-order: stroke fill;
-  -webkit-text-stroke: 0.14em var(--color-suelo-hondo);
+  -webkit-text-stroke: 0.14em var(--color-tinta);
   text-decoration-thickness: 0.08em;
   text-underline-offset: 0.2em;
 }
@@ -980,7 +980,7 @@
   overflow: hidden;
   border: 0;
   border-radius: var(--radio-boton);
-  background: var(--color-papel);
+  background: var(--color-fondo-pagina);
   cursor: zoom-in;
 }
 
@@ -1008,7 +1008,7 @@
   aspect-ratio: 16 / 10;
   border: 2px dashed var(--color-filete);
   border-radius: var(--radio-boton);
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.875rem;
   text-align: center;
 }
@@ -1023,7 +1023,7 @@
 }
 
 .huerta-foto .huerta-foto-fecha {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font: 850 1.25rem/1 var(--fuente-cifra);
   font-stretch: 118%;
 }
@@ -1143,7 +1143,7 @@
 
 .huerta-preguntas summary::after {
   content: "+";
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font: 700 1.4rem/1 var(--fuente-titulo);
 }
 
@@ -1192,7 +1192,7 @@
 
 .huerta-resumen-alcance {
   margin: 0;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.875rem;
 }
 
@@ -1221,7 +1221,7 @@
 .huerta-barra [data-n="10"] { flex-grow: 10; }
 
 .huerta-barra [data-estado="entregada"] {
-  background: var(--color-acento);
+  background: var(--color-accion-primaria);
   box-shadow: none;
 }
 
@@ -1242,7 +1242,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.9375rem;
 }
 
@@ -1264,7 +1264,7 @@
 }
 
 .huerta-leyenda [data-estado="entregada"]::before {
-  background: var(--color-acento);
+  background: var(--color-accion-primaria);
   box-shadow: none;
 }
 
@@ -1339,7 +1339,7 @@
   top: 2.625rem;
   right: 10%;
   left: 10%;
-  border-top: 2px dotted var(--color-tinta-suave);
+  border-top: 2px dotted var(--color-texto-suave);
 }
 
 .huerta-recorrido li {
@@ -1364,17 +1364,17 @@
   height: 1rem;
   border-radius: 50%;
   background: var(--color-superficie);
-  box-shadow: inset 0 0 0 2px var(--color-tinta-suave);
+  box-shadow: inset 0 0 0 2px var(--color-texto-suave);
 }
 
 .huerta-recorrido [data-avance="hecho"] .huerta-recorrido-punto {
-  background: var(--color-acento);
+  background: var(--color-accion-primaria);
   box-shadow: none;
 }
 
 .huerta-recorrido [data-avance="actual"] .huerta-recorrido-punto {
   background: var(--color-raiz);
-  box-shadow: 0 0 0 0.25rem var(--color-acento-claro);
+  box-shadow: 0 0 0 0.25rem var(--color-salvia);
 }
 
 .huerta-recorrido b {
@@ -1384,7 +1384,7 @@
 
 .huerta-recorrido li > span:last-child {
   grid-row: 4;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 /* --- La raíz de los 5 pasos (guía, D2; C1-20) ---------------------------------------------------

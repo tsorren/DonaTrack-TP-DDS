@@ -77,7 +77,7 @@ Hoja: `static/css/utilidades.css`, capa `utilidades`. Una por token de uso.
 | `data-espacio="0"` a `"5"` | `--espacio-0` a `--espacio-5` | El espacio entre hijos de una pila, un racimo, una barra lateral o una grilla. El `0` es el escalón de 4 px, no la nada |
 | `.texto-chico`, `.texto-base`, `.texto-grande` | `--tamano-chico`, `--tamano-base`, `--tamano-grande` | Cambiar el tamaño del texto de un elemento |
 | `.solo-lectores` (en `app.css`) | — | Un texto que solo leen los lectores de pantalla: el nombre de un control con ícono |
-| `data-tono="suave"`, `"acento"`, `"exito"`, `"aviso"`, `"error"` | `--color-texto-suave`, `--color-acento`, `--color-exito-texto`, `--color-advertencia-texto`, `--color-error-texto` | El color del texto según lo que dice. Siempre con palabras: el color solo no alcanza |
+| `data-tono="suave"`, `"acento"`, `"exito"`, `"aviso"`, `"error"` | `--color-texto-suave`, `--color-accion-primaria`, `--color-exito-texto`, `--color-advertencia-texto`, `--color-error-texto` | El color del texto según lo que dice. Siempre con palabras: el color solo no alcanza |
 | `data-fijo="celular"` (en `app.css`; desde el 2026-11-12, R11-33, lote `p2-armazon`, ficha [`r11-p2-armazon`](flujos/r11-p2-armazon.md)) | `--medida-menu-celular`, `--medida-boton-fijo`, `--capa-fijo-pantalla` | La envoltura del botón principal de un formulario largo cuyo botón está al final (y de su indicador de envío): en el celular queda pegada abajo, encima del menú, sobre papel con el filete arriba, hasta llegar al final del formulario; desde la tableta no arma caja (`display: contents`) y sus hijos quedan como estaban. La envoltura tiene que ser hija del formulario (o de una caja con `display: contents` en el celular) para quedar fija mientras se recorre todo el formulario. No va en inicios ni listados: tapa filas y el paginador. La usan Confirmar recepción y, desde la ola ADM1 (ADM1-11), Registrar donación del admin |
 
 Lo que queda fijo al desplazarse (R11-33, regla general 5; sin clase propia): desde la tableta y
@@ -117,7 +117,7 @@ plantilla. Duraciones, curvas y distancias salen de los tokens `--movimiento-*` 
 |---|---|---|---|
 | `data-movimiento="aparece"` | `duracion-media`, `curva-base` | Un elemento que se muestra con un fundido | No se anima; queda visible |
 | `data-movimiento="sube"` | `duracion-media`, `curva-entrada`, `distancia-media` | Un elemento que se muestra subiendo desde abajo | No se anima; queda visible |
-| `data-movimiento="resalta"` | `duracion-trazo`, `curva-salida`, `--color-destacado` | Marcar un momento un dato que cambió | No se anima; queda sin marca |
+| `data-movimiento="resalta"` | `duracion-trazo`, `curva-salida`, `--color-raiz` | Marcar un momento un dato que cambió | No se anima; queda sin marca |
 | `data-movimiento="crece"` | `duracion-larga`, `curva-entrada` | Un elemento que se muestra creciendo desde un poco más chico | No se anima; queda visible |
 | `data-movimiento="traza"` | `duracion-trazo`, `curva-enfasis` | Dibujar un trazo SVG; el `path` lleva `pathLength="1"` | No se anima; el trazo queda dibujado |
 
@@ -125,8 +125,8 @@ plantilla. Duraciones, curvas y distancias salen de los tokens `--movimiento-*` 
 (`--movimiento-retraso-*`), para armar una coreografía. Los `@keyframes` de estas primitivas se
 llaman `mov-*` y viven solo en `movimiento.css` (el cerco de `InterfazFitnessTest` falla si una
 hoja de la carpeta `css/` que no es `movimiento.css`, `app.css` ni `tokens.css` declara `@keyframes` o
-usa `--movimiento-duracion-*`, `--movimiento-curva-*` o una espera `--movimiento-retraso-*` que no sea
-`retraso-ninguno`).
+usa `--movimiento-duracion-*`, `--movimiento-curva-*` o una espera `--movimiento-retraso-*`; la espera
+de cero, que la regla todavía deja pasar, ya no es un token desde la ola Z).
 
 ### Animaciones con nombre
 
@@ -161,8 +161,8 @@ la declaración queda sin valor y el elemento no se anima. Una animación nueva 
 `mov-crece-alto` (el tronco crece de arriba) y `mov-asiento` (un asiento aparece subiendo) no son
 custom properties: son `@keyframes` para las líneas de tiempo del scroll
 (`animation: mov-asiento linear both` más `animation-timeline` y `animation-range` en la hoja de
-pantalla, que es disposición, o en el bloque que la usa: `mov-asiento` la pide `.libreta`). Esas reglas dejan `animation-delay: var(--movimiento-retraso-ninguno)`
-para anular la espera de la animación del tiempo: es un reset, no una duración.
+pantalla, que es disposición, o en el bloque que la usa: `mov-asiento` la pide `.libreta`). Esas reglas no llevan espera: la animación del tiempo arranca
+cuando el scroll llega a su tramo.
 
 Las duraciones de la guía que no son tokens pasan al token más cercano (C1-03): el giro de 0,9 s a
 `duracion-larga` (0,75 s) y el latido de 1,4 s a `duracion-trazo` (1,1 s). Las esperas de 0,2 s y
@@ -200,16 +200,15 @@ valores de base (`--p-*`) viven en `tokens.css` y en las variantes A/B. La muest
 | Movimiento | `--movimiento-duracion-corta`, `-media` y `-trazo`, `--movimiento-curva-entrada` y `-salida`, `--movimiento-distancia-corta` | Solo para explicar un cambio; el resto, en [Movimiento](#movimiento) |
 | Medidas y capas | `--medida-toque-minimo`, `--medida-texto` y `-texto-chico`, `--medida-pagina`, `--medida-formulario`, `--medida-cajon`, `--medida-menu-celular`, `--medida-quiebre-chico`, `-menu` y `-ancho`; `--capa-fijo-pantalla`, `--capa-menu-celular`, `--capa-encabezado-fijo`, `--capa-saltar` | El toque de 48 px, los anchos, los quiebres y lo que queda encima |
 
-**Los nombres de antes** (DA-14a). Siguen en uso y son alias del token de la guía del mismo valor:
-`--color-papel` (`--color-fondo-pagina`), `--color-tinta-suave` (`--color-texto-suave`),
-`--color-acento` y `--color-titulo` (`--color-accion-primaria`), `--color-acento-hondo`
-(`--color-accion-primaria-activa`), `--color-acento-claro` (`--color-salvia`), `--color-suelo-hondo` y
-`--color-sombra-grano` (`--color-tinta`), `--color-sombra` (`--color-hoja`) y `--color-destacado`
-(`--color-raiz`). Una hoja nueva usa el nombre de la guía. Quedan también, sin cambios, los tokens de
-antes que la guía no trae: el resto del movimiento, `--medida-boton-fijo`, `--medida-cabecera-fija`,
-`--medida-filtros-fijos`, `--capa-filtros-fijos`, `--capa-carga`, `--tamano-bajada-portada`,
-`--fuente-cifra` y los que solo nombra la lista de pares de `InterfazFitnessTest` (su retiro es DA-14b,
-en la ola Z). `--medida-quiebre-medio` (53,75 em) también queda: ningún `var()` lo nombra, pero las
+**Los nombres de antes** (DA-14a y DA-14b). Los nombres de color de antes de la guía se retiraron en
+la ola Z (DA-14b): cada hoja usa el token de la guía del mismo valor, así ningún color cambió. Los que
+quedaron en su lugar son `--color-fondo-pagina`, `--color-texto-suave`, `--color-accion-primaria`,
+`--color-accion-primaria-activa`, `--color-salvia`, `--color-tinta`, `--color-hoja` y `--color-raiz`.
+En la misma ola salieron los tokens que solo nombraba la lista de pares de `InterfazFitnessTest` y dos
+animaciones de `movimiento.css` que nadie usaba. Quedan, sin cambios, los tokens de antes que la guía
+no trae: el resto del movimiento, `--medida-boton-fijo`, `--medida-cabecera-fija`,
+`--medida-filtros-fijos`, `--capa-filtros-fijos`, `--capa-carga`, `--tamano-bajada-portada` y
+`--fuente-cifra`. `--medida-quiebre-medio` (53,75 em) también queda: ningún `var()` lo nombra, pero las
 media queries escriben su valor y solo valen los quiebres declarados en `tokens.css`. Se retiraron
 `--color-nodo`, `--color-estrato` y `--medida-estrato`, que nadie usaba.
 
@@ -330,7 +329,7 @@ Fragmentos que arman su forma solo con piezas de este catálogo. No suman clases
 
 | Pieza | Fragmento | Parámetros | Cómo se arma | Cuándo se usa | Equivalente |
 |---|---|---|---|---|---|
-| Paginador provisorio (desde el 2026-11-11, R11-01; lotes `p0-admin-listados` y `p0-persona`). **Reemplazado por `.paginas`** el 2026-11-12 (R11-11) | `paginador :: paginador(p)` (`templates/paginador.html`) | El mismo `p` de `.paginas` | Solo un pase: dibuja `componentes/paginas :: paginas(p)`, para que las listas del admin que lo nombran cambien sin tocar sus plantillas. Las plantillas nuevas usan `.paginas` directamente; se borra cuando ninguna lo nombre | Ninguna desde la oleada ADM2 (2026-11-25): se puede borrar en Z ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 2) | Material: Data tables (paginación) |
+| Paginador provisorio (desde el 2026-11-11, R11-01; lotes `p0-admin-listados` y `p0-persona`). **Reemplazado por `.paginas`** el 2026-11-12 (R11-11) | `paginador :: paginador(p)` (`templates/paginador.html`) | El mismo `p` de `.paginas` | Solo un pase: dibuja `componentes/paginas :: paginas(p)`, para que las listas del admin que lo nombran cambien sin tocar sus plantillas. Las plantillas nuevas usan `.paginas` directamente; se borra cuando ninguna lo nombre | Ninguna desde la oleada ADM2 (2026-11-25): se puede borrar en Z ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 2). **Actualización (2026-11-25):** borrado en la ola Z (Z-09, `3ed0130d0`); esta fila queda como registro | Material: Data tables (paginación) |
 
 ## Alpine (D31)
 

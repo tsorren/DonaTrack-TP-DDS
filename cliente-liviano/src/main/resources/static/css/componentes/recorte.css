@@ -31,7 +31,7 @@
   display: inline-flex;
   align-items: center;
   min-height: var(--medida-toque-minimo);
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font-size: var(--tamano-chico);
   font-weight: 700;
   text-decoration: underline;

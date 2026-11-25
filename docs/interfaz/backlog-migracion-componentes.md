@@ -243,11 +243,43 @@ a un token. Orden acordado con el usuario: la portada en 3 subtandas y después 
 | ID | Hoja | Líneas (2026-11-05) | Estado |
 |---|---|:-:|---|
 | B3-01 | `publico-portada.css` | 146 (1.590 antes de la subtanda 1; 1.446 y 695 después de la 1 y la 2) | Hecho (2026-11-05), en 3 subtandas; la hoja salió de `HOJAS_HEREDADAS` |
-| B3-02 | `entidad-necesidades.css` | 575 | Pendiente |
-| B3-03 | `privado.css` | 239 | Pendiente |
-| B3-04 | `entidad-seguimiento-confirmar.css` | 387 | Pendiente |
-| B3-05 | `publico-registro.css` | 453 | Pendiente |
-| B3-06 | Las 23 hojas restantes (con `app.css`, sin `tokens.css` ni las de la capa CUBE) | 4.070 en total | Pendiente |
+| B3-02 | `entidad-necesidades.css` | 575 | Fuera de `HOJAS_HEREDADAS` (2026-11-25): la reescribió la ola ORG de la guía (ORG-04 y ORG-05, `279ce7cef` a `79b9e3f74`) y salió de la lista en la ola Z (`3ed0130d0`), porque el cerco ya la acepta como hoja que solo dispone. Tiene 278 líneas |
+| B3-03 | `privado.css` | 239 | Pendiente: sigue en `HOJAS_HEREDADAS`. La ola C1 le sacó la campana (`41bc195b8`) |
+| B3-04 | `entidad-seguimiento-confirmar.css` | 387 | Fuera de `HOJAS_HEREDADAS` (2026-11-25): la reescribió la ola ORG (`ea633995f` y `29123f4da`) y salió de la lista en la ola Z (`3ed0130d0`). Tiene 88 líneas |
+| B3-05 | `publico-registro.css` | 453 | Pendiente: sigue en `HOJAS_HEREDADAS` |
+| B3-06 | Las 23 hojas restantes (con `app.css`, sin `tokens.css` ni las de la capa CUBE) | 4.070 en total | Parcial (2026-11-25): ver la nota de abajo. Siguen en `HOJAS_HEREDADAS` seis: `admin-inicio.css`, `donante-comun.css`, `entidad-comun.css`, `formularios.css`, `publico-mapa.css` y `sellos.css` |
+
+> Las olas de la guía «Huerta y galpón», 2026-11-22 a 2026-11-25 (una rama
+> `E7_guia_ui_<ola>` por ola, integrada en `E7_guia_ui`; [backlog de la guía](backlog-guia-al-codigo.md)).
+> Actualización del 2026-11-25, en la ola Z (lote `z-docs`).
+> Las olas reescribieron las hojas de sus pantallas con las piezas del catálogo. Una hoja sale de
+> `HOJAS_HEREDADAS` cuando el cerco la acepta como hoja que solo dispone
+> (`hojasDePantallaNuevasSoloDisponen`), aunque la migración de su fase no esté terminada.
+> El cerco no mira `fill` ni `stroke` (`DE_PANTALLA_PROHIBIDO`;
+> [DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 3). `[OBSERVED]` en `InterfazFitnessTest` y en
+> `git log` de la rama:
+>
+> - **Se borraron, y la que estaba en la lista salió con ella.**
+>   - ORG: `entidad-notificaciones.css` (`d9e8b73d7`). También `entidad-recibidas.css` (`e7c9d1327`), que quedó
+>     nombrada en la lista hasta Z (`3ed0130d0`). Y `entidad-seguimiento-problema.css` (`ea633995f`), que
+>     nunca estuvo en la lista.
+>   - DON: `donante-seguimiento.css` (`39efd6083`), `donante-notificaciones.css` (`ae68989d2`) y las
+>     variantes `variantes/misiones-a.css` y `-b.css` (`79b073dfb`).
+> - **Salieron de la lista en su ola, sin borrarse:**
+>   - DON: `donante-donaciones.css` (`53712e382`) y `donante-donaciones-detalle.css` (`39efd6083`).
+>   - PUB1: `publico-donaciones.css` (`8cfbaab5d`).
+> - **Salieron de la lista en Z (`3ed0130d0`), reescritas en las olas de su pantalla:**
+>   - ORG: `entidad-inicio.css`, `entidad-necesidades.css` (B3-02) y `entidad-seguimiento-confirmar.css`
+>     (B3-04).
+>   - DON: `donante-inicio.css`, `donante-perfil.css` y `donante-entidades.css`.
+>   - PUB1 y PUB2: `publico-entidades.css`, `publico-ingresar.css`, `publico-listas.css` y
+>     `publico-paginas.css`. También `publico-navegacion.css`, tocada también por C1.
+> - **Siguen en la lista:** son 8 hojas. `privado.css` (B3-03) y `publico-registro.css` (B3-05), más las
+>   seis de B3-06. Su migración queda pendiente: Z solo sacó de la lista las que el cerco ya acepta
+>   ([backlog de la guía](backlog-guia-al-codigo.md), §17.5).
+> - **Los topes.** Ninguna ola movió `TOPE_DE_CLASES_DE_UN_SOLO_USO` hasta Z, que lo bajó de 159 a 37.
+>   También bajó `TOPE_DE_MEDIDAS_LITERALES` de 1192 a 532. Z borró además `templates/paginador.html`,
+>   que ya no nombraba nada (`3ed0130d0`).
 
 ## Registro de avance
 
@@ -264,3 +296,7 @@ a un token. Orden acordado con el usuario: la portada en 3 subtandas y después 
 | 2026-11-05 | B3-01, subtanda 1 (la portada: lámina, diálogo de la foto, avisos, botones propios y tamaño del título) | 171 (medido después del cambio; era 172) | 7c07ca8b (rama `E6_raices`) |
 | 2026-11-05 | B3-01, subtanda 2 (la portada: pasos, planta, rama de frutos y libreta del mes, bloques nuevos) | 163 (medido después del cambio; era 171) | 954dd1cd (rama `E6_raices`) |
 | 2026-11-05 | B3-01, subtanda 3 (la portada: tierra, red y pausa como bloques; la hoja solo dispone) | 159 (medido después del cambio; era 163) | 81d9fb4d (rama `E6_raices`) |
+| 2026-11-23 | Ola ORG de la guía: se borran `entidad-notificaciones.css`, que sale de `HOJAS_HEREDADAS`, `entidad-recibidas.css` y `entidad-seguimiento-problema.css` | 159 (no cambia) | d9e8b73d7, e7c9d1327 y ea633995f (rama `E7_guia_ui`) |
+| 2026-11-24 | Ola DON de la guía: salen de la lista `donante-donaciones.css` y `donante-donaciones-detalle.css`. Se borran `donante-seguimiento.css` y `donante-notificaciones.css`, que salen de la lista, y las variantes de Misiones | 159 (no cambia) | 53712e382, 39efd6083, ae68989d2 y 79b073dfb (rama `E7_guia_ui`) |
+| 2026-11-24 | Ola PUB1 de la guía: sale de la lista `publico-donaciones.css` | 159 (no cambia) | 8cfbaab5d (rama `E7_guia_ui`) |
+| 2026-11-25 | Ola Z de la guía: B3-02 y B3-04 fuera de la lista. Salen 12 hojas de `HOJAS_HEREDADAS`, que pasa de 20 a 8: `entidad-recibidas.css`, que ya no existía, y 11 que el cerco acepta. Se borra `templates/paginador.html`. B3-06, parcial | 37 (medido después del cambio; era 159). `TOPE_DE_MEDIDAS_LITERALES`: 532 (era 1192) | 3ed0130d0 (rama `E7_guia_ui_z`) |

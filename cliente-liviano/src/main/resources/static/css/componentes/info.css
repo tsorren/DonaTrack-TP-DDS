@@ -33,12 +33,12 @@
 }
 
 .info-letra {
-  fill: var(--color-papel);
+  fill: var(--color-fondo-pagina);
 }
 
 .info-boton:hover .info-circulo,
 .info:has(.info-globo:popover-open) .info-circulo {
-  fill: var(--color-acento);
+  fill: var(--color-accion-primaria);
 }
 
 .info-boton:focus-visible {
@@ -54,7 +54,7 @@
   border-radius: var(--radio-lamina);
   background: var(--color-superficie);
   box-shadow: var(--sombra-papel);
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.95rem;
   line-height: 1.45;
   text-align: start;

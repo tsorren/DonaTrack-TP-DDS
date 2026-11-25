@@ -54,7 +54,7 @@
 
   [data-pantalla="entidades"] .maestro-ficha [data-parte="resumen"] > dl {
     padding-inline: var(--espacio-2) 0;
-    border-inline-start: 0.25rem solid var(--color-acento-claro);
+    border-inline-start: 0.25rem solid var(--color-salvia);
     border-inline-end: 0;
   }
 }

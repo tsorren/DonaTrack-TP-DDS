@@ -289,17 +289,17 @@
             </ul>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('Color: los nombres de antes', 'Siguen andando con el mismo color: cada uno es otro nombre del token de la guía. Una hoja nueva usa el nombre de la guía.', ~{::tokens-color-los-nombres-de-antes})}">
+        <div th:replace="~{componentes/muestra :: muestra('Color: los nombres de antes', 'Los nombres de color de antes se retiraron en la ola Z (DA-14b): cada hoja usa el nombre de la guía del mismo color. Estos son los que quedaron en su lugar.', ~{::tokens-color-los-nombres-de-antes})}">
           <th:block th:fragment="tokens-color-los-nombres-de-antes">
             <ul class="muestra-tokens" role="list" data-tipo="valor">
-              <li><code>--color-papel</code> es <code>--color-fondo-pagina</code></li>
-              <li><code>--color-tinta-suave</code> es <code>--color-texto-suave</code></li>
-              <li><code>--color-acento</code> y <code>--color-titulo</code> son <code>--color-accion-primaria</code></li>
-              <li><code>--color-acento-hondo</code> es <code>--color-accion-primaria-activa</code></li>
-              <li><code>--color-acento-claro</code> es <code>--color-salvia</code></li>
-              <li><code>--color-suelo-hondo</code> y <code>--color-sombra-grano</code> son <code>--color-tinta</code></li>
-              <li><code>--color-sombra</code> es <code>--color-hoja</code></li>
-              <li><code>--color-destacado</code> es <code>--color-raiz</code></li>
+              <li><code>--color-fondo-pagina</code></li>
+              <li><code>--color-texto-suave</code></li>
+              <li><code>--color-accion-primaria</code></li>
+              <li><code>--color-accion-primaria-activa</code></li>
+              <li><code>--color-salvia</code></li>
+              <li><code>--color-tinta</code></li>
+              <li><code>--color-hoja</code></li>
+              <li><code>--color-raiz</code></li>
             </ul>
           </th:block>
         </div>

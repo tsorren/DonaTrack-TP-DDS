@@ -137,7 +137,6 @@
   --p-tiempo-3: 0.75s;
   --p-tiempo-4: 1.1s;
   --p-tiempo-5: 24s;
-  --p-espera-0: 0s;
   --p-espera-1: 0.3s;
   --p-espera-2: 0.9s;
   --p-espera-3: 1.3s;
@@ -171,16 +170,6 @@
   --fuente-titulo: var(--p-letra-titulo);
   --fuente-texto: var(--p-letra-texto);
   --fuente-cifra: var(--p-letra-texto);
-  /* Los nombres de color de antes de la guía «Huerta y galpón» que siguen en uso (DA-14a, C0-03):
-     cada uno es un alias del token de la guía del mismo valor, así ningún color cambia. Una hoja
-     nueva usa el nombre de la guía. */
-  --color-papel: var(--color-fondo-pagina);
-  --color-tinta-suave: var(--color-texto-suave);
-  --color-acento: var(--color-accion-primaria);
-  --color-acento-hondo: var(--color-accion-primaria-activa);
-  --color-acento-claro: var(--color-salvia);
-  --color-suelo-hondo: var(--color-tinta);
-  --color-destacado: var(--color-raiz);
   --color-tinta: var(--p-tinta);
   --color-tallo: var(--p-tallo);
   --color-hoja: var(--p-hoja);
@@ -210,7 +199,6 @@
   --color-espera-texto: var(--p-papel);
   /* Los que piden los pares de contraste AA, del sitio. */
   --color-fondo-pagina: var(--p-papel);
-  --color-fondo: var(--p-papel);
   --color-superficie: var(--p-claro);
   --color-filete: var(--p-filete);
   --color-campo: var(--p-campo);
@@ -218,7 +206,6 @@
   --color-velo: var(--p-velo);
   --color-texto: var(--p-tinta);
   --color-texto-suave: var(--p-tinta-suave);
-  --color-titulo: var(--color-accion-primaria);
   /* El enlace, el botón secundario y el foco, con los valores de la guía (C0-02): el enlace en el
      verde hondo, el secundario en papel claro (salvia con el cursor) y el foco en tinta, con un
      separador de papel; sobre la tierra, el foco va en paja. */
@@ -229,15 +216,6 @@
   --color-texto-sobre-secundaria: var(--p-tinta);
   --color-accion-secundaria: var(--p-claro);
   --color-accion-secundaria-activa: var(--p-acento-claro);
-  --color-destacado-texto: var(--p-texto-suelo);
-  --color-destacado-texto-suave: var(--p-raiz);
-  --color-destacado-fondo: var(--p-suelo);
-  --color-destacado-fondo-alto: var(--p-suelo-medio);
-  --color-marca-brillante: var(--p-raiz);
-  --color-marca-alterna: var(--p-acento-hondo);
-  --color-marca: var(--p-acento);
-  --color-marca-texto: var(--p-acento);
-  --color-texto-sobre-error: var(--p-papel);
   --color-error-texto: var(--p-problema-texto);
   --color-error-fondo: var(--p-problema-fondo);
   --color-error-borde: var(--p-problema-texto);
@@ -270,9 +248,6 @@
   --radio-campo: 0.625rem;
   --radio-estampa: 0.1875rem;
   --radio-pastilla: 62rem;
-  /* Alias de la guía (DA-14a): la sombra plana, en hoja; la granulada, en tinta. */
-  --color-sombra: var(--color-hoja);
-  --color-sombra-grano: var(--color-tinta);
   /* Los bordes de la guía (C0-02). */
   --borde-fino: 1px solid var(--color-filete);
   --borde-control: 1.5px solid var(--color-borde-control);
@@ -294,7 +269,6 @@
   --movimiento-duracion-larga: var(--p-tiempo-3);
   --movimiento-duracion-trazo: var(--p-tiempo-4);
   --movimiento-duracion-ambiente: var(--p-tiempo-5);
-  --movimiento-retraso-ninguno: var(--p-espera-0);
   --movimiento-retraso-entrada: var(--p-espera-1);
   --movimiento-retraso-trazo: var(--p-espera-2);
   --movimiento-retraso-sello: var(--p-espera-3);

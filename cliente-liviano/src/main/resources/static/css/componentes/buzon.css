@@ -30,7 +30,7 @@
   padding: var(--espacio-1) var(--espacio-3);
   border-bottom: var(--borde-fino);
   border-radius: var(--radio-lamina) var(--radio-lamina) 0 0;
-  background: var(--color-papel);
+  background: var(--color-fondo-pagina);
 }
 
 /* «Seleccionar todas»: la casilla dibujada al lado del texto (abajo, con la de cada fila). */
