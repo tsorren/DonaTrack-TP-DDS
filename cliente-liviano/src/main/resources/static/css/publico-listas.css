@@ -4,15 +4,6 @@
    listado es el del catálogo. */
 @import url("publico-paginas.css");
 
-.publica {
-  display: grid;
-  gap: 1.5rem;
-}
-
-.publica :is(.banner, .vacio, [role="status"]) {
-  margin: 0;
-}
-
 /* --- Las salidas, lo que carga, los botones y la foto ------------------------------------------ */
 
 .salidas {
@@ -38,10 +29,4 @@
 /* El lugar de lo que todavía carga, en las páginas públicas: más alto que el esqueleto base. */
 .esqueleto {
   min-height: 12rem;
-}
-
-@media (min-width: 53.75em) {
-  .publica {
-    gap: 2rem;
-  }
 }

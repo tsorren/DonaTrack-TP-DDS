@@ -15,7 +15,6 @@ categoria-icono
 clave-fila
 confirmar
 contacto
-cuenta
 donaron
 entregas
 estacion-numero
@@ -23,7 +22,6 @@ fideos
 formulario
 iconos
 lectura
-lectura-bajada
 legales
 marca
 mesa
@@ -48,13 +46,11 @@ periodos
 periodos--lista
 periodos-anteriores
 periodos-desde
-publica
 publicar
 raices-cabecera
 raices-pie
 raices-privado
 raices-publico
-recibido
 resumen
 rotulo
 salidas

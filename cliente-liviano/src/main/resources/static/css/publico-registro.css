@@ -3,10 +3,6 @@
    de la organización, con su solicitud (PUB2-04 a PUB2-07), ya usan solo piezas del catálogo. */
 @import url("publico-listas.css");
 
-.cuenta .formulario {
-  margin-top: 0;
-}
-
 /* La solicitud enviada (PUB2-07): la columna de A12, del ancho del formulario, como Ingresar. */
 main > .pila {
   max-width: var(--medida-formulario);
