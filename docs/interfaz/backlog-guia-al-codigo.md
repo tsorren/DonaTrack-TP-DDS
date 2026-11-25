@@ -84,6 +84,8 @@ no respondió, con la misma regla y la misma nota. DA-28 a DA-31 son las pregunt
 de la ola ([Ranking](flujos/guia-adm-ranking.md) y [los gráficos del inicio](flujos/guia-adm-inicio-graficos.md)).
 Manifiesto de PUB2 (2026-11-24, misma corrida): DA-32 es una decisión nueva que el usuario no
 respondió, con la misma regla y la misma nota.
+Manifiesto de ADM2 (2026-11-25, misma corrida): DA-33 a DA-35 son decisiones nuevas que el usuario
+no respondió, con la misma regla y la misma nota.
 
 | ID | Pregunta | Recomendación | Respuesta del usuario | Fecha | Ola |
 |---|---|---|---|---|---|
@@ -118,6 +120,9 @@ respondió, con la misma regla y la misma nota.
 | DA-30 | Los gráficos del inicio (ficha): «Mes a mes» y «Por categoría», ¿se quedan como parte de la pantalla o pasan al catálogo? | Se quedan como parte de `admin-inicio`, en `admin-inicio.css`, debajo del resumen y con su tabla al lado (debajo en el celular), como hoy. Sus reglas dejan los nombres de antes de la guía (`--color-acento`, `--color-acento-claro`, `--color-tinta-suave`) por los de la guía con el mismo valor (DA-14a), así no cambia ningún píxel y Z puede retirar esos alias. Descartada: una pieza nueva del catálogo con su muestra en `/estilos` (la usa una sola pantalla y pediría un lote de catálogo en la tanda 1) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | ADM1 |
 | DA-31 | Ranking (ficha): ¿cómo se elige el mes? | Como hoy: la pastilla «Mes» de `componentes/filtros`, «Volver al último mes» y el paginador de meses (R11-23 y R11-43). Descartada: pestañas por mes (A03 usa pestañas para lo que hay por decidir, y doce meses no entran a 360 px) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | ADM1 |
 | DA-32 | Las respuestas de la cuenta: con DA-06 (página propia solo al confirmar una recepción), ¿cómo responden Recuperar la contraseña, Pedir el enlace de activación y Activar la cuenta? ¿Y «Solicitud enviada», de la organización? | Recuperar (`/publico-recuperar-enviado`) y Pedir el enlace (`/publico-activar-pedido`) muestran su misma pantalla con el aviso en la página del catálogo (`.aviso` con `data-tipo="exito"`, P13) en el lugar del formulario, como hoy, sin página propia. Activar (`/publico-activar-lista`) muestra la pantalla de Activar con ese aviso, «Tu cuenta está lista», y una sola acción llena, Ingresar. Las tres rutas siguen y ninguna lleva el sello de recibido dibujado a mano (`.recibido`). «Solicitud enviada» (`/publico-registro-entidad-enviada`) no es una respuesta: es la página de estado de la solicitud, a la que se vuelve con «Ver mi solicitud» (R11-41). Se queda como pantalla, con sus escenarios, y «Solicitud recibida» pasa al mismo aviso en la página. Descartadas: el aviso breve que se va solo, como Contacto (DA-24), porque el aviso dice qué hacer después («Revisá tu bandeja de entrada») y, cuando se va, queda el formulario vacío y la persona vuelve a pedir el enlace; llevar Activar a Ingresar con un aviso breve (edita `publico-ingresar.html`, una pantalla de PUB1); pasar «Solicitud enviada» a un aviso breve (rompe «Ver mi solicitud» y los escenarios de R11-41) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-24 | PUB2 |
+| DA-33 | Registrar donante: con DA-06, «registrado» pasa a aviso breve en Donantes. La página de hoy ofrece «Registrar su donación» (RF-15, «en un mismo flujo»), y el puerto no dice quién quedó registrado (`AdminPersonasPuerto.registrarDonante` devuelve `void`). ¿Dónde queda esa salida? | La respuesta es el aviso breve en Donantes, con el texto de hoy («Registraste a Ana Ejemplo como donante.» y, con `?escenario=ya-era`, «Ana Ejemplo ya era donante. No cambiamos nada.»), como ya hace el envío real (`AdminDonantesEnvioController.registrar` termina en `/admin-donantes` con el aviso). Registrar su donación sigue desde la ficha del donante en la lista, que ya tiene «Registrar una donación». En la maqueta, `/admin-donantes-registrado` sigue y muestra Donantes con el aviso. El paso de más (buscar al donante en la lista) se anota como deuda. Descartadas: conservar la página con sus dos acciones (contradice DA-06, y el envío real ya no la muestra); un enlace dentro del aviso breve (el aviso breve no pide nada, P13, y el envío real no sabe la clave del donante nuevo sin cambiar el puerto) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-25 | ADM2 |
+| DA-34 | Donantes y Organizaciones son hoy una bandeja con ficha (`.maestro` y `.maestro-ficha`, R11-34), y ADM1 pasó Donaciones a la `.tabla` del catálogo con cada fila a su detalle (decisión del agente, [DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 5). ¿Donantes y Organizaciones siguen como bandeja con ficha o pasan a tabla? | Siguen como bandeja con ficha, que es una pieza del catálogo, en el galpón: la ficha es donde se decide una solicitud (Aprobar, Pedir corrección y Rechazar) y donde sigue el donante (sus donaciones y «Registrar una donación»), y `?donante=` y `?entidad=` siguen siendo la dirección de cada ficha. Descartada: la tabla con una página de detalle por fila, como Donaciones (pide rutas nuevas, lleva las acciones de una solicitud a otra pantalla y obliga a cambiar los enlaces que llegan a cada ficha) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-25 | ADM2 |
+| DA-35 | Administradores: con DA-06, ¿«Contraseña provisoria» (`/admin-administradores-alta`), lo que ve el admin después de dar de alta a otro, pasa a aviso breve? | No: se queda como página propia, como en su ficha ([`flujos/r11-p1-admins.md`](flujos/r11-p1-admins.md) §4.4). No es solo una respuesta: muestra una contraseña que se ve una sola vez (la página va con `Cache-Control: no-store` y recargarla lleva a Administradores) y hay que anotarla con calma. Va en el galpón con la composición de A12 y una sola acción llena, «Volver a Administradores». `/admin-administradores-nuevo`, el formulario del alta sin JavaScript, sigue como página aparte: es un estado del formulario. Descartada: el aviso breve (se va solo y la contraseña no se vuelve a mostrar) | Sin respuesta del usuario: la recomendada, delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md) | 2026-11-25 | ADM2 |
 | G0 | Con la medida de C0 (§3.4): ¿el plan sigue con todo el sitio o se recorta al recorrido de la demo? | Recorte al recorrido de la demo (ORG, DON y PUB1), con ADM1 por decidir en G1 | Todo el sitio («Quiero todo el sitio», ronda 3). Quedan 8 corridas: C1, ORG, DON, PUB1, ADM1, PUB2, ADM2 y Z | 2026-11-22 | Todas |
 | G1 | Con la hoja de G1 (16 pantallas de hoy, §10.3): ¿cada área se puede mostrar así? | Ninguna: lo decide el usuario mirando la hoja | Las cuatro áreas se pueden mostrar así («Las 4 se muestran»). G2 permite que un área entre a medias. Es una excepción a la regla del piso del plan (§10: un área con una pantalla sin rehacer que falla el piso queda en «no»): las 11 rutas en rojo de la línea de base (§10.4), que tocan las cuatro áreas, fallan solo por toque, no por contraste. El usuario la mantuvo al conocer la regla («Mantener, excepción») | 2026-11-23 | Todas |
 | DA-17 | ¿El menú de cada rol cambia en la ola de ese rol, y no todos juntos en C1? | Sí: si una ola no llega, su área queda con el menú de hoy | Sí («Todas las recomendadas», ronda 3) | 2026-11-22 | PUB1, DON, ORG y ADM1 |
@@ -1302,3 +1307,134 @@ límite de las hojas compartidas de §15.2.
   es bloqueante. No se levantan el stack ni el recorrido con login: los hace Z, y ningún lote cambia
   un adaptador `rest` (plan de la corrida, punto 5). `IngresoConKeycloakRealTest` necesita el
   stack y corre en Z.
+
+## 16. Ola ADM2: el admin, las personas y la cuenta
+
+Rehace las 22 plantillas de ADM2 de §5: Donantes y sus importaciones, Organizaciones, los dos
+registros, Administradores y Actividad, Mi perfil y las Novedades del admin. No lleva fichas: todas
+derivan de A03 o de A12 (DA-08), salvo el buzón, que sigue la suya de ORG
+([`flujos/guia-org-buzon.md`](flujos/guia-org-buzon.md)). Ningún menú cambia: el del admin cambió
+en ADM1 (DA-17). Manifiesto:
+[`backlog-guia-al-codigo.adm2.manifiesto.json`](backlog-guia-al-codigo.adm2.manifiesto.json). Se
+escribió el 2026-11-25 en la corrida desatendida, mientras corría PUB2: el reparto y DA-33 a DA-35
+no los aprobó el usuario y van con la opción recomendada (§2.2). Se lanza desde la `E7_guia_ui` que
+deje PUB2. ADM2 no comparte pantallas con PUB2. Con ADM1 comparte `admin-secciones.css`,
+`admin-inicio.css` y `AdminPersonasMaqueta.java`, y de ellos cada lote toca solo lo de sus
+pantallas (regla 4).
+
+### 16.1 Decisiones de la ola
+
+| ID | Qué decide | Lote |
+|---|---|---|
+| DA-34 | Donantes y Organizaciones siguen como bandeja con ficha (`.maestro`), en el galpón | `adm2-donantes` y `adm2-organizaciones` |
+| DA-35 | La contraseña provisoria se queda como página propia; el alta sin JavaScript, como su página aparte | `adm2-administradores` |
+| DA-06 y DA-33 | «Registrado» pasa a aviso breve en Donantes; registrar su donación sigue desde la ficha del donante | `adm2-registrar-donante` |
+| DA-06 | «Registrada» pasa a aviso breve en Organizaciones | `adm2-registrar-organizacion` |
+
+DA-33 a DA-35 son nuevas de esta ola; su opción descartada está en §2.2. DA-08 (sin fichas),
+DA-17 (ningún menú cambia) y DA-21 (la casilla del buzón, que ORG-02 ya dejó en 48 × 48 px) son
+reglas del manifiesto (1 y 3) o trabajo ya hecho, no decisiones de un lote.
+
+### 16.2 Reparto
+
+Dos tandas, como en ADM1: la primera trae las listas y la cuenta; la segunda, los dos registros.
+
+- `adm2-registrar-donante` va en la tanda 2 porque toca `AdminDonantesEnvioController.java` y, si
+  hace falta, `AdminDonantesController.java`, que en la tanda 1 toca `adm2-donantes`, y porque
+  «registrado» muestra Donantes con el aviso breve (DA-06 y DA-33), con los fragmentos que rehace
+  ese lote.
+- `adm2-registrar-organizacion` va en la tanda 2 por lo mismo con Organizaciones:
+  `AdminEntidadesEnvioController.java` y `AdminEntidadesController.java` son de
+  `adm2-organizaciones` en la tanda 1, y «registrada» muestra su lista.
+- Mi perfil va con Administradores porque comparten `AdministradoresConIngresoTest`,
+  `PortadaConSesionMaquetaTest` y el caso
+  `SitioControllerTest.lasPantallasDeAdministracionMuestranSusEstadosEnLaMaqueta`.
+- Importaciones va con Donantes porque es su pestaña: `admin-importaciones.html` define el
+  fragmento `pestanas` que usa `admin-donantes.html`. Por lo mismo, Actividad va con
+  Administradores (`admin-actividad :: pestanas`).
+
+| Lote | Tanda | Plantillas | Arquetipo y decisiones | Ficha |
+|---|:-:|---|---|---|
+| `adm2-donantes` | 1 | `admin-donantes`, `-importando`, `-importado`, `-importar-error` y `admin-importaciones` | Deriva de A03; DA-34 | No |
+| `adm2-organizaciones` | 1 | `admin-entidades`, `-aprobada`, `-correccion` y `-rechazada` | Deriva de A03; DA-34 y DA-06 (las respuestas, ya aviso breve) | No |
+| `adm2-administradores` | 1 | `admin-administradores`, `-nuevo`, `-alta`, `admin-actividad` y `admin-perfil` | Deriva de A03; `-nuevo`, `-alta` y Mi perfil, de A12; DA-35 | No |
+| `adm2-novedades` | 1 | `admin-notificaciones` y `-leidas` | Sin arquetipo: el buzón, con la ficha de ORG; DA-06 | No |
+| `adm2-registrar-donante` | 2 | `admin-donantes-registrar`, `-registrado` y `-registrar-error` | Deriva de A12, en el galpón; DA-06 y DA-33 | No |
+| `adm2-registrar-organizacion` | 2 | `admin-entidades-registrar`, `-registrada` y `-registrar-error` | Deriva de A12, en el galpón; DA-06 | No |
+
+Suma: 5 + 4 + 5 + 2 + 3 + 3 = 22, las 22 de §5.
+
+**Plantillas y hojas del área que no son pantallas de ADM2:**
+
+| Plantilla u hoja | En ADM2 |
+|---|---|
+| `admin-secciones.css` | Compartida con ADM1: es la hoja de todas las pantallas del admin salvo el inicio. Cada lote saca solo las reglas que usan nada más que sus pantallas (las de `[data-pantalla="donantes"]` o `#solicitudes`, por ejemplo); las de `.tabla` y las de ADM1 se quedan. No se borra |
+| `admin-inicio.css` | Compartida: la importa `admin-secciones.css`. Arriba tiene `.mesa` y `.mesa-cabecera`, que usan solo plantillas de ADM2; las borra el integrador de la tanda (abajo). Los gráficos del inicio se quedan (DA-30) y la hoja no sale de `HOJAS_HEREDADAS` en esta ola |
+| `admin-donaciones.html` | Fuera: es de ADM1. Su fragmento `hecho(texto)`, el aviso breve con signo, se usa sin editarlo |
+| Las 18 pantallas de ADM1 (`admin-inicio`, `admin-asignaciones*`, `admin-donaciones*`, `admin-camiones*` y `admin-ranking`) | Fuera: no se editan |
+| `layout-privado.html`, `cuenta-menu.html`, `Pantallas.java` y `maqueta/CuentaDeEjemplo.java` | Fuera: el armazón y el menú del admin son de ADM1 (DA-17) |
+| `componentes/buzon.html` y `static/css/componentes/buzon.css` | Fuera: son del catálogo; ORG llevó al admin la fila de la campana y la casilla de 48 px (ORG-01 y ORG-02). `adm2-novedades` cambia solo la pantalla |
+| El resto de `componentes/` y `static/css/componentes/` (`maestro`, `listado`, `segmentos`, `tabla`, `datos`, `migas` y `paginas`), `static/js/` (`copiar.js` incluido), `iconos.html` y `estilos.html` | Fuera: son del catálogo; se usan sin editarlos. ADM2 no suma ni cambia piezas, así que no tiene muestra que tocar |
+| `docs/interfaz/componentes.md` | Solo `adm2-novedades`, y solo la frase de la fila `.buzon` que dice que los estados del admin llegan con ADM2 |
+| `paginador.html` | Fuera: es común. Hoy lo usan solo plantillas de ADM2; las listas de ADM2 pasan a `componentes/paginas :: paginas`, y si queda sin uso se anota para Z |
+| `envio.html`, `interaccion.html`, `cerrar-sesion.html` y `pie.html` | Fuera: son comunes a los cuatro roles; no se editan |
+| `persona/datos-persona.html`, `datos-donante.html`, `viaje-datos.html`, `piezas-entidad.html` y `datos-publicos.html` | Fuera: no son pantallas, son datos de ejemplo y piezas de DON, ORG y lo público (§5); no se editan |
+| `entidad-comun.css` | Fuera: la importa `admin-inicio.css` y es de ORG; no se edita |
+| `maqueta/AdminPersonasMaqueta.java` | Compartida con ADM1 (el inicio): cada lote, solo los datos de sus pantallas |
+
+**Las clases heredadas que comparten varios lotes.** `[OBSERVED]` `mesa` la usan 13 plantillas
+de ADM2 y `mesa-cabecera` 12, de los seis lotes, y ninguna de fuera de la ola. Con la composición de
+la regla 1 salen de todas, pero ningún lote puede borrar su línea de `clases-heredadas.txt` en su
+rama, porque la plantilla de otro lote todavía las usa. Si al integrar una tanda quedan sin uso,
+`InterfazFitnessTest.clasesDeLasPlantillasEstanEnElCatalogoOEnLasHeredadas` da rojo. Es un choque
+entre lotes y lo arregla el integrador de la tanda (su paso 4): borra las dos líneas y las reglas
+que quedan sin uso con ellas (`.mesa` y `.mesa-cabecera` en `admin-inicio.css`, y las de `.mesa` en
+`admin-secciones.css`). Lo dice la regla 4.
+
+### 16.3 Ítems
+
+| ID | Lote | Qué | Arquetipo y decisiones | Estado |
+|---|---|---|---|---|
+| ADM2-01 | `adm2-donantes` | Donantes en el galpón: la cabecera con la cifra y su fecha, «Registrar donante» como única acción llena e «Importar CSV»; la franja de la importación de la sesión como aviso en la página; importar plegado y su error; la barra del listado; la bandeja con ficha, con «Ver sus donaciones» y «Registrar una donación». Cada donación reciente de la ficha lleva a `/admin-donaciones-detalle?donacion=` ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 5). `/admin-donantes?donante=juan` sale de la línea de base de §10.4 | Deriva de A03; DA-34 | Pendiente |
+| ADM2-02 | `adm2-donantes` | El avance y el resultado de una importación (`-importando` e `-importado`), como páginas de estado, con sus avisos de etapa y las filas con error en la tabla del catálogo | Deriva de A03 | Pendiente |
+| ADM2-03 | `adm2-donantes` | Importaciones, la pestaña de Donantes (Donantes · Importaciones), con la barra del listado, la tabla y el paginador del catálogo | Deriva de A03 | Pendiente |
+| ADM2-04 | `adm2-organizaciones` | Organizaciones en el galpón: la cabecera con «Registrar organización», la barra del listado con Estado y su cuenta, la bandeja con ficha y, en las que piden sumarse, lo que mandaron y sus tres acciones (Aprobar, Pedir corrección y Rechazar) | Deriva de A03; DA-34 | Pendiente |
+| ADM2-05 | `adm2-organizaciones` | Las tres respuestas (`-aprobada`, `-correccion` y `-rechazada`): la lista con su aviso breve con signo | DA-06 | Pendiente |
+| ADM2-06 | `adm2-administradores` | Administradores (Cuentas) y Actividad, con las pestañas Cuentas · Actividad, la tabla y el paginador del catálogo; el alta en su ventana | Deriva de A03 | Pendiente |
+| ADM2-07 | `adm2-administradores` | El alta sin JavaScript (`-nuevo`) y la contraseña provisoria (`-alta`) como páginas propias, con el patrón de A12; el lote suma las dos rutas a `paginas.txt` | Deriva de A12; DA-35 | Pendiente |
+| ADM2-08 | `adm2-administradores` | Mi perfil del admin, en una columna, con sus dos errores en el aviso en la página | Deriva de A12 | Pendiente |
+| ADM2-09 | `adm2-novedades` | Las Novedades del admin en el galpón: la cabecera, los estados de lista del catálogo (vacío, cargando y error) y el aviso de marcar como aviso breve con signo | Sin arquetipo: la ficha del buzón de ORG; DA-06 | Pendiente |
+| ADM2-10 | `adm2-registrar-donante` | Registrar donante (persona u organización) y su error, en el galpón | Deriva de A12 | Pendiente |
+| ADM2-11 | `adm2-registrar-donante` | «Registrado» como aviso breve en Donantes, también con `?escenario=ya-era`; en la maqueta su ruta sigue | DA-06 y DA-33 | Pendiente |
+| ADM2-12 | `adm2-registrar-organizacion` | Registrar organización y su error, en el galpón | Deriva de A12 | Pendiente |
+| ADM2-13 | `adm2-registrar-organizacion` | «Registrada» como aviso breve en Organizaciones; en la maqueta su ruta sigue | DA-06 | Pendiente |
+
+Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5), con el
+límite de las hojas compartidas de §16.2.
+
+### 16.4 Qué se verifica (DA-20)
+
+- **En cada lote:** los gates y `-Pvisual` sobre sus `rutasVisuales`, una por plantilla.
+  `adm2-donantes` lleva además `/admin-donantes?donante=juan`, la única ruta de ADM2 que queda en
+  la línea de base de §10.4 (por un enlace de 22 px de la ficha, [DTI-46](../adr/DEUDA_TECNICA.md#dti-46),
+  ítem 4): tiene que pasar, y si no pasa es bloqueante del lote. `adm2-administradores` suma
+  `/admin-administradores-nuevo` y `/admin-administradores-alta` a `paginas.txt` y las lleva en
+  sus `rutasVisuales`.
+- **Antes de comitear, `adm2-donantes`:** `ArmazonFijoTest` y `MenusQueSeCierranTest` con
+  `-Pvisual`, porque `ArmazonFijoTest` mide `/admin-donantes` (la cabecera, la barra del listado
+  fija y el foco con Tab) y el gate visual del workflow corre solo `VerificacionVisualTest`. Se
+  compara con la línea de base de §14.5; un fallo nuevo es bloqueante del lote. Esos tests no
+  entran en su revisión ni en la hoja de contacto.
+- **Mientras dura la tanda 1:** Registrar donante y Registrar organización ven la lista nueva con
+  su formulario de hoy. No es hallazgo de esos lotes.
+- **Al cierre:** `-Pvisual` sobre las 49 rutas de ADM2 de `paginas.txt`: las que empiezan con
+  `/admin-donantes`, `-importaciones`, `-entidades`, `-administradores`, `-actividad`,
+  `-notificaciones` y `-perfil`. `[VERIFIED]` Hoy el mismo filtro da 47 líneas: faltan las dos que
+  suma `adm2-administradores`. De ellas, solo `/admin-donantes?donante=juan` está en la línea de
+  base de §10.4, y tiene que pasar; cualquier otra falla es bloqueante, con el lote que la rompe.
+  Corren también los otros cinco tests visuales, y se comparan con la línea de base de §10.5,
+  §11.3, §12.5, §13.5, §14.5 y del cierre de PUB2 (§15). Un fallo que no esté en esa línea de base
+  es bloqueante. No se levantan el stack ni el recorrido con login: los hace Z, y ningún lote
+  cambia un adaptador `rest` (plan de la corrida, punto 5). Queda para Z comprobar con datos reales
+  Donantes, la importación, Organizaciones con una solicitud, el alta de un administrador y los dos
+  registros.
