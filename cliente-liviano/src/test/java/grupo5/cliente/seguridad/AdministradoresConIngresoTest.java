@@ -396,7 +396,11 @@ class AdministradoresConIngresoTest {
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("value=\"Ana\"")))
         .andExpect(content().string(containsString("ana.perez@ejemplo.org")))
-        .andExpect(content().string(containsString("Cuenta creada el 12 de noviembre de 2026.")))
+        // La lista de datos del catálogo (regla de la ola ADM2): el correo y la fecha de alta, con
+        // su rótulo.
+        .andExpect(content().string(containsString("<dt>Correo</dt>")))
+        .andExpect(content().string(containsString("<dt>Cuenta creada</dt>")))
+        .andExpect(content().string(containsString("<dd>12 de noviembre de 2026</dd>")))
         .andExpect(content().string(not(containsString("name=\"correo\""))));
 
     mvc.perform(

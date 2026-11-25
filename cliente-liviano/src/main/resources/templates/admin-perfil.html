@@ -93,17 +93,16 @@
                th:value="${apellido}"
                th:attr="aria-describedby=${eApellido != null} ? 'apellido-error' : null,aria-invalid=${eApellido != null} ? 'true' : null">
       </div>
-      <!--/* El correo y la fecha de alta, fijos: texto, no un campo desactivado. El grupo lleva su
-             pila adentro de una caja: así el espacio entre los grupos es el del formulario. */-->
+      <!--/* El correo y la fecha de alta, fijos: la lista de datos del catálogo (como el Correo de
+             admin-administradores-alta), no un campo desactivado; sin fecha, solo el correo. El grupo
+             lleva su pila adentro de una caja: así el espacio entre los grupos es el del formulario. */-->
       <div>
         <div class="pila" data-espacio="1">
-          <h3>Correo</h3>
-          <p><strong th:text="${miPerfil.correo}">ana.perez@ejemplo.org</strong></p>
+          <dl th:replace="~{componentes/datos :: datos(${ { {rotulo: 'Correo', valor: miPerfil.correo},
+                                                            {rotulo: 'Cuenta creada', valor: creada} } })}"></dl>
           <p class="texto-chico" data-tono="suave">Es el correo con el que entrás. No se cambia desde acá.</p>
         </div>
       </div>
-      <p th:if="${creada != null}" class="texto-chico" data-tono="suave"
-         th:text="|Cuenta creada el ${creada}.|">Cuenta creada el 12 de noviembre de 2026.</p>
       <div data-fijo="celular">
         <button class="boton" data-tono="principal" type="submit">Guardar los cambios</button>
         <p th:replace="~{envio :: indicador('enviando-admin-perfil', 'Guardando…')}"></p>

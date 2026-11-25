@@ -27,8 +27,8 @@
 
 /* Los pictogramas de la lista y de la ficha, a la medida del bloque maestro: sellos.css (sin capa,
    por entidad-comun.css) le gana a la capa de bloques con su 1,75 rem; revert-layer vuelve a la
-   medida de maestro.css (2,25 rem; 2,75 rem en las necesidades). El de la ficha va a la misma medida
-   que el de la lista (sin data-tamano="grande"). */
+   medida de maestro.css (2,25 rem; 2,75 rem en las necesidades; 4,5 rem el de la identidad de la
+   ficha, con data-tamano="grande", como la muestra de /estilos). */
 [data-pantalla="entidades"] .maestro .categoria-icono {
   width: revert-layer;
   height: revert-layer;

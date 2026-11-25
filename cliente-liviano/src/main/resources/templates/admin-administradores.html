@@ -103,10 +103,10 @@
                     <form class="racimo" action="/admin-administradores-contrasena"
                           th:action="@{/admin-administradores-contrasena}" method="post">
                       <input type="hidden" name="cuenta" th:value="${c.id}">
+                      <button class="boton" data-tono="principal" type="submit">Generar otra contraseña</button>
                       <button type="button" class="boton" data-tono="secundario"
                               th:attr="popovertarget=|otra-${c.id}|" popovertarget="otra-cuenta"
                               popovertargetaction="hide">Cancelar</button>
-                      <button class="boton" data-tono="principal" type="submit">Generar otra contraseña</button>
                     </form>
                   </dialog>
                 </th:block>
@@ -197,9 +197,9 @@
   </div>
   <p>Le damos una contraseña provisoria para su primer ingreso. Ahí va a elegir la suya.</p>
   <div class="racimo">
+    <button class="boton" data-tono="principal" type="submit">Dar de alta</button>
     <button th:if="${enDialogo}" type="button" class="boton" data-tono="secundario"
             popovertarget="alta-administrador" popovertargetaction="hide">Cancelar</button>
-    <button class="boton" data-tono="principal" type="submit">Dar de alta</button>
   </div>
   <p th:replace="~{envio :: indicador('enviando-admin-administradores', 'Dando de alta…')}"></p>
 </form>
