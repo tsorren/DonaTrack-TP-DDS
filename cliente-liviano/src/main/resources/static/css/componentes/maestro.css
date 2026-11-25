@@ -33,7 +33,7 @@
 }
 
 .maestro > li > a:hover {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 .maestro > li > a[aria-current] {
@@ -57,7 +57,7 @@
 }
 
 .maestro small {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 /* El pictograma, centrado en su caja redondeada. */
@@ -68,8 +68,8 @@
   height: 2.25rem;
   padding: 0.25rem;
   border-radius: var(--radio-boton);
-  background: var(--color-acento-claro);
-  fill: var(--color-acento);
+  background: var(--color-salvia);
+  fill: var(--color-accion-primaria);
 }
 
 .maestro-ficha .categoria-icono[data-tamano="grande"] {
@@ -118,7 +118,7 @@
 
 .maestro-ficha [data-parte="identidad"] :is(h2, h3) + p {
   margin-block-start: var(--espacio-1);
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-grande);
 }
 
@@ -142,7 +142,7 @@
 }
 
 .maestro-ficha dd {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 /* El resumen: el estado con su fecha, más grande que en la lista, y cada bloque con su filete verde
@@ -160,7 +160,7 @@
 .maestro-ficha [data-parte="resumen"] > dl {
   padding-inline-start: var(--espacio-2);
   font-size: var(--tamano-chico);
-  border-inline-start: 0.25rem solid var(--color-acento-claro);
+  border-inline-start: 0.25rem solid var(--color-salvia);
 }
 
 /* Las necesidades vigentes: cada una con su pictograma, el nombre y lo que falta; en dos columnas
@@ -171,7 +171,7 @@
 }
 
 .maestro-ficha [data-parte="necesidades"] > :is(h3, h4) {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font: 850 var(--tamano-grande) / 1.2 var(--fuente-titulo);
   font-stretch: 110%;
 }
@@ -219,7 +219,7 @@
   .maestro-ficha [data-parte="resumen"] > dl {
     padding-inline: 0 var(--espacio-2);
     border-inline-start: 0;
-    border-inline-end: 0.25rem solid var(--color-acento-claro);
+    border-inline-end: 0.25rem solid var(--color-salvia);
   }
 }
 

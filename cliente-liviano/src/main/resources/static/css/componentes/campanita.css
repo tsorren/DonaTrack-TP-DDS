@@ -115,7 +115,7 @@
 }
 
 .campanita-cifra {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
 }
 
@@ -167,12 +167,12 @@
   box-sizing: border-box;
   width: 0.5rem;
   height: 0.5rem;
-  border: 0.25rem solid var(--color-acento);
+  border: 0.25rem solid var(--color-accion-primaria);
   border-radius: 50%;
 }
 
 .campanita-fila:hover {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 .campanita-fila strong,
@@ -181,7 +181,7 @@
 }
 
 .campanita-cuando {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
 }
 

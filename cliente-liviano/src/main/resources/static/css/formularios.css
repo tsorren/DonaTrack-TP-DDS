@@ -4,12 +4,12 @@
    del título en la segunda tinta. */
 
 main h1 em {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
 }
 
 .obligatorios {
   margin: 0;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.9375rem;
 }
 
@@ -34,7 +34,7 @@ main h1 em {
   padding: 1.25rem;
   border: 2px solid var(--color-tinta);
   border-radius: var(--radio-lamina);
-  background: var(--color-papel);
+  background: var(--color-fondo-pagina);
 }
 
 .formulario :is(.banner, .aviso-breve) {
@@ -44,7 +44,7 @@ main h1 em {
 
 .formulario .nota {
   margin: 0;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 /* La opción y la casilla (guía «Huerta y galpón», C1-12): el grupo de opciones (`fieldset` o `div`

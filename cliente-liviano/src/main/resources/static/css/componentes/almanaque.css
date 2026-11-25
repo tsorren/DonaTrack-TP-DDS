@@ -29,13 +29,13 @@
   min-height: 7rem;
   padding: var(--espacio-2);
   border-radius: var(--radio-boton);
-  background: var(--color-papel);
-  color: var(--color-tinta-suave);
+  background: var(--color-fondo-pagina);
+  color: var(--color-texto-suave);
   text-decoration: none;
 }
 
 .almanaque b {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font: 700 0.9375rem/1.15 var(--fuente-titulo);
 }
 
@@ -57,7 +57,7 @@
 }
 
 .almanaque [data-mes="con"] > a:hover {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 .almanaque [data-plantas] {
@@ -80,7 +80,7 @@
 .almanaque small[data-hoy] {
   padding: 0.125rem var(--espacio-1);
   border-radius: 999px;
-  background: var(--color-destacado);
+  background: var(--color-raiz);
   color: var(--color-tinta);
   font-size: 0.75rem;
   font-weight: 700;

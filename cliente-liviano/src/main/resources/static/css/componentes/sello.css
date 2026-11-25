@@ -105,7 +105,7 @@ span.estado:is([data-estado="vencida"], [data-estado="cancelada"], [data-estado=
 
 span.estado[data-estado="puerta"] {
   border-color: var(--color-tinta);
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 /* «Espera tu confirmación»: no es un estado, es un pedido a quien mira. Tinta llena, sin borde. */
@@ -163,7 +163,7 @@ span.estado[data-estado="cuenta-baja"] {
 
 /* Una entidad inactiva (dada de baja): en la tinta suave. */
 .estado[data-estado="inactiva"] {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 /* --- Las piezas del dibujo --------------------------------------------------------------------- */
@@ -176,7 +176,7 @@ span.estado[data-estado="cuenta-baja"] {
 }
 
 .sello-contorno {
-  fill: var(--color-papel);
+  fill: var(--color-fondo-pagina);
   stroke: var(--color-en-camino-texto);
   stroke-width: 2;
 }
@@ -196,7 +196,7 @@ span.estado[data-estado="cuenta-baja"] {
 
 .sello-calado {
   fill: none;
-  stroke: var(--color-papel);
+  stroke: var(--color-fondo-pagina);
   stroke-width: 3;
   stroke-linecap: round;
 }
@@ -221,7 +221,7 @@ span.estado[data-estado="cuenta-baja"] {
 }
 
 .sello-falta {
-  fill: var(--color-papel);
-  stroke: var(--color-tinta-suave);
+  fill: var(--color-fondo-pagina);
+  stroke: var(--color-texto-suave);
   stroke-width: 1.5;
 }

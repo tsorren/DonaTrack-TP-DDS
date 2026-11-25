@@ -22,7 +22,7 @@
   outline-offset: -7px;
   background: var(--color-superficie);
   box-shadow: var(--sombra-papel);
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   opacity: 0;
   transition: var(--movimiento-transicion-dialogo);
 }
@@ -42,7 +42,7 @@
 }
 
 .dialogo::backdrop {
-  background: var(--color-suelo-hondo);
+  background: var(--color-tinta);
   opacity: 0;
   transition: var(--movimiento-transicion-dialogo);
 }
@@ -169,13 +169,13 @@ html:has(.dialogo:modal) {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 .dialogo-indicador li + li::before {
   content: "";
   width: 1.5rem;
-  border-top: 1px solid var(--color-tinta-suave);
+  border-top: 1px solid var(--color-texto-suave);
 }
 
 .dialogo-marca::before {

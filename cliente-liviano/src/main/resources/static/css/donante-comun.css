@@ -12,7 +12,7 @@
 }
 
 main h1 em {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
 }
 
 /* El relleno de una parte (el papel y el filete, de .tarjeta). */
@@ -32,7 +32,7 @@ main h1 em {
   display: inline-flex;
   align-items: center;
   min-height: var(--medida-toque-minimo);
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font-weight: 700;
   text-underline-offset: 0.25em;
 }

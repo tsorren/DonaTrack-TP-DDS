@@ -34,7 +34,7 @@
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: var(--color-acento);
+  background: var(--color-accion-primaria);
 }
 
 .noticia-marca {
@@ -49,8 +49,8 @@
 }
 
 .noticia--sin-leer .noticia-marca {
-  background: var(--color-acento-claro);
-  color: var(--color-acento-hondo);
+  background: var(--color-salvia);
+  color: var(--color-accion-primaria-activa);
 }
 
 /* A la vista: la marca y la fecha, el texto, y el estado con la donación; para el lector, en el

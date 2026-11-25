@@ -196,7 +196,7 @@
   padding: 1rem 1rem 2rem;
   overflow-y: auto;
   border: 0;
-  background: var(--color-papel);
+  background: var(--color-fondo-pagina);
   color: var(--color-tinta);
 }
 
@@ -257,12 +257,12 @@
 }
 
 .navegacion .navegacion-hoja a:hover {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 .navegacion .navegacion-hoja a[aria-current="page"] {
-  background: var(--color-acento-claro);
-  color: var(--color-acento-hondo);
+  background: var(--color-salvia);
+  color: var(--color-accion-primaria-activa);
 }
 
 .navegacion-hoja .navegacion-icono {
@@ -451,7 +451,7 @@
 }
 
 .navegacion-cuenta-menu small {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.875rem;
 }
 
@@ -467,11 +467,11 @@
 }
 
 .navegacion-cuenta-menu a:hover {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 .navegacion-cuenta-menu a[aria-current="page"] {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
 }
 
 /* --- El cajón del galpón: el menú del admin (ADM1-01; guía, 10-componentes.css:417-427) -------- */

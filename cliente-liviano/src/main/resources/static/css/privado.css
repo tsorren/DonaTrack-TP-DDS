@@ -34,7 +34,7 @@ main:focus {
 
 .rotulo {
   margin: 0 0 0.25rem;
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font: 700 0.78rem/1.2 var(--fuente-titulo);
   font-stretch: 112%;
   text-transform: uppercase;
@@ -92,12 +92,11 @@ main h1 {
    guía la saca desde 56 em). Hasta 56 em el menú es la barra del celular, abajo; desde ahí, el cajón
    (componentes/navegacion.css) queda fijo a la izquierda, debajo de la barra, y el contenido y el
    pie empiezan a su derecha. */
-/* --color-papel es alias de --color-fondo-pagina (tokens.css), pero se resuelve en :root: se
-   redefine acá para que lo que pinta papel (la barra fija del listado y su sombra, el panel de Más,
-   la pantalla de carga) salga del papel del galpón y no deje una franja de otro color. */
+/* --color-fondo-pagina se redefine acá para que lo que pinta papel (la barra fija del listado y su
+   sombra, el panel de Más, la pantalla de carga) salga del papel del galpón y no deje una franja de
+   otro color. */
 [data-armazon="galpon"] {
   --color-fondo-pagina: var(--color-galpon-fondo);
-  --color-papel: var(--color-galpon-fondo);
   --color-superficie: var(--color-campo);
 }
 

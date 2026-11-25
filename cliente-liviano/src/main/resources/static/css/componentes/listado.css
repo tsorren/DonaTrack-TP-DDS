@@ -97,8 +97,8 @@
 }
 
 .listado-casilla:has(:checked) span::before {
-  background: var(--color-acento);
-  box-shadow: inset 0 0 0 2px var(--color-acento), inset 0 0 0 5px var(--color-campo);
+  background: var(--color-accion-primaria);
+  box-shadow: inset 0 0 0 2px var(--color-accion-primaria), inset 0 0 0 5px var(--color-campo);
 }
 
 .listado-casilla:hover span::before {
@@ -216,8 +216,8 @@
     z-index: var(--capa-filtros-fijos);
     padding-block: var(--espacio-1);
     border-bottom: 1px solid var(--color-filete);
-    background: var(--color-papel);
-    box-shadow: 0 calc(var(--espacio-1) * -0.75) 0 var(--color-papel);
+    background: var(--color-fondo-pagina);
+    box-shadow: 0 calc(var(--espacio-1) * -0.75) 0 var(--color-fondo-pagina);
   }
 }
 
@@ -228,8 +228,8 @@
     z-index: var(--capa-filtros-fijos);
     padding-block: var(--espacio-1);
     border-bottom: 1px solid var(--color-filete);
-    background: var(--color-papel);
-    box-shadow: 0 calc(var(--espacio-1) * -0.75) 0 var(--color-papel);
+    background: var(--color-fondo-pagina);
+    box-shadow: 0 calc(var(--espacio-1) * -0.75) 0 var(--color-fondo-pagina);
   }
 }
 
@@ -241,8 +241,8 @@
     z-index: var(--capa-filtros-fijos);
     padding-block: var(--espacio-2);
     border-bottom: 1px solid var(--color-filete);
-    background: var(--color-papel);
-    box-shadow: 0 calc(var(--espacio-1) * -0.75) 0 var(--color-papel);
+    background: var(--color-fondo-pagina);
+    box-shadow: 0 calc(var(--espacio-1) * -0.75) 0 var(--color-fondo-pagina);
   }
 }
 
