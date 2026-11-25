@@ -487,13 +487,22 @@
   display: none;
 }
 
-/* La muestra del cajón en /estilos. Hasta 56 em, la barra del celular del galpón con el ancho del
-   celular más angosto (cinco celdas de 4 rem: 320 px), para que sus cuatro celdas digan los nombres
-   enteros, como en la pantalla; en la ficha angosta se desplaza de costado (muestra.css). Desde
-   56 em, el cajón con su ancho de la pantalla (--medida-cajon, más el borde de la caja): en la ficha
-   de la grilla no entraba y partía «Donaciones» y «Organizaciones» con guion. */
+/* La muestra del cajón en /estilos. Hasta 56 em, la barra del celular del galpón con el ancho de la
+   ficha, sin el mínimo de las otras cajas (muestra.css): sus cuatro celdas (minmax(0, 1fr)) entran
+   enteras, Más incluida, sin desplazarse de costado (DA-27). Desde 56 em, el cajón con su ancho de
+   la pantalla (--medida-cajon, más el borde de la caja): en la ficha de la grilla no entraba y
+   partía «Donaciones» y «Organizaciones» con guion. */
 .muestra-demo [data-ventana][data-armazon="galpon"] {
-  min-width: calc(var(--medida-menu-celular) * 5);
+  min-width: 0;
+}
+
+/* En la ficha de 360 px cada celda mide unos 58 px y «Donaciones» se partía con guion: la letra va
+   más angosta y más junta, como en la barra de cinco celdas. Con :where(), desde 56 em la pisa el
+   cajón (su font, su padding y su letter-spacing). */
+:where(.muestra-demo [data-ventana])[data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul :is(a, button) {
+  padding-inline: 0;
+  font-stretch: 75%;
+  letter-spacing: -0.02em;
 }
 
 @media (min-width: 56em) {

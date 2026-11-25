@@ -47,15 +47,13 @@
     <div th:if="${escenario == 'error'}" class="aviso" data-tipo="error" role="alert">
       <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
       <p class="aviso-titulo">No pudimos cargar el ranking.</p>
-      <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue, escribinos con este
-        código.</p>
+      <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
+        <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-ranking')}">escribinos
+          con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-      <div class="racimo">
-        <a class="boton" data-tono="secundario" href="/admin-ranking"
-           th:href="@{/admin-ranking}">Volver a cargar</a>
-        <a class="boton" data-tono="secundario" href="/publico-contacto?codigo=a1b2c3d4e5f6"
-           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-ranking')}">Escribinos</a>
-      </div>
+      <a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-ranking"
+         th:href="@{/admin-ranking}">Volver a cargar</a>
     </div>
 
     <section th:if="${meses.isEmpty() and escenario != 'error' and escenario != 'lento'}" class="vacio"

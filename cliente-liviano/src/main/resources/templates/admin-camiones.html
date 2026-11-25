@@ -120,14 +120,13 @@
       <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
       <p class="aviso-titulo">No pudimos cargar los camiones.</p>
       <p>Es un problema nuestro: los camiones siguen como estaban. Probá de nuevo en unos minutos; si
-        sigue, escribinos con este código.</p>
+        sigue,
+        <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-camiones')}">escribinos
+          con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-      <div class="racimo">
-        <a class="boton" data-tono="secundario" href="/admin-camiones" th:href="@{/admin-camiones}">Volver
-          a cargar</a>
-        <a class="boton" data-tono="secundario" href="/publico-contacto?codigo=a1b2c3d4e5f6"
-           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-camiones')}">Escribinos</a>
-      </div>
+      <a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-camiones"
+         th:href="@{/admin-camiones}">Volver a cargar</a>
     </div>
 
     <!--/* El alta: en un diálogo del navegador; con el error de datos, abierta debajo del encabezado. */-->
@@ -408,21 +407,23 @@
 
 <!--/* El alta de un camión. conError: vuelve con el error de datos (el 400 del contrato: capacidad y
        altura positivas), el resumen arriba recibe el foco y enlaza a cada campo; lo escrito sigue.
-       enDialogo: "Cancelar" cierra el diálogo; si no, vuelve a la lista. */-->
+       enDialogo: "Cancelar" cierra el diálogo; si no, el enlace "Volver sin agregar" vuelve a la lista. */-->
 <form th:fragment="formulario(conError, enDialogo)" class="pila" data-espacio="3"
       th:classappend="${enDialogo} ? '' : 'formulario tarjeta'"
       action="/admin-camiones-agregado" th:action="@{/admin-camiones-agregado}" method="post" hx-boost="true"
       hx-indicator="#enviando-admin-camiones-agregar" hx-select-oob="#avisos"
           hx-disinherit="hx-indicator hx-select-oob">
-  <section th:if="${conError}" class="banner resumen" data-estado="error" role="alert" tabindex="-1"
-           autofocus aria-labelledby="resumen-titulo">
-    <h2 id="resumen-titulo">Revisá 2 datos para seguir.</h2>
-    <ul>
+  <div th:if="${conError}" class="aviso" data-tipo="error" role="alert" tabindex="-1" id="resumen"
+       autofocus>
+    <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+    <p class="aviso-titulo">Revisá 2 datos para seguir.</p>
+    <ul role="list">
       <li><a href="#capacidad">Falta la capacidad en kg</a></li>
       <li><a href="#altura">La altura tiene que ser mayor que 0</a></li>
     </ul>
-  </section>
-  <p class="obligatorios">* obligatorio</p>
+    <p class="texto-chico">Lo demás quedó como lo escribiste.</p>
+  </div>
+  <p class="texto-chico" data-tono="suave">Los datos con * son obligatorios.</p>
   <div class="grilla" data-espacio="3">
     <div class="campo">
       <label for="patente">Patente *</label>
@@ -432,8 +433,9 @@
     </div>
     <div class="campo" th:data-estado="${conError} ? 'error'">
       <label for="capacidad">Capacidad en kg *</label>
-      <p th:if="${conError}" id="capacidad-error" class="campo-error">Falta la capacidad: cuántos kg
-        carga. Por ejemplo: 2000.</p>
+      <p th:if="${conError}" id="capacidad-error" class="campo-error"><svg
+          th:replace="~{componentes/sello :: signo('problema')}"></svg><span>Falta la capacidad: cuántos
+        kg carga. Por ejemplo: 2000.</span></p>
       <input id="capacidad" name="capacidadKG" type="number" min="1" step="any" inputmode="decimal"
              required autocomplete="off"
              th:attr="aria-describedby=${conError} ? 'capacidad-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: 3500">
@@ -445,8 +447,9 @@
     </div>
     <div class="campo" th:data-estado="${conError} ? 'error'">
       <label for="altura">Altura en m *</label>
-      <p th:if="${conError}" id="altura-error" class="campo-error">La altura tiene que ser mayor que 0.
-        Por ejemplo: 2,8.</p>
+      <p th:if="${conError}" id="altura-error" class="campo-error"><svg
+          th:replace="~{componentes/sello :: signo('problema')}"></svg><span>La altura tiene que ser mayor
+        que 0. Por ejemplo: 2,8.</span></p>
       <input id="altura" name="altura" type="number" min="0.1" step="any" inputmode="decimal"
              required autocomplete="off" th:value="${conError} ? '0' : null"
              th:attr="aria-describedby=${conError} ? 'altura-error' : null,aria-invalid=${conError} ? 'true' : null" placeholder="Por ejemplo: 2,8">
@@ -457,10 +460,10 @@
     <button class="boton" data-tono="principal" type="submit">Agregar camión</button>
     <button th:if="${enDialogo}" type="button" class="boton" data-tono="secundario" popovertarget="agregar-camion"
             popovertargetaction="hide">Cancelar</button>
-    <a th:unless="${enDialogo}" class="boton" data-tono="secundario" href="/admin-camiones"
-       th:href="@{/admin-camiones}">Cancelar</a>
   </div>
   <p th:replace="~{envio :: indicador('enviando-admin-camiones-agregar', 'Guardando…')}"></p>
+  <!--/* Fuera del diálogo, la salida es un enlace, no otro botón (A12, como en registrar donación). */-->
+  <p th:unless="${enDialogo}"><a href="/admin-camiones" th:href="@{/admin-camiones}">Volver sin agregar</a></p>
 </form>
 
 <!--/* El aviso de corte de las ventanas (R11-32): oculto; static/js/interfaz.js lo muestra si el

@@ -64,16 +64,16 @@
         donaciones.</p>
       <p>Si volvió, registralo de nuevo en <a href="/admin-donantes" th:href="@{/admin-donantes}">Donantes</a>.</p>
     </div>
-    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
-             aria-labelledby="error-titulo">
-      <h2 id="error-titulo">No pudimos guardar: no cambió nada.</h2>
+    <div th:if="${escenario == 'error'}" class="aviso" data-tipo="error" role="alert">
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo">No pudimos guardar: no cambió nada.</p>
       <p>Es un problema nuestro: lo que escribiste sigue acá. Probá de nuevo con «Registrar donación» en unos
         minutos; si sigue,
         <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-donaciones-registrar')}">escribinos
           con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-    </section>
+    </div>
 
     <!--/* 1. Quién dona: la búsqueda va en su propio formulario, para no anidar formularios. */-->
     <section class="tarjeta pila" data-espacio="3" aria-labelledby="quien-titulo">

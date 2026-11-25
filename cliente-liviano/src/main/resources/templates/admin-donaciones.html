@@ -191,11 +191,12 @@
     <th:block th:if="${accion == 'vencida'}"><div
         th:replace="~{admin-donaciones :: hecho('La marcaste como vencida el 15 de octubre de 2026, 18:35.')}"></div></th:block>
 
-    <section th:if="${escenario == 'cambio'}" class="banner" data-estado="error" role="alert" tabindex="-1"
-             autofocus aria-labelledby="cambio-titulo">
-      <h2 id="cambio-titulo">Esta donación cambió mientras la mirabas: no la marcamos como vencida.</h2>
+    <div th:if="${escenario == 'cambio'}" class="aviso" data-tipo="error" role="alert" tabindex="-1"
+         autofocus>
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo">Esta donación cambió mientras la mirabas: no la marcamos como vencida.</p>
       <p>Volvimos a cargar su estado.</p>
-    </section>
+    </div>
 
     <section class="pila" data-espacio="3" aria-labelledby="que-titulo">
       <h2 id="que-titulo">Qué es</h2>
