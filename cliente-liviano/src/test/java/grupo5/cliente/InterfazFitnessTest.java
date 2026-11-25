@@ -237,7 +237,7 @@ class InterfazFitnessTest {
   /**
    * Tope de clases que aparecen una sola vez en las hojas heredadas. Solo baja (backlog, regla 3).
    */
-  private static final int TOPE_DE_CLASES_DE_UN_SOLO_USO = 159;
+  private static final int TOPE_DE_CLASES_DE_UN_SOLO_USO = 37;
 
   private static final Path CATALOGO = Path.of("../docs/interfaz/componentes.md");
   private static final Path ESTILOS = PLANTILLAS.resolve("estilos.html");
@@ -261,22 +261,10 @@ class InterfazFitnessTest {
       Set.of(
           "admin-inicio.css",
           "donante-comun.css",
-          "donante-entidades.css",
-          "donante-inicio.css",
-          "donante-perfil.css",
           "entidad-comun.css",
-          "entidad-inicio.css",
-          "entidad-necesidades.css",
-          "entidad-recibidas.css",
-          "entidad-seguimiento-confirmar.css",
           "formularios.css",
           "privado.css",
-          "publico-entidades.css",
-          "publico-ingresar.css",
-          "publico-listas.css",
           "publico-mapa.css",
-          "publico-navegacion.css",
-          "publico-paginas.css",
           "publico-registro.css",
           "sellos.css");
 
@@ -545,7 +533,7 @@ class InterfazFitnessTest {
               + "\\(\\s*\"([\\w-]+)\"");
 
   /** Tope de declaraciones de medida con valor literal en las hojas: solo baja. */
-  private static final int TOPE_DE_MEDIDAS_LITERALES = 1192;
+  private static final int TOPE_DE_MEDIDAS_LITERALES = 532;
 
   private static final Pattern MEDIDA_LITERAL =
       Pattern.compile(
