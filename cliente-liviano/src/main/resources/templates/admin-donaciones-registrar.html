@@ -124,9 +124,13 @@
                th:attr="aria-describedby=${datos} ? 'descripcion-error descripcion-ayuda' : 'descripcion-ayuda',aria-invalid=${datos} ? 'true' : null" placeholder="Por ejemplo: leche en polvo, 10 cajas">
       </div>
 
-      <fieldset th:each="n : ${#numbers.sequence(1, bienes)}" class="tarjeta pila" data-espacio="3">
-        <legend th:text="|Bien ${n}|">Bien 1</legend>
-        <div class="grilla" data-espacio="3"
+      <!--/* Cada bien, una tarjeta con su título, como «1. Quién dona»; los campos del bien van en un grupo
+             nombrado por ese título (role="group"), sin el borde ni la leyenda de un fieldset. */-->
+      <section th:each="n : ${#numbers.sequence(1, bienes)}" class="tarjeta pila" data-espacio="3"
+               th:aria-labelledby="|bien-${n}-titulo|" aria-labelledby="bien-1-titulo">
+        <h3 th:id="|bien-${n}-titulo|" id="bien-1-titulo" th:text="|Bien ${n}|">Bien 1</h3>
+        <div class="grilla" data-espacio="3" role="group" th:aria-labelledby="|bien-${n}-titulo|"
+             aria-labelledby="bien-1-titulo"
              th:with="enError=${datos and n == 2},
                       que=${escrito ? (n == 1 ? 'Arroz' : (n == 2 ? 'Fideos' : 'Aceite')) : null}">
           <div class="campo">
@@ -162,7 +166,7 @@
                    accept="image/*">
           </div>
         </div>
-      </fieldset>
+      </section>
       <div class="racimo" th:if="${bienes < 3}">
         <button class="boton" data-tono="secundario" type="submit" formaction="/admin-donaciones-registrar"
                 th:formaction="@{/admin-donaciones-registrar}" formmethod="get" formenctype="application/x-www-form-urlencoded"
