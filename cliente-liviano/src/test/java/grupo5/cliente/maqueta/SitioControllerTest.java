@@ -1912,6 +1912,14 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("data-pantalla=\"donaciones\"")))
         .andExpect(content().string(containsString("<h1>Donaciones</h1>")))
         .andExpect(content().string(containsString("class=\"aviso-breve\" data-estado=\"hecho\"")))
+        // U1: el aviso de la acción hecha va debajo de la cabecera, con el signo, como en la ola
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<h1>Donaciones</h1>.*<div hx-swap-oob=\"beforeend:#avisos\"><div"
+                            + " class=\"aviso-breve\".*data-signo=\"e-confirmada\".*"
+                            + "Registraste la donación.*")))
         .andExpect(
             content()
                 .string(
@@ -2035,10 +2043,33 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Propuestas sin problemas · 3")));
     mvc.perform(get("/admin-asignaciones-descartada"))
         .andExpect(content().string(containsString("Descartaste la propuesta para Merendero")));
+    // U4/U7: la que no se pudo aprobar va sin casilla (fuera de la aprobación juntas), con su
+    // sello,
+    // y el aviso del catálogo ofrece descartarla
     mvc.perform(get("/admin-asignaciones-error"))
         .andExpect(content().string(containsString("ya no está activa")))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(not(containsString("value=\"leche\" aria-label=\"Elegir:"))))
+        .andExpect(content().string(containsString("value=\"lentejas\" aria-label=\"Elegir:")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*Elegiste\\s+<span data-parte=\"cuenta\"></span> de 3\\..*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<input type=\"hidden\" name=\"propuesta\" value=\"leche\">.*"
+                            + "Descartar la\\s+propuesta</button>.*")))
         .andExpect(
             content().string(not(containsString("Aprobar: propuesta para Merendero Ejemplo Sur"))));
+    // U1/U6 (DA-25): la mesa lleva la fecha y las cuentas de /admin-inicio
+    mvc.perform(get("/admin-asignaciones"))
+        .andExpect(content().string(containsString("Jueves 15 de octubre de 2026.")))
+        .andExpect(content().string(containsString("Solicitudes <b>3</b>")))
+        .andExpect(content().string(containsString("Por vencer <b>4</b>")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
     mvc.perform(get("/admin-asignaciones-error?escenario=propia"))
         .andExpect(content().string(containsString("de la misma organización que la")));
     mvc.perform(get("/admin-asignaciones-error?escenario=cambio"))

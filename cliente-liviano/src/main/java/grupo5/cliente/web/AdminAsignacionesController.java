@@ -1,8 +1,10 @@
 package grupo5.cliente.web;
 
 import grupo5.cliente.puertos.AdminOperacionPuerto;
+import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.puertos.AdministradorActual;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
+import grupo5.cliente.vistas.AdminInicioVista;
 import grupo5.cliente.vistas.ConsultaAsignaciones;
 import grupo5.cliente.vistas.ConsultaDecididas;
 import grupo5.cliente.vistas.Listado;
@@ -12,6 +14,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
@@ -20,6 +24,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -35,11 +40,14 @@ import org.springframework.web.server.ResponseStatusException;
  * ({@code ?buscar=}) y los filtros ({@code ?estado=}, {@code ?categoria=}, desde R11-B04 {@code
  * ?desde=} y {@code ?hasta=} en lugar del período fijo y {@code ?quien=}, {@code ?decidio=} y
  * {@code ?orden=}), con la barra del componente listado ({@code listado}); "Vos" es la cuenta de la
- * sesión.
+ * sesión. La fecha de la cabecera y las cuentas de Solicitudes y Por vencer salen de la misma
+ * fuente que {@code /admin-inicio} (el inicio del puerto de personas): {@code hoy}, {@code
+ * inicioSolicitudes} y {@code inicioPorVencer}.
  */
 @Controller
 public class AdminAsignacionesController {
 
+  private static final Logger LOG = LoggerFactory.getLogger(AdminAsignacionesController.class);
   private static final String LISTA = "admin-asignaciones";
   private static final Locale ES = Locale.forLanguageTag("es-AR");
   private static final ZoneId ARGENTINA = ZoneId.of("America/Argentina/Buenos_Aires");
@@ -48,6 +56,7 @@ public class AdminAsignacionesController {
 
   private final AdminOperacionPuerto operacion;
   private final ObjectProvider<AdministradorActual> administrador;
+  private final ObjectProvider<AdminPersonasPuerto> personas;
   private final Pantallas pantallas;
   private final boolean maqueta;
 
@@ -63,10 +72,12 @@ public class AdminAsignacionesController {
   AdminAsignacionesController(
       AdminOperacionPuerto operacion,
       ObjectProvider<AdministradorActual> administrador,
+      ObjectProvider<AdminPersonasPuerto> personas,
       Pantallas pantallas,
       Environment entorno) {
     this.operacion = operacion;
     this.administrador = administrador;
+    this.personas = personas;
     this.pantallas = pantallas;
     this.maqueta = entorno.acceptsProfiles(Profiles.of("maqueta"));
   }
@@ -127,13 +138,36 @@ public class AdminAsignacionesController {
     model.addAttribute("listadoPropuestas", propuestas(consulta, datos));
     model.addAttribute("listadoDestino", destino(consulta, datos));
     model.addAttribute("paginador", paginador(pedido, datos));
-    model.addAttribute("hoy", hoy());
+    AdminInicioVista inicio = inicio();
+    model.addAttribute("hoy", inicio == null ? hoy() : inicio.fecha());
+    if (inicio != null && inicio.decisiones() != null) {
+      model.addAttribute("inicioSolicitudes", inicio.decisiones().entidades());
+      model.addAttribute("inicioPorVencer", inicio.decisiones().vencen());
+    }
     return plantilla;
   }
 
   /**
-   * La fecha de la cabecera de Por decidir (A03, DA-25), en palabras: «Martes 24 de noviembre de
-   * 2026». La usa también {@code /admin-inicio}, que lleva la misma cabecera.
+   * El inicio del puerto de personas, la fuente de la fecha y de las cuentas de Solicitudes y Por
+   * vencer de {@code /admin-inicio} (A03, DA-25): las dos rutas dicen lo mismo. Null si no hay
+   * puerto o no respondió: la cabecera lleva el día de hoy y esas dos pestañas, sin cuenta.
+   */
+  private AdminInicioVista inicio() {
+    AdminPersonasPuerto puerto = personas.getIfAvailable();
+    if (puerto == null) {
+      return null;
+    }
+    try {
+      return puerto.inicio();
+    } catch (RestClientException noRespondio) {
+      LOG.warn("No se pudieron leer las cuentas de Por decidir", noRespondio);
+      return null;
+    }
+  }
+
+  /**
+   * La fecha de la cabecera de Por decidir (A03, DA-25) cuando no llega la del inicio, en palabras:
+   * «Martes 24 de noviembre de 2026».
    */
   static String hoy() {
     String fecha = LocalDate.now(ARGENTINA).format(FECHA);

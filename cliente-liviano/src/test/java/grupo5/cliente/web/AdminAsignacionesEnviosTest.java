@@ -17,9 +17,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import grupo5.cliente.puertos.AdminOperacionPuerto;
+import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.puertos.AdministradorActual;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Cuentas;
+import grupo5.cliente.vistas.AdminInicioVista;
+import grupo5.cliente.vistas.AdminInicioVista.Decisiones;
 import grupo5.cliente.vistas.ConsultaAsignaciones;
 import grupo5.cliente.vistas.ConsultaDecididas;
 import grupo5.cliente.vistas.Tramo;
@@ -38,6 +41,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 /**
  * Asignar donaciones fuera de la maqueta: la lista sin asignaciones corridas, los envíos que
@@ -53,6 +57,7 @@ class AdminAsignacionesEnviosTest {
 
   @MockitoBean private AdminOperacionPuerto operacion;
   @MockitoBean private AdministradorActual administrador;
+  @MockitoBean private AdminPersonasPuerto personas;
   @Autowired private MockMvc mvc;
 
   @Test
@@ -77,9 +82,18 @@ class AdminAsignacionesEnviosTest {
         .andExpect(content().string(containsString("aria-label=\"Qué hay por decidir\"")));
   }
 
-  // DA-25: la cabecera y las pestañas de Por decidir, las mismas que /admin-inicio
+  // DA-25: la cabecera y las pestañas de Por decidir, las mismas que /admin-inicio, con la fecha y
+  // las cuentas de Solicitudes y Por vencer de la misma fuente (el inicio del puerto de personas)
   @Test
   void laMesaLlevaLaCabeceraYLasPestanasDePorDecidir() throws Exception {
+    when(personas.inicio())
+        .thenReturn(
+            new AdminInicioVista(
+                "Jueves 15 de octubre de 2026",
+                null,
+                new Decisiones(3, List.of("Hogar Ejemplo Norte"), 0, 7, 4, null, 8),
+                "15 de octubre de 2026, 18:30",
+                null));
     when(operacion.asignaciones(any(), eq("")))
         .thenReturn(
             new AdminAsignacionesVista(
@@ -96,6 +110,7 @@ class AdminAsignacionesEnviosTest {
     mvc.perform(get("/admin-asignaciones"))
         .andExpect(status().isOk())
         .andExpect(content().string(matchesPattern("(?s).*<h1[^>]*>Por decidir</h1>.*")))
+        .andExpect(content().string(containsString("Jueves 15 de octubre de 2026.")))
         .andExpect(content().string(containsString("Última asignación: hoy, 0:00 · generó 7")))
         .andExpect(content().string(containsString("action=\"/admin-asignaciones-corrida\"")))
         .andExpect(content().string(containsString("href=\"/admin-donaciones-registrar\"")))
@@ -114,14 +129,48 @@ class AdminAsignacionesEnviosTest {
         .andExpect(
             content()
                 .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-entidades\"[^>]*>Solicitudes <b>3</b></a>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-donaciones\\?vence=pronto\"[^>]*>Por vencer"
+                            + " <b>4</b></a>.*")));
+    mvc.perform(get("/admin-asignaciones?pestana=destino")).andExpect(status().isOk());
+    mvc.perform(get("/admin-asignaciones?vista=decididas")).andExpect(status().isOk());
+  }
+
+  // DA-25: si el inicio no responde, la mesa sigue con la fecha de hoy y esas dos pestañas sin
+  // cuenta
+  @Test
+  void sinElInicioLasPestanasVanSinCuentaYLaMesaSigue() throws Exception {
+    when(personas.inicio()).thenThrow(new ResourceAccessException("Personas no responde"));
+    when(operacion.asignaciones(any(), eq("")))
+        .thenReturn(
+            new AdminAsignacionesVista(
+                ConsultaAsignaciones.primera(),
+                new Cuentas(7, 4, 3),
+                null,
+                new Tramo<>(List.of(), 4, 1, 1),
+                List.of(),
+                null,
+                List.of(),
+                null,
+                null));
+
+    mvc.perform(get("/admin-asignaciones"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString(AdminAsignacionesController.hoy() + ".")))
+        .andExpect(
+            content()
+                .string(
                     matchesPattern("(?s).*<a href=\"/admin-entidades\"[^>]*>Solicitudes</a>.*")))
         .andExpect(
             content()
                 .string(
                     matchesPattern(
                         "(?s).*<a href=\"/admin-donaciones\\?vence=pronto\"[^>]*>Por vencer</a>.*")));
-    mvc.perform(get("/admin-asignaciones?pestana=destino")).andExpect(status().isOk());
-    mvc.perform(get("/admin-asignaciones?vista=decididas")).andExpect(status().isOk());
   }
 
   @Test

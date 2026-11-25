@@ -11,17 +11,12 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <!--/* El aviso breve: en el flujo de la página y, con HTMX, en la región de avisos. Fuera de la
-         maqueta lo trae el layout (envio :: aviso). hx-swap-oob="beforeend" suma a la región los
-         hijos del elemento que lo lleva: por eso va en una caja sin clase, y a la región llega el
-         aviso entero, con su papel. */-->
-  <div class="pila" data-espacio="4">
-    <div hx-swap-oob="beforeend:#avisos"><div
-        class="aviso-breve" data-estado="hecho" role="status" tabindex="-1" autofocus><svg
-        th:replace="~{componentes/sello :: signo('confirmada')}"></svg><p>Registraste la donación: Caja de alimentos, 3 bienes. Quedó en el Depósito Central.</p><button
-        type="button" class="aviso-cerrar" data-cerrar aria-label="Cerrar el aviso">×</button></div></div>
+  <!--/* El aviso breve, debajo de la cabecera de Donaciones como en las otras respuestas de la ola
+         (admin-donaciones :: hecho, que lee avisoHecho). Fuera de la maqueta lo trae el layout
+         (envio :: aviso). */-->
+  <th:block th:with="avisoHecho='Registraste la donación: Caja de alimentos, 3 bienes. Quedó en el Depósito Central.'">
     <th:block th:replace="~{admin-donaciones :: hoja('')}"></th:block>
-  </div>
+  </th:block>
 </th:block>
 </body>
 </html>

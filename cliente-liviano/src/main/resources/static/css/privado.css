@@ -121,6 +121,13 @@ body[data-armazon="galpon"] main h1 {
   }
 }
 
+/* Lo que va pegado arriba de la barra del listado (el título de la lista o su frase) deja un
+   espacio: .listado lleva margin 0 y, desde 68,75 em, queda fija y pinta un filete de papel hacia
+   arriba (listado.css) que tapaba los rabos de las letras del título. */
+body[data-armazon="galpon"] main :has(+ .listado) {
+  margin-block-end: var(--espacio-2);
+}
+
 @media (min-width: 37.5em) {
   body[data-armazon="galpon"] > .armazon {
     padding-inline: var(--espacio-4);

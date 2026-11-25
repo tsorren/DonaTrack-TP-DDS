@@ -25,11 +25,15 @@
        - pestanas(actual, propuestas, conflictos): la barra de pestañas; actual es 'propuestas' o
          'conflictos' (la que queda marcada; otro valor no marca ninguna) y propuestas y conflictos,
          la cuenta de cada una (null no la dibuja). Solicitudes y Por vencer llevan la suya si quien
-         la usa define cuentaSolicitudes y cuentaPorVencer (con th:with, alrededor; lo hace
-         /admin-inicio, que las trae de AdminInicioVista); aquí no llegan y van sin cuenta.
+         la usa define cuentaSolicitudes y cuentaPorVencer (con th:with, alrededor). Las dos rutas
+         las sacan de la misma fuente, AdminInicioVista: /admin-inicio de adminInicio y esta, de
+         inicioSolicitudes e inicioPorVencer (AdminAsignacionesController); si no llegan, van sin
+         cuenta en las dos.
        - propuestas(filas, volver): la tabla de propuestas con selección dentro de su formulario;
          filas son Propuesta y volver, la pestaña oculta a la que vuelven los envíos ('propuestas'
-         aquí, 'inicio' en /admin-inicio).
+         aquí, 'inicio' en /admin-inicio). Si quien la usa define fallo (la pantalla de error de la
+         maqueta), la propuesta que no se pudo aprobar va sin casilla y con el sello del problema:
+         no entra en la aprobación juntas, y el aviso de arriba ofrece descartarla.
        - tarjeta(p, pestana, fallo): una propuesta pendiente, de a una (Conflictos y Destino).
        - decidida(x): una propuesta decidida, con su sello. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -55,7 +59,9 @@
              cuentas=${a.cuentas},
              ultima=${!conDatos ? '' : (accion == 'corrida' ? (nuevas ? 'Última asignación: hoy, 0:00 · generó 2 propuestas.' : 'Última asignación: hoy, 0:00 · no generó propuestas.') : (a.ultima != null ? 'Última asignación: ' + a.ultima + '.' : 'Todavía no se corrió ninguna asignación.'))}">
   <div class="pila" data-espacio="4" data-pantalla="asignaciones">
-    <div class="pila" data-espacio="3">
+    <div class="pila" data-espacio="3"
+         th:with="cuentaSolicitudes=${!conDatos or inicioSolicitudes == null ? null : (vacioDeEjemplo ? 0 : inicioSolicitudes)},
+                  cuentaPorVencer=${!conDatos or inicioPorVencer == null ? null : (vacioDeEjemplo ? 0 : inicioPorVencer)}">
       <header th:replace="~{admin-asignaciones :: cabecera(${hoy}, ${ultima}, ${corriendo}, 'propuestas')}"></header>
       <nav th:replace="~{admin-asignaciones :: pestanas(${pestana},
                           ${cuentas == null ? null : (vacioDeEjemplo ? 0 : cuentas.sinProblemas)},
@@ -68,28 +74,42 @@
       </p>
     </div>
 
-    <!--/* Los avisos de las pantallas de resultado de la maqueta; fuera de ella llegan a #avisos. */-->
-    <p th:if="${accion == 'aprobada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Aprobaste la propuesta para Comedor Barrio Ejemplo. Las donaciones quedaron asignadas y salen
-      del depósito cuando se arme la ruta.</p>
-    <p th:if="${accion == 'descartada'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>Descartaste la propuesta para Merendero Ejemplo Sur. Las donaciones siguen en el depósito para
-      otra asignación.</p>
-    <p th:if="${accion == 'corrida'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus th:text="${nuevas} ? 'La asignación generó 2 propuestas nuevas.' : 'La asignación no encontró donaciones para ninguna necesidad nueva.'">La
-      asignación no encontró donaciones para ninguna necesidad nueva.</p>
-    <section th:if="${fallo != ''}" class="banner" data-estado="error" role="alert" tabindex="-1" autofocus
-             aria-labelledby="fallo-titulo">
-      <h2 id="fallo-titulo" th:switch="${fallo}">
+    <!--/* Los avisos de las pantallas de resultado de la maqueta, debajo de la cabecera y, con HTMX, en
+           la región de avisos; fuera de ella los trae el layout. hx-swap-oob="beforeend" suma a la
+           región los hijos del elemento que lo lleva: por eso va en una caja sin clase, y a la región
+           llega el aviso entero, con su signo y su cierre. */-->
+    <div th:if="${accion == 'aprobada' or accion == 'descartada' or accion == 'corrida'}"
+         hx-swap-oob="beforeend:#avisos"><div class="aviso-breve" data-estado="hecho" role="status" tabindex="-1"
+        autofocus><svg th:replace="~{componentes/sello :: signo('confirmada')}"></svg><p
+        th:text="${accion == 'aprobada'} ? 'Aprobaste la propuesta para Comedor Barrio Ejemplo. Las donaciones quedaron asignadas y salen del depósito cuando se arme la ruta.' : (${accion == 'descartada'} ? 'Descartaste la propuesta para Merendero Ejemplo Sur. Las donaciones siguen en el depósito para otra asignación.' : (${nuevas} ? 'La asignación generó 2 propuestas nuevas.' : 'La asignación no encontró donaciones para ninguna necesidad nueva.'))">La
+      asignación no encontró donaciones para ninguna necesidad nueva.</p><button
+        type="button" class="aviso-cerrar" data-cerrar aria-label="Cerrar el aviso">×</button></div></div>
+    <!--/* El envío que no se pudo hacer: el aviso del catálogo, sin código ni «Volver a cargar» (no es
+           un error de carga). La propuesta que falló no entra en la aprobación juntas: acá se
+           descarta. */-->
+    <div th:if="${fallo != ''}" class="aviso" data-tipo="error" role="alert" tabindex="-1" autofocus>
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo" th:switch="${fallo}">
         <th:block th:case="'inactiva'">No se pudo aprobar: la necesidad de Merendero Ejemplo Sur ya no está activa
           (la organización la dio de baja o ya se cumplió).</th:block>
         <th:block th:case="'propia'">No se pudo aprobar: una de las donaciones es de la misma organización que la
           pidió.</th:block>
         <th:block th:case="*">Esta propuesta cambió mientras la mirabas.</th:block>
-      </h2>
-      <p th:text="${fallo == 'cambio'} ? 'Volvimos a cargar la lista.' : 'No se asignó nada; podés descartar la propuesta.'">No
-        se asignó nada; podés descartar la propuesta.</p>
-    </section>
+      </p>
+      <p th:text="${fallo == 'cambio'} ? 'Volvimos a cargar la lista.' : 'No se asignó nada. La propuesta para Merendero Ejemplo Sur (Leche en polvo) no se puede aprobar; podés descartarla.'">No
+        se asignó nada. La propuesta para Merendero Ejemplo Sur (Leche en polvo) no se puede aprobar; podés
+        descartarla.</p>
+      <form th:if="${fallo != 'cambio'}" action="/admin-asignaciones-descartada"
+            th:action="@{/admin-asignaciones-descartada}" method="post" hx-boost="true"
+            hx-indicator="#enviando-descartar-fallo" hx-select-oob="#avisos">
+        <input type="hidden" name="propuesta" value="leche">
+        <input type="hidden" name="organizacion" value="Merendero Ejemplo Sur">
+        <input type="hidden" name="pestana" value="propuestas">
+        <button class="boton" data-tono="secundario" data-tamano="chico" type="submit">Descartar la
+          propuesta</button>
+        <p th:replace="~{envio :: indicador('enviando-descartar-fallo', 'Guardando…')}"></p>
+      </form>
+    </div>
 
     <!--/* Todas las decididas (?vista=decididas). La búsqueda, los filtros y el orden (R11-35, ficha
            r11-p2-admin-bandeja §4.3) se resuelven en Donaciones; la barra es el componente listado
@@ -134,17 +154,17 @@
                  pendientes=${vacioDeEjemplo ? 0 : cuentas.pendientes}">
       <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando las propuestas…</p>
 
-      <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
-               aria-labelledby="error-titulo">
-        <h2 id="error-titulo">No pudimos cargar las propuestas.</h2>
+      <div th:if="${escenario == 'error'}" class="aviso" data-tipo="error" role="alert">
+        <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+        <p class="aviso-titulo">No pudimos cargar las propuestas.</p>
         <p>Es un problema nuestro: no cambió ninguna decisión. Probá de nuevo en unos minutos; si sigue,
           <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
              th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-asignaciones')}">escribinos
             con este código</a>.</p>
         <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-        <a class="boton" data-tono="secundario" href="/admin-asignaciones"
+        <a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-asignaciones"
            th:href="@{/admin-asignaciones}">Volver a cargar</a>
-      </section>
+      </div>
 
       <div th:if="${escenario == 'lento'}" class="pila" data-espacio="2" aria-busy="true">
         <div class="esqueleto" data-forma="hueco" data-tamano="alto"></div>
@@ -359,7 +379,8 @@
                alg=${param.algoritmo != null ? param.algoritmo[0] : ''},
                pag=${param.pagina != null ? param.pagina[0] : ''},
                q=${(alg != '' ? '&algoritmo=' + #uris.escapeQueryParam(alg) : '') + (pag != '' ? '&pagina=' + #uris.escapeQueryParam(pag) : '')},
-               m=${#lists.size(filas)}">
+               fallida=${fallo != null and fallo != '' and fallo != 'cambio' ? 'leche' : ''},
+               m=${#lists.size(filas) - (fallida != '' and #lists.contains(filas.![clave], fallida) ? 1 : 0)}">
   <input type="hidden" name="pestana" th:value="${volver}" value="propuestas">
   <table class="tabla" data-forma="seleccion">
     <caption class="solo-lectores">Propuestas sin problemas</caption>
@@ -379,10 +400,14 @@
     </thead>
     <tbody>
       <tr th:each="p : ${filas}">
-        <td><label class="tabla-casilla"><input type="checkbox" name="propuesta" value="lentejas" th:value="${p.clave}"
+        <td th:if="${p.clave != fallida}"><label class="tabla-casilla"><input type="checkbox" name="propuesta" value="lentejas" th:value="${p.clave}"
             th:checked="${todas}" th:aria-label="|Elegir: ${p.cubre}, para ${p.entidad}|"
             aria-label="Elegir: Lentejas · 15 kg (de Juan Ejemplo), para Comedor Barrio Ejemplo"></label></td>
-        <th scope="row" th:text="${p.cubre}">Lentejas · 15 kg (de Juan Ejemplo)</th>
+        <td th:if="${p.clave == fallida}"><span class="estado" data-estado="problema"><svg
+            th:replace="~{componentes/sello :: sello('problema')}"></svg><span class="solo-lectores">No se pudo
+            aprobar</span></span></td>
+        <th scope="row"><th:block th:text="${p.cubre}">Lentejas · 15 kg (de Juan Ejemplo)</th:block><small
+            th:if="${p.clave == fallida}">No se pudo aprobar: descartala en el aviso de arriba.</small></th>
         <td><th:block th:text="${p.entidad}">Comedor Barrio Ejemplo</th:block><small
             th:text="|Pide ${p.pide}|">Pide Lentejas, 15 kg</small></td>
         <td data-columna="ancha" th:text="${p.alcance}">Cubre la necesidad completa.</td>

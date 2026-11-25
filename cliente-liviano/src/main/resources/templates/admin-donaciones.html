@@ -25,7 +25,11 @@
        Fragmentos:
        - hoja(accion): la pantalla entera; accion es '' (la lista), 'detalle' o 'vencida'.
        - bienes(d): la tabla de los bienes.
-       - vencer(d): "Marcar como vencida" y su diálogo (solo en el depósito). */-->
+       - vencer(d): "Marcar como vencida" y su diálogo (solo en el depósito).
+       - hecho(texto): el aviso breve de una acción hecha en la maqueta (registrar, marcar vencida y
+         los resultados de Camiones), con el signo y el cierre, debajo de la cabecera; con HTMX va a la
+         región de avisos. La lista lo muestra si quien la usa define avisoHecho (con th:with,
+         alrededor; lo hace admin-donaciones-registrada). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-privado :: pagina(~{::title}, 'admin-secciones', ~{::contenido})}">
 <head>
@@ -67,20 +71,22 @@
            th:href="@{/admin-donaciones-registrar}">Registrar donación</a>
       </div>
     </div>
+    <th:block th:if="${avisoHecho != null}"><div
+        th:replace="~{admin-donaciones :: hecho(${avisoHecho})}"></div></th:block>
 
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando las donaciones…</p>
 
-    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
-             aria-labelledby="error-titulo">
-      <h2 id="error-titulo">No pudimos cargar las donaciones.</h2>
+    <div th:if="${escenario == 'error'}" class="aviso" data-tipo="error" role="alert">
+      <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo">No pudimos cargar las donaciones.</p>
       <p>Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
         <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
            th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/admin-donaciones')}">escribinos
           con este código</a>.</p>
       <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-      <a class="boton" data-tono="secundario" href="/admin-donaciones"
+      <a class="boton" data-tono="secundario" data-tamano="chico" href="/admin-donaciones"
          th:href="@{/admin-donaciones}">Volver a cargar</a>
-    </section>
+    </div>
 
     <section th:if="${escenario != 'error'}" class="pila" data-espacio="3" aria-labelledby="lista-titulo"
              th:aria-busy="${escenario == 'lento'} ? 'true' : null">
@@ -182,8 +188,8 @@
       </div>
     </div>
 
-    <p th:if="${accion == 'vencida'}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1"
-       autofocus>La marcaste como vencida el 15 de octubre de 2026, 18:35.</p>
+    <th:block th:if="${accion == 'vencida'}"><div
+        th:replace="~{admin-donaciones :: hecho('La marcaste como vencida el 15 de octubre de 2026, 18:35.')}"></div></th:block>
 
     <section th:if="${escenario == 'cambio'}" class="banner" data-estado="error" role="alert" tabindex="-1"
              autofocus aria-labelledby="cambio-titulo">
@@ -276,5 +282,14 @@
       </dialog>
     </th:block>
 </th:block>
+<!--/* El aviso breve de una acción hecha: en el flujo de la página, debajo de la cabecera, y, con
+       HTMX, en la región de avisos. hx-swap-oob="beforeend" suma a la región los hijos del elemento
+       que lo lleva: por eso va en una caja sin clase, y a la región llega el aviso entero, con su
+       signo y su cierre. */-->
+<div th:fragment="hecho(texto)" hx-swap-oob="beforeend:#avisos"><div class="aviso-breve" data-estado="hecho"
+    role="status" tabindex="-1" autofocus><svg th:replace="~{componentes/sello :: signo('confirmada')}"></svg><p
+    th:text="${texto}">Listo.</p><button type="button" class="aviso-cerrar" data-cerrar
+    aria-label="Cerrar el aviso">×</button></div></div>
+
 </body>
 </html>
