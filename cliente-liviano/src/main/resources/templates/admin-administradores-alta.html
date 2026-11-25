@@ -19,9 +19,12 @@
 <th:block th:fragment="contenido">
   <section class="pila" data-espacio="4" data-pantalla="contrasena-provisoria"
            aria-labelledby="provisoria-titulo">
-    <h1 id="provisoria-titulo" tabindex="-1" autofocus
-        th:text="${provisoria.otra} ? |Nueva contraseña provisoria para ${provisoria.nombre}| : |Diste de alta a ${provisoria.nombre}|">Diste
-      de alta a Bruno Díaz</h1>
+    <div class="pila" data-espacio="1">
+      <nav th:replace="~{componentes/migas :: migas(pasos=${ { {texto: 'Administradores', ruta: '/admin-administradores'} } }, actual='Contraseña provisoria')}"></nav>
+      <h1 id="provisoria-titulo" tabindex="-1" autofocus
+          th:text="${provisoria.otra} ? |Nueva contraseña provisoria para ${provisoria.nombre}| : |Diste de alta a ${provisoria.nombre}|">Diste
+        de alta a Bruno Díaz</h1>
+    </div>
     <dl th:replace="~{componentes/datos :: datos(${ { {rotulo: 'Correo', valor: provisoria.correo} } })}"></dl>
     <!--/* La contraseña, con su pila adentro de una caja: el espacio de afuera es el de la página. */-->
     <div>
