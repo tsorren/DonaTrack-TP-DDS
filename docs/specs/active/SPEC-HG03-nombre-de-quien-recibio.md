@@ -74,6 +74,9 @@ de la organización.
 | Recortado, más de 80 caracteres | — | — | no | sí |
 | **Acción** | sin nombre | sin nombre | guarda el recortado | 400, la entrega no cambia |
 
+El tope se cuenta después de recortar, así que el contrato (OpenAPI y JSON Schema) no declara
+`maxLength` sobre el valor que llega: lo dice en la descripción.
+
 Solo vale en la transición a `ENTREGADA`; en las demás transiciones el campo se ignora, como el
 remito.
 

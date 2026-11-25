@@ -82,6 +82,10 @@ class QuienRecibioTest {
     conTope.confirmarEntrega(ORG, FOTOS, null, null, "a".repeat(80));
     assertEquals(80, conTope.getRecibidoPor().length());
 
+    Entrega conBordes = enTraslado();
+    conBordes.confirmarEntrega(ORG, FOTOS, null, null, "  " + "a".repeat(80) + "  ");
+    assertEquals("a".repeat(80), conBordes.getRecibidoPor());
+
     Entrega largo = enTraslado();
     String nombre = "a".repeat(81);
     assertThrows(

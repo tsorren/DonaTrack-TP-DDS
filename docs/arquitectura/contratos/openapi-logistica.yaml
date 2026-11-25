@@ -940,11 +940,11 @@ components:
         recibidoPor:
           type: string
           nullable: true
-          maxLength: 80
           description: >-
             Nombre de la persona que recibió, al pasar a ENTREGADA (HG-03, desde 1.12.0). Opcional;
-            en blanco queda sin nombre y, sin los espacios de los bordes, con más de 80 caracteres
-            da 400. Es un dato personal: sale solo en las lecturas privadas de la entrega, nunca en
+            en blanco queda sin nombre. El servicio quita los espacios de los bordes y después
+            cuenta: con más de 80 caracteres da 400. Por eso el contrato no declara maxLength sobre
+            el valor que llega. Es un dato personal: sale solo en las lecturas privadas de la entrega, nunca en
             el mapa público ni en los eventos (DA-10). El actor sigue siendo la organización.
         reporte:
           type: object

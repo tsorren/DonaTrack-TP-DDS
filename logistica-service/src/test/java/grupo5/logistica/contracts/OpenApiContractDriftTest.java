@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.Request;
+import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.model.SimpleResponse;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -149,6 +150,28 @@ class OpenApiContractDriftTest {
             "/api/entregas/seguimiento/donaciones/" + UUID.randomUUID(),
             Request.Method.GET,
             response);
+    assertFalse(
+        report.hasErrors(), "recibidoPor debe cumplir el contrato: " + report.getMessages());
+  }
+
+  @Test
+  void confirmar_conQuienRecibioDe80CaracteresYEspaciosEnLosBordes_cumpleElContrato() {
+    // HG-03: el tope de 80 se cuenta sin los espacios de los bordes, como en el dominio
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-logistica.yaml");
+    OpenApiInteractionValidator validator = OpenApiInteractionValidator.createFor(specPath).build();
+    String body =
+        "{\"estado\":\"ENTREGADA\",\"actor\":\"org-sintetica\","
+            + "\"fotosRecepcion\":[\"https://ejemplo.test/foto.jpg\"],"
+            + "\"recibidoPor\":\"  "
+            + "a".repeat(80)
+            + "  \"}";
+    SimpleRequest request =
+        SimpleRequest.Builder.patch("/api/entregas/" + UUID.randomUUID() + "/estado")
+            .withContentType("application/json")
+            .withBody(body)
+            .build();
+
+    ValidationReport report = validator.validateRequest(request);
     assertFalse(
         report.hasErrors(), "recibidoPor debe cumplir el contrato: " + report.getMessages());
   }

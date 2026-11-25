@@ -38,8 +38,7 @@
     },
     "recibidoPor": {
       "type": ["string", "null"],
-      "maxLength": 80,
-      "description": "Opcional (HG-03): nombre de la persona que recibió, al pasar a ENTREGADA; en blanco queda sin nombre. Dato personal: no se publica en el mapa ni en los eventos."
+      "description": "Opcional (HG-03): nombre de la persona que recibió, al pasar a ENTREGADA; en blanco queda sin nombre. El servicio quita los espacios de los bordes y después cuenta: con más de 80 caracteres da 400 (por eso no hay maxLength sobre el valor que llega). Dato personal: no se publica en el mapa ni en los eventos."
     },
     "reporte": {
       "type": ["object", "null"],
