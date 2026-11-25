@@ -1052,6 +1052,75 @@ class SitioControllerTest {
   }
 
   /**
+   * Solicitud enviada (PUB2-07, DA-32-solicitud): la página de estado de la solicitud, con sus
+   * cinco escenarios. «Solicitud recibida» es el aviso en la página del catálogo, sin el sello
+   * dibujado a mano, y «Cómo sigue» es la raíz numerada de la huerta.
+   */
+  @Test
+  void laSolicitudEnviadaEsLaPaginaDeEstadoConElAvisoDelCatalogo() throws Exception {
+    String aviso = "class=\"aviso\" data-tipo=\"exito\" role=\"status\"";
+    for (String escenario : List.of("", "con-sesion-pendiente", "corregida", "sin-datos")) {
+      String consulta = escenario.isEmpty() ? "" : "?escenario=" + escenario;
+      mvc.perform(get("/publico-registro-entidad-enviada" + consulta))
+          .andExpect(status().isOk())
+          .andExpect(view().name("publico-registro-entidad-enviada"))
+          .andExpect(content().string(containsString(aviso)))
+          .andExpect(content().string(containsString("Solicitud recibida</p>")))
+          .andExpect(content().string(containsString("class=\"huerta-raiz-pasos\"")))
+          .andExpect(content().string(not(containsString("class=\"recibido"))))
+          .andExpect(content().string(not(containsString("class=\"tramo"))));
+    }
+    mvc.perform(get("/publico-registro-entidad-enviada?escenario=con-sesion-pendiente"))
+        .andExpect(content().string(containsString("Lo que nos enviaste")))
+        .andExpect(content().string(containsString("<dl class=\"datos\">")))
+        .andExpect(content().string(containsString("Corregir los datos")));
+    mvc.perform(get("/publico-registro-entidad-enviada?escenario=corregida"))
+        .andExpect(content().string(containsString("Guardamos los cambios")));
+    mvc.perform(get("/publico-registro-entidad-enviada?escenario=sin-datos"))
+        .andExpect(content().string(containsString("Ahora no podemos mostrarte los datos")))
+        .andExpect(content().string(not(containsString("Corregir los datos"))));
+    mvc.perform(get("/publico-registro-entidad-enviada?escenario=aprobada"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("publico-registro-entidad-enviada"))
+        .andExpect(content().string(containsString("El equipo ya aprobó tu solicitud.")))
+        .andExpect(content().string(not(containsString("Solicitud recibida</p>"))))
+        .andExpect(content().string(not(containsString("Estás acá"))))
+        .andExpect(content().string(containsString("Ingresar de nuevo")))
+        .andExpect(content().string(not(containsString("Lo que nos enviaste"))));
+  }
+
+  /**
+   * El registro de la organización (PUB2-06): el registro en pasos del catálogo, con la columna de
+   * A12 en cada sección: el resumen del error arriba en el aviso del catálogo, con un enlace a cada
+   * campo, y el error de cada campo con su signo.
+   */
+  @Test
+  void elRegistroDeLaOrganizacionUsaLasPiezasDelCatalogo() throws Exception {
+    mvc.perform(get("/publico-registro-entidad"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("publico-registro-entidad"))
+        .andExpect(content().string(containsString("class=\"tarjeta registro-tipo\"")))
+        .andExpect(content().string(containsString("class=\"tarjeta registro-formulario\"")))
+        .andExpect(content().string(containsString("class=\"registro-seccion\" id=\"la-entidad\"")))
+        .andExpect(content().string(containsString("class=\"huerta-raiz-pasos\"")))
+        .andExpect(content().string(containsString("Enviar la solicitud")))
+        .andExpect(content().string(not(containsString("class=\"grupo"))))
+        .andExpect(content().string(not(containsString("class=\"tramo"))));
+    mvc.perform(get("/publico-registro-entidad-error"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("publico-registro-entidad-error"))
+        .andExpect(
+            content()
+                .string(
+                    containsString("class=\"aviso resumen\" data-tipo=\"error\" role=\"alert\"")))
+        .andExpect(content().string(containsString("id=\"resumen\" autofocus")))
+        .andExpect(content().string(containsString("href=\"#que-es\"")))
+        .andExpect(content().string(containsString("href=\"#calle\"")))
+        .andExpect(content().string(containsString("data-signo=\"e-problema\"")))
+        .andExpect(content().string(not(containsString("class=\"banner resumen\""))));
+  }
+
+  /**
    * El menú público de la guía (DA-01, DA-05 y DA-17): Inicio, Entregas, Organizaciones y Cómo
    * funciona (Nosotros), en ese orden y sin el Mapa, que sigue respondiendo y marca Entregas.
    */

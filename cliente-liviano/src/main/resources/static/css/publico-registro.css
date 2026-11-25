@@ -1,10 +1,15 @@
 /* Raíces, sitio A: Crear una cuenta y los registros (publico-registro*.html), y la base de Ingresar.
-   El formulario en su lámina (formularios.css), en grupos con título; y "Cómo sigue", el tramo de
-   raíz de Confirmar recepción: lo cumplido impreso, lo que falta hueco. */
+   El formulario en su lámina (formularios.css), en grupos con título. El registro de quien dona y el
+   de la organización, con su solicitud (PUB2-04 a PUB2-07), ya usan solo piezas del catálogo. */
 @import url("publico-listas.css");
 
 .cuenta .formulario {
   margin-top: 0;
+}
+
+/* La solicitud enviada (PUB2-07): la columna de A12, del ancho del formulario, como Ingresar. */
+main > .pila {
+  max-width: var(--medida-formulario);
 }
 
 .cuenta-salidas p {
@@ -50,32 +55,6 @@
 .campos-par {
   display: grid;
   gap: 1.25rem;
-}
-
-/* Cada grupo de la solicitud, con su título sobre un filete. */
-.grupo {
-  display: grid;
-  gap: 1.25rem;
-  min-width: 0;
-  margin: 0;
-  padding: 1rem 0 0;
-  border: 0;
-  border-top: 2px solid var(--color-tinta);
-}
-
-.grupo > legend {
-  float: left;
-  width: 100%;
-  margin: 0 0 0.25rem;
-  padding: 0;
-  color: var(--color-tinta);
-  font: 800 1.25rem/1.2 var(--fuente-titulo);
-  font-stretch: 115%;
-}
-
-.grupo > small {
-  color: var(--color-tinta-suave);
-  font-size: 0.9375rem;
 }
 
 .opciones small {
@@ -158,257 +137,8 @@
   color: var(--color-tinta);
 }
 
-/* --- Cómo sigue: el tramo de raíz -------------------------------------------------------------- */
-
-.como-sigue h2 {
-  margin: 0 0 1rem;
-}
-
-.tramo {
-  display: grid;
-  gap: 1rem;
-  max-width: 46rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.tramo-paso {
-  position: relative;
-  display: grid;
-  grid-template-columns: 2.75rem minmax(0, 1fr);
-  align-items: center;
-  gap: 1rem;
-}
-
-/* La línea paja al paso siguiente: llena hasta el actual; hueca hacia lo que falta. */
-.tramo-paso:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  top: 2.75rem;
-  bottom: -1rem;
-  left: calc(1.375rem - 3px);
-  width: 6px;
-  background: var(--color-raiz);
-}
-
-.tramo-paso--actual:not(:last-child)::after,
-.tramo-paso--falta:not(:last-child)::after {
-  border: 1.5px solid var(--color-tinta-suave);
-  background: var(--color-papel);
-}
-
-.tramo-paso p {
-  margin: 0;
-  color: var(--color-tinta);
-}
-
-.tramo-paso--falta p {
-  color: var(--color-tinta-suave);
-}
-
-.tramo-sello {
-  width: 2.75rem;
-  height: 2.75rem;
-}
-
-.tramo-numero {
-  fill: var(--color-tinta);
-  font: 800 20px var(--fuente-cifra);
-  text-anchor: middle;
-}
-
-.tramo-paso--falta .tramo-numero {
-  fill: var(--color-tinta-suave);
-}
-
-.tramo-aca {
-  display: inline-block;
-  margin-left: 0.5rem;
-  padding: 0.05rem 0.5rem;
-  border-radius: var(--radio-boton);
-  background: var(--color-acento);
-  color: var(--color-papel);
-  font-size: 0.8125rem;
-  vertical-align: 0.1em;
-}
-
-/* --- Solicitud enviada ------------------------------------------------------------------------- */
-
-.cuenta--enviada {
-  max-width: 46rem;
-}
-
-.cuenta--enviada .recibido {
-  margin: 0;
-}
-
-.recibido-sello {
-  color: var(--color-entregada-texto);
-  font: 800 1.25rem/1.1 var(--fuente-titulo);
-  font-stretch: 118%;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.cuenta--enviada h1 {
-  margin: 0;
-}
-
-/* R11-41: cada bloque toma el ritmo de la pantalla (el gap de .publica), sin márgenes propios; así
-   "Mientras tanto…" queda con las salidas que anuncia y no suelto debajo de la bajada. */
-.cuenta--enviada > :is(p, section) {
-  margin: 0;
-}
-
-.cuenta--enviada .salidas > p {
-  flex-basis: 100%;
-}
-
-/* "Lo que nos enviaste": tres grupos de datos; en el celular, cada dato en dos renglones. */
-.cuenta--enviada [data-parte="enviado"] {
-  --espacio-relleno: var(--espacio-4);
-
-  display: grid;
-  gap: var(--espacio-2);
-}
-
-.cuenta--enviada [data-parte="enviado"] :is(h2, h3, p, dl) {
-  margin: 0;
-}
-
-.cuenta--enviada [data-parte="enviado"] h3 {
-  margin-top: var(--espacio-3);
-}
-
-.cuenta--enviada [data-parte="enviado"] dl {
-  display: grid;
-  gap: var(--espacio-2);
-}
-
-.cuenta--enviada [data-parte="enviado"] dl > div {
-  display: grid;
-  gap: var(--espacio-1);
-}
-
-.cuenta--enviada [data-parte="enviado"] :is(dt, dd) {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
-.cuenta--enviada [data-parte="enviado"] dt {
-  font-weight: 700;
-}
-
-.cuenta--enviada [data-parte="enviado"] dd small {
-  display: block;
-}
-
-.cuenta--enviada [data-parte="enviado"] dd a {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--medida-toque-minimo);
-}
-
-.cuenta--enviada [data-parte="enviado"] > .boton {
-  justify-self: start;
-  margin-top: var(--espacio-3);
-}
-
-/* Corregir (R11-41): "Volver a la solicitud sin guardar", debajo del botón, con su área de toque. */
-.registro-seccion .registro-salida {
-  text-align: start;
-}
-
-.registro-seccion .registro-salida a {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--medida-toque-minimo);
-}
-
-@media (min-width: 37.5em) {
-  .cuenta--enviada [data-parte="enviado"] dl > div {
-    grid-template-columns: 11rem minmax(0, 1fr);
-    gap: var(--espacio-3);
-  }
-}
-
 @media (min-width: 37.5em) {
   .campos-par {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .campos-par:has(.campo--corto) {
-    grid-template-columns: minmax(0, 1fr) 8rem;
-  }
-}
-
-@media (min-width: 53.75em) {
-  /* El tramo, de izquierda a derecha. */
-  .tramo {
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(0, 1fr);
-    gap: 1.5rem;
-  }
-
-  .tramo-paso {
-    grid-template-columns: 1fr;
-    align-items: start;
-    gap: 0.75rem;
-  }
-
-  .tramo-paso:not(:last-child)::after {
-    top: calc(1.375rem - 3px);
-    bottom: auto;
-    left: 2.75rem;
-    right: -1.5rem;
-    width: auto;
-    height: 6px;
-  }
-}
-
-/* En pantalla grande, la solicitud a la izquierda y "Cómo sigue" a su lado, como raíz vertical que
-   acompaña mientras se completa (las dos columnas de Confirmar recepción). */
-@media (min-width: 68.75em) {
-  .cuenta--entidad {
-    grid-template-columns: minmax(0, 38rem) minmax(0, 22rem);
-    column-gap: 4rem;
-    align-items: start;
-  }
-
-  .cuenta--entidad > * {
-    grid-column: 1 / -1;
-  }
-
-  .cuenta--entidad > .como-sigue {
-    grid-column: 2;
-    grid-row: 2;
-    position: sticky;
-    top: calc(var(--medida-cabecera-fija) + 1.5rem);
-  }
-
-  .cuenta--entidad > .formulario {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
-  .cuenta--entidad .tramo {
-    grid-auto-flow: row;
-    gap: 2.25rem;
-  }
-
-  .cuenta--entidad .tramo-paso {
-    grid-template-columns: 2.75rem minmax(0, 1fr);
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .cuenta--entidad .tramo-paso:not(:last-child)::after {
-    top: 2.75rem;
-    bottom: -2.25rem;
-    left: calc(1.375rem - 3px);
-    right: auto;
-    width: 6px;
-    height: auto;
   }
 }
