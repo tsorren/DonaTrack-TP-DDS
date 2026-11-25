@@ -307,7 +307,7 @@ disposición). Del dibujo del mapa quedan en la hoja de la pantalla `.estacion-n
 el rótulo, porque compiten con reglas sin capa de `sellos.css` y `publico-listas.css`.
 
 **Quedan como clases heredadas**, de una sola pantalla: `aviso-brote` (el dibujo del brote de un estado vacío del
-donante), `aviso-acciones` (los botones de un banner de Ingresar), `aviso--nombre` y `aviso-codigo`
+donante), `aviso--nombre` y `aviso-codigo`
 (el renglón de código de un banner de error); y `seguimiento-reserva` (el esqueleto de Seguir entregas
 del donante). El esqueleto de la entidad, que era `hueco`, es desde B2-12 `.esqueleto` con
 `data-forma="hueco"` y `data-tamano="bajo"`.

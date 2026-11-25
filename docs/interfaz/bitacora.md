@@ -31,6 +31,129 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-25 · estados · Las páginas de estado con la composición de lectura de PUB1
+
+- **Decisión:** las páginas de error (403, 404, 429 y 5xx, con su pieza `pagina-error`),
+  `sin-dibujar` y `aviso-persona` repiten la composición de Términos y privacidad: una `.pila` con
+  el `p.huerta-rotulo`, el h1 y la bajada en un `p` simple, y después un `.racimo` con un solo
+  botón lleno. El código para soporte y su enlace van en su propia pila, envuelta en un `div`, y
+  conservan `.aviso-codigo`. Sale la regla `.sin-dibujar` de `privado.css`; el texto de
+  `aviso-persona` no cambia.
+- **Alternativas:** `huerta-bajada` (es la bajada de las secciones de la huerta); `lectura-bajada` y
+  `p.rotulo` (heredadas); la pila del código como hija directa de la de la página (su
+  `data-espacio` la pegaba a los botones, se vio en las capturas); un ancho de lectura propio en la
+  hoja (una pieza nueva); un h1 más corto en `aviso-persona` (texto sin ficha).
+- **Por qué:** las páginas de estado tienen que verse como las de lectura de PUB1, con piezas del
+  catálogo; la ficha `raices-misiones.md` fija el texto del aviso.
+- **Costo:** sin el tope de 38rem, el h1 de `aviso-persona` corre casi todo el ancho a 1280 px
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 5).
+- **Quién decidió:** agente (lote `pub2-estado`), sin consultar.
+- **Evidencia:** `492548f78`; backlog §15.3 (PUB2-08 y PUB2-09).
+
+### 2026-11-25 · formularios · El resumen del error es el `.aviso` del catálogo, sin `.resumen`
+
+- **Decisión:** en Activar y en los dos registros, el resumen del error del servidor es el `.aviso`
+  con `data-tipo="error"`, `role="alert"`, el foco e `id="resumen"`, sin la clase heredada
+  `resumen`: el mismo marcado que Ingresar. Va arriba, dentro del formulario, donde `publico.js`
+  pone el suyo. El texto de cada enlace es el de su `.campo-error` («Falta la calle»).
+- **Alternativas:** `class="aviso resumen"`, para que `publico.js` lo reemplace (lo usaron el
+  donante en la ronda 1 y la organización hasta la revisión de pantallas); sumar `resumen` y pisar
+  `.resumen a` (pide tocar `formularios.css`, hoja compartida); un gancho propio (solo sirve si
+  `publico.js` lo busca, y `static/js` no se edita en esta ola).
+- **Por qué:** con `resumen` se le aplican `.resumen ul` y `.resumen a` de `formularios.css`, y los
+  dos registros, que comparten `componentes/registro`, mostraban el mismo resumen de dos maneras.
+- **Costo:** en los dos registros, un reenvío con errores después de un error del servidor muestra
+  dos resúmenes con JavaScript; la revisión de los lotes lo dejó como bloqueante
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 1). PUB2-05 y PUB2-06 quedan parciales.
+- **Quién decidió:** agente (lotes `pub2-registro-donante` y `pub2-registro-entidad`, y revisión de
+  pantallas de la ola, U1), sin consultar.
+- **Evidencia:** `57ca07271`, `df357b740`, `f36b98e39`, `21f7d3ae3`, `8e0e7f0be`, `40083290f` y
+  `3f23221bb`.
+
+### 2026-11-25 · registro · Los dos registros con `componentes/registro`, como está en el catálogo
+
+- **Decisión:** Crear una cuenta, el registro de quien dona y el de la organización usan la cabeza,
+  las tarjetas, el índice de pasos y `.registro-formulario` con una `section.registro-seccion` con
+  h2 por paso. La dirección va en `.grilla`, con los campos alineados abajo (Calle y Altura en la
+  misma línea); la contraseña con «Mostrar», en un `.racimo` (sale `.clave-fila`, con su línea y
+  sus reglas); el botón, en un `.racimo`; «Volver a la solicitud sin guardar», botón secundario
+  junto a Guardar. `comoSigue(paso, nivel)` da un h3 dentro de Confirmar y un h2 en la solicitud
+  enviada, con `huerta :: raiz-pasos`. El estado lento lleva `aria-busy` y no `disabled`, como
+  Ingresar. `campos-par` se queda en los campos de la persona.
+- **Alternativas:** `fieldset.grupo` por paso; `.campos-par` y `.campo--corto` en la dirección;
+  `align-items: start` (la Altura quedaba arriba); una bajada entre «Confirmar» y «Cómo sigue»;
+  editar `componentes/registro.css` para centrar la salida (es del catálogo).
+- **Por qué:** el catálogo ya resuelve el registro en una página, y las dos pantallas tienen que
+  comportarse igual que Ingresar.
+- **Costo:** dos reglas de disposición en `publico-registro.css` que serían del catálogo (el input
+  del `.racimo` y `margin-inline: auto` de `.registro-salida`); quedan reglas sin uso en esa hoja
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 2).
+- **Quién decidió:** agente (lotes `pub2-registro-donante` y `pub2-registro-entidad`, y revisión de
+  pantallas de la ola), sin consultar.
+- **Evidencia:** `57ca07271`, `1dd71c308`, `e2232c725`, `40083290f` y `3f23221bb`; backlog §15.3
+  (PUB2-04 a PUB2-06).
+
+### 2026-11-25 · cuenta · Recuperar, Activar y Pedir el enlace en la columna de Ingresar
+
+- **Decisión:** las tres pantallas son la columna de Ingresar: un `.pila` con el h1 sin rótulo ni
+  `<em>` y la bajada, los campos del catálogo, una sola acción llena y la salida a Ingresar como
+  enlace. La contraseña con «Mostrar» va en un `.racimo` dentro del `.campo`; el correo de solo
+  lectura y la contraseña, sin placeholder. El banner de enlace vencido usa `.racimo`, con «Pedir
+  otro enlace» lleno e «Ir a Ingresar» secundario. Activar tiene un solo fragmento
+  `hoja(conError, lista)` para el formulario, el error y la cuenta lista. El estado lento, con
+  `aria-busy` y sin `disabled`.
+- **Alternativas:** conservar el rótulo «Ingresar» o «Activar cuenta» (o pasarlo a
+  `.huerta-rotulo`, como Contacto); una plantilla aparte para la cuenta lista; la salida como botón
+  dentro del banner; conservar `disabled` en Activar.
+- **Por qué:** Ingresar es la columna de referencia de la misma hoja, `publico-ingresar.css`, que
+  ya dispone `main > .pila`.
+- **Costo:** el correo de solo lectura se ve igual que uno editable
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 4). Salen de `clases-heredadas.txt`
+  `aviso-acciones`, `cuenta-principal`, `cuenta-salida` y `publica-cabeza`, con sus reglas.
+- **Quién decidió:** agente (lote `pub2-cuenta` y revisión de pantallas de la ola), sin consultar.
+- **Evidencia:** `d03df922f` y `3f23221bb`; backlog §15.3 (PUB2-01 y PUB2-02).
+
+### 2026-11-25 · solicitud · «Solicitud enviada» sigue como página de estado, con lo recibido en el aviso (DA-32)
+
+- **Decisión:** `/publico-registro-entidad-enviada` se queda como la página de estado de la
+  solicitud, con sus cinco escenarios. «Solicitud recibida» (y «Guardamos los cambios» en
+  `corregida`, dentro del mismo aviso) va en el `.aviso` con `data-tipo="exito"`, sin `.recibido`.
+  En `aprobada` se ocultan el aviso, la bajada, «Cómo sigue» y «Mientras tanto»: queda el banner
+  «El equipo ya aprobó tu solicitud.» con «Ingresar de nuevo» como única acción llena. La pantalla
+  sigue con la hoja `publico-registro` y la columna de Ingresar.
+- **Alternativas:** pasar «Solicitud enviada» a un aviso breve (rompe «Ver mi solicitud» y los
+  escenarios de R11-41); en `aprobada`, el aviso «en revisión» junto a «ya la aprobó», o un título
+  propio del estado (texto sin ficha); «Guardamos los cambios» en un banner aparte (dos
+  `role="status"`); la hoja `publico-ingresar` (marcaba «Ingresar» en el menú).
+- **Por qué:** a esa página se vuelve; no es la respuesta a un envío.
+- **Costo:** en `aprobada`, las salidas quedan sin su frase introductoria
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 6).
+- **Quién decidió:** usuario (DA-32, la recomendada, delegada por el relevamiento del 2026-11-24).
+  El caso `aprobada`, el aviso de `corregida` y la hoja, agente (lote `pub2-registro-entidad` y
+  revisión de pantallas). Consta como no cumplida: la revisión de pantallas de la ola no llegó a
+  PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `1dd71c308`, `8e0e7f0be` y `3f23221bb`; backlog §15.3 (PUB2-07).
+
+### 2026-11-25 · cuenta · Las respuestas de la cuenta en su misma pantalla, con el aviso (DA-32)
+
+- **Decisión:** Recuperar (`/publico-recuperar-enviado`) y Pedir el enlace
+  (`/publico-activar-pedido`) muestran su misma pantalla con el `.aviso` de éxito en el lugar del
+  formulario, y la bajada que pide el correo se va. Activar (`/publico-activar-lista`) muestra la
+  pantalla de Activar con el aviso «Tu cuenta está lista» e Ingresar como única acción llena; el h1
+  sigue «Activá tu cuenta». Las tres rutas siguen y ninguna lleva `.recibido`.
+- **Alternativas:** el aviso breve que se va solo, como Contacto; llevar Activar a Ingresar con un
+  aviso breve (edita una pantalla de PUB1); «Tu cuenta está lista» como h1 (repetía el aviso).
+- **Por qué:** el aviso dice qué hacer después; si se va, queda el formulario vacío y la persona
+  vuelve a pedir el enlace (regla 28 de [patrones](patrones-y-microcopy.md)).
+- **Costo:** las tres rutas de respuesta siguen en la maqueta. Las aserciones de
+  `SitioControllerTest` pasan a «Tu cuenta está lista» (en el aviso) y `<h1>Activá tu cuenta</h1>`,
+  igual de fuertes.
+- **Quién decidió:** usuario (DA-32, la recomendada, delegada por el relevamiento del 2026-11-24).
+  El h1 de la cuenta lista y la bajada que se va, agente (lote `pub2-cuenta` y revisión de
+  pantallas). Consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS; el
+  comportamiento está en el código y en los tests.
+- **Evidencia:** `d03df922f` y `3f23221bb`; backlog §15.3 (PUB2-03).
+
 ### 2026-11-25 · galpón · Los errores y los avisos del galpón con las piezas del catálogo
 
 - **Decisión:** el error de carga de una lista del galpón (Donaciones, Asignar, Camiones, Ranking y

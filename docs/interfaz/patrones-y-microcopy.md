@@ -125,6 +125,12 @@ resumen:
     decidir.»). Con una sola, el aviso de siempre.
     La cuenta de lo elegido se lee en la barra y en el botón («Elegiste 2 de 4.», «Aprobar las 2»,
     «Aprobar la elegida»), nunca «Aprobar las 1» (DA-26; oleada ADM1, 2026-11-25).
+28. Cuando la respuesta a un envío dice qué hacer después («Revisá tu bandeja de entrada»), no se
+    va sola: es el aviso en la página (`.aviso` con `data-tipo="exito"` y `role="status"`), en la
+    misma pantalla y en el lugar del formulario, sin página propia ni sello dibujado a mano. Lleva
+    a lo sumo una acción llena (en Activar, «Ingresar»). Una página a la que se vuelve, como la de
+    la solicitud de la organización, no es una respuesta: se queda como pantalla y dice lo recibido
+    con ese mismo aviso (DA-32; oleada PUB2, 2026-11-25).
 
 ## Reglas generales de la revisión del 2026-11-11
 
