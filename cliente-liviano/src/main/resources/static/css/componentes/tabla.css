@@ -200,9 +200,11 @@
    casilla entera y recibe el foco y el toque; la casilla dibujada (::before) no es interactiva, como
    la del buzón (DA-21). La fila elegida va en `--color-fila-elegida`. Las columnas con
    `data-columna="ancha"` se esconden por debajo de 56 em: en el celular quedan la casilla, el título
-   de la fila y una columna más. Arriba, la barra de las elegidas (`.tabla-elegidas`): lo que se
-   elige y las acciones del lote. La guía mide la casilla dibujada en 1,375 rem: va con el token más
-   cercano (--espacio-4), y la tilde, con --espacio-1 y --espacio-2. */
+   de la fila y una columna más. En el encabezado, la casilla de elegir todas: un enlace
+   `a.tabla-casilla` que vuelve a la pantalla con todas marcadas desde el servidor (marcada, con
+   `data-estado="elegida"`). Arriba, la barra de las elegidas (`.tabla-elegidas`): cuántas se
+   eligieron y las acciones del lote. La guía mide la casilla dibujada en 1,375 rem: va con el
+   token más cercano (--espacio-4), y la tilde, con --espacio-1 y --espacio-2. */
 .tabla[data-forma="seleccion"] {
   display: table;
   background: var(--color-superficie);
@@ -301,12 +303,12 @@
   background: var(--color-campo);
 }
 
-.tabla-casilla:has(:checked)::before {
+.tabla-casilla:is(:has(:checked), [data-estado="elegida"])::before {
   border-color: var(--color-accion-primaria);
   background: var(--color-accion-primaria);
 }
 
-.tabla-casilla:has(:checked)::after {
+.tabla-casilla:is(:has(:checked), [data-estado="elegida"])::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -319,13 +321,16 @@
   rotate: 45deg;
 }
 
-.tabla-casilla:has(:focus-visible) {
+.tabla-casilla:is(:has(:focus-visible), :focus-visible) {
   outline: var(--borde-ancho-foco) solid var(--color-foco);
   outline-offset: calc(-1 * var(--borde-ancho-foco));
 }
 
 /* La barra de las elegidas: el texto a la izquierda y las acciones a la derecha; bajan de renglón
-   si no entran. */
+   si no entran. Va después de la tabla en la página, dentro de la misma .pila, y se dibuja arriba:
+   así cuenta las casillas marcadas sin JavaScript, con un contador de CSS (`[data-parte="cuenta"]`
+   escribe el número), y no queda vieja al destildar una. Lo que dice con alguna elegida
+   (`data-elegidas="alguna"`) reemplaza a lo que dice sin ninguna (`data-elegidas="ninguna"`). */
 .tabla-elegidas {
   display: flex;
   flex-wrap: wrap;
@@ -342,13 +347,43 @@
   margin: 0;
 }
 
+.pila > .tabla-elegidas {
+  order: -1;
+  margin-block: 0 var(--espacio-entre, var(--espacio-3));
+}
+
+.pila > .tabla[data-forma="seleccion"] {
+  margin-block-start: 0;
+}
+
+:has(> .tabla[data-forma="seleccion"]) {
+  counter-reset: tabla-elegidas;
+}
+
+.tabla[data-forma="seleccion"] tbody .tabla-casilla:has(:checked) {
+  counter-increment: tabla-elegidas;
+}
+
+.tabla-elegidas [data-parte="cuenta"]::before {
+  content: counter(tabla-elegidas);
+}
+
+.tabla-elegidas [data-elegidas="alguna"],
+:has(> .tabla[data-forma="seleccion"] tbody :checked) > .tabla-elegidas [data-elegidas="ninguna"] {
+  display: none;
+}
+
+:has(> .tabla[data-forma="seleccion"] tbody :checked) > .tabla-elegidas [data-elegidas="alguna"] {
+  display: inline;
+}
+
 /* Con los colores del sistema, la casilla elegida se pinta con el color del texto. */
 @media (forced-colors: active) {
   .tabla-casilla::before {
     border-color: CanvasText;
   }
 
-  .tabla-casilla:has(:checked)::before {
+  .tabla-casilla:is(:has(:checked), [data-estado="elegida"])::before {
     background: CanvasText;
   }
 

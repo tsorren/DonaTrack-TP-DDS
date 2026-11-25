@@ -1843,12 +1843,48 @@ class SitioControllerTest {
                     containsString(
                         "name=\"propuesta\" value=\"lentejas\" aria-label=\"Elegir: Lentejas · 15"
                             + " kg (de Juan Ejemplo), para Comedor Barrio Ejemplo\"")))
-        .andExpect(content().string(containsString(">Aprobar las elegidas</button>")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "data-elegidas=\"ninguna\">Aprobar las elegidas</span><span"
+                            + " data-elegidas=\"alguna\">Aprobar <span")))
+        .andExpect(
+            content().string(containsString("<span data-parte=\"cuenta\"></span> de 4.</b>")))
+        // ADM1-04: la casilla de elegir todas es un enlace que vuelve con todas marcadas
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<a class=\"tabla-casilla\" href=\"/admin-asignaciones?elegir=todas\"")))
+        .andExpect(
+            content().string(containsString("aria-label=\"Elegir todas las propuestas\"></a>")))
+        .andExpect(content().string(not(containsString("checked=\"checked\"></label>"))))
         .andExpect(
             content().string(containsString("formaction=\"/admin-asignaciones-descartada\"")))
         .andExpect(content().string(containsString("Hay 4 propuestas en conflicto.")))
         .andExpect(
             content().string(containsString("href=\"/admin-asignaciones?vista=decididas\"")));
+    mvc.perform(get("/admin-asignaciones?elegir=todas"))
+        .andExpect(
+            content()
+                .string(
+                    containsString("para Comedor Barrio Ejemplo\" checked=\"checked\"></label>")))
+        .andExpect(
+            content()
+                .string(containsString("<a class=\"tabla-casilla\" href=\"/admin-asignaciones\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "aria-label=\"Sacar la elección de todas las propuestas\""
+                            + " data-estado=\"elegida\"></a>")));
+    mvc.perform(get("/admin-asignaciones?algoritmo=las-dos&pagina=1"))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/admin-asignaciones?elegir=todas&amp;algoritmo=las-dos&amp;pagina=1\"")));
     mvc.perform(get("/admin-asignaciones?escenario=vacio"))
         .andExpect(content().string(containsString("No hay propuestas que esperen tu decisión.")));
     mvc.perform(get("/admin-asignaciones?escenario=corriendo"))

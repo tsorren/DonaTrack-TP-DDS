@@ -191,7 +191,7 @@
             th:replace="~{admin-asignaciones :: propuestas(${filas}, 'propuestas')}"></form></th:block>
         <p th:if="${n > 0}" th:with="cuantas=${#lists.size(filas)},
                                       desde=${tramo.pagina < tramo.paginas ? (tramo.pagina - 1) * cuantas + 1 : tramo.total - cuantas + 1}"
-           data-tono="suave"
+           class="texto-chico" data-tono="suave"
            th:text="|Mostrando ${desde} a ${desde + cuantas - 1} de ${#numbers.formatInteger(n, 1, 'POINT')} propuestas sin problemas.|">Mostrando
           1 a 4 de 4 propuestas sin problemas.</p>
         <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
@@ -307,11 +307,11 @@
 
 <!--/* La cabecera de Por decidir (A03; DA-25): el título y, debajo, la fecha y la última asignación;
        a la derecha (abajo en el celular), «Correr la asignación» (el POST de siempre) y «Registrar
-       donación». Ninguna va llena: la acción llena de la mesa es «Aprobar las elegidas». */-->
+       donación». Ninguna va llena: la acción llena de la mesa es «Aprobar». */-->
 <header th:fragment="cabecera(fecha, ultima, corriendo, volver)" class="racimo" data-alinea="entre arriba">
   <div class="pila" data-espacio="0">
     <h1>Por decidir</h1>
-    <p data-tono="suave"><th:block th:text="|${fecha}.|">Martes 24 de noviembre de 2026.</th:block><th:block
+    <p class="texto-chico" data-tono="suave"><th:block th:text="|${fecha}.|">Martes 24 de noviembre de 2026.</th:block><th:block
         th:if="${ultima != null and ultima != ''}" th:text="| ${ultima}|"> Última asignación: hoy, 0:00 · generó 12
       propuestas.</th:block></p>
   </div>
@@ -340,30 +340,35 @@
 </nav>
 
 <!--/* Las propuestas sin problemas en la tabla con selección (P21; DA-26): se eligen varias y se
-       aprueban o se descartan juntas. «Aprobar las elegidas» es la única acción llena; «Descartar»
-       manda el mismo formulario a otra dirección (formaction), con el motivo opcional. Cada casilla
-       manda una propuesta; el envío vuelve a la pestaña oculta (volver). En el celular se ven la
-       casilla, la donación y para quién es; el resto, desde 56 em. Sin JavaScript anda igual: la
-       casilla de elegir todas y la cuenta de las elegidas en vivo quedan pendientes (static/js no se
-       edita en esta ola). */-->
+       aprueban o se descartan juntas. «Aprobar» es la única acción llena; «Descartar» manda el mismo
+       formulario a otra dirección (formaction), con el motivo opcional. Cada casilla manda una
+       propuesta; el envío vuelve a la pestaña oculta (volver). En el celular se ven la casilla, la
+       donación y para quién es; el resto, desde 56 em. Todo anda sin JavaScript: la casilla de elegir
+       todas es un enlace que vuelve a la misma pantalla (/admin-inicio con volver 'inicio') con
+       ?elegir=todas, que el servidor dibuja con todas marcadas, y la conserva con el filtro y la
+       página; marcada, el enlace las saca. La cuenta de las elegidas («Elegiste N de M.» y «Aprobar
+       N») la lleva la hoja de la tabla (un contador de CSS), así que no queda vieja si se destilda
+       una. Por eso la barra va después de la tabla y la hoja la sube arriba. */-->
 <form th:fragment="propuestas(filas, volver)" class="pila" data-espacio="2" method="post"
       action="/admin-asignaciones-aprobada" th:action="@{/admin-asignaciones-aprobada}" hx-boost="true"
-      hx-indicator="#enviando-propuestas" hx-select-oob="#avisos" aria-label="Propuestas sin problemas">
+      hx-indicator="#enviando-propuestas" hx-select-oob="#avisos" hx-disinherit="hx-indicator hx-select-oob"
+      aria-label="Propuestas sin problemas"
+      th:with="todas=${param.elegir != null and param.elegir[0] == 'todas'},
+               base=${volver == 'inicio' ? '/admin-inicio' : '/admin-asignaciones'},
+               alg=${param.algoritmo != null ? param.algoritmo[0] : ''},
+               pag=${param.pagina != null ? param.pagina[0] : ''},
+               q=${(alg != '' ? '&algoritmo=' + #uris.escapeQueryParam(alg) : '') + (pag != '' ? '&pagina=' + #uris.escapeQueryParam(pag) : '')},
+               m=${#lists.size(filas)}">
   <input type="hidden" name="pestana" th:value="${volver}" value="propuestas">
-  <div class="tabla-elegidas">
-    <p>Elegí las que quieras decidir juntas.</p>
-    <div class="racimo" data-espacio="1">
-      <button class="boton" data-tamano="chico" type="submit" formaction="/admin-asignaciones-descartada"
-              th:formaction="@{/admin-asignaciones-descartada}">Descartar</button>
-      <button class="boton" data-tono="principal" data-tamano="chico" type="submit">Aprobar las elegidas</button>
-      <p th:replace="~{envio :: indicador('enviando-propuestas', 'Guardando…')}"></p>
-    </div>
-  </div>
   <table class="tabla" data-forma="seleccion">
     <caption class="solo-lectores">Propuestas sin problemas</caption>
     <thead>
       <tr>
-        <th scope="col"><span class="solo-lectores">Elegir</span></th>
+        <th scope="col"><a class="tabla-casilla" href="/admin-asignaciones?elegir=todas"
+            th:href="${todas} ? @{${q == '' ? base : base + '?' + #strings.substring(q, 1)}} : @{|${base}?elegir=todas${q}|}"
+            th:attr="data-estado=${todas} ? 'elegida' : null"
+            th:aria-label="${todas} ? 'Sacar la elección de todas las propuestas' : 'Elegir todas las propuestas'"
+            aria-label="Elegir todas las propuestas"></a></th>
         <th scope="col">Donación</th>
         <th scope="col">Para</th>
         <th scope="col" data-columna="ancha">Cubre</th>
@@ -374,7 +379,7 @@
     <tbody>
       <tr th:each="p : ${filas}">
         <td><label class="tabla-casilla"><input type="checkbox" name="propuesta" value="lentejas" th:value="${p.clave}"
-            th:aria-label="|Elegir: ${p.cubre}, para ${p.entidad}|"
+            th:checked="${todas}" th:aria-label="|Elegir: ${p.cubre}, para ${p.entidad}|"
             aria-label="Elegir: Lentejas · 15 kg (de Juan Ejemplo), para Comedor Barrio Ejemplo"></label></td>
         <th scope="row" th:text="${p.cubre}">Lentejas · 15 kg (de Juan Ejemplo)</th>
         <td><th:block th:text="${p.entidad}">Comedor Barrio Ejemplo</th:block><small
@@ -388,6 +393,18 @@
       </tr>
     </tbody>
   </table>
+  <div class="tabla-elegidas">
+    <p><span data-elegidas="ninguna">Elegí las que quieras decidir juntas.</span><b data-elegidas="alguna">Elegiste
+      <span data-parte="cuenta"></span> de <th:block th:text="${m}">4</th:block>.</b></p>
+    <div class="racimo" data-espacio="1">
+      <button class="boton" data-tamano="chico" type="submit" formaction="/admin-asignaciones-descartada"
+              th:formaction="@{/admin-asignaciones-descartada}">Descartar</button>
+      <button class="boton" data-tono="principal" data-tamano="chico" type="submit"><span
+          data-elegidas="ninguna">Aprobar las elegidas</span><span data-elegidas="alguna">Aprobar <span
+          data-parte="cuenta"></span></span></button>
+      <p th:replace="~{envio :: indicador('enviando-propuestas', 'Guardando…')}"></p>
+    </div>
+  </div>
   <details>
     <summary class="boton" data-tono="secundario" data-tamano="chico">Escribir un motivo para descartar</summary>
     <div class="campo">

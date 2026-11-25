@@ -1652,26 +1652,26 @@
         </th:block>
       </div>
       <!--/* La tabla del galpón con selección (ADM1-04, DA-18 y DA-21), también a todo el ancho. */-->
-      <div th:replace="~{componentes/muestra :: muestra('.tabla[data-forma=&quot;seleccion&quot;], .tabla-casilla y .tabla-elegidas', 'La tabla del galpón con selección: densa y una tabla en todos los anchos. Cada fila empieza con su casilla sola de 48 × 48 px (label.tabla-casilla con el input checkbox, transparente, encima de la casilla dibujada); la fila elegida se pinta. Arriba, la barra de las elegidas con sus acciones: una sola llena. Las columnas con data-columna=&quot;ancha&quot; se esconden en el celular. Achicá la ventana para verlo.', ~{::demo-tabla-seleccion})}">
+      <div th:replace="~{componentes/muestra :: muestra('.tabla[data-forma=&quot;seleccion&quot;], .tabla-casilla y .tabla-elegidas', 'La tabla del galpón con selección: densa y una tabla en todos los anchos. Cada fila empieza con su casilla sola de 48 × 48 px (label.tabla-casilla con el input checkbox, transparente, encima de la casilla dibujada); la fila elegida se pinta. En el encabezado, la casilla de elegir todas: un enlace a.tabla-casilla que vuelve a la pantalla con todas marcadas desde el servidor (data-estado=&quot;elegida&quot;, marcada). Arriba, la barra de las elegidas: cuenta las marcadas sin JavaScript (va después de la tabla y se dibuja arriba) y lleva sus acciones, una sola llena. Marcá y desmarcá para ver la cuenta. Las columnas con data-columna=&quot;ancha&quot; se esconden en el celular. Achicá la ventana para verlo.', ~{::demo-tabla-seleccion})}">
         <th:block th:fragment="demo-tabla-seleccion">
           <form class="pila" data-espacio="2" action="#tabla-seleccion" aria-label="Propuestas de ejemplo">
-            <div class="tabla-elegidas">
-              <p>Elegí las que quieras decidir juntas.</p>
-              <div class="racimo" data-espacio="1">
-                <button class="boton" data-tamano="chico" type="button">Descartar</button>
-                <button class="boton" data-tono="principal" data-tamano="chico" type="button">Aprobar las elegidas</button>
-              </div>
-            </div>
             <table class="tabla" data-forma="seleccion" id="tabla-seleccion">
               <caption class="solo-lectores">Propuestas de ejemplo</caption>
               <thead>
-                <tr><th scope="col"><span class="solo-lectores">Elegir</span></th><th scope="col">Donación</th><th scope="col">Para</th><th scope="col" data-columna="ancha">Cubre</th><th scope="col" data-columna="ancha">Sugerida por</th></tr>
+                <tr><th scope="col"><a class="tabla-casilla" href="#tabla-seleccion" aria-label="Elegir todas las propuestas"></a></th><th scope="col">Donación</th><th scope="col">Para</th><th scope="col" data-columna="ancha">Cubre</th><th scope="col" data-columna="ancha">Sugerida por</th></tr>
               </thead>
               <tbody>
                 <tr><td><label class="tabla-casilla"><input type="checkbox" name="muestra-propuesta" value="arroz" checked aria-label="Elegir: Arroz largo fino · 10 kg, para Comedor Barrio Ejemplo"></label></td><th scope="row">Arroz largo fino · 10 kg (de Distribuidora Ejemplo SA)</th><td>Comedor Barrio Ejemplo<small>Pide Arroz, 25 kg</small></td><td data-columna="ancha">Cubre 10 de 25 kg; el resto sigue pendiente.</td><td data-columna="ancha">Quienes menos recibieron · 1.º de 6</td></tr>
                 <tr><td><label class="tabla-casilla"><input type="checkbox" name="muestra-propuesta" value="yogur" aria-label="Elegir: Yogur · 24 unidades, para Merendero Ejemplo Sur"></label></td><th scope="row">Yogur · 24 unidades (de Fundación Ejemplo Sur)</th><td>Merendero Ejemplo Sur<small>Pide Yogur, 24 unidades</small></td><td data-columna="ancha">Cubre la necesidad completa.</td><td data-columna="ancha">Parecido con lo pedido · 2.º de 10</td></tr>
               </tbody>
             </table>
+            <div class="tabla-elegidas">
+              <p><span data-elegidas="ninguna">Elegí las que quieras decidir juntas.</span><b data-elegidas="alguna">Elegiste <span data-parte="cuenta"></span> de 2.</b></p>
+              <div class="racimo" data-espacio="1">
+                <button class="boton" data-tamano="chico" type="button">Descartar</button>
+                <button class="boton" data-tono="principal" data-tamano="chico" type="button"><span data-elegidas="ninguna">Aprobar las elegidas</span><span data-elegidas="alguna">Aprobar <span data-parte="cuenta"></span></span></button>
+              </div>
+            </div>
           </form>
         </th:block>
       </div>
