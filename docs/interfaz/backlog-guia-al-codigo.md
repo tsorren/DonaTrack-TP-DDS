@@ -1167,18 +1167,20 @@ Suma: 7 + 3 + 4 + 7 = 21. Son las 19 de §5 (14 y 5 comunes), más `error/429` y
 Ninguna de las hojas de PUB2 sale de `HOJAS_HEREDADAS` en esta ola, porque las cinco las usan
 también pantallas de otras olas. Si una queda sin reglas heredadas, se anota para Z.
 
-**Las clases heredadas que comparten dos lotes.** En `clases-heredadas.txt` cada lote borra solo
-las líneas de las clases que deja sin uso. `publica`, `cuenta` y `recibido` las usan plantillas de
-los dos lotes: `publica` y `cuenta`, las cuatro de `pub2-cuenta` con `.publica` y
-`publico-registro-entidad-enviada`; `recibido`, `publico-activar-lista` y
-`publico-registro-entidad-enviada`. Los dos lotes las sacan de sus plantillas (regla 1 y DA-32),
-pero ninguno puede borrar esas líneas en su rama, porque la plantilla del otro todavía las usa. Al
-integrar la tanda 1 quedan sin uso y
+**Las clases heredadas que comparten varios lotes.** En `clases-heredadas.txt` cada lote borra solo
+las líneas de las clases que deja sin uso. Una clase heredada que usan plantillas de dos o más lotes
+de PUB2, y ninguna de fuera de la ola, no la puede borrar ningún lote en su rama, porque la plantilla
+del otro todavía la usa. `[OBSERVED]` Hoy son siete: `publica` y `cuenta` (las cuatro de
+`pub2-cuenta` con `.publica` y `publico-registro-entidad-enviada`), `recibido`
+(`publico-activar-lista` y `publico-registro-entidad-enviada`), `campos-par` y `casilla`
+(`publico-registro-donante` y `publico-registro-entidad`), `clave-fila` (`publico-activar` y los
+dos registros) y `lectura-bajada` (cuatro de `pub2-cuenta`, `publico-registro-entidad-enviada` y
+`pagina-error`). Si al integrar la tanda 1 alguna queda sin uso,
 `InterfazFitnessTest.clasesDeLasPlantillasEstanEnElCatalogoOEnLasHeredadas` da rojo. Es un choque
-entre lotes y lo arregla el integrador de la tanda (su paso 4): borra las de esas tres que ya no
-usa ninguna plantilla y, con cada una, las reglas que quedan sin uso (`.recibido` en
-`publico-paginas.css`, `.publica` en `publico-listas.css` y `.cuenta .formulario` en
-`publico-registro.css`). Lo dice la regla 4.
+entre lotes y lo arregla el integrador de la tanda (su paso 4): borra cada línea que ya no usa
+ninguna plantilla y, con cada una, las reglas que quedan sin uso en las hojas compartidas (por
+ejemplo `.recibido` en `publico-paginas.css`, `.publica` en `publico-listas.css` y
+`.cuenta .formulario` en `publico-registro.css`). Lo dice la regla 4.
 
 ### 15.3 Ítems
 
