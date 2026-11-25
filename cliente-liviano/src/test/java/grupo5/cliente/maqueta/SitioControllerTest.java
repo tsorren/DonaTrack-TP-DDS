@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import grupo5.cliente.vistas.OpcionNavegacion;
 import grupo5.cliente.web.TraceIdFiltro;
 import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
@@ -1482,6 +1483,58 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("menu-completo"))));
   }
 
+  /**
+   * El menú del admin (DA-04, DA-17 y DA-25): Por decidir, Donaciones, Donantes, Organizaciones,
+   * Camiones y Ranking. Por decidir lleva al inicio y queda marcada también en Asignar y en sus
+   * respuestas; ya no hay Inicio ni Asignar donaciones.
+   */
+  @Test
+  void elMenuDelAdminEsElDelGalpon() throws Exception {
+    List<String> textos =
+        List.of("Por decidir", "Donaciones", "Donantes", "Organizaciones", "Camiones", "Ranking");
+    List<String> rutas =
+        List.of(
+            "/admin-inicio",
+            "/admin-donaciones",
+            "/admin-donantes",
+            "/admin-entidades",
+            "/admin-camiones",
+            "/admin-ranking");
+    for (String ruta :
+        List.of("/admin-inicio", "/admin-asignaciones", "/admin-asignaciones-aprobada")) {
+      MvcResult resultado =
+          mvc.perform(get(ruta))
+              .andExpect(status().isOk())
+              .andExpect(model().attribute("seccion", "Por decidir"))
+              .andReturn();
+      List<OpcionNavegacion> menu = menuDe(resultado);
+      assertEquals(textos, menu.stream().map(OpcionNavegacion::texto).toList(), ruta);
+      assertEquals(rutas, menu.stream().map(OpcionNavegacion::ruta).toList(), ruta);
+      assertEquals(
+          List.of(true, false, false, false, false, false),
+          menu.stream().map(OpcionNavegacion::actual).toList(),
+          ruta);
+      String html = resultado.getResponse().getContentAsString(StandardCharsets.UTF_8);
+      String nav = html.substring(html.indexOf("<nav id=\"menu\""), html.indexOf("</nav>"));
+      assertTrue(
+          Pattern.compile("<a\\s+href=\"/admin-inicio\"[^>]*aria-current=\"page\"")
+              .matcher(nav)
+              .find(),
+          ruta + ": Por decidir marcada");
+      assertFalse(nav.contains("Asignar donaciones"), ruta);
+      assertFalse(nav.contains("<span>Inicio</span>"), ruta);
+    }
+    MvcResult donaciones = mvc.perform(get("/admin-donaciones")).andReturn();
+    assertEquals(
+        List.of(false, true, false, false, false, false),
+        menuDe(donaciones).stream().map(OpcionNavegacion::actual).toList());
+  }
+
+  @SuppressWarnings("unchecked")
+  private static List<OpcionNavegacion> menuDe(MvcResult resultado) {
+    return (List<OpcionNavegacion>) resultado.getModelAndView().getModel().get("navegacion");
+  }
+
   /** Las pantallas dibujadas de verdad (no caen en "sin dibujar"). */
   private static final List<String> DIBUJADAS =
       List.of(
@@ -1768,7 +1821,7 @@ class SitioControllerTest {
   @Test
   void lasPropuestasSeApruebanODescartan() throws Exception {
     mvc.perform(get("/admin-asignaciones"))
-        .andExpect(model().attribute("seccion", "Asignar donaciones"))
+        .andExpect(model().attribute("seccion", "Por decidir"))
         .andExpect(content().string(containsString("Propuestas sin problemas · 4")))
         .andExpect(content().string(containsString("Cubre 10 de 12 unidades")))
         .andExpect(

@@ -729,7 +729,7 @@
                 '/publico-para-donantes', 'Ver todo para donantes')}"></span></p>
           </th:block>
         </div>
-        <div th:replace="~{componentes/muestra :: muestra('.navegacion', 'La barra de secciones del armazón de la huerta. Hasta 56 em es el menú del celular: fijo abajo, en la tierra con la línea de paja, un ícono sobre cada nombre y la sección actual en papel (en las públicas, .navegacion-barra con un .navegacion-icono por sección y .navegacion-inicio, que solo va ahí, y .navegacion-acceso arriba, en la barra superior: Ingresar como botón de texto y Crear cuenta lleno). Desde 56 em las secciones van en la barra superior, sin íconos: el fondo salvia bajo el cursor y la actual en tinta (acá, cada menú dentro de una caja). La sección actual lleva aria-current=&quot;page&quot;. data-zona=&quot;publica&quot; para las páginas públicas, con .navegacion-largo (lo que solo se lee en el menú del celular) y .navegacion-destacado (el botón principal). Con más de 5 secciones (la administración, data-forma=&quot;panel&quot;), el botón de menú .navegacion-abrir abre .navegacion-hoja (un popover) con todas, en un panel de pantalla completa con la marca. Tocalo.', ~{::demo-navegacion})}">
+        <div th:replace="~{componentes/muestra :: muestra('.navegacion', 'La barra de secciones del armazón de la huerta. Hasta 56 em es el menú del celular: fijo abajo, en la tierra con la línea de paja, un ícono sobre cada nombre y la sección actual en papel (en las públicas, .navegacion-barra con un .navegacion-icono por sección y .navegacion-inicio, que solo va ahí, y .navegacion-acceso arriba, en la barra superior: Ingresar como botón de texto y Crear cuenta lleno). Desde 56 em las secciones van en la barra superior, sin íconos: el fondo salvia bajo el cursor y la actual en tinta (acá, cada menú dentro de una caja). La sección actual lleva aria-current=&quot;page&quot;. data-zona=&quot;publica&quot; para las páginas públicas, con .navegacion-largo (lo que solo se lee en el menú del celular) y .navegacion-destacado (el botón principal). El cajón del galpón, el menú del admin (data-forma=&quot;cajon&quot;, dentro de data-armazon=&quot;galpon&quot;, que solo lleva el admin): hasta 56 em, la misma barra del celular con Por decidir, Donaciones, Camiones (data-celular=&quot;si&quot;) y Más (.navegacion-mas), que abre .navegacion-hoja (un popover) con las seis, en un panel de pantalla completa con la marca; desde 56 em, las seis en columna, en la tierra, con su ícono y la actual en papel (en la pantalla, fijo a la izquierda, debajo de la barra de arriba). Tocá Más en el celular.', ~{::demo-navegacion})}">
           <th:block th:fragment="demo-navegacion">
             <div class="pila" data-espacio="3">
               <div data-ventana>
@@ -746,11 +746,25 @@
                   </ul>
                 </nav>
               </div>
-              <div data-ventana>
-                <nav class="navegacion" data-forma="panel" aria-label="Secciones de ejemplo, de la administración">
-                  <button class="navegacion-abrir" type="button" popovertarget="muestra-menu-completo"><svg
-                      viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span
-                      class="solo-lectores">Menú</span></button>
+              <div data-ventana data-armazon="galpon">
+                <nav class="navegacion" data-forma="cajon" aria-label="Secciones de ejemplo, del admin">
+                  <ul role="list">
+                    <li data-celular="si"><a href="#navegacion" aria-current="page"><svg class="navegacion-icono" aria-hidden="true"
+                        focusable="false"><use href="#i-bandeja"></use></svg><span>Por decidir</span></a></li>
+                    <li data-celular="si"><a href="#navegacion"><svg class="navegacion-icono" aria-hidden="true"
+                        focusable="false"><use href="#i-caja"></use></svg><span>Donaciones</span></a></li>
+                    <li data-celular="no"><a href="#navegacion"><svg class="navegacion-icono" aria-hidden="true"
+                        focusable="false"><use href="#i-cuenta"></use></svg><span>Donantes</span></a></li>
+                    <li data-celular="no"><a href="#navegacion"><svg class="navegacion-icono" aria-hidden="true"
+                        focusable="false"><use href="#i-gente"></use></svg><span>Organizaciones</span></a></li>
+                    <li data-celular="si"><a href="#navegacion"><svg class="navegacion-icono" aria-hidden="true"
+                        focusable="false"><use href="#i-camion"></use></svg><span>Camiones</span></a></li>
+                    <li data-celular="no"><a href="#navegacion"><svg class="navegacion-icono" aria-hidden="true"
+                        focusable="false"><use href="#i-podio"></use></svg><span>Ranking</span></a></li>
+                    <li class="navegacion-mas"><button type="button" popovertarget="muestra-menu-completo"><svg
+                        class="navegacion-icono" aria-hidden="true" focusable="false"><use href="#i-puntos"></use></svg><span>Más</span><span
+                        class="solo-lectores"> secciones</span></button></li>
+                  </ul>
                   <div id="muestra-menu-completo" class="navegacion-hoja" popover role="dialog"
                        aria-labelledby="muestra-menu-completo-titulo">
                     <div class="navegacion-hoja-cabecera">
@@ -762,19 +776,17 @@
                     </div>
                     <ul role="list">
                       <li><a href="#navegacion" aria-current="page"><svg class="navegacion-icono" aria-hidden="true"
-                          focusable="false"><use href="#nav-inicio"></use></svg><span>Inicio</span></a></li>
+                          focusable="false"><use href="#i-bandeja"></use></svg><span>Por decidir</span></a></li>
                       <li><a href="#navegacion"><svg class="navegacion-icono" aria-hidden="true"
-                          focusable="false"><use href="#nav-donantes"></use></svg><span>Donantes</span></a></li>
+                          focusable="false"><use href="#i-caja"></use></svg><span>Donaciones</span></a></li>
                       <li><a href="#navegacion"><svg class="navegacion-icono" aria-hidden="true"
-                          focusable="false"><use href="#nav-entidades"></use></svg><span>Organizaciones</span></a></li>
+                          focusable="false"><use href="#i-cuenta"></use></svg><span>Donantes</span></a></li>
                       <li><a href="#navegacion"><svg class="navegacion-icono" aria-hidden="true"
-                          focusable="false"><use href="#nav-donaciones"></use></svg><span>Donaciones</span></a></li>
+                          focusable="false"><use href="#i-gente"></use></svg><span>Organizaciones</span></a></li>
                       <li><a href="#navegacion"><svg class="navegacion-icono" aria-hidden="true"
-                          focusable="false"><use href="#nav-asignar"></use></svg><span>Asignar donaciones</span></a></li>
+                          focusable="false"><use href="#i-camion"></use></svg><span>Camiones</span></a></li>
                       <li><a href="#navegacion"><svg class="navegacion-icono" aria-hidden="true"
-                          focusable="false"><use href="#nav-camiones"></use></svg><span>Camiones</span></a></li>
-                      <li><a href="#navegacion"><svg class="navegacion-icono" aria-hidden="true"
-                          focusable="false"><use href="#nav-estrella"></use></svg><span>Ranking</span></a></li>
+                          focusable="false"><use href="#i-podio"></use></svg><span>Ranking</span></a></li>
                     </ul>
                   </div>
                 </nav>
