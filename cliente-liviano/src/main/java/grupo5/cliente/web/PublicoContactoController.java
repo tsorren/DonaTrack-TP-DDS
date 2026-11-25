@@ -6,15 +6,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * Contacto y su pantalla de enviado (ficha raices-contacto.md). El formulario lleva la clave de
- * envío del puerto; el enviado muestra el número que dejó el envío ({@link
- * PublicoContactoEnvioController}) o, sin envío, el de ejemplo. Fuera de la maqueta, sin número no
- * hay nada que mostrar: vuelve al formulario.
+ * Contacto (ficha raices-contacto.md). El formulario lleva la clave de envío del puerto. El envío
+ * real vuelve a Contacto con el aviso breve del número ({@link PublicoContactoEnvioController});
+ * {@code -enviado} es Contacto con ese aviso y el número de ejemplo de la maqueta (DA-06, DA-24).
+ * Fuera de la maqueta, sin número no hay nada que mostrar: vuelve al formulario.
  */
 @Controller
 public class PublicoContactoController {
 
-  /** El atributo con el número del mensaje que lee publico-contacto-enviado. */
+  /** El atributo con el número del mensaje que lee el aviso de publico-contacto-enviado. */
   static final String NUMERO = "numeroDelMensaje";
 
   private final Pantallas pantallas;
@@ -41,6 +41,8 @@ public class PublicoContactoController {
       }
       model.addAttribute(NUMERO, ejemplo);
     }
-    return pantallas.mostrar("publico-contacto-enviado", model);
+    String vista = pantallas.mostrar("publico-contacto-enviado", model);
+    model.addAttribute("claveEnvio", contacto.nuevaClave());
+    return vista;
   }
 }

@@ -1,8 +1,12 @@
-/* Raíces, sitio A: dónde va la navegación pública (navegacion-publica.html) dentro de la barra
-   superior de las públicas y de la portada (la barra de la huerta, app.css; C1-07). La barra es el
-   bloque `navegacion` (componentes/navegacion.css, con data-zona="publica"): hasta
-   --medida-quiebre-menu, el menú del celular, fijo abajo, en la tierra; desde ahí, en la barra
-   superior, después de la marca. Va después de la hoja de la pantalla, que ya trae los tokens. */
+/* Dónde va la navegación pública (navegacion-publica.html) dentro de la barra superior de las
+   públicas, también la portada (la barra de la huerta, app.css; C1-07). La barra es el bloque
+   `navegacion` (componentes/navegacion.css, con data-zona="publica"): hasta --medida-quiebre-menu,
+   el menú del celular, fijo abajo, en la tierra; desde ahí, en la barra superior, después de la
+   marca. Va después de la hoja de la pantalla, que ya trae los tokens. Con el menú de la guía (PUB1,
+   DA-05) lo que queda acá no lo resuelve el bloque: el aire del pie sobre el menú del celular, el
+   nombre corto de «Ir a mi inicio», la barra a lo ancho desde la tableta e Inicio en la barra de
+   arriba desde --medida-quiebre-ancho, como en la guía: el bloque lo oculta desde 56 em, y entre 56
+   y 68,75 em la fila con Inicio no entra en un renglón (ArmazonFijoTest, a 960 px). */
 
 /* El menú del celular no tapa el pie. */
 body {
@@ -31,5 +35,12 @@ body {
 
   .raices-cabecera .navegacion {
     flex: 1;
+  }
+}
+
+/* Inicio, también en la barra de arriba, cuando la fila entra en un renglón (menú de la guía, DA-05). */
+@media (min-width: 68.75em) {
+  .raices-cabecera .navegacion-inicio {
+    display: block;
   }
 }

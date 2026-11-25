@@ -1,90 +1,36 @@
-/* Raíces, sitio A: Entregas confirmadas (publico-donaciones.html). Cada entrega, una lámina de papel
-   con la esquina suave y la sombra plana salvia corrida, como las etiquetas de la portada: la foto
-   arriba con el sello de entrega confirmada impreso encima, y debajo qué, la categoría en su cuadro
-   salvia, la entidad y la fecha. */
+/* Entregas (publico-donaciones.html), derivada del arquetipo A10 de la guía. Las piezas son del
+   catálogo (listado, frutos, etiqueta de la entrega, sello, lista, aviso y carga); esta hoja solo dice
+   dónde va cada una: sin colores, fuentes ni filetes. publico-listas.css trae el marco de las
+   públicas (el ancho del contenido y los títulos). */
 @import url("publico-listas.css");
 
-.laminas {
-  --medida-columna: 15rem;
-  gap: 2rem 1.75rem;
+/* Arriba, el mismo aire que Organizaciones y el Mapa, sin depender del sprite de los pictogramas. */
+[data-v="entregas"] {
+  margin-block-start: var(--espacio-4);
 }
 
-.lamina {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: 1rem;
-  padding: 0.75rem 0.75rem 1rem;
+/* Los bloques del catálogo (el listado y la lista) se ponen margin: 0 en su capa: el aire entre las
+   partes de la pantalla, el de las confirmadas y el de la carga lo devuelve esta hoja, con la misma
+   medida que Organizaciones (publico-entidades.css). */
+[data-v="entregas"] > * + * {
+  margin-block-start: var(--espacio-4);
 }
 
-.lamina.esqueleto {
-  min-height: 22rem;
-  background: var(--color-pendiente-fondo);
+[aria-labelledby="confirmadas-titulo"] > * + *,
+[aria-busy="true"] > * + * {
+  margin-block-start: var(--espacio-3);
 }
 
-.lamina-foto {
-  position: relative;
+/* Una etiqueta por entrega, en tantas columnas como entren, con la misma medida que Entregas de la
+   organización; los esqueletos de la carga ocupan el mismo lugar. */
+[aria-labelledby="confirmadas-titulo"] > .lista,
+[aria-busy="true"] > .lista {
+  --medida-columna: 19rem;
+
+  gap: var(--espacio-3);
 }
 
-/* Si la foto no carga, su texto alternativo ocupa el lugar, sobre el salvia. */
-.lamina-foto img {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 8 / 5;
-  object-fit: cover;
-  border-radius: calc(var(--radio-lamina) - 0.375rem);
-  background: var(--color-acento-claro);
-  color: var(--color-tinta);
-  font-size: 0.9375rem;
-}
-
-/* El sello, impreso sobre el borde de la foto: el disco paja con su tilde y el texto. */
-.sello-entrega {
-  position: absolute;
-  left: 0.5rem;
-  bottom: -0.875rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  margin: 0;
-  padding: 0.2rem 0.75rem 0.2rem 0.25rem;
-  border: 1.5px solid var(--color-entregada-texto);
-  border-radius: 2rem;
-  background: var(--color-entregada-fondo);
-  color: var(--color-entregada-texto);
-  font-size: 0.875rem;
-  font-weight: 700;
-}
-
-.sello-entrega svg {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.lamina-texto {
-  display: grid;
-  align-content: start;
-  gap: 0.25rem;
-  padding-top: 0.5rem;
-}
-
-.lamina-texto > * {
-  margin: 0;
-}
-
-.lamina h2 {
-  margin: 0 0 0.25rem;
-  font-size: 1.25rem;
-}
-
-.lamina-categoria {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--color-tinta);
-  font-weight: 700;
-}
-
-.lamina-fecha {
-  font-size: 0.9375rem;
+/* «Ver la foto de la entrega»: a la izquierda, debajo de su etiqueta, sin estirarse. */
+[aria-labelledby="confirmadas-titulo"] li > .boton {
+  align-self: start;
 }

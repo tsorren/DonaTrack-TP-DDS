@@ -3,12 +3,14 @@ package grupo5.cliente.seguridad;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import grupo5.cliente.puertos.PublicoPuerto;
+import grupo5.cliente.vistas.PublicoEntregas;
 import grupo5.cliente.web.Pantallas;
 import grupo5.cliente.web.PublicoPortadaController;
 import java.time.Instant;
@@ -18,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -53,6 +56,13 @@ class PortadaConSesionTest {
   @Autowired private MockMvc mvc;
   @Autowired private ClientRegistrationRepository clientes;
   @Autowired private AreaDelToken areaDelToken;
+
+  /** La portada pide también las entregas del mes (A01): el puerto no trae ninguna. */
+  @BeforeEach
+  void sinEntregas() {
+    when(publico.entregasConfirmadas())
+        .thenReturn(new PublicoEntregas(List.of(), "del 1 al 15 de octubre de 2026", "", ""));
+  }
 
   @AfterEach
   void limpiar() {

@@ -45,7 +45,8 @@ class PortadaConSesionMaquetaTest {
         .andExpect(content().string(containsString("href=\"/donante-inicio\"")))
         .andExpect(content().string(containsString("href=\"/donante-perfil\">Mi perfil")))
         .andExpect(content().string(containsString(CERRAR_SESION)))
-        .andExpect(content().string(containsString("href=\"/publico-mapa\"")))
+        // Con la sesión, el menú público sigue entero: Cómo funciona incluida (DA-05).
+        .andExpect(content().string(containsString("href=\"/publico-nosotros\"")))
         .andExpect(content().string(not(containsString(CREAR_UNA_CUENTA))))
         .andExpect(content().string(not(containsString(INGRESAR))))
         .andExpect(content().string(not(containsString("armazon-avisos"))))

@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import grupo5.cliente.web.TraceIdFiltro;
 import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -759,7 +760,8 @@ class SitioControllerTest {
       mvc.perform(post("/publico-contacto-enviado").param("volver", afuera))
           .andExpect(redirectedUrl("/publico-contacto-enviado"));
       mvc.perform(get("/publico-contacto-enviado").param("volver", afuera))
-          .andExpect(content().string(containsString("Ir a la portada")))
+          .andExpect(content().string(containsString(RECIBIDO)))
+          .andExpect(content().string(not(containsString("Volver a"))))
           .andExpect(content().string(not(containsString("otro.test"))));
     }
     mvc.perform(
@@ -769,11 +771,22 @@ class SitioControllerTest {
             redirectedUrl(
                 "/publico-contacto-enviado?volver=%2Fentidad-seguimiento-confirmar%3Fentrega%3Dlentejas"));
     mvc.perform(get("/publico-contacto-enviado").param("volver", "/entidad-necesidades"))
-        .andExpect(content().string(containsString("Volver a Necesidades")));
+        .andExpect(view().name("publico-contacto-enviado"))
+        .andExpect(content().string(containsString(RECIBIDO)))
+        .andExpect(content().string(containsString("name=\"mensaje\"")))
+        .andExpect(
+            content()
+                .string(containsString("href=\"/entidad-necesidades\">Volver a Necesidades</a>")));
     mvc.perform(get("/publico-contacto-enviado").param("volver", "https://otro.test"))
-        .andExpect(content().string(containsString("Ir a la portada")))
+        .andExpect(content().string(containsString(RECIBIDO)))
         .andExpect(content().string(not(containsString("otro.test"))));
+    mvc.perform(get("/publico-contacto").param("volver", "/entidad-necesidades"))
+        .andExpect(content().string(containsString("Volver a Necesidades")))
+        .andExpect(content().string(not(containsString(RECIBIDO))));
   }
+
+  /** El aviso breve de Contacto después de enviar, con el número de ejemplo (DA-06, DA-24). */
+  private static final String RECIBIDO = "Recibimos tu mensaje. Su número es <b>4821</b>.";
 
   @Test
   void miPerfilEligeSiSeVeElNombreYMuestraLosLegales() throws Exception {
@@ -807,15 +820,19 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Guardamos cómo te avisamos")));
     mvc.perform(get("/publico-legales"))
         .andExpect(status().isOk())
+        .andExpect(content().string(containsString("<p class=\"huerta-rotulo\">Legales</p>")))
+        .andExpect(content().string(containsString("<a href=\"#datos\">Tus datos</a>")))
         .andExpect(content().string(containsString("Versión 1, vigente desde")))
         .andExpect(content().string(containsString("texto de ejemplo")))
         .andExpect(content().string(containsString("o solo en una donación al registrarla")))
         .andExpect(content().string(containsString("«Donante Sostenedor»")));
     mvc.perform(get("/entidad-seguimiento-sellada-ropa?escenario=sin-categoria"))
         .andExpect(content().string(containsString("Le avisamos a quien donó")));
+    // La portada de A01 no tiene las abejas ni su pausa (DA-22).
     mvc.perform(get("/publico-portada"))
         .andExpect(content().string(containsString("href=\"/publico-legales\"")))
-        .andExpect(content().string(containsString("id=\"pausar-movimiento\"")));
+        .andExpect(content().string(not(containsString("id=\"pausar-movimiento\""))))
+        .andExpect(content().string(not(containsString("/js/abejas.js"))));
   }
 
   @Test
@@ -973,21 +990,27 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("Cerrar sesión"))));
   }
 
+  /**
+   * El envío termina en Contacto con el aviso breve, sin página de respuesta propia (DA-06, DA-24):
+   * con la sesión, en el marco privado del rol; la única salida propia es la de ?volver=.
+   */
   @Test
-  void elEnviadoConSesionVuelveAMiInicioYSinSesionALaPortada() throws Exception {
+  void elEnviadoEsContactoConElAvisoConYSinSesion() throws Exception {
     mvc.perform(get("/publico-contacto-enviado?escenario=con-sesion&area=entidad"))
         .andExpect(content().string(containsString("class=\"raices-privado\"")))
-        .andExpect(content().string(containsString("href=\"/entidad-inicio\"")))
-        .andExpect(content().string(containsString("Volver a mi inicio")))
-        .andExpect(content().string(not(containsString("Ir a la portada"))));
+        .andExpect(content().string(containsString("href=\"/entidad-necesidades\"")))
+        .andExpect(content().string(containsString(RECIBIDO)))
+        .andExpect(content().string(containsString("el correo de tu cuenta")))
+        .andExpect(content().string(not(containsString("Volver a"))));
     mvc.perform(
             get("/publico-contacto-enviado?escenario=con-sesion")
                 .param("volver", "/donante-seguimiento"))
-        .andExpect(content().string(containsString("Volver a Seguimiento")))
-        .andExpect(content().string(not(containsString("Volver a mi inicio"))));
+        .andExpect(content().string(containsString(RECIBIDO)))
+        .andExpect(content().string(containsString("Volver a Seguimiento")));
     mvc.perform(get("/publico-contacto-enviado"))
-        .andExpect(content().string(containsString("Ir a la portada")))
-        .andExpect(content().string(not(containsString("Volver a mi inicio"))));
+        .andExpect(content().string(containsString("class=\"raices-publico\"")))
+        .andExpect(content().string(containsString(RECIBIDO)))
+        .andExpect(content().string(not(containsString("Volver a"))));
   }
 
   /** El traceId de ejemplo que TraceIdFiltro habría dejado en el pedido. */
@@ -1017,13 +1040,173 @@ class SitioControllerTest {
 
   @Test
   void laPortadaEnlazaAlSitio() throws Exception {
+    // El Mapa ya no va en la portada ni en el menú: queda dentro de Entregas (DA-01).
     mvc.perform(get("/publico-portada"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("href=\"/publico-ingresar\"")))
-        .andExpect(content().string(containsString("href=\"/publico-mapa\"")))
+        .andExpect(content().string(containsString("href=\"/publico-donaciones\">Ver todas</a>")))
         .andExpect(content().string(containsString("href=\"/publico-registro-donante\"")))
         .andExpect(content().string(containsString("href=\"/publico-registro-entidad\"")))
         .andExpect(content().string(not(containsString("href=\"/prototipo/"))));
+  }
+
+  /**
+   * El menú público de la guía (DA-01, DA-05 y DA-17): Inicio, Entregas, Organizaciones y Cómo
+   * funciona (Nosotros), en ese orden y sin el Mapa, que sigue respondiendo y marca Entregas.
+   */
+  @Test
+  void elMenuPublicoEsInicioEntregasOrganizacionesYComoFunciona() throws Exception {
+    String html =
+        mvc.perform(get("/publico-portada"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+    String barra =
+        html.substring(
+            html.indexOf("class=\"navegacion-barra\""),
+            html.indexOf("class=\"navegacion-acceso\""));
+    assertTrue(
+        barra.matches(
+            "(?s).*href=\"/publico-portada\" aria-current=\"page\">.*Inicio</a>"
+                + ".*href=\"/publico-donaciones\">.*Entregas</a>"
+                + ".*href=\"/publico-entidades\">.*Organizaciones</a>"
+                + ".*href=\"/publico-nosotros\">.*Cómo funciona</a>.*"),
+        barra);
+    assertFalse(barra.contains("/publico-mapa"), barra);
+    assertFalse(barra.contains(">Mapa<"), barra);
+    assertTrue(barra.contains("<use href=\"#i-brote\">"), barra);
+    assertTrue(html.contains("<symbol id=\"i-brote\""), "El brote de Cómo funciona");
+    mvc.perform(get("/publico-mapa"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(not(containsString("href=\"/publico-mapa\" aria-current"))))
+        .andExpect(
+            content().string(containsString("href=\"/publico-donaciones\" aria-current=\"page\"")));
+    mvc.perform(get("/publico-donaciones"))
+        .andExpect(
+            content().string(containsString("href=\"/publico-donaciones\" aria-current=\"page\"")));
+    mvc.perform(get("/publico-entidades"))
+        .andExpect(
+            content().string(containsString("href=\"/publico-entidades\" aria-current=\"page\"")));
+    for (String conocer : List.of("/publico-nosotros", "/publico-para-donantes")) {
+      mvc.perform(get(conocer))
+          .andExpect(
+              content().string(containsString("href=\"/publico-nosotros\" aria-current=\"page\"")));
+    }
+  }
+
+  /**
+   * La portada sigue a A01 (PUB1-01): la última entrega confirmada con su etiqueta, un fruto por
+   * entrega del mes, las cifras, la raíz de 5 pasos y las del mes; quien recibió es la organización
+   * (HG-03, DA-10). Cada estado, con su texto.
+   */
+  @Test
+  void laPortadaSigueAlArquetipoConSusEstados() throws Exception {
+    String html =
+        mvc.perform(get("/publico-portada"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+    assertTrue(html.contains("class=\"trama\""), "el título con la trama");
+    assertTrue(
+        html.contains("Seguí tu donación hasta que la organización la confirma"), "el título");
+    assertTrue(html.contains(">Quiero donar</a>"), "la acción llena");
+    assertTrue(html.contains(">Soy una organización</a>"), "la otra acción");
+    assertEquals(1, html.split("data-tono=\"principal\"", -1).length - 1, "una sola acción llena");
+    assertTrue(html.contains("ilustracion-recorrido.svg#ilustracion-recorrido"), "el dibujo");
+    // La maqueta trae 10 entregas confirmadas en el último mes: 10 frutos.
+    String frutos =
+        html.substring(
+            html.indexOf("class=\"huerta-frutos\""),
+            html.indexOf("</ul>", html.indexOf("class=\"huerta-frutos\"")));
+    assertEquals(10, frutos.split("<li>", -1).length - 1, frutos);
+    assertTrue(html.contains("10 entregas confirmadas"), "la cuenta de los frutos");
+    assertTrue(html.contains("etiqueta-entrega--costado"), "la última, con la foto al costado");
+    assertTrue(
+        html.contains("Recibió: Escuela Ejemplo N.º 12, el 14 de octubre de 2026."),
+        "quién recibió");
+    // Las del mes, como en Entregas: el lugar es categoría · barrio y el pie lleva el año.
+    assertTrue(html.contains("<p>Alimentos · Barrio Ejemplo</p>"), "el lugar, como en Entregas");
+    assertTrue(
+        html.contains("Recibió: Comedor Barrio Ejemplo, el 10 de octubre de 2026."),
+        "el pie, como en Entregas");
+    assertFalse(
+        html.contains("<p>Comedor Barrio Ejemplo · Barrio Ejemplo</p>"),
+        "sin repetir la organización en el lugar");
+    assertTrue(html.contains("Cómo sabemos que llega"), "las cifras");
+    assertTrue(
+        html.contains(
+            "Hasta hoy, <strong>1.284</strong> entregas confirmadas, <strong>46</strong>"
+                + " organizaciones en el mapa y <strong>32</strong> donaciones en camino ahora."),
+        "las cifras, en una frase como en A01");
+    assertFalse(html.contains("class=\"datos\""), "sin la lista de datos");
+    assertTrue(html.contains("data-forma=\"numerada tendida\""), "la raíz numerada");
+    assertEquals(5, html.split("class=\"huerta-raiz-nudo\"", -1).length - 1, "los 5 pasos");
+    assertEquals(
+        4, html.split("<article class=\"etiqueta-entrega", -1).length - 1, "la última y 3 más");
+    assertFalse(html.contains("huerta-hero"), "sin el hero de K");
+    assertFalse(html.contains("huerta-tierra"), "sin el corte bajo tierra");
+    assertFalse(html.contains("huerta-cierre"), "sin el cierre de K");
+    mvc.perform(get("/publico-portada?escenario=vacio"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().string(containsString("Todavía no hay entregas confirmadas este mes.")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "class=\"vacio\" data-forma=\"filetes\">Todavía no hay entregas")))
+        .andExpect(content().string(not(containsString("<strong>1.284</strong>"))))
+        .andExpect(content().string(not(containsString("class=\"etiqueta-entrega"))));
+    String lento =
+        mvc.perform(get("/publico-portada?escenario=lento"))
+            .andExpect(
+                content()
+                    .string(containsString("role=\"status\">Cargando las entregas confirmadas…")))
+            .andExpect(content().string(containsString("role=\"status\">Cargando las cifras…")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+    int cifras = lento.indexOf("aria-labelledby=\"portada-cifras\"");
+    assertTrue(
+        cifras > 0
+            && lento.substring(cifras, lento.indexOf('>', cifras)).contains("aria-busy=\"true\""),
+        "la sección de las cifras, ocupada mientras carga");
+    // Los dos errores de carga son el banner de error de Entregas y el Mapa, con el código y
+    // «escribinos» (U1): ni el aviso de formulario ni el renglón de la lista vacía.
+    mvc.perform(get("/publico-portada?escenario=error"))
+        .andExpect(
+            content()
+                .string(containsString("class=\"banner\" data-estado=\"error\" role=\"alert\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<h2 id=\"error-titulo\">No pudimos cargar las entregas confirmadas.</h2>")))
+        .andExpect(
+            content()
+                .string(containsString("class=\"banner\" data-estado=\"error\" role=\"alert\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<h2 id=\"cifras-error-titulo\">No pudimos cargar las cifras.</h2>")))
+        .andExpect(content().string(containsString("class=\"aviso-codigo\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/publico-contacto?codigo=a1b2c3d4e5f6&amp;volver=/publico-portada\"")))
+        .andExpect(content().string(not(containsString("data-forma=\"filetes\" role=\"alert\""))))
+        .andExpect(content().string(not(containsString("class=\"aviso\" data-tipo=\"error\""))))
+        .andExpect(content().string(not(containsString("<strong>1.284</strong>"))))
+        // Las del mes dicen qué falta, sin repetir el banner (U4).
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "No pudimos cargar las entregas del mes. Probá de nuevo en unos minutos.")));
   }
 
   /**
@@ -1040,29 +1223,169 @@ class SitioControllerTest {
           .andExpect(content().string(containsString("href=\"/publico-para-entidades\"")));
     }
     mvc.perform(get("/publico-portada"))
-        // El enlace a la landing de donantes, en la tarjeta de quien dona (usuario, 2026-11-08).
-        .andExpect(content().string(containsString("Qué podés donar")))
-        .andExpect(content().string(containsString("Cómo se suma una organización")));
+        // Las dos acciones de A01, cada una a su registro, y Cómo funciona en el menú (DA-05).
+        .andExpect(
+            content().string(containsString("href=\"/publico-registro-donante\">Quiero donar</a>")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("href=\"/publico-registro-entidad\">Soy una organización</a>")))
+        .andExpect(content().string(containsString("href=\"/publico-nosotros\">")));
     mvc.perform(get("/publico-nosotros"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Entregas confirmadas desde marzo de 2026")))
-        // Las cifras en árboles de K (2026-11-08; antes, la rama de frutos con data-cosecha).
-        .andExpect(content().string(containsString("class=\"huerta-cifras\"")))
-        .andExpect(content().string(containsString("Actualizado")))
-        .andExpect(content().string(not(containsString("aria-current=\"page\""))));
+        // Las cifras como en la portada (A01): una frase con cada número en negrita y el período
+        // dentro de la cifra, sin la lista de datos ni los árboles de K.
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<strong>1.284</strong> entregas confirmadas desde marzo de 2026")))
+        .andExpect(content().string(containsString("Cómo sabemos que llega")))
+        .andExpect(content().string(not(containsString("<dl class=\"datos\">"))))
+        .andExpect(content().string(not(containsString("class=\"huerta-cifras\""))))
+        .andExpect(content().string(containsString("Actualizado el ")))
+        // Las dos acciones de A01, a los mismos registros y con los mismos rótulos que la portada.
+        .andExpect(
+            content().string(containsString("href=\"/publico-registro-donante\">Quiero donar</a>")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("href=\"/publico-registro-entidad\">Soy una organización</a>")))
+        // Nosotros es Cómo funciona en el menú público, y lo marca (DA-05).
+        .andExpect(
+            content().string(containsString("href=\"/publico-nosotros\" aria-current=\"page\"")));
     mvc.perform(get("/publico-nosotros?escenario=vacio"))
         .andExpect(content().string(containsString("Todavía no hay entregas confirmadas.")))
         .andExpect(content().string(not(containsString("Actualizado"))));
     mvc.perform(get("/publico-nosotros?escenario=lento"))
         .andExpect(content().string(containsString("role=\"status\">Cargando las cifras…")));
     mvc.perform(get("/publico-nosotros?escenario=error"))
-        .andExpect(content().string(containsString("No pudimos cargar las cifras.")));
+        .andExpect(content().string(containsString("No pudimos cargar las cifras.")))
+        // El error de las cifras es el banner de error, como en la portada y Entregas (U1).
+        .andExpect(
+            content()
+                .string(containsString("class=\"banner\" data-estado=\"error\" role=\"alert\"")))
+        .andExpect(content().string(containsString("class=\"aviso-codigo\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/publico-contacto?codigo=a1b2c3d4e5f6&amp;volver=/publico-nosotros\"")))
+        .andExpect(content().string(not(containsString("data-forma=\"filetes\" role=\"alert\""))))
+        .andExpect(content().string(not(containsString("class=\"aviso\""))));
     mvc.perform(get("/publico-para-donantes"))
         .andExpect(content().string(containsString("href=\"/publico-registro-donante\"")))
-        .andExpect(content().string(containsString("<details>")));
+        // La tarjeta de la cuenta lleva h3, bajo un título de sección, como en Ayuda (U1).
+        .andExpect(content().string(containsString("<h3 id=\"cuenta-titulo\">")))
+        // Las preguntas frecuentes, con el plegable del catálogo, como Organizaciones y el Mapa.
+        .andExpect(content().string(containsString("<details class=\"plegable\">")))
+        .andExpect(content().string(not(containsString("<details>"))));
     mvc.perform(get("/publico-para-entidades"))
         .andExpect(content().string(containsString("href=\"/publico-registro-entidad\"")))
-        .andExpect(content().string(not(containsString("beneficiario"))));
+        // Las tarjetas de la cuenta y los datos llevan h3, bajo un título de sección, como las de
+        // «Cómo se suma».
+        .andExpect(content().string(containsString("<h3 id=\"cuenta-titulo\">")))
+        .andExpect(content().string(containsString("<h3 id=\"datos-titulo\">")))
+        .andExpect(content().string(not(containsString("beneficiario"))))
+        .andExpect(content().string(containsString("<details class=\"plegable\">")))
+        .andExpect(content().string(not(containsString("<details>"))));
+  }
+
+  /**
+   * Ingresar (PUB1-06) deriva de A12 de la guía: la columna del formulario con los campos del
+   * catálogo, una sola acción llena y las cuentas de ejemplo de la demo, en una lámina punteada.
+   */
+  @Test
+  void ingresarEsLaColumnaDelFormularioConLasCuentasDeEjemplo() throws Exception {
+    String html =
+        mvc.perform(get("/publico-ingresar"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("<h1>Ingresar</h1>")))
+            .andExpect(content().string(containsString("action=\"/donante-inicio\"")))
+            .andExpect(content().string(containsString("method=\"post\"")))
+            .andExpect(content().string(containsString("class=\"campo\"")))
+            .andExpect(content().string(containsString("autocomplete=\"current-password\"")))
+            .andExpect(content().string(containsString("href=\"/publico-recuperar\"")))
+            .andExpect(content().string(containsString("href=\"/publico-registro\"")))
+            .andExpect(content().string(containsString("Continuar con Google")))
+            .andExpect(content().string(containsString("class=\"tarjeta\" data-papel=\"hueco\"")))
+            .andExpect(content().string(containsString("Cuentas de ejemplo")))
+            .andExpect(content().string(containsString("href=\"/donante-inicio?cuenta=empresa\"")))
+            .andExpect(
+                content().string(containsString("Distribuidora Ejemplo SA, empresa donante")))
+            .andExpect(content().string(containsString("href=\"/entidad-inicio\"")))
+            .andExpect(content().string(containsString("Comedor Barrio Ejemplo, organización")))
+            .andExpect(content().string(containsString("href=\"/admin-inicio\"")))
+            .andExpect(content().string(not(containsString("aria-invalid"))))
+            .andExpect(content().string(not(containsString("role=\"alert\""))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(1, apariciones(html, "data-tono=\"principal\""), "una sola acción llena");
+    mvc.perform(get("/publico-ingresar?escenario=lento"))
+        .andExpect(content().string(containsString("aria-busy=\"true\"")))
+        .andExpect(content().string(containsString("role=\"status\">Ingresando…")));
+    mvc.perform(get("/publico-ingresar?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos ingresar en este momento.")))
+        .andExpect(content().string(containsString("role=\"alert\"")));
+    mvc.perform(get("/publico-ingresar?escenario=sin-conexion"))
+        .andExpect(content().string(containsString("Se cortó la conexión.")))
+        .andExpect(content().string(containsString("role=\"alert\"")));
+    mvc.perform(get("/publico-ingresar?escenario=bloqueado"))
+        .andExpect(content().string(containsString("Pausamos los intentos de ingreso.")))
+        .andExpect(content().string(containsString("role=\"alert\"")));
+    mvc.perform(get("/publico-ingresar?escenario=pendiente"))
+        .andExpect(content().string(containsString("Tu organización todavía está en revisión.")))
+        .andExpect(content().string(containsString("role=\"status\"")));
+    mvc.perform(get("/publico-ingresar?escenario=sesion-vencida"))
+        .andExpect(content().string(containsString("Tu sesión se cerró.")))
+        .andExpect(content().string(containsString("role=\"status\"")));
+  }
+
+  /**
+   * El error de Ingresar es un estado del mismo formulario (A12, «Con error»): el resumen arriba,
+   * con el foco y un enlace al campo; los dos campos marcados en su lugar y un solo mensaje, sin
+   * decir cuál de los dos falló (RF-04, RNF-AUTH-10). Lo escrito en el correo vuelve.
+   */
+  @Test
+  void elErrorDeIngresarMarcaLosCamposSinDecirCualFallo() throws Exception {
+    String html =
+        mvc.perform(get("/publico-ingresar-error"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("<title>No pudimos ingresar - DonaTrack")))
+            .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+            .andExpect(content().string(containsString("role=\"alert\" tabindex=\"-1\"")))
+            .andExpect(content().string(containsString("autofocus")))
+            .andExpect(content().string(containsString("href=\"#clave\"")))
+            .andExpect(content().string(containsString("El correo o la contraseña no coinciden")))
+            .andExpect(content().string(containsString("class=\"campo-error\"")))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*id=\"ingreso-error\" class=\"campo-error\">\\s*<svg[^>]*"
+                                + "data-signo=\"e-problema\".*")))
+            .andExpect(content().string(containsString("aria-describedby=\"ingreso-error\"")))
+            .andExpect(content().string(not(containsString("Al menos 8 caracteres"))))
+            .andExpect(
+                content().string(containsString("value=\"contacto@distribuidora-ejemplo.test\"")))
+            .andExpect(content().string(containsString("href=\"/publico-recuperar\"")))
+            .andExpect(content().string(containsString("Cuentas de ejemplo")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(2, apariciones(html, "data-estado=\"error\""), "los dos campos, marcados");
+    assertEquals(2, apariciones(html, "aria-invalid=\"true\""), "los dos controles, inválidos");
+    assertEquals(1, apariciones(html, "class=\"campo-error\""), "un solo mensaje");
+    assertEquals(1, apariciones(html, "data-tono=\"principal\""), "una sola acción llena");
+  }
+
+  private static int apariciones(String texto, String buscado) {
+    int cuenta = 0;
+    for (int i = texto.indexOf(buscado); i >= 0; i = texto.indexOf(buscado, i + 1)) {
+      cuenta++;
+    }
+    return cuenta;
   }
 
   /**
@@ -1857,6 +2180,76 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("No pudimos guardar los cambios.")));
     mvc.perform(get("/entidad-perfil?escenario=sin-conexion"))
         .andExpect(content().string(containsString("No sabemos si se guardó.")));
+  }
+
+  /**
+   * DA-05 (PUB1-07): Nosotros, Para donantes y Para organizaciones siguen en sus rutas y se llaman
+   * «Cómo funciona», «Cómo donar» y «Ayuda». Derivan de A01: el título sobre la trama, la raíz
+   * numerada de 5 pasos con el recorrido y una sola acción llena por página.
+   */
+  @Test
+  void lasPaginasParaConocerTienenSuNombreNuevoYLaComposicionDeLaPortada() throws Exception {
+    List<String[]> paginas =
+        List.of(
+            new String[] {"/publico-nosotros", "Cómo funciona"},
+            new String[] {"/publico-para-donantes", "Cómo donar"},
+            new String[] {"/publico-para-entidades", "Ayuda"});
+    for (String[] pagina : paginas) {
+      String html =
+          mvc.perform(get(pagina[0]))
+              .andExpect(status().isOk())
+              .andExpect(view().name(pagina[0].substring(1)))
+              .andReturn()
+              .getResponse()
+              .getContentAsString(StandardCharsets.UTF_8);
+      String principal = html.substring(html.indexOf("<main"), html.indexOf("</main>"));
+      assertTrue(html.contains("<title>" + pagina[1] + " - DonaTrack</title>"), pagina[0]);
+      assertTrue(principal.contains("<p class=\"huerta-rotulo\">" + pagina[1] + "</p>"), pagina[0]);
+      assertTrue(principal.matches("(?s).*<div class=\"trama\">\\s*<h1>.*"), pagina[0]);
+      assertTrue(
+          principal.matches(
+              "(?s).*<ol class=\"huerta-raiz-pasos\" role=\"list\"\\s+data-forma=\"numerada tendida\".*"),
+          pagina[0]);
+      assertEquals(5, cuantasVeces(principal, "class=\"huerta-raiz-nudo\""), pagina[0]);
+      assertEquals(1, cuantasVeces(principal, "data-tono=\"principal\""), pagina[0]);
+    }
+  }
+
+  /**
+   * DA-23 (PUB1-08): el pie nombra las tres páginas con su nombre nuevo, con las rutas y el orden.
+   */
+  @Test
+  void elPieNombraLasPaginasParaConocerConSuNombreNuevo() throws Exception {
+    for (String pantalla : List.of("/publico-legales", "/publico-nosotros", "/donante-inicio")) {
+      String html =
+          mvc.perform(get(pantalla))
+              .andReturn()
+              .getResponse()
+              .getContentAsString(StandardCharsets.UTF_8);
+      String pie = html.substring(html.indexOf("<footer class=\"raices-pie\""));
+      List<String> enlaces = new ArrayList<>();
+      Matcher enlace = Pattern.compile("<a href=\"([^\"]+)\"[^>]*>([^<]+)</a>").matcher(pie);
+      while (enlace.find()) {
+        enlaces.add(enlace.group(1) + " " + enlace.group(2));
+      }
+      assertEquals(
+          List.of(
+              "/publico-nosotros Cómo funciona",
+              "/publico-para-donantes Cómo donar",
+              "/publico-para-entidades Ayuda",
+              "/publico-legales Términos y privacidad",
+              "/publico-contacto Contacto"),
+          enlaces,
+          pantalla);
+    }
+  }
+
+  private static int cuantasVeces(String texto, String buscado) {
+    int n = 0;
+    for (int i = texto.indexOf(buscado); i >= 0; i = texto.indexOf(buscado, i + 1)) {
+      n++;
+    }
+    return n;
   }
 
   @Test

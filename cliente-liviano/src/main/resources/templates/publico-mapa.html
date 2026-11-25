@@ -1,5 +1,11 @@
 <!DOCTYPE html>
-<!--/* Raíces, sitio A: Mapa (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.2 y la
+<!--/* El Mapa (RF-02, PUB1-04), dentro de Entregas: deriva del arquetipo A07 de la guía «Huerta y
+       galpón» (docs/interfaz/guia/partes/50-pantallas.html, #seguimiento), hecho con las piezas del
+       catálogo (docs/interfaz/componentes.md): las migas (componentes/migas) con Entregas enlazada,
+       porque el Mapa salió del menú y Entregas lo enlaza (DA-01); el título y la bajada; y el mapa con
+       su lista (.mapa-cuerpo), donde todo lo que dice el dibujo está también en texto: la lista repite
+       lo del globo de cada marcador, también lo que pide la organización.
+       Antes: Raíces, sitio A (ficha docs/interfaz/flujos/raices-publico-navegable.md, 4.2 y la
        ampliación R11-19). Desde el 2026-11-09 (usuaria: "que sea literalmente un mapa"), un mapa real
        con MapLibre GL y el estilo de OpenFreeMap (D21): un marcador numerado por lugar o entidad que
        confirmó entregas, con su globo, y la atribución visible.
@@ -48,28 +54,31 @@
              hay=${escenario == '' and lugares > 0},
              unidad=${v.conEntidades ? (lugares == 1 ? 'organización' : 'organizaciones') : (lugares == 1 ? 'lugar' : 'lugares')}">
   <svg th:replace="~{iconos :: categorias}"></svg>
-  <div class="publica mapa">
-    <header class="publica-cabeza">
-      <p class="rotulo">Mapa</p>
-      <h1>Adónde llegaron <em>las donaciones</em></h1>
-      <p th:if="${v.conEntidades}" class="lectura-bajada">Cada punto es una organización que confirmó entregas en el último mes. La ubicación
-        es aproximada: mostramos el barrio, nunca la dirección.</p>
-      <p th:unless="${v.conEntidades}" class="lectura-bajada">Cada punto es un lugar donde se confirmaron entregas en el
-        último mes. Mostramos la localidad, nunca la dirección.</p>
-    </header>
+  <div class="pila" data-espacio="5" data-v="mapa">
+    <div class="pila" data-espacio="1">
+      <nav th:replace="~{componentes/migas :: migas(pasos=${ { {texto: 'Entregas', ruta: '/publico-donaciones'} } }, actual='Mapa')}"></nav>
+      <header class="pila" data-espacio="1">
+        <h1>Adónde llegaron las donaciones</h1>
+        <p th:if="${v.conEntidades}" data-tono="suave">Cada punto es una organización que confirmó entregas en el último
+          mes. La ubicación es aproximada: mostramos el barrio, nunca la dirección.</p>
+        <p th:unless="${v.conEntidades}" data-tono="suave">Cada punto es un lugar donde se confirmaron entregas en el
+          último mes. Mostramos la localidad, nunca la dirección.</p>
+      </header>
+    </div>
 
-    <div th:if="${escenario == ''}" class="publica-barra">
-      <th:block th:if="${v.conCategorias}"><form th:replace="~{componentes/listado :: listado(${listado})}"></form></th:block>
-      <div th:if="${hay}" class="cifra-fruto" aria-live="polite">
-        <p th:if="${conTope}"><b class="fruto" th:text="${#numbers.formatInteger(v.delPeriodo, 1, 'POINT')}">340</b>
+    <th:block th:if="${escenario == '' and v.conCategorias}"><form th:replace="~{componentes/listado :: listado(${listado})}"></form></th:block>
+
+    <!--/* La cifra del período, en palabras: con el tope de Logística pueden ser cientos, así que no
+           va en frutos. */-->
+    <div th:if="${hay}" class="pila" data-espacio="1" aria-live="polite">
+      <p th:if="${conTope}"><b th:text="${#numbers.formatInteger(v.delPeriodo, 1, 'POINT')}">340</b>
           <span th:text="|entregas confirmadas ${v.rango}. El mapa muestra las ${#numbers.formatInteger(cuantas, 1, 'POINT')} más recientes, en ${#numbers.formatInteger(lugares, 1, 'POINT')} ${unidad}.|">entregas
             confirmadas del 13 de octubre al 12 de noviembre de 2026. El mapa muestra las 200 más recientes, en 37
             lugares.</span></p>
-        <p th:unless="${conTope}"><b class="fruto" th:text="${#numbers.formatInteger(cuantas, 1, 'POINT')}">10</b>
+      <p th:unless="${conTope}"><b th:text="${#numbers.formatInteger(cuantas, 1, 'POINT')}">10</b>
           <span th:text="|${cuantas == 1 ? 'entrega' : 'entregas'}${elegida == null ? (cuantas == 1 ? ' confirmada' : ' confirmadas') : ' de ' + elegida.enFrase} en ${#numbers.formatInteger(lugares, 1, 'POINT')} ${unidad}, ${v.rango}.|">entregas
             confirmadas en 5 organizaciones, del 16 de septiembre al 15 de octubre de 2026.</span></p>
-        <p class="nota" th:text="|Actualizado el ${v.actualizado}.|">Actualizado el 15 de octubre de 2026, 14:30.</p>
-      </div>
+      <p data-tono="suave" class="texto-chico" th:text="|Actualizado el ${v.actualizado}.|">Actualizado el 15 de octubre de 2026, 14:30.</p>
     </div>
 
     <p th:if="${hay and v.nota != null}" class="texto-chico" data-tono="suave" th:text="${v.nota}">Todavía no mostramos qué organización recibió cada entrega.</p>
@@ -81,7 +90,7 @@
     <p th:if="${escenario == 'lento'}" class="cargando" role="status">Cargando el mapa de entregas…</p>
 
     <div th:unless="${escenario == 'error'}" class="mapa-cuerpo" th:aria-busy="${escenario == 'lento'} ? 'true' : null">
-      <figure th:if="${escenario == 'lento'}" class="mapa-dibujo tierra-impresa esqueleto" aria-hidden="true"></figure>
+      <div th:if="${escenario == 'lento'}" class="esqueleto" data-tamano="alto"></div>
 
       <!--/* El mapa y, debajo, los botones de salida: en la computadora, la columna queda fija. */-->
       <div th:if="${hay}" class="pila" data-espacio="4" data-parte="mapa">
@@ -112,7 +121,7 @@
             </template>
           </li>
         </ol>
-        <div class="salidas" data-parte="salidas">
+        <div class="racimo" data-parte="salidas">
           <a class="boton" data-tono="principal" href="/publico-registro-donante"
              th:href="@{/publico-registro-donante}">Quiero donar</a>
           <a class="boton" data-tono="secundario" href="/publico-donaciones"
@@ -152,6 +161,7 @@
               </summary>
               <div class="plegable-cuerpo">
                 <p th:unless="${e.barrio.isEmpty()}" th:text="${e.barrio}">Barrio Ejemplo</p>
+                <p th:unless="${e.pide.isEmpty()}" th:text="|Pide: ${#strings.listJoin(e.pide, ', ')}.|">Pide: lentejas secas, arroz.</p>
                 <ul class="estacion-entregas" role="list">
                   <li th:each="f : ${e.entregas}" th:with="id=${'foto-' + e.clave + '-' + fStat.count}">
                     <svg th:if="${f.cat != null}" class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true" focusable="false"><use width="100" height="100"
@@ -174,7 +184,7 @@
       <p th:if="${hay}" id="lista-del-mapa-aviso" class="solo-lectores" aria-live="polite"
          th:text="${paginador != null and paginador.cambio} ? |Página ${paginador.pagina} de ${paginador.paginas} de la lista.| : ''"></p>
 
-      <div th:if="${escenario == 'lento'}" class="esqueleto mapa-lista"></div>
+      <div th:if="${escenario == 'lento'}" class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
 
       <section th:if="${escenario == '' and lugares == 0}" class="vacio" aria-labelledby="vacio-titulo">
         <h2 id="vacio-titulo" th:text="|Todavía no hay entregas de ${elegida.enFrase} en el último mes.|">Todavía no

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<!--/* Raíces, sitio A: Ingresar con el error de datos, como lo devolvería el servidor: el aviso arriba
-       recibe el foco y describe a los dos campos, sin decir cuál falló (RF-04, RNF-AUTH-10). */-->
+<!--/* Ingresar con el error de datos (PUB1-06, A12 «Con error»), como lo devolvería el servidor: un
+       estado del mismo formulario (publico-ingresar :: hoja(true)). El resumen arriba recibe el foco
+       y enlaza al campo; los dos campos quedan marcados en su lugar con un solo mensaje, sin decir
+       cuál falló (RF-04, RNF-AUTH-10). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-ingresar', ~{::contenido})}">
 <head>

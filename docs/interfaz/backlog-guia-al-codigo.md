@@ -862,16 +862,16 @@ saca solo las reglas que usan nada más que sus pantallas.
 
 | ID | Lote | Qué | Arquetipo y decisiones | Estado |
 |---|---|---|---|---|
-| PUB1-01 | `pub1-portada` | La portada, en el orden de A01: el título con la trama, el dibujo con un fruto por entrega confirmada del mes, la última entrega confirmada con su foto y su sello, las cifras, «Cómo funciona» con la raíz numerada de 5 pasos y las entregas confirmadas del mes. Los datos salen del puerto que ya existe (`cifrasDePortada` y `entregasConfirmadas`) | A01; DA-22; HG-03 con su texto de reemplazo (DA-10) | Pendiente |
-| PUB1-02 | `pub1-portada` | El menú público: Inicio, Entregas, Organizaciones y Cómo funciona (a `/publico-nosotros`), sin el Mapa; en el Mapa queda marcada Entregas | DA-01, DA-05 y DA-17 | Pendiente |
-| PUB1-03 | `pub1-entregas` | Entregas: las entregas confirmadas, cada una con su foto, su etiqueta y quién la recibió, y un enlace al Mapa | Deriva de A10; DA-01, DA-10 y HG-03 | Pendiente |
-| PUB1-04 | `pub1-entregas` | El Mapa, dentro de Entregas: el mapa con su lista y las migas a Entregas | Deriva de A07; DA-01 | Pendiente |
-| PUB1-05 | `pub1-organizaciones` | Organizaciones: tarjetas sobre la lámina, con el avance de cada necesidad y la barra de `componentes/listado` | Deriva de A02; HG-04 | Pendiente |
-| PUB1-06 | `pub1-ingresar` | Ingresar y su error, la puerta de la demo | Deriva de A12 | Pendiente |
-| PUB1-07 | `pub1-conocer` | Cómo funciona, Cómo donar y Ayuda: las páginas de hoy, con su nombre nuevo y la composición de A01 | Deriva de A01; DA-05 | Pendiente |
-| PUB1-08 | `pub1-conocer` | El pie nombra esas tres páginas con su nombre nuevo | DA-23 | Pendiente |
-| PUB1-09 | `pub1-contacto` | Contacto y su error; la respuesta pasa a aviso breve en Contacto, con el número del mensaje | Deriva de A12; DA-06 y DA-24 | Pendiente |
-| PUB1-10 | `pub1-contacto` | Términos y privacidad, una página de lectura | Sin arquetipo: derivación (DA-08) | Pendiente |
+| PUB1-01 | `pub1-portada` | La portada, en el orden de A01: el título con la trama, el dibujo con un fruto por entrega confirmada del mes, la última entrega confirmada con su foto y su sello, las cifras, «Cómo funciona» con la raíz numerada de 5 pasos y las entregas confirmadas del mes. Los datos salen del puerto que ya existe (`cifrasDePortada` y `entregasConfirmadas`) | A01; DA-22; HG-03 con su texto de reemplazo (DA-10) | Hecho (`26ebd4af3`, `1878a1e39`, `33e1c7284`, `5556086f0` y el arreglo después de la ola). Con `?escenario=error`, «Entregas confirmadas del último mes» dice qué falta en un renglón entre filetes, sin repetir el banner; el dibujo queda sin leyenda, porque sin datos los frutos dirían 0 ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 1) |
+| PUB1-02 | `pub1-portada` | El menú público: Inicio, Entregas, Organizaciones y Cómo funciona (a `/publico-nosotros`), sin el Mapa; en el Mapa queda marcada Entregas | DA-01, DA-05 y DA-17 | Hecho (`26ebd4af3`). Revisión de pantallas de la ola sin PASS (13.5) |
+| PUB1-03 | `pub1-entregas` | Entregas: las entregas confirmadas, cada una con su foto, su etiqueta y quién la recibió, y un enlace al Mapa | Deriva de A10; DA-01, DA-10 y HG-03 | Hecho (`8cfbaab5d`, `a56418c53` y `60a4c976f`). Revisión de pantallas de la ola sin PASS (13.5) |
+| PUB1-04 | `pub1-entregas` | El Mapa, dentro de Entregas: el mapa con su lista y las migas a Entregas | Deriva de A07; DA-01 | Hecho (`8cfbaab5d`, `60a4c976f` y `fb9e34317`). Revisión de pantallas de la ola sin PASS (13.5) |
+| PUB1-05 | `pub1-organizaciones` | Organizaciones: tarjetas sobre la lámina, con el avance de cada necesidad y la barra de `componentes/listado` | Deriva de A02; HG-04 | Hecho (`375608498`, `a1cb6457c` y `8cef6d2ee`). Con datos reales la cuenta de cada necesidad va en palabras, sin barra (HG-04). Revisión de pantallas de la ola sin PASS (13.5) |
+| PUB1-06 | `pub1-ingresar` | Ingresar y su error, la puerta de la demo | Deriva de A12 | Hecho (`5ce687f2d` y `09942eb6c`). Revisión de pantallas de la ola sin PASS (13.5) |
+| PUB1-07 | `pub1-conocer` | Cómo funciona, Cómo donar y Ayuda: las páginas de hoy, con su nombre nuevo y la composición de A01 | Deriva de A01; DA-05 | Hecho (`6c5dc109c`, `7da9a7374`, `9738e96df`, `3b08f925f`, `fb9e34317`, `5556086f0` y el arreglo después de la ola). «Qué ves con tu cuenta» de Cómo donar es una tarjeta con h3 bajo el título de sección «Tu cuenta», como en Ayuda ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 2) |
+| PUB1-08 | `pub1-conocer` | El pie nombra esas tres páginas con su nombre nuevo | DA-23 | Hecho (`6c5dc109c`). Revisión de pantallas de la ola sin PASS (13.5) |
+| PUB1-09 | `pub1-contacto` | Contacto y su error; la respuesta pasa a aviso breve en Contacto, con el número del mensaje | Deriva de A12; DA-06 y DA-24 | Hecho (`35f6c8307` y `fb9e34317`). Revisión de pantallas de la ola sin PASS (13.5) |
+| PUB1-10 | `pub1-contacto` | Términos y privacidad, una página de lectura | Sin arquetipo: derivación (DA-08) | Hecho (`35f6c8307`). Revisión de pantallas de la ola sin PASS (13.5) |
 
 Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5), con el
 límite de las hojas compartidas de §13.2.
@@ -884,7 +884,7 @@ límite de las hojas compartidas de §13.2.
   fragmento `pantalla`; no entran en la revisión ni en la hoja de contacto.
 - **Mientras dura la tanda:** cada lote ve el menú y el pie de hoy fuera de `pub1-portada` y de
   `pub1-conocer`. No es hallazgo del lote.
-- **Al cierre:** `-Pvisual` sobre las 53 rutas de PUB1 de `paginas.txt` (las de `/publico-portada`,
+- **Al cierre:** `-Pvisual` sobre las 54 rutas de PUB1 de `paginas.txt` (53 cuando se escribió el manifiesto; `pub1-organizaciones` sumó `?abrir=comedor`) (las de `/publico-portada`,
   `-ingresar`, `-donaciones`, `-entidades`, `-mapa`, `-nosotros`, `-para-donantes`, `-para-entidades`,
   `-legales` y `-contacto`). No entra `/publico-donaciones?respuesta=404`, que muestra `error/404`
   (PUB2). Se compara con la línea de base de §10.4. Corren también los otros cinco tests visuales,
@@ -901,3 +901,81 @@ límite de las hojas compartidas de §13.2.
   `loQueDonasYEchaRaicesVanEnterosEnSuRenglonEnTodosLosAnchos`. Esos fallos se anotan para que
   decida el usuario; no son bloqueantes y nadie edita esos tests. Un fallo nuevo en `ArmazonFijoTest`,
   que también mide la portada y Entregas, sí es bloqueante.
+
+### 13.5 Cierre de PUB1 (2026-11-24)
+
+Rama `E7_guia_ui_pub1`, `5556086f0`; 17 commits de lote sobre `c8c0bee77` (el manifiesto
+integrado), uno de cierre (`d548de261`) y dos de la revisión de pantallas de la ola (`fb9e34317` y
+`5556086f0`). Estado de cada ítem en §13.3: 8 hechos y 2 parciales (PUB1-01 y PUB1-07), por los
+bloqueantes que dejaron `pub1-portada` y `pub1-conocer` tras 3 rondas de su revisión. La revisión de
+pantallas de la ola corrió 2 rondas de arreglos y no llegó a PASS. Por eso las decisiones del
+usuario de esta ola (DA-01, DA-05, DA-10, DA-17, DA-22, DA-23 y DA-24) constan como no cumplidas,
+aunque su comportamiento esté en el código y en los tests. Lo que queda abierto está en
+[DTI-50](../adr/DEUDA_TECNICA.md#dti-50); las decisiones, en la [bitácora](bitacora.md)
+(2026-11-24).
+
+- `[VERIFIED]` `mvn clean test -pl cliente-liviano -am` en `5556086f0`: exit 0, 903 tests, sin fallos.
+  En `3b08f925f`, antes de la revisión de pantallas: 903 tests, sin fallos (867 en la línea de base de
+  la corrida). `InterfazFitnessTest` pasa con los topes de hoy (159 y 1192); el test cambió solo en
+  una línea: `publico-donaciones.css` sale de `HOJAS_HEREDADAS` (la hoja se queda, solo dispone).
+  `clases-heredadas.txt` no suma ninguna línea; la integración de la tanda 1 (`d2fd4d81a`) y los
+  lotes borraron las que quedaron sin uso. `node scripts/agent-check.js` y `mvn spotless:check`: sin
+  fallos.
+- `[VERIFIED]` Cercos con `git diff 73d54b878..HEAD`: sin cambios en `rest/`, los puertos,
+  `tokens.css`, los tests de `visual/`, `templates/componentes/`, `static/css/componentes/`,
+  `layout-publico.html`, `static/js/` ni `iconos.html`. Ningún lote borró una plantilla ni una hoja.
+  Fuera de las plantillas y hojas de sus pantallas se tocaron `PublicoEntidadesController` (los
+  filtros y las páginas), los tests funcionales de sus rutas y
+  `seguridad/ErroresConSesionTest.java` (la página de enviado ya no tiene «Volver a mi inicio», por
+  DA-24; la aserción nueva es igual de fuerte).
+- `[VERIFIED]` `-Pvisual` sobre las 54 rutas de PUB1 de `paginas.txt` (sin la barra inicial y sin
+  `/publico-donaciones?respuesta=404`), en `d548de261`: pasan 52. Fallan las dos de la línea de base
+  de §10.4, `/publico-mapa?escenario=muchas` y
+  `/publico-mapa?escenario=muchas&pagina=2&abierta=ejemplo-12`, solo por el marcador numerado del
+  mapa a 360 px (`button.mapa-marcador`, que el reporte marca por toque con «menos de 48x48 px»
+  aunque mide 48 × 48): es del catálogo (`componentes/mapa.css`, `static/js/mapa.js`), que esta ola
+  no edita. Ninguna ruta pasó de rojo a verde ni de verde a rojo. No se volvió a correr después de
+  las dos rondas de la revisión de pantallas.
+- `[VERIFIED]` Los otros cinco tests visuales, en `d548de261`: 31 tests, 4 fallos y 3 errores. Los de
+  la línea de base de §10.5 y §11.3: `ArmazonFijoTest.enElCelularConTabYShiftTabElFocoNoQuedaTapado`,
+  `AbejasYRenglonesTest.lasAbejasCambianDeCapaSoloCuandoNoSeVen`, el inestable de
+  `MenusQueSeCierranTest` y el error del lema del pie
+  (`AbejasYRenglonesTest.loQueDonasYEchaRaicesVanEnterosEnSuRenglonEnTodosLosAnchos`,
+  [DTI-47](../adr/DEUDA_TECNICA.md#dti-47)). Los esperados por DA-22, que miden las abejas y el corte
+  «bajo tierra» que la portada de A01 no dibuja, para que decida el usuario:
+  `AbejasYRenglonesTest.conReducirMovimientoLasAbejasQuedanQuietasDelanteYEnteras` y los dos de
+  `BajoTierraRotulosTest` (error de Playwright: no encuentran lo que miden). `DonanteDetallesTest`
+  pasa sus 7. Ningún fallo nuevo. No se volvieron a correr después de la revisión de pantallas.
+- Sin stack ni recorrido con login (DA-20): ningún lote cambia un adaptador `rest`. Queda para Z.
+- Revisión de los lotes: `pub1-portada` y `pub1-conocer` quedaron sin PASS tras 3 rondas
+  ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítems 1 y 2). Para los demás, el veredicto no consta en
+  el cierre; tuvieron rondas de arreglo `pub1-organizaciones` (2), `pub1-entregas` (1) y
+  `pub1-ingresar` (1), y ninguna `pub1-contacto`. La revisión de pantallas de la ola: 2 rondas de
+  arreglos (`fb9e34317`: el Mapa a 360 px, «Enviar mensaje» en un racimo, las preguntas frecuentes
+  con `.plegable` y las salidas de Cómo funciona a los registros; `5556086f0`: los errores de carga de
+  la portada y de Cómo funciona con el banner de error y «Cuidamos los datos» con DA-10), sin PASS.
+- Commits de la ola, en hora del 2026-11-24: `5ce687f2d` (17:13), `375608498` (17:19), `8cfbaab5d`
+  (17:30), `26ebd4af3` (17:38), `a56418c53` (17:40), `6c5dc109c` (18:06), `35f6c8307` (18:10),
+  `7da9a7374` (18:11), `d2fd4d81a` (18:20, integración), `a1cb6457c` (18:46), `60a4c976f` (18:47),
+  `09942eb6c` (18:51), `1878a1e39` (18:52), `9738e96df` (19:03), `33e1c7284` (19:30), `8cef6d2ee`
+  (19:34), `3b08f925f` (19:37), `d548de261` (20:08, cierre), `fb9e34317` (20:27, revisión de
+  pantallas, ronda 1) y `5556086f0` (20:49, ronda 2).
+- Arreglo después de la ola (2026-11-24, un commit sobre `8e4a77b02`): el error de las entregas del
+  mes en la portada (PUB1-01), la tarjeta de la cuenta en Cómo donar (PUB1-07), la lógica de
+  Organizaciones del controller a `vistas.ConsultaOrganizaciones` con su test (DTI-50, ítem 4, la
+  primera mitad), el paso «Viaja» con el mismo texto en la portada y en Cómo funciona («Ves en tu
+  cuenta por dónde anda el camión.») y, mientras el catálogo no tenga el título sobre la trama
+  (DTI-50, ítem 6a), la portada y las tres páginas de conocer dejan el h1 como lo da el sistema: sus
+  hojas ya no declaran la caja de la trama, ni la letra, ni medidas literales.
+- ADR: ninguno. La ola no tuvo lotes de contrato e implementa el ADR «Huerta y galpón» (§9.1,
+  Gate A); DA-22 a DA-24 son decisiones de pantalla. Ninguna spec de `docs/specs/active/` es de esta
+  ola, así que no se mueve ninguna.
+- Documentos: `mapa-del-sitio.md` suma los cambios de la ola (el menú público, el Mapa dentro de
+  Entregas, los tres nombres nuevos y la respuesta de Contacto); `componentes.md`, las filas de las
+  piezas que ahora usan las públicas (la trama, la etiqueta de entrega, el plegable, el paginador, la
+  huerta, la tarjeta y la navegación) y los tres enlaces del pie con su nombre nuevo (DA-23), también
+  en la muestra de `/estilos`; `patrones-y-microcopy.md`, la regla 26 (un envío termina en la misma
+  pantalla, con el número en el aviso) y la fila 6 de las reglas de la revisión (Contacto ya no
+  tiene «Volver a mi inicio»). `tono-y-comunicacion.md` y
+  [`requerimientos-e7.md`](../requerimientos/requerimientos-e7.md) no cambian: el primero no nombra
+  páginas ni menús, y ningún requerimiento cambia de estado.

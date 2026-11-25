@@ -112,6 +112,7 @@
 /publico-entidades?escenario=vacio
 /publico-entidades?escenario=lento
 /publico-entidades?escenario=error
+/publico-entidades?abrir=comedor
 /publico-ingresar
 /publico-ingresar?escenario=lento
 /publico-ingresar?escenario=error

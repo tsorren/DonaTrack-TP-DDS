@@ -139,8 +139,10 @@ class ErroresConSesionTest {
             get("/publico-contacto-enviado")
                 .with(como("DONANTE"))
                 .flashAttr("numeroDelMensaje", 7L))
+        .andExpect(content().string(containsString("class=\"raices-privado\"")))
         .andExpect(content().string(containsString("href=\"/donante-inicio\"")))
-        .andExpect(content().string(containsString("Volver a mi inicio")));
+        .andExpect(
+            content().string(containsString("Recibimos tu mensaje. Su número es <b>7</b>.")));
     mvc.perform(get("/publico-contacto"))
         .andExpect(content().string(containsString("class=\"raices-publico\"")));
   }

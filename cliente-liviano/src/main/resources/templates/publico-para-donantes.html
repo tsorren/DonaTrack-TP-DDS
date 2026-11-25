@@ -1,30 +1,44 @@
 <!DOCTYPE html>
-<!--/* Raíces, Para donantes (la "Landing donante" del mapa del sitio; ficha
-       docs/interfaz/flujos/raices-conocer-y-activar.md, 4.2; sin boceto): qué podés donar, qué ves con
-       tu cuenta y las preguntas de siempre, con la salida al registro. Se llega desde el pie y desde
-       "Cómo funciona" de la portada. Solo promete lo que el sitio ya le muestra al donante. Sin estados:
-       es texto fijo. */-->
+<!--/* Raíces, Cómo donar (antes Para donantes; DA-05: la misma ruta con otro nombre; ficha
+       docs/interfaz/flujos/raices-conocer-y-activar.md, 4.2). Deriva del arquetipo A01 de la guía
+       (docs/interfaz/guia/partes/50-pantallas.html#portada): el título sobre la trama con la única
+       acción llena (crear la cuenta), el recorrido de lo que donás en la raíz numerada de 5 pasos,
+       qué podés donar en láminas de un solo tema, qué ves con tu cuenta y las preguntas de siempre. Es
+       la entrada «Cómo donar» del menú de quien dona y se llega también desde el pie. Solo promete lo
+       que el sitio ya le muestra a quien dona. Sin estados: es texto fijo. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-conocer', ~{::contenido})}">
 <head>
-  <title>Para donantes - DonaTrack</title>
+  <title>Cómo donar - DonaTrack</title>
 </head>
 <body>
-<th:block th:fragment="contenido">
+<th:block th:fragment="contenido"
+    th:with="recorrido=${ {
+               {nombre: 'Llevás tu donación', avance: 'hecho', detalle: 'Al depósito. El equipo la registra a tu nombre y la ves en tu cuenta.'},
+               {nombre: 'Se asigna', avance: 'hecho', detalle: 'A una organización que pidió eso mismo.'},
+               {nombre: 'Se prepara', avance: 'hecho', detalle: 'En el depósito, para salir en el próximo viaje.'},
+               {nombre: 'Viaja', avance: 'hecho', detalle: 'Ves por dónde va el camión, con la hora de la última actualización.'},
+               {nombre: 'La confirman', avance: 'hecho', detalle: 'La organización la recibe, sube una foto y te avisamos.'} } }">
   <svg th:replace="~{iconos :: categorias}"></svg>
   <div class="pila" data-espacio="5">
-    <header class="lectura pila" data-espacio="2">
-      <p class="rotulo">Para donantes</p>
-      <h1>Doná y seguí tu donación <em>hasta que llega</em></h1>
-      <p class="lectura-bajada">Podés donar como persona o con tu empresa. Con tu cuenta ves dónde está
+    <header class="pila" data-espacio="3">
+      <p class="huerta-rotulo">Cómo donar</p>
+      <div class="trama">
+        <h1>Doná y seguí tu donación hasta que llega</h1>
+      </div>
+      <p class="huerta-bajada">Podés donar como persona o con tu empresa. Con tu cuenta ves dónde está
         cada donación y quién la recibió.</p>
       <div class="racimo" data-espacio="2">
         <a class="boton" data-tono="principal" href="/publico-registro-donante"
            th:href="@{/publico-registro-donante}">Crear mi cuenta de donante</a>
       </div>
-      <p class="cuenta-salida">¿Ya tenés cuenta? <a href="/publico-ingresar"
-         th:href="@{/publico-ingresar}">Ingresar</a></p>
+      <p>¿Ya tenés cuenta? <a href="/publico-ingresar" th:href="@{/publico-ingresar}">Ingresar</a></p>
     </header>
+
+    <section class="pila" data-espacio="3" aria-labelledby="recorrido-titulo">
+      <h2 id="recorrido-titulo">El recorrido de lo que donás</h2>
+      <ol th:replace="~{componentes/huerta :: raiz-pasos(${recorrido}, 'numerada tendida', null, false)}"></ol>
+    </section>
 
     <section aria-labelledby="que-donar-titulo" class="pila" data-espacio="3">
       <h2 id="que-donar-titulo">Qué podés donar</h2>
@@ -44,41 +58,58 @@
       </ul>
     </section>
 
-    <section aria-labelledby="cuenta-titulo" class="lectura">
-      <h2 id="cuenta-titulo">Qué ves con tu cuenta</h2>
-      <ul class="lista" role="list">
-        <li>Tus donaciones y en qué estado está cada una.</li>
-        <li>Por dónde va el camión, con la hora de la última actualización.</li>
-        <li>Qué organización la recibió, cuando lo confirma.</li>
-        <li>Las organizaciones del mapa y lo que piden.</li>
-      </ul>
-      <p>Si donás como persona, también tenés misiones: metas para sumar donaciones con otras personas.</p>
+    <!--/* Como en Ayuda: un título de sección afuera y h3 en la tarjeta. La lista va dentro de un div para
+           que la pila deje su aire entre el título y la lista (.lista reinicia el margen). */-->
+    <section class="pila" data-espacio="3" aria-labelledby="cuenta-seccion-titulo">
+      <h2 id="cuenta-seccion-titulo">Tu cuenta</h2>
+      <div class="grilla" data-espacio="3">
+        <section class="tarjeta pila" data-espacio="2" aria-labelledby="cuenta-titulo">
+          <h3 id="cuenta-titulo">Qué ves con tu cuenta</h3>
+          <div>
+            <ul class="lista" role="list">
+              <li>Tus donaciones y en qué estado está cada una.</li>
+              <li>Por dónde va el camión, con la hora de la última actualización.</li>
+              <li>Qué organización la recibió, cuando lo confirma.</li>
+              <li>Las organizaciones del mapa y lo que piden.</li>
+            </ul>
+          </div>
+          <p>Si donás como persona, también tenés misiones: metas para sumar donaciones con otras
+            personas.</p>
+        </section>
+      </div>
     </section>
 
     <section aria-labelledby="preguntas-titulo" class="lectura pila" data-espacio="2">
       <h2 id="preguntas-titulo">Preguntas frecuentes</h2>
-      <details>
-        <summary>¿Cuesta algo?</summary>
-        <p>No.</p>
+      <details class="plegable">
+        <summary><span class="plegable-titulo"><b>¿Cuesta algo?</b></span><span class="plegable-ver"
+            aria-hidden="true">Ver</span></summary>
+        <div class="plegable-cuerpo">
+          <p>No.</p>
+        </div>
       </details>
-      <details>
-        <summary>¿Dónde dejo lo que dono?</summary>
-        <p>En el depósito; el equipo lo registra y lo vas a ver en tu cuenta.</p>
+      <details class="plegable">
+        <summary><span class="plegable-titulo"><b>¿Dónde dejo lo que dono?</b></span><span class="plegable-ver"
+            aria-hidden="true">Ver</span></summary>
+        <div class="plegable-cuerpo">
+          <p>En el depósito; el equipo lo registra y lo vas a ver en tu cuenta.</p>
+        </div>
       </details>
-      <details>
-        <summary>¿Puedo donar sin que se vea mi nombre?</summary>
-        <p>Sí: lo elegís en tu perfil.</p>
+      <details class="plegable">
+        <summary><span class="plegable-titulo"><b>¿Puedo donar sin que se vea mi nombre?</b></span><span class="plegable-ver"
+            aria-hidden="true">Ver</span></summary>
+        <div class="plegable-cuerpo">
+          <p>Sí: lo elegís en tu perfil.</p>
+        </div>
       </details>
-      <details>
-        <summary>¿Cómo sé que llegó?</summary>
-        <p>La organización confirma la entrega con una foto y te avisamos.</p>
+      <details class="plegable">
+        <summary><span class="plegable-titulo"><b>¿Cómo sé que llegó?</b></span><span class="plegable-ver"
+            aria-hidden="true">Ver</span></summary>
+        <div class="plegable-cuerpo">
+          <p>La organización confirma la entrega con una foto y te avisamos.</p>
+        </div>
       </details>
     </section>
-
-    <div class="racimo" data-espacio="2">
-      <a class="boton" data-tono="principal" href="/publico-registro-donante"
-         th:href="@{/publico-registro-donante}">Crear mi cuenta de donante</a>
-    </div>
   </div>
 </th:block>
 </body>

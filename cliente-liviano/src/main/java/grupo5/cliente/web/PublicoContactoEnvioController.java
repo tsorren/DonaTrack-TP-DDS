@@ -16,9 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
- * El envío real de Contacto, fuera de la maqueta: manda el mensaje a Notificaciones (HB-21) y lleva
- * al enviado con su número. Los textos de los avisos que la ficha no tenía (límite y datos que no
- * validan) están propuestos en raices-contacto.md, pendientes de OK.
+ * El envío real de Contacto, fuera de la maqueta: manda el mensaje a Notificaciones (HB-21) y
+ * vuelve a Contacto, con su {@code ?volver=} si vino, con el aviso breve que lleva el número del
+ * mensaje (DA-06, DA-24: sin página de respuesta propia). Los textos de los avisos que la ficha no
+ * tenía (límite y datos que no validan) están propuestos en raices-contacto.md, pendientes de OK.
  */
 @Controller
 @Profile("!maqueta")
@@ -36,7 +37,7 @@ class PublicoContactoEnvioController {
           "Algo del sitio no anduvo", "SITIO",
           "Otra cosa", OTRO);
 
-  /** A dónde puede volver el enviado: una pantalla del sitio, como en SitioController. */
+  /** A dónde puede volver Contacto: una pantalla del sitio, como en SitioController. */
   private static final String VOLVER =
       "/" + Pantallas.NOMBRE + "(?:\\?[a-z]+=[a-z0-9-]+(?:&[a-z]+=[a-z0-9-]+)*)?";
 
@@ -45,6 +46,8 @@ class PublicoContactoEnvioController {
 
   private static final String FORMULARIO = "publico-contacto";
   private static final String RECIBIDO = "Recibimos tu mensaje.";
+  private static final String RECIBIDO_CON_NUMERO =
+      "Recibimos tu mensaje. Su número es %d. Te respondemos por correo.";
   private static final String LIMITE =
       "No pudimos enviar este mensaje: ya mandaste varios seguidos. Los anteriores nos llegaron;"
           + " probá de nuevo más tarde.";
@@ -85,17 +88,17 @@ class PublicoContactoEnvioController {
             codigo == null || !codigo.strip().matches(CODIGO) ? null : codigo.strip(),
             correo,
             claveEnvio == null ? UUID.randomUUID() : claveEnvio);
+    long numero;
     try {
-      atributos.addFlashAttribute(
-          PublicoContactoController.NUMERO, contacto.enviar(enviado, pedido.getRemoteAddr()));
+      numero = contacto.enviar(enviado, pedido.getRemoteAddr());
     } catch (ContactoRechazado rechazo) {
       return Envios.listo(
           FORMULARIO, rechazo.motivo() == Motivo.LIMITE ? LIMITE : INVALIDO, atributos);
     }
     String destino =
         volver != null && volver.matches(VOLVER)
-            ? "publico-contacto-enviado?volver=" + URLEncoder.encode(volver, StandardCharsets.UTF_8)
-            : "publico-contacto-enviado";
-    return Envios.listo(destino, RECIBIDO, atributos);
+            ? FORMULARIO + "?volver=" + URLEncoder.encode(volver, StandardCharsets.UTF_8)
+            : FORMULARIO;
+    return Envios.listo(destino, RECIBIDO_CON_NUMERO.formatted(numero), atributos);
   }
 }
