@@ -2070,15 +2070,99 @@ class SitioControllerTest {
         .andExpect(
             content().string(containsString("aria-label=\"Aprobar: Merendero Ejemplo Este\"")))
         .andExpect(content().string(containsString("popover")))
-        .andExpect(content().string(matchesPattern("(?s).*Falta la constancia de\\s+domicilio.*")));
+        .andExpect(content().string(matchesPattern("(?s).*Falta la constancia de\\s+domicilio.*")))
+        // Lo que mandó: cada dato con su signo de la guía y la palabra
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*data-lista=\"documentos\".*<span data-tono=\"exito\">\\s*<svg[^>]*"
+                            + "data-signo=\"e-confirmada\".*</span> CUIT.*data-tono=\"error\">\\s*"
+                            + "<svg[^>]*data-signo=\"e-problema\".*</svg>\\s*Falta la constancia de"
+                            + " domicilio</li>.*")));
+    // DA-34: la bandeja con ficha en el galpón; la de una que pide sumarse lleva lo que mandó y sus
+    // tres acciones. Una sola acción llena fuera de los diálogos y de la barra del listado (que
+    // trae
+    // su propio «Filtrar»): «Registrar organización».
+    String hogar =
+        mvc.perform(get("/admin-entidades?entidad=hogar"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("data-pantalla=\"entidades\"")))
+            .andExpect(content().string(containsString("<ul class=\"maestro\" role=\"list\">")))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*<li id=\"entidad-hogar\">.*<section id=\"ficha\" class=\"tarjeta"
+                                + " maestro-ficha\".*Lo que mandó.*action=\"/admin-entidades-"
+                                + "aprobada\".*aria-label=\"Pedir corrección: Hogar Ejemplo"
+                                + " Norte\".*aria-label=\"Rechazar: Hogar Ejemplo Norte\".*")))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*<header class=\"racimo\" data-alinea=\"entre arriba\">\\s*"
+                                + "<div class=\"pila\" data-espacio=\"0\">\\s*<h1>Organizaciones"
+                                + "</h1>\\s*<p class=\"texto-chico\" data-tono=\"suave\">Elegí una"
+                                + " para ver su ficha\\. Al .*")))
+            .andExpect(content().string(not(containsString("class=\"mesa"))))
+            .andExpect(content().string(not(containsString("<p class=\"rotulo\">"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    String fueraDeLosDialogos =
+        hogar
+            .replaceAll("(?s)<dialog\\b.*?</dialog>", "")
+            .replaceAll("(?s)<form class=\"listado\".*?</form>", "");
+    assertEquals(
+        1,
+        apariciones(fueraDeLosDialogos, "data-tono=\"principal\""),
+        "una sola acción llena fuera de los diálogos y de la barra");
+    assertTrue(
+        fueraDeLosDialogos.matches(
+            "(?s).*<a class=\"boton\" data-tono=\"principal\" data-tamano=\"chico\""
+                + " href=\"/admin-entidades-registrar\">Registrar organización</a>.*"),
+        "la acción llena es Registrar organización");
+    // La pestaña Solicitudes de Por decidir (DA-25) llega a la lista sin parámetros
+    mvc.perform(get("/admin-entidades")).andExpect(status().isOk());
     mvc.perform(get("/admin-entidades?ver=inactivas"))
         .andExpect(content().string(containsString("Inactiva desde el 20 de agosto")));
     mvc.perform(get("/admin-entidades?escenario=vacio&ver=pendientes"))
         .andExpect(content().string(containsString("Pendientes · 0")))
         .andExpect(
             content().string(containsString("Ninguna organización pide sumarse por ahora.")));
+    // ADM2-04: el error es el aviso en la página del catálogo, con el signo del problema
     mvc.perform(get("/admin-entidades?escenario=error"))
-        .andExpect(content().string(containsString("No pudimos cargar las organizaciones.")));
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<div class=\"aviso\" data-tipo=\"error\" role=\"alert\">\\s*<svg"
+                            + "[^>]*data-signo=\"e-problema\".*<p class=\"aviso-titulo\">No"
+                            + " pudimos cargar las organizaciones\\.</p>.*escribinos\\s+con este"
+                            + " código.*")))
+        .andExpect(content().string(not(containsString("id=\"error-titulo\""))));
+    // ADM2-05 (DA-06): cada respuesta es la lista con el aviso breve con signo del galpón
+    for (String[] respuesta :
+        new String[][] {
+          {"/admin-entidades-aprobada", "Aprobaste a Hogar Ejemplo Norte."},
+          {"/admin-entidades-correccion", "Le pedimos a Merendero Ejemplo Este"},
+          {"/admin-entidades-rechazada", "Rechazaste la solicitud de Comedor Ejemplo Oeste."}
+        }) {
+      mvc.perform(get(respuesta[0]))
+          .andExpect(status().isOk())
+          .andExpect(content().string(containsString("data-pantalla=\"entidades\"")))
+          .andExpect(
+              content()
+                  .string(
+                      matchesPattern(
+                          "(?s).*<h1>Organizaciones</h1>.*<div hx-swap-oob=\"beforeend:#avisos\">"
+                              + "<div class=\"aviso-breve\" data-estado=\"hecho\".*"
+                              + "data-signo=\"e-confirmada\".*<p>"
+                              + Pattern.quote(respuesta[1])
+                              + ".*class=\"maestro\".*")))
+          .andExpect(content().string(not(containsString("class=\"mesa"))));
+    }
     mvc.perform(get("/admin-entidades-aprobada"))
         .andExpect(content().string(containsString("Aprobaste a Hogar Ejemplo Norte.")))
         .andExpect(content().string(containsString("Pendientes · 2")))

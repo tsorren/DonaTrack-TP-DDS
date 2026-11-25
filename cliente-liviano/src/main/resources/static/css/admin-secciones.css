@@ -14,12 +14,6 @@
   --espacio-relleno: var(--espacio-3);
 }
 
-/* El renglón de cada solicitud se toca entero: al menos el alto de un toque. */
-#solicitudes summary {
-  min-height: var(--medida-toque-minimo);
-  padding-block: var(--espacio-2);
-}
-
 /* Un botón que pliega (summary) mide lo que su texto, no el ancho de la columna. */
 .mesa details > summary.boton {
   width: fit-content;
@@ -37,8 +31,8 @@
   min-height: var(--medida-toque-minimo);
 }
 
-/* Los datos de una solicitud y de una donación: el rótulo arriba y el dato debajo, sin sangría. */
-:is(#solicitudes, .mesa .tarjeta) dd {
+/* Los datos de una donación: el rótulo arriba y el dato debajo, sin sangría. */
+.mesa .tarjeta dd {
   margin: 0;
 }
 
@@ -81,37 +75,39 @@
   padding-block: 0;
 }
 
-/* --- Entidades (ronda del 2026-11-09, tarde: la prueba admin-entidades-c pasó a ser la pantalla;
-   ronda del 2026-11-10: una sola lista y la ficha de la maqueta 15, en componentes/maestro.css) -- */
+/* --- Organizaciones (A03, ADM2-04): la cabecera, el listado, la bandeja con ficha (.maestro y
+   .maestro-ficha), el aviso y el paginador son del catálogo; acá queda lo que la pieza no resuelve. */
 
 /* Lo que mandó una pendiente, dentro de la ficha (.maestro-ficha): sin viñetas. */
-[data-lista="documentos"] {
+[data-pantalla="entidades"] [data-lista="documentos"] {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* Los pictogramas de la lista y de la ficha, a su medida: sellos.css (sin capa, por entidad-comun.css)
-   le gana al bloque maestro con su 1,75 rem. */
-.maestro .categoria-icono {
+/* Los pictogramas de la lista y de la ficha, a la medida del bloque maestro: sellos.css (sin capa,
+   por entidad-comun.css) le gana a la capa de bloques con su 1,75 rem. */
+[data-pantalla="entidades"] .maestro .categoria-icono {
   width: 2.25rem;
   height: 2.25rem;
 }
 
-.maestro-ficha .categoria-icono[data-tamano="grande"] {
+[data-pantalla="entidades"] .maestro-ficha .categoria-icono[data-tamano="grande"] {
   width: 4.5rem;
   height: 4.5rem;
 }
 
-.maestro-ficha [data-lista="necesidades-ficha"] .categoria-icono {
+[data-pantalla="entidades"] [data-lista="necesidades-ficha"] .categoria-icono {
   width: 2.75rem;
   height: 2.75rem;
 }
 
-/* Desde la tableta, la ficha con el relleno grande (.mesa .tarjeta le pone el chico). */
-@media (min-width: 53.75em) {
-  .mesa .maestro-ficha {
-    --espacio-relleno: var(--espacio-4);
+/* En el galpón la ficha es más angosta que la pantalla (el cajón ocupa su columna): la identidad no
+   baja de lo que mide su palabra más larga, así el nombre no se mete debajo del resumen (el bloque
+   maestro le da minmax(0, 1fr)). */
+@media (min-width: 68.75em) {
+  [data-pantalla="entidades"] .maestro-ficha {
+    grid-template-columns: minmax(min-content, 1fr) fit-content(50%);
   }
 }
 
