@@ -487,6 +487,14 @@
   display: none;
 }
 
+/* La muestra del cajón en /estilos: la barra del celular del galpón tiene cuatro celdas, que entran de
+   a 48 px en la ficha más angosta; la caja no necesita el ancho mínimo de la barra de la huerta
+   (muestra.css) y Más queda a la vista. Desde 56 em el cajón toma el ancho de la ficha (en la
+   pantalla lo fija privado.css), así entra entero con su cuenta chica. */
+.muestra-demo [data-ventana][data-armazon="galpon"] {
+  min-width: 0;
+}
+
 /* La cuenta chica solo va en el cajón (desde 56 em); en la celda del celular no entra. */
 [data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul a b {
   display: none;
@@ -516,7 +524,6 @@
 @media (min-width: 56em) {
   [data-armazon="galpon"] .navegacion[data-forma="cajon"] {
     position: static;
-    min-width: var(--medida-cajon);
     padding: var(--espacio-3) var(--espacio-2);
     border-top: 0;
   }
