@@ -1577,10 +1577,11 @@ condicionales se omiten y sus tandas quedan vacías.
 
 - `z-tokens` va con `z-hg02` en la tanda 1: toca hojas, `tokens.css`, `/estilos`, el tema y
   `PARES`, y ningún lote HG toca una hoja de estilo (regla 5).
-- Los tres lotes HG van en tandas distintas porque comparten plantillas:
-  - HG-02 y HG-03: `donante-inicio.html` y `persona/donante-inicio.html`.
-  - HG-02 y HG-04: `donante-donaciones-detalle.html`.
-  - HG-03 y HG-04: `entidad-seguimiento-sellada.html`.
+- Los tres lotes HG van en tandas distintas:
+  - HG-02 y HG-03 comparten `donante-inicio.html` y `persona/donante-inicio.html`.
+  - HG-03 y HG-04 comparten `entidad-seguimiento-sellada.html` y `EntidadConfirmarRest.java`.
+  - HG-02 y HG-04 no comparten plantillas, pero los dos suman un campo en `puertos/` y un dato en
+    `maqueta/` sin una lista cerrada de archivos.
 - `z-cerco` va en la tanda 4, después de todos los cambios de hojas. Mide los topes al final y puede
   borrar una hoja junto con su `<link>` en una plantilla que tocó un lote HG.
 - `z-docs` va último, en la tanda 5, para escribir lo que dejaron los otros cuatro.
@@ -1590,7 +1591,7 @@ condicionales se omiten y sus tandas quedan vacías.
 | `z-tokens` | 1 | Los alias, los tokens sin uso, la lista de pares y el tema de Keycloak | — | `/estilos` |
 | `z-hg02` | 1 | HG-02, la hora estimada de llegada | `HG-02` | 4 de quien dona |
 | `z-hg03` | 2 | HG-03, el nombre de quien recibió | `HG-03` | 7 de quien dona, la organización y lo público |
-| `z-hg04` | 3 | HG-04, el avance de una necesidad en unidades | `HG-04` | 7 de la organización, quien dona y lo público |
+| `z-hg04` | 3 | HG-04, el avance de una necesidad en unidades | `HG-04` | 6 de la organización, quien dona y lo público |
 | `z-cerco` | 4 | `HOJAS_HEREDADAS`, las hojas vacías, `paginador.html` y los dos topes | — | Ninguna |
 | `z-docs` | 5 | `backlog-migracion-componentes.md`, `docs/README.md`, `ESTADO_DOCUMENTACION.md` y `DEUDA_TECNICA.md` | — | Ninguna |
 
@@ -1604,7 +1605,7 @@ condicionales se omiten y sus tandas quedan vacías.
 | Z-04 | `z-tokens` | El tema de Keycloak: `donatrack.css` usa los nombres de la guía, la copia de `tokens.css` se vuelve a sincronizar y `test_auth_theme.py` nombra los tokens de la guía, con las mismas aserciones y los mismos mínimos | `auth-service/themes/donatrack/login/resources/css/donatrack.css` (9 usos de 6 alias); `scripts/tests/test_auth_theme.py:201-203, 216-219, 236, 262-300`; `scripts/sincronizar_tema.py`. DA-36 | Pendiente |
 | Z-05 | `z-hg02` | Con el PR de HG-02 mergeado, la hora estimada de llegada va en el inicio de quien dona (la empresa y la persona), en el detalle en camino y en Seguimiento. Reemplaza a «En camino desde las …», que era el texto de reemplazo. Salen los comentarios HG-02 que explican ese reemplazo | §7; A04 y A07; `donante-inicio.html:7, 92`, `persona/donante-inicio.html:6, 103`, `donante-seguimiento.html:9, 125`, `donante-donaciones-detalle.html:118`. A05 no la muestra hoy y no se le agrega (regla 5) | Pendiente |
 | Z-06 | `z-hg03` | Con el PR de HG-03 mergeado, en lo privado la etiqueta lleva el nombre de quien recibió («Recibió Marta el 5 de octubre», `componentes/etiqueta-entrega.html:13`). En lo público sigue la organización. Confirmar recepción cambia solo su comentario: si el PR pide el nombre al confirmar, el campo nuevo del formulario no entra en Z (regla 5) y va al PR final | §7; A01, A04, A10 y A13; `EntidadConfirmarRest.java:250`; los comentarios HG-03 de `donante-inicio.html`, `persona/donante-inicio.html`, `entidad-seguimiento*.html`, `publico-portada.html:12` y `publico-donaciones.html:7`. DA-10 | Pendiente |
-| Z-07 | `z-hg04` | Con el PR de HG-04 mergeado, el avance de una necesidad va en unidades (llegaron, asignadas y sin asignar) con el `.progreso` del catálogo. Reemplaza a la cuenta de donaciones | §7; A02, A06, A09 y A13; los comentarios HG-04 de `entidad-necesidades.html`, `entidad-inicio.html`, `donante-entidades.html`, `publico-entidades.html`, `donante-donaciones-detalle.html`, `entidad-entrega-problema.html` y `entidad-seguimiento-sellada.html`; `PeriodoNecesidadDTO.java:12-19` | Pendiente |
+| Z-07 | `z-hg04` | Con el PR de HG-04 mergeado, el avance de una necesidad va en unidades (llegaron, asignadas y sin asignar). Reemplaza a la cuenta de donaciones. Va con el `.progreso` que ya tienen Necesidades, el inicio de la organización, Organizaciones (de quien dona y de lo público) y Llegó con un problema. En Recepción confirmada va solo en palabras, en el texto de «Tu necesidad», sin sumar la barra (regla 5). El detalle de una donación no entra: no muestra la necesidad (§17.5) | §7; A02, A09, A11 y A13; los comentarios HG-04 de `entidad-necesidades.html`, `entidad-inicio.html`, `donante-entidades.html`, `publico-entidades.html`, `entidad-entrega-problema.html` y `entidad-seguimiento-sellada.html:120`; `PeriodoNecesidadDTO.java:12-19`. `[VERIFIED]` 2026-11-25: `entidad-seguimiento-sellada.html` y `donante-donaciones-detalle.html` no tienen ningún `.progreso` | Pendiente |
 | Z-08 | `z-cerco` | `HOJAS_HEREDADAS`: sale `entidad-recibidas.css`, que ya no existe. Una hoja sin reglas se borra, con todo lo que la nombra. Sale también toda hoja que el cerco acepta como hoja de pantalla nueva | `InterfazFitnessTest.java:268-294` (la lista dice que solo baja) y `:390-409` (`hojasDePantallaNuevasSoloDisponen`); [DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 3; §16.2 (`admin-inicio.css`). `[VERIFIED]` 2026-11-25: la lista tiene 20 hojas y la única que no existe es `entidad-recibidas.css`. DA-38 | Pendiente |
 | Z-09 | `z-cerco` | `templates/paginador.html` se borra si, después de ADM2, ningún archivo de `cliente-liviano/src` lo nombra. Si lo nombra uno, se queda y se anota | §16.2 (fila de `paginador.html`). DA-38 | Pendiente |
 | Z-10 | `z-cerco` | Los dos topes de `InterfazFitnessTest` bajan al valor medido con todo lo de Z integrado: clases de un solo uso (hoy 159) y medidas literales (hoy 1192). Si un conteo da más que su tope, es bloqueante: el tope no sube | `InterfazFitnessTest.java:253, 561`; los mensajes de `:386` y `:608` («solo baja»); §10.2 (fila de los topes) | Pendiente |
@@ -1651,3 +1652,4 @@ de pendientes del PR final y a la DTI nueva de Z-14.
 | `raices-pie.svg`, `grano-sombra.svg` y las reglas de `.vacio` pisadas en `aviso.css` | [DTI-47](../adr/DEUDA_TECNICA.md#dti-47), ítem 8 | No son tokens, y la regla de Z retira tokens. Además, `aviso.css` es del catálogo |
 | La migración de las hojas heredadas que todavía tienen reglas (B3-02 a B3-06) | `backlog-migracion-componentes.md:246-250` | Es reescribir hojas de pantalla. Z solo saca de la lista las que el cerco ya acepta (DA-38) |
 | HG-01, la fecha de la nueva salida | §7; DA-09 | No se construye: queda el texto sin fecha |
+| Con HG-04, la barra de avance de la necesidad en la donación asignada y en Recepción confirmada, y la necesidad que cubre en el detalle de una donación | La guía dibuja la barra en A06 y A13 (`guia/partes/50-pantallas.html:455` y `:981`); `donante-donaciones-detalle.html:13` y `entidad-seguimiento-sellada.html:120-127` no la tienen | Es una pieza que esas pantallas no tienen, y Z no suma piezas (regla 5). `z-hg04` conecta el dato solo en palabras en Recepción confirmada. Va al PR final |
