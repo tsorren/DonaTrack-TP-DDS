@@ -286,6 +286,18 @@ Ninguna pantalla nueva ni una que pase de 3 niveles; ninguna ruta ni menú cambi
 | Solicitud enviada | `/publico-registro-entidad-enviada` es la página de estado de la solicitud, con «Solicitud recibida» como aviso de éxito en la página y sus cinco escenarios | PUB2-07; DA-32 |
 | Páginas de error, la pantalla «Esta pantalla todavía no está dibujada» y el aviso de la persona | La composición de lectura de la huerta: rótulo, título, bajada y una sola acción llena, con y sin sesión | PUB2-08, PUB2-09 |
 
+## Cambios de la oleada ADM2 de la guía «Huerta y galpón» (2026-11-25)
+
+Ninguna pantalla nueva ni una que pase de 3 niveles; ningún menú cambia (DA-17) y ninguna ruta sale
+([backlog de la guía](backlog-guia-al-codigo.md), §16):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Donantes y Organizaciones del admin | Siguen como bandeja con ficha, con la ficha en la misma página (`?donante=` y `?entidad=`); la de partida queda marcada y en el celular no se abre sola. La ficha de Donantes ya no queda fija al desplazarse | ADM2-01, ADM2-04; DA-34 |
+| Registrar un donante | Vuelve a Donantes con un aviso breve; en la maqueta, `/admin-donantes-registrado` muestra Donantes con ese aviso. Sale «Registrar su donación»: la donación se registra desde la ficha del donante | ADM2-11; DA-06 y DA-33 |
+| Registrar una organización | Vuelve a Organizaciones con un aviso breve; en la maqueta, `/admin-entidades-registrada` muestra Organizaciones con ese aviso | ADM2-13; DA-06 |
+| Administradores | `/admin-administradores-nuevo` (el alta sin JavaScript) y `/admin-administradores-alta` (la contraseña provisoria) siguen como páginas propias, con las migas a Administradores. Las pestañas Cuentas · Actividad van debajo de la cabecera | ADM2-06, ADM2-07; DA-35 |
+
 ## Observaciones para el diseño
 
 - El admin tenía 9 secciones de nivel 2. Quedan 6 por tema, como el prototipo: registrar,

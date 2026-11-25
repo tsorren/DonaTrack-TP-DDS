@@ -1487,19 +1487,19 @@ que quedan sin uso con ellas (`.mesa` y `.mesa-cabecera` en `admin-inicio.css`, 
 
 | ID | Lote | Qué | Arquetipo y decisiones | Estado |
 |---|---|---|---|---|
-| ADM2-01 | `adm2-donantes` | Donantes en el galpón: la cabecera con la cifra y su fecha, «Registrar donante» como única acción llena e «Importar CSV»; la franja de la importación de la sesión como aviso en la página; importar plegado y su error; la barra del listado; la bandeja con ficha, con «Ver sus donaciones» y «Registrar una donación». Cada donación reciente de la ficha lleva a `/admin-donaciones-detalle?donacion=` ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 5). `/admin-donantes?donante=juan` sale de la línea de base de §10.4 | Deriva de A03; DA-34 | Pendiente |
-| ADM2-02 | `adm2-donantes` | El avance y el resultado de una importación (`-importando` e `-importado`), como páginas de estado, con sus avisos de etapa y las filas con error en la tabla del catálogo | Deriva de A03 | Pendiente |
-| ADM2-03 | `adm2-donantes` | Importaciones, la pestaña de Donantes (Donantes · Importaciones), con la barra del listado, la tabla y el paginador del catálogo | Deriva de A03 | Pendiente |
-| ADM2-04 | `adm2-organizaciones` | Organizaciones en el galpón: la cabecera con «Registrar organización», la barra del listado con Estado y su cuenta, la bandeja con ficha y, en las que piden sumarse, lo que mandaron y sus tres acciones (Aprobar, Pedir corrección y Rechazar) | Deriva de A03; DA-34 | Pendiente |
-| ADM2-05 | `adm2-organizaciones` | Las tres respuestas (`-aprobada`, `-correccion` y `-rechazada`): la lista con su aviso breve con signo | DA-06 | Pendiente |
-| ADM2-06 | `adm2-administradores` | Administradores (Cuentas) y Actividad, con las pestañas Cuentas · Actividad, la tabla y el paginador del catálogo; el alta en su ventana | Deriva de A03 | Pendiente |
-| ADM2-07 | `adm2-administradores` | El alta sin JavaScript (`-nuevo`) y la contraseña provisoria (`-alta`) como páginas propias, con el patrón de A12; el lote suma las dos rutas a `paginas.txt` | Deriva de A12; DA-35 | Pendiente |
-| ADM2-08 | `adm2-administradores` | Mi perfil del admin, en una columna, con sus dos errores en el aviso en la página | Deriva de A12 | Pendiente |
-| ADM2-09 | `adm2-novedades` | Las Novedades del admin en el galpón: la cabecera, los estados de lista del catálogo (vacío, cargando y error) y el aviso de marcar como aviso breve con signo | Sin arquetipo: la ficha del buzón de ORG; DA-06 | Pendiente |
-| ADM2-10 | `adm2-registrar-donante` | Registrar donante (persona u organización) y su error, en el galpón | Deriva de A12 | Pendiente |
-| ADM2-11 | `adm2-registrar-donante` | «Registrado» como aviso breve en Donantes, también con `?escenario=ya-era`; en la maqueta su ruta sigue | DA-06 y DA-33 | Pendiente |
-| ADM2-12 | `adm2-registrar-organizacion` | Registrar organización y su error, en el galpón | Deriva de A12 | Pendiente |
-| ADM2-13 | `adm2-registrar-organizacion` | «Registrada» como aviso breve en Organizaciones; en la maqueta su ruta sigue | DA-06 | Pendiente |
+| ADM2-01 | `adm2-donantes` | Donantes en el galpón: la cabecera con la cifra y su fecha, «Registrar donante» como única acción llena e «Importar CSV»; la franja de la importación de la sesión como aviso en la página; importar plegado y su error; la barra del listado; la bandeja con ficha, con «Ver sus donaciones» y «Registrar una donación». Cada donación reciente de la ficha lleva a `/admin-donaciones-detalle?donacion=` ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 5). `/admin-donantes?donante=juan` sale de la línea de base de §10.4 | Deriva de A03; DA-34 | Hecho (`83b7c34f8`, `b2669fedb`, arreglos `275f60a40` y `0431c7005`; revisión de pantallas `dffc1947e`): la cabecera del galpón con la cifra y su fecha, «Registrar donante» como única acción llena (con importar abierto, la llena es «Importar») e «Importar CSV»; la importación de la sesión, «terminada», «cortada» y «no pudimos actualizar» como `.aviso` en la página; el campo del archivo es el `.campo` del catálogo; `componentes/listado` y `componentes/paginas`; la bandeja con ficha (`.maestro`, DA-34), con «Ver sus donaciones», «Registrar una donación» y cada donación reciente a `/admin-donaciones-detalle?donacion=`. La de partida lleva `aria-current` y `data-elegido="partida"`, y en el celular no se abre sola (`dffc1947e`). La ficha ya no es fija desde la tableta (`0431c7005`): bajaba sola con el `sticky`. `/admin-donantes?donante=juan` pasa y sale de la línea de base de §10.4. DA-34 consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS (§16.5) |
+| ADM2-02 | `adm2-donantes` | El avance y el resultado de una importación (`-importando` e `-importado`), como páginas de estado, con sus avisos de etapa y las filas con error en la tabla del catálogo | Deriva de A03 | Hecho (`83b7c34f8`, arreglos `275f60a40` y `0431c7005`): el avance con las migas Donantes › Importaciones › archivo, sus avisos de etapa en el `.aviso`, «Ver todas las importaciones» y «Volver a Donantes» como botones chicos; las filas con error en la `.tabla` del catálogo con `componentes/paginas`. La región viva vacía ya no deja espacio de más (`0431c7005`) |
+| ADM2-03 | `adm2-donantes` | Importaciones, la pestaña de Donantes (Donantes · Importaciones), con la barra del listado, la tabla y el paginador del catálogo | Deriva de A03 | Hecho (`83b7c34f8`, arreglos `275f60a40` y `0431c7005`; revisión de pantallas `dffc1947e`): las pestañas Donantes · Importaciones (`componentes/segmentos`), `componentes/listado`, la `.tabla` con el enlace de cada importación en el `th scope="row"` (sale la columna «Qué se puede hacer»), `componentes/paginas` y la ayuda en el `.plegable` del catálogo, igual que Actividad. «Coinciden N importaciones.» solo con filtros, y «Mostrando X a Y de N» debajo de la lista (`dffc1947e`) |
+| ADM2-04 | `adm2-organizaciones` | Organizaciones en el galpón: la cabecera con «Registrar organización», la barra del listado con Estado y su cuenta, la bandeja con ficha y, en las que piden sumarse, lo que mandaron y sus tres acciones (Aprobar, Pedir corrección y Rechazar) | Deriva de A03; DA-34 | Parcial (`6e073d8fa`, `ec98c14f6`, arreglos `a2da2489d` y `36dbafa92`; revisión de pantallas `dffc1947e`): la cabecera con «Registrar organización» como única acción llena (Aprobar pasa a secundario), `componentes/listado` con Estado, la bandeja con ficha (DA-34) y, en las que piden sumarse, lo que mandaron con `componentes/sello :: signo` y las tres acciones; la de partida con `aria-current`; «Mostrando X a Y de N» en lugar del texto del orden. Falta: el pictograma de la identidad perdió `data-tamano="grande"`, que pide la pieza `.maestro` (`estilos.html`, `maestro.css`), y la ficha angosta del galpón se apila con una consulta de contenedor en `admin-secciones.css` (`dffc1947e`), no con una variante del catálogo ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 4). DA-34 consta como no cumplida (§16.5) |
+| ADM2-05 | `adm2-organizaciones` | Las tres respuestas (`-aprobada`, `-correccion` y `-rechazada`): la lista con su aviso breve con signo | DA-06 | Hecho (`6e073d8fa`, arreglo `a2da2489d`): las tres respuestas son Organizaciones con `admin-donaciones :: hecho(texto)`, el aviso breve con signo, leído por `admin-entidades :: hoja(accion)` sin cambiar su firma |
+| ADM2-06 | `adm2-administradores` | Administradores (Cuentas) y Actividad, con las pestañas Cuentas · Actividad, la tabla y el paginador del catálogo; el alta en su ventana | Deriva de A03 | Hecho (`94df0d9a0`, arreglos `5bd85e8e3` y `d40c3d5d6`; revisión de pantallas `dffc1947e`): las pestañas Cuentas · Actividad debajo de la cabecera, como A03; la `.tabla` y `componentes/paginas`; «Dar de alta un administrador» lleno y el alta en su ventana; en Actividad, «Actualizar» en la cabecera, «Leída el …» en la bajada, los avisos de la consulta como `.aviso` de advertencia y la ayuda en el `.plegable` del catálogo, igual que Importaciones (`dffc1947e`). Los diálogos no tienen captura: los cubren los tests HTMX de `AdministradoresConIngresoTest` |
+| ADM2-07 | `adm2-administradores` | El alta sin JavaScript (`-nuevo`) y la contraseña provisoria (`-alta`) como páginas propias, con el patrón de A12; el lote suma las dos rutas a `paginas.txt` | Deriva de A12; DA-35 | Hecho (`94df0d9a0`, arreglos `5bd85e8e3` y `d40c3d5d6`; revisión de pantallas `f1454822d`): `-nuevo` en la columna de A12, con el resumen del error arriba y «Volver sin dar de alta» como salida; `-alta`, página propia (DA-35) con las migas a Administradores (`f1454822d`), el correo en `.datos` y «Volver a Administradores» como única acción llena. Las dos rutas están en `paginas.txt`. DA-35 consta como no cumplida (§16.5) |
+| ADM2-08 | `adm2-administradores` | Mi perfil del admin, en una columna, con sus dos errores en el aviso en la página | Deriva de A12 | Hecho (`94df0d9a0`, arreglo `5bd85e8e3`): Mi perfil en una columna, el correo como texto fijo, «Todavía no cargaste tu nombre» como `.aviso` informativo, los dos errores en el `.aviso` de la página con el signo del problema y el h2 «Tu cuenta» para sus tres enlaces |
+| ADM2-09 | `adm2-novedades` | Las Novedades del admin en el galpón: la cabecera, los estados de lista del catálogo (vacío, cargando y error) y el aviso de marcar como aviso breve con signo | Sin arquetipo: la ficha del buzón de ORG; DA-06 | Hecho (`cfcb65a52` y `ba4ddb2f0`): la cabecera del galpón con la cifra y la bajada de la bandeja compartida; vacío, cargando (región `aria-busy` con `.cargando` y el esqueleto de tres renglones) y error (`.aviso` con «Volver a cargar», como el resto del galpón; la ficha R11-14 decía «Volver a intentar»); marcar responde con `admin-donaciones :: hecho(texto)` y los tres textos de antes |
+| ADM2-10 | `adm2-registrar-donante` | Registrar donante (persona u organización) y su error, en el galpón | Deriva de A12 | Hecho (`e1a960a63` y `f21c0d6a6`): las migas a Donantes, la columna de `--medida-formulario` (`[data-pantalla="registrar-donante"]`), la bajada nueva, «Quién dona» en su tarjeta con «Cambiar» secundario, el resumen del error arriba con un enlace a cada campo, los `.campo` del catálogo, «Registrar donante» como única acción llena y «Volver sin registrar». La dirección (opcional) va abierta bajo un h2, no plegada |
+| ADM2-11 | `adm2-registrar-donante` | «Registrado» como aviso breve en Donantes, también con `?escenario=ya-era`; en la maqueta su ruta sigue | DA-06 y DA-33 | Hecho (`e1a960a63`): en la maqueta, `/admin-donantes-registrado` (404 fuera de ella) muestra Donantes con el aviso breve, también con `?escenario=ya-era`; sale «Registrar su donación». Registrar la donación de un donante nuevo pide buscarlo en la lista ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 1). DA-33 consta como no cumplida (§16.5) |
+| ADM2-12 | `adm2-registrar-organizacion` | Registrar organización y su error, en el galpón | Deriva de A12 | Hecho (`668bc5231`): las migas a Organizaciones, la columna de `--medida-formulario` (`[data-pantalla="registrar-organizacion"]`), los rótulos más llanos («Responsable», «Nombre y apellido», «Correo»), el resumen del error con el enlace a `#calle`, una sola acción llena y «Volver sin registrar» |
+| ADM2-13 | `adm2-registrar-organizacion` | «Registrada» como aviso breve en Organizaciones; en la maqueta su ruta sigue | DA-06 | Hecho (`668bc5231`): en la maqueta, `/admin-entidades-registrada` (404 fuera de ella) muestra Organizaciones con el aviso breve «Registraste a Escuela Ejemplo N.º 5. Queda activa…», sin el banner. DA-06 consta como no cumplida en esta parte (§16.5) |
 
 Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5), con el
 límite de las hojas compartidas de §16.2.
@@ -1533,3 +1533,86 @@ límite de las hojas compartidas de §16.2.
   cambia un adaptador `rest` (plan de la corrida, punto 5). Queda para Z comprobar con datos reales
   Donantes, la importación, Organizaciones con una solicitud, el alta de un administrador y los dos
   registros.
+
+### 16.5 Cierre de ADM2 (2026-11-25)
+
+Rama `E7_guia_ui_adm2`, `f1454822d`. Seis lotes en dos tandas sobre `2d74fc081` (el manifiesto
+integrado): en la tanda 1, `adm2-donantes`, `adm2-organizaciones`, `adm2-administradores` y
+`adm2-novedades`; en la tanda 2, `adm2-registrar-donante` y `adm2-registrar-organizacion`, con la
+integración de la tanda 2 (`0bdf24657`, que borra `mesa` y `mesa-cabecera` de
+`clases-heredadas.txt` con sus reglas), un commit de cierre (`e5fbdc8d6`) y dos de la revisión de
+pantallas de la ola (`dffc1947e` y `f1454822d`). Estado de cada ítem en §16.3: 12 hechos y ADM2-04
+parcial (el pictograma grande de la ficha y la ficha angosta del galpón, que pide una variante de
+`.maestro`). La revisión de pantallas de la ola corrió 2 rondas de arreglos y no llegó a PASS. Por
+eso DA-33, DA-34, DA-35 y la parte de DA-06 de registrar una organización constan como no
+cumplidas, aunque su comportamiento está en el código y en los tests. Lo que queda abierto está en
+[DTI-53](../adr/DEUDA_TECNICA.md#dti-53); las decisiones, en la [bitácora](bitacora.md)
+(2026-11-25).
+
+- `[VERIFIED]` `mvn clean test -pl cliente-liviano -am` en `f1454822d`, después de las dos rondas
+  de la revisión de pantallas: exit 0, 942 tests en los reportes de `cliente-liviano`, 0 fallos y
+  0 errores (log en la carpeta de la corrida, `ADM2/gate-documentacion.log`). En `0bdf24657`,
+  antes de esas rondas: exit 0, 942 tests (934 en PUB2). `InterfazFitnessTest` pasa sin editarse:
+  ningún tope cambió.
+- `[VERIFIED]` `-Pvisual` en `0bdf24657` sobre las 49 líneas de ADM2 de `paginas.txt` (el filtro da
+  49, con las dos que suma `adm2-administradores`), a 360, 360x640, 1280 y 1920 px: exit 0, 55
+  rutas capturadas (las 49 y sus escenarios), `reporte.json` y `excepciones.json` vacíos. Pasan las
+  49. `/admin-donantes?donante=juan`, la única de ADM2 en la línea de base de §10.4, ahora pasa y
+  sale de ella. La pasada de las 49 no se repitió después de la revisión de pantallas
+  (`dffc1947e` y `f1454822d`).
+- `[VERIFIED]` Los otros cinco tests visuales, en `0bdf24657`: 31 tests, 3 fallos y 3 errores,
+  todos de la línea de base: `AbejasYRenglonesTest.lasAbejasCambianDeCapaSoloCuandoNoSeVen`,
+  `AbejasYRenglonesTest.conReducirMovimientoLasAbejasQuedanQuietasDelanteYEnteras` y el del lema
+  del pie ([DTI-47](../adr/DEUDA_TECNICA.md#dti-47)), y los dos de `BajoTierraRotulosTest` (DA-22,
+  [DTI-50](../adr/DEUDA_TECNICA.md#dti-50)). `MenusQueSeCierranTest.lasPastillasDeFiltroSeCierranTocandoAfueraYConEsc`,
+  el inestable conocido, falló y pasó 2 de 2 al repetirlo solo. `ArmazonFijoTest` pasa sus 12 y
+  `DonanteDetallesTest` sus 7. Ningún fallo nuevo. No se volvieron a correr después de la revisión
+  de pantallas.
+- Sin stack ni recorrido con login (DA-20): ningún lote cambia un adaptador `rest`. Queda para Z
+  comprobar con datos reales Donantes y su ficha, importar, Importaciones, Organizaciones (aprobar,
+  pedir corrección y rechazar), los dos registros, Administradores (alta y contraseña provisoria),
+  Actividad, Mi perfil y las Novedades.
+- Cercos `[VERIFIED]` (`git diff 2d74fc081..f1454822d`): sin cambios en `rest/`, `puertos/`,
+  `tokens.css`, los tests de `visual/`, `InterfazFitnessTest.java`, `templates/componentes/`,
+  `static/css/componentes/` ni `static/js/`. Ningún menú cambió (DA-17). `clases-heredadas.txt`
+  pierde `mesa` y `mesa-cabecera` y no suma ninguna. Ninguna plantilla ni hoja borrada:
+  `templates/paginador.html` queda sin uso y `admin-inicio.css` sigue en `HOJAS_HEREDADAS`
+  ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítems 2 y 3).
+- Revisión de los lotes, según los commits: `adm2-donantes`, `adm2-organizaciones` y
+  `adm2-administradores`, construcción y 2 rondas de arreglos cada uno, y quedaron con bloqueantes
+  tras la tercera revisión. Donantes y Administradores, por la ayuda plegada de Importaciones y
+  Actividad, que se cruzó entre los dos lotes (una con `.plegable` y la otra con el botón chico);
+  la revisión de pantallas la cerró con el `.plegable` en las dos (`dffc1947e`). Organizaciones, por
+  la ficha angosta en el galpón entre 1100 y 1280 px y por el pictograma sin `data-tamano="grande"`;
+  la revisión de pantallas apiló la ficha con una consulta de contenedor (`dffc1947e`) y el
+  pictograma sigue chico (ADM2-04 parcial). `adm2-novedades`, construcción y un arreglo (el
+  esqueleto de la lista); `adm2-registrar-donante`, construcción y un arreglo (la bajada y una
+  aserción de la barra); `adm2-registrar-organizacion`, construcción sin arreglos. El veredicto de
+  cada ronda no consta en el repo.
+- Revisión de pantallas de la ola: 2 rondas de arreglos, sin PASS. Ronda 1 (`dffc1947e`): la ayuda
+  de Actividad al `.plegable`, como Importaciones; la de partida de Donantes y Organizaciones con
+  `aria-current` y `data-elegido="partida"`, sin abrirse sola en el celular; «Coinciden» solo con
+  filtros y «Mostrando X a Y de N» debajo de la lista en Importaciones y Organizaciones; la ficha de
+  Organizaciones apilada con menos de 45 rem. Ronda 2 (`f1454822d`): las migas de la contraseña
+  provisoria. Lo que la última revisión dejó abierto no consta en el repo.
+- Commits de la ola, en hora de autor (2026-11-25, -03:00): `2d74fc081` (manifiesto integrado),
+  `cfcb65a52` (09:25), `ba4ddb2f0` (09:35), `94df0d9a0` (09:37), `6e073d8fa` (09:44), `83b7c34f8`
+  (09:50), `ec98c14f6` (09:59), `b2669fedb` (10:02), `a2da2489d` y `5bd85e8e3` (10:31), `275f60a40`
+  (10:38), `d40c3d5d6` (10:57), `0431c7005` (11:01), `36dbafa92` (11:04), `668bc5231` (11:31),
+  `e1a960a63` (11:35), `f21c0d6a6` (11:42), `0bdf24657` (11:49, integración de la tanda 2),
+  `e5fbdc8d6` (12:14, cierre), `dffc1947e` (12:42, revisión de pantallas, ronda 1) y `f1454822d`
+  (13:06, ronda 2).
+- ADR: ninguno. La ola no tuvo lotes de contrato e implementa el ADR «Huerta y galpón» (§9.1,
+  Gate A); DA-33 a DA-35 son decisiones de pantalla. Ninguna spec de `docs/specs/active/` es de esta
+  ola, así que no se mueve ninguna.
+- Documentos: [`mapa-del-sitio.md`](mapa-del-sitio.md) suma los cambios de la ola;
+  [`patrones-y-microcopy.md`](patrones-y-microcopy.md) suma los dos registros a la regla 26, la
+  regla 29 (en el galpón, el aviso breve es solo la respuesta a un envío) y pone al día las reglas
+  generales 3 y 5 (el pase `paginador.html` sin uso y la ficha de Donantes, que ya no es fija);
+  [`componentes.md`](componentes.md) pone al día las filas de `.paginas`, del paginador provisorio
+  y de `.plegable`. [`tono-y-comunicacion.md`](tono-y-comunicacion.md) y
+  [`requerimientos-e7.md`](../requerimientos/requerimientos-e7.md) no cambian: el primero no nombra
+  pantallas, y ningún requerimiento cambia de estado; RF-15 («en un mismo flujo», en los
+  [requerimientos de E6](../requerimientos/requerimientos-e6.md)) sigue, con el paso de más de DA-33
+  ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 1). Las fichas de antes de la ola que ya no
+  describen el código están en [DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 6.
