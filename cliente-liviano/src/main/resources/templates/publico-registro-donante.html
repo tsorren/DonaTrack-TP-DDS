@@ -43,7 +43,7 @@
             method="post" data-enviando="Creando tu cuenta…" data-validar
             th:aria-busy="${escenario == 'lento'} ? 'true' : null">
         <!--/* Error de datos: el resumen arriba, con el foco y un enlace a cada campo (como Ingresar). */-->
-        <div th:if="${conError}" class="aviso" data-tipo="error" role="alert" tabindex="-1"
+        <div th:if="${conError}" class="aviso resumen" data-tipo="error" role="alert" tabindex="-1"
              id="resumen" autofocus>
           <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
           <p class="aviso-titulo">Revisá tres cosas antes de crear tu cuenta</p>
@@ -158,9 +158,11 @@
               rel="noopener">términos y la política de privacidad<span class="solo-lectores"> (se abre en otra
               pestaña)</span></a> (versión 1).</span></label>
           </div>
-          <button class="boton" data-tono="principal" type="submit"
-                  th:aria-busy="${escenario == 'lento'} ? 'true' : null"
-                  th:text="${escenario == 'lento'} ? 'Creando tu cuenta…' : (${completarPerfil} ? 'Guardar mi perfil' : 'Crear mi cuenta')">Crear mi cuenta</button>
+          <div class="racimo">
+            <button class="boton" data-tono="principal" type="submit"
+                    th:aria-busy="${escenario == 'lento'} ? 'true' : null"
+                    th:text="${escenario == 'lento'} ? 'Creando tu cuenta…' : (${completarPerfil} ? 'Guardar mi perfil' : 'Crear mi cuenta')">Crear mi cuenta</button>
+          </div>
           <p th:if="${escenario == 'lento'}" class="solo-lectores" role="status">Creando tu cuenta…</p>
           <p th:if="${persona and !completarPerfil}" class="texto-chico">En la maqueta, después de crear la cuenta seguís con la cuenta de
             ejemplo de una empresa.</p>
