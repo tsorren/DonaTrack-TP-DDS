@@ -1763,6 +1763,10 @@ está en [DTI-54](../adr/DEUDA_TECNICA.md#dti-54); las decisiones, en la [bitác
   OK. `node scripts/agent-check.js`: PASS 272. `python scripts/validate_docs_links.py`: exit 1 con
   75 enlaces rotos, los mismos 75 de la línea de base de [DTI-46](../adr/DEUDA_TECNICA.md#dti-46),
   ítem 8; ninguno nuevo.
+- `[VERIFIED]` Línea de base de Maven, corrida después de la ola: `z-tokens` no la corrió antes de
+  editar. `mvn clean test -pl cliente-liviano -am` sobre una copia de `84012dffa` (el punto de partida
+  de los tres lotes): exit 0, 942 tests, 0 fallos (BASELINE_GREEN). Los mismos 942 pasan en el
+  arreglo después de la ola, así que Z no rompió ni sacó ningún test.
 - `[VERIFIED]` La pasada completa de DA-20, punto 1: `-Pvisual` sobre todo `paginas.txt`, con
   `target/capturas` borrado antes. El archivo tiene 347 líneas y 335 rutas sin contar comentarios ni
   líneas en blanco. Pasan 333. Fallan 2, solo a 360 px y por el área de toque de
