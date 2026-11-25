@@ -44,7 +44,7 @@ flowchart LR
     IE --> PE[Mi perfil]
   end
   subgraph Admin
-    IA[Inicio] --> DOa[Donantes]
+    IA[Por decidir] --> DOa[Donantes]
     DOa --> RDo[Registrar donante]
     DOa --> CSV[Importar CSV, con su resultado por fila]
     IA --> ENa[Organizaciones]
@@ -53,7 +53,7 @@ flowchart LR
     IA --> DO[Donaciones]
     DO --> RDn[Registrar donación]
     DO --> DV[Detalle y vencimiento]
-    IA --> AS[Asignaciones] --> PR[Propuesta]
+    IA --> AS[Por decidir: la mesa completa] --> PR[Propuesta]
     IA --> CA[Camiones]
     IA --> RK[Ranking]
     IA --> PA[Mi perfil]
@@ -92,7 +92,7 @@ flowchart LR
 | Donaciones recibidas | Organización | 2 | RF-11 | pág. 27 | E1 |
 | Seguir entregas → **Confirmar recepción** | Organización | 2 → 3 | RF-14, **RF-12** | pág. 28 | E1 · **flujo piloto** |
 | Notificaciones | Organización | 2 | RF-13 | — | E1 |
-| Inicio del admin | Admin | 1 | — | pág. 13 | E1 |
+| Por decidir, el inicio del admin (desde ADM1; antes, Inicio) | Admin | 1 | — | pág. 13 | E1 |
 | Donantes → registrar donante | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
 | Organizaciones → registrar organización | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
 | Organizaciones → aprobar organizaciones | Admin | 2 → 3 | RF-21 | — | E6 |
@@ -259,6 +259,19 @@ Entregas ([backlog de la guía](backlog-guia-al-codigo.md), §13):
 | Entregas y Mapa | Entregas (`/publico-donaciones`) enlaza el Mapa (`/publico-mapa`) y el Mapa muestra las migas «Entregas / Mapa». Rutas sin cambio | PUB1-03, PUB1-04; DA-01 |
 | Nosotros, Para donantes y Para organizaciones | Se llaman Cómo funciona, Cómo donar y Ayuda, con las mismas rutas; el pie los nombra igual | PUB1-07, PUB1-08; DA-05 y DA-23 |
 | Enviar un mensaje desde Contacto | Vuelve a Contacto (con su `?volver=` si vino) con un aviso breve que lleva el número del mensaje. En la maqueta, `/publico-contacto-enviado` muestra Contacto con ese aviso | PUB1-09; DA-06 y DA-24 |
+
+## Cambios de la oleada ADM1 de la guía «Huerta y galpón» (2026-11-25)
+
+Ninguna pantalla nueva ni una que pase de 3 niveles; Inicio y Asignar donaciones se juntan en
+Por decidir ([backlog de la guía](backlog-guia-al-codigo.md), §14):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Menú del admin | Por decidir, Donaciones, Donantes, Organizaciones, Camiones y Ranking; en el celular, Por decidir, Donaciones, Camiones y Más, que abre todas. Desde 56 em, las secciones van en el cajón, a la izquierda; la marca, la campana y la cuenta quedan en la barra de arriba. Los menús de quien dona, la organización y lo público no cambian | ADM1-01 a ADM1-03; DA-04, DA-17, DA-18 y DA-27 |
+| Inicio y Asignar donaciones | Las dos son Por decidir, con la misma cabecera y las pestañas Propuestas (`/admin-inicio`), Conflictos (`/admin-asignaciones?pestana=conflictos`), Solicitudes (`/admin-entidades`) y Por vencer (`/admin-donaciones?vence=pronto`). `/admin-inicio` abre Propuestas y debajo «Cómo está todo» y los gráficos; `/admin-asignaciones` es la mesa completa. En el menú, Por decidir queda marcada en las dos y en sus respuestas | ADM1-05, ADM1-09 y ADM1-10; DA-04 y DA-25 |
+| Aprobar o descartar propuestas | Se eligen varias en la tabla y se deciden juntas; la respuesta dice cuántas se decidieron | ADM1-06; DA-26 |
+| Donaciones del admin | Una tabla: cada fila lleva al detalle (`/admin-donaciones-detalle?donacion=`); sale la ficha al costado de R11-34. `/admin-donaciones?donacion=` muestra el detalle, para los enlaces que llegan de Decididas y de Donantes | ADM1-08 |
+| Registrar una donación | Vuelve a Donaciones con un aviso breve; en la maqueta, `/admin-donaciones-registrada` muestra Donaciones con ese aviso | ADM1-11; DA-06 |
 
 ## Observaciones para el diseño
 
