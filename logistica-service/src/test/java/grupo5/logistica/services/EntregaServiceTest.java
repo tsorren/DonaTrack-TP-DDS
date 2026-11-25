@@ -1021,6 +1021,54 @@ class EntregaServiceTest {
     assertEquals(posicion.registradaEn().plusSeconds(4003 + 600L), dto.horaEstimadaLlegada());
   }
 
+  /**
+   * Los listados arman la hora estimada con las paradas leídas por lote: la página trae solo la
+   * consultada, y el lote devuelve las otras dos en orden inverso al de visita. El recorrido sigue
+   * el orden de la ruta, no el del lote.
+   */
+  private Instant[] horaEstimadaEnListadoConParadasAnteriores(boolean porDonante) {
+    Entrega yaEntregada = EntregaMother.pendienteEn(new CoordenadasGeograficas(-34.9, -58.4));
+    Entrega pendienteAnterior = EntregaMother.pendienteEn(DESTINO);
+    Entrega consultada = EntregaMother.pendienteEn(new CoordenadasGeograficas(-34.6, -58.4));
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    Ruta ruta = rutaEnTraslado(camion, yaEntregada, pendienteAnterior, consultada);
+    yaEntregada.confirmarEntrega("Comedor Ejemplo", "https://storage.donatrack.org/foto.jpg");
+    PosicionCamion posicion = registrarPosicion(camion, ruta);
+    when(entregasRepository.buscarSeguimiento(any()))
+        .thenReturn(new TramoDeEntregas(List.of(consultada), 1));
+    when(rutasRepository.findByIds(any())).thenReturn(List.of(ruta));
+    when(camionRepository.findByIds(any())).thenReturn(List.of(camion));
+    when(entregasRepository.findByIds(any())).thenReturn(List.of(pendienteAnterior, yaEntregada));
+
+    SeguimientosDeEntregas resultado =
+        porDonante
+            ? entregasService.listarSeguimientoPorDonante(
+                UUID.randomUUID(), ConsultaSeguimiento.primeraPagina())
+            : entregasService.listarSeguimientoPorBeneficiaria(
+                UUID.randomUUID(), ConsultaSeguimiento.primeraPagina());
+
+    verify(entregasRepository, never()).findById(any());
+    // Ida y vuelta a la parada pendiente (22,239 km, 4003 s) y sus 10 minutos.
+    return new Instant[] {
+      posicion.registradaEn().plusSeconds(4003 + 600L),
+      resultado.seguimientos().getFirst().horaEstimadaLlegada()
+    };
+  }
+
+  @Test
+  void listarSeguimientoPorBeneficiaria_conParadasAnteriores_informaLaHoraEstimadaDeLlegada() {
+    Instant[] esperadaYObtenida = horaEstimadaEnListadoConParadasAnteriores(false);
+
+    assertEquals(esperadaYObtenida[0], esperadaYObtenida[1]);
+  }
+
+  @Test
+  void listarSeguimientoPorDonante_conParadasAnteriores_informaLaHoraEstimadaDeLlegada() {
+    Instant[] esperadaYObtenida = horaEstimadaEnListadoConParadasAnteriores(true);
+
+    assertEquals(esperadaYObtenida[0], esperadaYObtenida[1]);
+  }
+
   // ===================== cancelarPorDonacion() (HB-19) =====================
 
   @Test

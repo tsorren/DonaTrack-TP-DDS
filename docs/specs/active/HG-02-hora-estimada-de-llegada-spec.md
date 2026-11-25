@@ -65,7 +65,8 @@ minutos fijos ignora dónde está el camión.
 - `null` cuando no se puede estimar con honestidad (regla R1, §6.2), y también cuando la entrega
   consultada no figura en las paradas de su ruta.
 - Los listados usan la misma función: sus paradas llegan por lote (`findByIds`) antes de armar el
-  seguimiento (`EntregasService.pagina`).
+  seguimiento (`EntregasService.pagina`), y `construirSeguimiento` arma las paradas en el orden de
+  visita de la ruta (`Ruta.getEntregaIds`), no en el del lote. `pagina` y `findByIds` no cambian.
 - Ningún test existente se borra ni se debilita. Datos sintéticos.
 
 ## 5. Criterios de Aceptación
@@ -148,6 +149,7 @@ Flujo: posición del camión (Camion) + destinos (Entrega) → `EstimadorDeLlega
 | R1 col. 2 y 3 | `EntregaServiceTest`: ruta sin salir, entrega entregada o en la puerta, null |
 | Consultada fuera de su ruta | `EntregaServiceTest`: la entrega no figura en las paradas, null |
 | R2, paradas previas | `EntregaServiceTest`: suma la parada anterior pendiente y no la ya entregada |
+| Listados | `EntregaServiceTest`: por beneficiaria y por donante, con las paradas por lote en orden inverso, la misma estimación |
 | Serialización | `DtoSerializationTest`: el campo sale en ISO-8601 UTC |
 | Contrato | `OpenApiContractDriftTest` sin cambios, en verde |
 
