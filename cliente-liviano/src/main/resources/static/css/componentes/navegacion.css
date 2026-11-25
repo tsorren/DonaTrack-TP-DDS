@@ -487,6 +487,11 @@
   display: none;
 }
 
+/* La cuenta chica solo va en el cajón (desde 56 em); en la celda del celular no entra. */
+[data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul a b {
+  display: none;
+}
+
 [data-armazon="galpon"] .navegacion[data-forma="cajon"] .navegacion-mas button {
   display: flex;
   align-items: center;
@@ -511,6 +516,7 @@
 @media (min-width: 56em) {
   [data-armazon="galpon"] .navegacion[data-forma="cajon"] {
     position: static;
+    min-width: var(--medida-cajon);
     padding: var(--espacio-3) var(--espacio-2);
     border-top: 0;
   }
@@ -538,8 +544,15 @@
     font: 600 var(--tamano-base) / 1.2 var(--fuente-texto);
     letter-spacing: normal;
     text-align: left;
-    hyphens: manual;
-    overflow-wrap: normal;
+  }
+
+  /* La cuenta chica de una sección (un b después del nombre, como en las pestañas): a la derecha,
+     en la letra chica. */
+  [data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul a b {
+    display: inline;
+    margin-left: auto;
+    font-size: var(--tamano-chico);
+    font-weight: 700;
   }
 
   [data-armazon="galpon"] .navegacion[data-forma="cajon"] > ul a:hover {

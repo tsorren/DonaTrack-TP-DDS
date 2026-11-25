@@ -153,11 +153,12 @@ body[data-armazon="galpon"] main h1 {
   }
 }
 
-/* Con el cajón, el contenido es 15 rem más angosto y la barra del listado abierta baja un renglón
-   más: 293,5 px medidos el 2026-11-24 a 1280 px en Donaciones y en las decididas de Asignar,
-   redondeado hacia arriba a 1/8 rem. Solo sirve para que el foco no quede debajo (app.css). */
-@media (min-width: 68.75em) {
+/* Con el cajón, el contenido es 15 rem más angosto y la barra del listado abierta baja de renglón:
+   en Donaciones y en las decididas de Asignar, medida el 2026-11-24, 387 px a 1100 px (el ancho más
+   angosto de este quiebre) y 293,5 px a 1280 px; la más alta, redondeada hacia arriba a 1/8 rem.
+   Solo sirve para que el foco no quede debajo (app.css). */
+@media (min-width: 68.75em) and (min-height: 37.5em) {
   :root:has(body[data-armazon="galpon"]):has(.listado) {
-    --medida-filtros-fijos: 18.375rem;
+    --medida-filtros-fijos: 24.25rem;
   }
 }
