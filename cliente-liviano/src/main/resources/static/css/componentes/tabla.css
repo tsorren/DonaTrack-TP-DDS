@@ -368,6 +368,31 @@
   content: counter(tabla-elegidas);
 }
 
+/* La acción llena dice «Aprobar la elegida» con una y «Aprobar las N» con más (la guía): el mismo
+   contador, escrito con dos estilos de contador, porque el CSS no puede contar «exactamente una»
+   con :has() (no se anida). El artículo: «la» con 1 y «las» con más; el resto: «elegida» con 1 y
+   el número con más. */
+@counter-style tabla-articulo-varias {
+  system: cyclic;
+  symbols: "las";
+}
+
+@counter-style tabla-articulo {
+  system: fixed;
+  symbols: "la";
+  fallback: tabla-articulo-varias;
+}
+
+@counter-style tabla-cuenta-o-elegida {
+  system: fixed;
+  symbols: "elegida";
+  fallback: decimal;
+}
+
+.tabla-elegidas [data-parte="cuenta-aprobar"]::before {
+  content: counter(tabla-elegidas, tabla-articulo) " " counter(tabla-elegidas, tabla-cuenta-o-elegida);
+}
+
 .tabla-elegidas [data-elegidas="alguna"],
 :has(> .tabla[data-forma="seleccion"] tbody :checked) > .tabla-elegidas [data-elegidas="ninguna"] {
   display: none;

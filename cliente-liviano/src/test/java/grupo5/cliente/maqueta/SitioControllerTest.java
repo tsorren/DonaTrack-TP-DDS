@@ -1846,9 +1846,14 @@ class SitioControllerTest {
         .andExpect(
             content()
                 .string(
+                    containsString("data-elegidas=\"ninguna\">Aprobar las elegidas</span><span")))
+        // «Aprobar las N», o «Aprobar la elegida» con una: lo escribe la hoja de la tabla
+        .andExpect(
+            content()
+                .string(
                     containsString(
-                        "data-elegidas=\"ninguna\">Aprobar las elegidas</span><span"
-                            + " data-elegidas=\"alguna\">Aprobar <span")))
+                        "data-elegidas=\"alguna\">Aprobar <span data-parte=\"cuenta-aprobar\">"
+                            + "</span></span></button>")))
         .andExpect(
             content().string(containsString("<span data-parte=\"cuenta\"></span> de 4.</b>")))
         // ADM1-04: la casilla de elegir todas es un enlace que vuelve con todas marcadas

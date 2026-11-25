@@ -347,7 +347,7 @@
        todas es un enlace que vuelve a la misma pantalla (/admin-inicio con volver 'inicio') con
        ?elegir=todas, que el servidor dibuja con todas marcadas, y la conserva con el filtro y la
        página; marcada, el enlace las saca. La cuenta de las elegidas («Elegiste N de M.» y «Aprobar
-       N») la lleva la hoja de la tabla (un contador de CSS), así que no queda vieja si se destilda
+       las N», o «Aprobar la elegida» con una) la lleva la hoja de la tabla (un contador de CSS), así que no queda vieja si se destilda
        una. Por eso la barra va después de la tabla y la hoja la sube arriba. */-->
 <form th:fragment="propuestas(filas, volver)" class="pila" data-espacio="2" method="post"
       action="/admin-asignaciones-aprobada" th:action="@{/admin-asignaciones-aprobada}" hx-boost="true"
@@ -400,8 +400,8 @@
       <button class="boton" data-tamano="chico" type="submit" formaction="/admin-asignaciones-descartada"
               th:formaction="@{/admin-asignaciones-descartada}">Descartar</button>
       <button class="boton" data-tono="principal" data-tamano="chico" type="submit"><span
-          data-elegidas="ninguna">Aprobar las elegidas</span><span data-elegidas="alguna">Aprobar <span
-          data-parte="cuenta"></span></span></button>
+          data-elegidas="ninguna">Aprobar las elegidas</span><span
+          data-elegidas="alguna">Aprobar <span data-parte="cuenta-aprobar"></span></span></button>
       <p th:replace="~{envio :: indicador('enviando-propuestas', 'Guardando…')}"></p>
     </div>
   </div>
