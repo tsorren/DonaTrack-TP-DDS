@@ -11,7 +11,8 @@
        y que mientras tanto puede recorrer lo público. R11-41 (ficha r11-p2-pendiente-solicitud.md,
        4.1): con la cuenta pendiente, "Lo que nos enviaste" con lo que tiene Donaciones y "Corregir
        los datos"; si no se pudo leer (sinDatos), un aviso sin corregir; si el equipo ya la aprobó
-       (aprobada), "Ingresar de nuevo" es la acción llena; al volver de guardar (guardado), el mismo
+       (aprobada), "Ingresar de nuevo" es la acción llena y se van la bajada, "Cómo sigue" y "Mientras
+       tanto", que hablan de la revisión; al volver de guardar (guardado), el mismo
        aviso dice que guardamos los cambios. Sin sesión, como antes: sin la tarjeta.
        Escenarios de la maqueta: con-sesion-pendiente, corregida, sin-datos y aprobada. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -25,7 +26,7 @@
        th:with="corregida=${guardado} or ${param.escenario != null and param.escenario[0] == 'corregida'}">
     <div class="pila" data-espacio="1">
       <h1>Recibimos la solicitud de tu organización</h1>
-      <p>El equipo de DonaTrack la revisa antes de sumarla. La revisión suele llevar unos días hábiles.
+      <p th:unless="${aprobada}">El equipo de DonaTrack la revisa antes de sumarla. La revisión suele llevar unos días hábiles.
         Te escribimos al correo que dejaste cuando esté aprobada; desde ese día podés ingresar y publicar
         lo que le hace falta a tu organización.</p>
     </div>
@@ -55,7 +56,9 @@
       <p>La solicitud sigue en revisión: no se perdió nada. Probá de nuevo en unos minutos.</p>
     </section>
 
-    <section th:replace="~{publico-registro-entidad :: comoSigue(2, 2)}"></section>
+    <th:block th:unless="${aprobada}">
+      <section th:replace="~{publico-registro-entidad :: comoSigue(2, 2)}"></section>
+    </th:block>
 
     <section th:if="${solicitud != null}" class="tarjeta pila" data-espacio="3"
              aria-labelledby="enviado-titulo">
@@ -82,7 +85,7 @@
     </section>
 
     <div class="pila" data-espacio="2">
-      <p>Mientras tanto, podés recorrer el sitio: la portada, las organizaciones y lo que piden.</p>
+      <p th:unless="${aprobada}">Mientras tanto, podés recorrer el sitio: la portada, las organizaciones y lo que piden.</p>
       <div class="racimo">
         <a class="boton" th:data-tono="${aprobada} ? 'secundario' : 'principal'" href="/publico-entidades"
            th:href="@{/publico-entidades}">Ver las organizaciones y lo que piden</a>

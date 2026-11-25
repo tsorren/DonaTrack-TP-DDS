@@ -1130,6 +1130,9 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("El equipo ya aprobó tu solicitud.")))
         .andExpect(content().string(not(containsString("Solicitud recibida</p>"))))
         .andExpect(content().string(not(containsString("Estás acá"))))
+        .andExpect(content().string(not(containsString("Cómo sigue"))))
+        .andExpect(content().string(not(containsString("unos días hábiles"))))
+        .andExpect(content().string(not(containsString("Mientras tanto"))))
         .andExpect(content().string(containsString("Ingresar de nuevo")))
         .andExpect(content().string(not(containsString("Lo que nos enviaste"))));
   }

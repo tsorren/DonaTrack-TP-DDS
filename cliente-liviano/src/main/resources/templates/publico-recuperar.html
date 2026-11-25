@@ -24,7 +24,7 @@
   <div class="pila" data-espacio="4">
     <div class="pila" data-espacio="1">
       <h1>Pedí una contraseña nueva</h1>
-      <p>Escribí el correo de tu cuenta y te mandamos un enlace para crear una contraseña nueva.</p>
+      <p th:unless="${enviado}">Escribí el correo de tu cuenta y te mandamos un enlace para crear una contraseña nueva.</p>
     </div>
 
     <div th:if="${enviado}" class="aviso" data-tipo="exito" role="status" tabindex="-1" autofocus>

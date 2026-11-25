@@ -96,15 +96,15 @@
         <ul role="list">
           <!-- Un aviso por campo marcado (un mapa literal en th:with se corta en sus comas). -->
           <li th:each="campo : ${marcados}" th:switch="${campo}">
-            <a th:case="'entidad'" href="#entidad">Falta el nombre de la organización.</a>
-            <a th:case="'que-es'" href="#que-es">Elegí qué es tu organización.</a>
-            <a th:case="'tipo'" href="#tipo">Elegí el tipo de organización.</a>
-            <a th:case="'calle'" href="#calle">Falta la calle de la dirección de entrega.</a>
-            <a th:case="'altura'" href="#altura">Falta la altura.</a>
-            <a th:case="'localidad'" href="#localidad">Falta la localidad.</a>
-            <a th:case="'provincia'" href="#provincia">Falta la provincia.</a>
-            <a th:case="'codigo-postal'" href="#codigo-postal">Falta el código postal.</a>
-            <a th:case="'representante'" href="#representante">Falta el nombre de quien la representa.</a>
+            <a th:case="'entidad'" href="#entidad">Falta el nombre de la organización</a>
+            <a th:case="'que-es'" href="#que-es">Elegí qué es tu organización</a>
+            <a th:case="'tipo'" href="#tipo">Elegí el tipo de organización</a>
+            <a th:case="'calle'" href="#calle">Falta la calle</a>
+            <a th:case="'altura'" href="#altura">Falta la altura</a>
+            <a th:case="'localidad'" href="#localidad">Falta la localidad</a>
+            <a th:case="'provincia'" href="#provincia">Falta la provincia</a>
+            <a th:case="'codigo-postal'" href="#codigo-postal">Falta el código postal</a>
+            <a th:case="'representante'" href="#representante">Falta el nombre de quien la representa</a>
           </li>
         </ul>
       </div>
@@ -268,7 +268,8 @@
                  en otra pestaña)</span></a> (versión 1).</span></label>
         </div>
         <div class="racimo">
-          <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
+          <button class="boton" data-tono="principal" type="submit"
+                  th:aria-busy="${escenario == 'lento'} ? 'true' : null"
                   th:text="${escenario == 'lento'} ? 'Enviando la solicitud…' : 'Enviar la solicitud'">Enviar la
             solicitud</button>
         </div>
@@ -278,7 +279,8 @@
       <section th:if="${corregir}" class="registro-seccion" id="guardar" aria-labelledby="guardar-titulo">
         <h2 id="guardar-titulo">Guardar</h2>
         <div class="racimo">
-          <button class="boton" data-tono="principal" type="submit" th:disabled="${escenario == 'lento'}"
+          <button class="boton" data-tono="principal" type="submit"
+                  th:aria-busy="${escenario == 'lento'} ? 'true' : null"
                   th:text="${escenario == 'lento'} ? 'Guardando los cambios…' : 'Guardar los cambios'">Guardar
             los cambios</button>
           <a class="boton" data-tono="secundario" href="/publico-registro-entidad-enviada"

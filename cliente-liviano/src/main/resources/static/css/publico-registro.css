@@ -8,6 +8,11 @@ main > .pila {
   max-width: var(--medida-formulario);
 }
 
+/* "Lo que nos enviaste", una lámina con su relleno, como en Ingresar. */
+main > .pila > .tarjeta {
+  --espacio-relleno: var(--espacio-4);
+}
+
 .cuenta-salidas p {
   margin: 0;
 }

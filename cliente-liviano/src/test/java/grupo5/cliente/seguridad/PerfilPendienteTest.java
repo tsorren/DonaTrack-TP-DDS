@@ -326,8 +326,7 @@ class PerfilPendienteTest {
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Revisá estos datos antes de guardar")))
         .andExpect(content().string(containsString("href=\"#calle\"")))
-        .andExpect(
-            content().string(containsString("Falta la calle de la dirección de entrega.</a>")))
+        .andExpect(content().string(containsString("Falta la calle</a>")))
         .andExpect(content().string(containsString("aria-invalid=\"true\"")))
         .andExpect(content().string(containsString("value=\"Merendero Ejemplo Este\"")));
   }
