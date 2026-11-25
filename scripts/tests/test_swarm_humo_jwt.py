@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Tests de S3 (E7-S04 A): cadena JWT encendida por defecto en el stack de Swarm y su prueba de humo.
+"""Tests de S3 y S4 (E7-S04 A): cadena JWT encendida por defecto en Swarm, encabezados y su prueba de humo.
 
 Corren sin Docker ni Keycloak: `scripts/swarm/humo-jwt.sh` y `desplegar.sh` se ejecutan de verdad con un
 `docker` falso en el PATH que simula el gateway, los servicios y Keycloak. Fijan que la prueba de humo
-distingue 401, 200 y 403 (y falla si la seguridad está apagada o un servicio no valida), que los secretos
+distingue 401, 200 y 403 (y falla si la seguridad está apagada o un servicio no valida), que revisa los
+encabezados de S1 (faltan, se repiten) y cada réplica del gateway, que los secretos
 y los tokens no aparecen en argumentos ni en la salida, y que el despliegue en Swarm enciende la
 validación sin tocar el valor por defecto del compose. Que la cadena funcione con el Keycloak real lo
 prueba el propio script contra el stack.
@@ -26,19 +27,28 @@ SECRETO_PRUEBAS = "secreto-pruebas-sintetico-123"
 SECRETO_CLIENTE = "secreto-cliente-sintetico-456"
 SERVICIOS = ("donaciones-service", "incentivos-service", "logistica-service", "notificaciones-service")
 
-# docker falso: registra cada llamada (argumentos) y simula curl dentro del contenedor auxiliar.
-# FAKE_ESCENARIO: correcto | apagada | logistica_sin_validar | keycloak_rechaza
-DOCKER_FALSO = textwrap.dedent(r'''
+# docker falso: registra cada llamada (argumentos) y simula el contenedor auxiliar (curl), las réplicas del
+# gateway (docker ps / inspect) y las respuestas. FAKE_ESCENARIO: correcto | apagada | logistica_sin_validar |
+# keycloak_rechaza | falta_encabezado | encabezado_duplicado | cache_sin_no_store | replica_sin_seguridad |
+# sin_replicas
+DOCKER_FALSO = textwrap.dedent(r"""
     #!/usr/bin/env python3
     import os, sys, json
     args = sys.argv[1:]
     with open(os.environ["FAKE_LOG"], "a") as f:
         f.write(json.dumps(args) + "\n")
     esc = os.environ.get("FAKE_ESCENARIO", "correcto")
+    REPLICAS = {"c1": "10.0.1.11", "c2": "10.0.1.12"}
     if args[:1] == ["run"]:
         print("id-falso"); sys.exit(0)
-    if args[:1] in (["rm"],):
+    if args[:1] == ["rm"]:
         sys.exit(0)
+    if args[:1] == ["ps"]:
+        if esc != "sin_replicas" and any("api-gateway" in a for a in args):
+            print("\n".join(REPLICAS))
+        sys.exit(0)
+    if args[:1] == ["inspect"]:
+        print(REPLICAS.get(args[1], "")); sys.exit(0)
     if args[:1] == ["compose"]:
         with open(os.environ["FAKE_ENV"], "w") as f:
             f.write(os.environ.get("PREPROD_SEGURIDAD", "<sin definir>"))
@@ -58,14 +68,37 @@ DOCKER_FALSO = textwrap.dedent(r'''
     token = None
     if entrada.startswith("Authorization: Bearer "):
         token = entrada.strip().split(" ", 2)[2]
-    publica = url.endswith("/api/necesidades/publicas")
-    if esc == "apagada" or publica:
-        sys.stdout.write("200"); sys.exit(0)
-    if esc == "logistica_sin_validar" and url.startswith("http://logistica-service:"):
-        sys.stdout.write("200"); sys.exit(0)
-    codigo = {None: "401", "tok-admin-falso": "200", "tok-servicio-falso": "403"}.get(token, "401")
-    sys.stdout.write(codigo)
-''').lstrip()
+    host = url.split("/")[2]
+    es_gateway = host.startswith("api-gateway:") or host.startswith("10.0.1.")
+    ruta = "/" + url.split("/", 3)[3]
+    if esc == "apagada" or ruta in ("/api/necesidades/publicas", "/actuator/health"):
+        codigo = "200"
+    elif esc == "logistica_sin_validar" and host.startswith("logistica-service:"):
+        codigo = "200"
+    elif esc == "replica_sin_seguridad" and host == "10.0.1.12:8086":
+        codigo = "200"
+    else:
+        codigo = {None: "401", "tok-admin-falso": "200", "tok-servicio-falso": "403"}.get(token, "401")
+    if es_gateway:
+        enc = [("X-Content-Type-Options", "nosniff"), ("X-Frame-Options", "DENY"), ("Referrer-Policy", "no-referrer"),
+               ("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'"),
+               ("Permissions-Policy", "camera=(), microphone=(), geolocation=()"),
+               ("Strict-Transport-Security", "max-age=31536000")]
+        enc.append(("Cache-Control", "no-store") if ruta.startswith("/api/") else ("Cache-Control", "no-cache"))
+        if esc == "cache_sin_no_store":
+            enc = [e for e in enc if e[0] != "Cache-Control"] + [("Cache-Control", "no-cache")]
+        if esc == "falta_encabezado":
+            enc = [e for e in enc if e[0] != "Content-Security-Policy"]
+        if esc == "encabezado_duplicado":
+            enc.append(("x-frame-options", "DENY"))
+    else:  # un servicio directo: los de la cadena de common-lib
+        enc = [("X-Content-Type-Options", "nosniff"), ("X-Frame-Options", "DENY"), ("Cache-Control", "no-cache")]
+    if "-D" in args:
+        sys.stdout.write("HTTP/1.1 %s\r\n" % codigo + "".join("%s: %s\r\n" % e for e in enc) + "\r\n")
+        sys.stdout.write("\nCODIGO=" + codigo)
+    else:
+        sys.stdout.write(codigo)
+""").lstrip()
 
 
 def ejecutable(ruta, contenido):
@@ -116,23 +149,73 @@ class HumoJwtTests(Base):
     def test_la_sintaxis_es_valida(self):
         self.assertEqual(subprocess.run(["bash", "-n", HUMO]).returncode, 0)
 
-    def test_con_la_cadena_encendida_pasan_las_25_comprobaciones(self):
+    def test_con_la_cadena_encendida_pasan_las_48_comprobaciones(self):
         r = self.correr()
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         informe = self.informe_texto()
-        self.assertEqual(informe.count("| OK |"), 25, informe)
+        # 24 códigos (4 servicios x 2 vías x 3 casos) + 12 de encabezados en el gateway + pública y health
+        # (2 códigos y 2 de encabezados) + 2 réplicas x (401 y 200) x (código y encabezados).
+        self.assertEqual(informe.count("| OK |"), 48, informe)
         self.assertNotIn("FALLA", informe)
         for servicio in SERVICIOS:
             for via in ("directo", "gateway"):
                 for caso, codigo in (("sin token", 401), ("token ADMIN", 200), ("token SERVICIO", 403)):
                     self.assertRegex(informe, r"\| %s \(%s\) GET \S+ %s \| %d \| %d \| OK \|"
                                      % (servicio, via, caso, codigo, codigo))
+                    linea_enc = "%s (%s) GET" % (servicio, via)
+                    enc = [l for l in informe.splitlines() if l.startswith("| " + linea_enc) and "encabezados" in l]
+                    self.assertEqual(len(enc), 3 if via == "gateway" else 0, (servicio, via, enc))
+        for ip in ("10.0.1.11", "10.0.1.12"):
+            self.assertIn("| réplica %s GET /api/personas token ADMIN | 200 | 200 | OK |" % ip, informe)
+            self.assertIn("| réplica %s GET /api/personas sin token: encabezados de seguridad | todos | todos | OK |" % ip, informe)
+        self.assertIn("gateway GET /actuator/health sin token: encabezados de seguridad | todos | todos | OK", informe)
 
     def test_con_la_seguridad_apagada_falla(self):
         r = self.correr("apagada")
         self.assertEqual(r.returncode, 1)
-        # Sin token y con SERVICIO da 200 en lugar de 401 y 403: 16 fallas; con ADMIN, 200 como se espera.
-        self.assertEqual(self.informe_texto().count("**FALLA**"), 16)
+        # Sin token y con SERVICIO da 200 en lugar de 401 y 403: 16 en las rutas y 2 en las réplicas sin token.
+        # Los encabezados no dependen de la seguridad: siguen bien.
+        fallas = [l for l in self.informe_texto().splitlines() if "**FALLA**" in l]
+        self.assertEqual(len(fallas), 18, fallas)
+        self.assertFalse(any("encabezados" in l for l in fallas), fallas)
+
+    def fallas(self):
+        return [l for l in self.informe_texto().splitlines() if "**FALLA**" in l]
+
+    def test_si_falta_un_encabezado_falla_en_cada_respuesta_del_gateway_y_dice_cual(self):
+        r = self.correr("falta_encabezado")
+        self.assertEqual(r.returncode, 1)
+        fallas = self.fallas()
+        # 12 respuestas de las rutas + pública + health + 4 de las réplicas
+        self.assertEqual(len(fallas), 18, fallas)
+        self.assertTrue(all("falta Content-Security-Policy" in l for l in fallas), fallas)
+
+    def test_un_encabezado_repetido_falla(self):
+        r = self.correr("encabezado_duplicado")
+        self.assertEqual(r.returncode, 1)
+        fallas = self.fallas()
+        self.assertEqual(len(fallas), 18, fallas)
+        self.assertTrue(all("X-Frame-Options 2 veces" in l for l in fallas), fallas)
+
+    def test_sin_no_store_falla_en_api_pero_no_fuera_de_api(self):
+        r = self.correr("cache_sin_no_store")
+        self.assertEqual(r.returncode, 1)
+        fallas = self.fallas()
+        # 12 respuestas de las rutas + pública + 4 de las réplicas; health no está en /api y no lo exige.
+        self.assertEqual(len(fallas), 17, fallas)
+        self.assertTrue(all("Cache-Control=no-cache" in l for l in fallas), fallas)
+        self.assertFalse(any("/actuator/health" in l for l in fallas), fallas)
+
+    def test_una_replica_del_gateway_sin_validar_falla_aunque_la_otra_ande(self):
+        r = self.correr("replica_sin_seguridad")
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(self.fallas(), ["| réplica 10.0.1.12 GET /api/personas sin token | 401 | 200 | **FALLA** |"])
+
+    def test_sin_replicas_de_swarm_avisa_y_no_falla(self):
+        r = self.correr("sin_replicas")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("| aviso |", self.informe_texto())
+        self.assertIn("Réplicas del gateway probadas por su IP: 0.", self.informe_texto())
 
     def test_un_servicio_que_no_valida_el_token_directo_falla_aunque_el_gateway_lo_proteja(self):
         r = self.correr("logistica_sin_validar")
@@ -197,6 +280,25 @@ class RutasContraLaMatrizTests(unittest.TestCase):
     def test_la_ruta_publica_esta_en_la_allowlist_del_gateway(self):
         with open(os.path.join(RAIZ, "api-gateway", "src", "main", "resources", "application.yml"), encoding="utf-8") as f:
             self.assertIn("- GET /api/necesidades/publicas", f.read())
+
+
+class EncabezadosContraElGatewayTests(unittest.TestCase):
+    """La lista de la prueba de humo es la de EncabezadosDeSeguridad (S1): si cambia un valor, cambian los dos."""
+
+    def test_los_encabezados_y_valores_son_los_del_filtro_del_gateway(self):
+        with open(os.path.join(RAIZ, "api-gateway", "src", "main", "java", "grupo5", "gateway", "seguridad",
+                               "EncabezadosDeSeguridad.java"), encoding="utf-8") as f:
+            java = f.read()
+        siempre = java[java.index("SIEMPRE ="):java.index(");", java.index("SIEMPRE ="))]
+        del_gateway = dict(re.findall(r'"([A-Za-z-]+)", "([^"]*)"', siempre))
+        with open(HUMO, encoding="utf-8") as f:
+            humo = f.read()
+        bloque = humo[humo.index("ENCABEZADOS=("):humo.index(")\n", humo.index("ENCABEZADOS=("))]
+        de_la_prueba = dict(re.findall(r'"([A-Za-z-]+)\|([^"]*)"', bloque))
+        self.assertEqual(len(del_gateway), 6, del_gateway)
+        self.assertEqual(de_la_prueba, del_gateway)
+        self.assertIn('NO_STORE = "no-store"', java)
+        self.assertIn('CACHE_API="Cache-Control|no-store"', humo)
 
 
 @unittest.skipUnless(shutil.which("bash") and shutil.which("node"), "necesita bash y node")
