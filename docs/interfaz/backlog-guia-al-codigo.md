@@ -1261,15 +1261,15 @@ ejemplo `.recibido` en `publico-paginas.css`, `.publica` en `publico-listas.css`
 
 | ID | Lote | Qué | Arquetipo y decisiones | Estado |
 |---|---|---|---|---|
-| PUB2-01 | `pub2-cuenta` | Recuperar la contraseña: la columna del formulario de Ingresar, con su campo, una sola acción llena y la salida a Ingresar | Deriva de A12 | Pendiente |
-| PUB2-02 | `pub2-cuenta` | Activar la cuenta y Pedir el enlace, con sus estados (lento, error, sin conexión y vencido) y el error de datos (`publico-activar-error`), en la misma columna | Deriva de A12 | Pendiente |
-| PUB2-03 | `pub2-cuenta` | Las tres respuestas (`-recuperar-enviado`, `-activar-pedido` y `-activar-lista`) con el aviso en la página, en su misma pantalla y sin el sello de recibido | DA-06 y DA-32 | Pendiente |
-| PUB2-04 | `pub2-registro-donante` | Crear una cuenta: la cabeza y las tres tarjetas del tipo de cuenta del catálogo (`registro :: cabeza` y `:: tipos`), con su salida a Ingresar | Deriva de A12 | Pendiente |
-| PUB2-05 | `pub2-registro-donante` | El registro de quien dona (persona y empresa) y su error: el índice de pasos y el formulario del catálogo, el resumen del error arriba y una sola acción llena | Deriva de A12 | Pendiente |
-| PUB2-06 | `pub2-registro-entidad` | El registro de la organización, su corrección y su error, con el mismo formulario; `hoja` y `comoSigue` siguen como fragmentos | Sin arquetipo: el registro en pasos (DA-08) | Pendiente |
-| PUB2-07 | `pub2-registro-entidad` | Solicitud enviada, la página de estado de la solicitud (R11-41), con sus cinco escenarios y «Solicitud recibida» como aviso en la página | DA-06 y DA-32 | Pendiente |
-| PUB2-08 | `pub2-estado` | Las páginas de error 403, 404, 429 y 5xx y su pieza `pagina-error`, sin sesión (el marco público) y con sesión (el privado del rol) | Sin arquetipo: página de estado (DA-08) | Pendiente |
-| PUB2-09 | `pub2-estado` | `sin-dibujar` y `aviso-persona`, con la composición de lectura de la huerta; el lote suma sus dos rutas a `paginas.txt` | Sin arquetipo: página de estado (DA-08) | Pendiente |
+| PUB2-01 | `pub2-cuenta` | Recuperar la contraseña: la columna del formulario de Ingresar, con su campo, una sola acción llena y la salida a Ingresar | Deriva de A12 | Hecho (`d03df922f`) |
+| PUB2-02 | `pub2-cuenta` | Activar la cuenta y Pedir el enlace, con sus estados (lento, error, sin conexión y vencido) y el error de datos (`publico-activar-error`), en la misma columna | Deriva de A12 | Hecho (`d03df922f`) |
+| PUB2-03 | `pub2-cuenta` | Las tres respuestas (`-recuperar-enviado`, `-activar-pedido` y `-activar-lista`) con el aviso en la página, en su misma pantalla y sin el sello de recibido | DA-06 y DA-32 | Hecho (`d03df922f`) |
+| PUB2-04 | `pub2-registro-donante` | Crear una cuenta: la cabeza y las tres tarjetas del tipo de cuenta del catálogo (`registro :: cabeza` y `:: tipos`), con su salida a Ingresar | Deriva de A12 | Hecho (`57ca07271`, arreglos `df357b740` y `f36b98e39`) |
+| PUB2-05 | `pub2-registro-donante` | El registro de quien dona (persona y empresa) y su error: el índice de pasos y el formulario del catálogo, el resumen del error arriba y una sola acción llena | Deriva de A12 | Hecho (`57ca07271`, arreglos `df357b740` y `f36b98e39`) |
+| PUB2-06 | `pub2-registro-entidad` | El registro de la organización, su corrección y su error, con el mismo formulario; `hoja` y `comoSigue` siguen como fragmentos | Sin arquetipo: el registro en pasos (DA-08) | Hecho (`1dd71c308`, arreglos `21f7d3ae3` y `8e0e7f0be`) |
+| PUB2-07 | `pub2-registro-entidad` | Solicitud enviada, la página de estado de la solicitud (R11-41), con sus cinco escenarios y «Solicitud recibida» como aviso en la página | DA-06 y DA-32 | Hecho (`1dd71c308`, arreglos `21f7d3ae3` y `8e0e7f0be`) |
+| PUB2-08 | `pub2-estado` | Las páginas de error 403, 404, 429 y 5xx y su pieza `pagina-error`, sin sesión (el marco público) y con sesión (el privado del rol) | Sin arquetipo: página de estado (DA-08) | Hecho (`492548f78`) |
+| PUB2-09 | `pub2-estado` | `sin-dibujar` y `aviso-persona`, con la composición de lectura de la huerta; el lote suma sus dos rutas a `paginas.txt` | Sin arquetipo: página de estado (DA-08) | Hecho (`492548f78`) |
 
 Cada lote termina, además, la migración de las hojas heredadas de sus pantallas (plan §5), con el
 límite de las hojas compartidas de §15.2.
@@ -1302,3 +1302,37 @@ límite de las hojas compartidas de §15.2.
   es bloqueante. No se levantan el stack ni el recorrido con login: los hace Z, y ningún lote cambia
   un adaptador `rest` (plan de la corrida, punto 5). `IngresoConKeycloakRealTest` necesita el
   stack y corre en Z.
+
+### 15.5 Cierre de PUB2 (2026-11-25)
+
+Rama `E7_guia_ui_pub2`, `8e0e7f0be` (último commit de lote). Cuatro lotes en una tanda sobre
+`8b6608abd` (el manifiesto integrado): `pub2-cuenta`, `pub2-registro-donante`,
+`pub2-registro-entidad` y `pub2-estado`, más la integración de la tanda (`e2232c725`) y cuatro
+commits de arreglos de la revisión. Estado de cada ítem en §15.3: los 9 hechos.
+
+- `[VERIFIED]` `mvn clean test -pl cliente-liviano -am` en `8e0e7f0be`: exit 0, 934 tests, sin
+  fallos (926 en ADM1). `InterfazFitnessTest` pasa sin editarse: ningún tope cambió.
+  `clases-heredadas.txt` pierde 23 líneas y no suma ninguna.
+- `[VERIFIED]` `-Pvisual` sobre las 40 rutas de PUB2 de `paginas.txt`: el filtro da 40 líneas, las
+  38 de antes más `/entidad-seguimiento-tesoro` y `/donante-donaciones-nueva?cuenta=persona`.
+  Pasan las 40 (160 capturas, 4 anchos por ruta; `reporte.json` y `excepciones.json` vacíos). Ninguna
+  estaba en la línea de base de §10.4.
+- `[VERIFIED]` Los otros cinco tests visuales: 31 tests, 3 fallos y 3 errores, todos de la línea de
+  base: `AbejasYRenglonesTest.lasAbejasCambianDeCapaSoloCuandoNoSeVen`,
+  `AbejasYRenglonesTest.conReducirMovimientoLasAbejasQuedanQuietasDelanteYEnteras` y el del lema del
+  pie ([DTI-47](../adr/DEUDA_TECNICA.md#dti-47)), y los dos de `BajoTierraRotulosTest` (DA-22,
+  [DTI-50](../adr/DEUDA_TECNICA.md#dti-50)). `MenusQueSeCierranTest.lasPastillasDeFiltroSeCierranTocandoAfueraYConEsc`,
+  el inestable conocido, falló esta vez. `ArmazonFijoTest` pasa sus 12 y `DonanteDetallesTest`
+  sus 7. Ningún fallo nuevo.
+- Sin stack ni recorrido con login (DA-20): ningún lote cambia un adaptador `rest`. Queda para Z
+  comprobar con datos reales el registro de quien dona y de la organización (incluida la
+  corrección y la solicitud enviada con sus escenarios), Recuperar y Activar, y las páginas de error
+  con sesión de cada rol. `IngresoConKeycloakRealTest` también corre en Z.
+- Cercos `[VERIFIED]` (`git diff 46c1f4708..HEAD`): sin cambios en `rest/`, `puertos/`, `tokens.css`,
+  los tests de `visual/`, `InterfazFitnessTest.java`, `templates/componentes/`,
+  `static/css/componentes/`, `static/js/`, `auth-service/`, los menús (`navegacion-publica.html`,
+  `pie.html`, `Pantallas.java`, `CuentaDeEjemplo.java`) ni `AGENTS.md`. Ninguna plantilla ni hoja
+  borrada. El código Java de `cliente-liviano/src/main` no cambió: solo plantillas y hojas.
+- Rondas de arreglos de la revisión de cada lote: `pub2-registro-donante` (2) y
+  `pub2-registro-entidad` (2); `pub2-cuenta` y `pub2-estado`, ninguna. El veredicto de cada ronda
+  no consta en el repo.
