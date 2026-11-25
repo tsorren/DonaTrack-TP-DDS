@@ -6,7 +6,6 @@ armazon
 armazon-avisos
 armazon-avisos-cuenta
 armazon-avisos-texto
-aviso-acciones
 aviso-codigo
 bajada
 cambiar
@@ -20,8 +19,6 @@ confirmar
 contacto
 cuenta
 cuenta--enviada
-cuenta-principal
-cuenta-salida
 donaron
 entregas
 estacion-numero
@@ -56,7 +53,6 @@ periodos--lista
 periodos-anteriores
 periodos-desde
 publica
-publica-cabeza
 publicar
 raices-cabecera
 raices-pie

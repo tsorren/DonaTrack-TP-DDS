@@ -1,18 +1,7 @@
-/* Ingresar (PUB1-06, deriva de A12 de la guía «Huerta y galpón») y la base de activar y recuperar
-   (PUB2). Ingresar es la columna del formulario con piezas del catálogo (campo, aviso, banner,
-   botón y tarjeta; docs/interfaz/componentes.md): esta hoja solo la dispone. Las reglas de
-   .cuenta-principal son de activar y recuperar, que siguen con la composición de antes hasta su
-   ola. */
+/* Ingresar (PUB1-06), Recuperar la contraseña y Activar la cuenta (PUB2-01 a 03): derivan de A12 de
+   la guía «Huerta y galpón». Son la columna del formulario con piezas del catálogo (campo, aviso,
+   banner, botón y tarjeta; docs/interfaz/componentes.md): esta hoja solo la dispone. */
 @import url("publico-registro.css");
-
-.cuenta-principal {
-  display: grid;
-  gap: 1.5rem;
-}
-
-.cuenta-principal .banner {
-  margin: 0;
-}
 
 /* --- Ingresar: la columna del formulario (A12) -------------------------------------------------- */
 main > .pila {

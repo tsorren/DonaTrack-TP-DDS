@@ -1404,14 +1404,14 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("readonly")));
     mvc.perform(post(lista)).andExpect(redirectedUrl(lista));
     mvc.perform(get(lista))
-        .andExpect(content().string(containsString("Tu cuenta <em>está lista</em>")))
+        .andExpect(content().string(containsString("Tu cuenta está lista")))
         .andExpect(content().string(containsString("href=\"/publico-ingresar\"")));
     mvc.perform(get("/publico-activar-error"))
         .andExpect(content().string(containsString("Revisá la contraseña")))
         .andExpect(content().string(containsString("aria-invalid=\"true\"")));
     mvc.perform(get("/publico-activar?escenario=vencido"))
         .andExpect(content().string(containsString("Este enlace ya no sirve.")))
-        .andExpect(content().string(containsString("Activá <em>tu cuenta</em>")))
+        .andExpect(content().string(containsString("<h1>Activá tu cuenta</h1>")))
         .andExpect(content().string(containsString("href=\"/publico-activar-pedir\"")))
         .andExpect(content().string(not(containsString("action=\"/publico-activar-lista\""))));
     mvc.perform(get("/publico-activar?escenario=error"))
@@ -1443,6 +1443,62 @@ class SitioControllerTest {
         .andExpect(
             content().string(containsString("Si hay una cuenta con ese correo, te mandamos")))
         .andExpect(content().string(not(containsString("vence en"))));
+  }
+
+  /**
+   * DA-32 y DA-06, la parte de la cuenta: Recuperar, Pedir el enlace y Activar responden en su
+   * misma pantalla con el aviso en la página del catálogo (.aviso con data-tipo="exito") en el
+   * lugar del formulario, sin el sello de recibido; Activar deja una sola acción llena, Ingresar.
+   */
+  @Test
+  void lasRespuestasDeLaCuentaSonElAvisoEnLaPaginaSinFormulario() throws Exception {
+    List<List<String>> respuestas =
+        List.of(
+            List.of("/publico-recuperar-enviado", "Si hay una cuenta con ese correo, te mandamos"),
+            List.of("/publico-activar-pedido", "Si hay una cuenta con ese correo, te mandamos"),
+            List.of("/publico-activar-lista", "Tu cuenta está lista"));
+    for (List<String> respuesta : respuestas) {
+      String ruta = respuesta.get(0);
+      String html =
+          mvc.perform(get(ruta))
+              .andExpect(status().isOk())
+              .andReturn()
+              .getResponse()
+              .getContentAsString(StandardCharsets.UTF_8);
+      Matcher aviso =
+          Pattern.compile(
+                  "<div class=\"aviso\" data-tipo=\"exito\"[^>]*>(.*?)</div>", Pattern.DOTALL)
+              .matcher(html);
+      assertTrue(aviso.find(), ruta + " no muestra el aviso de éxito");
+      assertTrue(
+          aviso.group(1).contains(respuesta.get(1)), ruta + " no dice su respuesta en el aviso");
+      assertTrue(
+          aviso.group(0).contains("role=\"status\""), ruta + " no anuncia el aviso (role=status)");
+      for (String accion :
+          List.of(
+              "/publico-recuperar-enviado", "/publico-activar-pedido", "/publico-activar-lista")) {
+        assertFalse(
+            html.contains("action=\"" + accion + "\""), ruta + " todavía muestra el formulario");
+      }
+      assertFalse(
+          Pattern.compile("class=\"[^\"]*\\brecibido\\b").matcher(html).find(),
+          ruta + " lleva el sello de recibido");
+    }
+    String lista =
+        mvc.perform(get("/publico-activar-lista"))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    assertTrue(
+        Pattern.compile(
+                "<a class=\"boton\" data-tono=\"principal\" href=\"/publico-ingresar\">Ingresar</a>")
+            .matcher(lista)
+            .find(),
+        "Activar no lleva a Ingresar con la acción llena");
+    assertEquals(
+        1,
+        Pattern.compile("data-tono=\"principal\"").matcher(lista).results().count(),
+        "Activar lleva más de una acción llena");
   }
 
   /**
