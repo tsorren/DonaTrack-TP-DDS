@@ -1813,3 +1813,22 @@ está en [DTI-54](../adr/DEUDA_TECNICA.md#dti-54); las decisiones, en la [bitác
   [`tono-y-comunicacion.md`](tono-y-comunicacion.md) y
   [`requerimientos-e7.md`](../requerimientos/requerimientos-e7.md) no cambian: Z no cambió ninguna
   ruta, ningún texto de pantalla ni el estado de ningún requerimiento.
+
+Después de la ola (2026-11-25, `41995efd9`): un arreglo de los 8 pendientes no menores, sin cambios
+de código, los gates del cliente en verde (`mvn spotless:check`, 942 tests, `-Pvisual` sobre las 15
+rutas de la ola y `agent-check` PASS 272) y una revisión independiente de pantallas con PASS. Antes del
+merge en `E7_guia_ui` (`f139d47dc`) se comprobó en la rama que `PARES` queda en 38 sin bajar ningún
+mínimo, que los topes son 37 y 532, que `HOJAS_HEREDADAS` solo se achica y que no hay tests borrados
+ni deshabilitados. Siguen como menores en [DTI-54](../adr/DEUDA_TECNICA.md#dti-54): la remisión de
+DTI-53, ítems 5 y 6; la ficha «Color: los nombres de antes»; la entrada repetida de
+`test_auth_theme.py:201-203`, y la limpieza del proyecto `donatrack-guia` en Docker.
+
+### 17.7 Hoja de contacto global (2026-11-25)
+
+[`evidencia/guia-resto/hoja/hoja.html`](evidencia/guia-resto/hoja/hoja.html) junta las 109 rutas
+únicas de los manifiestos de C0 a Z, a 360 y 1280 px, agrupadas por la primera ola que las nombra.
+`[VERIFIED]` `mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest` sobre esas 109
+rutas en `f139d47dc`: 8 tests, 0 fallos, exit 0. Son capturas con los puertos simulados, sin stack.
+Cada JPG pesa 150 KB o menos y la hoja enlaza las imágenes en lugar de embeberlas, para no sumar
+unos 80 MB al repositorio. Las de `/estilos` son el recorte de los primeros 1800 px, como en la hoja
+de Z.
