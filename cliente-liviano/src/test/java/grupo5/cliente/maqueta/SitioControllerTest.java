@@ -1381,6 +1381,121 @@ class SitioControllerTest {
     assertEquals(1, apariciones(html, "data-tono=\"principal\""), "una sola acción llena");
   }
 
+  /**
+   * Crear una cuenta (PUB2-04): la cabeza y las tres tarjetas del tipo de cuenta del catálogo
+   * (componentes/registro), sin ninguna elegida, y la salida a Ingresar.
+   */
+  @Test
+  void crearUnaCuentaMuestraLasTresTarjetasYLaSalidaAIngresar() throws Exception {
+    String html =
+        mvc.perform(get("/publico-registro"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("class=\"registro-cabeza\"")))
+            .andExpect(content().string(containsString("Sumate a DonaTrack")))
+            .andExpect(
+                content().string(containsString("href=\"/publico-registro-donante?tipo=persona\"")))
+            .andExpect(content().string(containsString("href=\"/publico-registro-entidad\"")))
+            .andExpect(content().string(containsString("href=\"/publico-ingresar\">Ingresar</a>")))
+            .andExpect(content().string(not(containsString("registro-tipo\" aria-current"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(3, apariciones(html, "class=\"tarjeta registro-tipo\""), "las tres tarjetas");
+  }
+
+  /**
+   * El registro de quien dona (PUB2-05): el índice de pasos y el formulario del catálogo, con una
+   * sección por paso, los campos del catálogo, la casilla de los términos y una sola acción llena.
+   * La persona y la empresa van en la misma plantilla, cada una con sus campos.
+   */
+  @Test
+  void elRegistroDeQuienDonaUsaElFormularioDelCatalogoConUnaSolaAccionLlena() throws Exception {
+    String empresa =
+        mvc.perform(get("/publico-registro-donante"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("class=\"registro-indice\"")))
+            .andExpect(content().string(containsString("class=\"tarjeta registro-formulario\"")))
+            .andExpect(content().string(containsString("id=\"empresa\"")))
+            .andExpect(content().string(containsString("class=\"casilla\"")))
+            .andExpect(content().string(containsString("Crear mi cuenta")))
+            .andExpect(content().string(not(containsString("clave-fila"))))
+            .andExpect(content().string(not(containsString("class=\"nota\""))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(3, apariciones(empresa, "class=\"registro-seccion\""), "una sección por paso");
+    assertEquals(1, apariciones(empresa, "data-tono=\"principal\""), "una sola acción llena");
+    assertEquals(0, apariciones(empresa, "data-estado=\"error\""), "sin errores");
+
+    String persona =
+        mvc.perform(get("/publico-registro-donante?tipo=persona"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("id=\"apellido\"")))
+            .andExpect(content().string(not(containsString("id=\"empresa\""))))
+            .andExpect(content().string(containsString("class=\"texto-chico\"")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(1, apariciones(persona, "data-tono=\"principal\""), "una sola acción llena");
+  }
+
+  /**
+   * Lento y error del servicio, como en Ingresar: el botón dice qué pasa y está ocupado (sin
+   * desactivarse), y el error del servicio es el banner del catálogo, con lo escrito.
+   */
+  @Test
+  void elRegistroDeQuienDonaMuestraLentoYElErrorDelServicioComoIngresar() throws Exception {
+    mvc.perform(get("/publico-registro-donante?escenario=lento"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<button class=\"boton\" data-tono=\"principal\" type=\"submit\""
+                            + "\\s+aria-busy=\"true\">Creando tu cuenta…</button>.*")))
+        .andExpect(content().string(containsString("role=\"status\">Creando tu cuenta…")))
+        .andExpect(content().string(not(containsString("disabled"))));
+    mvc.perform(get("/publico-registro-donante?escenario=error"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("class=\"banner\" data-estado=\"error\"")))
+        .andExpect(content().string(containsString("No pudimos crear tu cuenta.")))
+        .andExpect(content().string(containsString("value=\"Distribuidora Ejemplo SA\"")));
+  }
+
+  /**
+   * El error de datos del registro es un estado del mismo formulario (A12, «Con error»): el resumen
+   * arriba, en el aviso del catálogo, con el foco y un enlace a cada campo; cada campo marcado en
+   * su lugar, con el signo del problema, y una sola acción llena.
+   */
+  @Test
+  void elErrorDelRegistroDeQuienDonaResumeArribaYMarcaCadaCampo() throws Exception {
+    String html =
+        mvc.perform(get("/publico-registro-donante-error"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("class=\"tarjeta registro-formulario\"")))
+            .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+            .andExpect(content().string(containsString("role=\"alert\" tabindex=\"-1\"")))
+            .andExpect(content().string(containsString("autofocus")))
+            .andExpect(content().string(containsString("class=\"aviso-titulo\"")))
+            .andExpect(content().string(containsString("href=\"#empresa\"")))
+            .andExpect(content().string(containsString("href=\"#correo\"")))
+            .andExpect(content().string(containsString("href=\"#terminos\"")))
+            .andExpect(content().string(not(containsString("banner resumen"))))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*id=\"correo-error\" class=\"campo-error\">\\s*<svg[^>]*"
+                                + "data-signo=\"e-problema\".*")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(3, apariciones(html, "class=\"campo-error\">"), "un mensaje por campo");
+    assertEquals(4, apariciones(html, "data-signo=\"e-problema\""), "el resumen y los tres campos");
+    assertEquals(3, apariciones(html, "aria-invalid=\"true\""), "los tres controles, inválidos");
+    assertEquals(1, apariciones(html, "data-tono=\"principal\""), "una sola acción llena");
+  }
+
   private static int apariciones(String texto, String buscado) {
     int cuenta = 0;
     for (int i = texto.indexOf(buscado); i >= 0; i = texto.indexOf(buscado, i + 1)) {

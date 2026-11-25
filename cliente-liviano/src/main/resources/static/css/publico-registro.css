@@ -1,8 +1,6 @@
 /* Raíces, sitio A: Crear una cuenta y los registros (publico-registro*.html), y la base de Ingresar.
-   El formulario en su lámina (formularios.css), en grupos con título; las dos tarjetas de Crear una
-   cuenta (la del donante, impresa con el brote; la de la entidad, la etiqueta vacía de "Tu entidad",
-   punteada); y "Cómo sigue", el tramo de raíz de Confirmar recepción: lo cumplido impreso, lo que
-   falta hueco. */
+   El formulario en su lámina (formularios.css), en grupos con título; y "Cómo sigue", el tramo de
+   raíz de Confirmar recepción: lo cumplido impreso, lo que falta hueco. */
 @import url("publico-listas.css");
 
 .cuenta .formulario {
@@ -35,6 +33,12 @@
   padding-inline: 1rem;
 }
 
+/* El registro de quien dona: la contraseña ocupa el renglón y "Mostrar" queda a su lado, como en
+   Ingresar (.racimo del catálogo). */
+.registro-seccion .campo > .racimo > input {
+  flex: 1;
+}
+
 .enlace-campo {
   display: inline-flex;
   align-items: center;
@@ -46,38 +50,6 @@
 .campos-par {
   display: grid;
   gap: 1.25rem;
-}
-
-/* Quién dona: dos enlaces con forma de opción; el elegido, impreso. */
-.eleccion {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.eleccion a {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--medida-toque-minimo);
-  padding: 0.5rem 0.875rem;
-  border: 1.5px solid var(--color-acento);
-  border-radius: var(--radio-boton);
-  font-weight: 700;
-  font-stretch: 108%;
-  text-decoration: none;
-}
-
-.eleccion a:hover {
-  background: var(--color-acento-claro);
-}
-
-.eleccion a[aria-current] {
-  background: var(--color-acento);
-  box-shadow: 0.2rem 0.2rem 0 var(--color-sombra);
-  color: var(--color-papel);
 }
 
 /* Cada grupo de la solicitud, con su título sobre un filete. */
@@ -184,88 +156,6 @@
 .aviso--nombre {
   border-color: var(--color-acento);
   color: var(--color-tinta);
-}
-
-/* --- Crear una cuenta: las dos tarjetas -------------------------------------------------------- */
-
-.opciones-cuenta {
-  display: grid;
-  gap: 2rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.opcion-cuenta section {
-  display: grid;
-  justify-items: start;
-  align-content: start;
-  gap: 0.75rem;
-  height: 100%;
-  padding: 1.5rem;
-  border-radius: var(--radio-lamina);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-papel);
-}
-
-/* La de la entidad: la etiqueta vacía de la portada, punteada y sin imprimir. */
-.opcion-cuenta--entidad section {
-  outline: 2px dashed var(--color-acento);
-  box-shadow: none;
-}
-
-.opcion-cuenta h2 {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
-.opcion-cuenta p {
-  margin: 0;
-}
-
-.opcion-pedimos {
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--color-tinta-suave);
-  color: var(--color-tinta);
-}
-
-.opcion-cuenta .boton {
-  margin-top: 0.5rem;
-}
-
-.opcion-dibujo {
-  width: 3.75rem;
-  height: 4rem;
-  fill: none;
-}
-
-.opcion-sol {
-  fill: var(--color-acento-claro);
-}
-
-.opcion-tallo {
-  stroke: var(--color-tallo);
-  stroke-width: 3;
-}
-
-.opcion-hoja {
-  fill: var(--color-hoja);
-}
-
-.opcion-hoja--tinta {
-  fill: var(--color-acento);
-}
-
-.opcion-raiz {
-  stroke: var(--color-tinta-suave);
-  stroke-width: 3;
-  stroke-dasharray: 4 4;
-}
-
-.opcion-hueco {
-  stroke: var(--color-acento);
-  stroke-width: 2.5;
-  stroke-dasharray: 5 4;
 }
 
 /* --- Cómo sigue: el tramo de raíz -------------------------------------------------------------- */
@@ -454,11 +344,6 @@
 }
 
 @media (min-width: 53.75em) {
-  .opciones-cuenta {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-width: 62rem;
-  }
-
   /* El tramo, de izquierda a derecha. */
   .tramo {
     grid-auto-flow: column;
