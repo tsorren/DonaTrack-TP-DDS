@@ -1119,6 +1119,13 @@ código y en los tests. Lo que queda abierto está en [DTI-51](../adr/DEUDA_TECN
 que ADM1 cierra de C1, en [DTI-47](../adr/DEUDA_TECNICA.md#dti-47), ítems 6 y 13; las decisiones,
 en la [bitácora](bitacora.md) (2026-11-25).
 
+Después de la ola (2026-11-25, `7bdee25e1`): un arreglo de los bloqueantes de la ronda 3 (los
+ejemplos de los campos del alta de camión enteros, «Volumen en m³» sin estirarse y la opción «Todas»
+del filtro de Camiones). Los gates dieron verde (spotless, 926 tests, `-Pvisual` sobre las 19 rutas
+de la ola, incluidas `/admin-camiones` y `/admin-camiones-agregar-error`, que salen de la línea de
+base, y `agent-check`), y la revisión independiente de `revisar-ui` dio PASS. Sigue sin correr
+`ArmazonFijoTest` ni `MenusQueSeCierranTest`: quedan para Z.
+
 - `[VERIFIED]` `mvn clean test -pl cliente-liviano -am` en `8b0e09344`: exit 0, 926 tests, sin
   fallos. En `2a5e83682`, antes de la revisión de pantallas: 925 tests, sin fallos (903 en PUB1).
   Spotless e `InterfazFitnessTest` incluidos: ningún tope cambió y el test no se editó.
