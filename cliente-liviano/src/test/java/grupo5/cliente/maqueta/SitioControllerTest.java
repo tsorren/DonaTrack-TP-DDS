@@ -1585,8 +1585,7 @@ class SitioControllerTest {
         mvc.perform(get("/publico-registro-donante-error"))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("class=\"tarjeta registro-formulario\"")))
-            .andExpect(
-                content().string(containsString("class=\"aviso resumen\" data-tipo=\"error\"")))
+            .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
             .andExpect(content().string(containsString("role=\"alert\" tabindex=\"-1\"")))
             .andExpect(content().string(containsString("autofocus")))
             .andExpect(content().string(containsString("class=\"aviso-titulo\"")))

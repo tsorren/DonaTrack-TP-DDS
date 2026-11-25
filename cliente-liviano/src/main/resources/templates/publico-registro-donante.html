@@ -43,7 +43,7 @@
             method="post" data-enviando="Creando tu cuenta…" data-validar
             th:aria-busy="${escenario == 'lento'} ? 'true' : null">
         <!--/* Error de datos: el resumen arriba, con el foco y un enlace a cada campo (como Ingresar). */-->
-        <div th:if="${conError}" class="aviso resumen" data-tipo="error" role="alert" tabindex="-1"
+        <div th:if="${conError}" class="aviso" data-tipo="error" role="alert" tabindex="-1"
              id="resumen" autofocus>
           <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
           <p class="aviso-titulo">Revisá tres cosas antes de crear tu cuenta</p>
