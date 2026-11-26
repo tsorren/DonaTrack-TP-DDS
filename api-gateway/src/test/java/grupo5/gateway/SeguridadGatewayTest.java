@@ -96,7 +96,9 @@ class SeguridadGatewayTest {
     "/api/entregas",
     "/api/rutas/5",
     "/api/logistica/planificaciones/9",
-    "/api/contacto/4821"
+    "/api/contacto/4821",
+    "/donaciones-independientes",
+    "/donaciones-independientes/conteos"
   })
   void sinTokenUnaRutaProtegidaDa401(String ruta) throws Exception {
     assertThat(pedir(ruta, null).statusCode()).isEqualTo(401);
@@ -120,7 +122,8 @@ class SeguridadGatewayTest {
     "/api/donaciones, donaciones",
     "/api/notificaciones/persona/7, notificaciones",
     "/api/incentivos/ranking/ultimo, incentivos",
-    "/api/entregas, logistica"
+    "/api/entregas, logistica",
+    "/donaciones-independientes, donaciones"
   })
   void conTokenElPedidoLlegaAlServicioConElBearerIntacto(String ruta, String servicio)
       throws Exception {
@@ -161,7 +164,8 @@ class SeguridadGatewayTest {
   void unaRutaFueraDeLaTablaPideTokenYConTokenDa404() throws Exception {
     assertThat(pedir("/api/inexistente", null).statusCode()).isEqualTo(401);
     assertThat(pedir("/api/inexistente", BEARER).statusCode()).isEqualTo(404);
-    assertThat(pedir("/donaciones-independientes", BEARER).statusCode()).isEqualTo(404);
+    // Un alias sin /api que repite una ruta enrutada queda afuera (ADR 20261126).
+    assertThat(pedir("/notificaciones/persona/7", BEARER).statusCode()).isEqualTo(404);
   }
 
   @Test
