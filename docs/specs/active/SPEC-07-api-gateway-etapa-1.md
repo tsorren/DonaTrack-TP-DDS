@@ -107,7 +107,7 @@ Escenario: traceId generado
 
 | Gate | Comando | Qué cubre |
 |---|---|---|
-| 1–2 | `mvn clean test -pl api-gateway -am` | `RutasGatewayTest`: 18 rutas a su servicio, 5 rutas fuera de la tabla (`404`), trace propagado y generado, cada ruta pública con ruta expuesta |
+| 1–2 | `mvn clean test -pl api-gateway -am` | `RutasGatewayTest`: 31 rutas a su servicio, 4 rutas fuera de la tabla (`404`) (conteo del 2026-11-26), trace propagado y generado, cada ruta pública con ruta expuesta |
 | 2 | `mvn test` (reactor) | Que el módulo nuevo no rompa los demás |
 | 4 | `docker compose up api-gateway` y `curl :8086/api/entregas/mapa` | `[DEFERRED_NO_DOCKER]` si no hay Docker |
 
