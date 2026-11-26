@@ -536,15 +536,16 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
   }
 
   /**
-   * El inicio de la ficha (R11-21): 3 organizaciones, 7 donaciones sin asignar (4 vencen) y 2
-   * propuestas; las cifras por tema, con 1 que no se pudo entregar, 2 vencidas y 1.284 entregas; y
-   * los gráficos de los últimos 12 meses (R11-42).
+   * El inicio de la ficha (R11-21): 3 organizaciones, 7 donaciones sin asignar (4 vencen) y 8
+   * propuestas pendientes (las 4 sin problemas y las 4 en conflicto de AdminAsignacionesDeEjemplo);
+   * las cifras por tema, con 1 que no se pudo entregar, 2 vencidas y 1.284 entregas; y los gráficos
+   * de los últimos 12 meses (R11-42).
    */
   @Override
   public AdminInicioVista inicio() {
     return new AdminInicioVista(
         "Jueves 15 de octubre de 2026",
-        "Hoy esperan tu decisión 3 organizaciones y 2 propuestas de asignación. Hay 7 donaciones"
+        "Hoy esperan tu decisión 3 organizaciones y 8 propuestas de asignación. Hay 7 donaciones"
             + " sin asignar en el depósito; 4 vencen en los próximos 7 días.",
         new Decisiones(
             3,
@@ -553,7 +554,7 @@ class AdminPersonasMaqueta implements AdminPersonasPuerto {
             7,
             4,
             "La primera, Leche en polvo, vence el 17 de octubre, en 2 días.",
-            2),
+            8),
         AL,
         new Cifras(
             7, 4, 1, 1, 2, 9, "en octubre, del 1 al 15", 1_284, 46, 86, 92, new Camiones(1, 3)),

@@ -10,10 +10,10 @@
   justify-self: start;
   min-height: var(--medida-toque-minimo);
   padding: 0.375rem 1rem 0.375rem 0.5rem;
-  border: 2px solid var(--color-acento);
+  border: 2px solid var(--color-accion-primaria);
   border-radius: var(--radio-boton);
-  background: var(--color-papel);
-  box-shadow: 0.3rem 0.3rem 0 var(--color-sombra);
+  background: var(--color-fondo-pagina);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-hoja);
   color: var(--color-tinta);
   font-weight: 700;
   font-stretch: 112%;
@@ -21,7 +21,7 @@
 }
 
 .novedades:hover {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 .novedades:active {

@@ -2,6 +2,7 @@ package grupo5.cliente.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -32,9 +33,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Contacto fuera de la maqueta: el formulario lleva la clave del puerto, el envío guarda y lleva al
- * enviado con su número, y el límite vuelve al formulario con su aviso. La seguridad se prueba
- * aparte (SeguridadTest: las públicas no piden ingreso).
+ * Contacto fuera de la maqueta: el formulario lleva la clave del puerto, el envío guarda y vuelve a
+ * Contacto con el aviso breve que lleva el número (DA-06, DA-24), y el límite vuelve al formulario
+ * con su aviso. La seguridad se prueba aparte (SeguridadTest: las públicas no piden ingreso).
  */
 @WebMvcTest({PublicoContactoController.class, PublicoContactoEnvioController.class})
 @AutoConfigureMockMvc(addFilters = false)
@@ -64,7 +65,7 @@ class PublicoContactoControllerTest {
   }
 
   @Test
-  void enviarGuardaYLlevaAlEnviadoConElNumeroYElAviso() throws Exception {
+  void enviarGuardaYVuelveAContactoConElNumeroEnElAvisoBreve() throws Exception {
     when(contacto.enviar(any(), any())).thenReturn(77L);
 
     mvc.perform(
@@ -80,9 +81,12 @@ class PublicoContactoControllerTest {
                       pedido.setRemoteAddr("203.0.113.7");
                       return pedido;
                     }))
-        .andExpect(redirectedUrl("/publico-contacto-enviado?volver=%2Fentidad-necesidades"))
-        .andExpect(flash().attribute("numeroDelMensaje", 77L))
-        .andExpect(flash().attribute(Envios.AVISO, "Recibimos tu mensaje."));
+        .andExpect(redirectedUrl("/publico-contacto?volver=%2Fentidad-necesidades"))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "Recibimos tu mensaje. Su número es 77. Te respondemos por correo."));
 
     ArgumentCaptor<Mensaje> mensaje = ArgumentCaptor.forClass(Mensaje.class);
     verify(contacto).enviar(mensaje.capture(), eq("203.0.113.7"));
@@ -91,14 +95,26 @@ class PublicoContactoControllerTest {
   }
 
   @Test
-  void elEnviadoMuestraElNumeroYSinEnvioVuelveAlFormulario() throws Exception {
+  void elEnviadoMuestraContactoConElAvisoYSinNumeroVuelveAlFormulario() throws Exception {
     when(contacto.numeroDeEjemplo()).thenReturn(null);
 
     mvc.perform(get("/publico-contacto-enviado").flashAttr("numeroDelMensaje", 77L))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Su número es <b>77</b>")));
+        .andExpect(content().string(containsString("Recibimos tu mensaje. Su número es <b>77</b>")))
+        .andExpect(content().string(containsString("name=\"mensaje\"")));
 
     mvc.perform(get("/publico-contacto-enviado")).andExpect(redirectedUrl("/publico-contacto"));
+  }
+
+  @Test
+  void conVolverContactoOfreceLaSalidaAEsaPantalla() throws Exception {
+    mvc.perform(get("/publico-contacto").param("volver", "/entidad-necesidades"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(containsString("href=\"/entidad-necesidades\">Volver a Necesidades</a>")));
+    mvc.perform(get("/publico-contacto"))
+        .andExpect(content().string(not(containsString("Volver a"))));
   }
 
   @Test
@@ -127,7 +143,7 @@ class PublicoContactoControllerTest {
             post("/publico-contacto-enviado")
                 .param("mensaje", "Hola")
                 .param("correo", "ana@ejemplo.test"))
-        .andExpect(redirectedUrl("/publico-contacto-enviado"));
+        .andExpect(redirectedUrl("/publico-contacto"));
 
     ArgumentCaptor<Mensaje> mensaje = ArgumentCaptor.forClass(Mensaje.class);
     verify(contacto).enviar(mensaje.capture(), any());

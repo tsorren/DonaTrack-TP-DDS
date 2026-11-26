@@ -1,5 +1,11 @@
 # Flujo: La entidad recibe, y el inicio del admin, en Raíces navegable
 
+> **Desde el 2026-11-24,** el inicio del admin (§4.4, con R11-21 y los gráficos de R11-42) pasa a
+> ser «Por decidir» (DA-04 y DA-25), y la ficha [`guia-adm-inicio-graficos.md`](guia-adm-inicio-graficos.md)
+> (ola ADM1 de la guía «Huerta y galpón») manda sobre lo que va debajo de la bandeja: el resumen y
+> los gráficos. Los datos, los estados y los textos de esta ficha siguen, salvo los cambios de §4 y
+> §6 de esa ficha.
+
 > **Estado:** aprobada: el usuario eligió el sitio A de la corrida A/B (2026-11-03), como
 > preveía el plan · **Fecha:** 2026-11-02 · **Aprobó:** el usuario, 2026-11-03
 > Plantilla de la skill `ux-flujo`. Ficha escrita para los dos sitios de la corrida A/B de Raíces:

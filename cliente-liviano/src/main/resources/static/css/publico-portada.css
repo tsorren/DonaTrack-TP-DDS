@@ -1,26 +1,42 @@
-/* La portada con la composición de la variante K (2026-11-08): las piezas son del componente huerta
-   (componentes/huerta.css); acá, solo dónde va cada una. El papel de arriba (la portada y cómo
-   funciona) y el de abajo (las cifras, las entregas del mes, quién participa, las preguntas y el
-   cierre) van centrados; la tierra con las raíces, a todo el ancho entre los dos. */
+/* La portada (publico-portada.html): el arquetipo A01 de la guía (50-pantallas.html, #portada). Las
+   piezas son del catálogo (la trama, los frutos, la etiqueta de una entrega, los estados de cada
+   parte y la raíz de huerta); esta hoja solo dice dónde va cada una, como 15-pantallas.css de la guía
+   (.portada-arriba, .portada-titulo, .portada-dibujo y .portada-prueba). */
 @import url("app.css");
 
-main > .centro {
-  --espacio-entre: 4.5rem;
-  padding-block: 2rem 1rem;
+#portada {
+  padding-block: var(--espacio-4) var(--espacio-5);
 }
 
-/* El árbol de cómo funciona queda apoyado sobre la tierra. */
-main > .centro:first-child {
-  padding-bottom: 0;
+/* Las cuatro partes (arriba, la prueba, «Cómo funciona» y las del mes) con el mismo aire entre sí,
+   como en A01: cada parte lleva su propio data-espacio para adentro, y .pila lo leería en el hijo. */
+#portada > * + * {
+  margin-block-start: var(--espacio-5);
 }
 
-main > .centro:last-child {
-  padding-top: 4rem;
+/* Arriba (el título y el dibujo) y la prueba (la última entrega y las cifras): una columna en el
+   celular y dos cuando entran. */
+#portada-arriba,
+#portada-prueba {
+  --medida-grilla: 20rem;
+
+  align-items: start;
 }
 
+/* El dibujo del recorrido, a todo el ancho de su columna. */
+#portada-dibujo svg {
+  width: 100%;
+  height: auto;
+}
+
+/* Desde que entran las dos columnas, la del texto algo más ancha que la del dibujo, como en la guía. */
 @media (min-width: 53.75em) {
-  main > .centro {
-    --espacio-entre: 6rem;
-    padding-top: 3.5rem;
+  #portada {
+    padding-top: var(--espacio-5);
+  }
+
+  #portada-arriba,
+  #portada-prueba {
+    grid-template-columns: minmax(0, 13fr) minmax(0, 11fr);
   }
 }

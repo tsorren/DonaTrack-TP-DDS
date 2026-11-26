@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.cliente.maqueta.MaquetaConfig;
 import grupo5.cliente.puertos.EntidadInicioPuerto;
+import grupo5.cliente.puertos.EntidadNecesidadesPuerto;
 import grupo5.cliente.puertos.EntidadSeguimientoPuerto;
 import grupo5.cliente.puertos.RecibidasPuerto;
 import grupo5.cliente.vistas.EntidadInicioVista;
@@ -26,6 +27,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -52,6 +54,9 @@ class EntidadInicioEnPuertaControllerTest {
 
   private static final String ENTIDAD = "6f1c2c1e-0000-4000-8000-0000000000e1";
   private static final String DONACION = "6f1c2c1e-0000-4000-8000-000000000009";
+
+  /** Entregas la pide para la entrega con problema, que acá no se abre. */
+  @MockitoBean private EntidadNecesidadesPuerto necesidades;
 
   @TestConfiguration
   static class UnaEnLaPuerta {
@@ -107,7 +112,12 @@ class EntidadInicioEnPuertaControllerTest {
   @Autowired private MockMvc mvc;
 
   @ParameterizedTest
-  @ValueSource(strings = {"/entidad-inicio", "/entidad-recibidas", "/entidad-seguimiento"})
+  @ValueSource(
+      strings = {
+        "/entidad-inicio",
+        "/entidad-seguimiento?estado=en-tu-puerta",
+        "/entidad-seguimiento"
+      })
   void laQueLlegoEsperaLaConfirmacionConElBotonAlActaDeEsaDonacion(String pantalla)
       throws Exception {
     mvc.perform(get(pantalla).param("entidad", ENTIDAD))
@@ -124,7 +134,10 @@ class EntidadInicioEnPuertaControllerTest {
     mvc.perform(get("/entidad-inicio").param("entidad", ENTIDAD))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Llegó el 8 de noviembre, 18:20.")))
-        .andExpect(content().string(containsString("1 entrega espera tu confirmación.")))
+        .andExpect(content().string(containsString("Llegó una entrega")))
+        .andExpect(content().string(containsString("data-papel=\"protagonista\"")))
+        .andExpect(content().string(containsString("Espera tu confirmación")))
+        .andExpect(content().string(not(containsString("No tenés entregas para confirmar"))))
         .andExpect(content().string(not(containsString("Para tu necesidad de"))));
   }
 }

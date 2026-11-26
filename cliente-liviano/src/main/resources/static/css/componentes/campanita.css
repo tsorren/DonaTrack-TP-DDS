@@ -1,7 +1,7 @@
 /* Bloque campanita (R11-29, R11-30; ficha docs/interfaz/flujos/r11-p2-campanita.md): la campana de
    la cabecera privada de los tres roles, un <details class="campanita"> como el menú de la cuenta.
-   El <summary> es la campana de siempre (`.armazon-avisos`, privado.css, con el número en su
-   disco); al abrirse, el desplegable (`.campanita-panel`): la cabecera (`.campanita-cabeza`, con
+   El <summary> es la campana (`.armazon-avisos`, con el número en su pastilla,
+   `.armazon-avisos-cuenta`); al abrirse, el desplegable (`.campanita-panel`): la cabecera (`.campanita-cabeza`, con
    `.campanita-titulo` y la región que se anuncia, `.campanita-estado`), la carga
    (`.campanita-cargando`, solo mientras HTMX la pide), la cifra (`.campanita-cifra`), hasta 5 filas
    (`.campanita-filas`; cada una, un botón de formulario `.campanita-fila` con el punto, el título y
@@ -18,8 +18,58 @@
   display: none;
 }
 
-.campanita[open] > summary {
-  color: var(--color-acento);
+/* La campana (C1-08; guía «Huerta y galpón», 10-componentes.css:340-341): un botón de ícono de
+   48 px, sin borde ni fondo, con el fondo salvia bajo el cursor y mientras está abierta. El número
+   de sin leer va en una pastilla de tinta arriba a la derecha, con un filete de papel que la separa
+   del ícono. Hasta C1 estas reglas vivían en privado.css (usuario, 2026-11-08). */
+.armazon-avisos {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--medida-toque-minimo);
+  min-height: var(--medida-toque-minimo);
+  border-radius: var(--radio-boton);
+  color: var(--color-texto);
+  text-decoration: none;
+}
+
+.armazon-avisos:hover,
+.campanita[open] > .armazon-avisos {
+  background: var(--color-salvia);
+}
+
+.armazon-avisos svg {
+  flex: none;
+  width: var(--espacio-4);
+  height: var(--espacio-4);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.armazon-avisos-texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.armazon-avisos-cuenta {
+  position: absolute;
+  top: var(--espacio-0);
+  right: 0.125rem;
+  min-width: 1.25rem;
+  padding: 0 var(--espacio-0);
+  border: 1.5px solid var(--color-fondo-pagina);
+  border-radius: var(--radio-pastilla);
+  background: var(--color-tinta);
+  color: var(--color-fondo-pagina);
+  font: 700 0.75rem / 1.4 var(--fuente-texto);
+  text-align: center;
 }
 
 .campanita-panel {
@@ -31,9 +81,10 @@
   display: grid;
   gap: var(--espacio-1);
   padding: var(--espacio-2);
-  border-radius: var(--radio-lamina);
+  border: var(--borde-tinta);
+  border-radius: var(--radio-boton);
   background: var(--color-superficie);
-  box-shadow: var(--sombra-papel), 0 0 0 1px var(--color-filete);
+  box-shadow: var(--sombra-papel);
   color: var(--color-tinta);
   font-weight: 400;
 }
@@ -64,7 +115,7 @@
 }
 
 .campanita-cifra {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
 }
 
@@ -116,12 +167,12 @@
   box-sizing: border-box;
   width: 0.5rem;
   height: 0.5rem;
-  border: 0.25rem solid var(--color-acento);
+  border: 0.25rem solid var(--color-accion-primaria);
   border-radius: 50%;
 }
 
 .campanita-fila:hover {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 .campanita-fila strong,
@@ -130,7 +181,7 @@
 }
 
 .campanita-cuando {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
 }
 

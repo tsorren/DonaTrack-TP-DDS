@@ -1,13 +1,20 @@
 <!DOCTYPE html>
-<!--/* Raíces, sitio A: la navegación pública (ficha docs/interfaz/flujos/raices-publico-navegable.md,
-       sección 2), la misma en todas las públicas, también en la portada. En el celular, las secciones
-       van en una barra inferior oscura con un ícono cada una (Inicio, Entregas, Mapa y Organizaciones)
-       e Ingresar y Crear cuenta quedan arriba, en la cabecera (usuario, 2026-11-12); desde la tableta,
-       todo en la cabecera, junto a la marca, sin íconos ni Inicio (publico-navegacion.css). En la
-       barra, "Entregas" y "Crear cuenta": lo demás del nombre se oculta a la vista y lo leen los
-       lectores. actual: la pantalla de la sección actual (las de registro marcan "Crear una
-       cuenta"; la portada, "publico-portada"); '' en Contacto y Términos. No es una pantalla: su
-       nombre no empieza con un rol.
+<!--/* La navegación pública, la misma en todas las públicas, también en la portada: el menú de la
+       guía «Huerta y galpón» (docs/interfaz/guia/partes/50-pantallas.html, #portada; backlog de la
+       guía al código, sección 5.1): Inicio, Entregas, Organizaciones y Cómo funciona (la página
+       Nosotros, /publico-nosotros), sin el Mapa, que queda dentro de Entregas (DA-01, DA-05 y DA-17).
+       Hasta 56 em, las secciones van en el menú del celular, abajo, en la tierra, con un ícono cada
+       una, e Ingresar y Crear cuenta quedan arriba, en la barra superior (C1-08); desde ahí, todo en
+       la barra, junto a la marca, sin íconos, e Inicio desde 68,75 em, donde la fila entra en un
+       renglón (componentes/navegacion.css y publico-navegacion.css).
+       Cómo funciona lleva el brote de la guía (i-brote, de iconos :: comunes, que ninguna pública
+       trae entera). En la barra, "Crear cuenta": lo demás del nombre se oculta a la vista y lo leen
+       los lectores.
+       actual: el nombre de la hoja de la pantalla. Marcan su sección publico-portada (Inicio),
+       publico-donaciones y publico-mapa (Entregas), publico-entidades (Organizaciones),
+       publico-conocer (Cómo funciona: Nosotros, Para donantes y Para organizaciones),
+       publico-ingresar y publico-registro (las de registro marcan "Crear una cuenta"); '' en
+       Contacto y Términos. No es una pantalla: su nombre no empieza con un rol.
        Con la sesión iniciada (salidaDeLaCuenta en el modelo, de Pantallas): "Ir a mi inicio" en
        lugar de Ingresar y Crear una cuenta, y el fragmento cuenta, la foto con el menú de la cuenta,
        después de la navegación (docs/interfaz/flujos/r11-p1-portada.md).
@@ -18,20 +25,20 @@
 <body>
 <nav th:fragment="navegacion(actual)" class="navegacion" data-zona="publica" aria-label="Secciones">
   <svg th:replace="~{iconos :: navegacion}"></svg>
+  <svg class="iconos" aria-hidden="true" focusable="false"><symbol th:replace="~{iconos :: #i-brote}"></symbol></svg>
   <ul class="navegacion-barra" role="list">
     <li class="navegacion-inicio"><a href="/publico-portada" th:href="@{/publico-portada}"
            th:aria-current="${actual == 'publico-portada'} ? 'page' : null"><svg class="navegacion-icono"
           aria-hidden="true" focusable="false"><use href="#nav-inicio"></use></svg>Inicio</a></li>
     <li><a href="/publico-donaciones" th:href="@{/publico-donaciones}"
-           th:aria-current="${actual == 'publico-donaciones'} ? 'page' : null"><svg class="navegacion-icono"
-          aria-hidden="true" focusable="false"><use href="#nav-entregas"></use></svg><span>Entregas<span
-          class="navegacion-largo"> confirmadas</span></span></a></li>
-    <li><a href="/publico-mapa" th:href="@{/publico-mapa}"
-           th:aria-current="${actual == 'publico-mapa'} ? 'page' : null"><svg class="navegacion-icono"
-          aria-hidden="true" focusable="false"><use href="#nav-mapa"></use></svg>Mapa</a></li>
+           th:aria-current="${actual == 'publico-donaciones' or actual == 'publico-mapa'} ? 'page' : null"><svg
+          class="navegacion-icono" aria-hidden="true" focusable="false"><use href="#nav-entregas"></use></svg>Entregas</a></li>
     <li><a href="/publico-entidades" th:href="@{/publico-entidades}"
            th:aria-current="${actual == 'publico-entidades'} ? 'page' : null"><svg class="navegacion-icono"
           aria-hidden="true" focusable="false"><use href="#nav-entidades"></use></svg>Organizaciones</a></li>
+    <li><a href="/publico-nosotros" th:href="@{/publico-nosotros}"
+           th:aria-current="${actual == 'publico-conocer'} ? 'page' : null"><svg class="navegacion-icono"
+          aria-hidden="true" focusable="false"><use href="#i-brote"></use></svg>Cómo funciona</a></li>
   </ul>
   <ul class="navegacion-acceso" role="list">
     <th:block th:if="${salidaDeLaCuenta == null}">

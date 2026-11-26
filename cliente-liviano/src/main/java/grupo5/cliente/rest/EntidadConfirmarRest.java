@@ -1,31 +1,38 @@
 package grupo5.cliente.rest;
 
 import static grupo5.cliente.rest.Comun.ARGENTINA;
+import static grupo5.cliente.rest.Comun.ASIGNADA;
 import static grupo5.cliente.rest.Comun.DIA;
 import static grupo5.cliente.rest.Comun.DIA_Y_ANIO;
 import static grupo5.cliente.rest.Comun.DIA_Y_HORA;
+import static grupo5.cliente.rest.Comun.ES_AR;
 import static grupo5.cliente.rest.Comun.HORA;
+import static grupo5.cliente.rest.Comun.LISTA;
 import static grupo5.cliente.rest.Comun.PUERTA;
 import static grupo5.cliente.rest.Comun.cantidad;
 import static grupo5.cliente.rest.Comun.categoria;
-import static grupo5.cliente.rest.Comun.desde;
 import static grupo5.cliente.rest.Comun.icono;
+import static grupo5.cliente.rest.Comun.normalizado;
 
 import grupo5.cliente.puertos.EntidadConfirmarPuerto;
 import grupo5.cliente.rest.DonacionesApi.Categoria;
 import grupo5.cliente.rest.LogisticaApi.Seguimiento;
 import grupo5.cliente.vistas.EntidadEntregaVista;
+import java.text.NumberFormat;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
@@ -50,6 +57,12 @@ import org.springframework.web.multipart.MultipartFile;
  * página de 2 de las que están en la puerta o en traslado ({@code orden=ATENCION}, la puerta
  * primero); de Logística, solo las entregas de esas donaciones. Confirmar busca la entrega por la
  * donación ({@code idDonacion}).
+ *
+ * <p>Recepción confirmada (ORG-12) arma la entrega ya confirmada con lo que Logística guarda de
+ * ella ({@code GET /api/entregas/{id}}): el remito, la primera foto (solo si es una dirección web),
+ * cuándo pasó a ENTREGADA y el problema que se contó. Quién la recibió no se guarda (HG-03): la
+ * pantalla dice la organización. Cuándo se registró, se asignó y se preparó sale del historial de
+ * la donación, que ya llega con ella.
  */
 // @Primary solo para el análisis estático (S9352): la propiedad ya deja un único adaptador activo.
 @Component
@@ -60,6 +73,19 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
   private static final String EN_TRASLADO = "EN_TRASLADO";
   private static final String EN_PUERTA = "EN_PUERTA";
   private static final List<String> SE_CONFIRMAN = List.of(EN_PUERTA, EN_TRASLADO);
+  private static final String ENTREGADA = "ENTREGADA";
+
+  /** Los motivos del reporte de Logística, como los nombra la pantalla. */
+  private static final List<String> MOTIVOS = List.of("incompleta", "danada", "otro");
+
+  /**
+   * La confirmada, en Donaciones: ENTREGADA o, mientras Donaciones no se enteró del cambio de
+   * Logística, todavía en la puerta o en traslado.
+   */
+  private static final List<String> CONFIRMADA = List.of(ENTREGADA, EN_PUERTA, EN_TRASLADO);
+
+  private static final DateTimeFormatter CUANDO =
+      DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy, H:mm", ES_AR);
 
   private final LogisticaApi logistica;
   private final DonacionesApi donaciones;
@@ -83,15 +109,12 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
       return List.of();
     }
     Map<UUID, DonacionesApi.Donacion> asignadas = new LinkedHashMap<>();
-    porConfirmar(entidad, clave, 1).forEach(d -> asignadas.put(d.id(), d));
+    asignadas(entidad, clave, SE_CONFIRMAN, 1).forEach(d -> asignadas.put(d.id(), d));
     if (asignadas.isEmpty()) {
       // La pedida no espera la confirmación o no es de la entidad: el acta dice que no la encontró
       return List.of();
     }
-    porConfirmar(entidad, null, 2).stream()
-        .filter(d -> !clave.equals(d.id()))
-        .findFirst()
-        .ifPresent(d -> asignadas.put(d.id(), d));
+    otraQueEspera(entidad, clave).ifPresent(d -> asignadas.put(d.id(), d));
     MultiValueMap<String, String> filtros =
         EntidadSeguimientoRest.deLasDonaciones(
             asignadas.keySet().stream().map(UUID::toString).toList());
@@ -100,8 +123,117 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
         .filter(s -> SE_CONFIRMAN.contains(s.estadoEntrega()))
         .filter(s -> s.idEntrega() != null && asignadas.containsKey(s.idDonacion()))
         .sorted(Comparator.comparingInt(s -> SE_CONFIRMAN.indexOf(s.estadoEntrega())))
-        .map(s -> entrega(s, asignadas.get(s.idDonacion())))
+        .map(s -> entrega(s, asignadas.get(s.idDonacion()), Asentado.NADA))
         .toList();
+  }
+
+  /**
+   * El problema sale de lo que Logística asentó, no de {@code motivo}: con la dirección no se
+   * inventa.
+   */
+  @Override
+  public List<EntidadEntregaVista> confirmada(UUID entidad, String pedida, String motivo) {
+    UUID clave = comoId(pedida);
+    if (clave == null) {
+      return List.of();
+    }
+    DonacionesApi.Donacion donacion =
+        asignadas(entidad, clave, CONFIRMADA, 1).stream().findFirst().orElse(null);
+    if (donacion == null) {
+      // No es de la entidad o no llegó: la pantalla dice que no la encontró
+      return List.of();
+    }
+    DonacionesApi.Donacion otra = otraQueEspera(entidad, clave).orElse(null);
+    List<String> pedidas = new ArrayList<>(List.of(clave.toString()));
+    if (otra != null) {
+      pedidas.add(otra.id().toString());
+    }
+    List<Seguimiento> seguimientos =
+        logistica.seguimientoDeEntidad(entidad, EntidadSeguimientoRest.deLasDonaciones(pedidas));
+    Seguimiento entregada =
+        seguimientos.stream()
+            .filter(s -> s.idEntrega() != null && clave.equals(s.idDonacion()))
+            .filter(s -> ENTREGADA.equals(s.estadoEntrega()))
+            .findFirst()
+            .orElse(null);
+    if (entregada == null) {
+      // Todavía no está confirmada: no hay nada asentado para mostrar
+      return List.of();
+    }
+    List<EntidadEntregaVista> vistas = new ArrayList<>();
+    vistas.add(
+        entrega(entregada, donacion, asentado(logistica.entrega(entregada.idEntrega()), donacion)));
+    if (otra != null) {
+      seguimientos.stream()
+          .filter(s -> s.idEntrega() != null && otra.id().equals(s.idDonacion()))
+          .filter(s -> SE_CONFIRMAN.contains(s.estadoEntrega()))
+          .findFirst()
+          .ifPresent(s -> vistas.add(entrega(s, otra, Asentado.NADA)));
+    }
+    return vistas;
+  }
+
+  /** La primera que espera en el orden de atención y no es {@code clave}, para ofrecerla. */
+  private Optional<DonacionesApi.Donacion> otraQueEspera(UUID entidad, UUID clave) {
+    return asignadas(entidad, null, SE_CONFIRMAN, 2).stream()
+        .filter(d -> !clave.equals(d.id()))
+        .findFirst();
+  }
+
+  /**
+   * Lo que quedó asentado en Logística: el remito, la primera foto si es una dirección web (va a un
+   * src), cuándo pasó a ENTREGADA y, del problema, cuánto llegó y el detalle.
+   */
+  private static Asentado asentado(LogisticaApi.Entrega e, DonacionesApi.Donacion d) {
+    if (e == null) {
+      return Asentado.NADA;
+    }
+    List<String> fotos = e.fotosRecepcion() == null ? List.of() : e.fotosRecepcion();
+    String foto = fotos.isEmpty() ? e.fotoRecepcionUrl() : fotos.getFirst();
+    boolean web = foto != null && (foto.startsWith("https://") || foto.startsWith("http://"));
+    Instant confirmo =
+        e.historialEstado() == null
+            ? null
+            : e.historialEstado().stream()
+                .filter(c -> ENTREGADA.equals(c.estadoNuevo()) && c.timestamp() != null)
+                .map(LogisticaApi.CambioDeEstado::timestamp)
+                .max(Comparator.naturalOrder())
+                .orElse(null);
+    LogisticaApi.Reporte reporte = e.reporte();
+    String llegoMenos =
+        reporte == null || reporte.cantidadRecibida() == null
+            ? null
+            : NumberFormat.getNumberInstance(ES_AR).format(reporte.cantidadRecibida())
+                + " de "
+                + cantidad(d.cantidad(), categoria(d));
+    String detalle =
+        reporte == null || reporte.detalle() == null || reporte.detalle().isBlank()
+            ? null
+            : reporte.detalle().strip();
+    String remito =
+        e.numeroRemito() == null || e.numeroRemito().isBlank() ? null : e.numeroRemito().strip();
+    String problema =
+        reporte == null || reporte.motivo() == null
+            ? null
+            : reporte.motivo().strip().toLowerCase(Locale.ROOT);
+    return new Asentado(
+        remito,
+        web ? foto : null,
+        confirmo == null ? null : confirmo.atZone(ARGENTINA).format(CUANDO),
+        llegoMenos,
+        detalle,
+        problema != null && MOTIVOS.contains(problema) ? problema : null);
+  }
+
+  /** Lo asentado de una entrega confirmada; en una que espera, nada. */
+  private record Asentado(
+      String remito,
+      String foto,
+      String confirmo,
+      String llegoMenos,
+      String detalle,
+      String problema) {
+    static final Asentado NADA = new Asentado(null, null, null, null, null, null);
   }
 
   private static UUID comoId(String clave) {
@@ -116,17 +248,19 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
   }
 
   /**
-   * Las asignadas que esperan la confirmación, de a una página chica de Donaciones (R11-43): con
-   * {@code id}, solo esa (si es de la entidad y espera); sin {@code id}, las primeras {@code
-   * cuantas} en el orden de atención, la puerta primero. Ningún tope depende de cuántas haya.
+   * Las asignadas de la entidad en {@code estados}, de a una página chica de Donaciones (R11-43):
+   * con {@code id}, solo esa (si es de la entidad y está en uno de esos estados); sin {@code id},
+   * las primeras {@code cuantas} en el orden de atención, la puerta primero. Ningún tope depende de
+   * cuántas haya.
    */
-  private List<DonacionesApi.Donacion> porConfirmar(UUID entidad, UUID id, int cuantas) {
+  private List<DonacionesApi.Donacion> asignadas(
+      UUID entidad, UUID id, List<String> estados, int cuantas) {
     MultiValueMap<String, String> filtros = new LinkedMultiValueMap<>();
     filtros.add("entidadId", entidad.toString());
     if (id != null) {
       filtros.add("id", id.toString());
     }
-    SE_CONFIRMAN.forEach(e -> filtros.add("estado", e));
+    estados.forEach(e -> filtros.add("estado", e));
     filtros.add("orden", "ATENCION");
     filtros.add("size", String.valueOf(cuantas));
     List<DonacionesApi.Donacion> pagina = donaciones.pagina(filtros).getBody();
@@ -134,7 +268,7 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
         .stream().filter(d -> d.id() != null).toList();
   }
 
-  private EntidadEntregaVista entrega(Seguimiento s, DonacionesApi.Donacion d) {
+  private EntidadEntregaVista entrega(Seguimiento s, DonacionesApi.Donacion d, Asentado a) {
     Categoria categoria = categoria(d);
     // La unidad sola, la de Comun: "2 kg" sin el número; sin categoría, vacía.
     String unidad = cantidad(2, categoria).substring(1).strip();
@@ -142,8 +276,10 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
     String descripcion = Objects.requireNonNullElse(d.descripcion(), "Donación");
     String salio =
         s.horaSalida() == null ? null : "Salió del depósito el " + dia(s.horaSalida()) + ".";
-    // La hora de llegada es la del cambio a EN_PUERTA en el historial de la donación (hora local)
-    LocalDateTime llego = EN_PUERTA.equals(s.estadoEntrega()) ? desde(d, PUERTA) : null;
+    // La hora de llegada es la del cambio a EN_PUERTA en el historial de la donación (hora local);
+    // una entrega en traslado todavía no llegó, y una confirmada desde el traslado no pasó por la
+    // puerta: sin ese cambio no hay hora de llegada (no cae en la fecha de registro)
+    LocalDateTime llego = EN_TRASLADO.equals(s.estadoEntrega()) ? null : pasoEn(d, PUERTA);
     String frase =
         llego == null
             ? salio
@@ -158,7 +294,7 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
         llego == null ? null : llego.format(DIA_Y_HORA),
         frase,
         frase,
-        null,
+        a.remito(),
         categoria == null ? null : icono(categoria.nombre()),
         categoria == null ? null : categoria.nombre(),
         pedido(d.necesidadId()),
@@ -169,13 +305,37 @@ class EntidadConfirmarRest implements EntidadConfirmarPuerto {
             : quien.nombreVisible().strip(),
         null,
         quien != null && "JURIDICA".equals(quien.tipo()) ? "empresa" : null,
-        null,
-        null,
+        a.foto(),
+        a.confirmo(),
         d.cantidad(),
         unidad.isEmpty() ? "unidades" : unidad,
         "kg".equals(unidad) || "l".equals(unidad),
-        null,
-        null);
+        a.llegoMenos(),
+        a.detalle(),
+        d.fechaRegistro() == null ? null : d.fechaRegistro().format(DIA_Y_HORA),
+        paso(d, ASIGNADA),
+        paso(d, LISTA),
+        a.problema());
+  }
+
+  /**
+   * Cuándo la donación pasó a {@code estado} por última vez (hora local), del historial; si nunca
+   * pasó, null: a diferencia de {@code Comun.desde}, no cae en la fecha de registro.
+   */
+  private static String paso(DonacionesApi.Donacion d, String estado) {
+    LocalDateTime t = pasoEn(d, estado);
+    return t == null ? null : t.format(DIA_Y_HORA);
+  }
+
+  /** Cuándo la donación pasó a {@code estado} por última vez, del historial; si nunca, null. */
+  private static LocalDateTime pasoEn(DonacionesApi.Donacion d, String estado) {
+    return d.historial() == null
+        ? null
+        : d.historial().stream()
+            .filter(c -> c.timestamp() != null && normalizado(c.estadoNuevo()).equals(estado))
+            .map(DonacionesApi.Cambio::timestamp)
+            .max(Comparator.naturalOrder())
+            .orElse(null);
   }
 
   /**

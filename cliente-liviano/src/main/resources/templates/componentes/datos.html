@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<!--/* Componente datos (guía al código C1-26): la lista de datos, lo que quedó asentado. Hoja:
+       static/css/componentes/datos.css. Catálogo: docs/interfaz/componentes.md.
+       Fragmento:
+       - datos(filas): filas es una lista de mapas o records con rotulo y valor, ya formateados
+         (por ejemplo, { {rotulo: 'Remito', valor: '0001-00004521'} }). Un dato sin valor no se
+         dibuja. Sin filas no se dibuja nada. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<dl th:fragment="datos(filas)" th:unless="${#lists.isEmpty(filas)}" class="datos">
+  <div th:each="f : ${filas}" th:if="${f.valor != null and f.valor != ''}">
+    <dt th:text="${f.rotulo}">Remito</dt>
+    <dd th:text="${f.valor}">0001-00004521</dd>
+  </div>
+</dl>
+</body>
+</html>

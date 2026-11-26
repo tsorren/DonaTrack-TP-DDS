@@ -14,6 +14,8 @@
      depósito y cada destino llevan su marcador (data-tipo="deposito" o "destino", con el ícono de
      <template data-mapa-icono="deposito|destino"> del contenedor) y cada entrega, su recorrido: del
      depósito a donde va el camión, lleno; de ahí al destino, punteado (lo que falta).
+   - Márgenes del encuadre (opcional): data-mapa-margenes="arriba derecha abajo izquierda" en px;
+     sin él, 64 px de cada lado.
    - Puntos con su fila aparte (publico-mapa, R11-19): el punto puede ser un elemento oculto
      ([data-mapa-punto]) con data-ficha, el id de su fila en la lista paginada. Pasar, enfocar o abrir
      la fila destaca su marcador; tocar el marcador abre su fila si está en la página que se ve, y el
@@ -135,6 +137,15 @@
     globoDeposito: contenedor.querySelector("template[data-mapa-globo-deposito]"),
   };
 
+  // data-mapa-margenes="arriba derecha abajo izquierda" (px, como en CSS): el encuadre deja esos
+  // márgenes para que ningún marcador caiga bajo los botones o la atribución. Sin él, 64 px.
+  function margenes() {
+    const m = (contenedor.dataset.mapaMargenes || "").trim().split(/\s+/).map(Number);
+    return m.length === 4 && m.every(Number.isFinite)
+      ? { top: m[0], right: m[1], bottom: m[2], left: m[3] }
+      : 64;
+  }
+
   function armar(maplibregl) {
     const deposito = lngLatDe(contenedor, "deposito");
     const puntos = fichas.map(function (ficha) {
@@ -163,7 +174,7 @@
       container: contenedor,
       style: ESTILO,
       bounds: limites,
-      fitBoundsOptions: { padding: 64, maxZoom: 14 },
+      fitBoundsOptions: { padding: margenes(), maxZoom: 14 },
       attributionControl: false,
       cooperativeGestures: true,
       locale: {

@@ -1,6 +1,6 @@
 # Orquestación de una oleada de interfaz
 
-> **Versión 1.0.0 · 2026-11-15**
+> **Versión 1.0.1 · 2026-11-22**
 > Guía de la sesión que corre el workflow `oleada-ui` (`.claude/workflows/oleada-ui.js`). Sucede a
 > la [orquestación del backlog R11](orquestacion-backlog-r11.md), que queda como historia. Decisión:
 > [ADR del harness de interfaz](../../adr/cliente-liviano/20261115-harness-de-interfaz-con-sistema-cerrado-y-tres-skills-cortas.md),
@@ -77,3 +77,4 @@ queda local.
 | Versión | Fecha | Qué cambió | Formato del manifiesto |
 |---|---|---|---|
 | 1.0.0 | 2026-11-15 | Primera versión: sucesor genérico de `backlog-r11`. | `oleada-ui/1` |
+| 1.0.1 | 2026-11-22 | Corrección del lazo de revisión de lotes: compara lotes por `id`, no por identidad de objeto, porque `parallel()` puede devolver copias. Antes, un lote con PASS se volvía a revisar hasta la ronda 3, los lotes con cambios se revisaban dos veces por ronda y sus decisiones terminaban «no cumplida» con el PR abierto (segunda corrida de C0). Prueba 19.23 de `scripts/tests/run-tests.js`. | `oleada-ui/1` |

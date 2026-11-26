@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240">
+<!-- Foto de ejemplo: cinco paquetes de arroz parados en un cajón. Dibujo de la guía (docs/interfaz/guia/partes/20-simbolos.html), con los colores de tokens.css escritos adentro, como los demás de esta carpeta. Se usa entero (img) o por símbolo (use href="…/escena-cajon.svg#escena-cajon"). -->
+<symbol id="escena-cajon" viewBox="0 0 320 240" preserveAspectRatio="xMidYMid slice">
+      <rect fill="#fbf2d3" width="320" height="240"/><rect fill="#ebe3c4" y="186" width="320" height="54"/><rect fill="#3b3527" y="178" width="320" height="10"/>
+      <g stroke="#2a2a22" stroke-width="3"><rect fill="#fffaea" x="58" y="58" width="38" height="110" rx="5"/><rect fill="#fffaea" x="99" y="50" width="38" height="118" rx="5"/><rect fill="#fffaea" x="140" y="58" width="38" height="110" rx="5"/><rect fill="#fffaea" x="181" y="50" width="38" height="118" rx="5"/><rect fill="#fffaea" x="222" y="58" width="38" height="110" rx="5"/></g>
+      <g fill="#2a7035"><rect x="63" y="76" width="28" height="22"/><rect x="104" y="68" width="28" height="22"/><rect x="145" y="76" width="28" height="22"/><rect x="186" y="68" width="28" height="22"/><rect x="227" y="76" width="28" height="22"/></g>
+      <rect fill="#fde3a6" stroke="#2a2a22" x="40" y="118" width="240" height="64" stroke-width="3"/><path fill="none" stroke="#2a2a22" d="M40 150h240" stroke-width="2.5"/><rect fill="#23602c" x="72" y="119.5" width="8" height="61"/><rect fill="#23602c" x="240" y="119.5" width="8" height="61"/>
+    </symbol>
+<use href="#escena-cajon"/>
+</svg>

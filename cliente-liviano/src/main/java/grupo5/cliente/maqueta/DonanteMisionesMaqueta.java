@@ -14,9 +14,9 @@ import org.springframework.stereotype.Component;
 /**
  * Las misiones de Martina, la persona de ejemplo (ficha raices-misiones.md): las seis de {@code
  * MisionFactory} (incentivos-service), con dos completas, y, con {@code ?escenario=vacio}, las de
- * quien recién empieza. Los datos son los que escribían la plantilla y su variante (la huerta);
- * "hoy" es el 15 de octubre de 2026. Que la cuenta sea una persona lo decide {@link
- * CuentaDeEjemplo}.
+ * quien recién empieza. Los datos son los que escribía la plantilla de la huerta; la cuenta de la
+ * que está en curso va sin unidad, como la da Incentivos; "hoy" es el 15 de octubre de 2026. Que la
+ * cuenta sea una persona lo decide {@link CuentaDeEjemplo}.
  */
 @Component
 @ConditionalOnProperty(
@@ -138,7 +138,7 @@ class DonanteMisionesMaqueta implements DonanteMisionesPuerto {
                   null,
                   12,
                   50,
-                  "12 de 50 bienes",
+                  "12 de 50",
                   "Tu donación más grande desde el 2 de septiembre.",
                   null,
                   null),
@@ -192,7 +192,7 @@ class DonanteMisionesMaqueta implements DonanteMisionesPuerto {
                   null,
                   0,
                   3,
-                  "0 de 3 meses",
+                  "0 de 3",
                   null,
                   null,
                   null),

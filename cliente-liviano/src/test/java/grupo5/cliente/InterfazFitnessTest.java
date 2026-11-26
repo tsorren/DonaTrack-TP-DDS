@@ -58,36 +58,46 @@ class InterfazFitnessTest {
       List.of(
           new Par("--color-texto", "--color-fondo-pagina", 4.5),
           new Par("--color-texto-suave", "--color-fondo-pagina", 4.5),
-          new Par("--color-titulo", "--color-fondo-pagina", 4.5),
+          new Par("--color-accion-primaria", "--color-fondo-pagina", 4.5),
           new Par("--color-enlace", "--color-fondo-pagina", 4.5),
-          new Par("--color-texto", "--color-fondo", 4.5),
           new Par("--color-texto", "--color-superficie", 4.5),
-          new Par("--color-texto-suave", "--color-fondo", 4.5),
           new Par("--color-texto-suave", "--color-superficie", 4.5),
-          new Par("--color-titulo", "--color-fondo", 4.5),
-          new Par("--color-enlace", "--color-fondo", 4.5),
           new Par("--color-enlace", "--color-superficie", 4.5),
           new Par("--color-texto-sobre-accion", "--color-accion-primaria", 4.5),
           new Par("--color-texto-sobre-accion", "--color-accion-primaria-activa", 4.5),
           new Par("--color-texto-sobre-secundaria", "--color-accion-secundaria", 4.5),
           new Par("--color-texto-sobre-secundaria", "--color-accion-secundaria-activa", 4.5),
-          new Par("--color-destacado-texto", "--color-destacado-fondo", 4.5),
-          new Par("--color-destacado-texto-suave", "--color-destacado-fondo", 4.5),
-          new Par("--color-destacado-texto-suave", "--color-destacado-fondo-alto", 4.5),
-          new Par("--color-marca-brillante", "--color-destacado-fondo", 4.5),
-          new Par("--color-texto-sobre-accion", "--color-marca-alterna", 4.5),
-          new Par("--color-texto-sobre-accion", "--color-marca", 4.5),
-          new Par("--color-marca-texto", "--color-superficie", 4.5),
-          new Par("--color-marca-texto", "--color-fondo", 4.5),
-          new Par("--color-texto-sobre-error", "--color-error-texto", 4.5),
+          new Par("--color-raiz", "--color-suelo", 4.5),
+          new Par("--color-raiz", "--color-suelo-medio", 4.5),
+          new Par("--color-accion-primaria", "--color-superficie", 4.5),
           new Par("--color-exito-texto", "--color-exito-fondo", 4.5),
           new Par("--color-info-texto", "--color-info-fondo", 4.5),
           new Par("--color-advertencia-texto", "--color-advertencia-fondo", 4.5),
           new Par("--color-error-texto", "--color-error-fondo", 4.5),
-          new Par("--color-error-texto", "--color-fondo", 4.5),
-          new Par("--color-borde-control", "--color-fondo", 3),
-          new Par("--color-foco", "--color-fondo", 3),
-          new Par("--color-foco", "--color-superficie", 3));
+          new Par("--color-foco", "--color-superficie", 3),
+          // Los pares de la guía «Huerta y galpón» (docs/interfaz/guia/partes/90-script.html,
+          // C0-04) que no estaban arriba. Los dos sin piso de la guía (deshabilitado y el borde del
+          // sello «En camino») no entran: un mínimo de 0 no comprueba nada.
+          new Par("--color-texto-suave", "--color-pendiente-fondo", 4.5),
+          new Par("--color-texto-suave", "--color-fila-elegida", 4.5),
+          new Par("--color-texto", "--color-salvia", 4.5),
+          new Par("--color-pendiente-texto", "--color-pendiente-fondo", 4.5),
+          new Par("--color-en-camino-texto", "--color-en-camino-fondo", 4.5),
+          new Par("--color-entregada-texto", "--color-entregada-fondo", 4.5),
+          new Par("--color-problema-texto", "--color-problema-fondo", 4.5),
+          new Par("--color-espera-texto", "--color-espera-fondo", 4.5),
+          new Par("--color-error-texto", "--color-fondo-pagina", 4.5),
+          new Par("--color-texto-suelo", "--color-suelo", 4.5),
+          new Par("--color-texto-suelo", "--color-suelo-medio", 4.5),
+          new Par("--color-borde-control", "--color-campo", 3),
+          new Par("--color-borde-control", "--color-fondo-pagina", 3),
+          new Par("--color-error-borde", "--color-campo", 3),
+          new Par("--color-foco", "--color-fondo-pagina", 3),
+          new Par("--color-foco-sobre-suelo", "--color-suelo", 3),
+          new Par("--color-accion-primaria", "--color-campo", 3),
+          new Par("--color-accion-primaria", "--color-fondo-pagina", 3),
+          new Par("--color-tinta", "--color-raiz", 3),
+          new Par("--color-problema-texto", "--color-fondo-pagina", 3));
 
   private static final Pattern COLOR_LITERAL =
       Pattern.compile(
@@ -228,7 +238,7 @@ class InterfazFitnessTest {
   /**
    * Tope de clases que aparecen una sola vez en las hojas heredadas. Solo baja (backlog, regla 3).
    */
-  private static final int TOPE_DE_CLASES_DE_UN_SOLO_USO = 159;
+  private static final int TOPE_DE_CLASES_DE_UN_SOLO_USO = 37;
 
   private static final Path CATALOGO = Path.of("../docs/interfaz/componentes.md");
   private static final Path ESTILOS = PLANTILLAS.resolve("estilos.html");
@@ -252,28 +262,10 @@ class InterfazFitnessTest {
       Set.of(
           "admin-inicio.css",
           "donante-comun.css",
-          "donante-donaciones-detalle.css",
-          "donante-donaciones.css",
-          "donante-entidades.css",
-          "donante-inicio.css",
-          "donante-notificaciones.css",
-          "donante-perfil.css",
-          "donante-seguimiento.css",
           "entidad-comun.css",
-          "entidad-inicio.css",
-          "entidad-necesidades.css",
-          "entidad-notificaciones.css",
-          "entidad-recibidas.css",
-          "entidad-seguimiento-confirmar.css",
           "formularios.css",
           "privado.css",
-          "publico-donaciones.css",
-          "publico-entidades.css",
-          "publico-ingresar.css",
-          "publico-listas.css",
           "publico-mapa.css",
-          "publico-navegacion.css",
-          "publico-paginas.css",
           "publico-registro.css",
           "sellos.css");
 
@@ -469,7 +461,7 @@ class InterfazFitnessTest {
       List.of(
           "donante-donaciones.html",
           "persona/donante-donaciones.html",
-          "entidad-recibidas.html",
+          "entidad-seguimiento.html",
           "donante-entidades.html",
           "persona/donante-entidades.html",
           "admin-donaciones.html",
@@ -542,7 +534,7 @@ class InterfazFitnessTest {
               + "\\(\\s*\"([\\w-]+)\"");
 
   /** Tope de declaraciones de medida con valor literal en las hojas: solo baja. */
-  private static final int TOPE_DE_MEDIDAS_LITERALES = 1192;
+  private static final int TOPE_DE_MEDIDAS_LITERALES = 532;
 
   private static final Pattern MEDIDA_LITERAL =
       Pattern.compile(

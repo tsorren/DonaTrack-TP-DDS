@@ -105,7 +105,7 @@ class DonacionesMaqueta implements DonacionesPuerto {
                   ESCUELA,
                   "8 de octubre de 2026",
                   CON_PROBLEMA,
-                  "No pudo llegar; sale de nuevo el 17 de octubre"),
+                  "No pudo llegar. Todavía sin fecha de nueva salida"),
               new Donacion(
                   "zapatillas",
                   3,
@@ -224,20 +224,17 @@ class DonacionesMaqueta implements DonacionesPuerto {
                   hecho(ASIGNADA, NUEVE_DE_OCTUBRE),
                   hecho(LISTA, "10 de octubre"),
                   actual(CAMINO, "11 de octubre: no pudo llegar"),
-                  new PasoRecorrido(
-                      ENTREGADA_PASO, "Nueva salida: 17 de octubre", Avance.PENDIENTE)),
+                  falta(ENTREGADA_PASO)),
+              // Sin la fecha de la nueva salida: el backend no la tiene (HG-01).
               new Problema(
                   "No pudo llegar a " + ESCUELA + ".",
-                  "El camino estaba cortado. Sale de nuevo el 17 de octubre. Última noticia: 11 de"
-                      + " octubre, 16:10."),
+                  "El camino estaba cortado. Última noticia: 11 de octubre, 16:10."),
               null,
               List.of(
                   new Noticia(
                       "11 de octubre, 16:10",
                       "2026-10-11T16:10",
-                      "El camión no pudo llegar a "
-                          + ESCUELA
-                          + ": el camino estaba cortado. Sale de nuevo el 17 de octubre."),
+                      "El camión no pudo llegar a " + ESCUELA + ": el camino estaba cortado."),
                   new Noticia(
                       "11 de octubre, 9:00",
                       "2026-10-11T09:00",

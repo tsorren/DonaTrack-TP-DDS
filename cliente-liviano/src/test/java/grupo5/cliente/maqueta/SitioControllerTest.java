@@ -3,6 +3,8 @@ package grupo5.cliente.maqueta;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -13,10 +15,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import grupo5.cliente.vistas.OpcionNavegacion;
 import grupo5.cliente.web.TraceIdFiltro;
 import jakarta.servlet.RequestDispatcher;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,6 +39,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -75,7 +81,7 @@ class SitioControllerTest {
     mvc.perform(get("/entidad-seguimiento-tesoro"))
         .andExpect(status().isOk())
         .andExpect(view().name("sin-dibujar"))
-        .andExpect(model().attribute("seccion", "Seguir entregas"))
+        .andExpect(model().attribute("seccion", "Entregas"))
         .andExpect(content().string(containsString("todavía no está dibujada")))
         .andExpect(content().string(containsString("href=\"/entidad-inicio\"")));
   }
@@ -113,15 +119,34 @@ class SitioControllerTest {
     mvc.perform(get("/admin-perfil").param("escenario", "vacio"))
         .andExpect(content().string(containsString("Todavía no cargaste tu nombre.")));
     mvc.perform(get("/admin-perfil").param("escenario", "error"))
-        .andExpect(content().string(containsString("No pudimos traer tus datos ahora.")));
+        .andExpect(content().string(containsString("No pudimos traer tus datos ahora.")))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    mvc.perform(get("/admin-perfil"))
+        .andExpect(content().string(containsString("data-pantalla=\"perfil-admin\"")))
+        .andExpect(content().string(containsString("Guardar los cambios")))
+        .andExpect(content().string(containsString("href=\"/admin-actividad?autor=yo\"")));
     mvc.perform(get("/admin-administradores").param("escenario", "error"))
         .andExpect(
             content()
-                .string(containsString("No pudimos traer las cuentas de administración ahora.")));
-    mvc.perform(get("/admin-administradores-nuevo")).andExpect(status().isOk());
+                .string(containsString("No pudimos traer las cuentas de administración ahora.")))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    mvc.perform(get("/admin-administradores"))
+        .andExpect(content().string(containsString("data-pantalla=\"administradores\"")))
+        .andExpect(content().string(containsString("aria-label=\"Vistas de administradores\"")))
+        .andExpect(content().string(containsString("Dar de alta un administrador</button>")));
+    // DA-35: el alta sin JavaScript y la contraseña provisoria siguen como páginas propias.
+    mvc.perform(get("/admin-administradores-nuevo"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("id=\"alta-formulario\"")))
+        .andExpect(content().string(containsString("aria-label=\"Dónde estás\"")))
+        .andExpect(content().string(containsString("Volver sin dar de alta")));
     mvc.perform(get("/admin-administradores-alta"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("K7pQ-m4Rt-x9Wa-2Lse")));
+        .andExpect(content().string(containsString("K7pQ-m4Rt-x9Wa-2Lse")))
+        .andExpect(content().string(containsString("data-copiar=\"provisoria-valor\"")))
+        .andExpect(content().string(containsString("Volver a Administradores")));
   }
 
   @Test
@@ -172,7 +197,7 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones-prueba"))
         .andExpect(status().isOk())
         .andExpect(view().name("donante-donaciones-prueba"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(
             content().string(containsString("href=\"/donante-donaciones\" aria-current=\"page\"")));
   }
@@ -192,16 +217,60 @@ class SitioControllerTest {
     mvc.perform(post("/donante-tesoro")).andExpect(status().isNotFound());
   }
 
+  /**
+   * Seguimiento es el arquetipo A07 (DA-03a): una sola donación, la primera en camino si no se pide
+   * ninguna, con el mapa y su recorrido, y las migas que vuelven a su detalle. Sin hora estimada
+   * (HG-02). La persona sigue a la empresa (DA-13).
+   */
   @Test
   void elSeguimientoMuestraCadaEstado() throws Exception {
     mvc.perform(get("/donante-seguimiento"))
         .andExpect(status().isOk())
         .andExpect(view().name("donante-seguimiento"))
-        .andExpect(model().attribute("seccion", "Seguimiento"))
-        .andExpect(content().string(containsString("3 entregas en curso")))
+        // Seguimiento ya no es una sección del menú: se abre desde una donación (DA-03a).
+        .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(
+            content().string(containsString("href=\"/donante-donaciones\" aria-current=\"page\"")))
+        .andExpect(content().string(containsString("<h1>Lentejas secas, 15 kg</h1>")))
+        .andExpect(
+            content()
+                .string(containsString("href=\"/donante-donaciones-detalle?donacion=lentejas\"")))
+        .andExpect(content().string(containsString("data-lat=\"-34.6392\"")))
         .andExpect(content().string(containsString("aria-current=\"step\"")))
-        .andExpect(content().string(containsString("aria-labelledby=\"lista-titulo\"")));
-    mvc.perform(get("/donante-seguimiento?escenario=vacio"))
+        .andExpect(content().string(containsString("aria-labelledby=\"recorrido-titulo\"")))
+        .andExpect(content().string(not(containsString("Hora estimada"))));
+    // La que no pudo llegar: el mismo recorrido que su detalle, sin fecha de nueva salida (HG-01),
+    // y sin camión en el mapa, porque no está viajando (A08).
+    mvc.perform(get("/donante-seguimiento?donacion=utiles"))
+        .andExpect(content().string(containsString("<h1>Útiles escolares, 2 cajas</h1>")))
+        .andExpect(content().string(containsString("data-paso=\"problema\"")))
+        .andExpect(content().string(not(containsString("17 de octubre"))))
+        .andExpect(content().string(not(containsString("data-mapa-puntos"))))
+        .andExpect(content().string(not(containsString("Posición aproximada"))))
+        .andExpect(content().string(containsString("Todavía sin posición del camión")))
+        .andExpect(
+            content().string(containsString("El camión no está viajando con esta donación.")));
+    // La asignada todavía no salió: no hay camión que seguir (A06).
+    mvc.perform(get("/donante-seguimiento?donacion=leche"))
+        .andExpect(content().string(containsString("<h1>Leche en polvo")))
+        .andExpect(content().string(not(containsString("data-mapa-puntos"))))
+        .andExpect(content().string(containsString("Todavía sin posición del camión")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Cuando el camión salga del depósito, vas a ver acá por dónde va.")));
+    mvc.perform(get("/donante-seguimiento?cuenta=persona&donacion=leche"))
+        .andExpect(view().name("persona/donante-seguimiento"))
+        .andExpect(content().string(not(containsString("data-mapa-puntos"))))
+        .andExpect(content().string(containsString("Todavía sin posición del camión")));
+    mvc.perform(get("/donante-seguimiento?donacion=fideos"))
+        .andExpect(content().string(containsString("No encontramos esa donación en camino.")));
+    mvc.perform(get("/donante-seguimiento?cuenta=persona"))
+        .andExpect(view().name("persona/donante-seguimiento"))
+        .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
+        .andExpect(content().string(containsString("Todavía espera destino")));
+    mvc.perform(get("/donante-seguimiento?cuenta=empresa&escenario=vacio"))
         .andExpect(
             content().string(containsString("Ningún camión está en camino con tus donaciones")));
     mvc.perform(get("/donante-seguimiento?escenario=error"))
@@ -211,25 +280,230 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("aria-busy=\"true\"")));
   }
 
+  /**
+   * La persona recorre su detalle en camino, el enlace a su seguimiento y la vuelta (DA-03a y
+   * DA-13): las dos pantallas salen de sus datos (persona/datos-persona), no de los de la empresa.
+   */
+  @Test
+  void laPersonaVaDelDetalleAlSeguimientoYVuelveConSusDatos() throws Exception {
+    MockHttpSession sesion = new MockHttpSession();
+    mvc.perform(get("/donante-donaciones-detalle?cuenta=persona").session(sesion))
+        .andExpect(view().name("persona/donante-donaciones-detalle"))
+        .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
+        .andExpect(content().string(containsString("Donación 0006. Para Merendero Ejemplo Sur.")))
+        .andExpect(content().string(containsString("figurás como «Martina Ruiz».")))
+        .andExpect(content().string(not(containsString("Distribuidora Ejemplo SA"))))
+        .andExpect(content().string(containsString("href=\"/donante-seguimiento?donacion=ropa\"")));
+    mvc.perform(get("/donante-seguimiento?donacion=ropa").session(sesion))
+        .andExpect(view().name("persona/donante-seguimiento"))
+        .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
+        .andExpect(content().string(not(containsString("No encontramos esa donación en camino."))))
+        .andExpect(content().string(containsString("Donación 0006. Para Merendero Ejemplo Sur.")))
+        .andExpect(
+            content().string(containsString("En camino desde las 11:10. Posición aproximada")))
+        .andExpect(
+            content().string(containsString("href=\"/donante-donaciones-detalle?donacion=ropa\"")));
+    mvc.perform(get("/donante-donaciones-detalle?donacion=ropa").session(sesion))
+        .andExpect(view().name("persona/donante-donaciones-detalle"))
+        .andExpect(content().string(containsString("<h1>Ropa de abrigo, 12 prendas</h1>")))
+        .andExpect(content().string(containsString("data-estado=\"en-camino\"")))
+        .andExpect(content().string(not(containsString("confirmó la entrega el 9 de octubre"))));
+    // Las lentejas de la persona llegaron en junio: su detalle es el de una entregada, sin enlace
+    // al seguimiento; una clave que la persona no tiene, "No encontramos esa donación".
+    mvc.perform(get("/donante-donaciones-detalle?donacion=lentejas").session(sesion))
+        .andExpect(content().string(containsString("<h1>Lentejas secas, 4 kg</h1>")))
+        .andExpect(content().string(containsString("class=\"etiqueta-entrega\"")))
+        .andExpect(content().string(not(containsString("/donante-seguimiento?donacion="))))
+        // El sello y la raíz dicen lo mismo que la lista: «Entrega confirmada», no «Entregada».
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"entregada\">"
+                            + "(?:(?!</span>\\s*</div>).)*?Entrega confirmada</span>.*")))
+        .andExpect(content().string(not(containsString("Entregada</"))))
+        .andExpect(content().string(not(containsString("En depósito"))));
+    // La que espera destino: Registrada, como en la lista, no Pendiente.
+    mvc.perform(get("/donante-donaciones-detalle?donacion=fideos").session(sesion))
+        .andExpect(content().string(containsString("data-estado=\"registrada\"")))
+        .andExpect(content().string(not(containsString("data-estado=\"pendiente\""))))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"registrada\">"
+                            + "(?:(?!</span>\\s*</div>).)*?Registrada</span>.*")));
+    // La asignada en su seguimiento: Asignada, como en la lista y el detalle, no Pendiente.
+    mvc.perform(get("/donante-seguimiento?donacion=leche").session(sesion))
+        .andExpect(content().string(containsString("<h1>Leche en polvo, 4 unidades</h1>")))
+        .andExpect(content().string(containsString("data-estado=\"asignada\"")))
+        .andExpect(content().string(not(containsString("data-estado=\"pendiente\""))))
+        .andExpect(content().string(containsString("Donación 0007. Para ")));
+    mvc.perform(get("/donante-donaciones-detalle?donacion=pan").session(sesion))
+        .andExpect(content().string(containsString("No encontramos esa donación.")));
+  }
+
+  /**
+   * DA-03a, DA-03b y DA-05: el menú de la empresa es Inicio, Donaciones, Organizaciones y Cómo
+   * donar (Para donantes); el de la persona de ejemplo (conMisiones de CuentaDeEjemplo) suma
+   * Misiones antes de Cómo donar. Ninguno tiene Seguimiento, que sigue respondiendo.
+   */
+  @Test
+  void losMenusDeQuienDonaSonLosDeLaGuia() throws Exception {
+    String empresa =
+        mvc.perform(get("/donante-inicio?cuenta=empresa"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(
+        List.of(
+            "/donante-inicio Inicio",
+            "/donante-donaciones Donaciones",
+            "/donante-entidades Organizaciones",
+            "/publico-para-donantes Cómo donar"),
+        entradasDelMenu(empresa));
+    String persona =
+        mvc.perform(get("/donante-inicio?cuenta=persona"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(
+        List.of(
+            "/donante-inicio Inicio",
+            "/donante-donaciones Donaciones",
+            "/donante-entidades Organizaciones",
+            "/donante-misiones Misiones",
+            "/publico-para-donantes Cómo donar"),
+        entradasDelMenu(persona));
+    mvc.perform(get("/donante-seguimiento?cuenta=empresa")).andExpect(status().isOk());
+  }
+
+  private static final Pattern MENU_DE_LA_PAGINA =
+      Pattern.compile("<nav[^>]*id=\"menu\"[^>]*>(.*?)</nav>", Pattern.DOTALL);
+  private static final Pattern ENTRADA_DEL_MENU =
+      Pattern.compile("<a href=\"([^\"]+)\"[^>]*>.*?<span>([^<]+)</span></a>", Pattern.DOTALL);
+
+  /** Las entradas del menú del layout privado ({@code nav#menu}), como "dirección texto". */
+  private static List<String> entradasDelMenu(String html) {
+    Matcher nav = MENU_DE_LA_PAGINA.matcher(html);
+    assertTrue(nav.find(), "la página tiene el menú");
+    Matcher entrada = ENTRADA_DEL_MENU.matcher(nav.group(1));
+    List<String> entradas = new ArrayList<>();
+    while (entrada.find()) {
+      entradas.add(entrada.group(1) + " " + entrada.group(2));
+    }
+    return entradas;
+  }
+
+  /**
+   * Donaciones de la persona sigue a la de la empresa (DA-13; arquetipo A05): la misma tabla, con
+   * una raíz y un sello por fila, y las vistas por estado con su cuenta sobre sus datos de ejemplo.
+   */
+  @Test
+  void lasDonacionesDeLaPersonaSonLaMismaTablaConSusDatos() throws Exception {
+    mvc.perform(get("/donante-donaciones?cuenta=persona"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("persona/donante-donaciones"))
+        .andExpect(content().string(containsString("<h1>Donaciones</h1>")))
+        .andExpect(content().string(containsString("<table class=\"tabla\">")))
+        .andExpect(content().string(containsString("Donación 0008")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "aria-label=\"El recorrido de esta donación: va por el paso 4 de 5\"")))
+        .andExpect(content().string(containsString(">Todas <b>8</b></a>")))
+        .andExpect(content().string(containsString(">Confirmadas <b>5</b></a>")))
+        .andExpect(content().string(containsString(">Con problema <b>0</b></a>")))
+        // El sello dice lo mismo que la raíz y el detalle (A05, A06): la pendiente sin destino,
+        // registrada; con destino, asignada; la entregada, «Entrega confirmada».
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"registrada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Registrada</span>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"asignada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Asignada</span>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"entregada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Entrega confirmada</span>.*")))
+        .andExpect(content().string(not(containsString("data-estado=\"pendiente\""))));
+    mvc.perform(get("/donante-donaciones?cuenta=persona&estado=en-camino"))
+        .andExpect(content().string(containsString("1 donación con esos filtros.")))
+        .andExpect(content().string(containsString("Ropa de abrigo")))
+        .andExpect(content().string(not(containsString("Fideos secos"))))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/donante-donaciones?cuenta=persona&amp;estado=en-camino\""
+                            + " aria-current=\"page\">En camino <b>1</b></a>")))
+        .andExpect(content().string(containsString(">Todas <b>8</b></a>")));
+  }
+
   @Test
   void elDonanteRecorreSuInicioSusDonacionesEntidadesYNotificaciones() throws Exception {
     mvc.perform(get("/donante-inicio"))
         .andExpect(status().isOk())
         .andExpect(view().name("donante-inicio"))
-        .andExpect(content().string(containsString("Primera entrega confirmada: fideos secos")))
+        .andExpect(content().string(containsString("Útiles escolares, 2 cajas: no pudo llegar")))
+        .andExpect(content().string(containsString("Seguir esta donación")))
         .andExpect(content().string(containsString("aria-label=\"Notificaciones, 4 sin leer\"")));
     mvc.perform(get("/donante-inicio?escenario=lento"))
         .andExpect(content().string(containsString("aria-busy=\"true\"")));
+    mvc.perform(get("/donante-inicio?escenario=sin-camino"))
+        .andExpect(content().string(containsString("Nada en camino ahora")))
+        .andExpect(content().string(not(containsString("Seguir esta donación"))));
     mvc.perform(get("/donante-donaciones?estado=pendiente&categoria=alimentos"))
-        .andExpect(content().string(containsString("2 donaciones con esos filtros.")));
+        .andExpect(content().string(containsString("2 donaciones con esos filtros.")))
+        // Arroz sin destino va registrada; Leche, con destino, asignada, como en su detalle.
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\"\\s+data-estado=\"registrada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Registrada</span>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"asignada\">"
+                            + "(?:(?!</td>).)*?</span>"
+                            + "\\s*Asignada</span>.*")));
     mvc.perform(get("/donante-donaciones?estado=otro"))
         .andExpect(content().string(containsString("7 donaciones, de la más reciente")));
     // Mis donaciones tiene su controller, pero ?cuenta= sigue cambiando la cuenta de ejemplo.
     mvc.perform(get("/donante-donaciones?cuenta=persona"))
         .andExpect(content().string(containsString("Martina Ruiz")));
     mvc.perform(get("/donante-donaciones-detalle?donacion=ropa"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
-        .andExpect(content().string(containsString("confirmó la entrega el 9 de octubre")));
+        .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(content().string(containsString("confirmó la entrega el 9 de octubre")))
+        .andExpect(content().string(containsString("class=\"etiqueta-entrega\"")));
+    // Las tres variantes de la guía: asignada (A06), en camino (A07, con el enlace a su
+    // seguimiento, DA-03a) y con problema (A08, sin fecha de nueva salida, HG-01).
+    mvc.perform(get("/donante-donaciones-detalle?donacion=leche"))
+        .andExpect(content().string(containsString("data-estado=\"asignada\"")))
+        .andExpect(content().string(not(containsString("/donante-seguimiento?donacion="))));
+    mvc.perform(get("/donante-donaciones-detalle?donacion=lentejas"))
+        .andExpect(
+            content().string(containsString("href=\"/donante-seguimiento?donacion=lentejas\"")));
+    mvc.perform(get("/donante-donaciones-detalle?donacion=utiles"))
+        .andExpect(content().string(containsString("<dd>Todavía sin fecha de nueva salida</dd>")))
+        .andExpect(content().string(not(containsString("17 de octubre"))));
     mvc.perform(get("/donante-donaciones-detalle?donacion=pan"))
         .andExpect(content().string(containsString("No encontramos esa donación.")));
     mvc.perform(get("/donante-entidades?nombre=zzz"))
@@ -263,27 +537,43 @@ class SitioControllerTest {
   void elActaMuestraCadaEstadoYConfirmaConUnFormularioReal() throws Exception {
     mvc.perform(get("/entidad-seguimiento-confirmar"))
         .andExpect(status().isOk())
-        .andExpect(model().attribute("seccion", "Seguir entregas"))
+        .andExpect(model().attribute("seccion", "Entregas"))
         .andExpect(
-            content().string(containsString("Lentejas secas, 15 kg. Llegó hoy a las 18:20.")))
+            content()
+                .string(
+                    containsString(
+                        "<strong>Lentejas secas, 15 kg</strong>, de Distribuidora Ejemplo SA."
+                            + " Llegó hoy a las 18:20.")))
         .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
         .andExpect(
             content().string(containsString("action=\"/entidad-seguimiento-sellada-lentejas\"")))
-        .andExpect(content().string(containsString("aria-current=\"step\"")))
+        .andExpect(content().string(containsString("aria-label=\"Dónde estás\"")))
+        .andExpect(content().string(containsString("href=\"/entidad-seguimiento\">Entregas</a>")))
+        .andExpect(content().string(containsString("aria-current=\"page\">Confirmar recepción")))
+        .andExpect(content().string(containsString("Recibe Comedor Barrio Ejemplo, el 15 de")))
+        .andExpect(content().string(containsString("data-papel=\"tierra\"")))
         .andExpect(content().string(containsString("name=\"fotos\"")));
     mvc.perform(get("/entidad-seguimiento-confirmar?entrega=ropa"))
-        .andExpect(content().string(containsString("Donó</dt>")))
-        .andExpect(content().string(containsString("Donante Sostenedor")));
+        .andExpect(content().string(containsString(", de Donante Sostenedor.")));
     mvc.perform(get("/entidad-seguimiento-confirmar?entrega=pan"))
         .andExpect(content().string(containsString("No encontramos esa entrega")));
     mvc.perform(get("/entidad-seguimiento-confirmar?escenario=confirmada"))
         .andExpect(content().string(containsString("Ya confirmaste esta entrega")))
-        .andExpect(content().string(containsString("Esta entrega ya está <em>confirmada</em>")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "La confirmó Comedor Barrio Ejemplo el 15 de octubre de 2026, 18:45.")))
+        .andExpect(
+            content()
+                .string(containsString("href=\"/entidad-seguimiento-sellada?entrega=lentejas\"")))
+        .andExpect(content().string(not(containsString("name=\"fotos\""))))
         .andExpect(content().string(not(containsString("Van 10 kg recibidos."))));
     mvc.perform(get("/entidad-seguimiento-confirmar?escenario=sin-conexion"))
         .andExpect(content().string(containsString("No sabemos si la confirmación llegó.")));
     mvc.perform(get("/entidad-seguimiento-confirmar-error"))
-        .andExpect(content().string(containsString("Revisá dos cosas antes de confirmar")))
+        .andExpect(content().string(containsString("Revisá 2 cosas para confirmar")))
+        .andExpect(content().string(containsString("href=\"#fotos\">La foto lentejas-1.jpg pesa")))
         .andExpect(content().string(containsString("aria-invalid=\"true\"")));
   }
 
@@ -293,13 +583,32 @@ class SitioControllerTest {
         .andExpect(redirectedUrl("/entidad-seguimiento-sellada-lentejas"));
     mvc.perform(get("/entidad-seguimiento-sellada-lentejas"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("confirmada--recien")))
+        .andExpect(content().string(containsString("huerta-raiz-trazo")))
+        .andExpect(content().string(containsString("data-papel=\"protagonista\"")))
+        .andExpect(content().string(containsString("aria-current=\"page\">Recepción confirmada")))
+        .andExpect(content().string(containsString("<dd>0001-00004521</dd>")))
+        .andExpect(
+            content().string(containsString("Recibió: Comedor Barrio Ejemplo, el 15 de octubre.")))
+        .andExpect(content().string(containsString("Foto de ejemplo")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "7 entregas confirmadas</strong> por tu organización en octubre.")))
+        .andExpect(content().string(containsString("data-recien=\"si\"")))
+        .andExpect(content().string(containsString(">12 de octubre, 10:00</span>")))
+        .andExpect(content().string(containsString(">14 de octubre, 9:10</span>")))
+        .andExpect(content().string(not(containsString("Marta"))))
         .andExpect(content().string(containsString("Te queda una en la puerta")))
         .andExpect(content().string(containsString("entidad-seguimiento-confirmar?entrega=ropa")));
+    mvc.perform(get("/entidad-seguimiento-sellada?entrega=lentejas"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Recepción confirmada")))
+        .andExpect(content().string(not(containsString("huerta-raiz-trazo"))));
     mvc.perform(get("/entidad-seguimiento-sellada-ropa"))
         .andExpect(content().string(containsString("No te quedan entregas para confirmar.")))
         .andExpect(content().string(not(containsString("Te queda una en la puerta"))))
-        .andExpect(content().string(containsString("15 de octubre, 18:50")));
+        .andExpect(content().string(containsString("15 de octubre de 2026, 18:50")));
   }
 
   @Test
@@ -396,7 +705,14 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Cumplidas y terminadas (4)")));
     mvc.perform(get("/entidad-necesidades-publicada"))
         .andExpect(content().string(containsString("Publicamos tu necesidad.")))
-        .andExpect(content().string(containsString("pedido--nuevo")));
+        .andExpect(content().string(containsString("pedido--nuevo")))
+        // hx-swap-oob="beforeend" suma a #avisos los hijos de su caja: el aviso va entero adentro.
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<div hx-swap-oob=\"beforeend:#avisos\"><div class=\"aviso-breve\"\\s+"
+                            + "data-estado=\"hecho\" role=\"status\".*")));
     mvc.perform(get("/entidad-necesidades-cambiada"))
         .andExpect(content().string(containsString("Guardamos los cambios de Lentejas secas.")))
         .andExpect(content().string(containsString("Cambiada hoy")))
@@ -426,9 +742,9 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Un donante · 5 unidades")))
         .andExpect(content().string(not(containsString("null"))));
     mvc.perform(get("/entidad-seguimiento-confirmar?entrega=ropa&escenario=sin-categoria"))
-        .andExpect(content().string(containsString("Un donante")));
+        .andExpect(content().string(containsString(", de un donante.")));
     mvc.perform(get("/entidad-seguimiento-confirmar?entrega=ropa"))
-        .andExpect(content().string(containsString("Ropa · 10 unidades")))
+        .andExpect(content().string(containsString("<strong>Ropa de abrigo, 10 unidades</strong>")))
         .andExpect(content().string(not(containsString("bultos"))));
   }
 
@@ -464,7 +780,8 @@ class SitioControllerTest {
       mvc.perform(post("/publico-contacto-enviado").param("volver", afuera))
           .andExpect(redirectedUrl("/publico-contacto-enviado"));
       mvc.perform(get("/publico-contacto-enviado").param("volver", afuera))
-          .andExpect(content().string(containsString("Ir a la portada")))
+          .andExpect(content().string(containsString(RECIBIDO)))
+          .andExpect(content().string(not(containsString("Volver a"))))
           .andExpect(content().string(not(containsString("otro.test"))));
     }
     mvc.perform(
@@ -474,11 +791,22 @@ class SitioControllerTest {
             redirectedUrl(
                 "/publico-contacto-enviado?volver=%2Fentidad-seguimiento-confirmar%3Fentrega%3Dlentejas"));
     mvc.perform(get("/publico-contacto-enviado").param("volver", "/entidad-necesidades"))
-        .andExpect(content().string(containsString("Volver a Necesidades")));
+        .andExpect(view().name("publico-contacto-enviado"))
+        .andExpect(content().string(containsString(RECIBIDO)))
+        .andExpect(content().string(containsString("name=\"mensaje\"")))
+        .andExpect(
+            content()
+                .string(containsString("href=\"/entidad-necesidades\">Volver a Necesidades</a>")));
     mvc.perform(get("/publico-contacto-enviado").param("volver", "https://otro.test"))
-        .andExpect(content().string(containsString("Ir a la portada")))
+        .andExpect(content().string(containsString(RECIBIDO)))
         .andExpect(content().string(not(containsString("otro.test"))));
+    mvc.perform(get("/publico-contacto").param("volver", "/entidad-necesidades"))
+        .andExpect(content().string(containsString("Volver a Necesidades")))
+        .andExpect(content().string(not(containsString(RECIBIDO))));
   }
+
+  /** El aviso breve de Contacto después de enviar, con el número de ejemplo (DA-06, DA-24). */
+  private static final String RECIBIDO = "Recibimos tu mensaje. Su número es <b>4821</b>.";
 
   @Test
   void miPerfilEligeSiSeVeElNombreYMuestraLosLegales() throws Exception {
@@ -512,15 +840,19 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Guardamos cómo te avisamos")));
     mvc.perform(get("/publico-legales"))
         .andExpect(status().isOk())
+        .andExpect(content().string(containsString("<p class=\"huerta-rotulo\">Legales</p>")))
+        .andExpect(content().string(containsString("<a href=\"#datos\">Tus datos</a>")))
         .andExpect(content().string(containsString("Versión 1, vigente desde")))
         .andExpect(content().string(containsString("texto de ejemplo")))
         .andExpect(content().string(containsString("o solo en una donación al registrarla")))
         .andExpect(content().string(containsString("«Donante Sostenedor»")));
     mvc.perform(get("/entidad-seguimiento-sellada-ropa?escenario=sin-categoria"))
-        .andExpect(content().string(containsString("Un donante")));
+        .andExpect(content().string(containsString("Le avisamos a quien donó")));
+    // La portada de A01 no tiene las abejas ni su pausa (DA-22).
     mvc.perform(get("/publico-portada"))
         .andExpect(content().string(containsString("href=\"/publico-legales\"")))
-        .andExpect(content().string(containsString("id=\"pausar-movimiento\"")));
+        .andExpect(content().string(not(containsString("id=\"pausar-movimiento\""))))
+        .andExpect(content().string(not(containsString("/js/abejas.js"))));
   }
 
   @Test
@@ -532,8 +864,8 @@ class SitioControllerTest {
     mvc.perform(get("/entidad-seguimiento-problema?entrega=lentejas"))
         .andExpect(status().isOk())
         .andExpect(view().name("entidad-seguimiento-problema"))
-        .andExpect(model().attribute("seccion", "Seguir entregas"))
-        .andExpect(content().string(containsString("Contá qué <em>pasó</em>")))
+        .andExpect(model().attribute("seccion", "Entregas"))
+        .andExpect(content().string(containsString("<h1>Llegó con un problema</h1>")))
         .andExpect(
             content().string(containsString("action=\"/entidad-seguimiento-sellada-lentejas\"")))
         .andExpect(content().string(containsString("value=\"incompleta\" required")))
@@ -661,6 +993,51 @@ class SitioControllerTest {
     }
   }
 
+  /**
+   * PUB2-08 y PUB2-09: las páginas de estado no tienen arquetipo (DA-08) y siguen la composición de
+   * lectura de la huerta, con las piezas del catálogo: el rótulo, el título, la bajada y una sola
+   * acción llena. Sin las clases heredadas de antes (lectura, lectura-bajada y sin-dibujar).
+   */
+  @Test
+  void lasPaginasDeEstadoTienenLaComposicionDeLecturaDeLaHuerta() throws Exception {
+    for (int codigo : List.of(403, 404, 429, 500)) {
+      String principal = principal(error(codigo, "/donante-inicio", ""));
+      assertTrue(
+          principal.contains("<p class=\"huerta-rotulo\">Error " + codigo + "</p>"), principal);
+      assertTrue(principal.matches("(?s).*</p>\\s*<h1>.*</h1>\\s*<p>.*"), principal);
+      assertEquals(1, cuantasVeces(principal, "data-tono=\"principal\""), principal);
+      assertTrue(!principal.matches("(?s).*class=\"[^\"]*\\blectura(-bajada)?\\b.*"), principal);
+      assertTrue(principal.contains("data-dibujo=\"error\""), principal);
+    }
+
+    String sinDibujar =
+        principal(
+            mvc.perform(get("/entidad-seguimiento-tesoro"))
+                .andExpect(view().name("sin-dibujar"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8));
+    assertTrue(sinDibujar.contains("<p class=\"huerta-rotulo\">Entregas</p>"), sinDibujar);
+    assertTrue(sinDibujar.contains("<h1>Esta pantalla todavía no está dibujada.</h1>"), sinDibujar);
+    assertTrue(!sinDibujar.contains("class=\"sin-dibujar\""), sinDibujar);
+
+    String avisoPersona =
+        principal(
+            mvc.perform(get("/donante-donaciones-nueva").sessionAttr("cuenta", "persona"))
+                .andExpect(view().name("aviso-persona"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8));
+    assertTrue(avisoPersona.contains("<p class=\"huerta-rotulo\">Donaciones</p>"), avisoPersona);
+    assertTrue(avisoPersona.matches("(?s).*</p>\\s*<h1>.*</h1>\\s*<p>.*"), avisoPersona);
+    assertEquals(1, cuantasVeces(avisoPersona, "data-tono=\"principal\""), avisoPersona);
+    assertTrue(!avisoPersona.contains("class=\"sin-dibujar\""), avisoPersona);
+  }
+
+  private static String principal(String html) {
+    return html.substring(html.indexOf("<main"), html.indexOf("</main>"));
+  }
+
   @Test
   void conSesionContactoUsaElMarcoPrivadoDelRol() throws Exception {
     mvc.perform(get("/publico-contacto?escenario=con-sesion"))
@@ -678,21 +1055,27 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("Cerrar sesión"))));
   }
 
+  /**
+   * El envío termina en Contacto con el aviso breve, sin página de respuesta propia (DA-06, DA-24):
+   * con la sesión, en el marco privado del rol; la única salida propia es la de ?volver=.
+   */
   @Test
-  void elEnviadoConSesionVuelveAMiInicioYSinSesionALaPortada() throws Exception {
+  void elEnviadoEsContactoConElAvisoConYSinSesion() throws Exception {
     mvc.perform(get("/publico-contacto-enviado?escenario=con-sesion&area=entidad"))
         .andExpect(content().string(containsString("class=\"raices-privado\"")))
-        .andExpect(content().string(containsString("href=\"/entidad-inicio\"")))
-        .andExpect(content().string(containsString("Volver a mi inicio")))
-        .andExpect(content().string(not(containsString("Ir a la portada"))));
+        .andExpect(content().string(containsString("href=\"/entidad-necesidades\"")))
+        .andExpect(content().string(containsString(RECIBIDO)))
+        .andExpect(content().string(containsString("el correo de tu cuenta")))
+        .andExpect(content().string(not(containsString("Volver a"))));
     mvc.perform(
             get("/publico-contacto-enviado?escenario=con-sesion")
                 .param("volver", "/donante-seguimiento"))
-        .andExpect(content().string(containsString("Volver a Seguimiento")))
-        .andExpect(content().string(not(containsString("Volver a mi inicio"))));
+        .andExpect(content().string(containsString(RECIBIDO)))
+        .andExpect(content().string(containsString("Volver a Seguimiento")));
     mvc.perform(get("/publico-contacto-enviado"))
-        .andExpect(content().string(containsString("Ir a la portada")))
-        .andExpect(content().string(not(containsString("Volver a mi inicio"))));
+        .andExpect(content().string(containsString("class=\"raices-publico\"")))
+        .andExpect(content().string(containsString(RECIBIDO)))
+        .andExpect(content().string(not(containsString("Volver a"))));
   }
 
   /** El traceId de ejemplo que TraceIdFiltro habría dejado en el pedido. */
@@ -722,13 +1105,243 @@ class SitioControllerTest {
 
   @Test
   void laPortadaEnlazaAlSitio() throws Exception {
+    // El Mapa ya no va en la portada ni en el menú: queda dentro de Entregas (DA-01).
     mvc.perform(get("/publico-portada"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("href=\"/publico-ingresar\"")))
-        .andExpect(content().string(containsString("href=\"/publico-mapa\"")))
+        .andExpect(content().string(containsString("href=\"/publico-donaciones\">Ver todas</a>")))
         .andExpect(content().string(containsString("href=\"/publico-registro-donante\"")))
         .andExpect(content().string(containsString("href=\"/publico-registro-entidad\"")))
         .andExpect(content().string(not(containsString("href=\"/prototipo/"))));
+  }
+
+  /**
+   * Solicitud enviada (PUB2-07, DA-32-solicitud): la página de estado de la solicitud, con sus
+   * cinco escenarios. «Solicitud recibida» es el aviso en la página del catálogo, sin el sello
+   * dibujado a mano, y «Cómo sigue» es la raíz numerada de la huerta.
+   */
+  @Test
+  void laSolicitudEnviadaEsLaPaginaDeEstadoConElAvisoDelCatalogo() throws Exception {
+    String aviso = "class=\"aviso\" data-tipo=\"exito\" role=\"status\"";
+    for (String escenario : List.of("", "con-sesion-pendiente", "corregida", "sin-datos")) {
+      String consulta = escenario.isEmpty() ? "" : "?escenario=" + escenario;
+      mvc.perform(get("/publico-registro-entidad-enviada" + consulta))
+          .andExpect(status().isOk())
+          .andExpect(view().name("publico-registro-entidad-enviada"))
+          .andExpect(content().string(containsString(aviso)))
+          .andExpect(content().string(containsString("Solicitud recibida</p>")))
+          .andExpect(content().string(containsString("class=\"huerta-raiz-pasos\"")))
+          .andExpect(content().string(not(containsString("class=\"recibido"))))
+          .andExpect(content().string(not(containsString("class=\"tramo"))));
+    }
+    mvc.perform(get("/publico-registro-entidad-enviada?escenario=con-sesion-pendiente"))
+        .andExpect(content().string(containsString("Lo que nos enviaste")))
+        .andExpect(content().string(containsString("<dl class=\"datos\">")))
+        .andExpect(content().string(containsString("Corregir los datos")));
+    mvc.perform(get("/publico-registro-entidad-enviada?escenario=corregida"))
+        .andExpect(content().string(containsString("Guardamos los cambios")));
+    mvc.perform(get("/publico-registro-entidad-enviada?escenario=sin-datos"))
+        .andExpect(content().string(containsString("Ahora no podemos mostrarte los datos")))
+        .andExpect(content().string(not(containsString("Corregir los datos"))));
+    mvc.perform(get("/publico-registro-entidad-enviada?escenario=aprobada"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("publico-registro-entidad-enviada"))
+        .andExpect(content().string(containsString("El equipo ya aprobó tu solicitud.")))
+        .andExpect(content().string(not(containsString("Solicitud recibida</p>"))))
+        .andExpect(content().string(not(containsString("Estás acá"))))
+        .andExpect(content().string(not(containsString("Cómo sigue"))))
+        .andExpect(content().string(not(containsString("unos días hábiles"))))
+        .andExpect(content().string(not(containsString("Mientras tanto"))))
+        .andExpect(content().string(containsString("Ingresar de nuevo")))
+        .andExpect(content().string(not(containsString("Lo que nos enviaste"))));
+  }
+
+  /**
+   * El registro de la organización (PUB2-06): el registro en pasos del catálogo, con la columna de
+   * A12 en cada sección: el resumen del error arriba en el aviso del catálogo, con un enlace a cada
+   * campo, y el error de cada campo con su signo.
+   */
+  @Test
+  void elRegistroDeLaOrganizacionUsaLasPiezasDelCatalogo() throws Exception {
+    mvc.perform(get("/publico-registro-entidad"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("publico-registro-entidad"))
+        .andExpect(content().string(containsString("class=\"tarjeta registro-tipo\"")))
+        .andExpect(content().string(containsString("class=\"tarjeta registro-formulario\"")))
+        .andExpect(content().string(containsString("class=\"registro-seccion\" id=\"la-entidad\"")))
+        .andExpect(content().string(containsString("class=\"huerta-raiz-pasos\"")))
+        .andExpect(content().string(containsString("Enviar la solicitud")))
+        .andExpect(content().string(not(containsString("class=\"grupo"))))
+        .andExpect(content().string(not(containsString("class=\"tramo"))));
+    mvc.perform(get("/publico-registro-entidad-error"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("publico-registro-entidad-error"))
+        .andExpect(
+            content().string(containsString("class=\"aviso\" data-tipo=\"error\" role=\"alert\"")))
+        .andExpect(content().string(containsString("id=\"resumen\" autofocus")))
+        .andExpect(content().string(containsString("href=\"#que-es\"")))
+        .andExpect(content().string(containsString("href=\"#calle\"")))
+        .andExpect(content().string(containsString("data-signo=\"e-problema\"")))
+        .andExpect(content().string(not(containsString("class=\"banner resumen\""))));
+  }
+
+  /**
+   * El menú público de la guía (DA-01, DA-05 y DA-17): Inicio, Entregas, Organizaciones y Cómo
+   * funciona (Nosotros), en ese orden y sin el Mapa, que sigue respondiendo y marca Entregas.
+   */
+  @Test
+  void elMenuPublicoEsInicioEntregasOrganizacionesYComoFunciona() throws Exception {
+    String html =
+        mvc.perform(get("/publico-portada"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+    String barra =
+        html.substring(
+            html.indexOf("class=\"navegacion-barra\""),
+            html.indexOf("class=\"navegacion-acceso\""));
+    assertTrue(
+        barra.matches(
+            "(?s).*href=\"/publico-portada\" aria-current=\"page\">.*Inicio</a>"
+                + ".*href=\"/publico-donaciones\">.*Entregas</a>"
+                + ".*href=\"/publico-entidades\">.*Organizaciones</a>"
+                + ".*href=\"/publico-nosotros\">.*Cómo funciona</a>.*"),
+        barra);
+    assertFalse(barra.contains("/publico-mapa"), barra);
+    assertFalse(barra.contains(">Mapa<"), barra);
+    assertTrue(barra.contains("<use href=\"#i-brote\">"), barra);
+    assertTrue(html.contains("<symbol id=\"i-brote\""), "El brote de Cómo funciona");
+    mvc.perform(get("/publico-mapa"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(not(containsString("href=\"/publico-mapa\" aria-current"))))
+        .andExpect(
+            content().string(containsString("href=\"/publico-donaciones\" aria-current=\"page\"")));
+    mvc.perform(get("/publico-donaciones"))
+        .andExpect(
+            content().string(containsString("href=\"/publico-donaciones\" aria-current=\"page\"")));
+    mvc.perform(get("/publico-entidades"))
+        .andExpect(
+            content().string(containsString("href=\"/publico-entidades\" aria-current=\"page\"")));
+    for (String conocer : List.of("/publico-nosotros", "/publico-para-donantes")) {
+      mvc.perform(get(conocer))
+          .andExpect(
+              content().string(containsString("href=\"/publico-nosotros\" aria-current=\"page\"")));
+    }
+  }
+
+  /**
+   * La portada sigue a A01 (PUB1-01): la última entrega confirmada con su etiqueta, un fruto por
+   * entrega del mes, las cifras, la raíz de 5 pasos y las del mes; quien recibió es la organización
+   * (HG-03, DA-10). Cada estado, con su texto.
+   */
+  @Test
+  void laPortadaSigueAlArquetipoConSusEstados() throws Exception {
+    String html =
+        mvc.perform(get("/publico-portada"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+    assertTrue(html.contains("class=\"trama\""), "el título con la trama");
+    assertTrue(
+        html.contains("Seguí tu donación hasta que la organización la confirma"), "el título");
+    assertTrue(html.contains(">Quiero donar</a>"), "la acción llena");
+    assertTrue(html.contains(">Soy una organización</a>"), "la otra acción");
+    assertEquals(1, html.split("data-tono=\"principal\"", -1).length - 1, "una sola acción llena");
+    assertTrue(html.contains("ilustracion-recorrido.svg#ilustracion-recorrido"), "el dibujo");
+    // La maqueta trae 10 entregas confirmadas en el último mes: 10 frutos.
+    String frutos =
+        html.substring(
+            html.indexOf("class=\"huerta-frutos\""),
+            html.indexOf("</ul>", html.indexOf("class=\"huerta-frutos\"")));
+    assertEquals(10, frutos.split("<li>", -1).length - 1, frutos);
+    assertTrue(html.contains("10 entregas confirmadas"), "la cuenta de los frutos");
+    assertTrue(html.contains("etiqueta-entrega--costado"), "la última, con la foto al costado");
+    assertTrue(
+        html.contains("Recibió: Escuela Ejemplo N.º 12, el 14 de octubre de 2026."),
+        "quién recibió");
+    // Las del mes, como en Entregas: el lugar es categoría · barrio y el pie lleva el año.
+    assertTrue(html.contains("<p>Alimentos · Barrio Ejemplo</p>"), "el lugar, como en Entregas");
+    assertTrue(
+        html.contains("Recibió: Comedor Barrio Ejemplo, el 10 de octubre de 2026."),
+        "el pie, como en Entregas");
+    assertFalse(
+        html.contains("<p>Comedor Barrio Ejemplo · Barrio Ejemplo</p>"),
+        "sin repetir la organización en el lugar");
+    assertTrue(html.contains("Cómo sabemos que llega"), "las cifras");
+    assertTrue(
+        html.contains(
+            "Hasta hoy, <strong>1.284</strong> entregas confirmadas, <strong>46</strong>"
+                + " organizaciones en el mapa y <strong>32</strong> donaciones en camino ahora."),
+        "las cifras, en una frase como en A01");
+    assertFalse(html.contains("class=\"datos\""), "sin la lista de datos");
+    assertTrue(html.contains("data-forma=\"numerada tendida\""), "la raíz numerada");
+    assertEquals(5, html.split("class=\"huerta-raiz-nudo\"", -1).length - 1, "los 5 pasos");
+    assertEquals(
+        4, html.split("<article class=\"etiqueta-entrega", -1).length - 1, "la última y 3 más");
+    assertFalse(html.contains("huerta-hero"), "sin el hero de K");
+    assertFalse(html.contains("huerta-tierra"), "sin el corte bajo tierra");
+    assertFalse(html.contains("huerta-cierre"), "sin el cierre de K");
+    mvc.perform(get("/publico-portada?escenario=vacio"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().string(containsString("Todavía no hay entregas confirmadas este mes.")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "class=\"vacio\" data-forma=\"filetes\">Todavía no hay entregas")))
+        .andExpect(content().string(not(containsString("<strong>1.284</strong>"))))
+        .andExpect(content().string(not(containsString("class=\"etiqueta-entrega"))));
+    String lento =
+        mvc.perform(get("/publico-portada?escenario=lento"))
+            .andExpect(
+                content()
+                    .string(containsString("role=\"status\">Cargando las entregas confirmadas…")))
+            .andExpect(content().string(containsString("role=\"status\">Cargando las cifras…")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+    int cifras = lento.indexOf("aria-labelledby=\"portada-cifras\"");
+    assertTrue(
+        cifras > 0
+            && lento.substring(cifras, lento.indexOf('>', cifras)).contains("aria-busy=\"true\""),
+        "la sección de las cifras, ocupada mientras carga");
+    // Los dos errores de carga son el banner de error de Entregas y el Mapa, con el código y
+    // «escribinos» (U1): ni el aviso de formulario ni el renglón de la lista vacía.
+    mvc.perform(get("/publico-portada?escenario=error"))
+        .andExpect(
+            content()
+                .string(containsString("class=\"banner\" data-estado=\"error\" role=\"alert\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<h2 id=\"error-titulo\">No pudimos cargar las entregas confirmadas.</h2>")))
+        .andExpect(
+            content()
+                .string(containsString("class=\"banner\" data-estado=\"error\" role=\"alert\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<h2 id=\"cifras-error-titulo\">No pudimos cargar las cifras.</h2>")))
+        .andExpect(content().string(containsString("class=\"aviso-codigo\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/publico-contacto?codigo=a1b2c3d4e5f6&amp;volver=/publico-portada\"")))
+        .andExpect(content().string(not(containsString("data-forma=\"filetes\" role=\"alert\""))))
+        .andExpect(content().string(not(containsString("class=\"aviso\" data-tipo=\"error\""))))
+        .andExpect(content().string(not(containsString("<strong>1.284</strong>"))))
+        // Las del mes dicen qué falta, sin repetir el banner (U4).
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "No pudimos cargar las entregas del mes. Probá de nuevo en unos minutos.")));
   }
 
   /**
@@ -745,29 +1358,284 @@ class SitioControllerTest {
           .andExpect(content().string(containsString("href=\"/publico-para-entidades\"")));
     }
     mvc.perform(get("/publico-portada"))
-        // El enlace a la landing de donantes, en la tarjeta de quien dona (usuario, 2026-11-08).
-        .andExpect(content().string(containsString("Qué podés donar")))
-        .andExpect(content().string(containsString("Cómo se suma una organización")));
+        // Las dos acciones de A01, cada una a su registro, y Cómo funciona en el menú (DA-05).
+        .andExpect(
+            content().string(containsString("href=\"/publico-registro-donante\">Quiero donar</a>")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("href=\"/publico-registro-entidad\">Soy una organización</a>")))
+        .andExpect(content().string(containsString("href=\"/publico-nosotros\">")));
     mvc.perform(get("/publico-nosotros"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Entregas confirmadas desde marzo de 2026")))
-        // Las cifras en árboles de K (2026-11-08; antes, la rama de frutos con data-cosecha).
-        .andExpect(content().string(containsString("class=\"huerta-cifras\"")))
-        .andExpect(content().string(containsString("Actualizado")))
-        .andExpect(content().string(not(containsString("aria-current=\"page\""))));
+        // Las cifras como en la portada (A01): una frase con cada número en negrita y el período
+        // dentro de la cifra, sin la lista de datos ni los árboles de K.
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<strong>1.284</strong> entregas confirmadas desde marzo de 2026")))
+        .andExpect(content().string(containsString("Cómo sabemos que llega")))
+        .andExpect(content().string(not(containsString("<dl class=\"datos\">"))))
+        .andExpect(content().string(not(containsString("class=\"huerta-cifras\""))))
+        .andExpect(content().string(containsString("Actualizado el ")))
+        // Las dos acciones de A01, a los mismos registros y con los mismos rótulos que la portada.
+        .andExpect(
+            content().string(containsString("href=\"/publico-registro-donante\">Quiero donar</a>")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("href=\"/publico-registro-entidad\">Soy una organización</a>")))
+        // Nosotros es Cómo funciona en el menú público, y lo marca (DA-05).
+        .andExpect(
+            content().string(containsString("href=\"/publico-nosotros\" aria-current=\"page\"")));
     mvc.perform(get("/publico-nosotros?escenario=vacio"))
         .andExpect(content().string(containsString("Todavía no hay entregas confirmadas.")))
         .andExpect(content().string(not(containsString("Actualizado"))));
     mvc.perform(get("/publico-nosotros?escenario=lento"))
         .andExpect(content().string(containsString("role=\"status\">Cargando las cifras…")));
     mvc.perform(get("/publico-nosotros?escenario=error"))
-        .andExpect(content().string(containsString("No pudimos cargar las cifras.")));
+        .andExpect(content().string(containsString("No pudimos cargar las cifras.")))
+        // El error de las cifras es el banner de error, como en la portada y Entregas (U1).
+        .andExpect(
+            content()
+                .string(containsString("class=\"banner\" data-estado=\"error\" role=\"alert\"")))
+        .andExpect(content().string(containsString("class=\"aviso-codigo\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/publico-contacto?codigo=a1b2c3d4e5f6&amp;volver=/publico-nosotros\"")))
+        .andExpect(content().string(not(containsString("data-forma=\"filetes\" role=\"alert\""))))
+        .andExpect(content().string(not(containsString("class=\"aviso\""))));
     mvc.perform(get("/publico-para-donantes"))
         .andExpect(content().string(containsString("href=\"/publico-registro-donante\"")))
-        .andExpect(content().string(containsString("<details>")));
+        // La tarjeta de la cuenta lleva h3, bajo un título de sección, como en Ayuda (U1).
+        .andExpect(content().string(containsString("<h3 id=\"cuenta-titulo\">")))
+        // Las preguntas frecuentes, con el plegable del catálogo, como Organizaciones y el Mapa.
+        .andExpect(content().string(containsString("<details class=\"plegable\">")))
+        .andExpect(content().string(not(containsString("<details>"))));
     mvc.perform(get("/publico-para-entidades"))
         .andExpect(content().string(containsString("href=\"/publico-registro-entidad\"")))
-        .andExpect(content().string(not(containsString("beneficiario"))));
+        // Las tarjetas de la cuenta y los datos llevan h3, bajo un título de sección, como las de
+        // «Cómo se suma».
+        .andExpect(content().string(containsString("<h3 id=\"cuenta-titulo\">")))
+        .andExpect(content().string(containsString("<h3 id=\"datos-titulo\">")))
+        .andExpect(content().string(not(containsString("beneficiario"))))
+        .andExpect(content().string(containsString("<details class=\"plegable\">")))
+        .andExpect(content().string(not(containsString("<details>"))));
+  }
+
+  /**
+   * Ingresar (PUB1-06) deriva de A12 de la guía: la columna del formulario con los campos del
+   * catálogo, una sola acción llena y las cuentas de ejemplo de la demo, en una lámina punteada.
+   */
+  @Test
+  void ingresarEsLaColumnaDelFormularioConLasCuentasDeEjemplo() throws Exception {
+    String html =
+        mvc.perform(get("/publico-ingresar"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("<h1>Ingresar</h1>")))
+            .andExpect(content().string(containsString("action=\"/donante-inicio\"")))
+            .andExpect(content().string(containsString("method=\"post\"")))
+            .andExpect(content().string(containsString("class=\"campo\"")))
+            .andExpect(content().string(containsString("autocomplete=\"current-password\"")))
+            .andExpect(content().string(containsString("href=\"/publico-recuperar\"")))
+            .andExpect(content().string(containsString("href=\"/publico-registro\"")))
+            .andExpect(content().string(containsString("Continuar con Google")))
+            .andExpect(content().string(containsString("class=\"tarjeta\" data-papel=\"hueco\"")))
+            .andExpect(content().string(containsString("Cuentas de ejemplo")))
+            .andExpect(content().string(containsString("href=\"/donante-inicio?cuenta=empresa\"")))
+            .andExpect(
+                content().string(containsString("Distribuidora Ejemplo SA, empresa donante")))
+            .andExpect(content().string(containsString("href=\"/entidad-inicio\"")))
+            .andExpect(content().string(containsString("Comedor Barrio Ejemplo, organización")))
+            .andExpect(content().string(containsString("href=\"/admin-inicio\"")))
+            .andExpect(content().string(not(containsString("aria-invalid"))))
+            .andExpect(content().string(not(containsString("role=\"alert\""))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(1, apariciones(html, "data-tono=\"principal\""), "una sola acción llena");
+    mvc.perform(get("/publico-ingresar?escenario=lento"))
+        .andExpect(content().string(containsString("aria-busy=\"true\"")))
+        .andExpect(content().string(containsString("role=\"status\">Ingresando…")));
+    mvc.perform(get("/publico-ingresar?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos ingresar en este momento.")))
+        .andExpect(content().string(containsString("role=\"alert\"")));
+    mvc.perform(get("/publico-ingresar?escenario=sin-conexion"))
+        .andExpect(content().string(containsString("Se cortó la conexión.")))
+        .andExpect(content().string(containsString("role=\"alert\"")));
+    mvc.perform(get("/publico-ingresar?escenario=bloqueado"))
+        .andExpect(content().string(containsString("Pausamos los intentos de ingreso.")))
+        .andExpect(content().string(containsString("role=\"alert\"")));
+    mvc.perform(get("/publico-ingresar?escenario=pendiente"))
+        .andExpect(content().string(containsString("Tu organización todavía está en revisión.")))
+        .andExpect(content().string(containsString("role=\"status\"")));
+    mvc.perform(get("/publico-ingresar?escenario=sesion-vencida"))
+        .andExpect(content().string(containsString("Tu sesión se cerró.")))
+        .andExpect(content().string(containsString("role=\"status\"")));
+  }
+
+  /**
+   * El error de Ingresar es un estado del mismo formulario (A12, «Con error»): el resumen arriba,
+   * con el foco y un enlace al campo; los dos campos marcados en su lugar y un solo mensaje, sin
+   * decir cuál de los dos falló (RF-04, RNF-AUTH-10). Lo escrito en el correo vuelve.
+   */
+  @Test
+  void elErrorDeIngresarMarcaLosCamposSinDecirCualFallo() throws Exception {
+    String html =
+        mvc.perform(get("/publico-ingresar-error"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("<title>No pudimos ingresar - DonaTrack")))
+            .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+            .andExpect(content().string(containsString("role=\"alert\" tabindex=\"-1\"")))
+            .andExpect(content().string(containsString("autofocus")))
+            .andExpect(content().string(containsString("href=\"#clave\"")))
+            .andExpect(content().string(containsString("El correo o la contraseña no coinciden")))
+            .andExpect(content().string(containsString("class=\"campo-error\"")))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*id=\"ingreso-error\" class=\"campo-error\">\\s*<svg[^>]*"
+                                + "data-signo=\"e-problema\".*")))
+            .andExpect(content().string(containsString("aria-describedby=\"ingreso-error\"")))
+            .andExpect(content().string(not(containsString("Al menos 8 caracteres"))))
+            .andExpect(
+                content().string(containsString("value=\"contacto@distribuidora-ejemplo.test\"")))
+            .andExpect(content().string(containsString("href=\"/publico-recuperar\"")))
+            .andExpect(content().string(containsString("Cuentas de ejemplo")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(2, apariciones(html, "data-estado=\"error\""), "los dos campos, marcados");
+    assertEquals(2, apariciones(html, "aria-invalid=\"true\""), "los dos controles, inválidos");
+    assertEquals(1, apariciones(html, "class=\"campo-error\""), "un solo mensaje");
+    assertEquals(1, apariciones(html, "data-tono=\"principal\""), "una sola acción llena");
+  }
+
+  /**
+   * Crear una cuenta (PUB2-04): la cabeza y las tres tarjetas del tipo de cuenta del catálogo
+   * (componentes/registro), sin ninguna elegida, y la salida a Ingresar.
+   */
+  @Test
+  void crearUnaCuentaMuestraLasTresTarjetasYLaSalidaAIngresar() throws Exception {
+    String html =
+        mvc.perform(get("/publico-registro"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("class=\"registro-cabeza\"")))
+            .andExpect(content().string(containsString("Sumate a DonaTrack")))
+            .andExpect(
+                content().string(containsString("href=\"/publico-registro-donante?tipo=persona\"")))
+            .andExpect(content().string(containsString("href=\"/publico-registro-entidad\"")))
+            .andExpect(content().string(containsString("href=\"/publico-ingresar\">Ingresar</a>")))
+            .andExpect(content().string(not(containsString("registro-tipo\" aria-current"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(3, apariciones(html, "class=\"tarjeta registro-tipo\""), "las tres tarjetas");
+  }
+
+  /**
+   * El registro de quien dona (PUB2-05): el índice de pasos y el formulario del catálogo, con una
+   * sección por paso, los campos del catálogo, la casilla de los términos y una sola acción llena.
+   * La persona y la empresa van en la misma plantilla, cada una con sus campos.
+   */
+  @Test
+  void elRegistroDeQuienDonaUsaElFormularioDelCatalogoConUnaSolaAccionLlena() throws Exception {
+    String empresa =
+        mvc.perform(get("/publico-registro-donante"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("class=\"registro-indice\"")))
+            .andExpect(content().string(containsString("class=\"tarjeta registro-formulario\"")))
+            .andExpect(content().string(containsString("id=\"empresa\"")))
+            .andExpect(content().string(containsString("class=\"casilla\"")))
+            .andExpect(content().string(containsString("Crear mi cuenta")))
+            .andExpect(content().string(not(containsString("clave-fila"))))
+            .andExpect(content().string(not(containsString("class=\"nota\""))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(3, apariciones(empresa, "class=\"registro-seccion\""), "una sección por paso");
+    assertEquals(1, apariciones(empresa, "data-tono=\"principal\""), "una sola acción llena");
+    assertEquals(0, apariciones(empresa, "data-estado=\"error\""), "sin errores");
+
+    String persona =
+        mvc.perform(get("/publico-registro-donante?tipo=persona"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("id=\"apellido\"")))
+            .andExpect(content().string(not(containsString("id=\"empresa\""))))
+            .andExpect(content().string(containsString("class=\"texto-chico\"")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(1, apariciones(persona, "data-tono=\"principal\""), "una sola acción llena");
+  }
+
+  /**
+   * Lento y error del servicio, como en Ingresar: el botón dice qué pasa y está ocupado (sin
+   * desactivarse), y el error del servicio es el banner del catálogo, con lo escrito.
+   */
+  @Test
+  void elRegistroDeQuienDonaMuestraLentoYElErrorDelServicioComoIngresar() throws Exception {
+    mvc.perform(get("/publico-registro-donante?escenario=lento"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<button class=\"boton\" data-tono=\"principal\" type=\"submit\""
+                            + "\\s+aria-busy=\"true\">Creando tu cuenta…</button>.*")))
+        .andExpect(content().string(containsString("role=\"status\">Creando tu cuenta…")))
+        .andExpect(content().string(not(containsString("disabled"))));
+    mvc.perform(get("/publico-registro-donante?escenario=error"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("class=\"banner\" data-estado=\"error\"")))
+        .andExpect(content().string(containsString("No pudimos crear tu cuenta.")))
+        .andExpect(content().string(containsString("value=\"Distribuidora Ejemplo SA\"")));
+  }
+
+  /**
+   * El error de datos del registro es un estado del mismo formulario (A12, «Con error»): el resumen
+   * arriba, en el aviso del catálogo, con el foco y un enlace a cada campo; cada campo marcado en
+   * su lugar, con el signo del problema, y una sola acción llena.
+   */
+  @Test
+  void elErrorDelRegistroDeQuienDonaResumeArribaYMarcaCadaCampo() throws Exception {
+    String html =
+        mvc.perform(get("/publico-registro-donante-error"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("class=\"tarjeta registro-formulario\"")))
+            .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+            .andExpect(content().string(containsString("role=\"alert\" tabindex=\"-1\"")))
+            .andExpect(content().string(containsString("autofocus")))
+            .andExpect(content().string(containsString("class=\"aviso-titulo\"")))
+            .andExpect(content().string(containsString("href=\"#empresa\"")))
+            .andExpect(content().string(containsString("href=\"#correo\"")))
+            .andExpect(content().string(containsString("href=\"#terminos\"")))
+            .andExpect(content().string(not(containsString("banner resumen"))))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*id=\"correo-error\" class=\"campo-error\">\\s*<svg[^>]*"
+                                + "data-signo=\"e-problema\".*")))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertEquals(3, apariciones(html, "class=\"campo-error\">"), "un mensaje por campo");
+    assertEquals(4, apariciones(html, "data-signo=\"e-problema\""), "el resumen y los tres campos");
+    assertEquals(3, apariciones(html, "aria-invalid=\"true\""), "los tres controles, inválidos");
+    assertEquals(1, apariciones(html, "data-tono=\"principal\""), "una sola acción llena");
+  }
+
+  private static int apariciones(String texto, String buscado) {
+    int cuenta = 0;
+    for (int i = texto.indexOf(buscado); i >= 0; i = texto.indexOf(buscado, i + 1)) {
+      cuenta++;
+    }
+    return cuenta;
   }
 
   /**
@@ -785,14 +1653,14 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("readonly")));
     mvc.perform(post(lista)).andExpect(redirectedUrl(lista));
     mvc.perform(get(lista))
-        .andExpect(content().string(containsString("Tu cuenta <em>está lista</em>")))
+        .andExpect(content().string(containsString("Tu cuenta está lista")))
         .andExpect(content().string(containsString("href=\"/publico-ingresar\"")));
     mvc.perform(get("/publico-activar-error"))
         .andExpect(content().string(containsString("Revisá la contraseña")))
         .andExpect(content().string(containsString("aria-invalid=\"true\"")));
     mvc.perform(get("/publico-activar?escenario=vencido"))
         .andExpect(content().string(containsString("Este enlace ya no sirve.")))
-        .andExpect(content().string(containsString("Activá <em>tu cuenta</em>")))
+        .andExpect(content().string(containsString("<h1>Activá tu cuenta</h1>")))
         .andExpect(content().string(containsString("href=\"/publico-activar-pedir\"")))
         .andExpect(content().string(not(containsString("action=\"/publico-activar-lista\""))));
     mvc.perform(get("/publico-activar?escenario=error"))
@@ -827,6 +1695,62 @@ class SitioControllerTest {
   }
 
   /**
+   * DA-32 y DA-06, la parte de la cuenta: Recuperar, Pedir el enlace y Activar responden en su
+   * misma pantalla con el aviso en la página del catálogo (.aviso con data-tipo="exito") en el
+   * lugar del formulario, sin el sello de recibido; Activar deja una sola acción llena, Ingresar.
+   */
+  @Test
+  void lasRespuestasDeLaCuentaSonElAvisoEnLaPaginaSinFormulario() throws Exception {
+    List<List<String>> respuestas =
+        List.of(
+            List.of("/publico-recuperar-enviado", "Si hay una cuenta con ese correo, te mandamos"),
+            List.of("/publico-activar-pedido", "Si hay una cuenta con ese correo, te mandamos"),
+            List.of("/publico-activar-lista", "Tu cuenta está lista"));
+    for (List<String> respuesta : respuestas) {
+      String ruta = respuesta.get(0);
+      String html =
+          mvc.perform(get(ruta))
+              .andExpect(status().isOk())
+              .andReturn()
+              .getResponse()
+              .getContentAsString(StandardCharsets.UTF_8);
+      Matcher aviso =
+          Pattern.compile(
+                  "<div class=\"aviso\" data-tipo=\"exito\"[^>]*>(.*?)</div>", Pattern.DOTALL)
+              .matcher(html);
+      assertTrue(aviso.find(), ruta + " no muestra el aviso de éxito");
+      assertTrue(
+          aviso.group(1).contains(respuesta.get(1)), ruta + " no dice su respuesta en el aviso");
+      assertTrue(
+          aviso.group(0).contains("role=\"status\""), ruta + " no anuncia el aviso (role=status)");
+      for (String accion :
+          List.of(
+              "/publico-recuperar-enviado", "/publico-activar-pedido", "/publico-activar-lista")) {
+        assertFalse(
+            html.contains("action=\"" + accion + "\""), ruta + " todavía muestra el formulario");
+      }
+      assertFalse(
+          Pattern.compile("class=\"[^\"]*\\brecibido\\b").matcher(html).find(),
+          ruta + " lleva el sello de recibido");
+    }
+    String lista =
+        mvc.perform(get("/publico-activar-lista"))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    assertTrue(
+        Pattern.compile(
+                "<a class=\"boton\" data-tono=\"principal\" href=\"/publico-ingresar\">Ingresar</a>")
+            .matcher(lista)
+            .find(),
+        "Activar no lleva a Ingresar con la acción llena");
+    assertEquals(
+        1,
+        Pattern.compile("data-tono=\"principal\"").matcher(lista).results().count(),
+        "Activar lleva más de una acción llena");
+  }
+
+  /**
    * El acceso a Notificaciones va en todas las privadas del donante y la entidad, también las
    * aprobadas antes de la corrida A/B (pulido, 2026-11-03). Contacto y Legales llevan el menú
    * público, sin sección marcada (pulido, 2026-11-03, usuario).
@@ -855,6 +1779,44 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("data-zona=\"publica\"")));
   }
 
+  /**
+   * «Por decidir» en la maqueta (ADM1-09, DA-04 y DA-25): la pestaña Propuestas abierta con las 4
+   * propuestas sin problemas de ejemplo y una casilla por fila; con ?escenario=vacio, todas las
+   * cuentas en 0 y el vacío de la pestaña; con ?escenario=error-camiones, solo la fila de camiones
+   * muestra su aviso.
+   */
+  @Test
+  void elInicioDelAdminEsPorDecidirConLasPropuestasDeEjemplo() throws Exception {
+    String html =
+        mvc.perform(get("/admin-inicio"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    assertTrue(html.contains("<h1>Por decidir</h1>"), html);
+    assertTrue(
+        Pattern.compile("aria-current=\"page\">Propuestas <b>4</b></a>").matcher(html).find(),
+        "Propuestas con la cuenta de la tabla");
+    assertTrue(html.contains(">Conflictos <b>4</b></a>"), "Conflictos");
+    assertTrue(html.contains(">Solicitudes <b>3</b></a>"), "Solicitudes");
+    assertTrue(html.contains(">Por vencer <b>4</b></a>"), "Por vencer");
+    assertEquals(5, html.split("name=\"propuesta\"", -1).length, "una casilla por propuesta");
+    assertTrue(html.contains("name=\"pestana\" value=\"inicio\""), "vuelve a Por decidir");
+    assertFalse(html.contains("Entregas para mirar hoy"));
+
+    mvc.perform(get("/admin-inicio?escenario=vacio"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("aria-current=\"page\">Propuestas <b>0</b>")))
+        .andExpect(content().string(containsString(">Solicitudes <b>0</b></a>")))
+        .andExpect(content().string(containsString("No hay propuestas que esperen tu decisión.")))
+        .andExpect(content().string(not(containsString("name=\"propuesta\""))));
+    mvc.perform(get("/admin-inicio?escenario=error-camiones"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No pudimos cargar los camiones.")))
+        .andExpect(content().string(containsString("<dt>Camiones</dt>")))
+        .andExpect(content().string(not(containsString(">Ver camiones</a>"))));
+  }
+
   /** Solo el menú de más de 5 secciones (la administración) lleva "Más" en el celular. */
   @Test
   void soloLaAdministracionLlevaElMenuCompleto() throws Exception {
@@ -862,6 +1824,58 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("popovertarget=\"menu-completo\"")));
     mvc.perform(get("/donante-inicio"))
         .andExpect(content().string(not(containsString("menu-completo"))));
+  }
+
+  /**
+   * El menú del admin (DA-04, DA-17 y DA-25): Por decidir, Donaciones, Donantes, Organizaciones,
+   * Camiones y Ranking. Por decidir lleva al inicio y queda marcada también en Asignar y en sus
+   * respuestas; ya no hay Inicio ni Asignar donaciones.
+   */
+  @Test
+  void elMenuDelAdminEsElDelGalpon() throws Exception {
+    List<String> textos =
+        List.of("Por decidir", "Donaciones", "Donantes", "Organizaciones", "Camiones", "Ranking");
+    List<String> rutas =
+        List.of(
+            "/admin-inicio",
+            "/admin-donaciones",
+            "/admin-donantes",
+            "/admin-entidades",
+            "/admin-camiones",
+            "/admin-ranking");
+    for (String ruta :
+        List.of("/admin-inicio", "/admin-asignaciones", "/admin-asignaciones-aprobada")) {
+      MvcResult resultado =
+          mvc.perform(get(ruta))
+              .andExpect(status().isOk())
+              .andExpect(model().attribute("seccion", "Por decidir"))
+              .andReturn();
+      List<OpcionNavegacion> menu = menuDe(resultado);
+      assertEquals(textos, menu.stream().map(OpcionNavegacion::texto).toList(), ruta);
+      assertEquals(rutas, menu.stream().map(OpcionNavegacion::ruta).toList(), ruta);
+      assertEquals(
+          List.of(true, false, false, false, false, false),
+          menu.stream().map(OpcionNavegacion::actual).toList(),
+          ruta);
+      String html = resultado.getResponse().getContentAsString(StandardCharsets.UTF_8);
+      String nav = html.substring(html.indexOf("<nav id=\"menu\""), html.indexOf("</nav>"));
+      assertTrue(
+          Pattern.compile("<a\\s+href=\"/admin-inicio\"[^>]*aria-current=\"page\"")
+              .matcher(nav)
+              .find(),
+          ruta + ": Por decidir marcada");
+      assertFalse(nav.contains("Asignar donaciones"), ruta);
+      assertFalse(nav.contains("<span>Inicio</span>"), ruta);
+    }
+    MvcResult donaciones = mvc.perform(get("/admin-donaciones")).andReturn();
+    assertEquals(
+        List.of(false, true, false, false, false, false),
+        menuDe(donaciones).stream().map(OpcionNavegacion::actual).toList());
+  }
+
+  @SuppressWarnings("unchecked")
+  private static List<OpcionNavegacion> menuDe(MvcResult resultado) {
+    return (List<OpcionNavegacion>) resultado.getModelAndView().getModel().get("navegacion");
   }
 
   /** Las pantallas dibujadas de verdad (no caen en "sin dibujar"). */
@@ -893,7 +1907,7 @@ class SitioControllerTest {
           "entidad-inicio",
           "entidad-seguimiento",
           "entidad-perfil",
-          "entidad-recibidas",
+          "entidad-entrega-problema",
           "entidad-notificaciones",
           "entidad-necesidades",
           "entidad-seguimiento-confirmar",
@@ -928,10 +1942,51 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Sus donaciones · ")))
         .andExpect(content().string(containsString("Ver sus ")))
         .andExpect(content().string(containsString("Correo:")));
+    // DA-34: sigue la bandeja con ficha, en el galpón; la ficha lleva a sus donaciones, a
+    // registrar una y cada donación reciente a su detalle (DTI-51, ítem 5)
     mvc.perform(get("/admin-donantes?donante=juan"))
-        .andExpect(content().string(containsString("aria-current=\"true\"")))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("class=\"maestro\"")))
+        .andExpect(content().string(containsString("maestro-ficha")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*id=\"donante-juan\">\\s*<a [^>]*aria-current=\"true\".*")))
         .andExpect(content().string(containsString("href=\"/admin-donaciones?donante=juan\"")))
+        .andExpect(
+            content().string(containsString("href=\"/admin-donaciones-registrar?donante=juan\"")))
+        .andExpect(content().string(containsString("href=\"/admin-donaciones-detalle?donacion=")))
+        .andExpect(content().string(not(containsString("&amp;donacion="))))
+        .andExpect(content().string(containsString("class=\"lista\" data-forma=\"filas\"")))
         .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
+    // ADM2-01: en el galpón, sin la mesa ni el banner; el error de carga es el aviso del catálogo
+    mvc.perform(get("/admin-donantes"))
+        .andExpect(content().string(containsString("data-pantalla=\"donantes\"")))
+        .andExpect(content().string(containsString("data-alinea=\"entre arriba\"")))
+        .andExpect(content().string(containsString("aria-label=\"Vistas de donantes\"")))
+        // «Registrar donante» es la única acción llena
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*data-tono=\"principal\"\\s+href=\"/admin-donantes-registrar\".*")))
+        .andExpect(content().string(not(containsString("class=\"mesa"))))
+        .andExpect(content().string(not(containsString("class=\"banner\""))))
+        .andExpect(content().string(not(containsString("<p class=\"rotulo\">"))));
+    for (String ruta : List.of("/admin-donantes", "/admin-donantes?importar=abrir")) {
+      String html =
+          mvc.perform(get(ruta))
+              .andReturn()
+              .getResponse()
+              .getContentAsString(StandardCharsets.UTF_8);
+      // Fuera del botón «Filtrar» del componente listado, que es del catálogo
+      String sinLaBarra =
+          html.replaceFirst(
+              "<button class=\"boton\" data-tono=\"principal\" type=\"submit\">Filtrar</button>",
+              "");
+      assertEquals(1, sinLaBarra.split("data-tono=\"principal\"", -1).length - 1, ruta);
+    }
     mvc.perform(get("/admin-donantes?importar=abrir"))
         .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
         .andExpect(content().string(containsString("action=\"/admin-donantes-importando\"")))
@@ -942,7 +1997,10 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("aria-busy=\"true\"")));
     mvc.perform(get("/admin-donantes?escenario=error"))
         .andExpect(content().string(containsString("No pudimos cargar los donantes.")))
-        .andExpect(content().string(containsString("role=\"alert\"")));
+        .andExpect(
+            content().string(containsString("class=\"aviso\" data-tipo=\"error\" role=\"alert\"")))
+        .andExpect(content().string(containsString("escribinos")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
     // R11-01: la lista llega de a una página (en la maqueta, de a 5), con su paginador.
     mvc.perform(get("/admin-donantes"))
         .andExpect(content().string(containsString("Página 1 de 2")))
@@ -973,35 +2031,97 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("every 3s"))));
     mvc.perform(get("/admin-donantes-importado?escenario=sin-errores"))
         .andExpect(content().string(containsString("Todas las filas se importaron sin errores.")));
+    // ADM2-02: el avance y el resultado son páginas de estado en el galpón, con las migas
+    mvc.perform(get("/admin-donantes-importado"))
+        .andExpect(content().string(containsString("class=\"migas\"")))
+        .andExpect(content().string(containsString("data-pantalla=\"importacion\"")))
+        .andExpect(content().string(containsString("class=\"paginas\"")))
+        .andExpect(content().string(not(containsString("class=\"mesa"))));
+    mvc.perform(get("/admin-donantes-importado?escenario=cortada"))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    // El archivo que no se acepta: el mismo formulario, con el resumen arriba y el campo marcado
     mvc.perform(get("/admin-donantes-importar-error"))
-        .andExpect(content().string(containsString("No se importó ninguna fila.")));
+        .andExpect(content().string(containsString("No se importó ninguna fila.")))
+        .andExpect(content().string(containsString("href=\"#archivo\"")))
+        .andExpect(content().string(containsString("class=\"campo-error\"")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
     mvc.perform(post("/admin-donantes-importando"))
         .andExpect(redirectedUrl("/admin-donantes-importando"));
   }
 
   @Test
-  void registrarDonanteLlevaASuDonacionYNoDuplica() throws Exception {
+  void registrarDonanteEsUnFormularioDelGalponYRespondeConElAvisoEnDonantes() throws Exception {
+    // ADM2-10: deriva de A12 como Registrar donación: las migas a Donantes, los campos del
+    // catálogo, una sola acción llena y la salida sin registrar
     mvc.perform(get("/admin-donantes-registrar"))
         .andExpect(model().attribute("seccion", "Donantes"))
+        .andExpect(content().string(containsString("data-pantalla=\"registrar-donante\"")))
+        .andExpect(content().string(containsString("<nav class=\"migas\"")))
+        .andExpect(content().string(containsString("href=\"/admin-donantes\">Donantes</a>")))
+        .andExpect(content().string(containsString("<h1>Registrar donante</h1>")))
         .andExpect(content().string(containsString("Apellido *")))
-        .andExpect(content().string(containsString("action=\"/admin-donantes-registrado\"")));
+        .andExpect(content().string(containsString("action=\"/admin-donantes-registrado\"")))
+        .andExpect(content().string(containsString(">Volver sin registrar</a>")))
+        .andExpect(content().string(not(containsString("class=\"mesa"))))
+        .andExpect(content().string(not(containsString("class=\"banner"))))
+        .andExpect(content().string(not(containsString(">Cancelar</a>"))));
     mvc.perform(get("/admin-donantes-registrar?tipo=organizacion"))
         .andExpect(content().string(containsString("Razón social *")))
         .andExpect(content().string(not(containsString("Apellido *"))));
+    // El error de datos: el mismo formulario con el resumen arriba (un enlace a cada campo) y cada
+    // campo marcado en su lugar
     mvc.perform(get("/admin-donantes-registrar-error"))
+        .andExpect(content().string(containsString("data-pantalla=\"registrar-donante\"")))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
         .andExpect(content().string(containsString("Revisá 2 datos para seguir.")))
-        .andExpect(content().string(containsString("aria-invalid=\"true\"")));
+        .andExpect(content().string(containsString("href=\"#apellido\"")))
+        .andExpect(content().string(containsString("href=\"#correo\"")))
+        .andExpect(content().string(containsString("id=\"apellido-error\" class=\"campo-error\"")))
+        .andExpect(content().string(containsString("id=\"correo-error\" class=\"campo-error\"")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")))
+        .andExpect(content().string(not(containsString("class=\"banner"))));
+    // El error de guardado: el aviso en la página con el código
+    mvc.perform(get("/admin-donantes-registrar?escenario=error"))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(containsString("No pudimos guardar: no cambió nada.")))
+        .andExpect(content().string(containsString("Código: <code>a1b2c3d4e5f6</code>")))
+        .andExpect(content().string(not(containsString("class=\"banner"))));
     mvc.perform(post("/admin-donantes-registrado"))
         .andExpect(redirectedUrl("/admin-donantes-registrado"));
+    // DA-06 y DA-33: «registrado» es Donantes con el aviso breve, sin página propia; la donación se
+    // registra desde la ficha del donante («Registrar una donación»)
     mvc.perform(get("/admin-donantes-registrado"))
-        .andExpect(content().string(containsString("Registraste a Ana Ejemplo como donante.")))
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("seccion", "Donantes"))
+        .andExpect(content().string(containsString("data-pantalla=\"donantes\"")))
+        .andExpect(content().string(containsString("class=\"maestro\"")))
         .andExpect(
             content()
                 .string(
-                    containsString("href=\"/admin-donaciones-registrar?donante=ana-ejemplo\"")));
+                    matchesPattern(
+                        "(?s).*<h1>Donantes</h1>.*<div hx-swap-oob=\"beforeend:#avisos\"><div"
+                            + " class=\"aviso-breve\" data-estado=\"hecho\".*"
+                            + "data-signo=\"e-confirmada\".*"
+                            + "<p>Registraste a Ana Ejemplo como donante.</p>.*")))
+        .andExpect(content().string(containsString("Registrar una donación")))
+        .andExpect(content().string(not(containsString("Registrar su donación"))))
+        .andExpect(content().string(not(containsString("class=\"banner"))))
+        // La barra y el paginador siguen en Donantes, no en la respuesta
+        .andExpect(content().string(not(containsString("href=\"/admin-donantes-registrado"))));
     mvc.perform(get("/admin-donantes-registrado?escenario=ya-era"))
+        .andExpect(status().isOk())
         .andExpect(
-            content().string(containsString("Ana Ejemplo ya era donante. No cambiamos nada.")));
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<h1>Donantes</h1>.*<div class=\"aviso-breve\""
+                            + " data-estado=\"hecho\".*"
+                            + "<p>Ana Ejemplo ya era donante. No cambiamos nada.</p>.*")))
+        .andExpect(content().string(not(containsString("Registraste a Ana Ejemplo"))))
+        .andExpect(content().string(not(containsString("Registrar su donación"))))
+        .andExpect(content().string(not(containsString("href=\"/admin-donantes-registrado"))));
   }
 
   @Test
@@ -1009,6 +2129,7 @@ class SitioControllerTest {
     // Una sola lista, de la A a la Z; el estado es un filtro al lado de la búsqueda.
     mvc.perform(get("/admin-entidades?entidad=comedor"))
         .andExpect(model().attribute("seccion", "Organizaciones"))
+        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))))
         .andExpect(content().string(containsString("Activas · 46")))
         .andExpect(content().string(containsString("Pendientes · 3")))
         .andExpect(content().string(containsString("Inactivas · 3")))
@@ -1017,15 +2138,112 @@ class SitioControllerTest {
         .andExpect(
             content().string(containsString("aria-label=\"Aprobar: Merendero Ejemplo Este\"")))
         .andExpect(content().string(containsString("popover")))
-        .andExpect(content().string(matchesPattern("(?s).*Falta la constancia de\\s+domicilio.*")));
+        .andExpect(content().string(matchesPattern("(?s).*Falta la constancia de\\s+domicilio.*")))
+        // Lo que mandó: cada dato con su signo de la guía y la palabra
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*data-lista=\"documentos\".*<span data-tono=\"exito\">\\s*<svg[^>]*"
+                            + "data-signo=\"e-confirmada\".*</span> CUIT.*data-tono=\"error\">\\s*"
+                            + "<svg[^>]*data-signo=\"e-problema\".*</svg>\\s*Falta la constancia de"
+                            + " domicilio</li>.*")));
+    // DA-34: la bandeja con ficha en el galpón; la de una que pide sumarse lleva lo que mandó y sus
+    // tres acciones. Una sola acción llena fuera de los diálogos y de la barra del listado (que
+    // trae
+    // su propio «Filtrar»): «Registrar organización».
+    String hogar =
+        mvc.perform(get("/admin-entidades?entidad=hogar"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("data-pantalla=\"entidades\"")))
+            .andExpect(content().string(containsString("<ul class=\"maestro\" role=\"list\">")))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*<li id=\"entidad-hogar\">.*<section id=\"ficha\" class=\"tarjeta"
+                                + " maestro-ficha\".*Lo que mandó.*action=\"/admin-entidades-"
+                                + "aprobada\".*aria-label=\"Pedir corrección: Hogar Ejemplo"
+                                + " Norte\".*aria-label=\"Rechazar: Hogar Ejemplo Norte\".*")))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*<header class=\"racimo\" data-alinea=\"entre arriba\">\\s*"
+                                + "<div class=\"pila\" data-espacio=\"0\">\\s*<h1>Organizaciones"
+                                + "</h1>\\s*<p class=\"texto-chico\" data-tono=\"suave\">Elegí una"
+                                + " para ver su ficha\\. Al .*")))
+            .andExpect(content().string(not(containsString("class=\"mesa"))))
+            .andExpect(content().string(not(containsString("<p class=\"rotulo\">"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    String fueraDeLosDialogos =
+        hogar
+            .replaceAll("(?s)<dialog\\b.*?</dialog>", "")
+            .replaceAll("(?s)<form class=\"listado\".*?</form>", "");
+    assertEquals(
+        1,
+        apariciones(fueraDeLosDialogos, "data-tono=\"principal\""),
+        "una sola acción llena fuera de los diálogos y de la barra");
+    assertTrue(
+        fueraDeLosDialogos.matches(
+            "(?s).*<a class=\"boton\" data-tono=\"principal\" data-tamano=\"chico\""
+                + " href=\"/admin-entidades-registrar\">Registrar organización</a>.*"),
+        "la acción llena es Registrar organización");
+    // La pestaña Solicitudes de Por decidir (DA-25) llega a la lista sin parámetros
+    // La de partida se marca como elegida (aria-current) y no se abre sola en el celular, como en
+    // Donantes; con una pedida, no es de partida. Sin filtros, cuántas se ven va debajo de la
+    // lista.
+    mvc.perform(get("/admin-entidades"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*data-elegido=\"partida\">\\s*<a [^>]*aria-current=\"true\".*")))
+        .andExpect(content().string(not(containsString("Coinciden"))))
+        .andExpect(
+            content()
+                .string(matchesPattern("(?s).*Mostrando 1 a \\d+ de \\d+ organizaciones\\..*")));
     mvc.perform(get("/admin-entidades?ver=inactivas"))
         .andExpect(content().string(containsString("Inactiva desde el 20 de agosto")));
     mvc.perform(get("/admin-entidades?escenario=vacio&ver=pendientes"))
         .andExpect(content().string(containsString("Pendientes · 0")))
         .andExpect(
             content().string(containsString("Ninguna organización pide sumarse por ahora.")));
+    // ADM2-04: el error es el aviso en la página del catálogo, con el signo del problema
     mvc.perform(get("/admin-entidades?escenario=error"))
-        .andExpect(content().string(containsString("No pudimos cargar las organizaciones.")));
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<div class=\"aviso\" data-tipo=\"error\" role=\"alert\">\\s*<svg"
+                            + "[^>]*data-signo=\"e-problema\".*<p class=\"aviso-titulo\">No"
+                            + " pudimos cargar las organizaciones\\.</p>.*escribinos\\s+con este"
+                            + " código.*")))
+        .andExpect(content().string(not(containsString("id=\"error-titulo\""))));
+    // ADM2-05 (DA-06): cada respuesta es la lista con el aviso breve con signo del galpón
+    for (String[] respuesta :
+        new String[][] {
+          {"/admin-entidades-aprobada", "Aprobaste a Hogar Ejemplo Norte."},
+          {"/admin-entidades-correccion", "Le pedimos a Merendero Ejemplo Este"},
+          {"/admin-entidades-rechazada", "Rechazaste la solicitud de Comedor Ejemplo Oeste."}
+        }) {
+      mvc.perform(get(respuesta[0]))
+          .andExpect(status().isOk())
+          .andExpect(content().string(containsString("data-pantalla=\"entidades\"")))
+          .andExpect(
+              content()
+                  .string(
+                      matchesPattern(
+                          "(?s).*<h1>Organizaciones</h1>.*<div hx-swap-oob=\"beforeend:#avisos\">"
+                              + "<div class=\"aviso-breve\" data-estado=\"hecho\".*"
+                              + "data-signo=\"e-confirmada\".*<p>"
+                              + Pattern.quote(respuesta[1])
+                              + ".*class=\"maestro\".*")))
+          .andExpect(content().string(not(containsString("class=\"mesa"))));
+    }
     mvc.perform(get("/admin-entidades-aprobada"))
         .andExpect(content().string(containsString("Aprobaste a Hogar Ejemplo Norte.")))
         .andExpect(content().string(containsString("Pendientes · 2")))
@@ -1044,10 +2262,96 @@ class SitioControllerTest {
         .andExpect(content().string(not(containsString("pidió sumarse el 14 de octubre"))));
     mvc.perform(post("/admin-entidades-rechazada"))
         .andExpect(redirectedUrl("/admin-entidades-rechazada"));
+  }
+
+  /**
+   * ADM2-12: Registrar organización deriva de A12 en el galpón, como Registrar donación; el error
+   * de datos es un estado del mismo formulario. ADM2-13 (DA-06): «registrada» es Organizaciones con
+   * el aviso breve, sin página propia ni el banner de antes.
+   */
+  @Test
+  void registrarOrganizacionEsElFormularioDelGalponYRegistradaEsLaListaConElAviso()
+      throws Exception {
+    String formulario =
+        mvc.perform(get("/admin-entidades-registrar"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("data-pantalla=\"registrar-organizacion\"")))
+            .andExpect(content().string(containsString("<h1>Registrar organización</h1>")))
+            .andExpect(
+                content().string(containsString("href=\"/admin-entidades\">Organizaciones</a>")))
+            .andExpect(
+                content()
+                    .string(
+                        containsString(
+                            "<p><a href=\"/admin-entidades\">Volver sin registrar</a></p>")))
+            .andExpect(content().string(containsString("name=\"calle\"")))
+            .andExpect(content().string(containsString("name=\"responsable\"")))
+            .andExpect(content().string(not(containsString("class=\"mesa"))))
+            .andExpect(content().string(not(containsString("class=\"banner\""))))
+            .andExpect(content().string(not(containsString("<p class=\"rotulo\">"))))
+            .andExpect(content().string(not(containsString("class=\"campo-error\""))))
+            .andExpect(content().string(not(containsString(">Cancelar<"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    String registro =
+        formulario.substring(formulario.indexOf("action=\"/admin-entidades-registrada\""));
+    assertEquals(
+        1,
+        apariciones(registro, "data-tono=\"principal\""),
+        "Registrar organización lleva una sola acción llena");
+    // El error de datos: el resumen arriba con un enlace al campo, y el campo marcado en su lugar
     mvc.perform(get("/admin-entidades-registrar-error"))
-        .andExpect(content().string(containsString("Falta la dirección: la usamos para")));
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("data-pantalla=\"registrar-organizacion\"")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<div class=\"aviso\" data-tipo=\"error\" role=\"alert\" tabindex=\"-1\""
+                            + " id=\"resumen\"\\s+autofocus>\\s*<svg[^>]*data-signo=\"e-problema\".*"
+                            + "<p class=\"aviso-titulo\">Revisá 1 dato para seguir\\.</p>.*"
+                            + "href=\"#calle\">Falta la dirección</a>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<div class=\"campo\" data-estado=\"error\">\\s*<label"
+                            + " for=\"calle\">Calle \\*</label>\\s*<p id=\"calle-error\""
+                            + " class=\"campo-error\">.*Falta la dirección: la usamos para.*"
+                            + "aria-describedby=\"calle-error\" aria-invalid=\"true\".*")))
+        .andExpect(content().string(containsString("value=\"Escuela Ejemplo N.º 5\"")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    // El error del servicio es el aviso en la página, con el código
+    mvc.perform(get("/admin-entidades-registrar?escenario=error"))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<div class=\"aviso\" data-tipo=\"error\" role=\"alert\">\\s*<svg"
+                            + "[^>]*data-signo=\"e-problema\".*<p class=\"aviso-titulo\">No"
+                            + " pudimos guardar: no cambió nada\\.</p>.*escribinos\\s+con este"
+                            + " código.*")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
+    mvc.perform(post("/admin-entidades-registrada"))
+        .andExpect(redirectedUrl("/admin-entidades-registrada"));
     mvc.perform(get("/admin-entidades-registrada"))
-        .andExpect(content().string(containsString("necesita aprobación.")));
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("data-pantalla=\"entidades\"")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<h1>Organizaciones</h1>.*<div hx-swap-oob=\"beforeend:#avisos\">"
+                            + "<div class=\"aviso-breve\" data-estado=\"hecho\".*"
+                            + "data-signo=\"e-confirmada\".*<p>"
+                            + Pattern.quote(
+                                "Registraste a Escuela Ejemplo N.º 5. Queda activa: la registraste"
+                                    + " vos, no necesita aprobación.")
+                            + "</p>.*class=\"maestro\".*")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))))
+        .andExpect(content().string(not(containsString("class=\"mesa"))))
+        .andExpect(content().string(not(containsString("href=\"/admin-entidades-registrada"))));
   }
 
   @Test
@@ -1056,22 +2360,27 @@ class SitioControllerTest {
         .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(content().string(containsString("7 en el depósito · 4 asignadas · 1 en camino")))
         .andExpect(content().string(containsString("Al 15 de octubre de 2026, 18:30.")))
-        // R11-34: una bandeja; la ficha de partida es la de la primera y en el celular no se abre
-        // sola
-        .andExpect(content().string(containsString("data-elegido=\"partida\"")))
+        // ADM1-08 (A03): la tabla del catálogo; cada fila lleva a su detalle, con el sello de su
+        // estado (en el depósito, el de registrada), y ya no hay bandeja con ficha
+        .andExpect(content().string(containsString("<table class=\"tabla\">")))
+        .andExpect(
+            content().string(containsString("href=\"/admin-donaciones-detalle?donacion=leche\"")))
         .andExpect(
             content()
-                .string(containsString("href=\"/admin-donaciones?donacion=leche#donacion-leche\"")))
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"registrada\">.*"
+                            + "En el depósito</span><small>Vence el 17 de octubre, en 2"
+                            + " días</small>.*")))
+        .andExpect(content().string(not(containsString("class=\"maestro\""))))
+        .andExpect(content().string(not(containsString("Cerrar la ficha"))))
         .andExpect(content().string(containsString("Buscar por lo que se donó")))
-        .andExpect(content().string(containsString("Mostrando 1 a 5 de 14 donaciones.")))
-        .andExpect(content().string(containsString("Ver las propuestas que la piden")));
-    mvc.perform(get("/admin-donaciones?donacion=arroz"))
-        .andExpect(content().string(containsString("aria-current=\"true\"")))
-        .andExpect(content().string(not(containsString("data-elegido=\"partida\""))));
-    // La pedida que no está en la página (los fideos están en la segunda) igual muestra su ficha
-    mvc.perform(get("/admin-donaciones?donacion=fideos"))
-        .andExpect(content().string(containsString("Cerrar la ficha")))
-        .andExpect(content().string(containsString("Solo se puede marcar como vencida")));
+        .andExpect(content().string(containsString("Mostrando 1 a 5 de 14 donaciones.")));
+    // Los fideos están en la segunda página: su fila lleva a su detalle
+    mvc.perform(get("/admin-donaciones?pagina=2"))
+        .andExpect(
+            content().string(containsString("href=\"/admin-donaciones-detalle?donacion=fideos\"")))
+        .andExpect(content().string(containsString("data-estado=\"asignada\"")));
     mvc.perform(get("/admin-donaciones?buscar=leche&categoria=alimentos"))
         .andExpect(content().string(containsString("Coincide 1 donación.")))
         .andExpect(content().string(containsString("Sacar los filtros")));
@@ -1101,6 +2410,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("No pudimos cargar las donaciones.")));
     mvc.perform(get("/admin-donaciones-detalle"))
         .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(content().string(containsString("Ver las propuestas que la piden")))
         .andExpect(content().string(containsString("¿Marcar Leche en polvo como vencida?")))
         .andExpect(content().string(containsString("popover")))
         .andExpect(
@@ -1113,34 +2423,107 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("cambió mientras la mirabas")));
     mvc.perform(post("/admin-donaciones-detalle-vencida"))
         .andExpect(redirectedUrl("/admin-donaciones-detalle-vencida"));
+    // DA-07: la vencida lleva el par neutro con su palabra, no el sello del problema
     mvc.perform(get("/admin-donaciones-detalle-vencida"))
         .andExpect(content().string(containsString("La marcaste como vencida el 15 de octubre")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<span class=\"estado\" data-estado=\"vencida\">.*Vencida</span>.*")))
+        .andExpect(content().string(not(containsString("data-estado=\"problema\""))))
         .andExpect(content().string(not(containsString("¿Marcar Leche en polvo como vencida?"))));
   }
 
   @Test
   void registrarDonacionEligeAlDonanteYSumaBienes() throws Exception {
-    mvc.perform(get("/admin-donaciones-registrar"))
-        .andExpect(content().string(containsString("Buscar por nombre o documento")))
-        .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
-        .andExpect(content().string(containsString("formnovalidate")))
-        .andExpect(content().string(not(containsString("Bien 2"))));
+    // ADM1-11: deriva de A12, en el galpón: las migas a Donaciones, una sola acción llena y la
+    // salida sin registrar
+    String formulario =
+        mvc.perform(get("/admin-donaciones-registrar"))
+            .andExpect(status().isOk())
+            .andExpect(model().attribute("seccion", "Donaciones"))
+            .andExpect(content().string(containsString("Buscar por nombre o documento")))
+            .andExpect(content().string(containsString("enctype=\"multipart/form-data\"")))
+            .andExpect(content().string(containsString("formnovalidate")))
+            .andExpect(content().string(containsString("data-pantalla=\"registrar-donacion\"")))
+            .andExpect(
+                content()
+                    .string(
+                        matchesPattern(
+                            "(?s).*<nav class=\"migas\" aria-label=\"Dónde estás\">\\s*<ol"
+                                + " role=\"list\">\\s*<li><a href=\"/admin-donaciones\">"
+                                + "Donaciones</a>.*<li aria-current=\"page\">Registrar"
+                                + " donación</li>.*")))
+            .andExpect(content().string(containsString("data-fijo=\"celular\"")))
+            .andExpect(content().string(containsString(">Volver sin registrar</a>")))
+            .andExpect(content().string(not(containsString(">Cancelar</a>"))))
+            .andExpect(content().string(not(containsString("class=\"mesa"))))
+            .andExpect(content().string(not(containsString("Bien 2"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    // El formulario del registro lleva una sola acción llena; la barra de Quién dona (el
+    // componente listado) trae su propio «Buscar»
+    String registro =
+        formulario.substring(formulario.indexOf("action=\"/admin-donaciones-registrada\""));
+    assertEquals(
+        1,
+        registro.split("data-tono=\"principal\"", -1).length - 1,
+        "Registrar donación lleva una sola acción llena");
     mvc.perform(get("/admin-donaciones-registrar?donante=ana-ejemplo&bienes=2"))
         .andExpect(content().string(containsString("<b>Ana Ejemplo</b>")))
         .andExpect(content().string(containsString("Bien 2")))
         .andExpect(content().string(containsString("value=\"ana-ejemplo\"")));
     mvc.perform(get("/admin-donaciones-registrar?buscar=ejemplo"))
         .andExpect(content().string(containsString("2 donantes coinciden con la búsqueda.")));
+    // El error es un estado del mismo formulario: el resumen arriba y el campo marcado en su lugar
     mvc.perform(get("/admin-donaciones-registrar-error"))
-        .andExpect(content().string(containsString("Revisá 2 datos para seguir.")))
-        .andExpect(content().string(containsString("aria-invalid=\"true\"")));
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("<p class=\"aviso-titulo\">Revisá 2 datos para seguir.</p>")))
+        .andExpect(content().string(containsString("href=\"#cantidad-2\"")))
+        .andExpect(
+            content().string(containsString("id=\"cantidad-2-error\" class=\"campo-error\"")))
+        .andExpect(content().string(containsString("aria-invalid=\"true\"")))
+        .andExpect(content().string(containsString("data-pantalla=\"registrar-donacion\"")));
     mvc.perform(get("/admin-donaciones-registrar-error?escenario=inactivo"))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
         .andExpect(
             content().string(containsString("Pedro Ejemplo está dado de baja como donante")));
+    mvc.perform(get("/admin-donaciones-registrar?escenario=error"))
+        .andExpect(content().string(containsString("No pudimos guardar: no cambió nada.")))
+        .andExpect(content().string(containsString("Código: <code>a1b2c3d4e5f6</code>")));
     mvc.perform(post("/admin-donaciones-registrada"))
         .andExpect(redirectedUrl("/admin-donaciones-registrada"));
+    // DA-06: «registrada» es Donaciones con el aviso breve, sin página propia ni el banner de hoy;
+    // el paginador sigue en Donaciones
     mvc.perform(get("/admin-donaciones-registrada"))
-        .andExpect(content().string(containsString("Caja de alimentos, 3 bienes.")));
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("seccion", "Donaciones"))
+        .andExpect(content().string(containsString("data-pantalla=\"donaciones\"")))
+        .andExpect(content().string(containsString("<h1>Donaciones</h1>")))
+        .andExpect(content().string(containsString("class=\"aviso-breve\" data-estado=\"hecho\"")))
+        // U1: el aviso de la acción hecha va debajo de la cabecera, con el signo, como en la ola
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<h1>Donaciones</h1>.*<div hx-swap-oob=\"beforeend:#avisos\"><div"
+                            + " class=\"aviso-breve\".*data-signo=\"e-confirmada\".*"
+                            + "Registraste la donación.*")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Registraste la donación: Caja de alimentos, 3 bienes. Quedó en el"
+                            + " Depósito Central.")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))))
+        .andExpect(content().string(not(containsString("Registrar otra"))))
+        .andExpect(content().string(not(containsString("href=\"/admin-donaciones-registrada"))));
     mvc.perform(get("/admin-donaciones-detalle?donacion=caja"))
         .andExpect(content().string(containsString("Caja de alimentos")))
         .andExpect(content().string(containsString("Los 3 bienes de la donación")))
@@ -1150,16 +2533,62 @@ class SitioControllerTest {
   @Test
   void lasPropuestasSeApruebanODescartan() throws Exception {
     mvc.perform(get("/admin-asignaciones"))
-        .andExpect(model().attribute("seccion", "Asignar donaciones"))
+        .andExpect(model().attribute("seccion", "Por decidir"))
         .andExpect(content().string(containsString("Propuestas sin problemas · 4")))
         .andExpect(content().string(containsString("Cubre 10 de 12 unidades")))
         .andExpect(
             content()
                 .string(
                     containsString(
-                        "aria-label=\"Aprobar: propuesta para Comedor Barrio Ejemplo\"")))
+                        "name=\"propuesta\" value=\"lentejas\" aria-label=\"Elegir: Lentejas · 15"
+                            + " kg (de Juan Ejemplo), para Comedor Barrio Ejemplo\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("data-elegidas=\"ninguna\">Aprobar las elegidas</span><span")))
+        // «Aprobar las N», o «Aprobar la elegida» con una: lo escribe la hoja de la tabla
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "data-elegidas=\"alguna\">Aprobar <span data-parte=\"cuenta-aprobar\">"
+                            + "</span></span></button>")))
+        .andExpect(
+            content().string(containsString("<span data-parte=\"cuenta\"></span> de 4.</b>")))
+        // ADM1-04: la casilla de elegir todas es un enlace que vuelve con todas marcadas
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<a class=\"tabla-casilla\" href=\"/admin-asignaciones?elegir=todas\"")))
+        .andExpect(
+            content().string(containsString("aria-label=\"Elegir todas las propuestas\"></a>")))
+        .andExpect(content().string(not(containsString("checked=\"checked\"></label>"))))
+        .andExpect(
+            content().string(containsString("formaction=\"/admin-asignaciones-descartada\"")))
         .andExpect(content().string(containsString("Hay 4 propuestas en conflicto.")))
-        .andExpect(content().string(containsString("Ver todas las decididas")));
+        .andExpect(
+            content().string(containsString("href=\"/admin-asignaciones?vista=decididas\"")));
+    mvc.perform(get("/admin-asignaciones?elegir=todas"))
+        .andExpect(
+            content()
+                .string(
+                    containsString("para Comedor Barrio Ejemplo\" checked=\"checked\"></label>")))
+        .andExpect(
+            content()
+                .string(containsString("<a class=\"tabla-casilla\" href=\"/admin-asignaciones\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "aria-label=\"Sacar la elección de todas las propuestas\""
+                            + " data-estado=\"elegida\"></a>")));
+    mvc.perform(get("/admin-asignaciones?algoritmo=las-dos&pagina=1"))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/admin-asignaciones?elegir=todas&amp;algoritmo=las-dos&amp;pagina=1\"")));
     mvc.perform(get("/admin-asignaciones?escenario=vacio"))
         .andExpect(content().string(containsString("No hay propuestas que esperen tu decisión.")));
     mvc.perform(get("/admin-asignaciones?escenario=corriendo"))
@@ -1209,10 +2638,33 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Propuestas sin problemas · 3")));
     mvc.perform(get("/admin-asignaciones-descartada"))
         .andExpect(content().string(containsString("Descartaste la propuesta para Merendero")));
+    // U4/U7: la que no se pudo aprobar va sin casilla (fuera de la aprobación juntas), con su
+    // sello,
+    // y el aviso del catálogo ofrece descartarla
     mvc.perform(get("/admin-asignaciones-error"))
         .andExpect(content().string(containsString("ya no está activa")))
+        .andExpect(content().string(containsString("class=\"aviso\" data-tipo=\"error\"")))
+        .andExpect(content().string(not(containsString("value=\"leche\" aria-label=\"Elegir:"))))
+        .andExpect(content().string(containsString("value=\"lentejas\" aria-label=\"Elegir:")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*Elegiste\\s+<span data-parte=\"cuenta\"></span> de 3\\..*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<input type=\"hidden\" name=\"propuesta\" value=\"leche\">.*"
+                            + "Descartar la\\s+propuesta</button>.*")))
         .andExpect(
             content().string(not(containsString("Aprobar: propuesta para Merendero Ejemplo Sur"))));
+    // U1/U6 (DA-25): la mesa lleva la fecha y las cuentas de /admin-inicio
+    mvc.perform(get("/admin-asignaciones"))
+        .andExpect(content().string(containsString("Jueves 15 de octubre de 2026.")))
+        .andExpect(content().string(containsString("Solicitudes <b>3</b>")))
+        .andExpect(content().string(containsString("Por vencer <b>4</b>")))
+        .andExpect(content().string(not(containsString("class=\"banner\""))));
     mvc.perform(get("/admin-asignaciones-error?escenario=propia"))
         .andExpect(content().string(containsString("de la misma organización que la")));
     mvc.perform(get("/admin-asignaciones-error?escenario=cambio"))
@@ -1275,7 +2727,11 @@ class SitioControllerTest {
         .andExpect(
             content().string(containsString("Calculado el 30 de septiembre de 2026, 23:59.")))
         .andExpect(content().string(containsString("hx-boost=\"true\"")))
-        .andExpect(content().string(containsString("<caption>")));
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "<caption class=\"solo-lectores\">Donantes de septiembre de 2026")));
     mvc.perform(get("/admin-ranking?mes=2026-08"))
         .andExpect(content().string(containsString("Ranking de donantes de agosto de 2026")))
         .andExpect(content().string(containsString("value=\"2026-08\" checked")))
@@ -1342,7 +2798,7 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Sos donante Sostenedor desde el")))
         .andExpect(
             content().string(containsString("href=\"/donante-misiones\" aria-current=\"page\"")))
-        .andExpect(content().string(containsString("aria-label=\"Gran Aporte: 12 de 50 bienes\"")))
+        .andExpect(content().string(containsString("aria-label=\"Gran Aporte: 12 de 50\"")))
         .andExpect(content().string(containsString("Completa el 3 de agosto de 2026")))
         .andExpect(
             content().string(containsString("Empieza a contar cuando completes Gran Aporte.")))
@@ -1351,10 +2807,18 @@ class SitioControllerTest {
                 .string(containsString("Sus misiones se ven cuando completes las de Sostenedor.")))
         .andExpect(content().string(containsString("aria-label=\"Tus insignias\"")))
         .andExpect(content().string(containsString("(2 de 6)")))
+        .andExpect(
+            content()
+                .string(containsString("<details class=\"plegable\" data-categoria=\"completa\">")))
+        .andExpect(content().string(containsString("Colaborador · completa")))
+        .andExpect(content().string(containsString("Ver las misiones")))
+        .andExpect(content().string(containsString("Llevás 12 de 50.")))
+        .andExpect(content().string(containsString("aria-label=\"Gran Aporte, en curso\"")))
+        .andExpect(content().string(containsString("data-papel=\"hueco\"")))
         .andExpect(content().string(not(containsString("Notificaciones, 4 sin leer"))));
     mvc.perform(get("/donante-misiones?escenario=vacio").sessionAttr("cuenta", "persona"))
         .andExpect(content().string(containsString("Todavía no tenés insignias")))
-        .andExpect(content().string(containsString("0 de 3 meses")))
+        .andExpect(content().string(containsString("Llevás 0 de 3.")))
         .andExpect(content().string(containsString("(0 de 6)")));
     mvc.perform(get("/donante-misiones?escenario=lento").sessionAttr("cuenta", "persona"))
         .andExpect(content().string(containsString("role=\"status\">Cargando tus misiones")))
@@ -1376,10 +2840,11 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones").sessionAttr("cuenta", "persona"))
         .andExpect(status().isOk())
         .andExpect(view().name("persona/donante-donaciones"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(content().string(containsString("Martina Ruiz")));
     mvc.perform(get("/donante-notificaciones").sessionAttr("cuenta", "persona"))
-        .andExpect(view().name("persona/donante-notificaciones"));
+        .andExpect(view().name("persona/donante-notificaciones"))
+        .andExpect(content().string(containsString("<h1>Novedades</h1>")));
     mvc.perform(get("/donante-perfil").sessionAttr("cuenta", "persona"))
         .andExpect(view().name("persona/donante-perfil"))
         .andExpect(model().attribute("seccion", "Mi perfil"));
@@ -1387,7 +2852,7 @@ class SitioControllerTest {
     mvc.perform(get("/donante-donaciones-nueva").sessionAttr("cuenta", "persona"))
         .andExpect(status().isOk())
         .andExpect(view().name("aviso-persona"))
-        .andExpect(model().attribute("seccion", "Mis donaciones"))
+        .andExpect(model().attribute("seccion", "Donaciones"))
         .andExpect(content().string(containsString("la maqueta solo muestra Misiones e insignias")))
         .andExpect(content().string(containsString("href=\"/donante-inicio?cuenta=empresa\"")));
     mvc.perform(get("/donante-inicio?cuenta=empresa").sessionAttr("cuenta", "persona"))
@@ -1400,33 +2865,134 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("Martina Ruiz, persona donante")));
   }
 
+  // DA-02: Donaciones recibidas y Seguir entregas son una sola pantalla, Entregas (arquetipo A10).
   @Test
-  void laEntidadSigueLoQueVieneASuPuerta() throws Exception {
-    mvc.perform(get("/entidad-seguimiento"))
-        .andExpect(status().isOk())
-        .andExpect(model().attribute("seccion", "Seguir entregas"))
-        .andExpect(
-            content().string(containsString("href=\"/entidad-seguimiento\" aria-current=\"page\"")))
-        .andExpect(content().string(containsString("Lo que viene a tu puerta")))
-        .andExpect(
-            content().string(containsString("class=\"mapa-dibujo tierra-impresa\" aria-hidden")))
-        .andExpect(content().string(containsString("estacion-ficha estacion-ficha--5")))
-        .andExpect(content().string(not(containsString("estacion-ficha--6"))))
-        .andExpect(content().string(containsString("Calle Ejemplo 450")))
-        .andExpect(content().string(containsString("entrega=lentejas")))
-        .andExpect(content().string(containsString("entrega=ropa")))
-        .andExpect(content().string(containsString("Última noticia: 14 de octubre, 16:40.")))
-        .andExpect(content().string(containsString("actualizada hoy a las 18:25")))
-        .andExpect(content().string(containsString("href=\"/entidad-recibidas?estado=recibidas\"")))
-        .andExpect(content().string(not(containsString("Confirmaste la recepción"))));
+  void laEntidadVeSusEntregasEnUnaSolaPantalla() throws Exception {
+    String entregas =
+        mvc.perform(get("/entidad-seguimiento"))
+            .andExpect(status().isOk())
+            .andExpect(model().attribute("seccion", "Entregas"))
+            .andExpect(
+                content()
+                    .string(containsString("href=\"/entidad-seguimiento\" aria-current=\"page\"")))
+            .andExpect(content().string(containsString("<h1>Entregas</h1>")))
+            .andExpect(content().string(containsString("role=\"search\"")))
+            .andExpect(content().string(containsString("Para confirmar")))
+            .andExpect(content().string(containsString("data-papel=\"protagonista\"")))
+            .andExpect(content().string(containsString("Espera tu confirmación")))
+            .andExpect(content().string(containsString("entrega=lentejas")))
+            .andExpect(content().string(containsString("entrega=ropa")))
+            .andExpect(content().string(containsString("Por llegar")))
+            .andExpect(content().string(containsString("Última noticia: 14 de octubre, 16:40.")))
+            .andExpect(content().string(containsString("actualizada hoy a las 18:25")))
+            .andExpect(
+                content()
+                    .string(containsString("href=\"/entidad-entrega-problema?entrega=aceite\"")))
+            .andExpect(content().string(containsString("Todavía sin fecha de nueva salida.")))
+            .andExpect(content().string(containsString("Confirmadas en octubre")))
+            .andExpect(
+                content().string(containsString("Recibió: Comedor Barrio Ejemplo, el 10 de")))
+            // A10 (D3): cada confirmada es su etiqueta, con la foto y el vínculo a lo asentado
+            .andExpect(
+                content()
+                    .string(containsString("class=\"etiqueta-entrega etiqueta-entrega--costado\"")))
+            .andExpect(content().string(containsString("/img/ilustraciones/escena-puerta.svg")))
+            .andExpect(content().string(containsString("Foto de ejemplo")))
+            .andExpect(
+                content()
+                    .string(containsString("href=\"/entidad-seguimiento-sellada?entrega=r10\"")))
+            .andExpect(content().string(not(containsString("entidad-recibidas"))))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    // Las tarjetas van en un orden fijo: por confirmar, con problema, por salir y confirmadas.
+    int confirmar = entregas.indexOf("id=\"confirmar-titulo\"");
+    int aceite = entregas.indexOf("id=\"entrega-aceite\"");
+    int leche = entregas.indexOf("id=\"entrega-leche\"");
+    int confirmadas = entregas.indexOf("id=\"confirmadas-titulo\"");
+    assertTrue(confirmar > 0 && confirmar < aceite, "por confirmar, antes que con problema");
+    assertTrue(aceite < leche, "con problema, antes que por salir");
+    assertTrue(leche < confirmadas, "por salir, antes que las confirmadas");
+    mvc.perform(get("/entidad-seguimiento?escenario=sin-puerta"))
+        .andExpect(content().string(containsString("No tenés entregas para")))
+        .andExpect(content().string(not(containsString("Para confirmar"))))
+        .andExpect(content().string(not(containsString("data-papel=\"protagonista\""))));
+    mvc.perform(get("/entidad-seguimiento?estado=recibidas"))
+        .andExpect(content().string(containsString("Mostrando: Confirmadas (6).")))
+        .andExpect(content().string(not(containsString("Por llegar"))));
+    mvc.perform(get("/entidad-seguimiento?escenario=sin-resultados"))
+        .andExpect(content().string(containsString("No hay entregas en ese estado.")));
     mvc.perform(get("/entidad-seguimiento?escenario=vacio"))
-        .andExpect(content().string(containsString("No tenés entregas por recibir.")))
-        .andExpect(content().string(not(containsString("mapa-dibujo"))));
+        .andExpect(
+            content()
+                .string(containsString("Todavía no se asignaron donaciones a tu organización.")))
+        .andExpect(content().string(not(containsString("Por llegar"))));
     mvc.perform(get("/entidad-seguimiento?escenario=lento"))
         .andExpect(content().string(containsString("role=\"status\">Cargando tus entregas")));
     mvc.perform(get("/entidad-seguimiento?escenario=error"))
         .andExpect(content().string(containsString("No pudimos cargar tus entregas.")))
         .andExpect(content().string(containsString("role=\"alert\"")));
+  }
+
+  // DA-02: la ruta vieja de Donaciones recibidas lleva a Entregas con la misma consulta.
+  @Test
+  void donacionesRecibidasRedirigeAEntregasConLaMismaConsulta() throws Exception {
+    mvc.perform(get("/entidad-recibidas")).andExpect(redirectedUrl("/entidad-seguimiento"));
+    mvc.perform(get("/entidad-recibidas?estado=en-camino&categoria=ropa"))
+        .andExpect(redirectedUrl("/entidad-seguimiento?estado=en-camino&categoria=ropa"));
+  }
+
+  // ORG-08: la entrega que no pudo llegar tiene su página, dentro de Entregas (arquetipo A11).
+  @Test
+  void laEntregaConProblemaDiceQuePasoYQueSigue() throws Exception {
+    mvc.perform(get("/entidad-entrega-problema?entrega=aceite"))
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("seccion", "Entregas"))
+        .andExpect(
+            content().string(containsString("href=\"/entidad-seguimiento\" aria-current=\"page\"")))
+        .andExpect(content().string(containsString("<h1>Aceite de girasol, 10 litros</h1>")))
+        .andExpect(content().string(containsString("El camión no pudo llegar el 14 de octubre.")))
+        .andExpect(content().string(containsString("<dd>Todavía sin fecha de nueva salida</dd>")))
+        .andExpect(content().string(containsString("<dd>14 de octubre, 16:40.</dd>")))
+        .andExpect(content().string(containsString("Tu necesidad de aceite de girasol")))
+        // A11: el avance de la necesidad, con la cuenta de Necesidades (HG-04)
+        .andExpect(content().string(containsString("Una sola vez · Hasta el 20 de octubre")))
+        .andExpect(content().string(containsString("aria-label=\"Llegaron 0 de 20 litros\"")))
+        .andExpect(
+            content()
+                .string(containsString("Llegaron 0 de 20 litros. Esta entrega trae 10 litros.")))
+        .andExpect(content().string(containsString("Al 15 de octubre de 2026.")))
+        .andExpect(content().string(containsString("Tu foto de la entrega")))
+        .andExpect(content().string(containsString("Volver a")))
+        .andExpect(content().string(not(containsString("17 de octubre"))));
+    mvc.perform(get("/entidad-entrega-problema?entrega=pan"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No encontramos esa entrega con problema.")));
+  }
+
+  // DA-02 y DA-05: el menú de la organización es Inicio, Necesidades, Entregas y Ayuda; Ayuda es
+  // la página Para organizaciones.
+  @Test
+  void elMenuDeLaOrganizacionEsInicioNecesidadesEntregasYAyuda() throws Exception {
+    String inicio =
+        mvc.perform(get("/entidad-inicio"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    String menu = inicio.substring(inicio.indexOf("id=\"menu\""));
+    menu = menu.substring(0, menu.indexOf("</nav>"));
+    List<String> secciones =
+        Pattern.compile("<span>([^<]+)</span>")
+            .matcher(menu)
+            .results()
+            .map(m -> m.group(1))
+            .toList();
+    assertEquals(List.of("Inicio", "Necesidades", "Entregas", "Ayuda"), secciones);
+    assertTrue(menu.contains("href=\"/entidad-seguimiento\""), menu);
+    assertTrue(menu.contains("href=\"/publico-para-entidades\""), menu);
+    assertTrue(menu.contains("#nav-ayuda"), menu);
+    assertFalse(menu.contains("entidad-recibidas"), menu);
   }
 
   @Test
@@ -1452,6 +3018,76 @@ class SitioControllerTest {
         .andExpect(content().string(containsString("No pudimos guardar los cambios.")));
     mvc.perform(get("/entidad-perfil?escenario=sin-conexion"))
         .andExpect(content().string(containsString("No sabemos si se guardó.")));
+  }
+
+  /**
+   * DA-05 (PUB1-07): Nosotros, Para donantes y Para organizaciones siguen en sus rutas y se llaman
+   * «Cómo funciona», «Cómo donar» y «Ayuda». Derivan de A01: el título sobre la trama, la raíz
+   * numerada de 5 pasos con el recorrido y una sola acción llena por página.
+   */
+  @Test
+  void lasPaginasParaConocerTienenSuNombreNuevoYLaComposicionDeLaPortada() throws Exception {
+    List<String[]> paginas =
+        List.of(
+            new String[] {"/publico-nosotros", "Cómo funciona"},
+            new String[] {"/publico-para-donantes", "Cómo donar"},
+            new String[] {"/publico-para-entidades", "Ayuda"});
+    for (String[] pagina : paginas) {
+      String html =
+          mvc.perform(get(pagina[0]))
+              .andExpect(status().isOk())
+              .andExpect(view().name(pagina[0].substring(1)))
+              .andReturn()
+              .getResponse()
+              .getContentAsString(StandardCharsets.UTF_8);
+      String principal = html.substring(html.indexOf("<main"), html.indexOf("</main>"));
+      assertTrue(html.contains("<title>" + pagina[1] + " - DonaTrack</title>"), pagina[0]);
+      assertTrue(principal.contains("<p class=\"huerta-rotulo\">" + pagina[1] + "</p>"), pagina[0]);
+      assertTrue(principal.matches("(?s).*<div class=\"trama\">\\s*<h1>.*"), pagina[0]);
+      assertTrue(
+          principal.matches(
+              "(?s).*<ol class=\"huerta-raiz-pasos\" role=\"list\"\\s+data-forma=\"numerada tendida\".*"),
+          pagina[0]);
+      assertEquals(5, cuantasVeces(principal, "class=\"huerta-raiz-nudo\""), pagina[0]);
+      assertEquals(1, cuantasVeces(principal, "data-tono=\"principal\""), pagina[0]);
+    }
+  }
+
+  /**
+   * DA-23 (PUB1-08): el pie nombra las tres páginas con su nombre nuevo, con las rutas y el orden.
+   */
+  @Test
+  void elPieNombraLasPaginasParaConocerConSuNombreNuevo() throws Exception {
+    for (String pantalla : List.of("/publico-legales", "/publico-nosotros", "/donante-inicio")) {
+      String html =
+          mvc.perform(get(pantalla))
+              .andReturn()
+              .getResponse()
+              .getContentAsString(StandardCharsets.UTF_8);
+      String pie = html.substring(html.indexOf("<footer class=\"raices-pie\""));
+      List<String> enlaces = new ArrayList<>();
+      Matcher enlace = Pattern.compile("<a href=\"([^\"]+)\"[^>]*>([^<]+)</a>").matcher(pie);
+      while (enlace.find()) {
+        enlaces.add(enlace.group(1) + " " + enlace.group(2));
+      }
+      assertEquals(
+          List.of(
+              "/publico-nosotros Cómo funciona",
+              "/publico-para-donantes Cómo donar",
+              "/publico-para-entidades Ayuda",
+              "/publico-legales Términos y privacidad",
+              "/publico-contacto Contacto"),
+          enlaces,
+          pantalla);
+    }
+  }
+
+  private static int cuantasVeces(String texto, String buscado) {
+    int n = 0;
+    for (int i = texto.indexOf(buscado); i >= 0; i = texto.indexOf(buscado, i + 1)) {
+      n++;
+    }
+    return n;
   }
 
   @Test

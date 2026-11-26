@@ -12,6 +12,7 @@
 /donante-seguimiento?escenario=vacio
 /donante-seguimiento?escenario=error
 /donante-seguimiento?escenario=lento
+/donante-seguimiento?donacion=utiles
 /donante-donaciones
 /entidad-seguimiento-confirmar
 /entidad-seguimiento-confirmar?entrega=ropa
@@ -35,6 +36,8 @@
 /donante-inicio?respuesta=429
 /donante-inicio?respuesta=500
 /donante-inicio?respuesta=500&escenario=sin-codigo
+# PUB2-09: una sección del menú sin pantalla (sin-dibujar).
+/entidad-seguimiento-tesoro
 /entidad-necesidades
 /entidad-necesidades?escenario=vacio
 /entidad-necesidades?escenario=error
@@ -88,6 +91,7 @@
 /donante-perfil?escenario=sin-conexion
 /donante-perfil-guardado
 /donante-perfil-guardado?mostrar=si
+/donante-perfil-guardado?seccion=datos
 /publico-donaciones
 /publico-donaciones?periodo=semana
 /publico-donaciones?escenario=vacio
@@ -110,6 +114,7 @@
 /publico-entidades?escenario=vacio
 /publico-entidades?escenario=lento
 /publico-entidades?escenario=error
+/publico-entidades?abrir=comedor
 /publico-ingresar
 /publico-ingresar?escenario=lento
 /publico-ingresar?escenario=error
@@ -144,9 +149,8 @@
 /donante-inicio?escenario=vacio
 /donante-inicio?escenario=error
 /donante-inicio?escenario=lento
-# El tablero con los totales del boceto A (1, 5 y 48) y una página del medio (R11-25).
-/donante-inicio?escenario=muchas
-/donante-inicio?escenario=muchas&camino=2&llego=8
+# A04 sin nada en camino: la lámina lo dice y no es protagonista (DON-01).
+/donante-inicio?escenario=sin-camino
 /donante-donaciones?estado=pendiente&categoria=alimentos
 /donante-donaciones?estado=con-problema&categoria=ropa
 /donante-donaciones?escenario=vacio
@@ -162,6 +166,7 @@
 /donante-donaciones-detalle?donacion=pan
 /donante-donaciones-detalle?escenario=lento
 /donante-donaciones-detalle?escenario=error
+/donante-donaciones-detalle?donacion=leche
 /donante-entidades
 /donante-entidades?nombre=zzz
 /donante-entidades?pagina=2
@@ -176,17 +181,18 @@
 /donante-notificaciones?escenario=lento
 /donante-notificaciones?escenario=error
 /donante-notificaciones-leidas
+/donante-notificaciones?cuenta=persona
+/donante-notificaciones-leidas?cuenta=persona
 /entidad-inicio
 /entidad-inicio?escenario=vacio
 /entidad-inicio?escenario=sin-puerta
 /entidad-inicio?escenario=lento
 /entidad-inicio?escenario=error
-/entidad-recibidas
-/entidad-recibidas?estado=en-camino
-/entidad-recibidas?escenario=sin-resultados
-/entidad-recibidas?escenario=vacio
-/entidad-recibidas?escenario=lento
-/entidad-recibidas?escenario=error
+/entidad-seguimiento?estado=en-camino
+/entidad-seguimiento?escenario=sin-resultados
+/entidad-seguimiento?escenario=sin-puerta
+/entidad-entrega-problema
+/entidad-entrega-problema?entrega=pan
 /entidad-notificaciones
 /entidad-notificaciones-leidas
 /entidad-notificaciones?escenario=vacio
@@ -236,6 +242,8 @@
 /admin-actividad?buscar=zoe
 /admin-actividad?fecha=ayer&accion=otra
 /admin-administradores
+/admin-administradores-nuevo
+/admin-administradores-alta
 /admin-perfil
 /admin-entidades
 /admin-entidades?ver=pendientes
@@ -255,7 +263,7 @@
 /admin-donaciones?escenario=error
 /admin-donaciones?vence=pronto
 /admin-donaciones?vence=pronto&escenario=vacio
-/admin-donaciones?donacion=fideos
+/admin-donaciones?estado=asignada
 /admin-donaciones?buscar=leche&categoria=alimentos
 /admin-donaciones?donante=ana
 /admin-donaciones-detalle
@@ -307,6 +315,8 @@
 # F5 del roadmap de vistas: Misiones (cuenta persona), Seguir entregas y Mi perfil de la entidad.
 /donante-misiones?cuenta=persona
 /donante-misiones?cuenta=persona&escenario=vacio
+/donante-misiones?cuenta=persona&lugar=estante-izq
+/donante-misiones?cuenta=persona&lugar=mesada-medio
 /donante-misiones?cuenta=persona&escenario=lento
 /donante-misiones?cuenta=persona&escenario=error
 /donante-misiones?cuenta=empresa
@@ -314,10 +324,16 @@
 # p0-persona (R11-06): las pantallas de persona. La cuenta queda en la sesión: al final, la empresa.
 /donante-inicio?cuenta=persona
 /donante-inicio?cuenta=persona&escenario=vacio
+/donante-inicio?cuenta=persona&escenario=sin-camino
 /donante-perfil?cuenta=persona
+/donante-donaciones-detalle?cuenta=persona
+/donante-seguimiento?cuenta=persona
+/donante-perfil-guardado?cuenta=persona
 /donante-entidades?cuenta=persona&ya=si
 # R11-18: la segunda página de la maqueta, con los nombres largos.
 /donante-entidades?cuenta=persona&pagina=2
+# PUB2-09: una pantalla del donante sin versión de la persona (aviso-persona).
+/donante-donaciones-nueva?cuenta=persona
 /donante-inicio?cuenta=empresa
 /entidad-seguimiento
 /entidad-seguimiento?escenario=vacio

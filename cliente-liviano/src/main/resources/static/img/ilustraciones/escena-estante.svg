@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240">
+<!-- Foto de ejemplo: paquetes de fideos y una caja en dos estantes. Dibujo de la guía (docs/interfaz/guia/partes/20-simbolos.html), con los colores de tokens.css escritos adentro, como los demás de esta carpeta. Se usa entero (img) o por símbolo (use href="…/escena-estante.svg#escena-estante"). -->
+<symbol id="escena-estante" viewBox="0 0 320 240" preserveAspectRatio="xMidYMid slice">
+      <rect fill="#e4efc9" width="320" height="240"/><rect fill="#3b3527" y="112" width="320" height="10"/><rect fill="#3b3527" y="212" width="320" height="10"/>
+      <g stroke="#2a2a22" stroke-width="2.5"><rect fill="#f4c844" x="28" y="48" width="42" height="64"/><rect fill="#f4c844" x="76" y="48" width="42" height="64"/><rect fill="#f4c844" x="124" y="56" width="42" height="56"/><rect fill="#f4c844" x="172" y="56" width="42" height="56"/>
+      <rect fill="#cfe1d4" x="236" y="62" width="40" height="50" rx="6"/><rect fill="#3b3527" x="240" y="52" width="32" height="10"/>
+      <rect fill="#fde3a6" x="30" y="148" width="96" height="64"/><rect fill="#f4c844" x="146" y="154" width="38" height="58"/><rect fill="#f4c844" x="190" y="154" width="38" height="58"/><rect fill="#f4c844" x="234" y="154" width="38" height="58"/></g>
+      <g fill="#fffaea"><rect x="36" y="60" width="26" height="22"/><rect x="84" y="60" width="26" height="22"/><rect x="132" y="66" width="26" height="20"/><rect x="180" y="66" width="26" height="20"/><rect x="153" y="166" width="24" height="20"/><rect x="197" y="166" width="24" height="20"/><rect x="241" y="166" width="24" height="20"/></g>
+      <rect fill="#23602c" x="73" y="148" width="10" height="64"/>
+    </symbol>
+<use href="#escena-estante"/>
+</svg>

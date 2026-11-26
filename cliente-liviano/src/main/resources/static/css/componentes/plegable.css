@@ -50,7 +50,7 @@
 }
 
 .plegable-titulo > span {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
 }
 
@@ -63,7 +63,7 @@
   aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: var(--radio-lamina);
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
   color: var(--color-tinta);
   fill: var(--color-tinta);
 }
@@ -92,7 +92,7 @@
 }
 
 .plegable-medida > span {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
 }
 
@@ -101,7 +101,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--espacio-2);
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font-weight: 700;
 }
 

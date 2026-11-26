@@ -4,10 +4,12 @@
    `composicion` desde app.css. El espacio entre hijos se cambia con data-espacio (utilidades.css).
    Catálogo: docs/interfaz/componentes.md y /estilos. */
 
-/* pila (stack): hijos en columna con el mismo espacio entre ellos. */
+/* pila (stack): hijos en columna con el mismo espacio entre ellos. Como en la guía «Huerta y galpón»
+   (C1-02), puede achicarse por debajo de su contenido (min-width: 0) para que nada la desborde. */
 .pila {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .pila > * {
@@ -18,25 +20,31 @@
   margin-block-start: var(--espacio-entre, var(--espacio-3));
 }
 
-/* racimo (cluster): hijos en fila que bajan de renglón cuando no entran. data-alinea: centro, fin
-   o entre. */
+/* racimo (cluster): hijos en fila que bajan de renglón cuando no entran. data-alinea, una o dos
+   palabras: centro, fin o entre (a lo ancho) y arriba (los hijos alineados por arriba en lugar de por
+   el medio), por ejemplo data-alinea="entre arriba" (C1-02, la .fila .entre .arriba de la guía). */
 .racimo {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--espacio-entre, var(--espacio-2));
+  min-width: 0;
 }
 
-.racimo[data-alinea="centro"] {
+.racimo[data-alinea~="centro"] {
   justify-content: center;
 }
 
-.racimo[data-alinea="fin"] {
+.racimo[data-alinea~="fin"] {
   justify-content: flex-end;
 }
 
-.racimo[data-alinea="entre"] {
+.racimo[data-alinea~="entre"] {
   justify-content: space-between;
+}
+
+.racimo[data-alinea~="arriba"] {
+  align-items: flex-start;
 }
 
 /* barra-lateral (sidebar): dos hijos lado a lado; el primero es la barra (ancho --medida-barra) y

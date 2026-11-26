@@ -1,0 +1,336 @@
+# Hoja de contacto global, guía al código (C0 a Z)
+Rama E7_guia_ui en f139d47dc (todas las olas mergeadas: C0, C1, ORG, DON, PUB1, ADM1, PUB2, ADM2 y Z). Capturas de -Pvisual del 2026-11-25 sobre las 109 rutas únicas de los manifiestos, a 360 y 1280 px, con los puertos simulados (sin stack). La pasada de VerificacionVisualTest salió con 0: sin errores de contraste, desborde ni área de toque. Cada ruta aparece una vez, en la primera ola que la nombra. Las de /estilos son el recorte de los primeros 1800 px.
+## C0, tokens y piezas
+### /estilos
+img img/estilos-360.jpg | 360 px
+img img/estilos-1280.jpg | 1280 px
+## ORG, la organización
+### /entidad-notificaciones
+img img/entidad-notificaciones-360.jpg | 360 px
+img img/entidad-notificaciones-1280.jpg | 1280 px
+### /entidad-notificaciones-leidas
+img img/entidad-notificaciones-leidas-360.jpg | 360 px
+img img/entidad-notificaciones-leidas-1280.jpg | 1280 px
+### /donante-notificaciones
+img img/donante-notificaciones-360.jpg | 360 px
+img img/donante-notificaciones-1280.jpg | 1280 px
+### /donante-notificaciones-leidas
+img img/donante-notificaciones-leidas-360.jpg | 360 px
+img img/donante-notificaciones-leidas-1280.jpg | 1280 px
+### /donante-notificaciones?cuenta=persona
+img img/donante-notificaciones-cuenta-persona-360.jpg | 360 px
+img img/donante-notificaciones-cuenta-persona-1280.jpg | 1280 px
+### /donante-notificaciones-leidas?cuenta=persona
+img img/donante-notificaciones-leidas-cuenta-persona-360.jpg | 360 px
+img img/donante-notificaciones-leidas-cuenta-persona-1280.jpg | 1280 px
+### /admin-notificaciones
+img img/admin-notificaciones-360.jpg | 360 px
+img img/admin-notificaciones-1280.jpg | 1280 px
+### /admin-notificaciones-leidas
+img img/admin-notificaciones-leidas-360.jpg | 360 px
+img img/admin-notificaciones-leidas-1280.jpg | 1280 px
+### /entidad-inicio
+img img/entidad-inicio-360.jpg | 360 px
+img img/entidad-inicio-1280.jpg | 1280 px
+### /entidad-necesidades
+img img/entidad-necesidades-360.jpg | 360 px
+img img/entidad-necesidades-1280.jpg | 1280 px
+### /entidad-necesidades-publicar-error
+img img/entidad-necesidades-publicar-error-360.jpg | 360 px
+img img/entidad-necesidades-publicar-error-1280.jpg | 1280 px
+### /entidad-perfil
+img img/entidad-perfil-360.jpg | 360 px
+img img/entidad-perfil-1280.jpg | 1280 px
+### /entidad-seguimiento
+img img/entidad-seguimiento-360.jpg | 360 px
+img img/entidad-seguimiento-1280.jpg | 1280 px
+### /entidad-entrega-problema
+img img/entidad-entrega-problema-360.jpg | 360 px
+img img/entidad-entrega-problema-1280.jpg | 1280 px
+### /entidad-seguimiento-confirmar
+img img/entidad-seguimiento-confirmar-360.jpg | 360 px
+img img/entidad-seguimiento-confirmar-1280.jpg | 1280 px
+### /entidad-seguimiento-confirmar-error
+img img/entidad-seguimiento-confirmar-error-360.jpg | 360 px
+img img/entidad-seguimiento-confirmar-error-1280.jpg | 1280 px
+### /entidad-seguimiento-problema?entrega=lentejas
+img img/entidad-seguimiento-problema-entrega-lentejas-360.jpg | 360 px
+img img/entidad-seguimiento-problema-entrega-lentejas-1280.jpg | 1280 px
+### /entidad-seguimiento-sellada
+img img/entidad-seguimiento-sellada-360.jpg | 360 px
+img img/entidad-seguimiento-sellada-1280.jpg | 1280 px
+### /entidad-seguimiento-sellada-lentejas
+img img/entidad-seguimiento-sellada-lentejas-360.jpg | 360 px
+img img/entidad-seguimiento-sellada-lentejas-1280.jpg | 1280 px
+### /entidad-seguimiento-sellada-ropa
+img img/entidad-seguimiento-sellada-ropa-360.jpg | 360 px
+img img/entidad-seguimiento-sellada-ropa-1280.jpg | 1280 px
+## DON, quien dona
+### /donante-inicio
+img img/donante-inicio-360.jpg | 360 px
+img img/donante-inicio-1280.jpg | 1280 px
+### /donante-donaciones
+img img/donante-donaciones-360.jpg | 360 px
+img img/donante-donaciones-1280.jpg | 1280 px
+### /donante-donaciones?cuenta=persona
+img img/donante-donaciones-cuenta-persona-360.jpg | 360 px
+img img/donante-donaciones-cuenta-persona-1280.jpg | 1280 px
+### /donante-donaciones-detalle
+img img/donante-donaciones-detalle-360.jpg | 360 px
+img img/donante-donaciones-detalle-1280.jpg | 1280 px
+### /donante-donaciones-detalle?cuenta=persona
+img img/donante-donaciones-detalle-cuenta-persona-360.jpg | 360 px
+img img/donante-donaciones-detalle-cuenta-persona-1280.jpg | 1280 px
+### /donante-seguimiento
+img img/donante-seguimiento-360.jpg | 360 px
+img img/donante-seguimiento-1280.jpg | 1280 px
+### /donante-seguimiento?cuenta=persona
+img img/donante-seguimiento-cuenta-persona-360.jpg | 360 px
+img img/donante-seguimiento-cuenta-persona-1280.jpg | 1280 px
+### /donante-entidades
+img img/donante-entidades-360.jpg | 360 px
+img img/donante-entidades-1280.jpg | 1280 px
+### /donante-entidades?cuenta=persona&ya=si
+img img/donante-entidades-cuenta-persona-ya-si-360.jpg | 360 px
+img img/donante-entidades-cuenta-persona-ya-si-1280.jpg | 1280 px
+### /donante-perfil
+img img/donante-perfil-360.jpg | 360 px
+img img/donante-perfil-1280.jpg | 1280 px
+### /donante-perfil-guardado
+img img/donante-perfil-guardado-360.jpg | 360 px
+img img/donante-perfil-guardado-1280.jpg | 1280 px
+### /donante-perfil?cuenta=persona
+img img/donante-perfil-cuenta-persona-360.jpg | 360 px
+img img/donante-perfil-cuenta-persona-1280.jpg | 1280 px
+### /donante-perfil-guardado?cuenta=persona
+img img/donante-perfil-guardado-cuenta-persona-360.jpg | 360 px
+img img/donante-perfil-guardado-cuenta-persona-1280.jpg | 1280 px
+### /donante-inicio?cuenta=persona
+img img/donante-inicio-cuenta-persona-360.jpg | 360 px
+img img/donante-inicio-cuenta-persona-1280.jpg | 1280 px
+### /donante-misiones?cuenta=persona
+img img/donante-misiones-cuenta-persona-360.jpg | 360 px
+img img/donante-misiones-cuenta-persona-1280.jpg | 1280 px
+### /donante-misiones?cuenta=persona&escenario=vacio
+img img/donante-misiones-cuenta-persona-escenario-vacio-360.jpg | 360 px
+img img/donante-misiones-cuenta-persona-escenario-vacio-1280.jpg | 1280 px
+## PUB1, lo público (1)
+### /publico-portada
+img img/publico-portada-360.jpg | 360 px
+img img/publico-portada-1280.jpg | 1280 px
+### /publico-donaciones
+img img/publico-donaciones-360.jpg | 360 px
+img img/publico-donaciones-1280.jpg | 1280 px
+### /publico-mapa
+img img/publico-mapa-360.jpg | 360 px
+img img/publico-mapa-1280.jpg | 1280 px
+### /publico-entidades
+img img/publico-entidades-360.jpg | 360 px
+img img/publico-entidades-1280.jpg | 1280 px
+### /publico-ingresar
+img img/publico-ingresar-360.jpg | 360 px
+img img/publico-ingresar-1280.jpg | 1280 px
+### /publico-ingresar-error
+img img/publico-ingresar-error-360.jpg | 360 px
+img img/publico-ingresar-error-1280.jpg | 1280 px
+### /publico-nosotros
+img img/publico-nosotros-360.jpg | 360 px
+img img/publico-nosotros-1280.jpg | 1280 px
+### /publico-para-donantes
+img img/publico-para-donantes-360.jpg | 360 px
+img img/publico-para-donantes-1280.jpg | 1280 px
+### /publico-para-entidades
+img img/publico-para-entidades-360.jpg | 360 px
+img img/publico-para-entidades-1280.jpg | 1280 px
+### /publico-contacto
+img img/publico-contacto-360.jpg | 360 px
+img img/publico-contacto-1280.jpg | 1280 px
+### /publico-contacto-enviado
+img img/publico-contacto-enviado-360.jpg | 360 px
+img img/publico-contacto-enviado-1280.jpg | 1280 px
+### /publico-contacto-error
+img img/publico-contacto-error-360.jpg | 360 px
+img img/publico-contacto-error-1280.jpg | 1280 px
+### /publico-legales
+img img/publico-legales-360.jpg | 360 px
+img img/publico-legales-1280.jpg | 1280 px
+## ADM1, el admin (1)
+### /admin-asignaciones
+img img/admin-asignaciones-360.jpg | 360 px
+img img/admin-asignaciones-1280.jpg | 1280 px
+### /admin-asignaciones-aprobada
+img img/admin-asignaciones-aprobada-360.jpg | 360 px
+img img/admin-asignaciones-aprobada-1280.jpg | 1280 px
+### /admin-asignaciones-corrida
+img img/admin-asignaciones-corrida-360.jpg | 360 px
+img img/admin-asignaciones-corrida-1280.jpg | 1280 px
+### /admin-asignaciones-descartada
+img img/admin-asignaciones-descartada-360.jpg | 360 px
+img img/admin-asignaciones-descartada-1280.jpg | 1280 px
+### /admin-asignaciones-error
+img img/admin-asignaciones-error-360.jpg | 360 px
+img img/admin-asignaciones-error-1280.jpg | 1280 px
+### /admin-camiones
+img img/admin-camiones-360.jpg | 360 px
+img img/admin-camiones-1280.jpg | 1280 px
+### /admin-camiones-agregado
+img img/admin-camiones-agregado-360.jpg | 360 px
+img img/admin-camiones-agregado-1280.jpg | 1280 px
+### /admin-camiones-agregar-error
+img img/admin-camiones-agregar-error-360.jpg | 360 px
+img img/admin-camiones-agregar-error-1280.jpg | 1280 px
+### /admin-camiones-deshabilitado
+img img/admin-camiones-deshabilitado-360.jpg | 360 px
+img img/admin-camiones-deshabilitado-1280.jpg | 1280 px
+### /admin-camiones-habilitado
+img img/admin-camiones-habilitado-360.jpg | 360 px
+img img/admin-camiones-habilitado-1280.jpg | 1280 px
+### /admin-donaciones
+img img/admin-donaciones-360.jpg | 360 px
+img img/admin-donaciones-1280.jpg | 1280 px
+### /admin-donaciones-detalle
+img img/admin-donaciones-detalle-360.jpg | 360 px
+img img/admin-donaciones-detalle-1280.jpg | 1280 px
+### /admin-donaciones-detalle-vencida
+img img/admin-donaciones-detalle-vencida-360.jpg | 360 px
+img img/admin-donaciones-detalle-vencida-1280.jpg | 1280 px
+### /admin-inicio
+img img/admin-inicio-360.jpg | 360 px
+img img/admin-inicio-1280.jpg | 1280 px
+### /admin-donaciones-registrar
+img img/admin-donaciones-registrar-360.jpg | 360 px
+img img/admin-donaciones-registrar-1280.jpg | 1280 px
+### /admin-donaciones-registrar-error
+img img/admin-donaciones-registrar-error-360.jpg | 360 px
+img img/admin-donaciones-registrar-error-1280.jpg | 1280 px
+### /admin-donaciones-registrada
+img img/admin-donaciones-registrada-360.jpg | 360 px
+img img/admin-donaciones-registrada-1280.jpg | 1280 px
+### /admin-ranking
+img img/admin-ranking-360.jpg | 360 px
+img img/admin-ranking-1280.jpg | 1280 px
+## PUB2, lo público (2)
+### /publico-recuperar
+img img/publico-recuperar-360.jpg | 360 px
+img img/publico-recuperar-1280.jpg | 1280 px
+### /publico-recuperar-enviado
+img img/publico-recuperar-enviado-360.jpg | 360 px
+img img/publico-recuperar-enviado-1280.jpg | 1280 px
+### /publico-activar
+img img/publico-activar-360.jpg | 360 px
+img img/publico-activar-1280.jpg | 1280 px
+### /publico-activar-pedir
+img img/publico-activar-pedir-360.jpg | 360 px
+img img/publico-activar-pedir-1280.jpg | 1280 px
+### /publico-activar-pedido
+img img/publico-activar-pedido-360.jpg | 360 px
+img img/publico-activar-pedido-1280.jpg | 1280 px
+### /publico-activar-lista
+img img/publico-activar-lista-360.jpg | 360 px
+img img/publico-activar-lista-1280.jpg | 1280 px
+### /publico-activar-error
+img img/publico-activar-error-360.jpg | 360 px
+img img/publico-activar-error-1280.jpg | 1280 px
+### /publico-registro
+img img/publico-registro-360.jpg | 360 px
+img img/publico-registro-1280.jpg | 1280 px
+### /publico-registro-donante
+img img/publico-registro-donante-360.jpg | 360 px
+img img/publico-registro-donante-1280.jpg | 1280 px
+### /publico-registro-donante-error
+img img/publico-registro-donante-error-360.jpg | 360 px
+img img/publico-registro-donante-error-1280.jpg | 1280 px
+### /publico-registro-entidad
+img img/publico-registro-entidad-360.jpg | 360 px
+img img/publico-registro-entidad-1280.jpg | 1280 px
+### /publico-registro-entidad-corregir
+img img/publico-registro-entidad-corregir-360.jpg | 360 px
+img img/publico-registro-entidad-corregir-1280.jpg | 1280 px
+### /publico-registro-entidad-enviada
+img img/publico-registro-entidad-enviada-360.jpg | 360 px
+img img/publico-registro-entidad-enviada-1280.jpg | 1280 px
+### /publico-registro-entidad-error
+img img/publico-registro-entidad-error-360.jpg | 360 px
+img img/publico-registro-entidad-error-1280.jpg | 1280 px
+### /publico-donaciones?respuesta=404
+img img/publico-donaciones-respuesta-404-360.jpg | 360 px
+img img/publico-donaciones-respuesta-404-1280.jpg | 1280 px
+### /entidad-inicio?respuesta=403
+img img/entidad-inicio-respuesta-403-360.jpg | 360 px
+img img/entidad-inicio-respuesta-403-1280.jpg | 1280 px
+### /donante-inicio?respuesta=429
+img img/donante-inicio-respuesta-429-360.jpg | 360 px
+img img/donante-inicio-respuesta-429-1280.jpg | 1280 px
+### /donante-inicio?respuesta=500
+img img/donante-inicio-respuesta-500-360.jpg | 360 px
+img img/donante-inicio-respuesta-500-1280.jpg | 1280 px
+### /entidad-seguimiento-tesoro
+img img/entidad-seguimiento-tesoro-360.jpg | 360 px
+img img/entidad-seguimiento-tesoro-1280.jpg | 1280 px
+### /donante-donaciones-nueva?cuenta=persona
+img img/donante-donaciones-nueva-cuenta-persona-360.jpg | 360 px
+img img/donante-donaciones-nueva-cuenta-persona-1280.jpg | 1280 px
+## ADM2, el admin (2)
+### /admin-donantes
+img img/admin-donantes-360.jpg | 360 px
+img img/admin-donantes-1280.jpg | 1280 px
+### /admin-donantes?donante=juan
+img img/admin-donantes-donante-juan-360.jpg | 360 px
+img img/admin-donantes-donante-juan-1280.jpg | 1280 px
+### /admin-donantes-importando
+img img/admin-donantes-importando-360.jpg | 360 px
+img img/admin-donantes-importando-1280.jpg | 1280 px
+### /admin-donantes-importado
+img img/admin-donantes-importado-360.jpg | 360 px
+img img/admin-donantes-importado-1280.jpg | 1280 px
+### /admin-donantes-importar-error
+img img/admin-donantes-importar-error-360.jpg | 360 px
+img img/admin-donantes-importar-error-1280.jpg | 1280 px
+### /admin-importaciones
+img img/admin-importaciones-360.jpg | 360 px
+img img/admin-importaciones-1280.jpg | 1280 px
+### /admin-entidades
+img img/admin-entidades-360.jpg | 360 px
+img img/admin-entidades-1280.jpg | 1280 px
+### /admin-entidades-aprobada
+img img/admin-entidades-aprobada-360.jpg | 360 px
+img img/admin-entidades-aprobada-1280.jpg | 1280 px
+### /admin-entidades-correccion
+img img/admin-entidades-correccion-360.jpg | 360 px
+img img/admin-entidades-correccion-1280.jpg | 1280 px
+### /admin-entidades-rechazada
+img img/admin-entidades-rechazada-360.jpg | 360 px
+img img/admin-entidades-rechazada-1280.jpg | 1280 px
+### /admin-administradores
+img img/admin-administradores-360.jpg | 360 px
+img img/admin-administradores-1280.jpg | 1280 px
+### /admin-administradores-nuevo
+img img/admin-administradores-nuevo-360.jpg | 360 px
+img img/admin-administradores-nuevo-1280.jpg | 1280 px
+### /admin-administradores-alta
+img img/admin-administradores-alta-360.jpg | 360 px
+img img/admin-administradores-alta-1280.jpg | 1280 px
+### /admin-actividad
+img img/admin-actividad-360.jpg | 360 px
+img img/admin-actividad-1280.jpg | 1280 px
+### /admin-perfil
+img img/admin-perfil-360.jpg | 360 px
+img img/admin-perfil-1280.jpg | 1280 px
+### /admin-donantes-registrar
+img img/admin-donantes-registrar-360.jpg | 360 px
+img img/admin-donantes-registrar-1280.jpg | 1280 px
+### /admin-donantes-registrado
+img img/admin-donantes-registrado-360.jpg | 360 px
+img img/admin-donantes-registrado-1280.jpg | 1280 px
+### /admin-donantes-registrar-error
+img img/admin-donantes-registrar-error-360.jpg | 360 px
+img img/admin-donantes-registrar-error-1280.jpg | 1280 px
+### /admin-entidades-registrar
+img img/admin-entidades-registrar-360.jpg | 360 px
+img img/admin-entidades-registrar-1280.jpg | 1280 px
+### /admin-entidades-registrada
+img img/admin-entidades-registrada-360.jpg | 360 px
+img img/admin-entidades-registrada-1280.jpg | 1280 px
+### /admin-entidades-registrar-error
+img img/admin-entidades-registrar-error-360.jpg | 360 px
+img img/admin-entidades-registrar-error-1280.jpg | 1280 px

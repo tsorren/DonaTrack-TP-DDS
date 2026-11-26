@@ -1,5 +1,9 @@
 # Flujo: las personas ven sus pantallas de persona (R11-06, R11-09)
 
+> **Desde el 2026-11-23,** la ficha [`guia-don-inicio-persona.md`](guia-don-inicio-persona.md)
+> (ola DON de la guía «Huerta y galpón») manda sobre esta en el inicio de la persona: deriva de A04,
+> con una sola lámina protagonista y el almanaque chico. Lo demás de esta ficha sigue.
+
 > **Estado:** en revisión · **Fecha:** 2026-11-11 · **Aprobó:** pendiente (usuario)
 > Ficha de la skill `ux-flujo` para el lote `p0-persona` del
 > [backlog de la revisión del 2026-11-11](../backlog-revision-2026-11-11.md) (P0, ruta STANDARD).

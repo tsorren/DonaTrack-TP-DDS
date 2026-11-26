@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -51,6 +52,11 @@ class EntidadNecesidadesControllerTest {
 
   /** La entidad recién aprobada: sin necesidades. */
   private static final UUID VACIA = UUID.fromString("6f1c2c1e-0000-4000-8000-0000000000f0");
+
+  /** Una entidad con una entrega que llegó a su puerta y falta confirmar. */
+  private static final UUID CON_PUERTA = UUID.fromString("6f1c2c1e-0000-4000-8000-0000000000f1");
+
+  private static final String ENTREGA = "entrega-en-la-puerta";
 
   @TestConfiguration
   static class DeDonaciones {
@@ -117,7 +123,10 @@ class EntidadNecesidadesControllerTest {
                           0,
                           List.of(
                               new Entrega(
-                                  "2 unidades", "en-tu-puerta", "Llegaron a tu puerta.", null)),
+                                  "2 unidades",
+                                  "en-tu-puerta",
+                                  "Llegaron a tu puerta.",
+                                  CON_PUERTA.equals(entidad) ? ENTREGA : null)),
                           List.of(),
                           null,
                           List.of())),
@@ -131,7 +140,7 @@ class EntidadNecesidadesControllerTest {
                               "6f1c2c1e-0000-4000-8000-0000000000c9",
                               "Bicicletas (unidades)",
                               false)))),
-              null,
+              CON_PUERTA.equals(entidad) ? ENTREGA : null,
               CLAVE);
         }
 
@@ -170,6 +179,46 @@ class EntidadNecesidadesControllerTest {
   }
 
   @Test
+  void conUnaEntregaEnLaPuertaLaLaminaPideConfirmarla() throws Exception {
+    mvc.perform(get(PANTALLA).param("entidad", CON_PUERTA.toString()))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("data-papel=\"protagonista\"")))
+        .andExpect(content().string(containsString("Llegó una entrega: falta que la confirmes")))
+        .andExpect(content().string(containsString("Leche, 2 unidades.")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/entidad-seguimiento-confirmar?entrega=" + ENTREGA + "\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "aria-label=\"El recorrido de esta entrega: va por el paso 4 de 5\"")))
+        .andExpect(content().string(not(containsString("null"))));
+  }
+
+  /**
+   * DA-06: después de publicar, cambiar o dar de baja, EntidadEnviosController vuelve a Necesidades
+   * con el aviso del servidor, y la pantalla lo muestra como aviso breve en la región de avisos.
+   */
+  @Test
+  void deVueltaDeUnEnvioMuestraElAvisoBreveEnLaRegionDeAvisos() throws Exception {
+    mvc.perform(
+            get(PANTALLA)
+                .param("entidad", "6f1c2c1e-0000-4000-8000-0000000000e1")
+                .flashAttr(Envios.AVISO, "Diste de baja tu necesidad. Ya no la ven los donantes."))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<div id=\"avisos\" class=\"avisos\" aria-live=\"polite\"[^>]*><p"
+                            + " class=\"aviso-breve\" data-estado=\"hecho\">Diste de baja tu"
+                            + " necesidad\\. Ya no la ven los donantes\\..*")));
+  }
+
+  @Test
   void sinEntidadMandaAIngresar() throws Exception {
     mvc.perform(get(PANTALLA)).andExpect(redirectedUrl("/publico-ingresar"));
   }
@@ -181,16 +230,26 @@ class EntidadNecesidadesControllerTest {
                 .param("entidad", "6f1c2c1e-0000-4000-8000-0000000000e1")
                 .param("necesidad", CLAVE))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Al 8 de noviembre de 2026")))
-        .andExpect(content().string(containsString("id=\"cantero-Movilidad\"")))
+        // A02: el título, cuántas vigentes, «Lo que pediste» y las pestañas con su cuenta
+        .andExpect(content().string(containsString("<h1>Necesidades</h1>")))
+        .andExpect(content().string(containsString("2 vigentes al 8 de noviembre de 2026.")))
+        .andExpect(content().string(containsString("Lo que pediste")))
+        .andExpect(content().string(containsString("href=\"#vigentes\"")))
+        .andExpect(content().string(containsString("Vigentes (2)")))
         .andExpect(content().string(containsString("Bicicletas")))
         .andExpect(content().string(containsString("Pide 6 unidades")))
+        // La pedida, abierta en su tarjeta; su entrega con problema, sin fecha de nueva salida
+        // (HG-01)
+        .andExpect(content().string(containsString("<li id=\"" + CLAVE + "\">")))
+        .andExpect(content().string(containsString("Con un problema</span>")))
         .andExpect(
             content()
                 .string(
                     containsString(
-                        "href=\"/entidad-necesidades?necesidad=" + CLAVE + "#" + CLAVE + "\"")))
-        .andExpect(content().string(containsString("href=\"/entidad-seguimiento\">Entregas")))
+                        "1 entrega con un problema. Todavía sin fecha de nueva salida.")))
+        .andExpect(content().string(containsString("class=\"sello-pedido\"")))
+        // Sin una entrega que confirmar no hay lámina protagonista (el estado «después»)
+        .andExpect(content().string(not(containsString("data-papel=\"protagonista\""))))
         .andExpect(
             content()
                 .string(
@@ -208,13 +267,13 @@ class EntidadNecesidadesControllerTest {
         .andExpect(content().string(containsString("min=\"2026-11-08\"")))
         .andExpect(content().string(containsString("Desde hoy, 8 de noviembre, en adelante.")))
         .andExpect(content().string(containsString("Cumplidas y terminadas (1)")))
-        // Regla 2: el resumen de las entregas en curso lleva "Ver todas", a Recibidas en curso
+        // Regla 2: el resumen de las entregas en curso lleva "Ver todas", a Entregas en curso
         .andExpect(content().string(containsString("Mostramos 1 de 5 entregas en curso.")))
         .andExpect(
             content()
                 .string(
                     containsString(
-                        "href=\"/entidad-recibidas?estado=en-tu-puerta&amp;estado=con-problema"
+                        "href=\"/entidad-seguimiento?estado=en-tu-puerta&amp;estado=con-problema"
                             + "&amp;estado=en-camino&amp;estado=por-salir\">Ver")))
         .andExpect(content().string(not(containsString("null"))))
         .andExpect(content().string(not(containsString("15 de octubre"))));

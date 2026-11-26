@@ -31,6 +31,1986 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-25 · contraste · El borde de los controles vuelve a medirse sobre el papel de la página
+
+- **Decisión:** `PARES` suma `--color-borde-control` sobre `--color-fondo-pagina`, con mínimo 3.
+  Quedan 39 pares.
+- **Alternativas:** dejarlo medido solo sobre `--color-campo`.
+- **Por qué:** el lote `z-tokens` (`0dba3e78f`) sacó el par contra `--color-fondo`, uno de los
+  tokens retirados (Z-02). DA-37 lo contó entre los 12 que «ya los mide un par que se queda», pero
+  el único par que quedó para este borde es el del campo. El color también dibuja bordes fuera del
+  campo: con `--borde-control` o `--borde-punteado` en listas, pestañas, tarjetas y la subida de
+  fotos, y directo en filtros, el listado y la huerta (11 hojas de `componentes/` y
+  `formularios.css`). Con solo el par del campo, el test pasaría aunque el borde se pierda sobre el
+  papel (`AGENTS.md` §4.3). Hoy da 6,04 a 1.
+- **Costo:** ninguno.
+- **Quién decidió:** usuario (punto 5 del handoff de la guía, 2026-11-25).
+- **Evidencia:** `InterfazFitnessTest`, 19 tests en verde; `git grep -c 'new Par("'` da 39.
+
+### 2026-11-25 · migración · B3-02 y B3-04 constan como fuera de la lista, no como hechos
+
+- **Decisión:** en el [backlog de migración](backlog-migracion-componentes.md), B3-02 y B3-04
+  dicen «Fuera de `HOJAS_HEREDADAS`». B3-03 y B3-05 siguen pendientes y B3-06 queda parcial.
+- **Alternativas:** marcarlos como hechos.
+- **Por qué:** el cerco los acepta, pero su patrón (`DE_PANTALLA_PROHIBIDO`) no mira `fill` ni
+  `stroke`, y la migración de B3 queda fuera de Z (§17.5). Decir «hecho» afirmaría una migración que
+  no terminó.
+- **Costo:** algunas hojas fuera de la lista siguen pintando dibujos con `fill` y `stroke`
+  ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54), ítem 8).
+- **Quién decidió:** agente (lote `z-docs`), sin consultar.
+- **Evidencia:** `2e13dba80`; backlog §17.3 (Z-11).
+
+### 2026-11-25 · sistema · Los topes del cerco quedan en el valor medido: 37 y 532
+
+- **Decisión:** `TOPE_DE_CLASES_DE_UN_SOLO_USO` baja de 159 a 37 y `TOPE_DE_MEDIDAS_LITERALES`, de
+  1192 a 532. Se tomaron del mensaje del test con el tope en 0, con todo lo de Z integrado.
+- **Alternativas:** dejar un margen sobre el valor medido.
+- **Por qué:** los topes solo bajan, y uno con margen dejaría entrar clases o medidas nuevas sin que
+  el cerco lo note.
+- **Costo:** el cerco queda sin margen: cualquier clase de un solo uso o medida literal nueva lo
+  rompe ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54), ítem 12).
+- **Quién decidió:** agente (lote `z-cerco`), sin consultar.
+- **Evidencia:** `3ed0130d0`; con 36 y 531 el test falla en los dos (cierre, §17.6).
+
+### 2026-11-25 · sistema · Salen del cerco las hojas que ya acepta, y nada se borra ni se reescribe (DA-38)
+
+- **Decisión:** `HOJAS_HEREDADAS` pasa de 20 a 8 hojas. Sale `entidad-recibidas.css`, que ya no
+  existía, y salen las 11 que no tienen color, fondo, fuente ni `@keyframes`. Ninguna hoja de la
+  lista estaba sin reglas, así que no se borró ninguna ni se tocó un `<link>` o un `@import`.
+  `templates/paginador.html` se borró, porque nadie lo nombraba. Siguen `admin-inicio.css` (su
+  primera declaración prohibida está en la línea 78) y 7 hojas más, cada una con la suya.
+- **Alternativas:** sacar solo `entidad-recibidas.css`; reescribir las hojas que retienen una regla
+  para que salgan.
+- **Por qué:** la lista dice que baja con cada hoja que el cerco acepta. Reescribir hojas es la
+  migración de B3, que Z no hace.
+- **Costo:** quedan 8 hojas con reglas para migrar ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54),
+  ítem 8).
+- **Quién decidió:** usuario (DA-38, la recomendada, delegada por el relevamiento del 2026-11-24).
+  Cuáles salen y cuáles se quedan, agente (lote `z-cerco`), probando cada hoja con el patrón del
+  cerco. Cumplida: PASS de la revisión del lote en la ronda 1.
+- **Evidencia:** `3ed0130d0`; backlog §17.3 (Z-08 y Z-09).
+
+### 2026-11-25 · contraste · La lista de pares pierde los retirados y repone los que siguen en uso (DA-37)
+
+- **Decisión:** de `PARES` salen los 16 pares que nombran un token retirado. Vuelven tres con el
+  nombre de la guía y el mismo 4,5: la raíz sobre el suelo, la raíz sobre el suelo medio y la acción
+  primaria sobre la superficie. El del título pasa a `--color-accion-primaria` sobre
+  `--color-fondo-pagina`. La lista pasa de 51 a 38 pares y conserva los 29 con piso de la guía.
+- **Alternativas:** la lista de la guía tal cual; sacar los 16 sin reponer ninguno.
+- **Por qué:** cuatro de los 16 miden colores que siguen en uso, como los rótulos y enlaces de la
+  tierra o el nombre de una muestra. Los otros 12 ya los mide un par que se queda. Ningún mínimo
+  baja.
+- **Costo:** ninguno pendiente.
+- **Quién decidió:** usuario (DA-37, la recomendada, delegada por el relevamiento del 2026-11-24).
+  Cumplida: PASS de la revisión del lote `z-tokens` en la ronda 1.
+- **Evidencia:** `0dba3e78f`; `git grep -c 'new Par("'` da 38.
+
+### 2026-11-25 · tema · El tema de Keycloak deja los alias con el sitio (DA-36)
+
+- **Decisión:** `donatrack.css` usa el token de la guía del mismo valor, la copia de `tokens.css`
+  se vuelve a sincronizar con `sincronizar_tema.py` y `test_auth_theme.py` nombra los tokens de la
+  guía, con las mismas aserciones y los mismos mínimos. Del conjunto `cubiertos` sale el
+  `--color-fondo-pagina` que el renombre dejaba repetido; el conjunto es el mismo.
+- **Alternativas:** conservar en `tokens.css` los alias que usa el tema; dejar que la copia del
+  tema deje de ser idéntica.
+- **Por qué:** el tema y el sitio comparten los tokens, y un nombre cambia por otro del mismo
+  valor.
+- **Costo:** la tupla de un test del tema nombra dos veces `--color-accion-primaria`
+  ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54), ítem 10).
+- **Quién decidió:** usuario (DA-36, la recomendada, delegada por el relevamiento del 2026-11-24).
+  El repetido de `cubiertos`, agente (lote `z-tokens`). Cumplida: PASS de la revisión del lote en la
+  ronda 1.
+- **Evidencia:** `0dba3e78f`; `sincronizar_tema.py --verificar` sale con 0 y `test_auth_theme.py`
+  pasa sus 45 tests.
+
+### 2026-11-25 · /estilos · La ficha de los nombres de antes lista los que los reemplazaron
+
+- **Decisión:** la ficha «Color: los nombres de antes» se queda y lista los 8 tokens de la guía que
+  reemplazaron a los alias, uno por renglón, sin la flecha del alias. Conserva `muestra-tokens`.
+- **Alternativas:** nombrar cada alias con su reemplazo; borrar la ficha.
+- **Por qué:** el criterio de DA-14b no deja nombrar un alias en `src/main`, y `EstilosBaseTest`
+  cuenta 14 fichas.
+- **Costo:** el título promete los nombres de antes y la ficha ya no los muestra
+  ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54), ítem 11).
+- **Quién decidió:** agente (lote `z-tokens`), sin consultar.
+- **Evidencia:** `0dba3e78f`; `estilos.html:292-303`; capturas de `/estilos` a 360 y 1280 px.
+
+### 2026-11-25 · sistema · El galpón deja de redeclarar `--color-papel`
+
+- **Decisión:** en `privado.css` sale la redeclaración `--color-papel: var(--color-galpon-fondo)`
+  de `[data-armazon="galpon"]`, y su comentario se reescribe.
+- **Alternativas:** renombrarla y dejar dos líneas iguales.
+- **Por qué:** `--color-fondo-pagina` ya se redeclara en ese mismo bloque con el mismo valor, así que
+  el galpón se ve igual.
+- **Costo:** ninguno pendiente. Es la única definición de un alias fuera de `tokens.css`.
+- **Quién decidió:** agente (lote `z-tokens`), sin consultar.
+- **Evidencia:** `0dba3e78f`; `privado.css:99-100` antes del cambio.
+
+### 2026-11-25 · sistema · Salen los alias y los tokens sin uso (DA-14b)
+
+- **Decisión:** salen de `tokens.css` los 10 alias de §3.2 y los 11 tokens que no usa ninguna hoja
+  ni plantilla. Cada uso de un alias pasa al token de la guía del mismo valor, así que ningún color
+  calculado cambia. Con `--movimiento-retraso-ninguno` sale `--p-espera-0`, que solo lo
+  alimentaba. De `movimiento.css` salen `--movimiento-animacion-ola`,
+  `--movimiento-animacion-vuelo-carga` y `@keyframes mov-ola`, con sus comentarios.
+- **Alternativas:** conservar los alias como sinónimos.
+- **Por qué:** dos nombres para el mismo color confunden a quien construye una pantalla, y un token
+  sin uso es un nombre más que mantener.
+- **Costo:** quedan nombres retirados fuera de `tokens.css`: un comentario de `movimiento.css`,
+  `guia/armar.js` y el texto de prueba del cerco de movimiento
+  ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54), ítem 10).
+- **Quién decidió:** usuario (DA-14b, la recomendada, delegada por el relevamiento del 2026-11-24).
+  `--p-espera-0`, agente (lote `z-tokens`), como en C0. Cumplida: PASS de la revisión del lote en
+  la ronda 1.
+- **Evidencia:** `0dba3e78f`; backlog §17.3 (Z-01 a Z-03).
+
+### 2026-11-25 · donantes · Donantes sigue como bandeja con ficha, en el galpón (DA-34)
+
+- **Decisión:** Donantes sigue como bandeja con ficha (`.maestro` y `.maestro-ficha`): cada renglón
+  elige su donante con `?donante=`, en la misma página, y la ficha lleva a sus donaciones, a
+  «Registrar una donación» y, cada donación reciente, a `/admin-donaciones-detalle?donacion=`. La
+  pantalla va en el `.pila` del galpón, con «Registrar donante» como única acción llena e «Importar
+  CSV»; con importar abierto, la llena es «Importar». La de partida lleva `aria-current` y
+  `data-elegido="partida"`, y en el celular no se abre sola. La ficha ya no queda fija al
+  desplazarse desde la tableta: con el `sticky`, su `top` la empujaba hacia abajo.
+- **Alternativas:** la `.tabla` con una página de detalle por fila, como Donaciones en ADM1; dos
+  acciones llenas en la cabecera; conservar el `sticky` con otro `top` o sin `max-height` (una ficha
+  fija más alta que la ventana esconde sus acciones); abrir la ficha en el celular (lo descartó la
+  ficha `r11-p2-admin-bandeja`).
+- **Por qué:** la ficha es donde sigue el donante, y `?donante=` sigue siendo su dirección; la
+  ficha de Organizaciones, que no es fija, era la referencia del arreglo.
+- **Costo:** la ficha fija de R11-33 (regla general 5) deja de valer en Donantes; la ficha
+  `r11-p2-admin-bandeja` ya no describe el código ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 6).
+- **Quién decidió:** usuario (DA-34, la recomendada, delegada por el relevamiento del 2026-11-24).
+  La acción llena, la de partida y la ficha sin `sticky`, agente (lote `adm2-donantes` y revisión de
+  pantallas de la ola). Consta como no cumplida: la revisión de pantallas de la ola no llegó a
+  PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `83b7c34f8`, `0431c7005` y `dffc1947e`; backlog §16.3 (ADM2-01).
+
+### 2026-11-25 · importaciones · El avance, el resultado e Importaciones con las piezas del catálogo
+
+- **Decisión:** los estados que no responden a un envío (la importación de la sesión, «terminada»,
+  «cortada», «No pudimos actualizar el avance» y los «No entendimos…» de la lista) van con el
+  `.aviso` en la página. El campo del archivo es el `.campo` con su `.campo-error`. El avance lleva
+  las migas Donantes › Importaciones › archivo. En la tabla, el enlace de cada importación va en el
+  `th scope="row"`, con «Ver el avance de X» o «Ver el resultado de X», y sale la columna «Qué se
+  puede hacer». «Coinciden N importaciones.» solo con filtros; debajo de la lista, «Mostrando X a Y
+  de N». Textos nuevos: «No pudimos leer el archivo. No se importó ninguna fila.», «Tiene que ser
+  un CSV de hasta 50 MB. Elegí el archivo de nuevo.», «Actualizar las cifras» y «Ver la ayuda».
+- **Alternativas:** el aviso breve (es solo para las respuestas); `.subida` (es el campo de fotos);
+  `data-tamano="chico"` o `nowrap` en los botones de cada fila (el texto se partía en dos
+  renglones); mover las regiones vivas del avance para sacar el espacio de más (el aviso quedaba
+  lejos del bloque).
+- **Por qué:** el catálogo ya resuelve cada caso, y la tabla del catálogo pone el enlace en el
+  encabezado de la fila, como Donaciones de ADM1.
+- **Costo:** la franja de la importación de la sesión no tiene captura; la cubre un test de HTML
+  ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 5).
+- **Quién decidió:** agente (lote `adm2-donantes` y revisión de pantallas de la ola), sin consultar.
+- **Evidencia:** `83b7c34f8`, `275f60a40`, `0431c7005` y `dffc1947e`; backlog §16.3 (ADM2-02 y
+  ADM2-03).
+
+### 2026-11-25 · galpón · La ayuda plegada de Importaciones y Actividad es el `.plegable` del catálogo
+
+- **Decisión:** las dos pestañas hermanas del galpón muestran su ayuda con el `.plegable`
+  (`.plegable-titulo`, «Ver la ayuda» y `.plegable-cuerpo`), igual que Por decidir. El texto de la
+  ayuda no cambia.
+- **Alternativas:** un `details` con el `summary.boton` secundario chico en las dos (lo tuvieron
+  Importaciones en la ronda 1 y Actividad en la ronda 2). Los lotes `adm2-donantes` y
+  `adm2-administradores` se cruzaron: cada uno copió la versión anterior del otro y quedaron
+  distintos tras tres revisiones.
+- **Por qué:** es una pieza del catálogo, y la misma ayuda tiene que verse igual en las pestañas de
+  una sección.
+- **Costo:** ninguno pendiente.
+- **Quién decidió:** agente (revisión de pantallas de la ola, ronda 1), sin consultar.
+- **Evidencia:** `0431c7005`, `d40c3d5d6` y `dffc1947e`.
+
+### 2026-11-25 · organizaciones · Organizaciones sigue como bandeja con ficha, con la ficha apilada en el galpón (DA-34)
+
+- **Decisión:** Organizaciones sigue como bandeja con ficha: cada renglón elige su organización
+  (`?entidad=`) y la ficha de una que pide sumarse lleva lo que mandó, con
+  `componentes/sello :: signo` y la palabra, y sus tres acciones. «Registrar organización» es la
+  única acción llena y Aprobar pasa a secundario. Con la ficha de menos de 45 rem (en el galpón, a
+  1280 px), el resumen va apilado bajo la identidad, con una consulta de contenedor en
+  `admin-secciones.css`; el pictograma de la identidad queda a la medida de la lista. «Mostrando X a
+  Y de N» reemplaza el texto del orden y la cuenta de las activas; «Coinciden» solo con filtros.
+- **Alternativas:** la tabla con una página de detalle por fila; ✓ y ✗ escritos a mano; un
+  `@media` en la hoja de la pantalla (repetía la grilla y un color del catálogo; salió en
+  `36dbafa92`); una grilla `auto-fit`; una variante de `.maestro` en el catálogo (fuera de esta
+  ola). El lote había descartado la consulta de contenedor por usar una medida fuera de los
+  quiebres de `tokens.css`; la revisión de pantallas la tomó igual.
+- **Por qué:** en la ficha se decide la solicitud. Lado a lado, en el galpón, el nombre ocupaba tres
+  renglones y la bolita del estado quedaba lejos de su palabra; el único quiebre mayor es el de
+  68,75 em, que es por pantalla.
+- **Costo:** el pictograma no es el grande que pide la pieza, y la disposición vive en la hoja de la
+  pantalla y no en el catálogo ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 4). Se pierden
+  «por nombre, de la A a la Z» y «46 están activas»: las cifras por estado siguen en el filtro.
+- **Quién decidió:** usuario (DA-34, la recomendada, delegada por el relevamiento del 2026-11-24).
+  La ficha apilada, el pictograma y «Mostrando», agente (lote `adm2-organizaciones` y revisión de
+  pantallas de la ola). Consta como no cumplida: la revisión de pantallas de la ola no llegó a
+  PASS.
+- **Evidencia:** `6e073d8fa`, `a2da2489d`, `36dbafa92` y `dffc1947e`; backlog §16.3 (ADM2-04 y
+  ADM2-05).
+
+### 2026-11-25 · administradores · La contraseña provisoria sigue como página propia, en A12 (DA-35)
+
+- **Decisión:** `/admin-administradores-alta` se queda como página propia, con `Cache-Control:
+  no-store` (recargarla lleva a Administradores), las migas a Administradores, el correo en
+  `.datos` y «Volver a Administradores» como única acción llena. `/admin-administradores-nuevo`, el
+  alta sin JavaScript, sigue como página aparte, con el resumen del error arriba, el foco en él y
+  «Volver sin dar de alta» como salida (sale el botón Cancelar). En la ventana con HTMX no hay
+  resumen: el foco va al primer campo con error. Las pestañas Cuentas · Actividad van debajo de la
+  cabecera, como A03.
+- **Alternativas:** el aviso breve (se va solo y la contraseña no se vuelve a mostrar); el resumen
+  también en la ventana (duplica los mensajes de un formulario corto); las pestañas arriba, como
+  antes.
+- **Por qué:** la contraseña se ve una sola vez y hay que anotarla con calma (regla 21 de
+  [patrones](patrones-y-microcopy.md)).
+- **Costo:** los diálogos no tienen captura; las fichas `r11-p1-admins` y `r11-p2-actividad` ya no
+  describen la composición ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítems 5 y 6).
+- **Quién decidió:** usuario (DA-35, la recomendada, delegada por el relevamiento del 2026-11-24).
+  El resumen, la salida, las pestañas y las migas, agente (lote `adm2-administradores` y revisión de
+  pantallas de la ola, ronda 2). Consta como no cumplida: la revisión de pantallas de la ola no
+  llegó a PASS.
+- **Evidencia:** `94df0d9a0`, `5bd85e8e3` y `f1454822d`; backlog §16.3 (ADM2-06 a ADM2-08).
+
+### 2026-11-25 · administradores · Actividad y Mi perfil con los avisos en la página
+
+- **Decisión:** en Actividad, «No entendimos la fecha pedida» y «No pudimos traer los nombres…»
+  pasan del aviso breve al `.aviso` de advertencia con su signo; «Actualizar» va en la cabecera y
+  «Leída el …», en la bajada. En Mi perfil, el correo es texto fijo, «Todavía no cargaste tu
+  nombre» es un `.aviso` informativo y los errores de campo llevan el signo del problema. Textos
+  nuevos: «Revisá N datos para seguir.», «Lo demás quedó como lo escribiste.» y «Es un problema
+  nuestro: lo que escribiste sigue acá.». El código de seguimiento se corta con `overflow-wrap` en la
+  hoja de la pantalla.
+- **Alternativas:** `admin-donaciones :: hecho` (es solo para acciones hechas); el correo en una
+  fila de `.datos` (en el celular separa el rótulo de la nota); un renglón suelto para «Actualizar».
+- **Por qué:** describen la consulta, no responden a un envío; así lo hace la cabecera de ADM1.
+- **Costo:** el corte del código largo sería del `.aviso` del catálogo
+  ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 7).
+- **Quién decidió:** agente (lote `adm2-administradores`), sin consultar.
+- **Evidencia:** `94df0d9a0` y `5bd85e8e3`.
+
+### 2026-11-25 · novedades · Las Novedades del admin con los estados de lista del catálogo
+
+- **Decisión:** la pantalla va en el `.pila` del galpón con `data-pantalla="novedades"`, la cifra y
+  la bajada de la bandeja compartida en dos `p.texto-chico`. Cargando es la región `aria-busy` con
+  `.cargando` y el esqueleto de tres renglones, como en la organización y quien dona; el error, el
+  `.aviso` con «Volver a cargar» chico, como el resto del galpón. Marcar responde con
+  `admin-donaciones :: hecho(texto)` y los tres textos de antes.
+- **Alternativas:** `data-pantalla="notificaciones"` (la pantalla se titula Novedades); la bajada
+  fundida con la cifra; el `data-forma="hueco"` de Donaciones; «Volver a intentar», como la ficha
+  R11-14.
+- **Por qué:** la ficha del buzón de ORG pide los estados de lista del catálogo, y el galpón ya dice
+  «Volver a cargar».
+- **Costo:** queda distinto de quien dona, que sigue con «Volver a intentar», y de la ficha
+  `r11-p1-notificaciones` ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 6). Con datos reales, el
+  aviso de marcar sale de `envio :: aviso`, sin signo ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51)).
+- **Quién decidió:** usuario (DA-06: la respuesta ya era un aviso breve). Lo demás, agente (lote
+  `adm2-novedades`), sin consultar.
+- **Evidencia:** `cfcb65a52` y `ba4ddb2f0`; backlog §16.3 (ADM2-09).
+
+### 2026-11-25 · registrar · Registrar un donante responde en Donantes, sin «Registrar su donación» (DA-06 y DA-33)
+
+- **Decisión:** registrar un donante responde con el aviso breve en Donantes («Registraste a Ana
+  Ejemplo como donante.» y, con `?escenario=ya-era`, «Ana Ejemplo ya era donante. No cambiamos
+  nada.»). En la maqueta, `/admin-donantes-registrado` sigue (404 fuera de ella) y muestra Donantes
+  con el aviso. Sale «Registrar su donación»: la donación se registra desde la ficha del donante. El
+  formulario deriva de A12 como Registrar donación: migas, columna de `--medida-formulario`, la
+  bajada «Una persona, una empresa, una ONG o una institución. Le llega un correo para que active su
+  cuenta.», «Quién dona» en su tarjeta con «Cambiar» secundario, «Registrar donante» como única
+  llena y «Volver sin registrar». La dirección (opcional) va abierta bajo un h2.
+- **Alternativas:** conservar la página con sus dos acciones (contradice DA-06); un enlace en el
+  aviso breve (el puerto no dice quién quedó registrado); la ruta en `SitioController` (no carga la
+  lista); la dirección plegada en un `details` (su regla de ancho colgaba de `.mesa`); «organización»
+  en la bajada (en el sitio, la organización es quien recibe).
+- **Por qué:** el envío real ya terminaba en Donantes con el aviso.
+- **Costo:** registrar la donación de un donante nuevo pide buscarlo en la lista; dos textos de
+  ADM1 en `admin-donaciones-registrar.html` dejaron de ser ciertos
+  ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítems 1 y 6).
+- **Quién decidió:** usuario (DA-06; DA-33, la recomendada, delegada por el relevamiento del
+  2026-11-24). El formulario, la bajada y la ruta de la maqueta, agente (lote
+  `adm2-registrar-donante`). Consta como no cumplida: la revisión de pantallas de la ola no llegó a
+  PASS.
+- **Evidencia:** `e1a960a63` y `f21c0d6a6`; backlog §16.3 (ADM2-10 y ADM2-11).
+
+### 2026-11-25 · registrar · Registrar una organización responde en Organizaciones (DA-06)
+
+- **Decisión:** registrar una organización responde con el aviso breve en Organizaciones
+  («Registraste a Escuela Ejemplo N.º 5. Queda activa: la registraste vos, no necesita
+  aprobación.»), sin el banner ni página propia. En la maqueta, `/admin-entidades-registrada` sigue
+  y da 404 fuera de ella. El formulario deriva de A12; los rótulos pasan a «Responsable», «Nombre y
+  apellido» y «Correo», y el ejemplo de razón social, a «Comedor Ejemplo». En el error se marca solo
+  la calle, con el texto de antes.
+- **Alternativas:** sumar «registrada» a las respuestas de la lista (con datos reales mostraría el
+  aviso de ejemplo); marcar los cinco campos de la dirección (el contrato devuelve un solo error);
+  conservar «Le enviamos un correo…» (ese correo no se manda).
+- **Por qué:** es la parte de DA-06 de esta pantalla; la de ADM1 ya respondía igual en Donaciones.
+- **Costo:** `?escenario=lento` no tiene aserción ni captura propia
+  ([DTI-53](../adr/DEUDA_TECNICA.md#dti-53), ítem 5).
+- **Quién decidió:** usuario (DA-06). Los rótulos, el error y la ruta de la maqueta, agente (lote
+  `adm2-registrar-organizacion`). Consta como no cumplida en esta parte: la revisión de pantallas
+  de la ola no llegó a PASS.
+- **Evidencia:** `668bc5231`; backlog §16.3 (ADM2-12 y ADM2-13).
+
+### 2026-11-25 · sistema · Manifiesto de Z: los alias salen también del tema, los pares solo pierden los retirados y el cerco baja con el test
+
+- **Decisión:** el tema de Keycloak deja los alias junto con el sitio (DA-36). De la lista de pares
+  de `InterfazFitnessTest` salen los 16 que nombran un token retirado. Entran tres con el nombre de
+  la guía para los colores que siguen en uso: la raíz sobre el suelo y sobre el suelo medio, y la
+  acción primaria sobre una lámina. El del título pasa a `--color-accion-primaria`. Ningún mínimo
+  baja y la lista queda en 38 pares (DA-37). Sale de `HOJAS_HEREDADAS` toda hoja que el
+  cerco ya acepta, y se borran las hojas vacías (DA-38). Son 6 lotes en 5 tandas, y tres de ellos
+  son condicionales, uno por hueco ([backlog, sección 17](backlog-guia-al-codigo.md)).
+- **Alternativas:**
+  - Conservar en `tokens.css` los alias que usa el tema, o que la copia del tema deje de ser
+    idéntica.
+  - La lista de pares de la guía tal cual.
+  - Sacar los 16 pares sin reponer ninguno.
+  - Sacar del cerco solo `entidad-recibidas.css`.
+- **Por qué:** se cambia un nombre por otro del mismo valor, así que ningún color cambia. La lista
+  de la guía tal cual dejaría sin medir 6 pares en uso, y sacar los 16 sin reponer dejaría sin
+  medir la raíz sobre la tierra y el verde sobre una lámina. `HOJAS_HEREDADAS` dice que baja con cada
+  hoja migrada.
+- **Costo:** `test_auth_theme.py` cambia nombres de tokens y no corre en los gates del workflow: el
+  lote lo corre aparte. La ficha «Color: los nombres de antes» de `/estilos` se queda, porque
+  `EstilosBaseTest` cuenta 14 fichas, y pasa a decir que se retiraron.
+
+### 2026-11-25 · registro y cuenta · Nombre y Apellido en la grilla, y un solo título en Activar
+
+- **Decisión:** en el registro de la persona, Nombre y Apellido van en la `.grilla` del catálogo,
+  como Calle y Altura en el de la organización, y sale `.campos-par`. Activar lleva un solo h1,
+  «Activá tu cuenta», en el formulario, el error, la respuesta y el enlace vencido, y el campo se
+  llama «Correo electrónico», como en Ingresar, Recuperar y Pedir otro enlace.
+- **Alternativas:** dejar `.campos-par` (dos piezas para lo mismo en los dos registros); conservar
+  «Elegí tu contraseña» también en la respuesta (un pedido de algo que ya se hizo, arriba de «Tu
+  cuenta está lista»); volver a `aviso resumen` en los dos registros para que `publico.js` saque el
+  resumen del servidor (vuelve el estilo heredado de `formularios.css`, que la ola ya descartó dos
+  veces).
+- **Por qué:** la revisión de pantallas de la ola (ronda 3) marcó las dos pantallas del registro
+  distintas para el mismo caso y una respuesta que contradecía el estado.
+- **Costo:** el resumen doble con JavaScript sigue hasta que una ola toque `static/js`
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 1); la ficha de Activar todavía dibuja «Elegí tu
+  contraseña» (ítem 7).
+- **Quién decidió:** agente (arreglo posterior a la ola PUB2), con la opción que propuso la revisión.
+- **Evidencia:** backlog §15.5; capturas de `-Pvisual` sobre las rutas de la ola.
+
+### 2026-11-25 · estados · Las páginas de estado con la composición de lectura de PUB1
+
+- **Decisión:** las páginas de error (403, 404, 429 y 5xx, con su pieza `pagina-error`),
+  `sin-dibujar` y `aviso-persona` repiten la composición de Términos y privacidad: una `.pila` con
+  el `p.huerta-rotulo`, el h1 y la bajada en un `p` simple, y después un `.racimo` con un solo
+  botón lleno. El código para soporte y su enlace van en su propia pila, envuelta en un `div`, y
+  conservan `.aviso-codigo`. Sale la regla `.sin-dibujar` de `privado.css`; el texto de
+  `aviso-persona` no cambia.
+- **Alternativas:** `huerta-bajada` (es la bajada de las secciones de la huerta); `lectura-bajada` y
+  `p.rotulo` (heredadas); la pila del código como hija directa de la de la página (su
+  `data-espacio` la pegaba a los botones, se vio en las capturas); un ancho de lectura propio en la
+  hoja (una pieza nueva); un h1 más corto en `aviso-persona` (texto sin ficha).
+- **Por qué:** las páginas de estado tienen que verse como las de lectura de PUB1, con piezas del
+  catálogo; la ficha `raices-misiones.md` fija el texto del aviso.
+- **Costo:** sin el tope de 38rem, el h1 de `aviso-persona` corre casi todo el ancho a 1280 px
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 5).
+- **Quién decidió:** agente (lote `pub2-estado`), sin consultar.
+- **Evidencia:** `492548f78`; backlog §15.3 (PUB2-08 y PUB2-09).
+
+### 2026-11-25 · formularios · El resumen del error es el `.aviso` del catálogo, sin `.resumen`
+
+- **Decisión:** en Activar y en los dos registros, el resumen del error del servidor es el `.aviso`
+  con `data-tipo="error"`, `role="alert"`, el foco e `id="resumen"`, sin la clase heredada
+  `resumen`: el mismo marcado que Ingresar. Va arriba, dentro del formulario, donde `publico.js`
+  pone el suyo. El texto de cada enlace es el de su `.campo-error` («Falta la calle»).
+- **Alternativas:** `class="aviso resumen"`, para que `publico.js` lo reemplace (lo usaron el
+  donante en la ronda 1 y la organización hasta la revisión de pantallas); sumar `resumen` y pisar
+  `.resumen a` (pide tocar `formularios.css`, hoja compartida); un gancho propio (solo sirve si
+  `publico.js` lo busca, y `static/js` no se edita en esta ola).
+- **Por qué:** con `resumen` se le aplican `.resumen ul` y `.resumen a` de `formularios.css`, y los
+  dos registros, que comparten `componentes/registro`, mostraban el mismo resumen de dos maneras.
+- **Costo:** en los dos registros, un reenvío con errores después de un error del servidor muestra
+  dos resúmenes con JavaScript; la revisión de los lotes lo dejó como bloqueante
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 1). PUB2-05 y PUB2-06 quedan parciales.
+- **Quién decidió:** agente (lotes `pub2-registro-donante` y `pub2-registro-entidad`, y revisión de
+  pantallas de la ola, U1), sin consultar.
+- **Evidencia:** `57ca07271`, `df357b740`, `f36b98e39`, `21f7d3ae3`, `8e0e7f0be`, `40083290f` y
+  `3f23221bb`.
+
+### 2026-11-25 · registro · Los dos registros con `componentes/registro`, como está en el catálogo
+
+- **Decisión:** Crear una cuenta, el registro de quien dona y el de la organización usan la cabeza,
+  las tarjetas, el índice de pasos y `.registro-formulario` con una `section.registro-seccion` con
+  h2 por paso. La dirección va en `.grilla`, con los campos alineados abajo (Calle y Altura en la
+  misma línea); la contraseña con «Mostrar», en un `.racimo` (sale `.clave-fila`, con su línea y
+  sus reglas); el botón, en un `.racimo`; «Volver a la solicitud sin guardar», botón secundario
+  junto a Guardar. `comoSigue(paso, nivel)` da un h3 dentro de Confirmar y un h2 en la solicitud
+  enviada, con `huerta :: raiz-pasos`. El estado lento lleva `aria-busy` y no `disabled`, como
+  Ingresar. `campos-par` se queda en los campos de la persona.
+- **Alternativas:** `fieldset.grupo` por paso; `.campos-par` y `.campo--corto` en la dirección;
+  `align-items: start` (la Altura quedaba arriba); una bajada entre «Confirmar» y «Cómo sigue»;
+  editar `componentes/registro.css` para centrar la salida (es del catálogo).
+- **Por qué:** el catálogo ya resuelve el registro en una página, y las dos pantallas tienen que
+  comportarse igual que Ingresar.
+- **Costo:** dos reglas de disposición en `publico-registro.css` que serían del catálogo (el input
+  del `.racimo` y `margin-inline: auto` de `.registro-salida`); quedan reglas sin uso en esa hoja
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 2).
+- **Quién decidió:** agente (lotes `pub2-registro-donante` y `pub2-registro-entidad`, y revisión de
+  pantallas de la ola), sin consultar.
+- **Evidencia:** `57ca07271`, `1dd71c308`, `e2232c725`, `40083290f` y `3f23221bb`; backlog §15.3
+  (PUB2-04 a PUB2-06).
+
+### 2026-11-25 · cuenta · Recuperar, Activar y Pedir el enlace en la columna de Ingresar
+
+- **Decisión:** las tres pantallas son la columna de Ingresar: un `.pila` con el h1 sin rótulo ni
+  `<em>` y la bajada, los campos del catálogo, una sola acción llena y la salida a Ingresar como
+  enlace. La contraseña con «Mostrar» va en un `.racimo` dentro del `.campo`; el correo de solo
+  lectura y la contraseña, sin placeholder. El banner de enlace vencido usa `.racimo`, con «Pedir
+  otro enlace» lleno e «Ir a Ingresar» secundario. Activar tiene un solo fragmento
+  `hoja(conError, lista)` para el formulario, el error y la cuenta lista. El estado lento, con
+  `aria-busy` y sin `disabled`.
+- **Alternativas:** conservar el rótulo «Ingresar» o «Activar cuenta» (o pasarlo a
+  `.huerta-rotulo`, como Contacto); una plantilla aparte para la cuenta lista; la salida como botón
+  dentro del banner; conservar `disabled` en Activar.
+- **Por qué:** Ingresar es la columna de referencia de la misma hoja, `publico-ingresar.css`, que
+  ya dispone `main > .pila`.
+- **Costo:** el correo de solo lectura se ve igual que uno editable
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 4). Salen de `clases-heredadas.txt`
+  `aviso-acciones`, `cuenta-principal`, `cuenta-salida` y `publica-cabeza`, con sus reglas.
+- **Quién decidió:** agente (lote `pub2-cuenta` y revisión de pantallas de la ola), sin consultar.
+- **Evidencia:** `d03df922f` y `3f23221bb`; backlog §15.3 (PUB2-01 y PUB2-02).
+
+### 2026-11-25 · solicitud · «Solicitud enviada» sigue como página de estado, con lo recibido en el aviso (DA-32)
+
+- **Decisión:** `/publico-registro-entidad-enviada` se queda como la página de estado de la
+  solicitud, con sus cinco escenarios. «Solicitud recibida» (y «Guardamos los cambios» en
+  `corregida`, dentro del mismo aviso) va en el `.aviso` con `data-tipo="exito"`, sin `.recibido`.
+  En `aprobada` se ocultan el aviso, la bajada, «Cómo sigue» y «Mientras tanto»: queda el banner
+  «El equipo ya aprobó tu solicitud.» con «Ingresar de nuevo» como única acción llena. La pantalla
+  sigue con la hoja `publico-registro` y la columna de Ingresar.
+- **Alternativas:** pasar «Solicitud enviada» a un aviso breve (rompe «Ver mi solicitud» y los
+  escenarios de R11-41); en `aprobada`, el aviso «en revisión» junto a «ya la aprobó», o un título
+  propio del estado (texto sin ficha); «Guardamos los cambios» en un banner aparte (dos
+  `role="status"`); la hoja `publico-ingresar` (marcaba «Ingresar» en el menú).
+- **Por qué:** a esa página se vuelve; no es la respuesta a un envío.
+- **Costo:** en `aprobada`, las salidas quedan sin su frase introductoria
+  ([DTI-52](../adr/DEUDA_TECNICA.md#dti-52), ítem 6).
+- **Quién decidió:** usuario (DA-32, la recomendada, delegada por el relevamiento del 2026-11-24).
+  El caso `aprobada`, el aviso de `corregida` y la hoja, agente (lote `pub2-registro-entidad` y
+  revisión de pantallas). Consta como no cumplida: la revisión de pantallas de la ola no llegó a
+  PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `1dd71c308`, `8e0e7f0be` y `3f23221bb`; backlog §15.3 (PUB2-07).
+
+### 2026-11-25 · cuenta · Las respuestas de la cuenta en su misma pantalla, con el aviso (DA-32)
+
+- **Decisión:** Recuperar (`/publico-recuperar-enviado`) y Pedir el enlace
+  (`/publico-activar-pedido`) muestran su misma pantalla con el `.aviso` de éxito en el lugar del
+  formulario, y la bajada que pide el correo se va. Activar (`/publico-activar-lista`) muestra la
+  pantalla de Activar con el aviso «Tu cuenta está lista» e Ingresar como única acción llena; el h1
+  sigue «Activá tu cuenta». Las tres rutas siguen y ninguna lleva `.recibido`.
+- **Alternativas:** el aviso breve que se va solo, como Contacto; llevar Activar a Ingresar con un
+  aviso breve (edita una pantalla de PUB1); «Tu cuenta está lista» como h1 (repetía el aviso).
+- **Por qué:** el aviso dice qué hacer después; si se va, queda el formulario vacío y la persona
+  vuelve a pedir el enlace (regla 28 de [patrones](patrones-y-microcopy.md)).
+- **Costo:** las tres rutas de respuesta siguen en la maqueta. Las aserciones de
+  `SitioControllerTest` pasan a «Tu cuenta está lista» (en el aviso) y `<h1>Activá tu cuenta</h1>`,
+  igual de fuertes.
+- **Quién decidió:** usuario (DA-32, la recomendada, delegada por el relevamiento del 2026-11-24).
+  El h1 de la cuenta lista y la bajada que se va, agente (lote `pub2-cuenta` y revisión de
+  pantallas). Consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS; el
+  comportamiento está en el código y en los tests.
+- **Evidencia:** `d03df922f` y `3f23221bb`; backlog §15.3 (PUB2-03).
+
+### 2026-11-25 · admin · Manifiesto de ADM2: las listas siguen con ficha y los registros responden en la lista
+
+- **Decisión:** Donantes y Organizaciones siguen como bandeja con ficha (`.maestro`), en el galpón
+  (DA-34). Registrar un donante y registrar una organización responden con el aviso breve en su
+  lista (DA-06); registrar la donación de un donante nuevo sigue desde su ficha (DA-33). La
+  contraseña provisoria se queda como página propia (DA-35). Reparto en 6 lotes de 2 tandas, sin
+  fichas ([backlog, sección 16](backlog-guia-al-codigo.md)).
+- **Alternativas:** Donantes y Organizaciones como tabla con una página de detalle por fila, como
+  Donaciones; conservar la página «registrado» con «Registrar su donación», o un enlace dentro del
+  aviso breve; la contraseña provisoria como aviso breve.
+- **Por qué:** en la ficha se decide una solicitud y sigue el donante, sin rutas nuevas. El envío
+  real ya termina en la lista, y el puerto no dice quién quedó registrado. La contraseña se ve una
+  sola vez y hay que anotarla con calma.
+- **Costo:** registrar la donación de un donante nuevo pide buscarlo en la lista (un paso más que
+  hoy en la maqueta). `mesa` y `mesa-cabecera` las borra el integrador de la tanda, porque las usan
+  los seis lotes.
+
+### 2026-11-25 · galpón · Los errores y los avisos del galpón con las piezas del catálogo
+
+- **Decisión:** el error de carga de una lista del galpón (Donaciones, Asignar, Camiones, Ranking y
+  el inicio) es el `.aviso` de error del catálogo, con su signo, el texto de siempre, el enlace en
+  línea «escribinos con este código» y un solo «Volver a cargar» chico. El error de un envío
+  (aprobar, guardar un registro, el cambio del detalle de una donación) usa el mismo aviso, sin
+  código ni «Volver a cargar». Lo hecho se avisa con un fragmento, `admin-donaciones :: hecho`: el
+  aviso breve con el signo «confirmada» y el botón de cerrar, debajo de la cabecera, que usan
+  Registrar, marcar vencida, Camiones y, con la misma forma, Asignar.
+- **Alternativas:** dejar el `.banner` heredado en Donaciones y Asignar; un botón secundario
+  «Escribinos» (lo usaron Camiones y Ranking hasta la segunda ronda); `envio :: aviso`, que esta ola
+  no edita.
+- **Por qué:** la misma situación se veía de tres maneras en pantallas vecinas; el catálogo ya
+  dice cómo se muestra una lista con error, y con `hx-swap-oob` en el `<p>` el aviso llegaba sin su
+  caja.
+- **Costo:** el aviso real del servidor (`envio :: aviso`) sigue sin signo; los avisos ocultos de
+  corte de conexión siguen con el `.banner`, porque los muestra `static/js/interfaz.js`
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítems 7 y 8).
+- **Quién decidió:** agente (revisión de pantallas de la ola, rondas 1 y 2, y lote `adm1-camiones`).
+- **Evidencia:** `e90cd4bf1` y `8b0e09344`; backlog §14.5.
+
+### 2026-11-25 · camiones · Camiones deriva de A03 con la flota del catálogo
+
+- **Decisión:** la cabecera del galpón (`header.racimo` con `data-alinea="entre arriba"` y una
+  `.pila`) en lugar de `.mesa`, sin el rótulo «Administración», con las cifras de la flota
+  (`.flota-resumen`) adentro y «Agregar camión» chico y sin llenar. Los botones de la ficha, chicos;
+  los del diálogo, de su tamaño. El alta con error sigue el patrón de A12 (aviso con signo, «Los
+  datos con * son obligatorios.» y «Volver sin agregar» como enlace). El mapa chico lleva
+  `data-mapa-margenes="24 96 120 40"` y la hoja de MapLibre antes del script.
+- **Alternativas:** dejar «Agregar camión» lleno; pasar las cifras a `.datos` (son cifras grandes de
+  la flota); los márgenes de Seguimiento de quien dona (`40 96 136 40`), que a 360 px amontonaban
+  los marcadores y sumaban cuatro fallas de toque; dar más alto al mapa desde la hoja (pisa
+  `componentes/flota`).
+- **Por qué:** en A03 solo la acción del lote va llena; con esos márgenes los tres marcadores
+  quedan fuera de la atribución y de los botones, y `/admin-camiones` y
+  `/admin-camiones-agregar-error` salen de la línea de base de §10.4.
+- **Costo:** a 360 px los marcadores se tocan entre sí, por el alto de la pieza
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 8).
+- **Quién decidió:** agente (lote `adm1-camiones` y revisión de pantallas).
+- **Evidencia:** `57b0fe52d`, `c0a520425` y `8b0e09344`; backlog §14.3 (ADM1-07).
+
+### 2026-11-25 · ranking · El mes se elige como hoy (DA-31)
+
+- **Decisión:** la pastilla «Mes» de `componentes/filtros`, «Volver al último mes» y el paginador de
+  meses, que pasa debajo de la tabla, como en el dibujo de la ficha. La pastilla sale llena porque
+  siempre hay un mes elegido: es el estado del filtro, no una acción; la única acción llena es
+  «Mostrar resultados», dentro de su menú.
+- **Alternativas:** pestañas por mes (A03 usa pestañas para lo que hay por decidir, y doce meses no
+  entran a 360 px).
+- **Por qué:** el filtro ya existía y anda sin JavaScript.
+- **Costo:** el paginador de meses no se ve en la maqueta, que manda todos los meses en una página.
+- **Quién decidió:** usuario (DA-31, la recomendada, delegada por el relevamiento del 2026-11-24).
+  La posición del paginador, agente (lote `adm1-ranking`). Consta como no cumplida: la revisión de
+  pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `fa55bb12b`; ficha [`guia-adm-ranking.md`](flujos/guia-adm-ranking.md).
+
+### 2026-11-25 · ranking · Ranking con la tabla del catálogo, sin podio (DA-28)
+
+- **Decisión:** Ranking sigue su ficha: la `.tabla` del catálogo con el encabezado del galpón, sin
+  selección, el puesto en número y ningún color, dibujo ni podio para los tres primeros. El caption
+  y el h2 «Los puestos del mes» van para lectores; el rótulo «Administración» (`p.rotulo`) queda
+  arriba del h1, como pide la ficha.
+- **Alternativas:** un podio dibujado (una pieza que el catálogo no tiene, y el tono pide no
+  comparar donantes más allá del criterio); dejar el caption visible.
+- **Por qué:** el criterio ya va visible arriba de la tabla; apilada en el celular, el caption de la
+  tabla se parte en una palabra por renglón, como en las otras tablas del admin.
+- **Costo:** el caption no se ve en las capturas, y Ranking es la única pantalla del galpón con el
+  rótulo ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 9).
+- **Quién decidió:** usuario (DA-28, la recomendada, delegada por el relevamiento del 2026-11-24).
+  El caption, el h2 y el rótulo, agente (lote `adm1-ranking`). Consta como no cumplida: la revisión
+  de pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `fa55bb12b` y `8b0e09344`; backlog §14.3 (ADM1-12).
+
+### 2026-11-25 · registrar · Registrar donación en A12, con la respuesta en Donaciones (DA-06)
+
+- **Decisión:** registrar una donación vuelve a Donaciones con el aviso breve («Registraste la
+  donación: …»), sin página propia; en la maqueta, `/admin-donaciones-registrada` muestra Donaciones
+  con ese aviso. La pantalla sigue a A12: cada bien es una tarjeta con su h3 y la grilla de campos
+  como `role="group"` (sin fieldset), el botón principal va en `data-fijo="celular"` y «Cancelar»
+  pasa a ser el enlace «Volver sin registrar», fuera del formulario.
+- **Alternativas:** pasar el aviso como atributo desde el controller (deja un texto de ejemplo en
+  `web/`); dar estilo a la `legend` en la hoja; migrar la foto de cada bien a `.subida` (es para
+  varias fotos, una por formulario).
+- **Por qué:** cada envío termina en la misma pantalla (regla 26 de patrones); A12 pide una sola
+  acción llena y la salida como enlace.
+- **Costo:** fuera de la maqueta, el error de datos sigue volviendo como aviso breve; se ven dos
+  botones llenos (el «Buscar» del listado tiene el tono fijo); la grilla de cada bien queda en una
+  columna a 1280 px ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 7).
+- **Quién decidió:** usuario (DA-06, «Todas las recomendadas», ronda 4 del 2026-11-23). La
+  composición, agente (lote `adm1-registrar`). Consta como no cumplida: la revisión de pantallas de
+  la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `24549de7c` y `2a5e83682`; backlog §14.3 (ADM1-11).
+
+### 2026-11-25 · donaciones · Donaciones pasa de la bandeja con ficha a una tabla
+
+- **Decisión:** la lista de Donaciones del admin deja la bandeja con la ficha al costado (R11-34) y
+  pasa a la `.tabla` del catálogo, derivada de A03: cada fila lleva a
+  `/admin-donaciones-detalle?donacion=`. Las columnas son Donación, Donó, Registrada y Estado.
+  `/admin-donaciones?donacion=<clave>` dibuja el detalle con 200, para los enlaces de Decididas y
+  de Donantes que siguen apuntando ahí.
+- **Alternativas:** una fila que se despliega con la ficha (pide CSS nuevo en una hoja de pantalla);
+  redirigir `?donacion=` al detalle (rompe `ningunEnlaceDelSitioEstaRoto`, que exige 200); cambiar
+  esos enlaces en `admin-donantes.html` y en Decididas (son de ADM2 y de otro lote; se revirtió);
+  la columna «Para» (la fila no trae la organización en todos los estados).
+- **Por qué:** A03 no tiene ficha al costado, y la ficha dentro de la tabla era una pieza nueva.
+- **Costo:** revierte una decisión de la revisión del 2026-11-11 sin una DA: la puede vetar el
+  usuario. La misma pantalla tiene dos URL y queda código sin uso en `vistas/`
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 5).
+- **Quién decidió:** agente (lote `adm1-donaciones`).
+- **Evidencia:** `341f726ee`, `b13b05eed` y `1af6d4b85`; backlog §14.3 (ADM1-08).
+
+### 2026-11-25 · donaciones · «Vencida» con el par neutro (DA-07)
+
+- **Decisión:** en la lista y en el detalle de Donaciones, una vencida lleva `data-estado="vencida"`
+  con la palabra «Vencida», en el par neutro, sin el sello de problema, sin el botón de marcar y sin
+  el aviso de «Solo se puede». Los sellos de los demás estados pasan a los nombres de la guía
+  (C1-14): `registrada`, `asignada`, `en-camino` y `confirmada`, con las mismas palabras.
+- **Alternativas:** sumar una vencida a los datos de ejemplo (cambiaba cuentas que afirman otros
+  tests); dejarla como problema.
+- **Por qué:** vencer no es un error de nadie: la guía no le da sello.
+- **Costo:** ninguno; DTI-47, ítem 6, queda saldado en esa parte.
+- **Quién decidió:** usuario (DA-07, «Todas las recomendadas», ronda 3 del 2026-11-22). Los nombres
+  de los sellos, agente (lote `adm1-donaciones`). Consta como no cumplida: la revisión de pantallas
+  de la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `341f726ee`; test `unaVencidaLlevaElParNeutroEnLaListaYEnElDetalle`.
+
+### 2026-11-25 · inicio · Los gráficos se quedan en la hoja del inicio (DA-30)
+
+- **Decisión:** «Mes a mes» y «Por categoría» siguen como parte de `admin-inicio`, en
+  `admin-inicio.css`, con su tabla al lado desde 68,75 em (antes, desde 53,75 em) y debajo en lo
+  más angosto. Sus reglas usan los nombres de token de la guía con el mismo valor, y las medidas
+  sueltas pasan al token más cercano: las medidas literales de la hoja bajan de 86 a 29.
+- **Alternativas:** una pieza nueva del catálogo con su muestra en `/estilos` (la usa una sola
+  pantalla).
+- **Por qué:** la tabla del catálogo no se parte, y entre 1024 y 1280 px desbordaba al lado del
+  gráfico.
+- **Costo:** `.tabla` no tiene reglas para `tfoot`; apilada, la tabla de Mes a mes son 12 bloques y
+  a 360 px los meses se apiñan ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 6).
+- **Quién decidió:** usuario (DA-30, la recomendada, delegada por el relevamiento del 2026-11-24).
+  El quiebre y los tokens, agente (lote `adm1-por-decidir`). Consta como no cumplida: la revisión de
+  pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `0dec8c01c` y `b64f154fa`.
+
+### 2026-11-25 · inicio · «Cómo está todo» en un solo resumen (DA-29)
+
+- **Decisión:** debajo de la bandeja, las cuatro tarjetas pasan a un resumen con la lista de datos
+  del catálogo (`.datos`) y su fecha, con las mismas cifras. Las salidas («Ver las donaciones en el
+  depósito», etc.) van juntas debajo, en un `.racimo`, con su texto completo y 48 px de alto. En el
+  celular el resumen va en una columna (una regla de disposición en la hoja). «Entregas para mirar
+  hoy» no se dibuja.
+- **Alternativas:** conservar las cuatro tarjetas (la densidad de la huerta en el galpón); armar
+  «Entregas para mirar hoy» con datos de la maqueta (en el sitio real quedaría vacía); «Ver ›» con
+  `aria-label` fuera de su fila.
+- **Por qué:** `AdminInicioVista` trae cuentas, no entregas; la lista de datos no tiene lugar para
+  una salida en la fila.
+- **Costo:** quien administra pierde la lista de las entregas del día, y dejan de verse los nombres
+  de las organizaciones que piden sumarse y la primera que vence
+  ([DTI-47](../adr/DEUDA_TECNICA.md#dti-47), ítem 13; [DTI-51](../adr/DEUDA_TECNICA.md#dti-51),
+  ítem 6).
+- **Quién decidió:** usuario (DA-29, la recomendada, delegada por el relevamiento del 2026-11-24).
+  Las salidas debajo y la columna del celular, agente (lote `adm1-por-decidir`). Consta como no
+  cumplida: la revisión de pantallas de la ola no llegó a PASS; el comportamiento está en el código
+  y en los tests.
+- **Evidencia:** `0dec8c01c` y `b64f154fa`; ficha [`guia-adm-inicio-graficos.md`](flujos/guia-adm-inicio-graficos.md).
+
+### 2026-11-25 · inicio · `/admin-inicio` es «Por decidir» (DA-04)
+
+- **Decisión:** `/admin-inicio` lleva la cabecera y las pestañas del fragmento de Asignar, con
+  Propuestas abierta: la primera página de las propuestas sin conflicto en la tabla con selección,
+  con «Aprobar las N» como única acción llena, y debajo lo de su ficha. Los errores (del inicio, de
+  las propuestas, de los camiones y de los gráficos) son el `.aviso` de error. Si falla el pedido de
+  propuestas, el resto de la pantalla sigue y Propuestas y Conflictos quedan sin cuenta.
+- **Alternativas:** dejar el saludo y las tarjetas de decisión de antes.
+- **Por qué:** «Por decidir» reemplaza a Inicio y a Asignar (DA-04 y DA-25).
+- **Costo:** el bloque de Propuestas está dos veces (inicio y mesa); dos enlaces a la mesa llevan
+  `hx-boost`, y el controller atrapa también los 401 y 403
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítems 4 y 6).
+- **Quién decidió:** usuario (DA-04, «Todas las recomendadas», ronda 4 del 2026-11-23). El manejo
+  de los errores, agente (lote `adm1-por-decidir`). Consta como no cumplida: la revisión de
+  pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `0dec8c01c` y `b64f154fa`; backlog §14.3 (ADM1-09).
+
+### 2026-11-25 · asignaciones · Aprobar o descartar varias juntas, sin cambiar el puerto (DA-26)
+
+- **Decisión:** el formulario manda varias `propuesta` a `-aprobada` o `-descartada` y
+  `AdminAsignacionesEnvios` llama a `decidirPropuesta` una vez por propuesta, en orden. Un 409 corta
+  el lote y el aviso dice cuántas se decidieron y por qué no la siguiente (regla 27 de patrones);
+  con ninguna elegida, «Elegí al menos una propuesta para aprobar.» y no se llama al puerto. Con una
+  sola, el aviso de siempre, sin el nombre de la organización si se eligió desde la tabla. En la
+  maqueta de error, la que no se pudo aprobar queda en la tabla sin casilla, con el sello de
+  problema y «No se pudo aprobar: descartala en el aviso de arriba.», y se descarta desde el aviso.
+- **Alternativas:** un botón por fila, sin selección; un pedido en lote nuevo (cambia el puerto y el
+  adaptador); un campo oculto con la organización por fila (viaja también en las no elegidas).
+- **Por qué:** A03 dibuja la selección y la ola no toca puertos.
+- **Costo:** solo el 409 corta con la cuenta; otro error a mitad del lote lleva a la página de error
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 4).
+- **Quién decidió:** usuario (DA-26, la recomendada, delegada por el relevamiento del 2026-11-24).
+  Lo demás, agente (lote `adm1-asignaciones` y revisión de pantallas). Consta como no cumplida: la
+  revisión de pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los
+  tests.
+- **Evidencia:** `0fda83499`, `4bc65d917` y `e90cd4bf1`; backlog §14.3 (ADM1-06).
+
+### 2026-11-25 · asignaciones · Inicio y Asignar con la misma cabecera y las mismas pestañas (DA-25)
+
+- **Decisión:** las dos rutas llevan la cabecera de A03 (título «Por decidir», la fecha, la última
+  asignación, «Correr la asignación» y «Registrar donación») y la barra de pestañas con su cuenta
+  (Propuestas, Conflictos, Solicitudes y Por vencer), en los fragmentos
+  `admin-asignaciones :: cabecera` y `:: pestanas`. `/admin-asignaciones` es la mesa completa. La
+  fecha y las cuentas de Solicitudes y Por vencer salen, en las dos, de `AdminPersonasPuerto.inicio()`
+  (en la mesa, por un `ObjectProvider`); la de Propuestas, de las propuestas sin conflicto. La
+  cabecera recibe `volver`, para que «Correr la asignación» vuelva al inicio. Salen el panel
+  «Estado de la asignación» (lo que tenía pasó a la cabecera y a un `.plegable`) y la lista de las 3
+  decididas más nuevas.
+- **Alternativas:** una sola ruta que redirige a la otra (rompe tests y rutas de `paginas.txt`);
+  Solicitudes y Por vencer como listas dentro del inicio; tomar la cuenta de Propuestas de
+  `Decisiones.propuestas` (incluye las de conflicto y contradecía la tabla); cambiar la firma de
+  `pestanas`.
+- **Por qué:** la persona ve la misma barra donde esté, y la cuenta coincide con lo que hay debajo.
+- **Costo:** la mesa pide además todo el inicio para la fecha y dos cuentas, y `pestanas` lee dos
+  variables del contexto sin parámetro ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 4).
+- **Quién decidió:** usuario (DA-25, la recomendada, delegada por el relevamiento del 2026-11-24).
+  Lo demás, agente (lotes `adm1-asignaciones` y `adm1-por-decidir`, y revisión de pantallas).
+  Consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS; el comportamiento
+  está en el código y en los tests.
+- **Evidencia:** `0fda83499`, `0dec8c01c` y `e90cd4bf1`; backlog §14.3 (ADM1-05 y ADM1-09).
+
+### 2026-11-25 · tabla · La tabla del galpón con selección, sin JavaScript (DA-18 y DA-21)
+
+- **Decisión:** la variante `.tabla[data-forma="seleccion"]` entra al catálogo, con
+  `.tabla-casilla` (la casilla sola de 48 × 48 px: el control nativo transparente encima de la
+  dibujada, que mide `--espacio-4`), la fila elegida, `data-columna="ancha"` para lo que se esconde
+  en el celular y `.tabla-elegidas` con su cuenta. Elegir todas es un enlace con `?elegir=todas` que
+  dibuja el servidor; la cuenta es un contador de CSS con `@counter-style`: «Elegiste N de M.»,
+  «Aprobar las N» o «Aprobar la elegida»; sin ninguna, «Elegí las que quieras decidir juntas.» y
+  «Aprobar las elegidas».
+- **Alternativas:** un bloque `Alpine.data` (esta ola no edita `static/js`); una casilla de todas
+  sin JavaScript (no marca nada); un campo «todas» pintado con `:has` (los lectores no oyen las
+  filas marcadas); la cuenta solo del servidor (queda vieja al destildar); «N elegidas» y «Aprobar
+  las N» de la guía (con una saldría «Aprobar las 1»).
+- **Por qué:** con lo que el catálogo y el navegador ya tienen, la cuenta no queda vieja y el
+  español es correcto para cualquier N.
+- **Costo:** la cuenta no se anuncia al marcar; la barra va después de la tabla en el DOM y se
+  dibuja arriba, así que el foco no sigue el orden visual; la casilla de arriba sigue al servidor
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítem 3).
+- **Quién decidió:** usuario (DA-18 y DA-21, rondas del 2026-11-22 y 2026-11-23). La forma sin
+  JavaScript, los nombres y los textos, agente (lote `adm1-asignaciones`). Consta como no cumplida:
+  la revisión de pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los
+  tests.
+- **Evidencia:** `0fda83499`, `4bc65d917` y `a8c064a75`; [catálogo](componentes.md), fila `.tabla`.
+
+### 2026-11-25 · armazón · El galpón: la barra de arriba en todos los anchos y el cajón desde 56 em (DA-18 y DA-27)
+
+- **Decisión:** el admin se dibuja con `body[data-armazon="galpon"]`, que pone `layout-privado`
+  cuando Mi perfil es el del admin. La barra de arriba (marca, campana y cuenta) se queda en todos
+  los anchos, con el alto de la huerta; desde 56 em las secciones van en el cajón (`data-forma=
+  "cajon"`), fijo a la izquierda y debajo de la barra, con el contenido y el pie corridos a su
+  derecha; hasta 56 em, la barra del celular con Por decidir, Donaciones, Camiones y Más, que abre
+  todas en un panel (popover). Desde 56 em la barra de arriba queda fija también en ventanas bajas.
+  El papel del galpón redefine `--color-papel` dentro del armazón. Sale el panel con hamburguesa
+  (`.navegacion-abrir`).
+- **Alternativas:** la guía tal cual, sin barra arriba desde 56 em (cambia el lugar de la campana y
+  arriesga `ArmazonFijoTest`); una clase en lugar del atributo (suma al catálogo y al tope de clases
+  de un solo uso); `body` como grilla (la cabecera dejaría de quedar fija); afinar la barra
+  (dependen de su alto la cabecera fija y la barra del listado).
+- **Por qué:** la campana queda donde está en los otros roles y `ArmazonFijoTest` pasa sus 12,
+  también el que estaba en la línea de base.
+- **Costo:** fijar la barra en ventanas bajas es un desvío de R11-33 para el admin, decidido por el
+  agente; la cuenta chica del cajón no llega a ninguna pantalla
+  ([DTI-51](../adr/DEUDA_TECNICA.md#dti-51), ítems 1 y 2).
+- **Quién decidió:** usuario (DA-18, ronda 3 del 2026-11-22; DA-27, la recomendada, delegada por el
+  relevamiento del 2026-11-24). Lo demás, agente (lote `adm1-galpon` y revisión de pantallas).
+  Consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS; el comportamiento
+  está en el código y en los tests.
+- **Evidencia:** `b5a6879f8`, `ed7631670`, `e9fbc76d2`, `2b7ef8b38`, `e90cd4bf1` y `8b0e09344`;
+  test `ArmazonDelGalponTest`.
+
+### 2026-11-25 · navegación · El menú del admin: Por decidir, Donaciones, Donantes, Organizaciones, Camiones y Ranking (DA-04, DA-17 y DA-25)
+
+- **Decisión:** el menú del admin es Por decidir, Donaciones, Donantes, Organizaciones, Camiones y
+  Ranking. Por decidir reemplaza a Inicio y a Asignar donaciones, lleva a `/admin-inicio` y queda
+  marcada también en `/admin-asignaciones` y sus respuestas. En el celular van Por decidir,
+  Donaciones, Camiones y Más; las tres se eligen en el layout con una lista de rutas. Los íconos son
+  los `i-*` de `iconos :: comunes`, una vez por pantalla desde el layout. Solo cambia el menú del
+  admin.
+- **Alternativas:** sumar el dato del celular a `OpcionNavegacion` (`vistas/` no era del lote);
+  cambiar todos los menús juntos.
+- **Por qué:** lo que hay por decidir es la primera tarea del admin; cada ola rehace el menú de su
+  rol.
+- **Costo:** las 22 pantallas de ADM2 se ven con el menú y el armazón nuevos y su contenido de
+  antes (menor).
+- **Quién decidió:** usuario (DA-04, ronda 4 del 2026-11-23; DA-17, ronda 3 del 2026-11-22; DA-25,
+  la recomendada, delegada por el relevamiento del 2026-11-24). La lista del celular y los íconos,
+  agente (lote `adm1-galpon`). Consta como no cumplida: la revisión de pantallas de la ola no llegó
+  a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** `b5a6879f8`; `Pantallas.java`, `layout-privado.html`.
+
+### 2026-11-24 · publico · Manifiesto de PUB2: las respuestas de la cuenta con el aviso en la página
+
+- **Decisión:** Recuperar la contraseña, Pedir el enlace y Activar la cuenta responden en su misma
+  pantalla con el aviso en la página del catálogo, sin página propia y sin el sello de recibido.
+  «Solicitud enviada», de la organización, se queda como la página de estado de la solicitud, con
+  «Solicitud recibida» como aviso en la página (DA-32). Reparto en 4 lotes de una tanda, sin fichas;
+  el registro en una página usa `componentes/registro` como está
+  ([backlog, sección 15](backlog-guia-al-codigo.md)).
+- **Alternativas:** el aviso breve que se va solo, como Contacto; llevar Activar a Ingresar con un
+  aviso breve; pasar «Solicitud enviada» a un aviso breve.
+- **Por qué:** el aviso dice qué hacer después, y si se va, queda el formulario vacío y la persona
+  vuelve a pedir el enlace. Ingresar es una pantalla de PUB1. A «Solicitud enviada» se vuelve con
+  «Ver mi solicitud».
+- **Costo:** las tres rutas de respuesta siguen en la maqueta. `.recibido` puede quedar sin uso en
+  `publico-paginas.css`; si queda, la borra el integrador de la tanda 1, con su línea de
+  `clases-heredadas.txt`.
+- **Quién decidió:** el autor del manifiesto, con la opción recomendada, delegada por el
+  relevamiento del 2026-11-24 (corrida desatendida, rama = gate; plan `.claude/plan-guia-resto.md`).
+  El usuario no la respondió.
+
+### 2026-11-24 · navegación · El menú público: Inicio, Entregas, Organizaciones y Cómo funciona (DA-01, DA-05, DA-17)
+
+- **Decisión:** el menú público es Inicio, Entregas, Organizaciones y Cómo funciona
+  (`/publico-nosotros`). El Mapa sale del menú y, en el Mapa, queda marcada Entregas. Entregas va sin
+  «confirmadas», como en la guía. Cómo funciona lleva el ícono `#i-brote`, incluido como símbolo en un
+  `svg.iconos` dentro del menú, sin editar `iconos.html`. En la barra de arriba, Inicio se ve desde
+  68,75 em; en el celular, siempre. Solo cambia el menú público.
+- **Alternativas:** dejar el Mapa en el menú; mostrar Inicio desde 56 em; traer entero
+  `iconos :: comunes`; cambiar todos los menús juntos.
+- **Por qué:** el Mapa es una vista de las entregas; entre 56 y 68,75 em la fila con Inicio no entra
+  en un renglón y rompía `ArmazonFijoTest`; cada ola rehace el menú de su rol.
+- **Costo:** entre 56 y 68,75 em Inicio no está en la barra (se llega por el logo).
+- **Quién decidió:** usuario (DA-01, DA-05 y DA-17, rondas del 2026-11-22 y del 2026-11-23). El ancho
+  de Inicio, el ícono y «Entregas», agente (lote `pub1-portada`). Consta como no cumplida: la revisión
+  de pantallas de la ola no llegó a PASS; el comportamiento está en el código y en los tests.
+- **Evidencia:** backlog §13.3 (PUB1-02); `navegacion-publica.html`, `26ebd4af3`.
+
+### 2026-11-24 · portada · La portada sigue a A01, sin las abejas, el corte bajo tierra ni el cierre de hoy (DA-22)
+
+- **Decisión:** la portada usa `layout-publico.html` y va en el orden de A01: el título sobre la
+  trama (sin el papel debajo de cada letra), el dibujo con un fruto por entrega confirmada, la última
+  entrega con su foto y su sello, las cifras, «Cómo funciona» con la raíz numerada de 5 pasos y hasta
+  3 entregas más del último mes con «Ver todas». «Quiero donar» lleva a `/publico-registro-donante` y
+  «Soy una organización» a `/publico-registro-entidad`. La última entrega dice «<organización>
+  confirmó la entrega con una foto.», sin «Ver las 2 fotos». El título del mes es «Entregas
+  confirmadas del último mes», porque el puerto trae un mes corrido. El texto del dibujo no cuenta
+  frutos (el SVG dibuja 9 fijos): la cuenta va en los frutos de debajo. El pie de cada entrega lleva
+  el año.
+- **Alternativas:** seguir con la cabecera propia de la portada; conservar las piezas de hoy debajo de
+  A01 (descartada en DA-22); «Ver las N» de A01; mandar «Quiero donar» a Cómo donar.
+- **Por qué:** sin lámina a todo el ancho, el armazón ya trae el salto al contenido, el indicador de
+  carga y la precarga de las letras; no hay un detalle público de una entrega ni la cuenta de sus
+  fotos; los registros son lo que ya enlazaba la portada.
+- **Costo:** fallan `AbejasYRenglonesTest.conReducirMovimientoLasAbejasQuedanQuietasDelanteYEnteras` y
+  los dos de `BajoTierraRotulosTest`, que miden piezas que la portada ya no tiene: los decide el
+  usuario. La etiqueta de la última entrega no tiene el marco protagonista de A01. La sección del mes
+  no tiene estado de error, bloqueante del lote ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítems 1, 3
+  y 6).
+- **Quién decidió:** usuario (DA-22, sin respuesta: la opción recomendada, delegada por el relevamiento del 2026-11-24). Lo
+  demás, agente (lote `pub1-portada`), sin consultar. Consta como no cumplida: la revisión de
+  pantallas de la ola no llegó a PASS.
+- **Evidencia:** backlog §13.3 (PUB1-01); `publico-portada.html`, `26ebd4af3`, `1878a1e39` y
+  `33e1c7284`.
+
+### 2026-11-24 · portada · Las cifras van en una frase, en la portada y en Cómo funciona
+
+- **Decisión:** bajo «Cómo sabemos que llega», las cifras son una frase con cada número en `<strong>`
+  y `.texto-grande` («Hasta hoy, 1.284 entregas confirmadas, …»), con los rótulos del puerto en
+  minúscula y la fecha `actualizado` del puerto («Actualizado el …», solo con datos). Cómo funciona
+  copia el mismo marcado con `cifrasDeNosotros`. El vacío va con `.vacio data-forma="filetes"`.
+- **Alternativas:** `huerta :: cifras` (otro título, árboles que no entran en media columna y una fecha
+  fija); la lista de datos (`componentes/datos`), que fue la primera versión, con las columnas
+  `minmax(0,1fr) auto` para que «Organizaciones» no se montara sobre el número a 360 px; informar una
+  variante de `.datos` como pieza faltante; la fecha fija en la plantilla.
+- **Por qué:** A01 no usa una lista de datos y las cifras no son «lo asentado»; la fecha fija sería un
+  dato de ejemplo escrito en la plantilla.
+- **Costo:** con el adaptador real los rótulos de Cómo funciona no llevan período (`PublicoRest`);
+  `huerta :: cifras` quedó sin llamadores ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 6).
+- **Quién decidió:** agente (lotes `pub1-portada` y `pub1-conocer`, en sus rondas de arreglo), sin
+  consultar.
+- **Evidencia:** `publico-portada.html`, `publico-nosotros.html`; `33e1c7284` y `3b08f925f`.
+
+### 2026-11-24 · estados · Los errores de carga de lo público son el banner con el código
+
+- **Decisión:** en la portada y en Cómo funciona, un error de carga es el banner de error
+  (`data-estado="error"`) con «Es un problema nuestro. Probá de nuevo en unos minutos; si sigue,
+  escribinos con este código.», el enlace a Contacto con el código y la vuelta, `.aviso-codigo` y
+  «Volver a cargar», como en Entregas, el Mapa y Organizaciones. Las cifras de la portada llevan el
+  banner en línea, con su propio id (`cifras-error-titulo`).
+- **Alternativas:** el renglón de filetes con `role="alert"` (la versión de las rondas de los lotes);
+  dos `avisoError` en la misma página; cambiar el fragmento `avisoError`.
+- **Por qué:** lo que se parece se comporta igual (U1, U4); `avisoError` tiene fijo `id="error-titulo"`
+  y dos repetirían el id, y su firma no cambia porque lo usan pantallas de PUB2.
+- **Costo:** la sección de las entregas del mes de la portada sigue sin estado de error
+  ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 1).
+- **Quién decidió:** agente (revisión de pantallas de la ola, ronda 2), sin consultar.
+- **Evidencia:** `publico-portada.html`; `5556086f0`.
+
+### 2026-11-24 · entregas · Entregas y el Mapa: frutos, la etiqueta de cada entrega y quién la recibió (DA-01, DA-10)
+
+- **Decisión:** Entregas cuenta en frutos (`componentes/huerta :: frutos`, uno por entrega) y muestra
+  cada entrega con la etiqueta del catálogo, con «Recibió: <la organización>» (nunca una persona) y
+  la categoría y el barrio en el lugar («Muebles · Centro Ejemplo»); «Foto de ejemplo» cuando la foto
+  no es una dirección http(s); «Ver la foto de la entrega» fuera de la etiqueta. Un período sin
+  entregas muestra solo los frutos en cero. Entregas enlaza el Mapa, y el Mapa vuelve por sus migas
+  «Entregas / Mapa», sin rótulo ni parte en otra tinta en el título. La cuenta del Mapa va en texto,
+  con la cifra en `<b>`. El listado del Mapa no queda fijo. `publico-mapa.css` corrige que MapLibre
+  corra el mapa 82 px desde 68,75 em (`top: 0`). A 360 px, Categoría va en su renglón y Filtrar
+  debajo. En Cómo funciona, «Cuidamos los datos» dice que lo publicado nunca muestra quién donó.
+- **Alternativas:** la cifra heredada con árbol (`.cifra-fruto`); frutos en el Mapa (con el tope de
+  Logística pueden ser cientos); el pictograma de la categoría, que la etiqueta no tiene; columnas de
+  22 rem (daban tres a 1280 px); `grid-template-columns: 1fr` en el listado a 360 px.
+- **Por qué:** como A10 y Entregas de la organización; la etiqueta del catálogo no tiene lugar para el
+  pictograma; en lo público quien recibe es la organización (HG-03).
+- **Costo:** el número dentro del sello del Mapa (`.estacion-numero`) sigue heredado, y con él
+  `publico-mapa.css` en `HOJAS_HEREDADAS`; el arreglo del mapa es de disposición y el de fondo es del
+  catálogo ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 6). Con datos reales llegan hasta 50
+  frutos; no se probó cómo se ven.
+- **Quién decidió:** usuario (DA-01 y DA-10). Lo demás, agente (lote `pub1-entregas` y revisión de
+  pantallas de la ola, rondas 1 y 2). Consta como no cumplida: la revisión de pantallas de la ola no
+  llegó a PASS.
+- **Evidencia:** backlog §13.3 (PUB1-03, PUB1-04); `8cfbaab5d`, `a56418c53`, `60a4c976f`,
+  `fb9e34317` y `5556086f0`.
+
+### 2026-11-24 · organizaciones · Organizaciones públicas: tarjetas por grupo, de a 6, filtradas en el controller
+
+- **Decisión:** los filtros y las páginas pasan de la plantilla a `PublicoEntidadesController`, sobre
+  la lista que ya da el puerto: se ordena por grupo, se corta la página de 6 y se agrupa la página
+  (Comedores y merenderos, etc.). El total de cada organización va en el atributo `vigentes`
+  (pedidos sin filtrar). Lo satisfecho va en palabras en el pie de la tarjeta, sin barra; el
+  plegable, solo para las necesidades que pasan de 3, y la misión en `.recorte`, fuera del plegable.
+  Las salidas son dos botones, «Quiero donar» y «Sumar mi organización». El fragmento `pantalla`
+  conserva su firma.
+- **Alternativas:** paginar en la plantilla (Thymeleaf no arma el paginador); sumar un campo al record
+  `Entidad` del puerto; una vista propia; sacar los grupos, que A02 no tiene; la salida heredada
+  `.salidas` con «¿Ya tenés cuenta? Ingresar».
+- **Por qué:** el paginador necesita el total ya filtrado; ninguna decisión autoriza sacar los grupos y
+  los tests los afirman; dos barras en la misma tarjeta confundían; sin anidar `details` (DTI-48).
+- **Costo:** el controller tiene lógica (busca, filtra, ordena y pagina), contra lo que pide
+  `cliente-liviano/AGENTS.md`; con la API paginada, la búsqueda solo ve la primera respuesta; las
+  ramas `yaDonadas` del fragmento ya no las usa nadie ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50),
+  ítems 4 y 5).
+- **Quién decidió:** agente (lote `pub1-organizaciones`), sin consultar.
+- **Evidencia:** backlog §13.3 (PUB1-05); `375608498`, `a1cb6457c` y `8cef6d2ee`.
+
+### 2026-11-24 · ingresar · Ingresar es la columna del formulario de A12
+
+- **Decisión:** una sola columna, con el h1 «Ingresar» y su bajada, y las cuentas de ejemplo debajo
+  del formulario en una tarjeta `data-papel="hueco"`. El error es un solo mensaje (`.campo-error`, con
+  el signo del catálogo) en la contraseña, con los dos campos marcados y el resumen enlazado a
+  `#clave`. Salen el «o» con filetes, los discos con la inicial del rol y `boton--google`: «Continuar
+  con Google» es un `.boton` secundario junto a Ingresar. La contraseña con «Mostrar» va en un
+  `.racimo`, sin placeholder. El estado lento lleva `aria-busy` y «Ingresando…», sin `disabled`.
+- **Alternativas:** las dos columnas de antes; conservar el rótulo y `.publica-cabeza`; un mensaje por
+  campo; «Mostrar» chico o en otro renglón; `disabled` en el envío.
+- **Por qué:** el arquetipo es la columna del formulario; dos mensajes repetían el texto y uno sugería
+  cuál falló (RNF-AUTH-10); el ingreso no valida el largo de la contraseña.
+- **Costo:** los selectores nuevos de `publico-ingresar.css` son estructurales y los heredarán activar
+  y recuperar (PUB2) cuando migren; `data-papel="hueco"` estira el sentido de «lo que falta»;
+  `.enlace-campo` de `publico-registro.css` quedó sin uso ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50),
+  ítem 7).
+- **Quién decidió:** agente (lote `pub1-ingresar`), sin consultar.
+- **Evidencia:** backlog §13.3 (PUB1-06); `5ce687f2d` y `09942eb6c`.
+
+### 2026-11-24 · conocer · Cómo funciona, Cómo donar y Ayuda, con la composición de A01 (DA-05, DA-23)
+
+- **Decisión:** Nosotros, Para donantes y Para organizaciones se llaman Cómo funciona, Cómo donar y
+  Ayuda, con las rutas de hoy, y el pie los nombra igual. Las tres llevan el título sobre la trama
+  (sin la máscara de papel y sin `<em>`) y la raíz de 5 pasos con el texto de su público. Cómo
+  funciona sube sus dos salidas a la cabecera, a los registros con los rótulos de la portada («Quiero
+  donar» y «Soy una organización»), y pierde la sección «Sumate». Cómo donar y Ayuda tienen una sola
+  acción llena y las preguntas frecuentes en `.plegable`, con «Ver» oculto a lectores. En Ayuda,
+  «Tu cuenta y tus datos» son dos tarjetas con su h3.
+- **Alternativas:** el botón repetido al final, en secundario; «Cómo donar» y «Ayuda para
+  organizaciones» como salidas de Cómo funciona; `details` sin clase; la lista en párrafos.
+- **Por qué:** una sola acción llena por página; cada rótulo lleva a un solo lugar en todo el sitio;
+  lo que se parece se comporta igual.
+- **Costo:** «Qué ves con tu cuenta» de Cómo donar sigue como lista suelta, distinta de Ayuda
+  (bloqueante del lote tras 3 rondas, [DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 2). Las fichas de
+  flujo conservan los nombres viejos (ítem 8).
+- **Quién decidió:** usuario (DA-05, ronda 4 del 2026-11-23; DA-23, sin respuesta: la recomendada, delegada por el
+  relevamiento del 2026-11-24). La composición, agente (lote `pub1-conocer` y revisión de pantallas
+  de la ola, ronda 1). Consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS.
+- **Evidencia:** backlog §13.3 (PUB1-07, PUB1-08); `6c5dc109c`, `9738e96df`, `3b08f925f` y
+  `fb9e34317`.
+
+### 2026-11-24 · contacto · El envío de Contacto termina en Contacto, con el número en el aviso (DA-06, DA-24)
+
+- **Decisión:** enviar vuelve a Contacto con un aviso breve que lleva el número («Recibimos tu
+  mensaje. Su número es 7.»); el campo trampa da el aviso sin número. Con `?volver=`, Contacto ofrece
+  «Volver a …», un botón secundario, antes y después de enviar. Ya no hay «Volver a mi inicio» ni «Ir
+  a la portada». Sale la lámina «Cuándo escribirnos» con su ilustración. «Enviar mensaje» va en un
+  racimo, como «Ingresar». En Legales, el aviso de texto de ejemplo es `.aviso data-tipo="info"`
+  («Texto de ejemplo»).
+- **Alternativas:** una página de respuesta propia; «Volver a …» como enlace suelto; conservar la lámina
+  al costado; un número inventado para el spam.
+- **Por qué:** A12 es una sola columna de formulario; con sesión, el menú del marco ya lleva al
+  inicio; para spam no se inventa un número.
+- **Costo:** la lámina venía del A/B aprobado el 2026-11-04: si vuelve, lo decide el usuario. Si el
+  envío real se rechaza, se pierde el `?volver=`. La maqueta muestra un aviso más rico que el envío
+  real ([DTI-50](../adr/DEUDA_TECNICA.md#dti-50), ítem 9).
+- **Quién decidió:** usuario (DA-06, ronda 4 del 2026-11-23; DA-24, sin respuesta: la recomendada, delegada por el relevamiento del
+  2026-11-24). Lo demás, agente (lote `pub1-contacto` y revisión de pantallas, ronda 1). Consta como no
+  cumplida: la revisión de pantallas de la ola no llegó a PASS.
+- **Evidencia:** backlog §13.3 (PUB1-09, PUB1-10); `35f6c8307` y `fb9e34317`;
+  `ErroresConSesionTest` actualizado al comportamiento nuevo.
+
+### 2026-11-24 · donaciones · Arreglo después de la ola DON: la misma palabra para el mismo estado
+
+- **Decisión:** la vista se llama «Confirmadas» y la opción del filtro, «Entrega confirmada». El
+  detalle y el seguimiento usan la regla de la lista (Registrada, Asignada, Entrega confirmada) y
+  «Donación 0005»; la raíz nombra los pasos por su lugar, como la tabla. La nota del seguimiento y
+  «Cómo va» del detalle en camino dicen «En camino desde las HH:MM» (HG-02). Los datos de ejemplo de
+  Organizaciones de la persona dicen lo mismo que los de la empresa («Faltan los 20 litros», con la
+  barra vacía).
+- **Alternativas:** «En curso» en lugar de «Pendientes», como la guía; tomar el nombre del paso del
+  dato.
+- **Por qué:** la lista ya tiene la vista «En camino», y «En curso» la incluiría; el dato trae los
+  nombres del backend («En depósito», «Lista para entregar»), que no dice ninguna otra pantalla.
+- **Costo:** la raíz supone 5 pasos en el orden de la guía; si el dato trae otra cantidad, queda su
+  nombre.
+- **Quién decidió:** agente, sobre los bloqueantes de la revisión de `don-donaciones`, `don-detalle`
+  y de pantallas ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 1 a 3).
+- **Evidencia:** `MisDonacionesController.java`, `donante-donaciones-detalle.html`,
+  `donante-seguimiento.html` y sus tests.
+
+### 2026-11-24 · navegación · El menú de quien dona: Inicio, Donaciones, Organizaciones, Misiones y Cómo donar (DA-03a, DA-03b, DA-05, DA-17)
+
+- **Decisión:** la empresa ve Inicio, Donaciones, Organizaciones y Cómo donar; la persona, además,
+  Misiones antes de Cómo donar. Seguimiento deja de ser una sección: se abre desde el detalle de
+  cada donación y su pantalla queda marcada en Donaciones. Cómo donar es la página de hoy Para
+  donantes (`/publico-para-donantes`), con el ícono `nav-ayuda`. Solo cambian los menús de quien dona.
+- **Alternativas:** dejar Seguimiento en el menú; Misiones al final; una página nueva de «Cómo
+  donar»; cambiar todos los menús juntos en C1.
+- **Por qué:** el seguimiento es de una donación, no de la cuenta; la página ya explica cómo donar;
+  cada ola rehace el menú con las pantallas a las que lleva.
+- **Costo:** `EN_LA_SECCION` vale ahora también para las pantallas de nivel 3 por prefijo: una ruta
+  inexistente que empiece como una de ellas muestra «sin dibujar» en vez de 404. Quien entra a Cómo
+  donar sale del área privada a una página pública.
+- **Quién decidió:** usuario (DA-03a, ronda 2 del 2026-11-22; DA-03b y DA-05, ronda 4 del
+  2026-11-23; DA-17, ronda 3 del 2026-11-22). El ícono y el prefijo de `EN_LA_SECCION`, agente
+  (lote `don-inicio`). Consta como no cumplida: la revisión de pantallas de la ola no llegó a PASS;
+  el comportamiento está en el código y en los tests.
+- **Evidencia:** backlog §12.3 (DON-02); `Pantallas.java`, `524d86d6d`.
+
+### 2026-11-24 · inicio · El inicio de la empresa es A04 y deja el tablero de tres columnas
+
+- **Decisión:** aviso del problema arriba, una sola lámina protagonista con la donación que viaja
+  (raíz de 5 pasos y el mapa del recorrido, decorativo, en un `.marco`), «También en curso» y «Ya
+  confirmadas en `<mes>`» con un fruto por entrega del mes, del 1 a hoy. Sale el tablero de R11-25 con
+  sus paginadores, y salen las cifras con árboles, el hito, las últimas noticias, la pista y las
+  raíces acumuladas: A04 no los tiene. Las noticias siguen en la campanita. Sin nada en camino, la
+  lámina dice «Nada en camino ahora» y deja de ser protagonista (escenario nuevo `sin-camino`).
+- **Alternativas:** conservar la llamada al tablero solo por los totales; un ícono nuevo para Cómo
+  donar; los rótulos del mapa de la guía (depósito, patente, destino), que el catálogo no tiene.
+- **Por qué:** la lista del inicio ya trae todo y da los totales; una sola protagonista y una sola
+  acción llena (piso de la guía).
+- **Costo:** el método `tablero()` del puerto y sus adaptadores quedan sin uso hasta Z
+  ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 6). Los 7 tests del tablero se reescribieron como
+  tests de A04, con aserciones igual de fuertes.
+- **Quién decidió:** agente (lote `don-inicio`), sin consultar; el título con el mes, agente, al
+  arreglar la ronda 1 de la revisión de pantallas.
+- **Evidencia:** backlog §12.3 (DON-01); `524d86d6d`, `91f31ec86` y `2cd69d8ba`.
+
+### 2026-11-24 · textos · Lo que el servicio no da no se escribe: HG-01 y HG-02 con su texto de reemplazo
+
+- **Decisión:** la hora sale de la nota que ya llega: «Salió hoy a las X» se muestra «En camino desde
+  las X», sin hora estimada (HG-02). Una donación que no pudo llegar dice el motivo, la última noticia
+  y «Todavía sin fecha de nueva salida» (HG-01). En el detalle se omite lo que el adaptador no
+  entrega: «Sale del depósito», la necesidad que cubre (HG-04) y el texto de cada paso; la raíz muestra
+  la fecha de cada paso o «Pendiente». Los datos de ejemplo de Útiles escolares pierden la fecha
+  inventada de la nueva salida.
+- **Alternativas:** imprimir la nota de la maqueta («sale de nuevo el 17»); escribir en la plantilla
+  los datos de la guía.
+- **Por qué:** la regla de la ola: un dato que no llega se dice con el texto de «Si no llega» (§7).
+- **Costo:** el reemplazo depende del texto exacto de la nota; el seguimiento y el detalle en camino
+  todavía no lo usan ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 2). Quedan fechas inventadas en
+  `viaje-datos.html` y `DonanteNotificacionesMaqueta` (ítem 9).
+- **Quién decidió:** agente (lotes `don-inicio` y `don-detalle`), sin consultar.
+- **Evidencia:** backlog §7 y §12.3; `donante-inicio.html`, `DonacionesMaqueta.java`.
+
+### 2026-11-24 · inicio · El inicio de la persona deriva de A04, con la huerta (DA-03c, DA-08, DON-P2, DON-P3)
+
+- **Decisión:** como su ficha: aviso del problema arriba, una sola protagonista (la que viaja o, sin
+  ninguna, la huerta con «Ver mi huerta» llena), «También en curso», «Ya confirmadas en `<mes>`» solo
+  con las del mes, la huerta chica, el almanaque de 12 meses en una fila con un fruto por entrega
+  confirmada y las 3 últimas novedades. La lista mes por mes sale. El mes del almanaque va abreviado,
+  con el nombre completo para lectores; 3 columnas en el celular, 6 desde 37,5 em y 12 desde 68,75 em.
+  Los datos son los 8 de Martina Ruiz que ya leen su detalle y su seguimiento.
+- **Alternativas:** el ejemplo dibujado en la ficha (Arroz en camino, Ropa con problema); los nombres
+  completos de los meses en una fila; una lista propia de las confirmadas del mes en la vista.
+- **Por qué:** las mismas claves en todas las pantallas de la persona; «Septiembre» no entra a 1280 px
+  y un mes más angosto mediría menos de 48 px; la vista y el adaptador quedan fuera del lote.
+- **Costo:** los frutos de cada mes salen de las hasta 3 donaciones que trae el año, con «+N»: en la
+  maqueta, octubre muestra 0 frutos y 1 entrega confirmada ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49),
+  ítem 10). Martina no tiene donaciones con problema: el aviso se prueba con mocks.
+- **Quién decidió:** usuario (DA-03c y DA-08, ronda 4 del 2026-11-23; DON-P2 y DON-P3, ronda 5 del
+  2026-11-23, «va asi»); la disposición y los datos, agente (lote `don-inicio-persona`). Consta como
+  no cumplida: la revisión de pantallas de la ola no llegó a PASS.
+- **Evidencia:** ficha [`guia-don-inicio-persona.md`](flujos/guia-don-inicio-persona.md); backlog
+  §12.3 (DON-09); `d282ddcc9` a `9d7c5990c`.
+
+### 2026-11-24 · donaciones · Donaciones es A05, con una vista por estado del filtro
+
+- **Decisión:** vistas Todas, Pendientes, En camino, Entregadas y Con problema con su cuenta, como
+  `.segmentos` (enlaces con `aria-current`), sobre el mismo `?estado=` del filtro; la tabla lleva un
+  sello y una raíz por fila. El sello dice Registrada (pendiente sin organización), Asignada (con
+  ella) o Entrega confirmada, igual que el detalle. El paso de la raíz sale del estado y de la
+  organización. La persona usa la misma composición (DA-13).
+- **Alternativas:** `.pestanas` del catálogo, que es una pieza de paneles y sin JavaScript marca
+  siempre la primera; paneles por estado, que no se combinan con el paginador del servidor; un
+  parámetro nuevo para «En curso».
+- **Por qué:** la vista es un enlace a la misma lista filtrada; el sello no puede contradecir al
+  detalle.
+- **Costo:** las vistas se ven como pastillas y no como solapas; cada carga hace 4 pedidos más a
+  Donaciones, uno por cuenta. La vista «Entregadas» y el filtro «Entregada» no coinciden con el
+  sello «Entrega confirmada»: bloqueante abierto ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 1 y 6).
+- **Quién decidió:** agente (lote `don-donaciones`), sin consultar; DA-13 (usuario, ronda 4 del
+  2026-11-23), que consta como no cumplida: la revisión de pantallas no llegó a PASS.
+- **Evidencia:** backlog §12.3 (DON-03); `53712e382`, `d8403c8d5` y `642c1698e`.
+
+### 2026-11-24 · detalle · El detalle es una plantilla con las variantes de la guía; el seguimiento se abre desde él (DA-03a)
+
+- **Decisión:** la variante sale del estado, el destino y el problema: asignada (A06, sello
+  «Asignada»), en camino (A07, con el botón secundario «Ver dónde está el camión» a su seguimiento) y
+  con problema (A08, el motivo una vez y la última noticia en «Qué sigue»). La entregada y la que
+  espera destino siguen la composición de A06; la entregada pone la etiqueta de entrega. El detalle
+  y el seguimiento de la persona salen de `persona/datos-persona`, la misma fuente.
+- **Alternativas:** dejar «Pendiente» en la asignada; una variante nueva para la entregada; el mapa
+  dentro del detalle, que pedía otro puerto en el controller; que `DonacionesMaqueta` lea la sesión.
+- **Por qué:** el sello y el paso actual no se contradicen; el detalle lleva al lugar donde está el
+  mapa sin sumar dependencias.
+- **Costo:** quedan bloqueantes del lote: el número con «N.º», la que espera destino con «Pendiente»
+  y dos aserciones que no pueden fallar ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 2 y 3).
+- **Quién decidió:** usuario (DA-03a, ronda 2 del 2026-11-22; DA-13, ronda 4); las variantes y la
+  fuente de la persona, agente (lote `don-detalle`). Consta como no cumplida: la revisión de
+  pantallas no llegó a PASS.
+- **Evidencia:** backlog §12.3 (DON-04); `39efd6083`, `9572f7047` y `e4cc56f3f`.
+
+### 2026-11-24 · seguimiento · El mapa del seguimiento: el marco del catálogo, el camión solo si viaja y márgenes propios
+
+- **Decisión:** el mapa y su nota van en `[data-parte="mapa"]`, con `.mapa-dibujo` envolviendo a
+  `.mapa-real`; el camión aparece solo si la donación va en camino. Los marcadores miden el toque
+  mínimo más 1 px, porque MapLibre los ubica en fracciones de píxel (47,99997 px). `mapa.js` acepta
+  un atributo opcional, `data-mapa-margenes`, y el seguimiento usa 64 96 136 64 para que ningún punto
+  quede bajo los botones o la atribución; sin el atributo, todo sigue en 64. En el celular el mapa es
+  3/4. Se elige la donación con `?donacion=` o, sin él, la primera en camino.
+- **Alternativas:** un solo elemento `mapa-dibujo mapa-real`, que en pantalla ancha baja el mapa
+  sobre la nota; anular el `top` en la hoja; un mapa más alto sin cambiar el encuadre; mover las
+  coordenadas de ejemplo para pasar el chequeo.
+- **Por qué:** el arreglo queda en la pantalla o en un atributo que las demás no usan; no se fuerza
+  un verde con los datos.
+- **Costo:** el defecto del marco y la atribución de dos renglones siguen en `componentes/mapa.css`
+  para `publico-mapa` ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 7).
+- **Quién decidió:** agente (lote `don-detalle` y arreglos de la revisión de pantallas), sin consultar.
+- **Evidencia:** backlog §12.3 (DON-05); `componentes.md` (fila del mapa); `2cd69d8ba` y `9b2d3e147`.
+
+### 2026-11-24 · organizaciones · Organizaciones deriva de A02 sin atenuar las tarjetas a las que ya donaste
+
+- **Decisión:** una tarjeta del catálogo por organización; «Ya le donaste» en palabras y no con la
+  tarjeta atenuada; la necesidad sin porcentaje, con la cuenta en palabras («Faltan 30 de 40 kg este
+  mes») y la barra con su `aria-label`; «Ver N necesidades más» con el `.plegable` de un solo rótulo;
+  «Cómo llega tu donación» como `.aviso` de información, con «Ver tus donaciones». La persona usa el
+  mismo fragmento `hoja` (DA-13).
+- **Alternativas:** repintar la tarjeta atenuada en la hoja; `data-papel="tierra"`, que dice «lo que
+  va a pasar»; filas de alto igual en toda la página (`grid-auto-rows: 1fr`), que dejaba huecos.
+- **Por qué:** el catálogo no tiene una tarjeta atenuada y la hoja de una pantalla solo dispone.
+- **Costo:** la maqueta de la persona sigue con sus datos en la plantilla
+  ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 9).
+- **Quién decidió:** agente (lote `don-organizaciones`), sin consultar; DA-13, usuario, que consta
+  como no cumplida: la revisión de pantallas no llegó a PASS.
+- **Evidencia:** backlog §12.3 (DON-06); `f67f49d3e` y `2cd69d8ba`.
+
+### 2026-11-24 · perfil · El perfil de quien dona sigue al de la organización y guardar da un aviso breve (DA-06)
+
+- **Decisión:** una columna, un formulario por sección; el CUIT y el documento como texto fijo con
+  «No se cambia desde acá»; el escenario lento afecta los 3 formularios con `aria-busy` y
+  «Guardando…». Guardar vuelve al perfil con el aviso breve del catálogo (fragmento
+  `donante-perfil :: aviso`); en la maqueta, `/donante-perfil-guardado` es el perfil con el aviso. El
+  buzón de quien dona nombra `donante-comun.css`, donde vive su `.bajada`, y la hoja
+  `donante-notificaciones.css` se borra.
+- **Alternativas:** el `input readonly`, que sin estilo parece editable; los pares de campos lado a
+  lado; que el buzón nombre `privado.css`, que le sacaba el estilo a la bajada.
+- **Por qué:** las dos áreas se ven iguales con las mismas piezas; la respuesta se ve donde se hizo
+  la acción.
+- **Costo:** el buzón queda atado a una hoja heredada; la versión de la empresa no salió en las
+  capturas por la sesión de la maqueta ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 7 y 8).
+- **Quién decidió:** usuario (DA-06 y DA-13, ronda 4 del 2026-11-23); la forma, agente (lote
+  `don-perfil`). Consta como no cumplida: la revisión de pantallas no llegó a PASS.
+- **Evidencia:** backlog §12.3 (DON-07, DON-08); `ae68989d2` y `69edbeb07`.
+
+### 2026-11-24 · misiones · Misiones es la huerta, con lugares de 48 px y sin el álbum (DA-08, DA-21, DON-P1)
+
+- **Decisión:** según su ficha: la huerta en una sola lámina protagonista, sin acción llena. Cada
+  lugar mide 48 × 48 px como mínimo con el toque encima del dibujo; por debajo de 53,75 em cada lugar
+  es un renglón de 48 px con su dibujo, el nombre y el estado. Los hitos y las misiones usan el sello
+  del catálogo (completa → entregada, en curso → en camino, en espera → pendiente; las cerradas sin
+  sello) y el mensaje de la organización va en una `.tarjeta`. Se borran `misiones-a` y `misiones-b`
+  con sus hojas.
+- **Alternativas:** el área de toque superpuesta en todos los anchos, que a 360 px pisa unos 26 px
+  entre lugares; una sección aparte con la categoría actual; el ícono de categoría, cuyo estilo vive
+  en una hoja que la pantalla no carga.
+- **Por qué:** una sola Misiones que mantener; la hoja de la pantalla solo dispone.
+- **Costo:** quedan sin uso `huerta-armada.svg` y `Historia.categoria`; el contorno punteado al pasar
+  y algunas medidas siguen en la hoja ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítems 7 y 9).
+- **Quién decidió:** usuario (DA-08 y DA-21, ronda 4 del 2026-11-23; DON-P1, ronda 5 del 2026-11-23);
+  la disposición, agente (lote `don-misiones` y arreglos de la revisión de pantallas). Consta como no
+  cumplida: la revisión de pantallas no llegó a PASS; las dos rutas de `/donante-misiones` pasan el
+  toque.
+- **Evidencia:** ficha [`guia-don-misiones.md`](flujos/guia-don-misiones.md); backlog §12.3 (DON-10);
+  `79b073dfb`, `2cd69d8ba` y `9b2d3e147`.
+
+### 2026-11-24 · variantes · Una variante que no existe se ignora, en lugar de dar 404
+
+- **Decisión:** `?variante=<nombre>` sin archivos muestra la pantalla igual que sin el parámetro, y
+  no carga ninguna hoja de `/css/variantes/`. Así `?variante=misiones-a`, ya borrada, muestra la
+  huerta (DON-P1). El nombre de ruta y de vista sigue saliendo solo de los archivos que existen.
+- **Alternativas:** ignorar solo `misiones-a`, que obligaba a escribir el nombre en el código; aceptar
+  el 404 como «deja de servirse».
+- **Por qué:** el criterio de DON-P1 pide la misma pantalla, sin nombrar el álbum fuera de `docs/`.
+- **Costo:** vale para todas las rutas: un enlace con una variante equivocada ya no avisa con un 404.
+  Dos tests de `VariantesInterceptorTest` pasaron de afirmar el 404 a afirmar la pantalla sin la hoja.
+- **Quién decidió:** agente (arreglos de la revisión de pantallas, ronda 2), sin consultar; lo puede
+  revisar el usuario ([DTI-49](../adr/DEUDA_TECNICA.md#dti-49), ítem 5).
+- **Evidencia:** `VariantesInterceptor.java`, `9b2d3e147`.
+
+### 2026-11-24 · admin · Manifiesto de ADM1: Por decidir en dos rutas y el galpón con barra arriba
+
+- **Decisión:** `/admin-inicio` y `/admin-asignaciones` llevan la misma cabecera y la misma barra
+  de pestañas de A03; el inicio abre Propuestas y debajo lleva el resumen y los gráficos (DA-25).
+  La tabla con selección aprueba o descarta varias propuestas, una por una contra el puerto de hoy
+  (DA-26). El galpón conserva la barra superior fina en todos los anchos y lleva las secciones al
+  cajón (DA-27). Fichas: [Ranking](flujos/guia-adm-ranking.md), sin podio y con el mes como hoy
+  (DA-28 y DA-31), y [los gráficos del inicio](flujos/guia-adm-inicio-graficos.md), con un solo
+  resumen denso, sin «Entregas para mirar hoy», y los gráficos en la pantalla (DA-29 y DA-30).
+  Reparto en 7 lotes de 2 tandas ([backlog, sección 14](backlog-guia-al-codigo.md)).
+- **Alternativas:** una sola ruta que redirige a la otra; selección sin envío conjunto o un pedido
+  en lote nuevo a Donaciones; la guía tal cual, sin barra arriba en escritorio; un podio; conservar
+  las cuatro tarjetas; los gráficos como pieza del catálogo. La opción descartada de cada una está
+  en §2.2 del backlog.
+- **Por qué:** los tests y el ingreso del admin llegan a las dos rutas; el puerto y el adaptador
+  `rest` no cambian en una ola de rol; `ArmazonFijoTest` mide la cabecera del admin y nadie lo edita;
+  el resto sigue la densidad del galpón sin piezas nuevas.
+- **Costo:** Solicitudes y Por vencer llevan a otras pantallas en lugar de abrirse en la bandeja; la
+  barra superior del galpón se aparta de la guía en escritorio; falta «Entregas para mirar hoy».
+- **Quién decidió:** el autor del manifiesto, con la opción recomendada, delegada por el
+  relevamiento del 2026-11-24 (corrida desatendida, rama = gate; plan `.claude/plan-guia-resto.md`).
+  El usuario no las respondió.
+
+### 2026-11-24 · publico · Manifiesto de PUB1: la portada de A01 sin las abejas
+
+- **Decisión:** la portada sigue al arquetipo A01, sin las abejas, el corte «bajo tierra» ni el
+  cierre de la portada de K (DA-22). El pie nombra Nosotros, Para donantes y Para organizaciones
+  como «Cómo funciona», «Cómo donar» y «Ayuda» (DA-23). Contacto responde con un aviso breve en
+  Contacto que lleva el número del mensaje (DA-24). Reparto en 6 lotes de una tanda
+  ([backlog, sección 13](backlog-guia-al-codigo.md)).
+- **Alternativas:** conservar las abejas y el corte debajo de A01; dejar el pie con los nombres de
+  hoy; llevar el envío de Contacto a la pantalla de origen.
+- **Por qué:** la portada es una pantalla «directa» y la guía no dibuja abejas; cada enlace del pie
+  nombra la página a la que lleva; la portada no tiene región de avisos, así que el aviso se
+  perdería.
+- **Costo:** `AbejasYRenglonesTest` y `BajoTierraRotulosTest` van a fallar en lo que miden de la
+  portada de K. No se editan y lo decide el usuario, como el lema del pie en C1.
+- **Quién decidió:** el autor del manifiesto, con la opción recomendada, delegada por el
+  relevamiento del 2026-11-24 (corrida desatendida, rama = gate; plan `.claude/plan-guia-resto.md`).
+  El usuario no las respondió.
+
+### 2026-11-23 · donante · Fichas de DON: Misiones y el inicio de la persona con la guía
+
+- **Decisión:** las fichas [`guia-don-misiones.md`](flujos/guia-don-misiones.md) y
+  [`guia-don-inicio-persona.md`](flujos/guia-don-inicio-persona.md). Misiones: la huerta
+  (`misiones-b`) queda como la única y el álbum (`misiones-a`) se borra (DON-P1); cada lugar, de
+  48 × 48 px. El inicio de la persona deriva de A04 con una sola lámina protagonista: la donación en
+  camino o, sin ninguna, la huerta con «Ver mi huerta» (DON-P3); el almanaque se queda chico, en
+  una fila de 12 meses, y la lista mes por mes sale (DON-P2). La planta es una misión solo en
+  Misiones; el fruto, una entrega confirmada.
+- **Alternativas:** dejar la variante del álbum sin migrar; sacar el almanaque o dejarlo como hoy;
+  una lámina vacía sin nada en camino.
+- **Por qué:** una sola Misiones que migrar; el almanaque responde a que las personas no donan
+  todos los días (usuaria, 2026-11-09); una sola protagonista y una sola acción llena (piso de la
+  guía).
+- **Costo:** la protagonista del inicio cambia según haya algo en camino.
+- **Quién decidió:** usuario («va asi» a las fichas, las tres preguntas y el reparto, 2026-11-23).
+- **Evidencia:** las fichas, §9; backlog §12.
+
+### 2026-11-23 · datos · Recepción confirmada muestra lo asentado en Logística, no lo de la dirección
+
+- **Decisión:** el problema de Recepción confirmada sale del motivo del reporte de Logística
+  (`EntidadEntregaVista.problema`), y la llegada, solo del cambio a `EN_PUERTA` del historial. El
+  puerto recibe el `?problema=` de la respuesta, pero solo lo usa la maqueta, que no guarda el
+  acta. Sin cómo va la necesidad, «Tu necesidad» dice cuál es, como Llegó con un problema.
+- **Alternativas:** seguir leyendo `?problema=` en la plantilla (al volver a abrir la página el
+  problema desaparecía, y con un parámetro inventado aparecía uno que no existe); pedir a Donaciones
+  la cuenta de la necesidad en esta pantalla (una llamada más por cada confirmación).
+- **Por qué:** la página promete mostrar lo que quedó asentado y poder volver a abrirse (DA-06).
+- **Costo:** la cuenta de donaciones de la necesidad no aparece en esta pantalla con datos reales;
+  se conecta en Z con HG-04 ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 2).
+- **Quién decidió:** agente, al arreglar en sesión los bloqueantes de la ronda 3 de `org-confirmar`.
+- **Evidencia:** backlog §11 (ORG-11 y ORG-12); `EntidadConfirmarRestTest`.
+
+### 2026-11-23 · navegación · Entregas reúne «Donaciones recibidas» y «Seguir entregas» (DA-02)
+
+- **Decisión:** una sola pantalla, Entregas (`/entidad-seguimiento`), con Para confirmar, Por llegar y
+  Confirmadas. `/entidad-recibidas` redirige ahí y conserva su consulta, así que los filtros de
+  antes siguen andando. Los textos, las migas y las salidas que decían «Seguir entregas» o
+  «Donaciones recibidas» pasan a «Entregas».
+- **Alternativas:** dejar las dos pantallas; borrar `/entidad-recibidas` sin redirigir.
+- **Por qué:** las dos mostraban las mismas entregas en momentos distintos; la redirección no rompe
+  los enlaces guardados ni los de las novedades.
+- **Costo:** los tests que afirmaban la ruta vieja se actualizaron con aserciones igual de fuertes.
+- **Quién decidió:** usuario (DA-02, «3 si», ronda 2 del 2026-11-22; diferida a ORG por DA-17).
+  Cumplida: PASS de la revisión de `org-entregas`, ronda 2.
+- **Evidencia:** backlog §11.1 (ORG-07); `e7c9d1327` y `1520674a0`.
+
+### 2026-11-23 · navegación · Ayuda de la organización es Para organizaciones (DA-05)
+
+- **Decisión:** la entrada «Ayuda» del menú lleva a `/publico-para-entidades`, con otro nombre; su
+  ícono es `nav-ayuda`, con el dibujo de `i-ayuda`.
+- **Alternativas:** una página de ayuda nueva.
+- **Por qué:** la página ya explica a la organización cómo funciona y no suma una pantalla antes del
+  30/11.
+- **Costo:** quien entra a Ayuda sale del área privada a una página pública.
+- **Quién decidió:** usuario (DA-05, ronda 4 del 2026-11-23); el ícono, agente (lote
+  `org-entregas`), sin consultar. Cumplida: PASS de la revisión de `org-entregas`, ronda 2.
+- **Evidencia:** backlog §11.1 (ORG-09); `iconos.html`.
+
+### 2026-11-23 · navegación · En ORG cambia solo el menú de la organización (DA-17)
+
+- **Decisión:** Inicio, Necesidades, Entregas y Ayuda. Los menús de quien dona, el admin, la persona
+  y lo público quedan como estaban.
+- **Alternativas:** cambiar todos los menús juntos.
+- **Por qué:** cada ola rehace el menú junto con las pantallas a las que lleva.
+- **Costo:** hasta su ola, los otros roles conviven con sus entradas de hoy.
+- **Quién decidió:** usuario (DA-17, ronda 3 del 2026-11-22). Cumplida: PASS de la revisión de
+  `org-entregas`, ronda 2; `[VERIFIED]` en el recorrido con login.
+- **Evidencia:** backlog §11.3; `Pantallas.java`.
+
+### 2026-11-23 · avisos · Solo confirmar una recepción tiene página de respuesta (DA-06)
+
+- **Decisión:** publicar, cambiar o dar de baja una necesidad termina en Necesidades con el aviso
+  breve del catálogo (signo y cerrar, por `hx-swap-oob` a `#avisos`); en la maqueta, las rutas de
+  respuesta siguen y muestran Necesidades con el aviso. Guardar el perfil responde en el perfil
+  (DA-06-perfil). Confirmar una recepción conserva su página.
+- **Alternativas:** una página de respuesta por acción, como antes.
+- **Por qué:** la respuesta se ve donde se hizo la acción; confirmar es el momento que merece su
+  página, con la raíz completa y lo que quedó asentado.
+- **Costo:** la parte de Necesidades consta como no cumplida: el lote quedó sin PASS tras 3 rondas
+  por bloqueantes de su hoja, no del aviso ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 1).
+- **Quién decidió:** usuario (DA-06, ronda 4 del 2026-11-23). En el perfil, cumplida: PASS de la
+  revisión de `org-perfil`, ronda 2. En Necesidades, el comportamiento está `[VERIFIED]` en el
+  recorrido, sin PASS del lote.
+- **Evidencia:** backlog §11.1 (ORG-05, ORG-06); `b99ddff71` y `9e409b266`.
+
+### 2026-11-23 · buzón · La casilla del buzón mide 48 × 48 px de verdad (DA-21)
+
+- **Decisión:** en cada fila y en «Seleccionar todas», el control nativo, transparente, de 48 px,
+  queda encima de la casilla dibujada (`::before`, 1,375 rem, borde de tinta y `--radio-estampa`;
+  elegida, llena de verde con su tilde), como la opción de C1-12. Solo con CSS: el marcado no cambia.
+- **Alternativas:** extender la excepción de DA-16 a las rutas del buzón; que el test mida la
+  etiqueta.
+- **Por qué:** pasa el piso de toque sin tocar el test.
+- **Costo:** la excepción de DA-16 de `/estilos` queda sin uso y sigue en el test, que no se edita
+  ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 10).
+- **Quién decidió:** usuario (DA-21, ronda 4 del 2026-11-23); el tamaño y el dibujo, agente (lote
+  `org-buzon`). Cumplida: PASS de la revisión del lote, ronda 1; las tres rutas `/…-notificaciones`
+  salen de la línea de base `[VERIFIED]`.
+- **Evidencia:** backlog §11.3; `buzon.css`.
+
+### 2026-11-23 · buzón · El rótulo, el título y la pestaña dicen «Novedades»
+
+- **Decisión:** sobre el título, el rótulo «Novedades» en la organización y en quien dona, como en
+  el dibujo de la ficha; en el admin, «Administración». La organización conserva «Tus novedades».
+  El `<title>` de las 8 pantallas pasa a «Novedades - DonaTrack». De la ficha (§6) cambian solo el
+  título, el total y el nombre del paginador («Páginas de novedades»).
+- **Alternativas:** quitar el rótulo (las otras pantallas lo tienen); dejar «Notificaciones»
+  (repite el título con otro nombre); cambiar también los vacíos y la búsqueda.
+- **Por qué:** la pestaña dice lo mismo que el título; los demás textos los hereda la ficha de R11-14.
+- **Costo:** quedan textos con «notificaciones» al lado de «Novedades», y en quien dona el rótulo
+  repite el título ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 5).
+- **Quién decidió:** agente (lote `org-buzon`), sin consultar.
+- **Evidencia:** `d9e8b73d7`.
+
+### 2026-11-23 · buzón · Los estados del buzón son los de lista del catálogo
+
+- **Decisión:** en la organización y en quien dona, el error es un `.aviso` con
+  `data-tipo="error"`, `role="alert"` y el signo «problema»; la carga, una región `aria-busy` con
+  `.cargando` y el esqueleto de tres renglones. El botón de ícono es `.buzon-accion`, de 48 px, con
+  el aro de foco en tokens. Ningún texto cambia.
+- **Alternativas:** seguir con el `.banner` de `piezas-entidad` y `datos-donante`.
+- **Por qué:** son las piezas que la guía usa para una lista con error o cargando.
+- **Costo:** el admin sigue con el banner y el esqueleto heredados hasta ADM2.
+- **Quién decidió:** agente (lote `org-buzon`), sin consultar.
+- **Evidencia:** `d9e8b73d7`.
+
+### 2026-11-23 · inicio · La puerta de Inicio: hasta cinco frutos y la raíz punteada sin entrega
+
+- **Decisión:** el árbol dibuja hasta 5 frutos en los lugares de la guía y la cuenta exacta va
+  debajo (`huerta :: frutos`). Sin entrega en la puerta y sin ninguna confirmada, el tramo al
+  quinto nudo queda punteado. Las partes que cambian con el estado se pintan desde la hoja de la
+  pantalla, con selectores `data-dibujo` y los tokens de uso.
+- **Alternativas:** un fruto por entrega (con muchas no entran); ningún fruto (se pierde D4); colores
+  en la plantilla o clases nuevas (los cercos no lo permiten).
+- **Por qué:** la cuenta se lee siempre y el dibujo no se desborda.
+- **Costo:** `entidad-inicio.css` sigue como hoja heredada; conviene llevar la puerta con sus estados
+  al catálogo ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 3).
+- **Quién decidió:** agente (lote `org-inicio`), sin consultar.
+- **Evidencia:** `74f441ee4`.
+
+### 2026-11-23 · inicio · Inicio deja lo que la guía no muestra y lleva el problema arriba
+
+- **Decisión:** salen la fecha larga, la cabecera con su rótulo y el acceso a las novedades (la
+  campana ya lo da). Las entregas con problema van en un aviso arriba, titulado «`<nombre>`,
+  <cuánto>: con problema» (el grupo incluye las vencidas), con «Todavía sin fecha de nueva salida.»
+  (HG-01) y el enlace a la página del problema. «Lo que viene» muestra solo en camino y pendientes.
+- **Alternativas:** «no pudo llegar» como título (mentiría para una vencida); conservar la fecha.
+- **Por qué:** la composición de A09, sin inventar lo que el grupo no distingue.
+- **Costo:** las filas de «Lo que viene» y «Tus necesidades» son `div` sin enlace.
+- **Quién decidió:** agente (lotes `org-inicio` y `org-entregas`), sin consultar.
+- **Evidencia:** `74f441ee4` y `e7c9d1327`.
+
+### 2026-11-23 · necesidades · Necesidades conserva el detalle dentro de la tarjeta plegable
+
+- **Decisión:** cada necesidad es un `.plegable` con su detalle (por qué hace falta, entregas, quién
+  donó, períodos, cambiar y dar de baja); abierta ocupa el ancho entero y la pedida por defecto queda
+  abierta. Salen el registro de cifras y los canteros por categoría. La lámina protagonista va en
+  una `.grilla` de 18 rem. «Nueva» y «Cambiada hoy» son un `strong.texto-chico` con
+  `data-tono="acento"`; el cartel del cambio, un `.aviso` de información; «Ver los anteriores», un
+  botón chico secundario.
+- **Alternativas:** las tarjetas plegadas de A02 sin el detalle (no habría cómo cambiar ni dar de
+  baja); `.estado` o `.chip` para «Nueva»; `.plegable-ver` para los anteriores (la flecha seguiría
+  al plegable de afuera).
+- **Por qué:** seguir A02 sin perder acciones y sin piezas nuevas.
+- **Costo:** el rótulo «Ver el detalle» / «Cerrar» quedó en la hoja y fue bloqueante de la revisión
+  ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 1).
+- **Quién decidió:** agente (lote `org-necesidades`), sin consultar.
+- **Evidencia:** `279ce7cef`, `5f713b7db` y `b99ddff71`.
+
+### 2026-11-23 · necesidades · Los textos de Necesidades que fija un test o el dato de hoy
+
+- **Decisión:** el botón sigue «Publicar otra necesidad» (lo busca un test de `visual/`); la cuenta
+  sigue «10 de 40 kg recibidos» (HG-04) y la barra lleva el `aria-label` «Llegaron X de Y …»; hay
+  dos pestañas, Vigentes y «Cumplidas y terminadas», porque la vista no distingue cumplidas de dadas
+  de baja. Las chapas son solo las que piden atención («Espera tu confirmación», «Con un problema»).
+- **Alternativas:** los textos y las tres pestañas de la guía.
+- **Por qué:** no inventar un dato ni editar un test de `visual/`.
+- **Costo:** dos textos distintos de la guía.
+- **Quién decidió:** agente (lote `org-necesidades`), sin consultar.
+- **Evidencia:** `279ce7cef`.
+
+### 2026-11-23 · perfil · El perfil de la organización sigue el formulario de A12
+
+- **Decisión:** «Mi perfil» como título, con el nombre de la organización debajo; una columna, sin
+  lámina, con «Todos los datos son obligatorios.»; «guardando» con `aria-busy` en el botón. Hoja
+  propia, `entidad-perfil.css`, que solo dispone. El error del servidor sigue como banner. Sin migas.
+  Fuera de la maqueta, el aviso «Todavía no podemos guardar estos cambios desde acá…» no cambia.
+- **Alternativas:** seguir cargando `donante-perfil.css` (es de otro rol); un formulario a todo el
+  ancho; «Listo. Guardamos…» en el sitio real (sería falso: no se guarda nada).
+- **Por qué:** la composición de A12 con las piezas del catálogo.
+- **Costo:** el perfil de quien dona se ve distinto hasta su ola.
+- **Quién decidió:** agente (lote `org-perfil`), sin consultar.
+- **Evidencia:** `728e65683`, `206096090` y `9e409b266`.
+
+### 2026-11-23 · entregas · Entregas no inventa fotos ni horas
+
+- **Decisión:** una confirmada con foto va con `etiqueta-entrega`; sin foto, una `.tarjeta` con el
+  mismo sello. En el sitio real las confirmadas no traen foto (pedirla sería una llamada por fila).
+  La entrega con problema (A11) tiene 4 pasos sin horas y la necesidad como tarjeta con «Ver tu
+  necesidad», sin barra (HG-04). El desplegable de Estado sigue el orden de las tarjetas y
+  «Recibidas» pasa a «Confirmadas». Sin entrega elegida, la página del problema muestra la primera
+  con problema; con una que no tiene problema, un vacío con «Volver a Entregas».
+- **Alternativas:** escenas de ejemplo en el sitio real; los 5 pasos con horas de la guía; la foto
+  por entrega (N+1).
+- **Por qué:** el backend no entrega esos datos y la regla de la ola prohíbe inventarlos.
+- **Costo:** las confirmadas reales salen sin imagen ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 4).
+- **Quién decidió:** agente (lote `org-entregas`), sin consultar.
+- **Evidencia:** `e7c9d1327` y `1520674a0`.
+
+### 2026-11-23 · confirmar · Confirmar es A12 directo y el problema sigue en su página
+
+- **Decisión:** sin el radio «¿Llegó bien?» ni el campo «Quién recibe»: «llegó con un problema» se
+  abre por un enlace y anda sin JavaScript. Sin etiqueta de herbario; una línea suave «Para tu
+  necesidad: …». El placeholder de «Cuánto llegó» sale (parece un valor cargado).
+- **Alternativas:** el formulario de la guía con el radio y el nombre.
+- **Por qué:** el backend no guarda quién recibe (HG-03) y el problema necesita su formulario.
+- **Costo:** una pantalla más que la guía para el problema.
+- **Quién decidió:** agente (lote `org-confirmar`), sin consultar.
+- **Evidencia:** `ea633995f` y `29123f4da`.
+
+### 2026-11-23 · confirmar · Lo que dice la recepción confirmada
+
+- **Decisión:** el pie dice «Recibió: <la organización>, el <día>.» (HG-03); quién donó va en la
+  frase, y si ocultó el nombre, «Donante <categoría>» o «un donante». La foto se muestra si es una
+  dirección; la de la maqueta es una escena con el rótulo «Foto de ejemplo». Los pasos llevan su
+  fecha cuando el historial la tiene, y sin el dato van sin fecha. La raíz se traza una vez, al
+  llegar desde el acta.
+- **Alternativas:** la fecha de la guía escrita en la plantilla; caer en la fecha de registro.
+- **Por qué:** mostrar solo lo que quedó asentado.
+- **Costo:** el problema sale de la dirección y «Llegó a tu puerta» puede caer en la fecha de
+  registro: bloqueantes de la ronda 3 ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 2).
+- **Quién decidió:** agente (lote `org-confirmar`), sin consultar.
+- **Evidencia:** `ea633995f`, `3eca434eb` y `35af5ec8e`.
+
+### 2026-11-23 · confirmar · Los frutos de la confirmada cuentan las recibidas del mes
+
+- **Decisión:** la cifra sale de las recibidas del mes, con el mismo criterio que Inicio, y suma la
+  recién confirmada si Donaciones todavía no la tiene; el árbol dibuja hasta 5.
+- **Alternativas:** el conteo exacto del mes de Donaciones (la maqueta no lo tiene y pedía un
+  método nuevo en el puerto).
+- **Por qué:** sin sumarla, el fruto que brota no se ve.
+- **Costo:** el cálculo quedó en el controller: bloqueante de la ronda 3
+  ([DTI-48](../adr/DEUDA_TECNICA.md#dti-48), ítem 2).
+- **Quién decidió:** agente (lote `org-confirmar`), sin consultar.
+- **Evidencia:** `29123f4da`.
+
+### 2026-11-23 · buzón · El buzón de los tres roles toma la fila de la campana de la guía
+
+- **Decisión:** la ficha [`guia-org-buzon.md`](flujos/guia-org-buzon.md): «Novedades» como título
+  en los tres roles; sin leer, con el punto lleno y la negrita, **sin fondo** (revierte el fondo
+  suave que aprobó R11-14); y el buzón del admin cambia en la ola ORG junto con los otros dos.
+- **Alternativas:** dejar los títulos de hoy; conservar el fondo suave; una variante del admin hasta
+  ADM2.
+- **Por qué:** la campana y el buzón muestran la misma señal; en la guía, el salvia es de pasar el
+  mouse o del foco, no de un estado; y el buzón es una sola pieza.
+- **Costo:** sin fondo, una fila sin leer se distingue menos de lejos.
+- **Quién decidió:** usuario («ok» a la ficha con las tres recomendadas, 2026-11-23). Cumplida
+  (DA-08): PASS de la revisión de `org-buzon`, ronda 1.
+- **Evidencia:** la ficha, §9; backlog §11.
+
+### 2026-11-23 · proceso · G1: las cuatro áreas se pueden mostrar así, como excepción a la regla del piso
+
+- **Decisión:** las cuatro áreas pueden entrar a medias el 30/11, aunque 11 pantallas sin rehacer
+  fallan el piso por toque.
+- **Alternativas:** aplicar la regla del plan (§10) y dejar las cuatro áreas en «no se puede mostrar
+  así», con todas sus olas necesarias para el go.
+- **Por qué:** las 11 fallan solo por toque, no por contraste; el usuario conoció la regla y mantuvo
+  su respuesta.
+- **Costo:** si una ola no llega, su área se muestra con esas fallas de toque.
+- **Quién decidió:** usuario («Las 4 se muestran» y, al conocer la regla, «Mantener, excepción»).
+- **Evidencia:** backlog §2.2 (fila G1), §10.3 a §10.5; la hoja en `guia-c1/G1/hoja-g1.html`, fuera
+  del repo.
+
+### 2026-11-23 · proceso · Ronda 4: lo que necesitan los manifiestos de rol (DA-03b, DA-03c, DA-04, DA-05, DA-06, DA-08, DA-13 y DA-21)
+
+- **Decisión:** el admin entra por «Por decidir», que reemplaza a Inicio y a Asignar, y los
+  gráficos de hoy van a una ficha de ADM1 (DA-04). La persona suma Misiones como cuarta entrada de
+  su menú (DA-03b) y su inicio deriva del de quien dona, con la tarjeta de la huerta (DA-03c).
+  «Cómo funciona», «Cómo donar» y «Ayuda» son Nosotros, Para donantes y Para organizaciones con
+  otro nombre (DA-05). Solo confirmar una recepción tiene página de respuesta; el resto, aviso
+  breve (DA-06). Llevan ficha Misiones, Ranking, el inicio de la persona y el buzón; lo demás sin
+  arquetipo se deriva (DA-08). Las 6 plantillas de `persona/` se migran con su gemela (DA-13). La
+  casilla del buzón pasa el toque midiendo 48 px de verdad, con el patrón de C1-12 (DA-21).
+- **Alternativas:** las de cada fila del backlog §2.2. Para la casilla: extender la excepción de
+  DA-16 a las rutas del buzón, o que el test mida la etiqueta.
+- **Por qué:** cada una usa lo que ya existe (páginas, plantillas, el patrón de la opción de C1) y
+  no suma pantallas ni cambia tests antes del 30/11.
+- **Costo:** cuatro fichas para escribir en sesión (DA-19) y la persona con una entrada de menú más
+  que la guía.
+- **Quién decidió:** usuario («Todas las recomendadas», ronda 4 del 2026-11-23).
+- **Evidencia:** backlog §2.2.
+
+### 2026-11-23 · proceso · Los menús de cada rol no cambian en C1 (DA-17; DA-01, DA-02 y DA-03a diferidas)
+
+- **Decisión:** C1 no cambia ninguna entrada de ningún menú. El menú de cada rol cambia en la ola de
+  ese rol: el público en PUB1 (DA-01, el Mapa pasa a Entregas), el de la organización en ORG (DA-02,
+  «Donaciones recibidas» y «Seguir entregas» se funden en «Entregas») y el de quien dona en DON
+  (DA-03a, «Seguimiento» sale del menú y se abre desde el detalle).
+- **Alternativas:** cambiar los cuatro menús junto con el armazón, en C1.
+- **Por qué:** una entrada nueva sin su pantalla rehecha lleva a una pantalla vieja; cada ola rehace
+  el menú junto con las pantallas a las que lleva.
+- **Costo:** hasta la ola de cada rol, el armazón nuevo convive con las entradas de hoy.
+- **Quién decidió:** usuario (DA-17, ronda 3 del 2026-11-22). Cumplida: PASS de la revisión de
+  `c1-armazon`, ronda 1.
+- **Evidencia:** backlog §2.2 y §10.2; `41bc195b8`.
+
+### 2026-11-23 · proceso · Las piezas del galpón no entran en C1 (DA-18)
+
+- **Decisión:** la tabla con selección, el cajón y el armazón del galpón pasan a la ola ADM1.
+- **Alternativas:** traerlas al catálogo en C1 junto con las demás piezas.
+- **Por qué:** solo las usa el admin, y entran con sus pantallas.
+- **Costo:** el admin sigue con el armazón de la huerta hasta ADM1. También queda para ADM1 la
+  casilla sola de 48 × 48 px.
+- **Quién decidió:** usuario (DA-18, ronda 3 del 2026-11-22).
+- **Evidencia:** backlog §2.2 y §10.2.
+
+### 2026-11-23 · sello · «Vencida», «cancelada» y «en revisión» van con el sello neutro y el signo de información (DA-07)
+
+- **Decisión:** los tres estados que la guía no dibuja usan el par de «pendiente» y su palabra
+  (DA-07). Como signo, el lote eligió `e-info`, el mismo para los tres.
+- **Alternativas:** para el signo, `e-registrada` (se confunde con «registrada», que usa el mismo
+  par), `e-atencion` y `e-problema` (alarman, y DA-07 pide algo neutro) y `e-espera` (es el de la
+  chapa de pedido).
+- **Por qué:** neutro, sin alarma y sin confundirse con otro estado.
+- **Costo:** `/admin-donaciones` sigue mapeando «vencida» a `problema` hasta ADM1, porque su plantilla
+  no es de la ola.
+- **Quién decidió:** usuario (DA-07); el signo, agente (lote `c1-estados`), sin consultar.
+  Cumplida: PASS de la revisión del lote, ronda 2.
+- **Evidencia:** `ebb17dd0d` y `dfdb876d3`; `componentes/sello.css` y `sello.html`.
+
+### 2026-11-23 · base · La base de la guía entra en una capa propia, con el aro de foco de un solo color
+
+- **Decisión:** el reset de márgenes, las listas sin viñetas, los títulos, `a`, `strong`, `svg` y el
+  foco van en `@layer base`; `body` sigue sin capa. La medida del texto se fija en `main :where(p)`.
+  El foco conserva el selector genérico `:focus-visible`. `.dt`, `.es-foco` y `.es-cursor` de la
+  maqueta no entran.
+- **Alternativas:** dejar la base sin capa (les ganaba a `.pila > * + *` y a todos los bloques);
+  restringir el foco a la lista de elementos de la guía (se perdía en otros).
+- **Por qué:** que cualquier composición o componente le gane a la base sin pelear especificidad.
+- **Costo:** en las pantallas que no son de la ola, las listas pierden viñetas, los párrafos quedan en
+  34 rem, el texto pasa a `--color-texto` con interlineado 1,5 y algunas partes quedan más apretadas.
+  Es un dato para G1.
+- **Quién decidió:** agente (lote `c1-base`), sin consultar.
+- **Evidencia:** `1447644f2`; `app.css`.
+
+### 2026-11-23 · composición · Los nombres de la guía se traducen a las piezas que ya existen
+
+- **Decisión:** `.fila` es `.racimo`, `.entre` es `data-alinea="entre"`, `.suave` es
+  `data-tono="suave"`, `.chico` es `.texto-chico` y `.oculto-visual` es `.solo-lectores`. Lo que
+  faltaba entra con la forma de hoy: `data-alinea` acepta varias palabras (`"entre arriba"`) y
+  `data-espacio="0"`. `.pila` sigue con margen y no pasa a `gap`. No entran `.medida`, `.cifra`,
+  `.enlace-suelto` ni `.sobre-suelo` (es `.raices-pie`).
+- **Alternativas:** copiar las clases de la guía; reescribir `.pila` con `gap`.
+- **Por qué:** la regla de la ola: los nombres que existen se conservan. Reescribir `.pila` podía
+  mover pantallas que no son de la ola.
+- **Costo:** quien lee la guía tiene que traducir los nombres. `.enlace-suelto` queda sin pieza.
+- **Quién decidió:** agente (lote `c1-base`), sin consultar.
+- **Evidencia:** `1447644f2`; `composicion.css` y `componentes.md`.
+
+### 2026-11-23 · movimiento · Las animaciones nuevas reusan las de hoy y sus duraciones van al token más cercano
+
+- **Decisión:** el trazo y el asomo de la guía son `mov-traza` y `mov-aparece`, que ya existían. Son
+  nuevas solo `mov-gira`, `mov-late` y `mov-brote` (`--movimiento-animacion-brote`, porque `-brota` ya
+  es otra). El giro de 0,9 s va con `--movimiento-duracion-larga` (0,75 s) y el latido de 1,4 s con
+  `--movimiento-duracion-trazo` (1,1 s). `--movimiento-animacion-traza-raiz` toma la curva de la
+  guía.
+- **Alternativas:** duraciones literales, que la regla de la ola no permite; un token nuevo en
+  `tokens.css`, que no se toca.
+- **Por qué:** una duración va siempre a un token.
+- **Costo:** el giro y el latido son algo más rápidos que en la guía; la diferencia está anotada en
+  `movimiento.css` y en el catálogo.
+- **Quién decidió:** agente (lote `c1-base`), sin consultar.
+- **Evidencia:** `1447644f2`.
+
+### 2026-11-23 · tokens · Las fichas de tokens de /estilos pasan al fragmento de muestra
+
+- **Decisión:** las 14 fichas usan `componentes/muestra :: muestra`; el relleno pasa a
+  `.muestra-demo`. Se suma una sección «Base» con tres fichas (títulos y texto, foco y listas).
+- **Alternativas:** dejarlas a mano (el bloqueante de C0); un parámetro nuevo del fragmento para los
+  títulos en prosa.
+- **Por qué:** lo que existe se usa como está, y la pieza nueva de la base necesita su muestra.
+- **Costo:** los títulos en prosa («Letra», «Color: superficies y texto») salen en monoespaciada,
+  porque el fragmento envuelve el nombre en `<code>`.
+- **Quién decidió:** agente (lote `c1-base`), sin consultar.
+- **Evidencia:** `1447644f2`; [DTI-46](../adr/DEUDA_TECNICA.md#dti-46), ítem 1.
+
+### 2026-11-23 · símbolos · El ícono es `.icono` y el signo de estado, una variante por atributo
+
+- **Decisión:** la hoja nueva es `icono.css`, con `.icono`; el `.signo` de la guía es
+  `.icono[data-forma="signo"]`, con puntas rectas. Íconos y signos van en dos fragmentos nuevos de
+  `iconos.html`, `comunes` y `signos`, y no en `navegacion`. Las medidas salen de tokens exactos.
+- **Alternativas:** una segunda clase `.signo` (otra hoja, fuera del patrón de variantes por
+  atributo); sumar los símbolos a `navegacion`, que cargan los dos layouts.
+- **Por qué:** no agrandar todas las páginas y seguir el catálogo.
+- **Costo:** ningún layout carga todavía esos fragmentos: los incluye la primera ola que los use en
+  una pantalla.
+- **Quién decidió:** agente (lote `c1-simbolos`), sin consultar.
+- **Evidencia:** `cb50bb372` y `b5cef7d93`.
+
+### 2026-11-23 · símbolos · La marca de tres colores se resuelve con un hueco en el cuerpo
+
+- **Decisión:** en `i-marca`, el cuerpo toma `currentColor`, la hoja hereda `--color-hoja` y la hoja
+  clara es un hueco (`fill-rule="evenodd"`).
+- **Alternativas:** colores en hex en la plantilla; la marca de un solo color.
+- **Por qué:** ni los atributos SVG ni una plantilla sin `style` aceptan `var()`.
+- **Costo:** sobre un fondo de color, la hoja clara toma ese color en lugar del papel.
+- **Quién decidió:** agente (lote `c1-simbolos`), sin consultar.
+- **Evidencia:** `cb50bb372`; `iconos.html`.
+
+### 2026-11-23 · ilustraciones · Los dibujos de la guía entran como los de hoy, con los colores en hex
+
+- **Decisión:** el recorrido, la puerta, el mapa y las 7 escenas van en `static/img/ilustraciones/`.
+  Cada clase `f-*` y `s-*` de la guía pasa al hex de su token, y cada archivo trae el símbolo y lo
+  dibuja con `<use>`, para servir como `<img>` y como `<use href>`. De la puerta entran solo los
+  símbolos fijos; las partes que cambian con el estado las dibuja la pantalla.
+- **Alternativas:** clases de color nuevas; ponerlos sueltos en `static/img/`.
+- **Por qué:** el producto no tiene las clases de la maqueta, y así no se mezclan con otros recursos.
+- **Costo:** los dibujos no siguen un cambio de tema; los números piden «DM Sans» por nombre.
+- **Quién decidió:** agente (lote `c1-simbolos`), sin consultar.
+- **Evidencia:** `cb50bb372`.
+
+### 2026-11-23 · armazón · El menú de abajo llega hasta 56 em en todos los roles
+
+- **Decisión:** el menú pasa a la barra de arriba recién desde `--medida-quiebre-menu` (56 em), como
+  la guía, también en las áreas privadas (antes, desde 37,5 em). La barra de arriba va en una sola
+  fila, y `--medida-cabecera-fija` tiene un solo valor (4,125 rem). Con 5 secciones, la letra se
+  estrecha en el celular y se aprieta entre 56 y 68,75 em.
+- **Alternativas:** conservar el corte de 37,5 em en las privadas.
+- **Por qué:** manda la guía.
+- **Costo:** entre 600 y 896 px las privadas muestran el menú abajo. A 320 px, con 5 secciones, dos
+  nombres bajan de renglón (75 px de alto, sin desborde).
+- **Quién decidió:** agente (lote `c1-armazon`), sin consultar.
+- **Evidencia:** `41bc195b8` y `00e6aed69`; `app.css` y `componentes/navegacion.css`.
+
+### 2026-11-23 · armazón · En el celular la barra de arriba no queda fija, aunque la guía la pega
+
+- **Decisión:** se mantiene R11-33: en el celular arriba no queda nada fijo.
+- **Alternativas:** pegar la barra arriba en todo ancho, como la guía (`10-componentes.css:318`).
+- **Por qué:** rige la decisión R11-33 y `ArmazonFijoTest` lo afirma; esta ola no edita los tests de
+  `visual/`.
+- **Costo:** una diferencia con la guía. Queda pendiente para el usuario
+  ([DTI-47](../adr/DEUDA_TECNICA.md#dti-47)).
+- **Quién decidió:** agente (lote `c1-armazon`), sin consultar; la decisión de fondo es del usuario.
+- **Evidencia:** `app.css` (bloque de lo fijo).
+
+### 2026-11-23 · armazón · El pie es el corte de suelo de la guía, sin el lema
+
+- **Decisión:** el pie pierde el lema «Lo que donás echa raíces.» y los fondos de raíces y textura.
+  La marca toma la letra de la guía y conserva el `img` de hoy. Las reglas de la campana pasan a
+  `componentes/campanita.css`, y el menú de la cuenta y el de la campana llevan el borde de tinta.
+- **Alternativas:** conservar el lema y los fondos.
+- **Por qué:** la guía no los dibuja.
+- **Costo:** sale un texto que estaba en el pie desde la identidad Raíces. Ahora
+  `AbejasYRenglonesTest.loQueDonasYEchaRaicesVanEnterosEnSuRenglonEnTodosLosAnchos` da error porque
+  mide ese lema: el usuario decide si se conserva o si se quita esa medición
+  ([DTI-47](../adr/DEUDA_TECNICA.md#dti-47)). `img/raices-pie.svg` queda sin uso.
+- **Quién decidió:** agente (lote `c1-armazon`), sin consultar.
+- **Evidencia:** `41bc195b8`; `pie.html` y `app.css`.
+
+### 2026-11-23 · armazón · Las migas dibujan su flecha en línea
+
+- **Decisión:** `componentes/migas.css` y su fragmento dibujan la flecha con el trazo en línea, no
+  con `use href="#i-ir"`. El enlace lleva un ancho mínimo de 48 px.
+- **Alternativas:** usar el símbolo `i-ir`, que obliga a la página a cargar `iconos :: comunes`.
+- **Por qué:** que el fragmento ande en cualquier página y que un texto corto llegue al toque mínimo.
+- **Costo:** la flecha está dibujada dos veces.
+- **Quién decidió:** agente (lote `c1-armazon`), sin consultar.
+- **Evidencia:** `41bc195b8`.
+
+### 2026-11-23 · formularios · La opción y la casilla dibujan su marca y dejan el control nativo encima, transparente
+
+- **Decisión:** la opción y la casilla son `.opciones`, con su variante de casilla. El control nativo
+  queda transparente sobre todo el bloque, para que mida 48 px o más, y la marca de 22 px es un
+  `::before`. `.opciones` queda en una columna.
+- **Alternativas:** mostrar el control nativo de 22 px, como la guía (no llega al toque mínimo);
+  encimarlo solo en el relleno (46 px, 44 con error); las clases `.opcion` y `.casilla` de la guía
+  (`.casilla` ya es la casilla de los términos del registro); dos columnas desde 37,5 em (los
+  párrafos de nota ocupaban una celda).
+- **Por qué:** el piso de toque de 48 px no se negocia y no se toca el test.
+- **Costo:** la casilla de los términos del registro conserva el dibujo de antes y se ve distinta.
+- **Quién decidió:** agente (lote `c1-formularios`), sin consultar.
+- **Evidencia:** `6051f2a1a` y `a5d384c7a`.
+
+### 2026-11-23 · formularios · El botón trae su estado «cargando» y no las variantes que nadie usa
+
+- **Decisión:** el botón con `aria-busy` muestra la ruedita (`--movimiento-animacion-gira`, de
+  `--espacio-3`). Deshabilitado les gana a todos los tonos, también con el cursor encima. El botón
+  con foto y el botón chico pasan a tokens. No entran las variantes de texto e ícono.
+- **Alternativas:** traer las variantes de la guía.
+- **Por qué:** ninguna plantilla las usa.
+- **Costo:** las hojas de pantalla que pisan `.boton` pueden verse distintas del botón nuevo (dato para
+  G1).
+- **Quién decidió:** agente (lote `c1-formularios`), sin consultar.
+- **Evidencia:** `6051f2a1a`.
+
+### 2026-11-23 · formularios · El error de campo lleva el signo de la guía, y sin signo sigue siendo un párrafo
+
+- **Decisión:** el error va en fila solo si lleva el signo (`.campo-error:has(> svg)`), de 1 rem
+  (`--espacio-3`) y con `--espacio-0` hacia abajo. Las cuatro muestras de error de `/estilos` lo
+  llevan.
+- **Alternativas:** el margen de `--espacio-1` que proponía la revisión; un error siempre en fila.
+- **Por qué:** `--espacio-0` es el token más cercano a los 0,3125 rem de la guía, y un error sin signo
+  no debe partir su texto.
+- **Costo:** el error que arma `publico.js` sigue sin signo.
+- **Quién decidió:** agente (lote `c1-formularios`, rondas 1 y 2), sin consultar.
+- **Evidencia:** `c7814ee54` y `7d4fcefc0`.
+
+### 2026-11-23 · estados · El sello de la guía se ve en la chapa; suelto sigue el dibujo de hoy
+
+- **Decisión:** `sello(estado)` dibuja las dos cosas: el signo de la guía, que se ve solo dentro de
+  `span.estado`, y el dibujo de hoy, que se ve suelto o en `p.estado`. Los signos se dibujan en línea
+  en `sello :: signo(nombre)`. El borde punteado va solo en «registrada». El sello deja partir el
+  renglón (sin `nowrap`). La chapa de espera es `.sello-pedido`.
+- **Alternativas:** cambiar el dibujo por el signo en todos lados (rediseñaba etapas y contadores de
+  pantallas que no son de la ola); usar `use href="#e-…"` (las pantallas no cargan ese sprite).
+- **Por qué:** la pieza nueva sin rehacer pantallas, y textos largos de sello que con `nowrap` se
+  salían del borde.
+- **Costo:** dos fuentes de verdad para la geometría de los signos (`iconos.html` y `sello.html`).
+  Cada `span.estado` de las pantallas cambia de pastilla a chapa.
+- **Quién decidió:** agente (lote `c1-estados`), sin consultar.
+- **Evidencia:** `ebb17dd0d` y `dfdb876d3`.
+
+### 2026-11-23 · avisos · El aviso en la página es una pieza nueva y el breve toma el papel de la guía
+
+- **Decisión:** clase nueva `.aviso` con `data-tipo`; `.banner` no se convierte. El aviso breve de la
+  guía se aplica a `.aviso-breve:not([data-pista])`, y «hecho» pinta el signo con el color del éxito,
+  sin franja ni negrita. El ícono del aviso mide 1,25 rem con una regla propia.
+- **Alternativas:** convertir `.banner`; sumar el tamaño a `.aviso-breve > .icono` (no le ganaba a
+  `.icono[data-forma="signo"]`).
+- **Por qué:** la pista conserva su papel, y la pieza nueva no rehace pantallas.
+- **Costo:** los avisos breves reales todavía no traen el signo ni el botón de ícono.
+- **Quién decidió:** agente (lote `c1-estados`; la regla del ícono, en la ronda 1), sin consultar.
+- **Evidencia:** `ebb17dd0d` y `a976019af`.
+
+### 2026-11-23 · entrega · La lámina pierde la sombra granulada y sus variantes van por `data-papel`
+
+- **Decisión:** `.tarjeta` lleva el filete fino de la guía y `isolation: isolate`. Sus variantes son
+  `data-papel` (protagonista, hueco, tierra). `data-filete="contorno"` pasa a ser el filete en tinta;
+  el hueco usa `background-color: transparent`, para no borrar la trama.
+- **Alternativas:** las clases `lamina--*` (heredadas); `data-tono` (ya es una utilidad de texto);
+  conservar el `outline` de contorno (dibujaba dos líneas); subir la especificidad de la trama.
+- **Por qué:** seguir la guía sin chocar con nombres que ya existen.
+- **Costo:** las pantallas que usan `.tarjeta` pierden la sombra granulada; `grano-sombra.svg` y
+  `--color-sombra-grano` quedan sin uso. Con `tierra`, el atajo `background` todavía borra la trama.
+- **Quién decidió:** agente (lote `c1-entrega`; el hueco, en la ronda 1), sin consultar.
+- **Evidencia:** `4c6d2a36c`, `0e574abf8` y `0f68f2e14`.
+
+### 2026-11-23 · entrega · La etiqueta de la entrega se apila sola, sin media query
+
+- **Decisión:** `etiqueta-entrega`, con el nombre de su hoja como prefijo. Con la foto al costado, se
+  apila sola por debajo de unos 21,8 rem (`flex-wrap`) y el filete entre foto y texto es una sombra.
+  El sello es siempre el de entregada; el título, un `h3`. Las medidas de la guía pasan a tokens: el
+  hueco del agujero a `--espacio-5` (guía, 2 rem) y el rótulo a `--espacio-0` (guía, 0,375 rem).
+- **Alternativas:** el quiebre de 37,5 em (apilaba la etiqueta en celulares de 390 a 600 px, donde la
+  guía la muestra al costado); `.etiqueta`, `.foto` y `.foto-falta` (son clases heredadas).
+- **Por qué:** el `@container` de la guía no tiene un quiebre equivalente.
+- **Costo:** las variantes de espera y de fila quedan para ORG. En `/estilos` la foto al costado se
+  ve cortada en la captura de 1280 px.
+- **Quién decidió:** agente (lote `c1-entrega`), sin consultar.
+- **Evidencia:** `4c6d2a36c`.
+
+### 2026-11-23 · raíz · La raíz de los 5 pasos y los frutos son fragmentos nuevos
+
+- **Decisión:** `huerta :: raiz-pasos(pasos, forma, nombre, recien)` y
+  `huerta :: frutos(cuenta, periodo, recien)`, con las clases `.huerta-raiz-*` y `.huerta-frutos*`.
+  Las formas van por `data-forma` (acostada, numerada, numerada tendida); la tendida, desde 56 em. Con
+  `recien`, el último tramo es una raya SVG que se dibuja con la animación de hoy. Las medidas salen
+  de `--espacio-*`.
+- **Alternativas:** rehacer `recorrido(d)` o `cifras(estado, valores)`; los nombres `raiz`,
+  `raiz-paso` y `fruto` (heredados); `mov-recorta` para el trazo; omitir el trazo.
+- **Por qué:** `cifras` cuenta números grandes y sus pantallas no son de la ola. `mov-traza` anima un
+  trazo SVG y la raíz de la guía usa bordes.
+- **Costo:** los frutos se separan 0,25 rem (guía, 0,3125). La tendida con un paso que falta dibuja
+  una línea punteada. La puerta y `.estado-raiz` quedan para ORG, y ninguna pantalla usa todavía
+  estas piezas.
+- **Quién decidió:** agente (lote `c1-raiz`), sin consultar.
+- **Evidencia:** `10f3d3b64` y `bd1c8b233`.
+
+### 2026-11-23 · listas · La lista de filas es una variante, y la vacía y la que carga pierden sus abejas
+
+- **Decisión:** la lista de la guía entra como `.lista[data-forma="filas"]`. La caja de la lista vacía
+  se pinta desde `lista.css`. Salen la abeja dormida de `.vacio`, la abeja que vuela en `.cargando` y
+  la ola del esqueleto, que pasa a latir; con tres renglones, son los de la guía. La caja de carga va
+  en `[aria-busy="true"]:has(> .esqueleto > i)`.
+- **Alternativas:** cambiar la `.lista` base (unas 27 plantillas la usan como grilla); la clase
+  `lista-fila` de la guía; editar `aviso.css`, de otro lote.
+- **Por qué:** manda la guía, que no dibuja las abejas.
+- **Costo:** pisa la ronda de ilustraciones del 2026-11-08 y la ola del esqueleto, que había decidido
+  el usuario el 2026-11-12. Quedan reglas muertas en `aviso.css`. La lista con error sigue con el
+  `.banner` y la vacía, sin la trama (bloqueantes abiertos, [DTI-47](../adr/DEUDA_TECNICA.md#dti-47)).
+- **Quién decidió:** agente (lote `c1-listas`), sin consultar.
+- **Evidencia:** `c919e6848`, `6456a75fc` y `d641c4b60`.
+
+### 2026-11-23 · listas · La tabla se apila por debajo de 56 em con el rótulo en el margen de la celda
+
+- **Decisión:** el corte pasa de 53,75 a 56 em. Apilada, el rótulo flota en el margen de la celda
+  (`float` con margen negativo), y la celda de acciones ocupa todo el ancho. Desde 56 em, la cabecera
+  usa `--color-galpon-cabecera` y la fila bajo el cursor, `--color-fila-cursor`.
+- **Alternativas:** la grilla de dos columnas de la guía (partía las celdas que mezclan texto, `<br>`
+  y botones); el rótulo en `::before` absoluto (la primera versión); un `min-height`; `.tabla-caja`
+  (pide un envoltorio en las plantillas).
+- **Por qué:** las celdas reales del admin mezclan contenidos.
+- **Costo:** las tablas del admin, que no son de la ola, pasan de tarjetas a filas entre filetes.
+- **Quién decidió:** agente (lote `c1-listas`, y la ronda 1), sin consultar.
+- **Evidencia:** `c919e6848`, `2c97c0b57` y `6456a75fc`.
+
+### 2026-11-23 · listas · Las pestañas se pueden desplazar de costado
+
+- **Decisión:** desde 37,5 em, el filete es una sombra hacia adentro de la lista, que se desplaza de
+  costado (`overflow-x: auto`). Se conserva la animación de impresión de la elegida.
+- **Alternativas:** el borde con margen de -1,5 px de la guía (recortaba la solapa elegida al
+  desplazar).
+- **Por qué:** en columnas angostas las pestañas se salían.
+- **Costo:** en la ficha de `/estilos` a 1280 px la tercera pestaña queda escondida, sin barra a la
+  vista: bloqueante abierto ([DTI-47](../adr/DEUDA_TECNICA.md#dti-47)).
+- **Quién decidió:** agente (lote `c1-listas`), sin consultar.
+- **Evidencia:** `c919e6848`; `pestanas.css`.
+
+### 2026-11-22 · proceso · Las casillas de la demo de la bandeja en /estilos son una excepción conocida del gate visual
+
+- **Decisión:** `VerificacionVisualTest` deja afuera del piso las fallas de toque de las casillas
+  de 12 × 12 px de la demo de la bandeja en `/estilos` (`EXCEPCIONES_CONOCIDAS`: ruta, tipo y detalle
+  exactos). No cuentan en `reporte.json` y quedan a la vista en `excepciones.json` (`e7ba71c36`).
+- **Alternativas:** que la medición de toque cuente cada casilla por su etiqueta de 48 px (también
+  limpiaba las tres pantallas de notificaciones); dejar el gate de `/estilos` en rojo hasta que el
+  usuario decida.
+- **Por qué:** la casilla chica es decisión del usuario del 2026-11-12 (`buzon.css`) y la falla ya
+  estaba antes de la oleada C0 (igual en `093aed884`).
+- **Costo:** `/admin-notificaciones`, `/donante-notificaciones` y `/entidad-notificaciones` siguen
+  fallando por la misma casilla en la corrida completa. El ADR de la verificación visual
+  (`20261030`) no prevé esta excepción ([DTI-46](../adr/DEUDA_TECNICA.md#dti-46), ítem 2).
+- **Quién decidió:** agente (cierre de C0), sin consultar. El agente la tomó como la respuesta
+  «Opción B» del usuario, pero esa respuesta es la de la corrección de DA-14a (backlog §2.2, escrita
+  en `8a2b0e646`, antes del cierre), que lanzó la segunda corrida. La excepción no tiene decisión del
+  usuario: él decide si queda, se revierte o se cambia la medición. **Actualización (2026-11-22):**
+  el usuario la revisó y decidió mantenerla («Mantenerla», DA-16 del backlog). Queda en el
+  [ADR de la excepción de toque](../adr/cliente-liviano/20261122-excepcion-de-toque-para-la-casilla-del-buzon-en-estilos.md)
+  (`proposed`).
+- **Evidencia:** `guia-r2/C0/cierre.md`, sección 6, fuera del repo.
+
+### 2026-11-22 · tokens · En /estilos, las listas de alias y valores ocupan la fila entera y cada nombre va en un renglón
+
+- **Decisión:** las listas `data-tipo="valor"` de `.muestra-tokens` van en una columna, con cada `li`
+  en bloque y su `code` sin cortes, y su ficha ocupa la fila entera de la grilla (también
+  «Movimiento»). En el celular usan `--tamano-micro` y relleno `--espacio-1`, y vuelven a
+  `--tamano-chico` y `--espacio-2` desde 37,5 em. En Movimiento, número y unidad van con `&nbsp;`.
+- **Alternativas:** `overflow-wrap: anywhere` (partía cada nombre); dejar la ficha angosta (un alias
+  de unos 55 caracteres no entra en 16 rem); bajar el nombre de la guía a su renglón; achicar el
+  relleno de toda la ficha `.muestra`.
+- **Por qué:** la revisión de la primera corrida pidió que cada alias se lea entero.
+- **Costo:** otra letra para la misma pieza en el celular; huecos en la grilla a 1280 y 1920 px.
+- **Quién decidió:** agente (lote `c0-tokens`).
+- **Evidencia:** `ebce607ad` y `7d413d1b2`; captura `estilos-360` de la corrida del cierre.
+
+### 2026-11-22 · tokens · La grilla de las fichas de token pasa a columnas de 22 rem
+
+- **Decisión:** en la sección Tokens de `/estilos`, la grilla de fichas usa `--medida-grilla: 22rem`
+  (con `:has`, solo en esa sección).
+- **Alternativas:** las columnas de antes (los nombres de color se partían en 2 o 3 renglones a
+  1280 px); columnas de 23 rem (dejaban solo 2 columnas).
+- **Por qué:** el mismo defecto de la tarjeta de alias, en las fichas de color.
+- **Costo:** `22rem` es una medida literal que el cerco no cuenta; a 1280 px
+  `--color-accion-secundaria-activa` todavía baja de renglón en un guion.
+- **Quién decidió:** agente (lote `c0-tokens`), por su cuenta, más allá de lo que pidió la revisión.
+- **Evidencia:** `ebce607ad`, `componentes/muestra.css`.
+
+### 2026-11-22 · tokens · Salen también tres valores base sin uso
+
+- **Decisión:** además de los 3 tokens de DA-14a, salen `--p-nodo`, `--p-destacado` y
+  `--p-suelo-hondo`, que solo alimentaban a tokens retirados o pasados a alias.
+- **Alternativas:** dejarlos (valores base sin ninguna referencia).
+- **Por qué:** no son tokens de uso; G-01 y el conteo de 73 conservados no cambian, ni ningún color
+  calculado.
+- **Costo:** DA-14a no los nombra.
+- **Quién decidió:** agente (lote `c0-tokens`, primera corrida).
+- **Evidencia:** `9e995ec42`, `tokens.css`.
+
+### 2026-11-22 · tokens · Se retiran 3 tokens y no 4: `--medida-quiebre-medio` se conserva (DA-14a, corregida)
+
+- **Decisión:** los 10 nombres de color de hoy que la guía no trae pasan a ser alias del token de la
+  guía del mismo valor; se retiran `--color-nodo`, `--color-estrato` y `--medida-estrato`;
+  `--medida-quiebre-medio` queda; los otros 30 de los 44 no se tocan en C0.
+- **Alternativas:** retirar los 4 que pedía la primera versión de DA-14a.
+- **Por qué:** 39 media queries usan el valor de `--medida-quiebre-medio` (53,75 em) y
+  `InterfazFitnessTest` exige que cada media query use un quiebre declarado en `tokens.css`. La
+  primera corrida lo encontró y se paró.
+- **Costo:** queda un quiebre que la guía no trae.
+- **Quién decidió:** usuario (DA-14a: «todas las recomendadas», ronda 1; corregida con «Opción B»).
+- **Evidencia:** backlog §2.2 y §3.2; `9e995ec42`.
+
+### 2026-11-22 · tokens · Los tokens de la guía se suman sin renombrar ninguno de antes (G-01)
+
+- **Decisión:** `tokens.css` suma los 46 tokens nuevos de «Huerta y galpón» y toma el valor de la
+  guía en los 6 que cambian; ningún token que ya existía cambia de nombre. La guía mide en `cqi` y el
+  sitio en `vw`.
+- **Alternativas:** renombrar los tokens de hoy a los de la guía en todas las hojas.
+- **Por qué:** cambiar el sistema sin tocar las pantallas que no son de la ola.
+- **Costo:** conviven dos nombres para un mismo color hasta la ola Z (DA-14b).
+- **Quién decidió:** usuario (G-01, cierre de la fase 3 de la guía).
+- **Evidencia:** `9e995ec42`; `docs/interfaz/componentes.md`, sección Tokens.
+
+### 2026-11-22 · identidad · La identidad pasa a «Huerta y galpón», con un esqueleto por rol (G-02)
+
+- **Decisión:** la guía de `docs/interfaz/guia/` es el sistema visual: un esqueleto aireado para lo
+  público, quien dona y la organización, y uno denso para el admin (mezcla C). `direccion-de-arte.md`
+  deja de nombrar a Pico como base.
+- **Alternativas:** Poda, Acta, Recorrido y Remito solas; las mezclas A (Cuaderno) y B (Herbario).
+- **Por qué:** de las tres mezclas, la que más calidez pone.
+- **Costo:** la piel Huerta de antes queda reemplazada en parte; la relación `superseded` espera la
+  aprobación del grupo.
+- **Quién decidió:** usuario (G-02, 2026-11-20).
+- **Evidencia:** [ADR `proposed`](../adr/cliente-liviano/20261122-huerta-y-galpon-la-guia-como-sistema-visual-y-un-esqueleto-por-rol.md); `34cf87ae7`.
+
 ### 2026-11-15 · proceso · Las oleadas de interfaz rinden cada decisión del usuario y no abren PR sin la revisión de pantallas (paso 4 de la opción A)
 
 - **Decisión:** el workflow `oleada-ui` reemplaza a `backlog-r11`. Arranca solo si cada decisión

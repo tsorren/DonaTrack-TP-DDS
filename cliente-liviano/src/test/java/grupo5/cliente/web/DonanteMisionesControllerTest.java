@@ -1,5 +1,6 @@
 package grupo5.cliente.web;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
@@ -125,13 +126,13 @@ class DonanteMisionesControllerTest {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
     when(misiones.misiones(DONANTE)).thenReturn(conUnaCompleta());
 
-    mvc.perform(get("/donante-misiones?variante=misiones-b&lugar=estante-izq"))
+    mvc.perform(get("/donante-misiones?lugar=estante-izq"))
         .andExpect(status().isOk())
         .andExpect(
             content().string(containsString("Completaste esta misión el 9 de octubre de 2026.")))
         .andExpect(content().string(not(containsString("Ver la donación"))))
         .andExpect(content().string(not(containsString("galletitas"))));
-    mvc.perform(get("/donante-misiones?variante=misiones-b&lugar=mesada-izq"))
+    mvc.perform(get("/donante-misiones?lugar=mesada-izq"))
         .andExpect(content().string(containsString("Esta planta llega con tu cuenta.")))
         .andExpect(content().string(containsString("Ver a quién donar")));
   }
@@ -146,14 +147,75 @@ class DonanteMisionesControllerTest {
     when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
     when(misiones.misiones(DONANTE)).thenReturn(conUnaCompleta());
 
-    mvc.perform(get("/donante-misiones?variante=misiones-b&lugar=estante-izq"))
+    mvc.perform(get("/donante-misiones?lugar=estante-izq"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("data-suelta")))
         .andExpect(content().string(containsString("data-suelta-adentro")));
-    mvc.perform(get("/donante-misiones?variante=misiones-b"))
+    mvc.perform(get("/donante-misiones"))
         .andExpect(status().isOk())
         .andExpect(content().string(not(containsString("data-suelta>"))))
         .andExpect(content().string(not(containsString("data-suelta "))));
+  }
+
+  /**
+   * DA-08 y DA-21-misiones: la huerta va en la única lámina protagonista, sin acción llena; cada
+   * lugar es un enlace con la misión y su estado en palabras; la que está en curso lleva el avance
+   * con la cuenta en texto; y la hoja de la variante ya no se carga (DON-P1).
+   */
+  @Test
+  void laHuertaVaEnLaUnicaLaminaProtagonistaConUnEnlacePorLugarYSinAccionLlena() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(misiones.misiones(DONANTE)).thenReturn(conUnaCompleta());
+
+    String html =
+        mvc.perform(get("/donante-misiones"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    assertThat(html.split("data-papel=\"protagonista\"", -1)).hasSize(2);
+    assertThat(html)
+        .contains("id=\"huerta-lamina\" class=\"tarjeta\" data-papel=\"protagonista\"")
+        .doesNotContain("data-tono=\"principal\"")
+        .doesNotContain("variantes/")
+        .contains("aria-label=\"Racha Inicial, completa\"")
+        .contains("aria-label=\"Explorador, en curso\"")
+        .contains("aria-label=\"Una misión de Sostenedor, más adelante\"")
+        .contains("href=\"/donante-misiones?lugar=piso-izq#huerta\"")
+        .contains("class=\"progreso\"")
+        .contains("aria-label=\"Explorador: 1 de 3\"")
+        .contains("Llevás 1 de 3.")
+        .contains("data-estado=\"en-camino\"")
+        .contains("Ver tus donaciones")
+        .doesNotContain("Mis donaciones");
+  }
+
+  /**
+   * DON-P1: la prueba A/B de Misiones se cerró y su variante ya no se sirve. Un enlace viejo con
+   * ?variante= de una variante sin archivos (el nombre acá es inventado: fuera de docs/, ningún
+   * archivo nombra a la retirada) muestra la misma pantalla que sin el parámetro, no un error.
+   */
+  @Test
+  void unaVarianteRetiradaMuestraLaMismaPantallaQueSinElla() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(misiones.misiones(DONANTE)).thenReturn(conUnaCompleta());
+
+    String sin =
+        mvc.perform(get("/donante-misiones"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    String con =
+        mvc.perform(get("/donante-misiones").param("variante", "misiones-z"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    assertThat(sin).contains("id=\"huerta-lamina\"");
+    assertThat(con).isEqualTo(sin).doesNotContain("variantes/");
   }
 
   @Test
@@ -169,6 +231,7 @@ class DonanteMisionesControllerTest {
         .andExpect(
             content()
                 .string(containsString("Misiones e insignias es para quienes donan como persona.")))
+        .andExpect(content().string(containsString("lo que donaron se ve en Donaciones.")))
         .andExpect(content().string(not(containsString("Tu huerta"))));
   }
 

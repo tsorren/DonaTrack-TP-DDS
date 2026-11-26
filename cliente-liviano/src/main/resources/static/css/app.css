@@ -25,7 +25,10 @@
 @import url("componentes/dialogo.css") layer(bloques);
 @import url("componentes/info.css") layer(bloques);
 @import url("componentes/navegacion.css") layer(bloques);
+@import url("componentes/migas.css") layer(bloques);
 @import url("componentes/tarjeta.css") layer(bloques);
+@import url("componentes/etiqueta-entrega.css") layer(bloques);
+@import url("componentes/trama.css") layer(bloques);
 @import url("componentes/lista.css") layer(bloques);
 @import url("componentes/tabla.css") layer(bloques);
 @import url("componentes/noticias.css") layer(bloques);
@@ -45,6 +48,8 @@
 @import url("componentes/buzon.css") layer(bloques);
 @import url("componentes/flota.css") layer(bloques);
 @import url("componentes/paginas.css") layer(bloques);
+@import url("componentes/datos.css") layer(bloques);
+@import url("componentes/icono.css") layer(bloques);
 
 *,
 *::before,
@@ -52,25 +57,62 @@
   box-sizing: border-box;
 }
 
+/* La base de la guía «Huerta y galpón» (C1-01): el papel, la tinta y el texto en DM Sans con su alto
+   de renglón. */
 body {
   position: relative;
   margin: 0;
-  background: var(--color-papel);
-  color: var(--color-tinta-suave);
-  font: 400 1.0625rem/1.6 var(--fuente-texto);
+  color-scheme: light;
+  background: var(--color-fondo-pagina);
+  color: var(--color-texto);
+  font: 400 var(--tamano-base) / var(--tamano-interlinea-texto) var(--fuente-texto);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* El color de los enlaces y el anillo de foco son la base: van en la capa `base` para que los
-   componentes (el botón con forma de enlace, la barra de navegación) le ganen sin pelear por
-   especificidad. */
+/* Las reglas de los elementos sueltos, el color de los enlaces y el aro de foco son la base: van en
+   la capa `base` para que la composición, los componentes y las hojas de pantalla les ganen sin pelear
+   por especificidad. */
 @layer base {
-  a {
-    color: var(--color-acento);
+  /* Sin márgenes ni viñetas del navegador: el espacio lo ponen la composición y los componentes. */
+  :where(h1, h2, h3, h4, p, ul, ol, dl, dd, figure, fieldset, legend, table) {
+    margin: 0;
+    padding: 0;
   }
 
-  :focus-visible {
-    outline: 3px solid var(--color-acento);
-    outline-offset: 3px;
+  :where(ul, ol) {
+    list-style: none;
+  }
+
+  :where(fieldset) {
+    border: 0;
+    min-width: 0;
+  }
+
+  /* Los títulos, en Archivo ancha y pesada; el cuarto, en la letra del texto. */
+  :where(h1, h2, h3) {
+    font-family: var(--fuente-titulo);
+    font-weight: var(--fuente-peso-titulo);
+    font-stretch: var(--fuente-ancho-titulo);
+    line-height: var(--tamano-interlinea-titulo);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  h1 {
+    font-size: var(--tamano-titulo-1);
+  }
+
+  h2 {
+    font-size: var(--tamano-titulo-2);
+  }
+
+  h3 {
+    font-size: var(--tamano-titulo-3);
+  }
+
+  h4 {
+    font: 700 var(--tamano-base) / 1.3 var(--fuente-texto);
   }
 
   /* La parte destacada de un título va derecha, en otro color (piel Huerta, 2026-11-08). */
@@ -78,9 +120,46 @@ body {
     font-style: normal;
   }
 
-  /* Sobre la tierra honda del pie, el anillo es de paja. */
+  /* El enlace, en verde hondo y subrayado; con el cursor, el subrayado engrosa. */
+  a {
+    color: var(--color-enlace);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.2em;
+  }
+
+  a:hover {
+    text-decoration-thickness: 3px;
+  }
+
+  strong {
+    font-weight: 700;
+  }
+
+  svg {
+    display: block;
+  }
+
+  /* El foco, de un solo color en todo el sitio: un aro de tinta separado por un filete de papel, para
+     que se vea sobre cualquier fondo. */
+  :focus-visible {
+    outline: var(--borde-ancho-foco) solid var(--color-foco);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-foco-separador);
+  }
+
+  /* Sobre la tierra del pie, el aro es de paja y el filete, de tierra. */
   .raices-pie :focus-visible {
-    outline-color: var(--color-raiz);
+    outline-color: var(--color-foco-sobre-suelo);
+    box-shadow: 0 0 0 2px var(--color-suelo);
+  }
+
+  /* El texto corrido no pasa de unos 70 caracteres por renglón; el chico, un poco menos. */
+  main :where(p) {
+    max-width: var(--medida-texto);
+  }
+
+  main :where(p.texto-chico, .texto-chico p) {
+    max-width: var(--medida-texto-chico);
   }
 }
 
@@ -94,86 +173,76 @@ body {
   white-space: nowrap;
 }
 
+/* «Saltar al contenido» (guía «Huerta y galpón», 10-componentes.css:315-316): lo primero que
+   encuentra el teclado. Es un botón (el de la guía, .boton), arriba a la izquierda y fuera de la
+   pantalla; con el foco baja a la vista, encima de la cabecera fija (R11-33). */
 .saltar {
   position: absolute;
-  left: -100vw;
+  left: var(--espacio-2);
+  top: var(--espacio-2);
+  z-index: var(--capa-saltar);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: var(--medida-toque-minimo);
+  padding: 0 var(--espacio-4);
+  translate: 0 -200%;
+  border: var(--borde-tinta);
+  border-radius: var(--radio-boton);
+  background: var(--color-accion-secundaria);
+  color: var(--color-texto-sobre-secundaria);
+  font: 700 var(--tamano-base) / 1.2 var(--fuente-texto);
+  text-decoration: none;
 }
 
 .saltar:focus {
-  left: 1rem;
-  top: 1rem;
-  /* Encima de la cabecera fija (R11-33). */
-  z-index: var(--capa-saltar);
-  background: var(--color-papel);
-  padding: 0.75rem 1rem;
+  translate: none;
 }
 
-.raices-cabecera {
-  max-width: 75rem;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-/* La cabecera, una barra de papel con un filete fino abajo (estética de K, 2026-11-08; antes, una
-   franja de tierra honda). El borde de imagen estira el fondo a los lados sin estirar el contenido ni recortarlo: un
-   recorte escondería la barra fija del menú en el celular, que va dentro de la cabecera. El fondo
-   liso queda debajo: es el que miden los contrastes. */
+/* La barra superior de la huerta (C1-07 y C1-08; guía, 10-componentes.css:317-323 y
+   15-pantallas.css:1-14): la marca, las secciones a la vista desde --medida-quiebre-menu y las
+   acciones de la cuenta, en una fila de papel de 4 rem con el filete abajo. Es la misma en las
+   públicas (.raices-cabecera) y en las privadas (.armazon); el borde de cada una lo dice su hoja
+   (publico-navegacion.css y privado.css). En el celular la pública puede bajar de renglón (la
+   marca, Ingresar y Crear cuenta no entran en 360 px); desde la tableta entra en una. */
 .raices-cabecera,
 .armazon {
-  border-image: linear-gradient(to top, var(--color-filete) 0 1px, var(--color-papel) 1px)
-    fill 0 / / 0 100vmax;
-  background: var(--color-papel);
-  color: var(--color-tinta);
-}
-
-.raices-cabecera,
-.armazon {
-  padding-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-1) var(--espacio-3);
+  min-height: var(--espacio-6);
+  padding: var(--espacio-1) var(--espacio-3);
+  border-bottom: var(--borde-fino);
+  background: var(--color-fondo-pagina);
+  color: var(--color-texto);
 }
 
 /* --- Lo que queda fijo al desplazarse (R11-33, regla general 5; ficha r11-p2-armazon) -----------
-   Desde la tableta, con la ventana de al menos 37,5 em de alto, la cabecera (con el menú) queda
-   pegada arriba. En el celular arriba no queda nada: el menú ya es la barra fija de abajo
-   (componentes/navegacion.css). Lo que queda fijo es solo visual: el orden del foco y de lectura no
-   cambia. --medida-cabecera-fija es el alto de la cabecera medido el 2026-11-12 en el navegador,
-   con las letras ya cargadas, redondeado hacia arriba a 1/8 rem: la privada de 5 secciones
-   (donante y entidad) mide 8 rem hasta 68,75 em y 4,5 rem desde ahí; la de la administración (7
-   secciones, con "Más"), 11,375 rem hasta 53,75 em y 8 rem desde ahí; la pública (también la de
-   la portada), 12,25 rem, 8,875 rem desde 53,75 em y 5,5 rem desde 68,75 em. La barra de filtros
-   se pega debajo (componentes/filtros.css); --medida-filtros-fijos es su alto más alto en esos
-   anchos (el de la administración), y solo sirve para que el foco no quede debajo. */
+   Desde la tableta, con la ventana de al menos 37,5 em de alto, la barra superior queda pegada
+   arriba. En el celular arriba no queda nada: el menú ya es la barra fija de abajo
+   (componentes/navegacion.css). La guía pega la barra arriba también en el celular; acá sigue la
+   decisión R11-33 (C1, pendiente para el usuario). Lo que queda fijo es solo visual: el orden del
+   foco y de lectura no cambia. Desde C1 la barra va en una sola fila en todos los anchos fijos y
+   en todas las áreas (la marca, las secciones desde 56 em y las acciones de la cuenta, de 48 px,
+   con 8 px arriba y abajo y el filete): --medida-cabecera-fija es ese alto redondeado hacia arriba
+   a 1/8 rem, y la barra mide justo eso, para que la barra de filtros
+   (componentes/filtros.css) se pegue justo debajo. --medida-filtros-fijos es el alto más alto de
+   la barra de filtros en esos anchos (el de la administración), y solo sirve para que el foco no
+   quede debajo. */
 @media (min-width: 37.5em) and (min-height: 37.5em) {
   /* `header` pesa más que `.armazon { position: relative }` de privado.css. */
   body > header:is(.raices-cabecera, .armazon) {
     position: sticky;
     top: 0;
     z-index: var(--capa-encabezado-fijo);
-  }
-
-  /* La pública corta su menú en una, dos o tres filas según el ancho, y esos cortes no caen en los
-     puntos de quiebre: medida el 2026-11-12 en publico-donaciones, publico-entidades y la portada,
-     mide 12,25 rem hasta 640 px, 8,875 rem de 660 a 900 px y 5,5 rem desde 920 px. Para que la
-     barra de filtros se pegue siempre justo debajo, la cabecera mide al menos lo que dice su
-     medida, con lo de adentro centrado. */
-  body > header.raices-cabecera {
     min-height: var(--medida-cabecera-fija);
     align-content: center;
   }
 
-  :root:has(body > .armazon) {
-    --medida-cabecera-fija: 8rem;
-    --medida-filtros-fijos: 18rem;
-  }
-
-  :root:has(body > .armazon .navegacion-mas) {
-    --medida-cabecera-fija: 11.375rem;
-  }
-
-  :root:has(body > .raices-cabecera) {
-    --medida-cabecera-fija: 12.25rem;
+  :root:has(body > :is(.armazon, .raices-cabecera)) {
+    --medida-cabecera-fija: 4.125rem;
     --medida-filtros-fijos: 18rem;
   }
 }
@@ -201,14 +270,6 @@ body {
   :root:is(:has(body > .armazon), :has(body > .raices-cabecera)) {
     --medida-filtros-fijos: 14.5rem;
   }
-
-  :root:has(body > .armazon .navegacion-mas) {
-    --medida-cabecera-fija: 8rem;
-  }
-
-  :root:has(body > .raices-cabecera) {
-    --medida-cabecera-fija: 8.875rem;
-  }
 }
 
 @media (min-width: 68.75em) and (min-height: 37.5em) {
@@ -220,18 +281,6 @@ body {
      el 2026-11-14 de 1280 a 1920 px, redondeado hacia arriba a 1/8 rem. */
   :root:is(:has(body > .armazon), :has(body > .raices-cabecera)):has(.listado) {
     --medida-filtros-fijos: 13rem;
-  }
-
-  :root:has(body > .armazon) {
-    --medida-cabecera-fija: 4.5rem;
-  }
-
-  :root:has(body > .armazon .navegacion-mas) {
-    --medida-cabecera-fija: 8rem;
-  }
-
-  :root:has(body > .raices-cabecera) {
-    --medida-cabecera-fija: 5.5rem;
   }
 }
 
@@ -263,7 +312,7 @@ html:has([data-fijo="celular"]) {
   gap: var(--espacio-1);
   padding-block: var(--espacio-2);
   border-top: 1px solid var(--color-filete);
-  background: var(--color-papel);
+  background: var(--color-fondo-pagina);
 }
 
 @media (min-width: 37.5em) {
@@ -271,6 +320,14 @@ html:has([data-fijo="celular"]) {
     display: contents;
   }
 
+  /* Sin el botón fijo, abajo queda solo el menú del celular, hasta 56 em. */
+  html:has([data-fijo="celular"]) {
+    scroll-padding-bottom: var(--medida-menu-celular);
+  }
+}
+
+/* Desde 56 em el menú del celular no está (C1: antes, desde 37,5 em en las privadas). */
+@media (min-width: 56em) {
   html,
   html:has([data-fijo="celular"]) {
     scroll-padding-bottom: 0;
@@ -290,7 +347,7 @@ body::before {
   inset: 0;
   z-index: var(--capa-carga);
   visibility: hidden;
-  background: url("../img/logo.svg") 50% 50% / 3rem auto no-repeat, var(--color-papel);
+  background: url("../img/logo.svg") 50% 50% / 3rem auto no-repeat, var(--color-fondo-pagina);
   pointer-events: none;
 }
 
@@ -335,56 +392,44 @@ body::before {
   }
 }
 
-/* La marca: el nombre en la letra de los títulos, con "Track" en verde (piel Huerta). */
+/* La marca (guía «Huerta y galpón», 10-componentes.css:324-325): el dibujo y el nombre en la letra
+   de los títulos, de un solo color (C1; antes, "Track" en verde). */
 .marca {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--espacio-1);
   min-height: var(--medida-toque-minimo);
-  padding: 0.25rem 0.25rem 0.25rem 0;
-  color: var(--color-tinta);
+  color: var(--color-texto);
   text-decoration: none;
-  font: 850 1.375rem/1 var(--fuente-titulo);
-  font-stretch: 118%;
-  letter-spacing: -0.02em;
+  font: 850 var(--tamano-titulo-3) / 1 var(--fuente-titulo);
+  font-stretch: 112%;
+  letter-spacing: -0.01em;
 }
 
 .marca em {
-  color: var(--color-acento);
+  color: inherit;
   font-style: normal;
 }
 
-/* El pie de todas las páginas, como el de K (estética de la variante K, 2026-11-08): una franja de
-   tierra con su textura a todo el ancho, las raíces finas de paja arriba, el lema y las secciones a la
-   izquierda, la firma abajo. Los enlaces, en el color del texto de la tierra (antes, paja). */
+/* El pie de la huerta, el corte de suelo (C1-09; guía «Huerta y galpón», 10-componentes.css:380-383):
+   una franja lisa de tierra con la línea de paja arriba, las secciones en una fila que baja de
+   renglón y la firma debajo. Los enlaces van subrayados, en el color del texto de la tierra; el aro
+   de foco, en paja (capa base, más arriba). Antes (variante K, 2026-11-08), la tierra llevaba su
+   textura, las raíces finas y el lema. */
 .raices-pie {
   display: grid;
-  gap: 1rem 2.5rem;
+  gap: var(--espacio-2);
   margin-top: 3rem;
-  padding: 5.5rem max(1rem, (100% - 75rem) / 2) 2rem;
-  background: url("../img/raices-pie.svg") 0 0 / 100% 4.375rem no-repeat,
-    url("../img/tierra-textura.svg") 0 0 / 260px, var(--color-suelo);
+  padding: var(--espacio-4) max(var(--espacio-3), (100% - 75rem) / 2);
+  border-top: var(--espacio-0) solid var(--color-horizonte);
+  background: var(--color-suelo);
   color: var(--color-texto-suelo);
-}
-
-.raices-pie > p {
-  margin: 0;
-  font: 850 clamp(1.4rem, 1.1rem + 1vw, 2rem) / 1.05 var(--fuente-titulo);
-  font-stretch: 122%;
-}
-
-.raices-pie > p em {
-  color: var(--color-raiz);
-  font-style: normal;
 }
 
 .raices-pie ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 1.5rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: 0 var(--espacio-4);
 }
 
 .raices-pie a {
@@ -393,15 +438,10 @@ body::before {
   min-height: var(--medida-toque-minimo);
   color: var(--color-texto-suelo);
   font-weight: 600;
-  text-decoration: none;
-}
-
-.raices-pie a:hover {
-  color: var(--color-raiz);
 }
 
 .raices-pie small {
-  font-size: 0.8125rem;
+  font-size: var(--tamano-chico);
 }
 
 /* En los planos de tierra, la tinta no cubre del todo y el papel se asoma en puntitos, también
@@ -445,7 +485,7 @@ body::before {
 
 /* La parte destacada, en verde y derecha (piel Huerta; antes, la segunda tinta corrida). */
 .hero h1 em {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font-style: normal;
 }
 
@@ -494,18 +534,11 @@ body::before {
   stroke-linecap: round;
 }
 
+/* Desde la tableta, el borde de la barra pública, como antes de C1: lo de adentro en 75 rem con 2 rem
+   a cada lado. */
 @media (min-width: 37.5em) {
   .raices-cabecera {
-    padding: 1.25rem 2rem;
-  }
-
-  .raices-pie {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: start;
-  }
-
-  .raices-pie > small {
-    grid-column: 1 / -1;
+    padding-inline: max(2rem, (100% - 71rem) / 2);
   }
 }
 

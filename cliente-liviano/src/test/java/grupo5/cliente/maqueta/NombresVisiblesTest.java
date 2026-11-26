@@ -55,6 +55,8 @@ class NombresVisiblesTest {
         "/admin-entidades",
         "/admin-donantes",
         "/admin-entidades-registrar",
+        "/admin-entidades-registrar-error",
+        "/admin-entidades-registrada",
         "/admin-donantes-registrar?tipo=organizacion"
       })
   void quienRecibeSeLlamaOrganizacion(String ruta) throws Exception {
@@ -88,7 +90,7 @@ class NombresVisiblesTest {
   @ValueSource(
       strings = {
         "/entidad-perfil",
-        "/entidad-recibidas",
+        "/entidad-entrega-problema",
         "/entidad-seguimiento",
         "/entidad-seguimiento-confirmar"
       })

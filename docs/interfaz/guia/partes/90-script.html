@@ -1,0 +1,284 @@
+<div class="lam lam-aviso" id="lam-aviso" role="status" hidden></div>
+<script>
+(function () {
+  'use strict';
+  var raiz = document.documentElement;
+  raiz.classList.add('con-js');
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var vistas = $$('.vista');
+  var pantallaConfirmar = $('#p-confirmar');
+  var pantallaConfirmada = $('#p-confirmada');
+  /* Pantallas con dos estados (o dos horas) en un mismo marcado. El ancla del segundo es la del primero más «-despues». */
+  var DOS_ESTADOS = [
+    { ancla: 'inicio-organizacion', pantalla: $('#p-inicio-organizacion'), dato: 'estadoInicio', atributo: 'data-estado-inicio' },
+    { ancla: 'entregas', pantalla: $('#p-entregas'), dato: 'estadoEntregas', atributo: 'data-estado-entregas' },
+    { ancla: 'necesidades', pantalla: $('#p-necesidades'), dato: 'estadoNecesidades', atributo: 'data-estado-necesidades' },
+    { ancla: 'entrega-problema', pantalla: $('#p-entrega-problema'), dato: 'estadoEntregaProblema', atributo: 'data-estado-entrega-problema' }
+  ];
+  var recienConfirmada = false;
+
+  /* ---- Una vista a la vez, según el ancla de la dirección ---- */
+  function ir(mover) {
+    var id = '';
+    try { id = decodeURIComponent(location.hash.slice(1)); } catch (e) { id = ''; }
+    var el = id ? document.getElementById(id) : null;
+    var vista = el ? el.closest('.vista') : null;
+    /* Un aviso de la lámina habla de la pantalla y del estado en que se tocó: con cada navegación, se va. */
+    var avisoViejo = document.getElementById('lam-aviso');
+    if (avisoViejo) { avisoViejo.hidden = true; }
+    if (!vista) { vista = $('#inicio'); el = vista; id = 'inicio'; }
+    vistas.forEach(function (v) { v.classList.toggle('activa', v === vista); });
+    if (id === 'confirmar-error') { ponerEstado('error'); } else if (id === 'confirmar') { ponerEstado('normal'); }
+    DOS_ESTADOS.forEach(function (d) { if (id === d.ancla + '-despues') { ponerDosEstados(d, 'despues'); } else if (id === d.ancla) { ponerDosEstados(d, 'puerta'); } });
+    /* El trazo de la raíz se dibuja solo al llegar desde el formulario, una vez. */
+    pantallaConfirmada.classList.toggle('recien', id === 'confirmada' && recienConfirmada); recienConfirmada = false;
+    var grupo = vista.classList.contains('vista--pantalla') ? 'pantallas' : vista.id;
+    $$('[data-nav]').forEach(function (a) { marcar(a, a.dataset.nav === grupo); });
+    $$('.lam-pantallas a').forEach(function (a) { marcar(a, a.dataset.pantalla === vista.id); });
+    ajustar();
+    if (mover === false) { return; }
+    if (id === 'confirmar-error') {
+      var resumen = $('#confirmar-resumen');
+      resumen.scrollIntoView({ block: 'start' }); resumen.focus({ preventScroll: true });
+    } else if (el === vista || /-despues$/.test(id)) {
+      window.scrollTo(0, 0);
+      $$('.marco-lienzo', vista).forEach(function (l) { l.scrollTop = 0; });
+    } else {
+      el.scrollIntoView({ block: 'start' });
+      if (el.matches('input, select, textarea, button, a[href], [tabindex]')) { el.focus({ preventScroll: true }); }
+    }
+  }
+  function marcar(a, si) { if (si) { a.setAttribute('aria-current', 'page'); } else { a.removeAttribute('aria-current'); } }
+  function ponerDosEstados(d, estado) {
+    d.pantalla.dataset.estado = estado;
+    $$('[' + d.atributo + ']').forEach(function (a) { marcar(a, a.dataset[d.dato] === estado); });
+  }
+  function ponerEstado(estado) {
+    pantallaConfirmar.dataset.estado = estado;
+    var mal = estado === 'error';
+    ['#c-remito', '#c-fotos'].forEach(function (s) { var c = $(s); if (mal) { c.setAttribute('aria-invalid', 'true'); } else { c.removeAttribute('aria-invalid'); } });
+    $$('[data-estado-enlace]').forEach(function (a) { marcar(a, a.dataset.estadoEnlace === estado); });
+  }
+
+  /* ---- El marco: si la pantalla de 1280 no entra, se achica entera ---- */
+  function ajustar() {
+    $$('.vista.activa .marco').forEach(function (m) {
+      var l = m.firstElementChild;
+      l.style.zoom = '';
+      var ancho = l.offsetWidth, lugar = m.clientWidth;
+      if (ancho > lugar + 1) { l.style.zoom = (lugar / ancho).toFixed(4); }
+    });
+  }
+  window.addEventListener('hashchange', function () { ir(); });
+  window.addEventListener('resize', ajustar);
+  $$('input[name="ancho"]').forEach(function (r) { r.addEventListener('change', ajustar); });
+
+  /* ---- Enlaces a pantallas que no están entre las trece ---- */
+  var aviso = $('#lam-aviso'), relojAviso = 0;
+  function avisar(texto) {
+    aviso.textContent = texto; aviso.hidden = false;
+    clearTimeout(relojAviso); relojAviso = setTimeout(function () { aviso.hidden = true; }, 4500);
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('[data-fuera]');
+    if (a) { e.preventDefault(); avisar('«' + a.dataset.fuera + '» no está entre las trece pantallas de esta entrega.'); return; }
+    /* «Inicio», dentro del inicio: se queda en el estado que se está mirando. */
+    var aqui = e.target.closest('[data-aqui]');
+    if (aqui && aqui.closest('[data-estado="despues"]')) { e.preventDefault(); $$('.vista.activa .marco-lienzo').forEach(function (l) { l.scrollTop = 0; }); window.scrollTo(0, 0); }
+  });
+
+  /* ---- Bandeja: la cuenta de las elegidas ---- */
+  var casillas = $$('#form-bandeja input[name="propuesta"]');
+  var todas = $('#bandeja-todas'), cuenta = $('#bandeja-cuenta'), aprobar = $('#bandeja-aprobar'), descartar = $('#bandeja-descartar');
+  function contar() {
+    var elegidas = casillas.filter(function (c) { return c.checked; });
+    var n = elegidas.length, orgs = {};
+    elegidas.forEach(function (c) { orgs[c.dataset.para] = 1; });
+    var m = Object.keys(orgs).length;
+    cuenta.textContent = '';
+    var fuerte = document.createElement('strong');
+    if (n === 0) {
+      fuerte.textContent = 'Ninguna elegida.'; cuenta.appendChild(fuerte);
+      cuenta.appendChild(document.createTextNode(' Marcá las propuestas que querés decidir.'));
+      aprobar.textContent = 'Aprobar';
+    } else {
+      fuerte.textContent = n === 1 ? '1 elegida' : n + ' elegidas'; cuenta.appendChild(fuerte);
+      cuenta.appendChild(document.createTextNode(', para ' + (m === 1 ? '1 organización' : m + ' organizaciones')));
+      aprobar.textContent = n === 1 ? 'Aprobar la elegida' : 'Aprobar las ' + n;
+    }
+    [aprobar, descartar].forEach(function (b) { if (n === 0) { b.setAttribute('aria-disabled', 'true'); } else { b.removeAttribute('aria-disabled'); } });
+    todas.checked = n === casillas.length; todas.indeterminate = n > 0 && n < casillas.length;
+  }
+  casillas.forEach(function (c) { c.addEventListener('change', contar); });
+  todas.addEventListener('change', function () { casillas.forEach(function (c) { c.checked = todas.checked; }); contar(); });
+  $('#form-bandeja').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var n = casillas.filter(function (c) { return c.checked; }).length;
+    avisar(n === 0 ? 'Elegí al menos una propuesta.' : 'En el producto, esto decide las ' + n + ' elegidas y muestra un aviso breve. La maqueta no cambia los datos.');
+  });
+  contar();
+
+  /* ---- Confirmar recepción: el primer envío muestra el error; el segundo lo da por corregido y confirma ---- */
+  $('#form-confirmar').addEventListener('submit', function (e) {
+    e.preventDefault();
+    /* Se mira el estado de la pantalla y no el ancla: el resumen de errores cambia el ancla al llevar a cada campo. */
+    if (pantallaConfirmar.dataset.estado === 'error') { recienConfirmada = true; location.hash = 'confirmada'; } else if (location.hash === '#confirmar-error') { ir(); } else { location.hash = 'confirmar-error'; }
+  });
+
+  /* ---- Guía: tablas de tokens armadas desde el bloque ---- */
+  var comparacion = window.DT_COMPARACION || {};
+  var sonda = document.createElement('span'); sonda.className = 'dt'; sonda.hidden = true; document.body.appendChild(sonda);
+  function resolverColor(nombre) {
+    sonda.style.color = ''; sonda.style.color = 'var(' + nombre + ')';
+    var c = getComputedStyle(sonda).color; var m = c.match(/[\d.]+/g);
+    return m ? m.map(Number) : null;
+  }
+  function aHex(c) {
+    if (!c) { return ''; }
+    var h = '#' + c.slice(0, 3).map(function (n) { return ('0' + Math.round(n).toString(16)).slice(-2); }).join('');
+    if (c.length > 3 && c[3] < 1) { h += ('0' + Math.round(c[3] * 255).toString(16)).slice(-2); }
+    return h;
+  }
+  function celda(fila, contenido, etiqueta) {
+    var td = document.createElement(etiqueta || 'td');
+    if (typeof contenido === 'string') { td.textContent = contenido; } else if (contenido) { td.appendChild(contenido); }
+    fila.appendChild(td); return td;
+  }
+  function crear(etiqueta, clase, texto) { var e = document.createElement(etiqueta); if (clase) { e.className = clase; } if (texto) { e.textContent = texto; } return e; }
+  function muestraDe(nombre) {
+    var caja;
+    if (nombre.indexOf('--color-') === 0) { caja = crear('span', 'muestra-color'); caja.style.background = 'var(' + nombre + ')'; return caja; }
+    if (nombre.indexOf('--tamano-') === 0 && nombre.indexOf('interlinea') < 0) { caja = crear('span', 'dt', 'Donación'); caja.style.cssText = 'background:none;font-size:var(' + nombre + ');line-height:1.1;container-type:normal'; if (nombre.indexOf('titulo') > 0) { caja.style.fontFamily = 'var(--fuente-titulo)'; caja.style.fontWeight = '850'; caja.style.fontStretch = '116%'; } return caja; }
+    if (nombre.indexOf('--espacio-') === 0) { caja = crear('span', 'barra-espacio'); caja.style.width = 'var(' + nombre + ')'; return caja; }
+    if (nombre.indexOf('--radio-') === 0) { caja = crear('span', 'caja-radio'); caja.style.borderRadius = 'var(' + nombre + ')'; return caja; }
+    if (nombre.indexOf('--borde-') === 0 && nombre.indexOf('ancho') < 0) { caja = crear('span', 'caja-radio'); caja.style.border = 'var(' + nombre + ')'; return caja; }
+    if (nombre.indexOf('--sombra-') === 0) { caja = crear('span', 'caja-radio'); caja.style.boxShadow = 'var(' + nombre + ')'; return caja; }
+    return null;
+  }
+  function armarTokens() {
+    var fuente = $('#tokens'), destino = $('#tablas-tokens');
+    if (!fuente || !destino) { return; }
+    var texto = fuente.textContent, grupos = [], actual = null;
+    texto.split('\n').forEach(function (linea) {
+      var com = linea.match(/^\s*\/\*\s*(?:-+\s*)?(.+?)\s*(?:-+\s*)?\*\/\s*$/);
+      var tok = linea.match(/^\s*(--[a-z0-9-]+):\s*(.+);\s*$/);
+      if (com && !/^=+/.test(com[1]) && linea.indexOf('Tokens de DonaTrack') < 0) { actual = { titulo: com[1], filas: [] }; grupos.push(actual); }
+      else if (tok && actual) { actual.filas.push({ nombre: tok[1], valor: tok[2] }); }
+    });
+    function marcaDe(nombre) {
+      var c = comparacion[nombre] || { m: 'nuevo' };
+      var marca = crear('span', 'marca-token', c.m === 'igual' ? 'Igual' : c.m === 'cambia' ? 'Cambia' : 'Nuevo'); marca.dataset.m = c.m;
+      return { marca: marca, c: c };
+    }
+    destino.textContent = '';
+    var cuenta = { igual: 0, cambia: 0, nuevo: 0 };
+    grupos.filter(function (g) { return g.filas.length; }).forEach(function (g) {
+      var base = g.filas[0].nombre.indexOf('--p-') === 0;
+      var color = g.filas[0].nombre.indexOf('--color-') === 0;
+      var caja;
+      if (!base) { g.filas.forEach(function (f) { cuenta[(comparacion[f.nombre] || { m: 'nuevo' }).m]++; }); }
+      if (color) {
+        caja = crear('div', 'fichas-color');
+        g.filas.forEach(function (f) {
+          var ficha = crear('div', 'ficha-color'), m = marcaDe(f.nombre);
+          var muestra = crear('span', 'ficha-color-muestra'); muestra.style.background = 'var(' + f.nombre + ')';
+          ficha.appendChild(muestra); ficha.appendChild(crear('code', '', f.nombre));
+          var pie = crear('span', 'ficha-color-pie', aHex(resolverColor(f.nombre)) + ' ');
+          if (m.c.m !== 'igual') { pie.appendChild(m.marca); }
+          if (m.c.m === 'cambia') { pie.appendChild(crear('span', '', ' antes ' + m.c.antes)); }
+          ficha.appendChild(pie); caja.appendChild(ficha);
+        });
+      } else {
+        caja = crear('div', 'tabla-lam'); var tabla = crear('table'), cab = crear('tr');
+        ['Token', 'Valor', 'Muestra', 'Frente a hoy'].forEach(function (t) { var th = celda(cab, t, 'th'); th.scope = 'col'; });
+        var thead = crear('thead'); thead.appendChild(cab); tabla.appendChild(thead);
+        var cuerpo = crear('tbody');
+        g.filas.forEach(function (f) {
+          var tr = crear('tr'); celda(tr, crear('code', '', f.nombre)); celda(tr, crear('code', '', f.valor));
+          var m = muestraDe(f.nombre); var tdm = celda(tr, m); if (m) { tdm.className = 'dt-celda'; }
+          var mc = marcaDe(f.nombre); var tdc = celda(tr, mc.marca);
+          if (mc.c.m === 'cambia') { tdc.appendChild(document.createTextNode(' antes: ')); tdc.appendChild(crear('code', '', mc.c.antes)); }
+          cuerpo.appendChild(tr);
+        });
+        tabla.appendChild(cuerpo); caja.appendChild(tabla);
+      }
+      var bloque;
+      if (base) { bloque = crear('details', 'lam-pila'); bloque.appendChild(crear('summary', 'boton-lam', g.titulo + ' (' + g.filas.length + ')')); }
+      else { bloque = crear('div', 'lam-pila grupo-tokens'); bloque.appendChild(crear('h3', '', g.titulo)); }
+      bloque.appendChild(caja); destino.appendChild(bloque);
+    });
+    var resumen = $('#resumen-tokens');
+    if (resumen) { resumen.textContent = 'De los ' + (cuenta.igual + cuenta.cambia + cuenta.nuevo) + ' tokens de uso, ' + cuenta.igual + ' quedan igual que hoy, ' + cuenta.cambia + ' cambian de valor y ' + cuenta.nuevo + ' son nuevos.'; }
+  }
+
+  /* ---- Guía: contraste calculado desde los tokens ---- */
+  var PARES = [
+    ['Texto sobre el papel', '--color-texto', '--color-fondo-pagina', 4.5],
+    ['Texto sobre una lámina', '--color-texto', '--color-superficie', 4.5],
+    ['Texto suave sobre el papel', '--color-texto-suave', '--color-fondo-pagina', 4.5],
+    ['Texto suave sobre una lámina', '--color-texto-suave', '--color-superficie', 4.5],
+    ['Texto suave sobre la nota de tierra', '--color-texto-suave', '--color-pendiente-fondo', 4.5],
+    ['Texto suave sobre una fila elegida', '--color-texto-suave', '--color-fila-elegida', 4.5],
+    ['Texto sobre una fila u opción elegida', '--color-texto', '--color-salvia', 4.5],
+    ['Enlace sobre el papel', '--color-enlace', '--color-fondo-pagina', 4.5],
+    ['Enlace sobre una lámina', '--color-enlace', '--color-superficie', 4.5],
+    ['Botón lleno', '--color-texto-sobre-accion', '--color-accion-primaria', 4.5],
+    ['Botón lleno, con el cursor', '--color-texto-sobre-accion', '--color-accion-primaria-activa', 4.5],
+    ['Botón secundario, con el cursor', '--color-texto-sobre-secundaria', '--color-accion-secundaria-activa', 4.5],
+    ['Sello: Registrada, Asignada y Preparada', '--color-pendiente-texto', '--color-pendiente-fondo', 4.5],
+    ['Sello: En camino', '--color-en-camino-texto', '--color-en-camino-fondo', 4.5],
+    ['Sello: Entrega confirmada', '--color-entregada-texto', '--color-entregada-fondo', 4.5],
+    ['Sello: Con problema', '--color-problema-texto', '--color-problema-fondo', 4.5],
+    ['Chapa «Espera tu confirmación»', '--color-espera-texto', '--color-espera-fondo', 4.5],
+    ['Error junto a un campo', '--color-error-texto', '--color-fondo-pagina', 4.5],
+    ['Título de un aviso de error', '--color-error-texto', '--color-error-fondo', 4.5],
+    ['Texto sobre la tierra: pie, cajón y menú', '--color-texto-suelo', '--color-suelo', 4.5],
+    ['Menú del cajón, con el cursor', '--color-texto-suelo', '--color-suelo-medio', 4.5],
+    ['Borde de un campo', '--color-borde-control', '--color-campo', 3],
+    ['Borde de un campo con error', '--color-error-borde', '--color-campo', 3],
+    ['Aro de foco sobre el papel', '--color-foco', '--color-fondo-pagina', 3],
+    ['Aro de foco sobre la tierra', '--color-foco-sobre-suelo', '--color-suelo', 3],
+    ['Avance de una necesidad', '--color-accion-primaria', '--color-campo', 3],
+    ['Borde del botón lleno sobre el papel', '--color-accion-primaria', '--color-fondo-pagina', 3],
+    ['Nudo de la raíz: contorno', '--color-tinta', '--color-raiz', 3],
+    ['Nudo de un paso que no pudo ser: contorno', '--color-problema-texto', '--color-fondo-pagina', 3],
+    ['Deshabilitado (sin piso: WCAG lo exceptúa)', '--color-deshabilitado-texto', '--color-deshabilitado-fondo', 0],
+    ['Borde del sello «En camino» (sin piso: el estado lo dicen el texto y el signo)', '--color-en-camino-sello', '--color-fondo-pagina', 0]
+  ];
+  function luz(c) { var v = c.slice(0, 3).map(function (n) { n /= 255; return n <= 0.03928 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4); }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; }
+  function razon(a, b) { var la = luz(a), lb = luz(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); }
+  function armarContraste() {
+    var cuerpo = $('#tabla-contraste'); if (!cuerpo) { return; }
+    cuerpo.textContent = ''; var fallas = 0;
+    PARES.forEach(function (p) {
+      var frente = resolverColor(p[1]), fondo = resolverColor(p[2]), r = razon(frente, fondo);
+      var tr = crear('tr'); celda(tr, p[0], 'th').scope = 'row';
+      var m = crear('span', 'muestra-par', p[3] === 3 ? '▬▬' : 'Abc'); m.style.cssText = 'display:inline-block;padding:0 .5rem;border-radius:.25rem;font-weight:700;color:var(' + p[1] + ');background:var(' + p[2] + ')';
+      celda(tr, m);
+      celda(tr, r.toFixed(2).replace('.', ',') + ' a 1');
+      celda(tr, p[3] ? String(p[3]).replace('.', ',') + ' a 1' : 'No aplica');
+      var pasa = !p[3] || r >= p[3]; if (!pasa) { fallas++; }
+      celda(tr, p[3] ? (pasa ? 'Sí' : 'No') : 'Informativo');
+      tr.dataset.pasa = pasa ? 'si' : 'no'; tr.dataset.razon = r.toFixed(2); tr.dataset.par = p[1] + ' / ' + p[2];
+      cuerpo.appendChild(tr);
+    });
+    cuerpo.dataset.fallas = String(fallas);
+  }
+
+  /* ---- Copiar el bloque de tokens ---- */
+  var copiar = $('#copiar-tokens');
+  if (copiar) {
+    copiar.addEventListener('click', function () {
+      var bloque = $('#bloque-tokens'), estado = $('#copiar-estado');
+      function elegir() { var r = document.createRange(); r.selectNodeContents(bloque); var s = getSelection(); s.removeAllRanges(); s.addRange(r); estado.textContent = 'Quedó seleccionado: copialo con Ctrl+C.'; }
+      try { navigator.clipboard.writeText(bloque.textContent).then(function () { estado.textContent = 'Bloque copiado.'; }, elegir); } catch (e) { elegir(); }
+    });
+  }
+
+  armarTokens();
+  armarContraste();
+  ir(location.hash.length > 1);
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(ajustar); }
+})();
+</script>

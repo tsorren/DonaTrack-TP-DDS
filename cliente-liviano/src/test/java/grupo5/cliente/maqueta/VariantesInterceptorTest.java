@@ -1,6 +1,7 @@
 package grupo5.cliente.maqueta;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -59,13 +60,20 @@ class VariantesInterceptorTest {
   }
 
   @Test
-  void unNombreQueNoEsUnArchivoDeVarianteNoExiste() throws Exception {
-    mvc.perform(get(PANTALLA).param("variante", "../app")).andExpect(status().isNotFound());
+  void unNombreQueNoEsUnArchivoDeVarianteSeIgnora() throws Exception {
+    mvc.perform(get(PANTALLA).param("variante", "../app"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("donante-perfil"))
+        .andExpect(model().attributeDoesNotExist("varianteCss"))
+        .andExpect(content().string(not(containsString("/css/variantes/"))));
   }
 
   @Test
-  void unaVarianteSinArchivosNoExiste() throws Exception {
+  void unaVarianteSinArchivosSeIgnora() throws Exception {
     mvc.perform(get(PANTALLA).param("variante", "tema-sin-archivos-a"))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isOk())
+        .andExpect(view().name("donante-perfil"))
+        .andExpect(model().attributeDoesNotExist("varianteCss"))
+        .andExpect(content().string(not(containsString("/css/variantes/"))));
   }
 }

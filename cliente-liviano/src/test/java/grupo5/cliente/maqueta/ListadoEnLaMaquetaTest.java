@@ -47,32 +47,32 @@ class ListadoEnLaMaquetaTest {
 
   @Test
   void recibidasFiltraPorFechaCategoriaDonanteYOrden() throws Exception {
-    mvc.perform(get("/entidad-recibidas?desde=2026-10-11&hasta=2026-10-13"))
+    mvc.perform(get("/entidad-seguimiento?desde=2026-10-11&hasta=2026-10-13"))
         .andExpect(content().string(containsString("Lentejas secas")))
         .andExpect(content().string(not(containsString("Aceite de girasol"))))
         .andExpect(content().string(not(containsString("Fideos secos"))))
         .andExpect(content().string(containsString("Sacar los filtros")));
 
-    mvc.perform(get("/entidad-recibidas?categoria=ropa"))
+    mvc.perform(get("/entidad-seguimiento?categoria=ropa"))
         .andExpect(content().string(containsString("Ropa de abrigo")))
         .andExpect(content().string(not(containsString("Lentejas secas"))))
         .andExpect(content().string(matchesPattern(elegida("ropa", "Ropa"))));
 
-    mvc.perform(get("/entidad-recibidas?quien=MARTINA"))
+    mvc.perform(get("/entidad-seguimiento?quien=MARTINA"))
         .andExpect(content().string(containsString("Martina Ruiz")))
         .andExpect(content().string(not(containsString("Lácteos Ejemplo SA"))));
 
-    String antiguas = pagina("/entidad-recibidas?estado=recibidas&orden=antiguas");
+    String antiguas = pagina("/entidad-seguimiento?estado=recibidas&orden=antiguas");
     assertThat(antiguas.indexOf("Arroz, 10 kg"))
         .isLessThan(antiguas.indexOf("Lentejas secas, 10 kg"));
-    String urgentes = pagina("/entidad-recibidas?estado=recibidas");
+    String urgentes = pagina("/entidad-seguimiento?estado=recibidas");
     assertThat(urgentes.indexOf("Lentejas secas, 10 kg"))
         .isLessThan(urgentes.indexOf("Arroz, 10 kg"));
   }
 
   @Test
   void recibidasJuntaLosEstadosQueLleganDesdeNecesidades() throws Exception {
-    mvc.perform(get("/entidad-recibidas?estado=en-tu-puerta&estado=con-problema"))
+    mvc.perform(get("/entidad-seguimiento?estado=en-tu-puerta&estado=con-problema"))
         .andExpect(
             content()
                 .string(
@@ -83,7 +83,7 @@ class ListadoEnLaMaquetaTest {
         .andExpect(content().string(containsString("Aceite de girasol")))
         .andExpect(content().string(not(containsString("Arroz, 10 kg"))));
 
-    mvc.perform(get("/entidad-recibidas?estado=en-tu-puerta,con-problema"))
+    mvc.perform(get("/entidad-seguimiento?estado=en-tu-puerta,con-problema"))
         .andExpect(content().string(containsString("Aceite de girasol")))
         .andExpect(content().string(not(containsString("Arroz, 10 kg"))));
   }

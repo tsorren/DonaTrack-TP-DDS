@@ -86,6 +86,9 @@ class DonanteNotificacionesControllerTest {
 
     mvc.perform(get("/donante-notificaciones"))
         .andExpect(status().isOk())
+        // El título es «Novedades» en los tres roles (ficha guia-org-buzon, sección 6).
+        .andExpect(content().string(containsString("<h1>Novedades</h1>")))
+        .andExpect(content().string(containsString("<title>Novedades - DonaTrack</title>")))
         .andExpect(content().string(containsString("3 sin leer.")))
         .andExpect(content().string(containsString("Subiste de categoría")))
         .andExpect(content().string(containsString("¡Felicitaciones! Has ascendido.")))
@@ -94,7 +97,22 @@ class DonanteNotificacionesControllerTest {
         // El menú de Categoría muestra todas las del rol, también las que no tienen avisos.
         .andExpect(content().string(containsString("Problemas en la entrega")))
         // Con una sola página no hay paginador.
-        .andExpect(content().string(not(containsString("Páginas de notificaciones"))));
+        .andExpect(content().string(not(containsString("Páginas de novedades"))));
+  }
+
+  /**
+   * DON-08: el buzón es el del catálogo; su hoja heredada salió y la pantalla nombra
+   * donante-comun.css, que estiliza la bajada e importa privado.css.
+   */
+  @Test
+  void elBuzonNoUsaLaHojaHeredada() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(notificaciones.bandeja(eq(DONANTE), any(ConsultaBandeja.class))).thenReturn(dos(2));
+
+    mvc.perform(get("/donante-notificaciones"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("href=\"/css/donante-comun.css\"")))
+        .andExpect(content().string(not(containsString("donante-notificaciones.css"))));
   }
 
   @Test
@@ -110,7 +128,7 @@ class DonanteNotificacionesControllerTest {
                 .param("orden", "viejas")
                 .param("pagina", "2"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Páginas de notificaciones")));
+        .andExpect(content().string(containsString("Páginas de novedades")));
 
     ArgumentCaptor<ConsultaBandeja> consulta = ArgumentCaptor.forClass(ConsultaBandeja.class);
     verify(notificaciones).bandeja(eq(DONANTE), consulta.capture());

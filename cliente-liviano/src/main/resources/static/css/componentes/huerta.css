@@ -2,13 +2,14 @@
    el sitio el 2026-11-08). Los fragmentos están en templates/componentes/huerta.html: la lámina de una
    donación (`.huerta-planta`, sobre el papel de `.tarjeta`), la cabeza de una sección, la portada con
    sus láminas y el enjambre, la escalera de cómo funciona, la tierra con sus raíces, las cifras en
-   árboles, quién participa, las preguntas y el cierre. Las ilustraciones son decorativas. Se carga en
+   árboles, quién participa, las preguntas y el cierre, más la raíz de los 5 pasos y los frutos de
+   la guía (C1-20 y C1-21). Las ilustraciones son decorativas. Se carga en
    la capa `bloques` desde app.css. Catálogo: docs/interfaz/componentes.md. */
 
 /* --- La cabeza de una sección: rótulo, título y bajada ------------------------------------------ */
 .huerta-cabeza {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--espacio-2);
 }
 
 .huerta-cabeza :is(h2, p) {
@@ -32,7 +33,7 @@
 }
 
 :is(.huerta-cabeza, .huerta-cierre) h2 em {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
 }
 
 /* El corte va antes de la parte destacada y esta no se parte: "lo que donás" queda entero en su
@@ -43,7 +44,7 @@
 
 .huerta-rotulo {
   margin: 0;
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font: 700 0.78rem/1.2 var(--fuente-titulo);
   font-stretch: 112%;
   letter-spacing: 0.13em;
@@ -52,7 +53,7 @@
 
 .huerta-bajada {
   max-width: 48rem;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: clamp(1.05rem, 0.98rem + 0.35vw, 1.25rem);
 }
 
@@ -81,7 +82,7 @@
   border-radius: 50%;
   background: var(--color-superficie);
   box-shadow: inset 0 0 0 1.5px var(--color-filete);
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   cursor: pointer;
 }
 
@@ -101,7 +102,7 @@
 }
 
 .huerta-pausa:has(:checked) {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 .huerta-pausa-casilla {
@@ -145,7 +146,7 @@
   margin: 0.75rem 0.75rem 0;
   padding: 1rem 0.5rem 0.25rem;
   border-radius: var(--radio-boton);
-  background: radial-gradient(120% 90% at 50% 80%, var(--color-superficie), var(--color-papel));
+  background: radial-gradient(120% 90% at 50% 80%, var(--color-superficie), var(--color-fondo-pagina));
 }
 
 .huerta-marco::before {
@@ -228,7 +229,7 @@
 }
 
 .huerta-planta:has(.huerta-enlace:hover) h3 {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
 }
 
 .huerta-enlace:focus-visible {
@@ -247,7 +248,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.875rem;
   line-height: 1.3;
 }
@@ -327,7 +328,7 @@
 }
 
 .huerta-hero h1 em {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
 }
 
 .huerta-hero-texto > p:not(.huerta-rotulo) {
@@ -527,7 +528,7 @@
   width: auto;
   max-width: 100%;
   height: calc(var(--medida-alto) * var(--medida-escala-paso, 0.62px));
-  background: var(--color-papel);
+  background: var(--color-fondo-pagina);
 }
 
 .huerta-paso h3 {
@@ -539,12 +540,12 @@
 
 .huerta-paso p {
   margin: 0;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.95rem;
 }
 
 .huerta-paso .huerta-paso-numero {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font: 700 0.75rem/1 var(--fuente-titulo);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -638,7 +639,7 @@
 
 .huerta-nudo {
   fill: var(--color-raiz);
-  stroke: var(--color-suelo-hondo);
+  stroke: var(--color-tinta);
   stroke-width: 3;
 }
 
@@ -698,12 +699,12 @@
 
 .huerta-bajo-nudo {
   fill: var(--color-raiz);
-  stroke: var(--color-suelo-hondo);
+  stroke: var(--color-tinta);
   stroke-width: 10;
 }
 
 .huerta-bajo-halo {
-  fill: var(--color-suelo-hondo);
+  fill: var(--color-tinta);
   opacity: 0.45;
 }
 
@@ -744,7 +745,7 @@
   left: 0;
   width: 1.25rem;
   height: 1.25rem;
-  border: 3px solid var(--color-suelo-hondo);
+  border: 3px solid var(--color-tinta);
   border-radius: 50%;
   background: var(--color-raiz);
   content: "";
@@ -789,7 +790,7 @@
   color: var(--color-raiz);
   font-weight: 800;
   paint-order: stroke fill;
-  -webkit-text-stroke: 0.14em var(--color-suelo-hondo);
+  -webkit-text-stroke: 0.14em var(--color-tinta);
   text-decoration-thickness: 0.08em;
   text-underline-offset: 0.2em;
 }
@@ -979,7 +980,7 @@
   overflow: hidden;
   border: 0;
   border-radius: var(--radio-boton);
-  background: var(--color-papel);
+  background: var(--color-fondo-pagina);
   cursor: zoom-in;
 }
 
@@ -1007,7 +1008,7 @@
   aspect-ratio: 16 / 10;
   border: 2px dashed var(--color-filete);
   border-radius: var(--radio-boton);
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.875rem;
   text-align: center;
 }
@@ -1022,7 +1023,7 @@
 }
 
 .huerta-foto .huerta-foto-fecha {
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font: 850 1.25rem/1 var(--fuente-cifra);
   font-stretch: 118%;
 }
@@ -1142,7 +1143,7 @@
 
 .huerta-preguntas summary::after {
   content: "+";
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font: 700 1.4rem/1 var(--fuente-titulo);
 }
 
@@ -1191,7 +1192,7 @@
 
 .huerta-resumen-alcance {
   margin: 0;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.875rem;
 }
 
@@ -1220,7 +1221,7 @@
 .huerta-barra [data-n="10"] { flex-grow: 10; }
 
 .huerta-barra [data-estado="entregada"] {
-  background: var(--color-acento);
+  background: var(--color-accion-primaria);
   box-shadow: none;
 }
 
@@ -1241,7 +1242,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.9375rem;
 }
 
@@ -1263,7 +1264,7 @@
 }
 
 .huerta-leyenda [data-estado="entregada"]::before {
-  background: var(--color-acento);
+  background: var(--color-accion-primaria);
   box-shadow: none;
 }
 
@@ -1338,7 +1339,7 @@
   top: 2.625rem;
   right: 10%;
   left: 10%;
-  border-top: 2px dotted var(--color-tinta-suave);
+  border-top: 2px dotted var(--color-texto-suave);
 }
 
 .huerta-recorrido li {
@@ -1363,17 +1364,17 @@
   height: 1rem;
   border-radius: 50%;
   background: var(--color-superficie);
-  box-shadow: inset 0 0 0 2px var(--color-tinta-suave);
+  box-shadow: inset 0 0 0 2px var(--color-texto-suave);
 }
 
 .huerta-recorrido [data-avance="hecho"] .huerta-recorrido-punto {
-  background: var(--color-acento);
+  background: var(--color-accion-primaria);
   box-shadow: none;
 }
 
 .huerta-recorrido [data-avance="actual"] .huerta-recorrido-punto {
   background: var(--color-raiz);
-  box-shadow: 0 0 0 0.25rem var(--color-acento-claro);
+  box-shadow: 0 0 0 0.25rem var(--color-salvia);
 }
 
 .huerta-recorrido b {
@@ -1383,7 +1384,281 @@
 
 .huerta-recorrido li > span:last-child {
   grid-row: 4;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
+}
+
+/* --- La raíz de los 5 pasos (guía, D2; C1-20) ---------------------------------------------------
+   Llena, lo que pasó; punteada, lo que falta. Cada paso dibuja con su ::before el tramo que baja al
+   siguiente. Las medidas de la guía salen de los tokens: la columna (1,75 rem), el nudo (1,375 rem) y
+   el ancho del tramo (0,625 rem); las posiciones se calculan desde ellas. */
+.huerta-raiz-pasos {
+  --medida-raiz-columna: calc(var(--espacio-4) + var(--espacio-0));
+  --medida-raiz-nudo: calc(var(--espacio-4) - var(--espacio-0) / 2);
+  --medida-raiz-tramo: calc(var(--espacio-1) + var(--espacio-0) / 2);
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.huerta-raiz-pasos > li {
+  /* Dónde va el tramo lleno: lo leen el ::before y el trazo. */
+  --medida-raiz-izquierda: calc((var(--medida-raiz-columna) - var(--medida-raiz-tramo)) / 2);
+  --medida-raiz-derecha: auto;
+  --medida-raiz-arriba: calc(var(--medida-raiz-columna) / 2);
+  --medida-raiz-abajo: calc(var(--medida-raiz-columna) / -2);
+  --medida-raiz-ancho: var(--medida-raiz-tramo);
+  --medida-raiz-alto: auto;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--medida-raiz-columna) minmax(0, 1fr);
+  gap: var(--espacio-2);
+  padding-bottom: var(--espacio-3);
+}
+
+.huerta-raiz-pasos > li:last-child {
+  padding-bottom: 0;
+}
+
+.huerta-raiz-pasos p {
+  margin: 0;
+}
+
+.huerta-raiz-pasos p + p {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.huerta-raiz-nudo {
+  position: relative;
+  z-index: 1;
+  justify-self: center;
+  margin-top: calc(var(--espacio-0) / 2);
+  width: var(--medida-raiz-nudo);
+  height: var(--medida-raiz-nudo);
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radio-pastilla);
+  background: var(--color-raiz);
+}
+
+.huerta-raiz-pasos > li::before,
+.huerta-raiz-trazo {
+  position: absolute;
+  top: var(--medida-raiz-arriba);
+  right: var(--medida-raiz-derecha);
+  bottom: var(--medida-raiz-abajo);
+  left: var(--medida-raiz-izquierda);
+  width: var(--medida-raiz-ancho);
+  height: var(--medida-raiz-alto);
+}
+
+.huerta-raiz-pasos > li::before {
+  content: "";
+  border-inline: 2px solid var(--color-tinta);
+  background: var(--color-raiz);
+}
+
+.huerta-raiz-pasos > li:last-child::before {
+  content: none;
+}
+
+.huerta-raiz-pasos > li[data-paso="actual"] > .huerta-raiz-nudo {
+  width: var(--medida-raiz-columna);
+  height: var(--medida-raiz-columna);
+  margin-top: calc(var(--espacio-0) / -4);
+  border: 3px solid var(--color-tinta);
+  background: var(--color-superficie);
+  box-shadow: inset 0 0 0 calc(var(--espacio-0) * 1.25) var(--color-superficie), inset 0 0 0 var(--espacio-3) var(--color-raiz);
+}
+
+.huerta-raiz-pasos > li[data-paso="falta"] > .huerta-raiz-nudo {
+  border: 2px dashed var(--color-borde-control);
+  background: var(--color-fondo-pagina);
+}
+
+/* Un paso que se intentó y no pudo ser: el nudo lleva el signo del problema, además del color. */
+.huerta-raiz-pasos > li[data-paso="problema"] > .huerta-raiz-nudo {
+  display: grid;
+  place-items: center;
+  width: var(--medida-raiz-columna);
+  height: var(--medida-raiz-columna);
+  margin-top: calc(var(--espacio-0) / -4);
+  border: 2.5px solid var(--color-problema-texto);
+  background: var(--color-problema-fondo);
+  color: var(--color-problema-texto);
+}
+
+/* Después del paso actual, del que falta o del que no pudo ser, el tramo es punteado: falta. */
+.huerta-raiz-pasos > li:is([data-paso="actual"], [data-paso="falta"], [data-paso="problema"])::before {
+  left: calc(var(--medida-raiz-columna) / 2 - 1.5px);
+  width: 0;
+  border-inline: 0;
+  border-left: 3px dotted var(--color-borde-control);
+  background: none;
+}
+
+.huerta-raiz-cuando {
+  color: var(--color-texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+/* La numerada: el número del paso en el nudo, del tamaño de la columna. */
+.huerta-raiz-pasos[data-forma~="numerada"] .huerta-raiz-nudo {
+  display: grid;
+  place-items: center;
+  width: var(--medida-raiz-columna);
+  height: var(--medida-raiz-columna);
+  margin-top: calc(var(--espacio-0) / -4);
+  color: var(--color-tinta);
+  font: 700 var(--tamano-chico) / 1 var(--fuente-texto);
+}
+
+/* La acostada: los cinco nudos en un renglón; los nombres quedan para el lector de pantalla. */
+.huerta-raiz-pasos[data-forma~="acostada"] {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  max-width: 22rem;
+}
+
+.huerta-raiz-pasos[data-forma~="acostada"] > li {
+  --medida-raiz-izquierda: calc(var(--medida-raiz-nudo) / 2);
+  --medida-raiz-derecha: calc(var(--medida-raiz-nudo) / -2);
+  --medida-raiz-arriba: calc((var(--medida-raiz-nudo) - var(--medida-raiz-tramo)) / 2);
+  --medida-raiz-abajo: auto;
+  --medida-raiz-ancho: auto;
+  --medida-raiz-alto: var(--medida-raiz-tramo);
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+  padding-bottom: 0;
+}
+
+.huerta-raiz-pasos[data-forma~="acostada"] .huerta-raiz-nudo {
+  justify-self: start;
+  margin-top: 0;
+}
+
+.huerta-raiz-pasos[data-forma~="acostada"] > li:is([data-paso="actual"], [data-paso="problema"]) > .huerta-raiz-nudo {
+  margin-top: calc((var(--medida-raiz-nudo) - var(--medida-raiz-columna)) / 2);
+}
+
+.huerta-raiz-pasos[data-forma~="acostada"] [data-eje="alto"],
+.huerta-raiz-trazo [data-eje="ancho"] {
+  display: none;
+}
+
+.huerta-raiz-pasos[data-forma~="acostada"] .huerta-raiz-trazo [data-eje="ancho"] {
+  display: inline;
+}
+
+.huerta-raiz-pasos[data-forma~="acostada"] > li::before {
+  border-inline: 0;
+  border-block: 2px solid var(--color-tinta);
+}
+
+.huerta-raiz-pasos[data-forma~="acostada"] > li:is([data-paso="actual"], [data-paso="falta"], [data-paso="problema"])::before {
+  top: calc(var(--medida-raiz-nudo) / 2 - 1.5px);
+  left: var(--medida-raiz-izquierda);
+  width: auto;
+  height: 0;
+  border-block: 0;
+  border-left: 0;
+  border-top: 3px dotted var(--color-borde-control);
+}
+
+/* El trazo: el último tramo lleno, como una raya SVG (pathLength="1") que se dibuja una vez. Sin
+   animación queda dibujado; mientras está, el ::before de ese paso no se pinta. */
+.huerta-raiz-pasos > li:has(> .huerta-raiz-trazo)::before {
+  content: none;
+}
+
+.huerta-raiz-trazo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.huerta-raiz-trazo path {
+  fill: none;
+  stroke: var(--color-tinta);
+  stroke-width: 10;
+  stroke-dasharray: 1;
+}
+
+.huerta-raiz-trazo path + path {
+  stroke: var(--color-raiz);
+  stroke-width: 6;
+}
+
+/* --- Los frutos (guía, D4; C1-21): un fruto, una entrega confirmada ------------------------------- */
+.huerta-frutos-cuenta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-2);
+}
+
+.huerta-frutos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-0);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.huerta-frutos > li {
+  width: calc(var(--espacio-3) + var(--espacio-0) / 2);
+  height: calc(var(--espacio-3) + var(--espacio-0) / 2);
+  border: 2px solid var(--color-fruto-hondo);
+  border-radius: var(--radio-pastilla);
+  background: var(--color-fruto);
+}
+
+/* La raíz tendida: desde 56 em, los cinco pasos en un renglón, cada uno con su texto. */
+@media (min-width: 56em) {
+  .huerta-raiz-pasos[data-forma~="tendida"] {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--espacio-3);
+  }
+
+  .huerta-raiz-pasos[data-forma~="tendida"] > li {
+    --medida-raiz-izquierda: calc(var(--medida-raiz-columna) / 2);
+    --medida-raiz-derecha: calc(-1 * var(--espacio-3) - var(--medida-raiz-columna) / 2);
+    --medida-raiz-arriba: var(--espacio-1);
+    --medida-raiz-abajo: auto;
+    --medida-raiz-ancho: auto;
+    --medida-raiz-alto: var(--medida-raiz-tramo);
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    padding-bottom: 0;
+  }
+
+  .huerta-raiz-pasos[data-forma~="tendida"] .huerta-raiz-nudo {
+    justify-self: start;
+  }
+
+  .huerta-raiz-pasos[data-forma~="tendida"] > li::before {
+    border-inline: 0;
+    border-block: 2px solid var(--color-tinta);
+  }
+
+  .huerta-raiz-pasos[data-forma~="tendida"] > li:is([data-paso="actual"], [data-paso="falta"], [data-paso="problema"])::before {
+    top: calc(var(--espacio-1) + var(--medida-raiz-tramo) / 2 - 1.5px);
+    left: var(--medida-raiz-izquierda);
+    width: auto;
+    height: 0;
+    border-block: 0;
+    border-left: 0;
+    border-top: 3px dotted var(--color-borde-control);
+  }
+
+  .huerta-raiz-pasos[data-forma~="tendida"] [data-eje="alto"] {
+    display: none;
+  }
+
+  .huerta-raiz-pasos[data-forma~="tendida"] .huerta-raiz-trazo [data-eje="ancho"] {
+    display: inline;
+  }
 }
 
 /* --- Con más lugar --------------------------------------------------------------------------------- */
@@ -1498,5 +1773,19 @@
 
   .huerta-planta:nth-child(even) .huerta-marco-abeja {
     animation-delay: var(--movimiento-retraso-trazo);
+  }
+
+  /* La raíz recién llegada (C1-20): el último tramo se dibuja una vez y después asoma el nudo al que
+     llega. El fruto nuevo brota desde nada (C1-21). */
+  .huerta-raiz-trazo path {
+    animation: var(--movimiento-animacion-traza-raiz);
+  }
+
+  .huerta-raiz-pasos > li:has(> .huerta-raiz-trazo) + li > .huerta-raiz-nudo {
+    animation: var(--movimiento-animacion-asoma);
+  }
+
+  .huerta-frutos[data-recien] > li:last-child {
+    animation: var(--movimiento-animacion-brote);
   }
 }

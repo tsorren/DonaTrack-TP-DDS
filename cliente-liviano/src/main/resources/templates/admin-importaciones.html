@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<!--/* Importaciones de donantes del admin (R11-20), según su ficha de flujo
-       (docs/interfaz/flujos/r11-p1-importaciones.md, sección 4.1). Es una pestaña de la sección
-       Donantes (Pantallas la marca así): arriba, las pestañas Donantes · Importaciones; después, el
-       título con "Importar CSV", cuántas siguen en curso (un número de la fuente) y cuándo se leyeron
-       las cifras, con "Actualizar"; la búsqueda por nombre del archivo y los filtros (Subida, de
-       ?desde= a ?hasta=, Estado y Ordenar) en el componente listado; y la lista, de a 20, con el
-       paginador provisorio.
+<!--/* Importaciones de donantes del admin (R11-20), la pestaña de la sección Donantes: deriva del
+       arquetipo A03 de la guía «Huerta y galpón» (docs/interfaz/guia/partes/50-pantallas.html,
+       #bandeja; ADM2-03), en el galpón, hecha con las piezas del catálogo
+       (docs/interfaz/componentes.md). Arriba, la cabecera del galpón: el título, cuántas siguen en
+       curso (un número de la fuente) y cuándo se leyeron las cifras, e «Importar CSV» (la única acción
+       llena); debajo, las pestañas Donantes · Importaciones (.segmentos). Después, la ayuda plegada
+       (componente plegable, como Actividad); la búsqueda por nombre del archivo y los
+       filtros (Subida, de ?desde= a ?hasta=, Estado y Ordenar) en el componente listado, con «Ver solo las que están en curso» y «Actualizar
+       las cifras»; y la lista, de a 20, en la tabla del catálogo, con el paginador (componentes/paginas).
        La lista llega ya buscada, filtrada y ordenada (adminImportaciones.importaciones, un
-       vistas.Tramo): la plantilla no filtra ni cuenta. Cada renglón lleva a su avance o a su
-       resultado; el que no leyó ninguna fila dice por qué y no lleva a ningún lado. Las importaciones
-       viejas, sin nombre ni fecha guardados, lo dicen.
+       vistas.Tramo): la plantilla no filtra ni cuenta. Cada fila lleva a su avance o a su resultado desde el nombre del archivo;
+       la que no leyó ninguna fila dice por qué y no lleva a ningún lado. Las importaciones viejas, sin
+       nombre ni fecha guardados, lo dicen.
        Lo que la dirección pidió y no se entendió (adminImportaciones.consulta.avisos) se avisa arriba
-       de la lista; ese filtro no se aplica.
+       de la lista con el aviso en la página (.aviso data-tipo="advertencia"); ese filtro no se aplica.
        En la maqueta, ?escenario=vacia, sin-resultados y con-viejas.
        Fragmentos:
        - pestanas(actual): la fila de pestañas de Donantes; actual es 'donantes' o 'importaciones'. */-->
@@ -28,25 +30,36 @@
              n=${tramo.total},
              filtrado=${c.filtrada()},
              vacia=${n == 0 and !filtrado}">
-  <div class="mesa">
-    <nav th:replace="~{admin-importaciones :: pestanas('importaciones')}"></nav>
+  <div class="pila" data-espacio="4" data-pantalla="importaciones">
+    <div class="pila" data-espacio="3">
+      <header class="racimo" data-alinea="entre arriba">
+        <div class="pila" data-espacio="0">
+          <h1>Importaciones de donantes</h1>
+          <p th:unless="${vacia}" class="texto-chico" data-tono="suave">
+            <th:block th:if="${datos.enCurso > 0}"
+                      th:text="${datos.enCurso == 1} ? '1 importación en curso.' : |${#numbers.formatInteger(datos.enCurso, 1, 'POINT')} importaciones en curso.|">1
+              importación en curso.</th:block>
+            <th:block th:text="|Cifras leídas el ${datos.al}.|">Cifras leídas el 12 de noviembre de 2026, 18:34.</th:block>
+          </p>
+        </div>
+        <div class="racimo" data-espacio="1">
+          <a class="boton" data-tono="principal" data-tamano="chico" href="/admin-donantes?importar=abrir#importar"
+             th:href="@{/admin-donantes(importar='abrir')} + '#importar'">Importar CSV</a>
+        </div>
+      </header>
+      <nav th:replace="~{admin-importaciones :: pestanas('importaciones')}"></nav>
+    </div>
 
-    <header class="mesa-cabecera">
-      <div>
-        <p class="rotulo">Donantes</p>
-        <h1>Importaciones de donantes</h1>
-      </div>
-      <div class="racimo">
-        <a class="boton" data-tono="principal" href="/admin-donantes?importar=abrir#importar"
-           th:href="@{/admin-donantes(importar='abrir')} + '#importar'">Importar CSV</a>
-      </div>
-    </header>
-
-    <details>
-      <summary class="boton" data-tono="secundario">¿Qué muestra esta lista?</summary>
-      <p>Acá están todos los archivos de donantes que se importaron, los que siguen importándose y los
-        que no terminaron. Abrí uno para ver su avance o sus filas con error. Para seguir una
+    <!--/* La ayuda, plegada en el componente plegable del catálogo; Actividad (la otra sección con
+           pestañas) la arma igual. */-->
+    <details class="plegable">
+      <summary><span class="plegable-titulo"><b>¿Qué muestra esta lista?</b></span><span
+          class="plegable-ver">Ver la ayuda</span></summary>
+      <div class="plegable-cuerpo">
+        <p>Acá están todos los archivos de donantes que se importaron, los que siguen importándose y
+        los que no terminaron. Abrí uno para ver su avance o sus filas con error. Para seguir una
         importación en vivo, abrí su avance: esta lista no se actualiza sola.</p>
+      </div>
     </details>
 
     <section th:if="${vacia}" class="vacio" aria-labelledby="vacio-titulo">
@@ -57,19 +70,6 @@
     </section>
 
     <section th:unless="${vacia}" class="pila" data-espacio="3" aria-labelledby="lista-titulo">
-      <div class="pila" data-espacio="1">
-        <p th:if="${datos.enCurso > 0}">
-          <span th:text="${datos.enCurso == 1} ? '1 importación en curso.' : |${#numbers.formatInteger(datos.enCurso, 1, 'POINT')} importaciones en curso.|">1
-            importación en curso.</span>
-          <a href="/admin-importaciones?estado=en-curso" th:href="@{/admin-importaciones(estado='en-curso')}"
-             hx-boost="true">Ver solo las que están en curso</a>
-        </p>
-        <p class="texto-chico">
-          <span th:text="|Cifras leídas el ${datos.al}.|">Cifras leídas el 12 de noviembre de 2026, 18:34.</span>
-          <a href="/admin-importaciones" th:href="${actualizar}" hx-boost="true">Actualizar</a>
-        </p>
-      </div>
-
       <h2 id="lista-titulo" tabindex="-1" class="solo-lectores"
           th:autofocus="${paginador != null and paginador.cambio}">Todas las importaciones</h2>
 
@@ -77,13 +77,23 @@
              AdminImportacionesController). Enviarlo no lleva ?pagina=: vuelve a la primera. */-->
       <form th:replace="~{componentes/listado :: listado(${listado})}"></form>
 
-      <p th:each="aviso : ${c.avisos}" class="aviso-breve" role="status" th:text="${aviso}">No
-        entendimos la fecha pedida: te mostramos todas las fechas.</p>
+      <p class="racimo" data-espacio="3">
+        <a th:if="${datos.enCurso > 0}" href="/admin-importaciones?estado=en-curso"
+           th:href="@{/admin-importaciones(estado='en-curso')}" hx-boost="true">Ver solo las que están
+          en curso</a>
+        <a href="/admin-importaciones" th:href="${actualizar}" hx-boost="true">Actualizar las cifras</a>
+      </p>
 
-      <div class="racimo" aria-live="polite">
-        <p th:if="${n > 0}" th:text="${n == 1} ? 'Coincide 1 importación.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} importaciones.|">Coinciden
-          23 importaciones.</p>
+      <!--/* Lo que la dirección pidió y no se entendió: el aviso en la página; ese filtro no se aplica. */-->
+      <div th:each="aviso : ${c.avisos}" class="aviso" data-tipo="advertencia" role="status">
+        <svg th:replace="~{componentes/sello :: signo('atencion')}"></svg>
+        <p class="aviso-titulo" th:text="${aviso}">No entendimos la fecha pedida: te mostramos todas las fechas.</p>
       </div>
+
+      <!--/* Cuántas coinciden, solo con algo buscado o elegido (como Donantes y Donaciones); cuántas se
+             ven, debajo de la tabla. */-->
+      <p th:if="${filtrado and n > 0}" role="status" th:text="${n == 1} ? 'Coincide 1 importación.' : |Coinciden ${#numbers.formatInteger(n, 1, 'POINT')} importaciones.|">Coinciden
+        3 importaciones.</p>
 
       <section th:if="${n == 0}" class="vacio" aria-labelledby="sin-titulo">
         <h3 id="sin-titulo">Ninguna importación coincide con la búsqueda y los filtros elegidos.</h3>
@@ -101,13 +111,17 @@
             <th scope="col">Subido</th>
             <th scope="col">Estado</th>
             <th scope="col">Filas</th>
-            <th scope="col"><span class="solo-lectores">Qué se puede hacer</span></th>
           </tr>
         </thead>
         <tbody>
           <tr th:each="f : ${tramo.filas}"
               th:with="nombre=${f.archivo != null ? f.archivo : 'Archivo sin nombre guardado'}">
-            <th scope="row" th:text="${nombre}">donantes-octubre.csv</th>
+            <!--/* El enlace al avance o al resultado va en el título de la fila, como en la .tabla
+                   del catálogo y en Donaciones (ADM1); su nombre dice cuál de los dos abre. */-->
+            <th scope="row"><a th:if="${f.enlace != null}" th:href="@{${f.enlace}}"
+                href="/admin-donantes-importado" th:aria-label="|${f.accion} de ${nombre}|"
+                th:text="${nombre}">donantes-octubre.csv</a><th:block th:if="${f.enlace == null}"
+                th:text="${nombre}">prueba.csv</th:block></th>
             <td data-rotulo="Subido">
               <time th:if="${f.subido != null}" th:datetime="${f.subidoIso}" th:text="${f.subido}"
                     datetime="2026-10-15T18:02:00">15 oct 2026, 18:02</time>
@@ -120,16 +134,14 @@
               <th:block th:if="${f.filas == null and f.detalle == null}">—</th:block>
               <th:block th:if="${f.detalle != null}" th:text="${f.detalle}">El archivo no se pudo leer.</th:block>
             </td>
-            <td data-rotulo="">
-              <a th:if="${f.enlace != null}" class="boton" data-tono="secundario"
-                 th:href="@{${f.enlace}}" href="/admin-donantes-importado"
-                 th:aria-label="|${f.accion} de ${nombre}|"
-                 th:text="|${f.accion} ›|">Ver el resultado ›</a>
-            </td>
           </tr>
         </tbody>
       </table>
-      <nav th:replace="~{paginador :: paginador(${paginador})}"></nav>
+      <p th:if="${n > 0}" class="texto-chico" data-tono="suave"
+         th:with="desde=${(tramo.pagina - 1) * 20 + 1}, hasta=${desde + #lists.size(tramo.filas) - 1}"
+         th:text="${n == 1} ? 'Mostrando 1 a 1 de 1 importación.' : |Mostrando ${desde} a ${hasta} de ${#numbers.formatInteger(n, 1, 'POINT')} importaciones.|">Mostrando
+        1 a 20 de 23 importaciones.</p>
+      <nav th:replace="~{componentes/paginas :: paginas(${paginador})}"></nav>
     </section>
   </div>
 </th:block>

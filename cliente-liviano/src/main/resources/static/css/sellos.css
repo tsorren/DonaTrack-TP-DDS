@@ -35,7 +35,7 @@
 
 .dibujo-rotulo--papel {
   fill: var(--color-tinta);
-  stroke: var(--color-papel);
+  stroke: var(--color-fondo-pagina);
   text-anchor: start;
 }
 
@@ -81,7 +81,7 @@
   height: 1.75rem;
   /* Redondeado, como el resto de las cajas (ronda del 2026-11-09, regla general 4). */
   border-radius: var(--radio-boton);
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
   color: var(--color-tinta);
   fill: var(--color-tinta);
 }

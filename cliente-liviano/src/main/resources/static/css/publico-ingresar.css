@@ -1,113 +1,36 @@
-/* Raíces, sitio A: Ingresar (publico-ingresar.html). El formulario en su lámina y, al lado (abajo, en
-   el celular), las cuentas de ejemplo de la maqueta: etiquetas de herbario en la tierra, con el sello
-   de cada rol, dentro de un marco punteado, porque no son del sistema. */
+/* Ingresar (PUB1-06), Recuperar la contraseña y Activar la cuenta (PUB2-01 a 03): derivan de A12 de
+   la guía «Huerta y galpón». Son la columna del formulario con piezas del catálogo (campo, aviso,
+   banner, botón y tarjeta; docs/interfaz/componentes.md): esta hoja solo la dispone. */
 @import url("publico-registro.css");
 
-.cuenta--ingresar {
-  align-items: start;
+/* --- Ingresar: la columna del formulario (A12) -------------------------------------------------- */
+main > .pila {
+  max-width: var(--medida-formulario);
 }
 
-.cuenta-principal {
-  display: grid;
-  gap: 1.5rem;
-}
-
-.cuenta-principal .banner {
-  margin: 0;
-}
-
-/* "o", entre los dos modos de ingresar. */
-.separador {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 0;
-  color: var(--color-tinta-suave);
-}
-
-.separador::before,
-.separador::after {
-  content: "";
+/* La contraseña ocupa el renglón y "Mostrar" queda a su lado. */
+main .campo > .racimo > input {
   flex: 1;
-  border-top: 1px solid var(--color-tinta-suave);
 }
 
-.ejemplos {
-  display: grid;
-  gap: 0.75rem;
-  padding: 1.75rem 1.5rem;
-  border-radius: var(--radio-lamina);
-  outline: 2px dashed var(--color-filete);
-  outline-offset: -0.625rem;
-  background: var(--color-acento-claro);
-  color: var(--color-tinta);
+/* "¿Olvidaste tu contraseña?", un enlace suelto debajo del campo, con su lugar para el dedo. */
+main .campo > a {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: var(--medida-toque-minimo);
 }
 
-.ejemplos h2 {
-  margin: 0;
-  color: var(--color-tinta);
+/* Las cuentas de ejemplo: la lámina punteada, con su relleno, y cada cuenta, una lámina que es un
+   enlace, con su lugar para el dedo. */
+main > .pila > .tarjeta {
+  --espacio-relleno: var(--espacio-4);
 }
 
-.ejemplos p {
-  margin: 0;
-}
+main > .pila > .tarjeta a.tarjeta {
+  --espacio-relleno: var(--espacio-3);
 
-.ejemplos-lista {
-  display: grid;
-  gap: 1rem;
-  margin: 0.5rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.ejemplos-lista a {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
   min-height: var(--medida-toque-minimo);
-  padding: 0.625rem 0.875rem;
-  border-radius: var(--radio-lamina);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-papel);
-  color: var(--color-tinta);
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.ejemplos-lista a:hover {
-  background: var(--color-acento-claro);
-}
-
-.ejemplos-lista a:active {
-  box-shadow: none;
-  translate: 0.3rem 0.3rem;
-}
-
-.ejemplos :focus-visible {
-  outline-color: var(--color-acento);
-}
-
-/* El sello de cada rol: un disco paja con su inicial. */
-.ejemplo-inicial {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 2.25rem;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--color-raiz);
-  box-shadow: 0.15rem 0.15rem 0 var(--color-hoja);
-  font: 900 1rem/1 var(--fuente-titulo);
-  font-stretch: 120%;
-}
-
-@media (min-width: 53.75em) {
-  .cuenta--ingresar {
-    grid-template-columns: minmax(0, 38rem) minmax(0, 24rem);
-    gap: 3rem;
-  }
-
-  .ejemplos {
-    margin-top: 9rem;
-  }
 }

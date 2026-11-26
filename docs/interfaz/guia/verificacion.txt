@@ -1,0 +1,262 @@
+Capturas en <carpeta temporal de la sesión>/fase3/capturas
+== Comprobación del Artifact «Guía de estilo y pantallas» ==
+
+1. Desplazamiento horizontal de la página, por vista y ancho
+  320 px: inicio ok, guia ok, portada ok, necesidades ok, necesidades-despues ok, bandeja ok, inicio-donante ok, donaciones ok, detalle-asignada ok, seguimiento ok, detalle-problema ok, inicio-organizacion ok, inicio-organizacion-despues ok, entregas ok, entregas-despues ok, entrega-problema ok, entrega-problema-despues ok, confirmar ok, confirmar-error ok, confirmada ok
+  360 px: inicio ok, guia ok, portada ok, necesidades ok, necesidades-despues ok, bandeja ok, inicio-donante ok, donaciones ok, detalle-asignada ok, seguimiento ok, detalle-problema ok, inicio-organizacion ok, inicio-organizacion-despues ok, entregas ok, entregas-despues ok, entrega-problema ok, entrega-problema-despues ok, confirmar ok, confirmar-error ok, confirmada ok
+  1280 px: inicio ok, guia ok, portada ok, necesidades ok, necesidades-despues ok, bandeja ok, inicio-donante ok, donaciones ok, detalle-asignada ok, seguimiento ok, detalle-problema ok, inicio-organizacion ok, inicio-organizacion-despues ok, entregas ok, entregas-despues ok, entrega-problema ok, entrega-problema-despues ok, confirmar ok, confirmar-error ok, confirmada ok
+  1920 px: inicio ok, guia ok, portada ok, necesidades ok, necesidades-despues ok, bandeja ok, inicio-donante ok, donaciones ok, detalle-asignada ok, seguimiento ok, detalle-problema ok, inicio-organizacion ok, inicio-organizacion-despues ok, entregas ok, entregas-despues ok, entrega-problema ok, entrega-problema-despues ok, confirmar ok, confirmar-error ok, confirmada ok
+
+2. Cada pantalla en su marco: desborde, toque de 48 px, acción llena, primera pantalla del celular, renglones
+  portada a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  portada a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; título termina a 295 px y la acción llena a 499 px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  portada a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 26 y 67 caracteres por renglón; texto corrido (3 o más renglones): entre 64 y 67
+  portada a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  necesidades a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  necesidades a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; título termina a 121 px y la acción llena a 504 px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  necesidades a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 66 y 70 caracteres por renglón; sin párrafos de 3 o más renglones
+  necesidades a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  necesidades-despues a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  necesidades-despues a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; título termina a 121 px y la acción llena a null px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  necesidades-despues a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 66 y 70 caracteres por renglón; texto corrido (3 o más renglones): entre 70 y 70
+  necesidades-despues a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  bandeja a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  bandeja a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; título termina a 107 px y la acción llena a 447 px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  bandeja a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 73 y 73 caracteres por renglón; sin párrafos de 3 o más renglones
+  bandeja a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  inicio-donante a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  inicio-donante a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; título termina a 141 px y la acción llena a 532 px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  inicio-donante a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 38 y 73 caracteres por renglón; texto corrido (3 o más renglones): entre 69 y 73
+  inicio-donante a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  donaciones a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  donaciones a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; título termina a 121 px y la acción llena a null px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  donaciones a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 70 y 71 caracteres por renglón; texto corrido (3 o más renglones): entre 71 y 71
+  donaciones a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  detalle-asignada a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 1
+  detalle-asignada a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 1; título termina a 210 px y la acción llena a null px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  detalle-asignada a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 1; párrafos de 2 o más renglones: entre 47 y 71 caracteres por renglón; sin párrafos de 3 o más renglones
+  detalle-asignada a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 1
+  seguimiento a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 1
+  seguimiento a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 1; título termina a 210 px y la acción llena a null px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  seguimiento a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 1; párrafos de 2 o más renglones: entre 47 y 67 caracteres por renglón; sin párrafos de 3 o más renglones
+  seguimiento a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 1
+  detalle-problema a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 1
+  detalle-problema a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 1; título termina a 210 px y la acción llena a null px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  detalle-problema a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 1; párrafos de 2 o más renglones: entre 48 y 70 caracteres por renglón; sin párrafos de 3 o más renglones
+  detalle-problema a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 1
+  inicio-organizacion a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  inicio-organizacion a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; título termina a 141 px y la acción llena a 507 px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  inicio-organizacion a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 70 y 74 caracteres por renglón; texto corrido (3 o más renglones): entre 70 y 70
+  inicio-organizacion a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  inicio-organizacion-despues a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  inicio-organizacion-despues a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; título termina a 141 px y la acción llena a null px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  inicio-organizacion-despues a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 70 y 74 caracteres por renglón; sin párrafos de 3 o más renglones
+  inicio-organizacion-despues a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  entregas a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  entregas a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; título termina a 121 px y la acción llena a 452 px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  entregas a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 64 y 73 caracteres por renglón; sin párrafos de 3 o más renglones
+  entregas a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  entregas-despues a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  entregas-despues a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; título termina a 121 px y la acción llena a null px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  entregas-despues a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 64 y 73 caracteres por renglón; sin párrafos de 3 o más renglones
+  entregas-despues a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  entrega-problema a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  entrega-problema a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; título termina a 210 px y la acción llena a null px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  entrega-problema a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 50 y 72 caracteres por renglón; sin párrafos de 3 o más renglones
+  entrega-problema a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  entrega-problema-despues a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  entrega-problema-despues a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; título termina a 210 px y la acción llena a null px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  entrega-problema-despues a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 50 y 72 caracteres por renglón; sin párrafos de 3 o más renglones
+  entrega-problema-despues a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  confirmar a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  confirmar a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; título termina a 210 px y la acción llena a 1294 px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  confirmar a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 63 y 72 caracteres por renglón; texto corrido (3 o más renglones): entre 63 y 63
+  confirmar a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  confirmar-error a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  confirmar-error a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; título termina a 210 px y la acción llena a 1647 px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  confirmar-error a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 63 y 72 caracteres por renglón; texto corrido (3 o más renglones): entre 63 y 63
+  confirmar-error a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 1; enlaces en oración exceptuados: 0
+  confirmada a 320: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+  confirmada a 360: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; título termina a 210 px y la acción llena a null px; en un celular de 640 px de alto el menú fijo empieza a los 576 px
+  confirmada a 1280: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0; párrafos de 2 o más renglones: entre 38 y 71 caracteres por renglón; sin párrafos de 3 o más renglones
+  confirmada a 1920: desborde no; controles menores a 48: ninguno; acciones llenas: 0; enlaces en oración exceptuados: 0
+
+2b. Muestras de la guía: controles de menos de 48 px y signos de más de 24 px
+  guía a 360: 125 controles medidos; menores a 48: ninguno; signos grandes: 0
+  guía a 1280: 129 controles medidos; menores a 48: ninguno; signos grandes: 0
+
+3. Detalles gráficos por pantalla (atributo data-d)
+  portada (huerta): D1×4, D2×2, D3×4, D4×1, D5×1, D7×1
+  necesidades (huerta): D1×2, D2×1, D7×1
+  bandeja (galpon): D1×3
+  inicio-donante (huerta): D1×5, D2×2, D3×2, D4×1, D7×1
+  donaciones (huerta): D1×6, D2×6
+  detalle-asignada (huerta): D1×1, D2×1, D3×1
+  seguimiento (huerta): D1×1, D2×2, D3×1
+  detalle-problema (huerta): D1×1, D2×1, D3×1
+  inicio-organizacion (huerta): D1×2, D2×1, D4×1, D7×1
+  entregas (huerta): D1×7, D3×5, D4×1, D7×1
+  entrega-problema (huerta): D1×1, D2×1, D3×1
+  confirmar (huerta): ninguno
+  confirmada (huerta): D1×1, D2×2, D3×1, D4×1, D7×1
+  Frutos en la ilustración: 9; frutos al pie: 9; cifra del mes: 9
+  La puerta en inicio-organizacion: 4 frutos en el árbol, 4 al pie y la cifra dice 4; bultos en la puerta: 1; tramo lleno hasta el quinto nudo: no; sombra de paja: sí; acciones llenas: 1
+  La puerta en inicio-organizacion-despues: 5 frutos en el árbol, 5 al pie y la cifra dice 5; bultos en la puerta: 0; tramo lleno hasta el quinto nudo: sí; sombra de paja: no; acciones llenas: 0
+  La puerta en confirmada: 5 frutos en el árbol, 5 al pie y la cifra dice 5; bultos en la puerta: 0; tramo lleno hasta el quinto nudo: sí; sombra de paja: sí; acciones llenas: 0
+  Donaciones: 6 filas, 6 raíces, 6 sellos y 6 enlaces al detalle; celdas sin rótulo: 0; pestañas: 6, 3, 1, 2; nudos «no pudo llegar» con signo: 1; acciones llenas: 0; encabezados con scope: 10
+  Donaciones a 360: cada fila se dibuja como «grid»; el rótulo de la primera celda es "Para" / ""; la cabecera mide 1 px de alto; celdas escondidas: 0; celdas con texto cortado: 0
+  Donaciones a 1280: cada fila se dibuja como «table-row»; el rótulo de la primera celda es none; la cabecera mide 38 px de alto; celdas escondidas: 0; celdas con texto cortado: 0
+  Donación con problema: avisos 1; láminas protagonistas 0; acciones llenas 0; mapas 0; pasos de la raíz: hecho,hecho,hecho,problema,falta; el nudo del problema lleva signo: sí
+  Entregas en entregas (estado «puerta»): 4 frutos, la cifra dice 4 y hay 4 etiquetas con 4 fotos distintas; láminas protagonistas: 1; acciones llenas: 1; por llegar: Aceite de girasol, 20 litros | Leche en polvo, 6 unidades
+  Entregas en entregas-despues (estado «despues»): 5 frutos, la cifra dice 5 y hay 5 etiquetas con 5 fotos distintas; láminas protagonistas: 0; acciones llenas: 0; por llegar: Aceite de girasol, 20 litros | Leche en polvo, 6 unidades
+  Qué entrega muestra cada foto de ejemplo, en las trece pantallas:
+    #escena-latas: Leche en polvo, 12 unidades · 14 de octubre
+    #escena-puerta: Lentejas secas, 10 kg · 10 de octubre / formulario · 
+    #escena-ropa: Ropa de abrigo, 12 prendas · 9 de octubre
+    #escena-estante: Fideos secos, 8 kg · 5 de octubre
+    #escena-bolsas: Lentejas secas, 15 kg · 15 de octubre / formulario · 
+    #escena-cajon: Arroz, 15 kg · 3 de octubre
+    #escena-caja-latas: Leche en polvo, 12 unidades · 2 de octubre
+  Donación asignada: sello «Asignada»; avisos 0; láminas protagonistas 0; acciones llenas 0; mapas 0; pasos de la raíz: hecho,actual,falta,falta,falta, los 5 con su texto: sí; la necesidad: 12 de 24 · «Llegaron 12 de 24 unidades. Tus 6 están asignadas. Quedan 6 sin asignar.»; horas que nombra: 16:25 12:15 16:25 09:20 12:15
+  Entrega con problema en entrega-problema (estado «puerta»): avisos 1; láminas protagonistas 0; acciones llenas 0; mapas 0; formas de contacto 0; pasos de la raíz: hecho,hecho,hecho,problema,falta; el nudo del problema lleva signo: sí; 6 enlaces de vuelta a la vista en escritorio (la marca, tres secciones, las migas y «Volver a Entregas»), 0 a otra hora
+  Entrega con problema en entrega-problema-despues (estado «despues»): avisos 1; láminas protagonistas 0; acciones llenas 0; mapas 0; formas de contacto 0; pasos de la raíz: hecho,hecho,hecho,problema,falta; el nudo del problema lleva signo: sí; 6 enlaces de vuelta a la vista en escritorio (la marca, tres secciones, las migas y «Volver a Entregas»), 0 a otra hora
+  Entrega con problema: el texto de las dos horas es el mismo salvo la hora: sí
+  Necesidades en necesidades (estado «puerta»): láminas protagonistas 1; acciones llenas 1; chapas «Espera tu confirmación» 2; sellos 2; tarjetas 4; lentejas: 10 de 40 kg · «Cada mes, hasta el 31 de octubre · Llegaron 10 de 40 kg. 15 kg esperan tu confirmación.»; pestaña elegida a la vista: 1
+  Necesidades en necesidades-despues (estado «despues»): láminas protagonistas 0; acciones llenas 0; chapas «Espera tu confirmación» 0; sellos 2; tarjetas 4; lentejas: 25 de 40 kg · «Cada mes, hasta el 31 de octubre · Llegaron 25 de 40 kg: 15 los confirmaste hoy a las 18:45. Faltan 15 kg. Sin entregas en curso.»; pestaña elegida a la vista: 1
+  donaciones a 360: 2512 px de alto, que son 3,9 pantallas de 640 px
+  detalle-problema a 360: 1895 px de alto, que son 3,0 pantallas de 640 px
+  entregas a 360: 2921 px de alto, que son 4,6 pantallas de 640 px
+  entregas-despues a 360: 2854 px de alto, que son 4,5 pantallas de 640 px
+  entregas-despues a 360, con la etiqueta común, que se apila: 3763 px de alto, que son 5,9 pantallas de 640 px
+  detalle-asignada a 360: 2082 px de alto, que son 3,3 pantallas de 640 px
+  entrega-problema a 360: 2124 px de alto, que son 3,3 pantallas de 640 px
+  necesidades a 360: 2176 px de alto, que son 3,4 pantallas de 640 px
+  necesidades-despues a 360: 1746 px de alto, que son 2,7 pantallas de 640 px
+  Inicio de quien dona: 2 frutos y la cifra dice 2
+
+4. Contraste, calculado desde los tokens
+  12.90 (piso 4,5 a 1) pasa: Texto sobre el papel [--color-texto / --color-fondo-pagina]
+  13.85 (piso 4,5 a 1) pasa: Texto sobre una lámina [--color-texto / --color-superficie]
+  6.04 (piso 4,5 a 1) pasa: Texto suave sobre el papel [--color-texto-suave / --color-fondo-pagina]
+  6.49 (piso 4,5 a 1) pasa: Texto suave sobre una lámina [--color-texto-suave / --color-superficie]
+  5.26 (piso 4,5 a 1) pasa: Texto suave sobre la nota de tierra [--color-texto-suave / --color-pendiente-fondo]
+  5.64 (piso 4,5 a 1) pasa: Texto suave sobre una fila elegida [--color-texto-suave / --color-fila-elegida]
+  12.04 (piso 4,5 a 1) pasa: Texto sobre una fila u opción elegida [--color-texto / --color-salvia]
+  6.74 (piso 4,5 a 1) pasa: Enlace sobre el papel [--color-enlace / --color-fondo-pagina]
+  7.23 (piso 4,5 a 1) pasa: Enlace sobre una lámina [--color-enlace / --color-superficie]
+  5.41 (piso 4,5 a 1) pasa: Botón lleno [--color-texto-sobre-accion / --color-accion-primaria]
+  6.74 (piso 4,5 a 1) pasa: Botón lleno, con el cursor [--color-texto-sobre-accion / --color-accion-primaria-activa]
+  12.04 (piso 4,5 a 1) pasa: Botón secundario, con el cursor [--color-texto-sobre-secundaria / --color-accion-secundaria-activa]
+  7.02 (piso 4,5 a 1) pasa: Sello: Registrada, Asignada y Preparada [--color-pendiente-texto / --color-pendiente-fondo]
+  5.95 (piso 4,5 a 1) pasa: Sello: En camino [--color-en-camino-texto / --color-en-camino-fondo]
+  6.52 (piso 4,5 a 1) pasa: Sello: Entrega confirmada [--color-entregada-texto / --color-entregada-fondo]
+  5.43 (piso 4,5 a 1) pasa: Sello: Con problema [--color-problema-texto / --color-problema-fondo]
+  10.87 (piso 4,5 a 1) pasa: Chapa «Espera tu confirmación» [--color-espera-texto / --color-espera-fondo]
+  6.90 (piso 4,5 a 1) pasa: Error junto a un campo [--color-error-texto / --color-fondo-pagina]
+  5.43 (piso 4,5 a 1) pasa: Título de un aviso de error [--color-error-texto / --color-error-fondo]
+  10.87 (piso 4,5 a 1) pasa: Texto sobre la tierra: pie, cajón y menú [--color-texto-suelo / --color-suelo]
+  11.80 (piso 4,5 a 1) pasa: Menú del cajón, con el cursor [--color-texto-suelo / --color-suelo-medio]
+  6.71 (piso 3 a 1) pasa: Borde de un campo [--color-borde-control / --color-campo]
+  7.66 (piso 3 a 1) pasa: Borde de un campo con error [--color-error-borde / --color-campo]
+  12.90 (piso 3 a 1) pasa: Aro de foco sobre el papel [--color-foco / --color-fondo-pagina]
+  7.65 (piso 3 a 1) pasa: Aro de foco sobre la tierra [--color-foco-sobre-suelo / --color-suelo]
+  6.00 (piso 3 a 1) pasa: Avance de una necesidad [--color-accion-primaria / --color-campo]
+  5.41 (piso 3 a 1) pasa: Borde del botón lleno sobre el papel [--color-accion-primaria / --color-fondo-pagina]
+  9.08 (piso 3 a 1) pasa: Nudo de la raíz: contorno [--color-tinta / --color-raiz]
+  6.90 (piso 3 a 1) pasa: Nudo de un paso que no pudo ser: contorno [--color-problema-texto / --color-fondo-pagina]
+  5.26 (piso No aplica) pasa: Deshabilitado (sin piso: WCAG lo exceptúa) [--color-deshabilitado-texto / --color-deshabilitado-fondo]
+  2.01 (piso No aplica) pasa: Borde del sello «En camino» (sin piso: el estado lo dicen el texto y el signo) [--color-en-camino-sello / --color-fondo-pagina]
+
+5. Letras: Archivo cargada true, DM Sans cargada true; un título mide 243 px a 62 % de ancho y 441 px a 122 %
+
+6. Foco con Tab: visible y no tapado por lo fijo
+  portada a 360: 16 paradas; todas con aro y a la vista
+  necesidades a 360: 17 paradas; todas con aro y a la vista
+  necesidades-despues a 360: 16 paradas; todas con aro y a la vista
+  bandeja a 360: 20 paradas; todas con aro y a la vista
+  inicio-donante a 360: 15 paradas; todas con aro y a la vista
+  donaciones a 360: 19 paradas; todas con aro y a la vista
+  detalle-asignada a 360: 11 paradas; todas con aro y a la vista
+  seguimiento a 360: 10 paradas; todas con aro y a la vista
+  detalle-problema a 360: 11 paradas; todas con aro y a la vista
+  inicio-organizacion a 360: 18 paradas; todas con aro y a la vista
+  inicio-organizacion-despues a 360: 18 paradas; todas con aro y a la vista
+  entregas a 360: 16 paradas; todas con aro y a la vista
+  entregas-despues a 360: 16 paradas; todas con aro y a la vista
+  entrega-problema a 360: 10 paradas; todas con aro y a la vista
+  entrega-problema-despues a 360: 10 paradas; todas con aro y a la vista
+  confirmar a 360: 15 paradas; todas con aro y a la vista
+  confirmar-error a 360: 17 paradas; todas con aro y a la vista
+  confirmada a 360: 11 paradas; todas con aro y a la vista
+  portada a 1280: 16 paradas; todas con aro y a la vista
+  necesidades a 1280: 17 paradas; todas con aro y a la vista
+  necesidades-despues a 1280: 16 paradas; todas con aro y a la vista
+  bandeja a 1280: 22 paradas; todas con aro y a la vista
+  inicio-donante a 1280: 15 paradas; todas con aro y a la vista
+  donaciones a 1280: 19 paradas; todas con aro y a la vista
+  detalle-asignada a 1280: 11 paradas; todas con aro y a la vista
+  seguimiento a 1280: 10 paradas; todas con aro y a la vista
+  detalle-problema a 1280: 11 paradas; todas con aro y a la vista
+  inicio-organizacion a 1280: 18 paradas; todas con aro y a la vista
+  inicio-organizacion-despues a 1280: 18 paradas; todas con aro y a la vista
+  entregas a 1280: 16 paradas; todas con aro y a la vista
+  entregas-despues a 1280: 16 paradas; todas con aro y a la vista
+  entrega-problema a 1280: 10 paradas; todas con aro y a la vista
+  entrega-problema-despues a 1280: 10 paradas; todas con aro y a la vista
+  confirmar a 1280: 15 paradas; todas con aro y a la vista
+  confirmar-error a 1280: 17 paradas; todas con aro y a la vista
+  confirmada a 1280: 11 paradas; todas con aro y a la vista
+  En total: 534 paradas
+
+7. Sin JavaScript
+  #(sin ancla): #inicio se ve; #guia no se ve
+  #necesidades: #necesidades se ve; #inicio no se ve
+  #inicio-donante: #inicio-donante se ve; #inicio no se ve
+  #donaciones: #donaciones se ve; #inicio no se ve
+  #detalle-problema: #detalle-problema se ve; #inicio no se ve
+  #detalle-asignada: #detalle-asignada se ve; #inicio no se ve
+  #entrega-problema: #entrega-problema se ve; #inicio no se ve
+  #entregas: #entregas se ve; #inicio no se ve
+  #inicio-organizacion: #inicio-organizacion se ve; #inicio no se ve
+  #confirmada: #confirmada se ve; #inicio no se ve
+  #g-botones: #guia se ve; #inicio no se ve
+  #confirmar-error: #confirmar-resumen se ve; #inicio no se ve
+  #confirmar: el resumen de errores no se ve
+  #inicio-organizacion: «Confirmar recepción» se ve; lo del otro estado no se ve
+  #inicio-organizacion-despues: «Ver lo que quedó asentado» se ve; lo del otro estado no se ve
+  #entregas: «Confirmar recepción» se ve; lo del otro estado no se ve
+  #entregas-despues: «Ver lo que quedó asentado» se ve; lo del otro estado no se ve
+  #necesidades: la lámina de la entrega por confirmar se ve; lo del otro estado no se ve
+  #necesidades-despues: la necesidad de lentejas en 25 de 40 kg se ve; lo del otro estado no se ve
+  #entrega-problema: las migas a Entregas de las 18:30 se ve; lo del otro estado no se ve
+  #entrega-problema-despues: las migas a Entregas de las 18:50 se ve; lo del otro estado no se ve
+  #necesidades: Entregas lleva a #entregas
+  #necesidades-despues: Entregas lleva a #entregas-despues
+  #inicio-organizacion: Entregas lleva a #entregas
+  #inicio-organizacion-despues: Entregas lleva a #entregas-despues
+  #confirmar: Entregas lleva a #entregas
+  #confirmada: Entregas lleva a #entregas-despues
+  #inicio-organizacion: Necesidades lleva a #necesidades
+  #inicio-organizacion-despues: Necesidades lleva a #necesidades-despues
+  #entregas: Necesidades lleva a #necesidades
+  #entregas-despues: Necesidades lleva a #necesidades-despues
+  #entrega-problema: Necesidades lleva a #necesidades
+  #entrega-problema-despues: Necesidades lleva a #necesidades-despues
+  #confirmar: Necesidades lleva a #necesidades
+  #confirmada: Necesidades lleva a #necesidades-despues
+  #necesidades-despues: Inicio lleva a #inicio-organizacion-despues
+  #entrega-problema-despues: Inicio lleva a #inicio-organizacion-despues
+  #inicio-organizacion: el aviso del aceite lleva a #entrega-problema
+  #inicio-organizacion-despues: el aviso del aceite lleva a #entrega-problema-despues
+  #entregas: «Ver el detalle» del aceite lleva a #entrega-problema
+  #entregas-despues: «Ver el detalle» del aceite lleva a #entrega-problema-despues
+
+8. Movimiento reducido: el giro del botón es «none» y el latido del esqueleto es «none». Tema oscuro: la lámina queda en rgb(23, 24, 20); el producto sigue en rgb(251, 242, 211), con color-scheme «light» y campos en rgb(255, 254, 250)
+   El trazo de Recepción confirmada: desde el formulario (queda en #confirmada) las animaciones son «dt-trazo», «dt-asoma» y «dt-brota»; por su enlace, «none»; desde el formulario con movimiento reducido, «none», «none» y «none»
+
+9. El producto se dibuja solo con sus tokens: estilos calculados dentro de .dt, con y sin la hoja de la lámina, en tema claro y oscuro
+  tema claro: 1991 elementos de las trece pantallas, 127 títulos, enlaces y controles de las muestras de la guía y 309 aros de foco; distintos con y sin la hoja de la lámina: 0
+  tema oscuro: 1991 elementos de las trece pantallas, 127 títulos, enlaces y controles de las muestras de la guía y 309 aros de foco; distintos con y sin la hoja de la lámina: 0
+  entre tema claro y oscuro: de 3203 elementos del producto (pantallas y muestras), cambian 0
+
+Resultado: sin fallas

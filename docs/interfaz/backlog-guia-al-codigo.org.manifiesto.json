@@ -1,0 +1,238 @@
+{
+  "formato": "oleada-ui/1",
+  "version": "1.0.0",
+  "nombre": "guia",
+  "fecha": "2026-11-23",
+  "backlog": "docs/interfaz/backlog-guia-al-codigo.md",
+  "prefijoCommit": "E7: guía al código",
+  "comoLeerlo": "Manifiesto de la ola ORG: las 18 plantillas de la organización y el buzón, que es una pieza compartida con quien dona y el admin. Los ítems, con su arquetipo, están en la sección 11 del backlog; las decisiones del usuario, con su texto y su fecha, en la sección 2.2; el arquetipo de cada plantilla, en la sección 5; los huecos de backend y su texto de reemplazo, en la sección 7. Son 6 lotes en 2 tandas, con el reparto que aprobó el usuario el 2026-11-23. La tanda 2 cambia rutas (DA-02) y el menú, y por eso va después de las pantallas que no las cambian. Solo org-buzon lleva ficha: docs/interfaz/flujos/guia-org-buzon.md, aprobada el 2026-11-23. En rutasVisuales va una ruta por plantilla (DA-20). La regla 5 es solo para el cierre: esta ola sí levanta el stack, porque toca EntidadConfirmarRest (DA-20). DA-19 y DA-20 son decisiones del plan y no de un lote: están en la sección 2.2 del backlog y no en 'decisiones'.",
+  "ramas": {
+    "base": "E7_guia_ui",
+    "destino": "E7_guia_ui",
+    "prefijoOla": "E7_guia_ui_"
+  },
+  "topes": {
+    "constructoresEnParalelo": 4,
+    "rondasDeReparacion": 3
+  },
+  "modelos": {
+    "juicio": {
+      "model": "opus",
+      "effort": "medium"
+    },
+    "mecanico": {
+      "model": "sonnet",
+      "effort": "high"
+    }
+  },
+  "olas": [
+    "ORG"
+  ],
+  "reglas": [
+    "Cada pantalla se rehace con su arquetipo de la guía (docs/interfaz/guia/partes/50-pantallas.html, el ancla de la sección 4 del backlog) y con las piezas que C1 dejó en el catálogo (docs/interfaz/componentes.md y /estilos): no se copia el marcado ni las clases de la guía, se usan los fragmentos y las clases del catálogo. Una plantilla que «deriva» sigue la composición de su arquetipo. Si una pantalla necesita una pieza que el catálogo no tiene, es un bloqueante del lote y se informa: no se crea una pieza nueva dentro de una hoja de pantalla. Cada lote termina la migración de las hojas heredadas de sus pantallas: lo que la pieza del catálogo ya resuelve sale de la hoja de la pantalla, y una hoja que queda vacía se borra con su import.",
+    "Los cercos no se mueven: ningún tope de InterfazFitnessTest cambia (ni sube ni baja), la lista de clases heredadas no crece (si un lote deja sin uso una clase heredada, borra su línea de cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt y lo anota), tokens.css no se toca y nadie edita un test de cliente-liviano/src/test/java/grupo5/cliente/visual/ ni le suma una excepción. La lista LISTAS de InterfazFitnessTest no es un tope: si un lote borra una plantilla que nombra, la reemplaza por la que la sucede. Los tests funcionales que afirman una ruta, un texto o un menú que esta ola cambia por una decisión del usuario (DA-02, DA-05, DA-06) se actualizan al comportamiento nuevo, con aserciones igual de fuertes; ninguno se borra ni se debilita.",
+    "El alcance es la organización y el buzón. Los menús de quien dona, el admin, la persona y el público no cambian (DA-17). Una pantalla que no es de la ola no se rediseña ni se arregla, aunque se vea inconsistente con las nuevas: quien construye y quien revisa la anotan como menor, nunca como bloqueante. La excepción es el buzón de quien dona y del admin, que cambia con su pieza y entra en la revisión. Un dato que el backend no entrega (HG-01, HG-03 y HG-04) se muestra con el texto de «Si no llega» de la sección 7 del backlog; no se inventa ni se escribe en la plantilla un dato de la guía.",
+    "Algunos archivos los tocan varios lotes: cliente-liviano/src/main/java/grupo5/cliente/web/EntidadEnviosController.java y su test EntidadEnviosControllerTest.java (cada lote, solo los métodos y los tests de sus rutas), cliente-liviano/src/test/resources/verificacion/paginas.txt (cada lote, solo las líneas de sus rutas), templates/estilos.html y docs/interfaz/componentes.md (solo org-buzon, en la ficha y la fila del buzón). templates/piezas-entidad.html, static/css/entidad-comun.css, static/css/donante-perfil.css y static/css/donante-seguimiento.css no se editan en esta ola: también los usan el admin o quien dona; una pantalla que deja de usarlos solo saca su uso o su import. Si al integrar chocan dos lotes en líneas vecinas, se conservan los dos cambios.",
+    "Solo para quien cierra la ola; no es criterio de revisión de ningún lote. (1) Levantá el stack, corré el seed y hacé el recorrido con login (pasos 2, 3 y 5 del cierre): ORG toca el adaptador EntidadConfirmarRest (decisión DA-20; backlog, sección 2.2). En el recorrido, con la cuenta de la organización: inicio, necesidades, entregas, confirmar una recepción con foto y el buzón; con la de quien dona y la del admin, solo el buzón. (2) Después de los gates corré una vez -Pvisual sobre las rutas del área, no sobre las 320: la pasada completa es de C1 y de Z (DA-20, puntos 1 y 4). Las rutas son las líneas de cliente-liviano/src/test/resources/verificacion/paginas.txt que empiezan con /entidad-, /donante-notificaciones o /admin-notificaciones, sin la barra inicial y separadas por comas: rm -rf cliente-liviano/target/capturas; R=$(grep -E '^/(entidad-|donante-notificaciones|admin-notificaciones)' cliente-liviano/src/test/resources/verificacion/paginas.txt | sed 's#^/##' | paste -sd, -); MSYS2_ARG_CONV_EXCL='-Dverificacion' mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false -Dverificacion.paginas=\"$R\". Compará con la línea de base de la sección 10.4 del backlog: una ruta que falle y esté en esa lista no es bloqueante; una que falle y no esté, sí, con el lote que la rompe. Si una ruta de la lista ahora pasa, anotalo. (3) Corré los otros tests visuales (mvn test -pl cliente-liviano -Pvisual -Dtest=ArmazonFijoTest,MenusQueSeCierranTest,BajoTierraRotulosTest,AbejasYRenglonesTest,DonanteDetallesTest -Dsurefire.failIfNoSpecifiedTests=false) y compará con la línea de base de la sección 10.5: un fallo que ya estaba se anota; uno nuevo es bloqueante del lote que tocó eso y se arregla la pantalla, nunca el test. (4) En cierre.md: cuántas rutas pasan y cuáles no, la hora de cada commit de la ola (git log) y las rondas de revisión de cada lote."
+  ],
+  "decisiones": [
+    {
+      "id": "DA-08",
+      "texto": "El buzón, que no tiene arquetipo, se construye con una ficha aprobada por el usuario: docs/interfaz/flujos/guia-org-buzon.md (aprobada el 2026-11-23, con «Novedades» en los tres roles, sin leer sin fondo y el buzón del admin en esta ola).",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-08); aprobación de la ficha, 2026-11-23 (su encabezado)",
+      "lote": "org-buzon",
+      "criterio": "En las capturas a 360 y 1280 px de /entidad-notificaciones, /donante-notificaciones y /admin-notificaciones, el título de la pantalla dice «Novedades» (la organización puede decir «Tus novedades»); cada fila sin leer tiene el punto lleno y el título en negrita, cada fila leída el punto hueco y el título sin negrita, y ninguna fila tiene un fondo propio por estar sin leer. Las tres pantallas usan templates/componentes/buzon.html."
+    },
+    {
+      "id": "DA-21",
+      "texto": "La casilla de cada fila del buzón y la de elegir todas llegan a 48 × 48 px con el control nativo transparente encima de la casilla dibujada, como la opción de C1-12; el test no cambia.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-21)",
+      "lote": "org-buzon",
+      "criterio": "El gate visual del lote, sobre sus rutasVisuales (entre ellas /entidad-notificaciones, /donante-notificaciones y /admin-notificaciones), no reporta ninguna falla de toque, y git diff E7_guia_ui..HEAD no toca ningún archivo de cliente-liviano/src/test/java/grupo5/cliente/visual/."
+    },
+    {
+      "id": "DA-06",
+      "texto": "Solo confirmar una recepción tiene página propia de respuesta; publicar, cambiar o dar de baja una necesidad y guardar el perfil responden con el aviso breve de la guía en la pantalla de origen.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-06)",
+      "lote": "org-necesidades",
+      "criterio": "Un POST a /entidad-necesidades-publicada, /entidad-necesidades-cambiada y /entidad-necesidades-baja termina en /entidad-necesidades con un aviso breve (la pieza de aviso breve del catálogo) que dice cómo salió, y lo comprueba un test de EntidadEnviosControllerTest por cada uno. Ninguna ruta de cliente-liviano/src/test/resources/verificacion/paginas.txt responde 404."
+    },
+    {
+      "id": "DA-06-perfil",
+      "texto": "La parte de DA-06 que es del perfil: guardar el perfil responde con el aviso breve en el perfil, sin página de respuesta propia.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-06)",
+      "lote": "org-perfil",
+      "criterio": "Un POST a /entidad-perfil-guardado termina en /entidad-perfil, en la sección guardada, con el aviso breve del catálogo, y lo comprueba un test de EntidadEnviosControllerTest. En la maqueta, /entidad-perfil-guardado?seccion=datos muestra el perfil con ese aviso breve."
+    },
+    {
+      "id": "DA-02",
+      "texto": "«Donaciones recibidas» y «Seguir entregas» se funden en una sola pantalla, Entregas.",
+      "quien": "usuario",
+      "ok": "Ronda 2 de decisiones, 2026-11-22 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-02)",
+      "lote": "org-entregas",
+      "criterio": "La entrada «Entregas» del menú de la organización lleva a /entidad-seguimiento, que muestra las entregas por llegar y las recibidas con componentes/listado. Un GET a /entidad-recibidas, con o sin filtros, redirige a /entidad-seguimiento conservando la consulta, y lo comprueba un test. Los vínculos del buzón de la organización dicen «Ver en Entregas» y llevan a /entidad-seguimiento."
+    },
+    {
+      "id": "DA-05",
+      "texto": "«Ayuda» de la organización es la página de hoy Para organizaciones (/publico-para-entidades), con otro nombre.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-05)",
+      "lote": "org-entregas",
+      "criterio": "El menú de la organización tiene, en este orden, Inicio, Necesidades, Entregas y Ayuda; Ayuda lleva a /publico-para-entidades. SitioControllerTest lo afirma, y templates/publico-para-entidades.html no cambia."
+    },
+    {
+      "id": "DA-17",
+      "texto": "El menú de cada rol cambia en la ola de ese rol: en ORG cambia solo el de la organización.",
+      "quien": "usuario",
+      "ok": "Ronda 3 de decisiones, 2026-11-22 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-17)",
+      "lote": "org-entregas",
+      "criterio": "git diff E7_guia_ui..HEAD de cliente-liviano/src/main/java/grupo5/cliente/web/Pantallas.java cambia solo el menú de la organización; templates/navegacion-publica.html y cliente-liviano/src/main/java/grupo5/cliente/maqueta/CuentaDeEjemplo.java no cambian."
+    }
+  ],
+  "lotes": [
+    {
+      "id": "org-buzon",
+      "ola": "ORG",
+      "tanda": 1,
+      "items": [
+        "ORG-01",
+        "ORG-02"
+      ],
+      "titulo": "El buzón de novedades de los tres roles, con la guía",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ficha",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/resources/: templates/componentes/buzon.html; static/css/componentes/buzon.css; templates/entidad-notificaciones.html y entidad-notificaciones-leidas.html; templates/donante-notificaciones.html y donante-notificaciones-leidas.html; templates/persona/donante-notificaciones.html y persona/donante-notificaciones-leidas.html; templates/admin-notificaciones.html y admin-notificaciones-leidas.html (el título y el uso del buzón; nada más de la pantalla del admin); static/css/entidad-notificaciones.css (la migración); templates/estilos.html (solo la ficha del buzón). Además: docs/interfaz/componentes.md (solo la fila del buzón); en cliente-liviano/src/test/resources/verificacion/paginas.txt, las dos rutas de la persona (/donante-notificaciones?cuenta=persona y /donante-notificaciones-leidas?cuenta=persona), que hoy no están; en EntidadEnviosController.java, solo el método de /entidad-notificaciones-leidas, si hace falta; y los tests de esas pantallas.",
+      "rutasVisuales": [
+        "entidad-notificaciones",
+        "entidad-notificaciones-leidas",
+        "donante-notificaciones",
+        "donante-notificaciones-leidas",
+        "donante-notificaciones?cuenta=persona",
+        "donante-notificaciones-leidas?cuenta=persona",
+        "admin-notificaciones",
+        "admin-notificaciones-leidas"
+      ],
+      "que": "El buzón sigue su ficha aprobada (docs/interfaz/flujos/guia-org-buzon.md), que manda sobre este resumen: la fila de la campana de la guía (punto lleno o hueco, negrita solo sin leer, sin fondo de estado), sobre la lámina, con la barra de componentes/listado de hoy, el paginador, los estados de lista y el aviso breve del catálogo, y «Novedades» como título en los tres roles. La casilla de cada fila y la de elegir todas llegan a 48 × 48 px con el control nativo transparente encima de la casilla dibujada (DA-21), como la opción de C1-12. Los dos fragmentos (:: buzon, que hoy solo usa la bandeja de la persona de la maqueta, y :: pagina) cambian juntos y conservan sus firmas y los campos boton, que y nota de cada aviso. El vínculo «Ver en Entregas» de la organización lo cambia org-entregas, que cambia la ruta."
+    },
+    {
+      "id": "org-inicio",
+      "ola": "ORG",
+      "tanda": 1,
+      "items": [
+        "ORG-03"
+      ],
+      "titulo": "El inicio de la organización",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/entidad-inicio.html; resources/static/css/entidad-inicio.css (la migración); java/grupo5/cliente/web/EntidadInicioController.java y lo que arma su vista, si la pantalla lo pide; y los tests de esa pantalla (EntidadInicioControllerTest, EntidadInicioEnPuertaControllerTest).",
+      "rutasVisuales": [
+        "entidad-inicio"
+      ],
+      "que": "El inicio de la organización es el arquetipo A09 (#inicio-organizacion), con sus dos estados, que decide el servidor: con una entrega en la puerta, lo primero es confirmarla; sin ella, lo que viene. El avance de cada necesidad usa la pieza de avance del catálogo con la cuenta de donaciones de hoy (HG-04, «Si no llega» de la sección 7 del backlog). Los vínculos a Donaciones recibidas quedan como están: org-entregas los cambia en la tanda 2."
+    },
+    {
+      "id": "org-necesidades",
+      "ola": "ORG",
+      "tanda": 1,
+      "items": [
+        "ORG-04",
+        "ORG-05"
+      ],
+      "titulo": "Necesidades y sus respuestas como aviso breve",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/entidad-necesidades.html, entidad-necesidades-publicar-error.html, entidad-necesidades-publicada.html, entidad-necesidades-cambiada.html y entidad-necesidades-baja.html; resources/static/css/entidad-necesidades.css (la migración); java/grupo5/cliente/web/EntidadNecesidadesController.java; en java/grupo5/cliente/web/EntidadEnviosController.java, solo los métodos de /entidad-necesidades-publicada, -cambiada y -baja; las líneas de esas rutas en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas (EntidadNecesidadesControllerTest, EntidadEnviosControllerTest, NecesidadesConIngresoTest).",
+      "rutasVisuales": [
+        "entidad-necesidades",
+        "entidad-necesidades-publicar-error"
+      ],
+      "que": "Necesidades es el arquetipo A02 (#necesidades), con sus dos estados; el error al publicar deriva de A12 (el error es un estado del formulario). Publicar, cambiar y dar de baja una necesidad terminan en Necesidades con el aviso breve del catálogo, que dice cómo salió (DA-06): En la maqueta, las rutas /entidad-necesidades-publicada, -cambiada y -baja siguen existiendo y sus plantillas siguen siendo el envoltorio que delega en entidad-necesidades :: hoja(...): muestran Necesidades con el aviso breve, con los mismos textos de hoy («Publicamos tu necesidad.» y los otros dos), porque VerificacionVisualTest.publicarOtraNecesidadVaEnTresPasos espera esa dirección y ese texto y no se edita. No se borra ninguna plantilla ni ninguna ruta."
+    },
+    {
+      "id": "org-perfil",
+      "ola": "ORG",
+      "tanda": 1,
+      "items": [
+        "ORG-06"
+      ],
+      "titulo": "El perfil de la organización",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/entidad-perfil.html y entidad-perfil-guardado.html; java/grupo5/cliente/web/EntidadPerfilController.java; en java/grupo5/cliente/web/EntidadEnviosController.java, solo el método de /entidad-perfil-guardado; las líneas de esas rutas en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas (EntidadPerfilControllerTest, EntidadEnviosControllerTest).",
+      "rutasVisuales": [
+        "entidad-perfil"
+      ],
+      "que": "El perfil deriva de A12: un formulario por sección, con los campos, los errores y los botones del catálogo. Guardar termina en el perfil, en la sección guardada, con el aviso breve del catálogo (DA-06); en la maqueta, /entidad-perfil-guardado sigue existiendo como el envoltorio que delega en entidad-perfil :: hoja(true) y muestra el perfil con el aviso breve. No se borra ninguna plantilla ni ninguna ruta."
+    },
+    {
+      "id": "org-entregas",
+      "ola": "ORG",
+      "tanda": 2,
+      "items": [
+        "ORG-07",
+        "ORG-08",
+        "ORG-09"
+      ],
+      "titulo": "Entregas, la entrega con problema y el menú de la organización",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/entidad-seguimiento.html, entidad-recibidas.html y entidad-entrega-problema.html (nueva); resources/static/css/entidad-seguimiento.css y entidad-recibidas.css (la migración; una hoja que queda vacía se borra); java/grupo5/cliente/web/EntidadSeguimientoController.java, RecibidasController.java y Pantallas.java (solo el menú de la organización); java/grupo5/cliente/rest/EntidadNotificacionesRest.java y java/grupo5/cliente/maqueta/EntidadNotificacionesMaqueta.java (solo los vínculos a Entregas); la maqueta de la entrega con problema (en java/grupo5/cliente/maqueta/: la clase que hoy arma las entregas de la organización o una nueva); los vínculos a /entidad-recibidas en entidad-inicio.html y entidad-necesidades.html; las líneas de esas rutas en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas y del menú (SitioControllerTest, RecibidasControllerTest, EntidadSeguimientoControllerTest, ListadoEnLaMaquetaTest, EntidadNotificacionesRestTest, NombresVisiblesTest, SitioConApisTest, CuentaDelTokenTest); en InterfazFitnessTest, solo la línea de LISTAS que nombra entidad-recibidas.html, que pasa a entidad-seguimiento.html si no está (regla 2).",
+      "rutasVisuales": [
+        "entidad-seguimiento",
+        "entidad-entrega-problema"
+      ],
+      "que": "Entregas es el arquetipo A10 (#entregas), con sus dos estados: funde Donaciones recibidas y Seguir entregas en /entidad-seguimiento (DA-02), con componentes/listado; /entidad-recibidas redirige ahí conservando la consulta y su plantilla se borra, y ningún vínculo del sitio sigue apuntando a la ruta vieja. La entrega que no pudo llegar tiene su página nueva, /entidad-entrega-problema, que es el arquetipo A11 (#entrega-problema); la nueva salida dice «Todavía sin fecha de nueva salida» (HG-01). El menú de la organización queda en Inicio, Necesidades, Entregas y Ayuda (DA-02, DA-05): Ayuda lleva a /publico-para-entidades, que no se toca. Los menús de los otros roles no cambian (DA-17)."
+    },
+    {
+      "id": "org-confirmar",
+      "ola": "ORG",
+      "tanda": 2,
+      "items": [
+        "ORG-10",
+        "ORG-11",
+        "ORG-12"
+      ],
+      "titulo": "Confirmar la recepción, el problema y la recepción confirmada",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/entidad-seguimiento-confirmar.html, entidad-seguimiento-confirmar-error.html, entidad-seguimiento-problema.html, entidad-seguimiento-sellada.html, entidad-seguimiento-sellada-lentejas.html y entidad-seguimiento-sellada-ropa.html; resources/static/css/entidad-seguimiento-confirmar.css y entidad-seguimiento-problema.css (la migración); java/grupo5/cliente/web/EntidadConfirmarController.java; en java/grupo5/cliente/web/EntidadEnviosController.java, solo el método de /entidad-seguimiento-sellada-{clave}; java/grupo5/cliente/rest/EntidadConfirmarRest.java; las líneas de esas rutas en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas y del adaptador.",
+      "rutasVisuales": [
+        "entidad-seguimiento-confirmar",
+        "entidad-seguimiento-confirmar-error",
+        "entidad-seguimiento-problema?entrega=lentejas",
+        "entidad-seguimiento-sellada",
+        "entidad-seguimiento-sellada-lentejas",
+        "entidad-seguimiento-sellada-ropa"
+      ],
+      "que": "Confirmar la recepción y su error son el arquetipo A12 (#confirmar); «llegó con un problema» deriva de A12. La recepción confirmada es el arquetipo A13 (#confirmada), la única respuesta con página propia (DA-06), con la etiqueta de la entrega del catálogo; quién recibió dice «Recibió: <la organización>» (HG-03). El adaptador real (EntidadConfirmarRest) arma la vista de una entrega con el remito, la foto y quién confirmó, con lo que Logística ya entrega; hoy esos campos van vacíos (backlog, sección 7). No se agrega ningún dato ni endpoint a Logística."
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<!--/* Raíces, Activar cuenta con el error de datos (la contraseña es corta), como lo devolvería el
-       servidor: el resumen arriba recibe el foco y enlaza al campo, que lleva aria-invalid. */-->
+<!--/* Activar cuenta con el error de datos (la contraseña es corta), como lo devolvería el servidor:
+       un estado del mismo formulario (publico-activar :: hoja(true, false)). El resumen arriba
+       recibe el foco y enlaza al campo, que queda marcado en su lugar con aria-invalid. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-ingresar', ~{::contenido})}">
 <head>
@@ -8,7 +9,7 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
-  <th:block th:replace="~{publico-activar :: hoja(true)}"></th:block>
+  <th:block th:replace="~{publico-activar :: hoja(true, false)}"></th:block>
 </th:block>
 </body>
 </html>

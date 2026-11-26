@@ -73,9 +73,9 @@ class RecibidasMaqueta implements RecibidasPuerto {
                   "10 litros",
                   ALMACEN,
                   "problema",
-                  "El camión no pudo llegar el 14 de octubre. Te avisamos la nueva fecha.",
+                  "El camión no pudo llegar el 14 de octubre.",
                   null,
-                  "te avisamos la nueva fecha"),
+                  "no pudo llegar el 14 de octubre"),
               espera(
                   ARROZ,
                   "Arroz",
@@ -94,12 +94,44 @@ class RecibidasMaqueta implements RecibidasPuerto {
                   "Asignada el 13 de octubre. Sale del depósito el 17 de octubre.",
                   null,
                   "sale el 17 de octubre"),
-              recibida("r10", LENTEJAS_SECAS, ALIMENTOS, "10 kg", ALMACEN, LENTEJAS, 10),
-              recibida("r9", "Arroz", ALIMENTOS, "5 kg", "Martina Ruiz", ARROZ, 9),
-              recibida("r8", ROPA_DE_ABRIGO, "cat-ropa", "5 unidades", SOSTENEDOR, ROPA, 8),
-              recibida("r6", LECHE_EN_POLVO, ALIMENTOS, "12 unidades", LACTEOS, LECHE, 6),
-              recibida("r5", "Fideos secos", ALIMENTOS, "8 kg", DISTRIBUIDORA, null, 5),
-              recibida("r2", "Arroz", ALIMENTOS, "10 kg", ALMACEN, ARROZ, 2)),
+              recibida(
+                  "r10",
+                  LENTEJAS_SECAS,
+                  ALIMENTOS,
+                  "10 kg",
+                  ALMACEN,
+                  LENTEJAS,
+                  10,
+                  "escena-puerta"),
+              recibida("r9", "Arroz", ALIMENTOS, "5 kg", "Martina Ruiz", ARROZ, 9, "escena-bolsas"),
+              recibida(
+                  "r8",
+                  ROPA_DE_ABRIGO,
+                  "cat-ropa",
+                  "5 unidades",
+                  SOSTENEDOR,
+                  ROPA,
+                  8,
+                  "escena-ropa"),
+              recibida(
+                  "r6",
+                  LECHE_EN_POLVO,
+                  ALIMENTOS,
+                  "12 unidades",
+                  LACTEOS,
+                  LECHE,
+                  6,
+                  "escena-caja-latas"),
+              recibida(
+                  "r5",
+                  "Fideos secos",
+                  ALIMENTOS,
+                  "8 kg",
+                  DISTRIBUIDORA,
+                  null,
+                  5,
+                  "escena-estante"),
+              recibida("r2", "Arroz", ALIMENTOS, "10 kg", ALMACEN, ARROZ, 2, "escena-cajon")),
           "octubre",
           "15 de octubre de 2026, 18:30",
           3);
@@ -191,7 +223,11 @@ class RecibidasMaqueta implements RecibidasPuerto {
         breve);
   }
 
-  /** Una recibida en octubre: el pedido se nombra como el bien, en minúsculas. */
+  /**
+   * Una recibida en octubre: el pedido se nombra como el bien, en minúsculas; {@code escena}, la de
+   * su foto de ejemplo (static/img/ilustraciones).
+   */
+  @SuppressWarnings("java:S107") // Los datos de una fila de ejemplo, en el orden en que se leen.
   private static Recibida recibida(
       String clave,
       String nombre,
@@ -199,7 +235,8 @@ class RecibidasMaqueta implements RecibidasPuerto {
       String cuanto,
       String dono,
       String pedido,
-      int dia) {
+      int dia,
+      String escena) {
     return new Recibida(
         clave,
         nombre,
@@ -214,6 +251,7 @@ class RecibidasMaqueta implements RecibidasPuerto {
         String.valueOf(dia),
         "2026-10-%02d".formatted(dia),
         null,
-        null);
+        null,
+        escena);
   }
 }

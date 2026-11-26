@@ -1,0 +1,330 @@
+{
+  "formato": "oleada-ui/1",
+  "version": "1.0.0",
+  "nombre": "guia",
+  "fecha": "2026-11-23",
+  "backlog": "docs/interfaz/backlog-guia-al-codigo.md",
+  "prefijoCommit": "E7: guía al código",
+  "comoLeerlo": "Manifiesto de la ola DON: las 19 plantillas de quien dona, 10 de la empresa y 9 de la persona (DA-13). Los ítems, con su arquetipo, están en la sección 12 del backlog; las decisiones del usuario, en las secciones 2.2 y 12.1; el arquetipo de cada plantilla, en la sección 5; los huecos de backend y su texto de reemplazo, en la sección 7. Son 7 lotes en 2 tandas, con el reparto que aprobó el usuario el 2026-11-23 («va asi»). La tanda 2 va después porque don-inicio-persona toca DonanteInicioController.java, DonanteInicioMaqueta.java y su test, que en la tanda 1 toca don-inicio, y don-misiones depende del menú nuevo de la persona. El buzón de quien dona ya cambió en ORG (ORG-01): acá solo sale su hoja heredada. Llevan ficha don-misiones (docs/interfaz/flujos/guia-don-misiones.md) y don-inicio-persona (docs/interfaz/flujos/guia-don-inicio-persona.md), aprobadas el 2026-11-23. En rutasVisuales va una ruta por plantilla (DA-20); en don-misiones van dos, porque las dos están en la línea de base de toque. La regla 5 es solo para el cierre: esta ola no levanta el stack, porque ningún lote toca un adaptador rest (DA-20). DA-19 y DA-20 son decisiones del plan y no de un lote. Requisito para lanzarla: el PR 1004 (ORG) mergeado en E7_guia_ui.",
+  "ramas": {
+    "base": "E7_guia_ui",
+    "destino": "E7_guia_ui",
+    "prefijoOla": "E7_guia_ui_"
+  },
+  "topes": {
+    "constructoresEnParalelo": 4,
+    "rondasDeReparacion": 3
+  },
+  "modelos": {
+    "juicio": {
+      "model": "opus",
+      "effort": "medium"
+    },
+    "mecanico": {
+      "model": "sonnet",
+      "effort": "high"
+    }
+  },
+  "olas": [
+    "DON"
+  ],
+  "reglas": [
+    "Cada pantalla se rehace con su arquetipo de la guía (docs/interfaz/guia/partes/50-pantallas.html, el ancla de la sección 4 del backlog) y con las piezas que C1 dejó en el catálogo (docs/interfaz/componentes.md y /estilos): no se copia el marcado ni las clases de la guía, se usan los fragmentos y las clases del catálogo. Una plantilla que «deriva» sigue la composición de su arquetipo. La plantilla de persona/ sigue a su gemela de la empresa (DA-13), salvo persona/donante-inicio, que sigue su ficha. Si una pantalla necesita una pieza que el catálogo no tiene, es un bloqueante del lote y se informa: no se crea una pieza nueva dentro de una hoja de pantalla. Cada lote termina la migración de las hojas heredadas de sus pantallas: lo que la pieza del catálogo ya resuelve sale de la hoja de la pantalla, y una hoja que queda vacía se borra con su import.",
+    "Los cercos no se mueven: ningún tope de InterfazFitnessTest cambia (ni sube ni baja), la lista de clases heredadas no crece (si un lote deja sin uso una clase heredada, borra su línea de cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt y lo anota), tokens.css no se toca y nadie edita un test de cliente-liviano/src/test/java/grupo5/cliente/visual/ ni le suma una excepción. Las listas LISTAS y HOJAS_HEREDADAS de InterfazFitnessTest no son topes: si un lote borra una plantilla o una hoja que nombran, la reemplaza por la que la sucede o saca su línea. Los tests funcionales que afirman una ruta, un texto o un menú que esta ola cambia por una decisión del usuario (DA-03a, DA-03b, DA-05, DA-06, DON-P1) se actualizan al comportamiento nuevo, con aserciones igual de fuertes; ninguno se borra ni se debilita.",
+    "El alcance es quien dona, la empresa y la persona. Los menús de la organización, el admin y el público no cambian (DA-17), ni las pantallas de ORG. Una pantalla que no es de la ola no se rediseña ni se arregla: quien construye y quien revisa la anotan como menor, nunca como bloqueante. Ningún lote cambia un adaptador de cliente-liviano/src/main/java/grupo5/cliente/rest/ ni un puerto: un dato que el adaptador real no entrega (HG-01, HG-02, HG-03 y HG-04) se muestra con el texto de «Si no llega» de la sección 7 del backlog, y lo demás que falte se anota como deuda del lote; no se inventa ni se escribe en la plantilla un dato de la guía. Los datos de ejemplo nuevos van en las clases de cliente-liviano/src/main/java/grupo5/cliente/maqueta/.",
+    "Algunos archivos los tocan varios lotes: templates/datos-donante.html y templates/viaje-datos.html (cada lote, solo los fragmentos que usan sus pantallas; un fragmento que usan pantallas de dos lotes conserva su firma), cliente-liviano/src/test/resources/verificacion/paginas.txt (cada lote, solo las líneas de sus rutas), MisDonacionesController.java y MisDonacionesControllerTest.java (don-donaciones, el método y los tests de /donante-donaciones; don-detalle, los de /donante-donaciones-detalle), SitioControllerTest.java (cada lote, solo los tests de sus rutas y don-inicio los del menú), InterfazFitnessTest.java (cada lote, solo las líneas de HOJAS_HEREDADAS y LISTAS de sus hojas y plantillas) y cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt (cada lote, solo las líneas de las clases que deja sin uso) y static/css/donante-comun.css (cada lote, solo las reglas de sus pantallas; si queda vacía, se borra en el cierre con sus imports). templates/layout-privado.html lo toca solo don-misiones, en la línea de misiones-b.css. templates/componentes/ y static/css/componentes/ no se editan en esta ola: son del catálogo y las usa ORG. Si al integrar chocan dos lotes en líneas vecinas, se conservan los dos cambios.",
+    "Solo para quien cierra la ola; no es criterio de revisión de ningún lote. (1) No levantes el stack ni hagas el recorrido con login (pasos 2, 3 y 5 del cierre): ningún lote de DON toca un adaptador rest (decisión DA-20; backlog, sección 2.2). (2) Después de los gates corré una vez -Pvisual sobre las rutas del área, no sobre las 320: la pasada completa es de C1 y de Z (DA-20, puntos 1 y 4). Las rutas son las líneas de cliente-liviano/src/test/resources/verificacion/paginas.txt que empiezan con /donante-, sin la barra inicial y separadas por comas: rm -rf cliente-liviano/target/capturas; R=$(grep -E '^/donante-' cliente-liviano/src/test/resources/verificacion/paginas.txt | sed 's#^/##' | paste -sd, -); MSYS2_ARG_CONV_EXCL='-Dverificacion' mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false -Dverificacion.paginas=\"$R\". Compará con la línea de base de la sección 10.4 del backlog, sin las 3 rutas del buzón que ORG ya sacó (sección 11.3): una ruta que falle y esté en esa lista no es bloqueante, salvo /donante-misiones?cuenta=persona y su escenario vacio (DA-21-misiones) y /donante-seguimiento, que rehace don-detalle; una que falle y no esté, sí, con el lote que la rompe. Si una ruta de la lista ahora pasa, anotalo. (3) Corré los otros tests visuales (mvn test -pl cliente-liviano -Pvisual -Dtest=ArmazonFijoTest,MenusQueSeCierranTest,BajoTierraRotulosTest,AbejasYRenglonesTest,DonanteDetallesTest -Dsurefire.failIfNoSpecifiedTests=false) y compará con la línea de base de la sección 10.5: un fallo que ya estaba se anota; uno nuevo es bloqueante del lote que tocó eso y se arregla la pantalla, nunca el test. (4) En cierre.md: cuántas rutas pasan y cuáles no, la hora de cada commit de la ola (git log) y las rondas de revisión de cada lote."
+  ],
+  "decisiones": [
+    {
+      "id": "DA-03a",
+      "texto": "Seguimiento deja de ser una sección del menú de quien dona: el seguimiento de cada donación se abre desde su detalle.",
+      "quien": "usuario",
+      "ok": "Ronda 2 de decisiones, 2026-11-22 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-03a)",
+      "lote": "don-inicio",
+      "criterio": "Los menús de la empresa y de la persona no tienen la entrada Seguimiento, y un test del menú lo afirma; /donante-seguimiento sigue respondiendo 200 (sigue en paginas.txt)."
+    },
+    {
+      "id": "DA-03b",
+      "texto": "El menú de la persona es Inicio, Donaciones, Organizaciones, Misiones y Cómo donar; el de la empresa, Inicio, Donaciones, Organizaciones y Cómo donar.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-03b)",
+      "lote": "don-inicio",
+      "criterio": "En las capturas a 360 y 1280 px de /donante-inicio, el menú de la empresa tiene esas entradas en ese orden; MENU_PERSONA de Pantallas.java (login real) y conMisiones de CuentaDeEjemplo.java (maqueta) dan el mismo orden, y un test lo afirma para los dos."
+    },
+    {
+      "id": "DA-05-don",
+      "texto": "La parte de DA-05 que es de quien dona: «Cómo donar» es la página de hoy Para donantes (/publico-para-donantes), con otro nombre.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-05)",
+      "lote": "don-inicio",
+      "criterio": "La entrada «Cómo donar» del menú de quien dona lleva a /publico-para-donantes, un test lo afirma, y templates/publico-para-donantes.html no cambia (git diff E7_guia_ui..HEAD)."
+    },
+    {
+      "id": "DA-17",
+      "texto": "El menú de cada rol cambia en la ola de ese rol: en DON cambian solo los de quien dona.",
+      "quien": "usuario",
+      "ok": "Ronda 3 de decisiones, 2026-11-22 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-17)",
+      "lote": "don-inicio",
+      "criterio": "git diff E7_guia_ui..HEAD de cliente-liviano/src/main/java/grupo5/cliente/web/Pantallas.java cambia solo el menú de quien dona y el de la persona; templates/navegacion-publica.html no cambia."
+    },
+    {
+      "id": "DA-03a-detalle",
+      "texto": "La parte de DA-03a que es del detalle: el seguimiento de una donación se abre desde su detalle.",
+      "quien": "usuario",
+      "ok": "Ronda 2 de decisiones, 2026-11-22 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-03a)",
+      "lote": "don-detalle",
+      "criterio": "En /donante-donaciones-detalle de una donación en camino hay un enlace a su seguimiento (/donante-seguimiento con la donación), y un test lo afirma."
+    },
+    {
+      "id": "DA-03c",
+      "texto": "El inicio de la persona, que la guía no dibuja, deriva de A04: saludo, aviso de problema, «En camino ahora» y novedades, más la tarjeta de la huerta y sin lo que es solo de la empresa; con ficha.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-03c)",
+      "lote": "don-inicio-persona",
+      "criterio": "/donante-inicio?cuenta=persona usa la plantilla persona/donante-inicio.html y muestra el saludo, las 3 últimas novedades con «Ver todas» al buzón y la huerta (lámina o tarjeta, según DON-P3); no muestra la razón social ni «Ver las 6 en una tabla». DonanteInicioControllerTest lo afirma."
+    },
+    {
+      "id": "DA-13-don-donaciones",
+      "texto": "La parte de DA-13 de este lote: las plantillas de persona/ del lote se migran con su gemela de la empresa; borrarlas es otra decisión.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-13)",
+      "lote": "don-donaciones",
+      "criterio": "Cada plantilla de persona/ del lote existe al terminar, sigue la composición de su gemela de la empresa con las piezas del catálogo y su ruta con ?cuenta=persona está en paginas.txt y en las rutasVisuales del lote; git diff E7_guia_ui..HEAD no borra ninguna plantilla de persona/."
+    },
+    {
+      "id": "DA-13-don-detalle",
+      "texto": "La parte de DA-13 de este lote: las plantillas de persona/ del lote se migran con su gemela de la empresa; borrarlas es otra decisión.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-13)",
+      "lote": "don-detalle",
+      "criterio": "Cada plantilla de persona/ del lote existe al terminar, sigue la composición de su gemela de la empresa con las piezas del catálogo y su ruta con ?cuenta=persona está en paginas.txt y en las rutasVisuales del lote; git diff E7_guia_ui..HEAD no borra ninguna plantilla de persona/."
+    },
+    {
+      "id": "DA-13-don-organizaciones",
+      "texto": "La parte de DA-13 de este lote: las plantillas de persona/ del lote se migran con su gemela de la empresa; borrarlas es otra decisión.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-13)",
+      "lote": "don-organizaciones",
+      "criterio": "Cada plantilla de persona/ del lote existe al terminar, sigue la composición de su gemela de la empresa con las piezas del catálogo y su ruta con ?cuenta=persona está en paginas.txt y en las rutasVisuales del lote; git diff E7_guia_ui..HEAD no borra ninguna plantilla de persona/."
+    },
+    {
+      "id": "DA-13-don-perfil",
+      "texto": "La parte de DA-13 de este lote: las plantillas de persona/ del lote se migran con su gemela de la empresa; borrarlas es otra decisión.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-13)",
+      "lote": "don-perfil",
+      "criterio": "Cada plantilla de persona/ del lote existe al terminar, sigue la composición de su gemela de la empresa con las piezas del catálogo y su ruta con ?cuenta=persona está en paginas.txt y en las rutasVisuales del lote; git diff E7_guia_ui..HEAD no borra ninguna plantilla de persona/."
+    },
+    {
+      "id": "DA-06-perfil-don",
+      "texto": "La parte de DA-06 que es del perfil de quien dona: guardar responde con el aviso breve de la guía en el perfil, sin página de respuesta propia.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-06)",
+      "lote": "don-perfil",
+      "criterio": "Un POST a /donante-perfil-guardado termina en /donante-perfil con el aviso breve del catálogo, y lo comprueba DonantePerfilEnvioControllerTest. En la maqueta, /donante-perfil-guardado muestra el perfil con ese aviso breve. Ninguna ruta de paginas.txt responde 404."
+    },
+    {
+      "id": "DA-08-inicio-persona",
+      "texto": "El inicio de la persona se construye con su ficha aprobada, docs/interfaz/flujos/guia-don-inicio-persona.md: deriva de A04, con el aviso de problema y una sola lámina protagonista (DA-03c).",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-08); ficha aprobada el 2026-11-23 («va asi», su encabezado)",
+      "lote": "don-inicio-persona",
+      "criterio": "En las capturas a 360 y 1280 px de /donante-inicio?cuenta=persona hay una sola lámina protagonista y una sola acción llena; con una donación con problema, el aviso en la página va arriba de la lámina; «También en curso» y «Ya confirmadas» muestran sus filas con el sello, y cada entrega confirmada lleva un fruto. La cabecera no tiene botones «Mis donaciones» ni «Ver seguimiento»."
+    },
+    {
+      "id": "DON-P2",
+      "texto": "El almanaque se queda, chico: los 12 meses en una fila, con la cuenta de donaciones de cada mes y un fruto por entrega confirmada, debajo de «Ya confirmadas»; la lista mes por mes sale.",
+      "quien": "usuario",
+      "ok": "Ronda 5, 2026-11-23: «va asi», la recomendada (docs/interfaz/backlog-guia-al-codigo.md, sección 12.1, fila DON-P2)",
+      "lote": "don-inicio-persona",
+      "criterio": "En /donante-inicio?cuenta=persona el almanaque tiene 12 meses, ninguna planta por donación (los dibujos son frutos de entregas confirmadas) y no hay secciones mes por mes (ningún id mes-N); el mes sin donaciones no tiene marca de falta. DonanteInicioControllerTest lo afirma."
+    },
+    {
+      "id": "DON-P3",
+      "texto": "Sin ninguna donación en camino, la huerta ocupa la lámina protagonista con «Ver mi huerta» como acción llena; con una en camino, la huerta es una tarjeta chica con su acción secundaria.",
+      "quien": "usuario",
+      "ok": "Ronda 5, 2026-11-23: «va asi», la recomendada (docs/interfaz/backlog-guia-al-codigo.md, sección 12.1, fila DON-P3)",
+      "lote": "don-inicio-persona",
+      "criterio": "En /donante-inicio?cuenta=persona&escenario=vacio la lámina protagonista es la huerta y «Ver mi huerta» es la única acción llena; en /donante-inicio?cuenta=persona, con una en camino, la lámina es la donación en camino con «Seguir esta donación» llena y «Ver mi huerta» secundaria. Un test cubre los dos casos."
+    },
+    {
+      "id": "DA-08-misiones",
+      "texto": "Misiones se construye con su ficha aprobada, docs/interfaz/flujos/guia-don-misiones.md: la huerta con las piezas de la guía, una sola lámina protagonista y sin acción llena.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-08); ficha aprobada el 2026-11-23 («va asi», su encabezado)",
+      "lote": "don-misiones",
+      "criterio": "En las capturas a 360 y 1280 px de /donante-misiones?cuenta=persona la huerta va en la única lámina protagonista, el estado de cada misión va en palabras con el sello del catálogo, la que está en curso usa la pieza de avance con la cuenta en texto y no hay ninguna acción llena. static/css/variantes/misiones-b.css ya no se carga en la pantalla."
+    },
+    {
+      "id": "DON-P1",
+      "texto": "La prueba A/B se cierra con la huerta como la única Misiones: misiones-a (el álbum) y su hoja dejan de servirse y se borran.",
+      "quien": "usuario",
+      "ok": "Ronda 5, 2026-11-23: «va asi», la recomendada (docs/interfaz/backlog-guia-al-codigo.md, sección 12.1, fila DON-P1)",
+      "lote": "don-misiones",
+      "criterio": "templates/variantes/misiones-a.html y static/css/variantes/misiones-a.css no existen; /donante-misiones?cuenta=persona&variante=misiones-a muestra la misma pantalla que sin la variante; fuera de docs/, ningún archivo del repo nombra misiones-a."
+    },
+    {
+      "id": "DA-21-misiones",
+      "texto": "Cada lugar de la huerta de Misiones mide 48 × 48 px como mínimo, con el área de toque encima del dibujo (el patrón de C1-12 que DA-21 aplicó al buzón); el test no cambia.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-21); ficha de Misiones aprobada el 2026-11-23",
+      "lote": "don-misiones",
+      "criterio": "El gate visual del lote no reporta ninguna falla de toque en /donante-misiones?cuenta=persona ni en /donante-misiones?cuenta=persona&escenario=vacio (las dos estaban en la línea de base de la sección 10.4), y git diff E7_guia_ui..HEAD no toca ningún archivo de cliente-liviano/src/test/java/grupo5/cliente/visual/."
+    }
+  ],
+  "lotes": [
+    {
+      "id": "don-inicio",
+      "ola": "DON",
+      "tanda": 1,
+      "items": [
+        "DON-01",
+        "DON-02"
+      ],
+      "titulo": "El inicio de la empresa y los menús de quien dona",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/donante-inicio.html; resources/static/css/donante-inicio.css (la migración); java/grupo5/cliente/web/Pantallas.java (solo los menús de quien dona y de la persona) y java/grupo5/cliente/maqueta/CuentaDeEjemplo.java (solo el menú de la persona); en java/grupo5/cliente/web/DonanteInicioController.java, solo lo que pide la vista de la empresa; los datos de ejemplo de la empresa en java/grupo5/cliente/maqueta/DonanteInicioMaqueta.java, si la pantalla los pide; las líneas de /donante-inicio sin ?cuenta=persona en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esa pantalla y de los menús (DonanteInicioControllerTest, SitioControllerTest, PantallasTest, NombresVisiblesTest, SitioConApisTest y EstilosArmazonTest, que afirma el texto del menú).",
+      "rutasVisuales": [
+        "donante-inicio"
+      ],
+      "que": "El inicio de la empresa es el arquetipo A04 (#inicio-donante): el aviso de la donación con problema arriba, la lámina protagonista con la donación que viaja hoy (la raíz de 5 pasos y el mapa) y la única acción llena, «Seguir esta donación»; «También en curso» y «Ya confirmadas», con un fruto por entrega confirmada. La hora estimada no existe: «En camino desde las 14:30» (HG-02); quién recibió, «Recibió: <la organización>» (HG-03); la nueva salida, «Todavía sin fecha de nueva salida» (HG-01). Los menús de quien dona pasan a Inicio, Donaciones, Organizaciones y Cómo donar (a /publico-para-donantes), y el de la persona suma Misiones antes de Cómo donar (DA-03a, DA-03b, DA-05, DA-17). La persona no cambia en este lote: su inicio es de don-inicio-persona."
+    },
+    {
+      "id": "don-donaciones",
+      "ola": "DON",
+      "tanda": 1,
+      "items": [
+        "DON-03"
+      ],
+      "titulo": "Donaciones, de la empresa y de la persona",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/donante-donaciones.html y persona/donante-donaciones.html; resources/static/css/donante-donaciones.css (la migración); java/grupo5/cliente/web/MisDonacionesController.java, si la pantalla lo pide; las líneas de /donante-donaciones en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas (MisDonacionesControllerTest).",
+      "rutasVisuales": [
+        "donante-donaciones",
+        "donante-donaciones?cuenta=persona"
+      ],
+      "que": "Donaciones es el arquetipo A05 (#donaciones): la tabla que se apila del catálogo, con una raíz y un sello por fila, las pestañas con su cuenta y la barra de componentes/listado con sus filtros de hoy (estado, categoría, mes) y el paginador. El título dice «Donaciones». La versión de la persona sigue a la de la empresa (DA-13), con sus textos."
+    },
+    {
+      "id": "don-detalle",
+      "ola": "DON",
+      "tanda": 1,
+      "items": [
+        "DON-04",
+        "DON-05"
+      ],
+      "titulo": "El detalle de una donación y su seguimiento",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/donante-donaciones-detalle.html, persona/donante-donaciones-detalle.html, donante-seguimiento.html y persona/donante-seguimiento.html; resources/static/css/donante-donaciones-detalle.css y donante-seguimiento.css (la migración); java/grupo5/cliente/web/DonanteSeguimientoController.java y, en MisDonacionesController.java, solo el método del detalle, si las pantallas lo piden; en cliente-liviano/src/test/resources/verificacion/paginas.txt, las líneas de esas rutas y las de la persona (/donante-donaciones-detalle?cuenta=persona y /donante-seguimiento?cuenta=persona), que hoy no están; y los tests de esas pantallas (DonanteSeguimientoControllerTest, MisDonacionesControllerTest).",
+      "rutasVisuales": [
+        "donante-donaciones-detalle",
+        "donante-donaciones-detalle?cuenta=persona",
+        "donante-seguimiento",
+        "donante-seguimiento?cuenta=persona"
+      ],
+      "que": "El detalle es una sola plantilla con tres variantes según el estado: asignada, el arquetipo A06 (#detalle-asignada); en camino, A07 (#seguimiento); con problema, A08 (#detalle-problema), con «Todavía sin fecha de nueva salida» (HG-01). Seguimiento es el arquetipo A07 y deja de ser sección del menú (DA-03a): se llega desde el detalle de la donación, que tiene el enlace. La hora estimada no existe (HG-02). /donante-seguimiento está en la línea de base de toque (sección 10.4 del backlog): rehecha como A07, tiene que pasar el gate visual del lote. Las versiones de la persona siguen a las de la empresa (DA-13)."
+    },
+    {
+      "id": "don-organizaciones",
+      "ola": "DON",
+      "tanda": 1,
+      "items": [
+        "DON-06"
+      ],
+      "titulo": "Organizaciones, para la empresa y para la persona",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/donante-entidades.html y persona/donante-entidades.html; resources/static/css/donante-entidades.css (la migración); java/grupo5/cliente/web/DonanteEntidadesController.java, si la pantalla lo pide; las líneas de /donante-entidades en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esas pantallas (DonanteEntidadesControllerTest, DonanteEntidadesSinMaquetaTest).",
+      "rutasVisuales": [
+        "donante-entidades",
+        "donante-entidades?cuenta=persona&ya=si"
+      ],
+      "que": "Organizaciones deriva del arquetipo A02 (#necesidades): tarjetas de organización sobre la lámina, con el avance de su necesidad (la cuenta de donaciones de hoy, HG-04) y la barra de componentes/listado con sus filtros de hoy (nombre, categoría, «Ya doné») y el paginador. La versión de la persona sigue a la de la empresa (DA-13)."
+    },
+    {
+      "id": "don-perfil",
+      "ola": "DON",
+      "tanda": 1,
+      "items": [
+        "DON-07",
+        "DON-08"
+      ],
+      "titulo": "El perfil de quien dona y la hoja heredada del buzón",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/donante-perfil.html, donante-perfil-guardado.html, persona/donante-perfil.html y persona/donante-perfil-guardado.html; resources/static/css/donante-perfil.css (la migración) y donante-notificaciones.css (lo que el buzón del catálogo ya resuelve sale; si queda vacía, se borra con su import, y las 4 plantillas del buzón de quien dona solo cambian la hoja que nombran); java/grupo5/cliente/web/DonantePerfilController.java y DonantePerfilEnvioController.java, si hace falta; las líneas de /donante-perfil en cliente-liviano/src/test/resources/verificacion/paginas.txt, más /donante-perfil-guardado?cuenta=persona, que hoy no está; y los tests de esas pantallas (DonantePerfilControllerTest, DonantePerfilEnvioControllerTest, DonanteNotificacionesControllerTest); en InterfazFitnessTest, solo la línea de HOJAS_HEREDADAS de donante-notificaciones.css, si la hoja se borra (regla 2).",
+      "rutasVisuales": [
+        "donante-perfil",
+        "donante-perfil-guardado",
+        "donante-perfil?cuenta=persona",
+        "donante-perfil-guardado?cuenta=persona"
+      ],
+      "que": "El perfil deriva de A12 (#confirmar): un formulario por sección, con los campos, los errores y los botones del catálogo. Guardar termina en el perfil con el aviso breve del catálogo (DA-06); en la maqueta, /donante-perfil-guardado sigue existiendo y muestra el perfil con ese aviso. La versión de la persona sigue a la de la empresa (DA-13), con sus campos. El buzón de quien dona no se rediseña: ya cambió en ORG; solo sale su hoja heredada. No se borra ninguna ruta."
+    },
+    {
+      "id": "don-inicio-persona",
+      "ola": "DON",
+      "tanda": 2,
+      "items": [
+        "DON-09"
+      ],
+      "titulo": "El inicio de la persona",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ficha",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/persona/donante-inicio.html; resources/static/css/persona-inicio.css (la migración); java/grupo5/cliente/web/DonanteInicioController.java (lo que pide la persona: inicio(id) además de anio(id)); los datos de ejemplo de Martina Ruiz en java/grupo5/cliente/maqueta/DonanteInicioMaqueta.java; las líneas de /donante-inicio?cuenta=persona en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esa pantalla (DonanteInicioControllerTest).",
+      "rutasVisuales": [
+        "donante-inicio?cuenta=persona"
+      ],
+      "que": "El inicio de la persona sigue su ficha aprobada (docs/interfaz/flujos/guia-don-inicio-persona.md), que manda sobre este resumen: deriva de A04, con el aviso de problema arriba, una sola lámina protagonista (la donación en camino o, sin ninguna, la huerta con «Ver mi huerta», DON-P3), «También en curso», «Ya confirmadas» con frutos, el almanaque chico de 12 meses (DON-P2) y las 3 últimas novedades. La cuenta sin tipo queda sin huerta ni Misiones (R11-06). No cambia el puerto ni el adaptador rest: el controller le pide a la persona lo mismo que a la empresa."
+    },
+    {
+      "id": "don-misiones",
+      "ola": "DON",
+      "tanda": 2,
+      "items": [
+        "DON-10"
+      ],
+      "titulo": "Misiones de la persona",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ficha",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/donante-misiones.html y variantes/misiones-b.html (la huerta pasa a la plantilla de la pantalla o a un fragmento suyo); variantes/misiones-a.html, static/css/variantes/misiones-a.css y misiones-b.css (se borran, DON-P1; lo que siga haciendo falta pasa a la hoja de la pantalla, que solo dispone); resources/static/css/donante-misiones.css; resources/static/img/ilustraciones/huerta-armada.svg (solo su comentario, que nombra misiones-a); templates/layout-privado.html (solo la línea que carga misiones-b.css); java/grupo5/cliente/web/DonanteMisionesController.java y java/grupo5/cliente/maqueta/DonanteMisionesMaqueta.java, si hace falta; las líneas de /donante-misiones en cliente-liviano/src/test/resources/verificacion/paginas.txt; y los tests de esa pantalla (DonanteMisionesControllerTest).",
+      "rutasVisuales": [
+        "donante-misiones?cuenta=persona",
+        "donante-misiones?cuenta=persona&escenario=vacio"
+      ],
+      "que": "Misiones sigue su ficha aprobada (docs/interfaz/flujos/guia-don-misiones.md), que manda sobre este resumen: la huerta sobre la única lámina protagonista, un lugar por misión de 48 × 48 px como mínimo (DA-21-misiones), el sello con su texto, la pieza de avance con «Llevás 12 de 50.», el plegable del catálogo para las categorías completas y ninguna acción llena. La prueba A/B se cierra (DON-P1): sin misiones-a. Los estados (vacío, cargando, error, sin permiso para la empresa) y los textos de la ficha de Misiones del 2026-11-07 siguen, con los cambios de su §6: «Donaciones» en lugar de «Mis donaciones» y «Ver tus donaciones» en el pie."
+    }
+  ]
+}

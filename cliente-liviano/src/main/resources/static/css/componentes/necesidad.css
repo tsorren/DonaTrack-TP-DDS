@@ -33,7 +33,7 @@
   width: 3rem;
   height: 3rem;
   border-radius: var(--radio-boton);
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
   color: var(--color-tinta);
   fill: var(--color-tinta);
 }
@@ -74,7 +74,7 @@
 }
 
 .necesidad-texto > span {
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: var(--tamano-chico);
 }
 

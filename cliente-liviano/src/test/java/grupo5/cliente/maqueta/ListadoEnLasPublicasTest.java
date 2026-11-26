@@ -1,5 +1,6 @@
 package grupo5.cliente.maqueta;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
@@ -7,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,6 +119,56 @@ class ListadoEnLasPublicasTest {
         .andExpect(content().string(containsString(FRAZADAS)))
         .andExpect(content().string(containsString("en el último mes")))
         .andExpect(content().string(not(containsString(SACAR))));
+  }
+
+  /**
+   * A10 en lo público (PUB1-03): cada entrega es la etiqueta del catálogo con su sello, y quien
+   * recibió es la organización, nunca una persona (DA-10, HG-03). Entregas enlaza al Mapa (DA-01).
+   */
+  @Test
+  void entregasMuestraLaEtiquetaConLaOrganizacionQueRecibioYEnlazaAlMapa() throws Exception {
+    String pagina =
+        mvc.perform(get("/publico-donaciones"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+
+    assertThat(pagina)
+        .contains("class=\"etiqueta-entrega etiqueta-entrega--costado\"")
+        .contains("Recibió: Escuela Ejemplo N.º 12, el 14 de octubre de 2026.")
+        .contains("Recibió: Hogar Casa Ejemplo, el 7 de octubre de 2026.")
+        .contains("Recibió: Merendero Ejemplo Sur, el 9 de octubre de 2026.")
+        .contains("Recibió: " + COMEDOR + ", el 10 de octubre de 2026.")
+        .doesNotContain("Recibió Marta")
+        .containsPattern("<span class=\"estado\" data-estado=\"entregada\">")
+        .containsPattern(
+            "<a class=\"boton\" data-tono=\"secundario\" href=\"/publico-mapa\">Ver dónde"
+                + " llegaron, en el mapa</a>");
+    assertThat(pagina.split("class=\"etiqueta-entrega ", -1))
+        .as("una etiqueta por cada una de las 10 entregas del mes")
+        .hasSize(11);
+  }
+
+  /**
+   * A07 en lo público (PUB1-04): el Mapa está dentro de Entregas y vuelve por sus migas (DA-01).
+   */
+  @Test
+  void elMapaVuelveAEntregasPorSusMigasYDiceEnLaListaLoQuePide() throws Exception {
+    String pagina =
+        mvc.perform(get("/publico-mapa"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+
+    assertThat(pagina)
+        .containsPattern(
+            "(?s)<nav class=\"migas\" aria-label=\"Dónde estás\">\\s*<ol role=\"list\">\\s*<li><a"
+                + " href=\"/publico-donaciones\">Entregas</a>.*?</li>\\s*<li"
+                + " aria-current=\"page\">Mapa</li>");
+    // Lo que dice el globo del marcador está también en la lista.
+    assertThat(pagina.substring(pagina.indexOf("id=\"lista-del-mapa\""))).contains("Pide: ");
   }
 
   @Test

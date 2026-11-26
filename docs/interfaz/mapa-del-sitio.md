@@ -29,11 +29,11 @@ flowchart LR
     IS --> AC[Activar cuenta]
   end
   subgraph Donante
-    ID[Inicio] --> MD[Mis donaciones] --> DD[Detalle de donación]
-    ID --> BE[Beneficiarios]
-    ID --> MI[Misiones e insignias]
-    ID --> SD[Seguir entregas]
-    ID --> ND[Notificaciones]
+    ID[Inicio] --> MD[Donaciones] --> DD[Detalle de donación] --> SD[Seguimiento]
+    ID --> BE[Organizaciones]
+    ID --> MI[Misiones: solo la persona]
+    ID --> CD[Cómo donar: Para donantes]
+    ID --> ND[Novedades]
     ID --> PD[Mi perfil]
   end
   subgraph Entidad["Organización"]
@@ -44,7 +44,7 @@ flowchart LR
     IE --> PE[Mi perfil]
   end
   subgraph Admin
-    IA[Inicio] --> DOa[Donantes]
+    IA[Por decidir] --> DOa[Donantes]
     DOa --> RDo[Registrar donante]
     DOa --> CSV[Importar CSV, con su resultado por fila]
     IA --> ENa[Organizaciones]
@@ -53,7 +53,7 @@ flowchart LR
     IA --> DO[Donaciones]
     DO --> RDn[Registrar donación]
     DO --> DV[Detalle y vencimiento]
-    IA --> AS[Asignaciones] --> PR[Propuesta]
+    IA --> AS[Por decidir: la mesa completa] --> PR[Propuesta]
     IA --> CA[Camiones]
     IA --> RK[Ranking]
     IA --> PA[Mi perfil]
@@ -92,7 +92,7 @@ flowchart LR
 | Donaciones recibidas | Organización | 2 | RF-11 | pág. 27 | E1 |
 | Seguir entregas → **Confirmar recepción** | Organización | 2 → 3 | RF-14, **RF-12** | pág. 28 | E1 · **flujo piloto** |
 | Notificaciones | Organización | 2 | RF-13 | — | E1 |
-| Inicio del admin | Admin | 1 | — | pág. 13 | E1 |
+| Por decidir, el inicio del admin (desde ADM1; antes, Inicio) | Admin | 1 | — | pág. 13 | E1 |
 | Donantes → registrar donante | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
 | Organizaciones → registrar organización | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
 | Organizaciones → aprobar organizaciones | Admin | 2 → 3 | RF-21 | — | E6 |
@@ -221,6 +221,82 @@ pestaña (Actividad); ninguna a más de 3 niveles
 | Organizaciones del admin | Vuelven los filtros Estado, Necesidades y Tipo | R11-43 |
 | Recibimos la solicitud | "Lo que nos enviaste" con los datos guardados y "Corregir los datos"; si ya la aprobaron, "Ingresar de nuevo" | R11-41 |
 | Listados (desde la tableta) | La cabecera y la barra de búsqueda y filtros quedan fijas al desplazarse; en el celular, el botón de Confirmar recepción queda fijo encima del menú | R11-33 |
+
+## Cambios de la oleada ORG de la guía «Huerta y galpón» (2026-11-23)
+
+Una pantalla nueva (la entrega con problema, nivel 3) y dos que se funden; ninguna a más de 3
+niveles ([backlog de la guía](backlog-guia-al-codigo.md), §11):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Menú de la organización | Inicio, Necesidades, Entregas y Ayuda. Ayuda lleva a Para organizaciones (`/publico-para-entidades`). Los menús de quien dona, el admin, la persona y lo público no cambian | ORG-09; DA-02, DA-05 y DA-17 |
+| Donaciones recibidas y Seguir entregas | Una sola pantalla, Entregas (`/entidad-seguimiento`): Para confirmar, Por llegar y Confirmadas. `/entidad-recibidas` redirige ahí con su búsqueda y sus filtros | ORG-07; DA-02 |
+| Entregas → Entrega con problema | Página nueva, `/entidad-entrega-problema?entrega=`: qué pasó, los pasos y «Todavía sin fecha de nueva salida». Se llega también desde el aviso de Inicio | ORG-08 |
+| Publicar, cambiar o dar de baja una necesidad; guardar el perfil | Terminan en la misma pantalla con un aviso breve; en la maqueta, las rutas de respuesta siguen y muestran Necesidades o el perfil con el aviso. Solo confirmar una recepción tiene página de respuesta | ORG-05, ORG-06; DA-06 |
+| Notificaciones de los tres roles | Se titulan «Novedades» (la organización, «Tus novedades»); las rutas no cambian | ORG-01; DA-08 |
+
+## Cambios de la oleada DON de la guía «Huerta y galpón» (2026-11-24)
+
+Ninguna pantalla nueva; Seguimiento baja de nivel 2 a nivel 3 y ninguna pasa de 3 niveles
+([backlog de la guía](backlog-guia-al-codigo.md), §12):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Menú de quien dona | La empresa: Inicio, Donaciones, Organizaciones y Cómo donar. La persona: Inicio, Donaciones, Organizaciones, Misiones y Cómo donar. Cómo donar lleva a Para donantes (`/publico-para-donantes`). Los menús de la organización, el admin y lo público no cambian | DON-02; DA-03a, DA-03b, DA-05 y DA-17 |
+| Seguimiento (`/donante-seguimiento`) | Sale del menú: se abre desde el detalle de una donación en camino («Ver dónde está el camión») o desde Inicio («Seguir esta donación»), con `?donacion=`; en el menú queda marcada Donaciones | DON-04, DON-05; DA-03a |
+| Misiones | La huerta es la única Misiones; `?variante=misiones-a` ya no existe y muestra la misma pantalla | DON-10; DON-P1 |
+| Guardar el perfil | Vuelve al perfil con un aviso breve; en la maqueta, `/donante-perfil-guardado` muestra el perfil con el aviso | DON-07; DA-06 |
+| Inicio de la empresa y de la persona | Sale el tablero de tres columnas (R11-25) y la lista mes por mes de la persona; el almanaque queda chico | DON-01, DON-09; DON-P2 |
+
+## Cambios de la oleada PUB1 de la guía «Huerta y galpón» (2026-11-24)
+
+Ninguna pantalla nueva ni una que pase de 3 niveles; el Mapa baja de nivel 2 a nivel 3, dentro de
+Entregas ([backlog de la guía](backlog-guia-al-codigo.md), §13):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Menú público | Inicio, Entregas, Organizaciones y Cómo funciona (`/publico-nosotros`). El Mapa sale del menú; en el Mapa queda marcada Entregas | PUB1-02; DA-01, DA-05 y DA-17 |
+| Entregas y Mapa | Entregas (`/publico-donaciones`) enlaza el Mapa (`/publico-mapa`) y el Mapa muestra las migas «Entregas / Mapa». Rutas sin cambio | PUB1-03, PUB1-04; DA-01 |
+| Nosotros, Para donantes y Para organizaciones | Se llaman Cómo funciona, Cómo donar y Ayuda, con las mismas rutas; el pie los nombra igual | PUB1-07, PUB1-08; DA-05 y DA-23 |
+| Enviar un mensaje desde Contacto | Vuelve a Contacto (con su `?volver=` si vino) con un aviso breve que lleva el número del mensaje. En la maqueta, `/publico-contacto-enviado` muestra Contacto con ese aviso | PUB1-09; DA-06 y DA-24 |
+
+## Cambios de la oleada ADM1 de la guía «Huerta y galpón» (2026-11-25)
+
+Ninguna pantalla nueva ni una que pase de 3 niveles; Inicio y Asignar donaciones se juntan en
+Por decidir ([backlog de la guía](backlog-guia-al-codigo.md), §14):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Menú del admin | Por decidir, Donaciones, Donantes, Organizaciones, Camiones y Ranking; en el celular, Por decidir, Donaciones, Camiones y Más, que abre todas. Desde 56 em, las secciones van en el cajón, a la izquierda; la marca, la campana y la cuenta quedan en la barra de arriba. Los menús de quien dona, la organización y lo público no cambian | ADM1-01 a ADM1-03; DA-04, DA-17, DA-18 y DA-27 |
+| Inicio y Asignar donaciones | Las dos son Por decidir, con la misma cabecera y las pestañas Propuestas (`/admin-inicio`), Conflictos (`/admin-asignaciones?pestana=conflictos`), Solicitudes (`/admin-entidades`) y Por vencer (`/admin-donaciones?vence=pronto`). `/admin-inicio` abre Propuestas y debajo «Cómo está todo» y los gráficos; `/admin-asignaciones` es la mesa completa. En el menú, Por decidir queda marcada en las dos y en sus respuestas | ADM1-05, ADM1-09 y ADM1-10; DA-04 y DA-25 |
+| Aprobar o descartar propuestas | Se eligen varias en la tabla y se deciden juntas; la respuesta dice cuántas se decidieron | ADM1-06; DA-26 |
+| Donaciones del admin | Una tabla: cada fila lleva al detalle (`/admin-donaciones-detalle?donacion=`); sale la ficha al costado de R11-34. `/admin-donaciones?donacion=` muestra el detalle, para los enlaces que llegan de Decididas y de Donantes | ADM1-08 |
+| Registrar una donación | Vuelve a Donaciones con un aviso breve; en la maqueta, `/admin-donaciones-registrada` muestra Donaciones con ese aviso | ADM1-11; DA-06 |
+
+## Cambios de la oleada PUB2 de la guía «Huerta y galpón» (2026-11-25)
+
+Ninguna pantalla nueva ni una que pase de 3 niveles; ninguna ruta ni menú cambia
+([backlog de la guía](backlog-guia-al-codigo.md), §15):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Recuperar la contraseña, Activar la cuenta y Pedir el enlace | La columna del formulario de Ingresar, con una sola acción llena. Sus rutas de estado (`/publico-activar?escenario=`, `-pedir?escenario=`) siguen | PUB2-01, PUB2-02 |
+| Respuestas de la cuenta | `/publico-recuperar-enviado`, `/publico-activar-pedido` y `/publico-activar-lista` muestran su misma pantalla con el aviso de éxito en la página, sin página propia y sin el sello de recibido. Las tres rutas siguen | PUB2-03; DA-06 y DA-32 |
+| Crear una cuenta y los registros | Crear una cuenta lleva la cabeza y las tarjetas del tipo de cuenta del catálogo; el registro de quien dona y el de la organización, el índice de pasos y el formulario del catálogo, con el resumen del error arriba | PUB2-04 a PUB2-06 |
+| Solicitud enviada | `/publico-registro-entidad-enviada` es la página de estado de la solicitud, con «Solicitud recibida» como aviso de éxito en la página y sus cinco escenarios | PUB2-07; DA-32 |
+| Páginas de error, la pantalla «Esta pantalla todavía no está dibujada» y el aviso de la persona | La composición de lectura de la huerta: rótulo, título, bajada y una sola acción llena, con y sin sesión | PUB2-08, PUB2-09 |
+
+## Cambios de la oleada ADM2 de la guía «Huerta y galpón» (2026-11-25)
+
+Ninguna pantalla nueva ni una que pase de 3 niveles; ningún menú cambia (DA-17) y ninguna ruta sale
+([backlog de la guía](backlog-guia-al-codigo.md), §16):
+
+| Dónde | Qué cambia | Ítem |
+|---|---|---|
+| Donantes y Organizaciones del admin | Siguen como bandeja con ficha, con la ficha en la misma página (`?donante=` y `?entidad=`); la de partida queda marcada y en el celular no se abre sola. La ficha de Donantes ya no queda fija al desplazarse | ADM2-01, ADM2-04; DA-34 |
+| Registrar un donante | Vuelve a Donantes con un aviso breve; en la maqueta, `/admin-donantes-registrado` muestra Donantes con ese aviso. Sale «Registrar su donación»: la donación se registra desde la ficha del donante | ADM2-11; DA-06 y DA-33 |
+| Registrar una organización | Vuelve a Organizaciones con un aviso breve; en la maqueta, `/admin-entidades-registrada` muestra Organizaciones con ese aviso | ADM2-13; DA-06 |
+| Administradores | `/admin-administradores-nuevo` (el alta sin JavaScript) y `/admin-administradores-alta` (la contraseña provisoria) siguen como páginas propias, con las migas a Administradores. Las pestañas Cuentas · Actividad van debajo de la cabecera | ADM2-06, ADM2-07; DA-35 |
 
 ## Observaciones para el diseño
 

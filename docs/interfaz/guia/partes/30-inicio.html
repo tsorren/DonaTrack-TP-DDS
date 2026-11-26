@@ -1,0 +1,350 @@
+<header class="lam lam-barra">
+  <div class="lam-ancho">
+    <p class="lam-nombre">DonaTrack<small>Guía de estilo y pantallas de la mezcla C, «Huerta y galpón»</small></p>
+    <nav class="lam-nav" aria-label="Partes de esta entrega">
+      <a href="#inicio" data-nav="inicio">Decisiones</a>
+      <a href="#guia" data-nav="guia">Guía de estilo</a>
+      <a href="#portada" data-nav="pantallas">Pantallas</a>
+    </nav>
+  </div>
+</header>
+<div class="lam lam-herramientas">
+  <div class="lam-ancho">
+    <nav class="lam-pantallas" aria-label="Las trece pantallas">
+      <a href="#portada" data-pantalla="portada">Portada</a>
+      <a href="#necesidades" data-pantalla="necesidades">Necesidades</a>
+      <a href="#bandeja" data-pantalla="bandeja">Bandeja</a>
+      <a href="#inicio-donante" data-pantalla="inicio-donante">Inicio de quien dona</a>
+      <a href="#donaciones" data-pantalla="donaciones">Donaciones</a>
+      <a href="#detalle-asignada" data-pantalla="detalle-asignada">Donación asignada</a>
+      <a href="#seguimiento" data-pantalla="seguimiento">Seguimiento</a>
+      <a href="#detalle-problema" data-pantalla="detalle-problema">Donación con problema</a>
+      <a href="#inicio-organizacion" data-pantalla="inicio-organizacion">Inicio de la organización</a>
+      <a href="#entregas" data-pantalla="entregas">Entregas</a>
+      <a href="#entrega-problema" data-pantalla="entrega-problema">Entrega con problema</a>
+      <a href="#confirmar" data-pantalla="confirmar">Confirmar recepción</a>
+      <a href="#confirmada" data-pantalla="confirmada">Recepción confirmada</a>
+    </nav>
+    <fieldset class="lam-anchos">
+      <legend>Ancho</legend>
+      <label><input type="radio" name="ancho" id="ancho-auto" checked> Según tu pantalla</label>
+      <label><input type="radio" name="ancho" id="ancho-360"> Celular, 360</label>
+      <label><input type="radio" name="ancho" id="ancho-1280"> Escritorio, 1280</label>
+    </fieldset>
+  </div>
+</div>
+
+<main class="lam">
+<section class="vista" id="inicio">
+  <div class="lam-ancho">
+    <div class="seccion">
+      <div class="lam-pila lam-lectura">
+        <h1>Guía de estilo y pantallas</h1>
+        <p>Es la fase 3 del rediseño del cliente liviano de DonaTrack. Lleva a alta fidelidad la mezcla C, «Huerta y galpón»: un esqueleto aireado y cálido para lo público, para quien dona y para la organización, y uno denso para el equipo que administra.</p>
+        <p class="lam-suave">Todos los datos son de ejemplo. Hoy es jueves 15 de octubre de 2026 en todas las pantallas.</p>
+      </div>
+      <div class="rejilla">
+        <a class="caja lam-pila" href="#guia"><h3>Guía de estilo</h3><span class="lam-suave">Los tokens en un solo bloque y los componentes con todos sus estados.</span></a>
+        <a class="caja lam-pila" href="#portada"><h3>Trece pantallas</h3><span class="lam-suave">Navegables entre sí, a 360 y a 1280 px. Se cambia el ancho arriba de cada una.</span></a>
+        <a class="caja lam-pila" href="#analisis-portada"><h3>La portada</h3><span class="lam-suave">Por qué la pieza grande pasa a ser una ilustración y dónde queda la foto.</span></a>
+        <a class="caja lam-pila" href="#decisiones-inicio"><h3>El inicio de quien dona</h3><span class="lam-suave">La sexta pantalla: qué donación es la protagonista, a dónde va la 0043 y una corrección que alcanza a las otras cinco.</span></a>
+        <a class="caja lam-pila" href="#decisiones-organizacion"><h3>La organización, de la puerta al cierre</h3><span class="lam-suave">Las dos pantallas de la versión 8: el inicio con sus dos estados, la recepción confirmada, el dibujo de la puerta y el único trazo que se mueve.</span></a>
+        <a class="caja lam-pila" href="#decisiones-tres"><h3>Donaciones, el problema y las entregas</h3><span class="lam-suave">Las tres pantallas de la versión 9: la tabla que en el celular se apila, el detalle de una donación que no pudo llegar y las entregas de la organización, con sus dos estados.</span></a>
+        <a class="caja lam-pila" href="#decisiones-cierre"><h3>Lo que quedaba afuera</h3><span class="lam-suave">Lo que suma la versión 10: dos pantallas, la donación asignada que todavía no viaja y la entrega con problema vista por la organización, y un segundo estado de Necesidades, después de confirmar.</span></a>
+      </div>
+    </div>
+
+    <div class="seccion" id="analisis-portada">
+      <div class="lam-pila lam-lectura">
+        <h2>La portada: foto de una entrega o ilustración propia</h2>
+        <p>La mezcla C ponía la foto de la última entrega confirmada ocupando media portada. El pedido fue analizar si conviene cambiarla por una ilustración propia del sitio.</p>
+      </div>
+      <div class="decision lam-pila lam-lectura">
+        <h3>Decisión</h3>
+        <p>La pieza grande pasa a ser una ilustración propia: el recorrido de una donación, del depósito a la organización. La entrega real no se va de la portada: queda al lado, en tamaño de lámina, con su foto, quién la recibió y cuándo.</p>
+      </div>
+      <div class="tabla-lam">
+        <table>
+          <thead><tr><th scope="col">Qué se mira</th><th scope="col">Con la foto grande</th><th scope="col">Con la ilustración grande y la entrega al lado</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Qué entiende quien llega por primera vez</th><td>Unas cajas en una puerta. No dice qué es DonaTrack ni qué puede hacer acá.</td><td>El dibujo cuenta el recorrido entero: el depósito, el camión, la organización y los 5 pasos que después se ven en cada donación.</td></tr>
+            <tr><th scope="row">Credibilidad, que en DonaTrack pesa doble</th><td>La prueba es lo primero que se ve. Es su mejor argumento.</td><td>La prueba sigue en la portada, con la confirmación de la organización a la vista. Pierde tamaño, no lugar. En el celular queda debajo del dibujo.</td></tr>
+            <tr><th scope="row">De qué depende lo más grande del sitio</th><td>De la foto que subió una organización con su celular: puede salir oscura, movida o vertical, y se amplía a media pantalla.</td><td>De nadie. La foto va en un tamaño que perdona una foto regular.</td></tr>
+            <tr><th scope="row">Personas en la foto</th><td>La regla dice que las fotos muestran lo entregado y el lugar, no a las personas, pero nadie las revisa antes de publicarlas. Ampliarla agranda cualquier descuido.</td><td>El riesgo baja con el tamaño. La regla sigue haciendo falta.</td></tr>
+            <tr><th scope="row">Cuando todavía no hay entregas con foto</th><td>La portada se queda sin su pieza grande. Hay que dibujar un reemplazo igual.</td><td>La pieza grande está siempre. La lámina de la entrega tiene su estado vacío.</td></tr>
+            <tr><th scope="row">En la maqueta y en la defensa</th><td>El repositorio no tiene fotos. Una foto inventada a ese tamaño se lee como una prueba falsa, en un sitio que promete transparencia.</td><td>Un dibujo no finge ser una prueba. Las escenas chicas van rotuladas «foto de ejemplo».</td></tr>
+            <tr><th scope="row">Identidad</th><td>Una foto de cajas en una puerta podría ser la portada de cualquier sitio de donaciones.</td><td>La huerta, la raíz y los frutos ya son de Raíces: la portada se reconoce como DonaTrack.</td></tr>
+            <tr><th scope="row">Costo</th><td>Ninguno de dibujo.</td><td>Hay que dibujarla y cuidarla. Los frutos salen de los datos: uno por cada entrega confirmada del mes.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="comparar">
+        <div class="lam-pila">
+          <h4>Como estaba en la mezcla C: la foto grande</h4>
+          <div class="dt muestra">
+            <article class="etiqueta">
+              <figure class="foto"><svg role="img" aria-label="Foto de ejemplo: una caja y siete latas de leche en polvo sobre una mesa, junto a una ventana"><use href="#escena-latas"/></svg><figcaption class="foto-rotulo">Foto de ejemplo</figcaption></figure>
+              <div class="etiqueta-cuerpo"><h3>Leche en polvo, 12 unidades</h3><p>Hogar Casa Ejemplo</p><p class="etiqueta-pie">Recibió Rosa el 14 de octubre</p><span class="sello" data-estado="confirmada"><svg class="signo" aria-hidden="true"><use href="#e-confirmada"/></svg>Entrega confirmada</span></div>
+            </article>
+          </div>
+        </div>
+        <div class="lam-pila">
+          <h4>Como queda: la ilustración, y la entrega al lado</h4>
+          <div class="dt muestra lam-pila">
+            <svg viewBox="0 0 640 396" role="img" aria-label="Ilustración: una raíz con cinco nudos va por debajo de la tierra desde un depósito hasta un árbol con nueve frutos, junto a la puerta de una organización. Arriba, un camión va de uno a otro."><use href="#ilustracion-recorrido"/></svg>
+            <article class="etiqueta etiqueta--costado">
+              <figure class="foto"><svg role="img" aria-label="Foto de ejemplo: una caja y siete latas de leche en polvo sobre una mesa, junto a una ventana"><use href="#escena-latas"/></svg><figcaption class="foto-rotulo">Foto de ejemplo</figcaption></figure>
+              <div class="etiqueta-cuerpo"><h3>Leche en polvo, 12 unidades</h3><p>Hogar Casa Ejemplo</p><p class="etiqueta-pie">Recibió Rosa el 14 de octubre</p><span class="sello" data-estado="confirmada"><svg class="signo" aria-hidden="true"><use href="#e-confirmada"/></svg>Entrega confirmada</span></div>
+            </article>
+          </div>
+        </div>
+      </div>
+      <div class="rejilla">
+        <div class="caja lam-pila"><h4>Qué se pierde</h4><p>El golpe de una foto real apenas se abre el sitio. En el celular, la prueba baja un tramo: queda después del dibujo.</p></div>
+        <div class="caja lam-pila"><h4>Qué reemplaza de la mezcla C</h4><p>La lámina de la última entrega ya no ocupa media portada. Sigue siendo la tarjeta protagonista: lleva la sombra de paja <span class="dg">D7</span> y la etiqueta <span class="dg">D3</span>.</p></div>
+        <div class="caja lam-pila"><h4>Dónde quedan los demás detalles</h4><p>La trama <span class="dg">D5</span>, detrás del título. Los frutos <span class="dg">D4</span>, en el árbol, con la cifra del mes al pie. La raíz <span class="dg">D2</span>, en el dibujo y en «Cómo funciona». El sello <span class="dg">D1</span>, en cada entrega.</p></div>
+        <div class="caja lam-pila"><h4>Cuándo conviene revisarla</h4><p>Cuando haya fotos reales y alguien que las revise. Ahí vale probar con personas la foto grande contra la ilustración, antes de cambiarla por gusto.</p></div>
+      </div>
+    </div>
+
+    <div class="seccion" id="las-pantallas">
+      <div class="lam-pila lam-lectura">
+        <h2>Las trece pantallas y por qué estas</h2>
+        <p>Cubren los cuatro roles y los dos esqueletos de la mezcla. Cinco se hicieron primero y son el recorrido completo: una organización pide, el equipo asigna, quien dona sigue el camión, la organización confirma y la portada muestra las entregas confirmadas. El inicio de quien dona se sumó después: es por donde quien dona llega a Seguimiento. Otras dos completan el lado de la organización: el inicio, que es por donde entra, y la recepción confirmada, que es donde termina el recorrido. Las tres de la versión 9 cierran lo que las otras dejaban abierto: la tabla a la que lleva «Ver las 6 en una tabla», el detalle al que lleva el aviso de una donación con problema y «Entregas», que estaba en el menú de cuatro pantallas y no existía. Las de la versión 10 son lo que hasta ahí quedaba dicho como afuera: el detalle de una donación asignada que todavía no viaja, el detalle de la entrega con problema para quien la espera y Necesidades después de confirmar, que es un segundo estado de una pantalla que ya estaba.</p>
+      </div>
+      <div class="tabla-lam">
+        <table>
+          <thead><tr><th scope="col">Pantalla</th><th scope="col">Quién la usa</th><th scope="col">Esqueleto</th><th scope="col">Qué pone a prueba</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><a href="#portada">Portada</a></th><td>Quien llega por primera vez</td><td>Huerta</td><td>La ilustración, los frutos, la trama, la barra superior y las láminas de entregas.</td></tr>
+            <tr><th scope="row"><a href="#necesidades">Necesidades</a></th><td>La organización</td><td>Huerta</td><td>La tarjeta protagonista con la entrega por confirmar, las pestañas y las tarjetas de cada necesidad. Desde la versión 10 tiene dos estados: después de confirmar, la tarjeta protagonista no está.</td></tr>
+            <tr><th scope="row"><a href="#bandeja">Bandeja</a></th><td>El equipo que administra</td><td>Galpón</td><td>El cajón, la tabla con selección de varias filas y la acción para las elegidas.</td></tr>
+            <tr><th scope="row"><a href="#inicio-donante">Inicio de quien dona</a></th><td>Quien dona</td><td>Huerta</td><td>El aviso de una donación con problema, la lámina protagonista con el mapa adentro, los frutos junto a su cifra y la lista donde cada fila lleva al detalle.</td></tr>
+            <tr><th scope="row"><a href="#donaciones">Donaciones de quien dona</a></th><td>Quien dona</td><td>Huerta</td><td>La tabla que en el celular se apila sin perder columnas, una raíz por fila y las pestañas por estado.</td></tr>
+            <tr><th scope="row"><a href="#detalle-asignada">Donación asignada</a></th><td>Quien dona</td><td>Huerta</td><td>Una donación que todavía no viaja: qué sigue, la necesidad que cubre y la raíz con los pasos que faltan, dichos como pendientes. Una pantalla sin mapa, sin tarea y sin acción llena.</td></tr>
+            <tr><th scope="row"><a href="#seguimiento">Seguimiento de una donación</a></th><td>Quien dona</td><td>Huerta</td><td>El mapa, la raíz de 5 pasos con fecha y con quién, y las migas de pan.</td></tr>
+            <tr><th scope="row"><a href="#detalle-problema">Donación con problema</a></th><td>Quien dona</td><td>Huerta</td><td>Cómo se cuenta un problema: qué pasó, qué se sabe y qué sigue. La raíz con un paso que no pudo ser. Una pantalla sin tarea y sin acción llena.</td></tr>
+            <tr><th scope="row"><a href="#inicio-organizacion">Inicio de la organización</a></th><td>La organización</td><td>Huerta</td><td>Una pantalla con dos estados: con una entrega en la puerta y después de confirmarla. El dibujo de la puerta, las filas de cada necesidad con su avance y la lámina que deja de ser protagonista cuando no hay nada para confirmar.</td></tr>
+            <tr><th scope="row"><a href="#entregas">Entregas de la organización</a></th><td>La organización</td><td>Huerta</td><td>La lista completa, con dos estados: lo que espera confirmación, lo que falta llegar y las confirmadas del mes, cada una con su foto.</td></tr>
+            <tr><th scope="row"><a href="#entrega-problema">Entrega con problema</a></th><td>La organización</td><td>Huerta</td><td>El mismo problema, dicho para quien recibe: qué le toca hacer y si llega antes de la fecha de su necesidad. Una pantalla a dos horas, con el mismo contenido y distintos enlaces de vuelta.</td></tr>
+            <tr><th scope="row"><a href="#confirmar">Confirmar recepción</a></th><td>La organización</td><td>Huerta</td><td>El formulario con las fotos primero y su estado de error, que es un estado de la misma pantalla.</td></tr>
+            <tr><th scope="row"><a href="#confirmada">Recepción confirmada</a></th><td>La organización</td><td>Huerta</td><td>La respuesta a un envío: la raíz con los 5 pasos cumplidos, la lista de lo que quedó asentado y el único trazo que se mueve.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="lam-suave lam-lectura">El cambio de rol entre una pantalla y otra lo hace esta lámina, no el producto. Quedan afuera, entre otras, el detalle de una donación registrada que todavía no tiene organización, el de una entrega ya confirmada, el detalle de una necesidad y lo que filtran las pestañas. Los enlaces que llevan ahí lo avisan.</p>
+    </div>
+
+    <div class="seccion" id="decisiones-inicio">
+      <div class="lam-pila lam-lectura">
+        <h2>El inicio de quien dona: dos decisiones</h2>
+        <p>La sexta pantalla se sumó después del cierre de las otras cinco. Al construirla hubo que resolver dos cosas que la maqueta de baja fidelidad dejaba abiertas.</p>
+      </div>
+      <div class="decision lam-pila lam-lectura">
+        <h3>Qué donación va en la lámina protagonista</h3>
+        <p>Va la que viaja ahora. La donación con problema sigue siendo lo primero que se lee: va arriba de todo, en un aviso propio, con qué pasó, dónde y cuándo sale de nuevo.</p>
+        <p>Esto cambia lo que estaba decidido. La regla anterior ponía como protagonista a la donación con problema, antes que a la que está en camino. No se aplicó tal cual, y la tabla dice por qué.</p>
+      </div>
+      <div class="tabla-lam">
+        <table>
+          <thead><tr><th scope="col">Qué se mira</th><th scope="col">El problema como protagonista, que era la regla</th><th scope="col">El problema en un aviso arriba y el viaje como protagonista</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Qué se lee primero</th><td>El problema.</td><td>El problema también: el aviso va antes que la lámina, con el color, el signo y el texto de un error.</td></tr>
+            <tr><th scope="row">Para qué sirve la lámina</th><td>Útiles escolares no está viajando: no tiene mapa ni hora de llegada. La pieza más grande de la pantalla quedaría quieta seis días, del 11 al 17 de octubre.</td><td>Muestra lo que se puede seguir hoy: el mapa, la raíz y la hora estimada. A las 16:25 el camión está a una hora y cuarto de llegar.</td></tr>
+            <tr><th scope="row">Qué puede hacer quien dona</th><td>Nada: el depósito ya fijó la nueva salida. La acción llena llevaría a leer lo mismo otra vez.</td><td>«Seguir esta donación» lleva a Seguimiento. El título del aviso lleva al detalle del problema.</td></tr>
+            <tr><th scope="row">Costo</th><td>El viaje de hoy baja al segundo lugar y pierde la sombra de paja.</td><td>El problema ocupa menos lugar que el viaje. Conviene probarlo con personas: si el aviso pasa inadvertido, se vuelve a la regla anterior.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="rejilla">
+        <div class="caja lam-pila"><h4>La regla, completa</h4><ul class="vinetas"><li>Una donación con problema va siempre arriba de todo mientras dure: en un aviso o, si le toca, en la lámina protagonista. Nunca en los dos lugares.</li><li>Primero es protagonista la que tiene un problema que le pide algo a quien dona, o que todavía no tiene fecha de nueva salida.</li><li>Si no hay, la que está en camino y llega antes.</li><li>Si ninguna viaja, la que tiene un problema.</li><li>Si no hay ninguna de esas, la última que cambió de estado.</li></ul></div>
+        <div class="caja lam-pila"><h4>A dónde va la donación 0043</h4><p>Leche en polvo, 6 unidades, asignada el 14 de octubre: va a Comedor Barrio Ejemplo y sale el 16. Son las mismas 6 unidades que Necesidades muestra como «asignadas, que salen el 16 de octubre». Es un solo hecho, visto por quien dona y por quien recibe.</p><p>La maqueta de baja fidelidad la mandaba a Merendero Ejemplo Sur. Con ese destino quedaban dos asignaciones de 6 unidades de leche en polvo que salían el mismo día, y se leían como un error.</p></div>
+        <div class="caja lam-pila"><h4>Otras decisiones de esta pantalla</h4><ul class="vinetas"><li>El saludo lleva la razón social, que puede ser larga. En el celular baja un escalón, al tamaño de los títulos de sección: así el aviso y la acción llena entran en la primera pantalla, por encima del menú.</li><li>El sello va junto a la raíz y no al lado del título: dicen juntos el estado y por qué paso va.</li><li>«Cómo donar» ya está en la barra. No se repite como botón lleno: la única acción llena es «Seguir esta donación».</li><li>Después de la protagonista va lo que sigue en curso. Lo confirmado cierra la pantalla, con sus fotos, sus dos frutos <span class="dg">D4</span> y el agradecimiento.</li><li>La cuenta del mes separa las 3 donaciones en curso de la que tiene un problema. La maqueta anterior las sumaba como 4 en curso.</li></ul></div>
+      </div>
+    </div>
+
+    <div class="seccion" id="decisiones-organizacion">
+      <div class="lam-pila lam-lectura">
+        <h2>La organización, de la puerta al cierre: decisiones</h2>
+        <p>Las dos pantallas que se sumaron en la versión 8 son el inicio de la organización y lo que se ve después de confirmar una recepción. Ninguna de las dos estaba en la maqueta de baja fidelidad: se diseñaron acá, sobre las piezas de la guía.</p>
+      </div>
+      <div class="decision lam-pila lam-lectura">
+        <h3>El inicio es una pantalla con dos estados</h3>
+        <p>A las 18:30 hay una entrega en la puerta: la lámina protagonista la muestra, con la única acción llena. A las 18:50, ya confirmada, la misma lámina dice que no hay nada para confirmar: pierde la sombra de paja y la pantalla queda sin acción llena.</p>
+        <p>Se dibujaron los dos porque el inicio cambia con lo que espera en la puerta. Con uno solo, «Volver al inicio» llevaría, recién confirmada la entrega, a una pantalla que todavía pide confirmarla.</p>
+      </div>
+      <div class="tabla-lam">
+        <table>
+          <thead><tr><th scope="col">Qué se resolvió</th><th scope="col">Cómo quedó</th><th scope="col">Por qué, y qué cuesta</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Qué va primero en el inicio</th><td>La misma regla que en el inicio de quien dona: la entrega con problema va arriba de todo, en un aviso, y la lámina protagonista es lo que se puede hacer ahora.</td><td>Una sola regla para los dos inicios. Cuesta que a las 18:30 lo primero que se lee es un problema del 13 de octubre y no la tarea. La acción igual entra en la primera pantalla del celular. Conviene probarlo con personas: si la tarea se pierde, en este inicio lo de la puerta pasa arriba del aviso.</td></tr>
+            <tr><th scope="row">Cuando no hay nada para confirmar</th><td>La lámina de la puerta se queda en su lugar, sin sombra de paja: dice cuál fue la última confirmación y lleva a lo que quedó asentado.</td><td>La sombra de paja significa «esto es lo principal». En el inicio, sin nada para confirmar, ninguna pieza es más importante que las otras: no se le da la sombra a otra cosa para rellenar. La pantalla queda sin acción llena, como Seguimiento. En Recepción confirmada sí hay algo principal, el cierre, y por eso esa lámina la lleva.</td></tr>
+            <tr><th scope="row">El dibujo de la puerta</th><td>Es nuevo. Muestra el final de la ilustración de la portada, visto desde la organización: su puerta, el árbol y la raíz que llega por debajo.</td><td>En estas dos pantallas reemplaza a la raíz acostada: dice lo mismo, paso 4 de 5 y después 5 de 5, y además dónde pasa. Cuesta un dibujo más para mantener. El texto de al lado dice el paso, así que el dibujo no es la única fuente.</td></tr>
+            <tr><th scope="row">Los frutos del árbol</th><td>Son las entregas que confirmó esta organización en el mes: 4 antes de confirmar y 5 después. La cifra va al pie, con el período y la hora.</td><td>Un fruto sigue siendo una entrega confirmada. Acá no cuenta las 9 de toda la plataforma, que son las de la portada.</td></tr>
+            <tr><th scope="row">La respuesta a confirmar</th><td>Una página propia, Recepción confirmada, y no un aviso breve sobre la lista.</td><td>Es el cierre del recorrido y se puede volver a abrir desde el inicio. Dice qué quedó asentado, a quién se avisó, cómo queda la necesidad y qué sigue. Cuesta un paso más para volver a la lista.</td></tr>
+            <tr><th scope="row">Sin acción llena después de confirmar</th><td>«Volver al inicio» y «Ver tus necesidades» son botones secundarios.</td><td>No queda nada pendiente. Una acción llena inventaría una urgencia.</td></tr>
+            <tr><th scope="row">El trazo</th><td>Al llegar desde el formulario, el último tramo de la raíz se dibuja una vez: después se llena el quinto nudo y aparece el fruto. Dura menos de dos segundos.</td><td>Es el único movimiento del producto que no es la respuesta de un control: explica qué cambió. Si se abre la página por su enlace, el dibujo ya está completo. Con movimiento reducido, también.</td></tr>
+            <tr><th scope="row">«Así lo ve quien donó»</th><td>La etiqueta de la entrega, igual a la que aparece en el inicio de quien dona.</td><td>La organización ve qué se muestra de ella: la foto, quién recibió y cuándo. Es parte de lo que promete DonaTrack.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="rejilla">
+        <div class="caja lam-pila"><h4>Tres horas del mismo día</h4><p>La organización está dibujada a tres horas. A las 18:30, con las lentejas esperando en la puerta: el inicio, Necesidades, Entregas, la entrega con problema y Confirmar recepción. A las 18:45: Recepción confirmada. A las 18:50, ya confirmadas las lentejas: el inicio, Necesidades, Entregas y la entrega con problema.</p><p>Hasta la versión 9, Necesidades estaba solo a las 18:30 y el enlace desde las pantallas posteriores avisaba. Desde la versión 10 tiene su estado de las 18:50, y cada enlace abre el estado de la hora de la pantalla de origen.</p></div>
+        <div class="caja lam-pila"><h4>Del error a la confirmación</h4><p>En la maqueta, el segundo envío del formulario da los dos errores por corregidos. Lo que queda asentado lo dice: 2 fotos, la segunda cambiada por una de menos de 5 MB, y el remito 0001-00004521.</p></div>
+        <div class="caja lam-pila"><h4>Los datos que se sumaron</h4><p>El comedor confirmó 4 entregas en octubre antes de esta: leche en polvo el 2, arroz el 3, fideos el 5 y lentejas el 10. Las de leche, arroz y lentejas son las cantidades que Necesidades ya mostraba como llegadas; la de fideos es de una necesidad ya cumplida y está en la portada. Con la de hoy son 5, y la necesidad de lentejas pasa de 10 a 25 de 40 kg.</p></div>
+        <div class="caja lam-pila"><h4>Lo que conviene probar con personas</h4><ul class="vinetas"><li>Si, con el aviso arriba, Marta encuentra «Confirmar recepción» sin buscarlo.</li><li>Si el dibujo de la puerta se entiende sin leer el texto.</li><li>Si después de confirmar queda claro que no hay nada más que hacer.</li></ul></div>
+      </div>
+    </div>
+
+    <div class="seccion" id="decisiones-tres">
+      <div class="lam-pila lam-lectura">
+        <h2>Donaciones, el problema y las entregas: decisiones</h2>
+        <p>Las tres pantallas que se sumaron en la versión 9 eran enlaces que avisaban que la pantalla no estaba dibujada: la tabla del inicio de quien dona, el detalle del aviso y «Entregas», en el menú de la organización. Ninguna estaba en la maqueta de baja fidelidad. Se armaron con las piezas de la guía. Lo nuevo son tres cosas: la tabla que se apila, un estado más de la raíz y la etiqueta que en el celular no se apila.</p>
+      </div>
+      <div class="decision lam-pila lam-lectura">
+        <h3>Una tabla que en el celular se apila</h3>
+        <p>En escritorio, las seis donaciones de quien dona van en una tabla: sirve para comparar, que es para lo que se la pide. En el celular la misma tabla pasa a ser un bloque por fila y cada dato lleva su rótulo. No se esconde ninguna columna.</p>
+        <p>La tabla del admin hace otra cosa: en el celular muestra tres columnas y deja el resto en la ficha. Son dos respuestas porque son dos trabajos. El admin decide muchas filas seguidas y necesita verlas juntas. Quien dona mira pocas y las quiere completas.</p>
+      </div>
+      <div class="tabla-lam">
+        <table>
+          <thead><tr><th scope="col">Qué se resolvió</th><th scope="col">Cómo quedó</th><th scope="col">Por qué, y qué cuesta</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">La tabla en el celular</th><td>Se apila: un bloque por donación, con «Para», «Estado» y «Lo último» rotulados.</td><td>Esconder «Para» o «Lo último» deja a quien dona sin lo que vino a buscar. Cuesta largo: a 360 px las 6 donaciones ocupan casi cuatro pantallas de celular. Por eso las pestañas por estado van arriba. Cuesta también dos comportamientos de tabla para mantener.</td></tr>
+            <tr><th scope="row">Una raíz por fila</th><td>Cada fila lleva su sello y, debajo, su raíz de 5 nudos, con el paso en texto.</td><td>Las seis raíces alineadas dicen de un vistazo cuáles llegaron, cuál viaja y cuál se trabó. <span class="dg">D2</span> no cambia de significado: sigue siendo el recorrido comprobado de una donación. Cuesta densidad: es la pantalla más cargada de la huerta. Conviene probar si la raíz se lee o si alcanza con «Paso 4 de 5».</td></tr>
+            <tr><th scope="row">El paso que no pudo ser</th><td>La raíz suma un estado: el nudo con el signo del problema. El tramo que sigue es punteado.</td><td>Hasta ahora la raíz solo decía «pasó» y «falta». Una donación con problema no es ninguna de las dos cosas: el viaje se intentó. El nudo lleva signo además de color. Cuesta un estado más para mantener.</td></tr>
+            <tr><th scope="row">El detalle del problema</th><td>La plantilla de Seguimiento, sin el mapa. El problema va una vez, en un aviso. Después va qué sigue, en una lista de datos. No hay un bloque de datos de la donación: repetía la cabecera y la raíz.</td><td>Vale la regla de los inicios: el problema va en un aviso o en la lámina protagonista, nunca en los dos. Acá no hay lámina protagonista ni sombra de paja, porque nada de esta pantalla es una tarea. Cuesta que la pantalla es casi toda texto: no tiene una pieza grande, como el mapa.</td></tr>
+            <tr><th scope="row">Qué puede hacer quien dona</th><td>Nada, y la pantalla lo dice: «Qué tenés que hacer: nada. Te avisamos cuando salga y cuando Escuela Ejemplo N.º&nbsp;12 confirme la entrega».</td><td>Es lo que hace hoy el producto: el detalle solo se lee. No se sumó un botón para escribirle al equipo, que sería una función nueva. Se revisó después de publicar la versión 9 y quedó así.</td></tr>
+            <tr><th scope="row">Entregas, en qué orden</th><td>Por confirmar, con problema, por salir y, abajo, las confirmadas del mes.</td><td>Es el orden que ya usa el producto en «Seguir entregas». Lo que pide algo va primero, con la sombra de paja y la acción llena. El problema va primero entre lo que falta llegar. Ese grupo se llama «Por llegar» y no «En curso»: del lado de quien dona, «en curso» no cuenta la donación con problema. No va en un aviso arriba: esa regla es de los inicios, donde el problema compite con otras cosas. Cuesta que a las 18:30 el aceite queda debajo de la tarea.</td></tr>
+            <tr><th scope="row">Entregas tiene dos estados</th><td>A las 18:30 y a las 18:50, como el inicio.</td><td>Es la lista donde confirmar cambia más cosas: la lámina de arriba se va, la entrega pasa a las confirmadas con su foto y los frutos van de 4 a 5. Cada pantalla de la organización abre el estado de su hora. Cuesta marcado con dos variantes.</td></tr>
+            <tr><th scope="row">Las confirmadas, con foto</th><td>Una etiqueta por entrega: la foto, de quién vino, quién la recibió y cuándo. En el celular la foto queda al costado, chica y entera.</td><td>Es la prueba a la vista, que es lo que la mezcla C llama calidez. La etiqueta común se apila en el celular: con cinco entregas, la pantalla medía casi seis pantallas de celular; con la foto al costado mide cuatro y media. Cuesta una variante más de la etiqueta.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="rejilla">
+        <div class="caja lam-pila"><h4>A dónde llevan los avisos</h4><p>El aviso del inicio de quien dona lleva al detalle de Útiles escolares. El del inicio de la organización es de otra entrega, el aceite de girasol. En la versión 9 llevaba a Entregas, porque el detalle de esa entrega no estaba dibujado.</p><p>Desde la versión 10 lleva a ese detalle, Entrega con problema: la plantilla de Donación con problema, vista por la organización.</p></div>
+        <div class="caja lam-pila"><h4>Los datos que se sumaron</h4><p>Útiles escolares se registró el 6 de octubre, se asignó el 7 y se preparó el 9. Salió el 11 a las 09:40 y volvió al depósito a las 12:10. A las 16:10 quedó fijada la nueva salida. El 11 de octubre es domingo y el 17, sábado: las dos fechas vienen de la fase 2 y ya estaban en tres pantallas.</p><p>Las entregas que el comedor confirmó el 2, el 3 y el 10 de octubre son de Fundación Ejemplo Sur y de Almacén Ejemplo SRL. Hay dos fotos de ejemplo nuevas: dos entregas no muestran la misma.</p></div>
+        <div class="caja lam-pila"><h4>Lo que cambió, en la versión 9, en las ocho que ya estaban</h4><p>Solo enlaces que antes avisaban y ahora navegan. «Donaciones» y el aviso, en el inicio de quien dona. «Donaciones» y las migas, en Seguimiento. «Entregas», en las cuatro pantallas de la organización, y el aviso del aceite en su inicio.</p></div>
+        <div class="caja lam-pila"><h4>Lo que conviene probar con personas</h4><ul class="vinetas"><li>Si la raíz de cada fila se entiende sin el texto.</li><li>Si quien dona, al leer el detalle, se queda con una pregunta que la pantalla no contesta.</li><li>Si Marta distingue, en Entregas, lo que tiene que hacer hoy de lo que solo tiene que saber.</li></ul></div>
+      </div>
+    </div>
+
+    <div class="seccion" id="decisiones-cierre">
+      <div class="lam-pila lam-lectura">
+        <h2>La donación asignada, la entrega con problema y Necesidades después: decisiones</h2>
+        <p>La versión 10 suma dos pantallas y un segundo estado de Necesidades: es lo que la versión 9 dejaba dicho como afuera. Con las once que había, son trece. Ninguna suma piezas a la guía: se armaron con las que había. Lo nuevo es de recorrido: ya ningún enlace entre pantallas de la organización avisa por cruzar de una hora a otra.</p>
+      </div>
+      <div class="decision lam-pila lam-lectura">
+        <h3>Necesidades tiene dos estados, y después de confirmar no hay protagonista</h3>
+        <p>Necesidades no se dibujó de nuevo como otra pantalla: es la misma, a las 18:30 y a las 18:50, como el inicio y Entregas. Después de confirmar, la lámina de arriba se va y nada ocupa su lugar. Debajo del título dice que no hay entregas para confirmar, y la necesidad de lentejas pasa de 10 a 25 de 40 kg y dice qué parte se confirmó hoy.</p>
+        <p>Con eso salió el aviso de «está dibujada a las 18:30». Desde Recepción confirmada, y desde el inicio y Entregas de las 18:50, «Necesidades» abre el estado de las 18:50.</p>
+      </div>
+      <div class="tabla-lam">
+        <table>
+          <thead><tr><th scope="col">Qué se resolvió</th><th scope="col">Cómo quedó</th><th scope="col">Por qué, y qué cuesta</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Necesidades a las 18:50</th><td>Sin lámina protagonista y sin acción llena. Lo que cambia está debajo del título y en una tarjeta.</td><td>La sombra de paja significa «esto es lo principal», y a las 18:50 nada lo es: es lo que ya se decidió para Entregas. Cuesta que el cambio se ve en una sola tarjeta, la de lentejas. Conviene probar si Marta lo nota.</td></tr>
+            <tr><th scope="row">La necesidad de lentejas, ya confirmada la entrega</th><td>«Llegaron 25 de 40 kg: 15 los confirmaste hoy a las 18:45. Faltan 15 kg. Sin entregas en curso». Sin chapa.</td><td>En una necesidad, la chapa nombra una entrega en curso, y ya no hay ninguna: queda como Arroz. No lleva el sello «Entrega confirmada»: ese es el estado de una entrega, y a la necesidad le faltan 15 kg.</td></tr>
+            <tr><th scope="row">Cuál donación sin viaje se dibujó</th><td>Leche en polvo, 6 unidades, que está asignada. Arroz largo fino, registrada y sin organización, sigue avisando.</td><td>La asignada tiene destino y un próximo paso con fecha: hay algo para contar. El detalle de la registrada tendría que decidir cuánto se le muestra a quien dona de una propuesta que el equipo todavía no aprobó. Esa es una decisión del producto, no del dibujo. Cuesta que tres filas de la tabla siguen sin detalle: esa y las dos confirmadas.</td></tr>
+            <tr><th scope="row">Qué muestra una donación que todavía no viaja</th><td>La plantilla de Seguimiento sin el mapa y sin aviso: qué sigue, la necesidad que cubre y la raíz con tres pasos pendientes.</td><td>Sin camión, el mapa no dice nada. En su lugar va lo que sí se sabe: cuándo sale y qué parte de la necesidad del comedor cubre esta donación, con los mismos números que ve la organización. Lo que falta se dice como pendiente y no se promete una hora. Cuesta que la pantalla es casi toda texto, como la del problema.</td></tr>
+            <tr><th scope="row">La entrega con problema, para quien la espera</th><td>La plantilla de Donación con problema, con otra voz: «Nada por ahora. Cuando llegue, la confirmás con la foto». Abajo, la necesidad con su fecha.</td><td>A la organización le importan dos cosas que a quien dona no: qué le va a tocar hacer y si llega a tiempo. La pantalla contesta las dos: sale de nuevo el 17 y la necesidad es hasta el 20. Sin contacto, como en el detalle de quien dona. Cuesta dos pantallas casi iguales: en el código conviene que sean una plantilla con dos voces.</td></tr>
+            <tr><th scope="row">Dos horas, un contenido</th><td>El detalle del aceite se abre a las 18:30 y a las 18:50 y dice lo mismo. Cambian la hora del pie y a dónde vuelven «Inicio», «Necesidades», «Entregas» y las migas.</td><td>Con una sola hora, volver desde el detalle a las 18:50 abría Entregas de las 18:30, que pide confirmar otra vez. Es un costo de esta maqueta, que dibuja tres horas del mismo día. En el producto hay una sola hora: la real.</td></tr>
+            <tr><th scope="row">A dónde lleva el aviso del aceite</th><td>Al detalle de esa entrega, igual que el aviso del inicio de quien dona.</td><td>La versión 9 lo mandaba a Entregas y lo declaraba como un desvío. Entregas conserva la fila, con «Ver el detalle».</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="rejilla">
+        <div class="caja lam-pila"><h4>Lo que se revisó de la versión 9</h4><p>Las cuatro decisiones que quedaban para confirmar se revisaron el 22 de noviembre.</p><ul class="vinetas"><li>La tabla de quien dona se apila en el celular: queda así.</li><li>Los detalles con problema no llevan una forma de contacto: queda así, también en el de la organización.</li><li>Entregas conserva su orden: por confirmar, por llegar y confirmadas.</li><li>El aviso del aceite pasa a llevar al detalle de esa entrega.</li></ul></div>
+        <div class="caja lam-pila"><h4>Los datos que se sumaron</h4><p>La donación 0043 se registró el martes 13 a las 09:20. El aceite de girasol se registró el 8 de octubre, se asignó el 9 y se preparó el 12. El 13 salió a las 10:15 y volvió al depósito a las 13:20.</p><p>Ese mismo día, a las 16:40, el depósito fijó la nueva salida. Es una de las dos novedades que Marta tiene sin leer.</p></div>
+        <div class="caja lam-pila"><h4>Lo que cambió, en la versión 10, en las once que ya estaban</h4><p>Solo enlaces. Las dos filas de Leche en polvo, 6 unidades, en el inicio de quien dona y en la tabla, llevan a su detalle. El aviso del aceite y «Ver el detalle», en Entregas, llevan al detalle de esa entrega. «Necesidades» abre el estado de la hora de cada pantalla.</p><p>Necesidades a las 18:30 se dibuja igual que antes: se comparó elemento por elemento.</p></div>
+        <div class="caja lam-pila"><h4>Lo que conviene probar con personas</h4><ul class="vinetas"><li>Si Marta, al volver a Necesidades, nota qué cambió sin una lámina que se lo diga.</li><li>Si quien dona entiende por qué su donación asignada todavía no se movió.</li><li>Si «Nada por ahora» alcanza, o la organización busca a quién escribirle.</li></ul></div>
+      </div>
+    </div>
+
+    <div class="seccion" id="correccion-titulos">
+      <div class="lam-pila lam-lectura">
+        <h2>Una corrección que alcanza a las otras cinco pantallas</h2>
+        <p>Al medir la pantalla nueva apareció un defecto de la versión anterior de esta página: las reglas de la lámina de presentación se metían en las pantallas. Los títulos, los enlaces y el aro de foco del producto no salían de sus tokens. Se corrigió, y por eso las cinco pantallas que ya estaban se ven distintas.</p>
+      </div>
+      <div class="tabla-lam">
+        <table>
+          <thead><tr><th scope="col">Qué</th><th scope="col">Cómo se veía</th><th scope="col">Cómo queda, que es lo que dicen los tokens</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Títulos</th><td>Peso 800 y ancho 112 %. El tamaño dependía del ancho de tu ventana y no del de la pantalla dibujada: a 360, el título de una pantalla medía 40 px en una ventana grande y unos 29 px en un teléfono.</td><td>Peso 850 y ancho 116 %. El título de una pantalla mide 30 px a 360 y 42 px a 1280. Los de sección, 24 px. Los de una lámina, 20 px.</td></tr>
+            <tr><th scope="row">Enlaces</th><td>Con el tema oscuro, verde claro sobre el papel claro: 1,5 a 1 de contraste.</td><td>El verde hondo del producto con cualquier tema: 6,74 a 1 sobre el papel.</td></tr>
+            <tr><th scope="row">Aro de foco</th><td>Verde, del color de la lámina.</td><td>De tinta, separado por un filete de papel, como lo muestra la guía.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="rejilla">
+        <div class="caja lam-pila"><h4>Qué se tocó</h4><p>Un bloque de la hoja de la lámina: sus siete reglas base ya no alcanzan lo que está dentro del producto. La lámina no cambió: se compararon los estilos de todos sus elementos antes y después.</p></div>
+        <div class="caja lam-pila"><h4>Qué hubo que ajustar</h4><p>Con su peso real, el título de la portada pasaba de 4 a 5 renglones: la columna del título quedó algo más ancha que la del dibujo. El título de cada paso de «Cómo funciona» usa el tamaño de los rótulos, como el de la etiqueta.</p></div>
+        <div class="caja lam-pila"><h4>Para que no vuelva a pasar</h4><p>La comprobación ahora compara lo que se dibuja dentro del producto con y sin la hoja de la lámina, en tema claro y en oscuro. Antes el contraste se calculaba solo desde los tokens.</p></div>
+        <div class="caja lam-pila"><h4>Para deshacerlo</h4><p>Es un solo bloque. La versión anterior de esta página, la 6, muestra cómo se veía.</p></div>
+      </div>
+    </div>
+
+    <div class="seccion" id="direccion">
+      <div class="lam-pila lam-lectura">
+        <h2>Dirección de arte</h2>
+        <p><strong>Concepto.</strong> La huerta y el galpón: lo que crece y se muestra, y el lugar donde se trabaja y se lleva la cuenta. La raíz une los dos lados, porque es el mismo recorrido de 5 pasos.</p>
+      </div>
+      <div class="rejilla">
+        <div class="caja lam-pila"><h4>Una audacia por pantalla</h4><ul class="vinetas"><li>Portada: la ilustración del recorrido.</li><li>Necesidades: la lámina con sombra de paja.</li><li>Inicio de quien dona: el viaje de hoy, con su mapa, adentro de la lámina.</li><li>Donaciones: seis raíces alineadas, una por fila.</li><li>Donación asignada: ninguna. Lo que todavía no pasó va punteado y dicho como pendiente.</li><li>Seguimiento: la raíz paso a paso junto al mapa.</li><li>Donación con problema: ninguna. Una mala noticia se dice clara y sin adorno.</li><li>Inicio de la organización: la puerta dibujada, con lo que espera afuera.</li><li>Entregas: cada entrega confirmada, con su foto.</li><li>Entrega con problema: ninguna, como la de quien dona.</li><li>Confirmar recepción: las fotos, primero y grandes.</li><li>Recepción confirmada: el quinto nudo se llena y el árbol suma un fruto.</li><li>Bandeja: ninguna. Al galpón se le suma velocidad.</li></ul></div>
+        <div class="caja lam-pila"><h4>Tipografía</h4><p>Archivo, ancha y pesada, en los títulos. DM Sans en todo lo demás. Las dos tienen licencia OFL y el sitio ya las sirve. Los títulos van en un solo color y sin rótulo en mayúsculas encima.</p></div>
+        <div class="caja lam-pila"><h4>Forma</h4><p>Lo que se toca es redondeado: botones, campos y láminas. Lo que se estampa o se rotula es recto: el sello y la etiqueta. La elevación tiene tres escalones: nada, papel y paja.</p></div>
+        <div class="caja lam-pila"><h4>Imagen</h4><p>Las fotos de las entregas van en láminas con su etiqueta. En esta maqueta son escenas dibujadas con la paleta, rotuladas «foto de ejemplo». Los dibujos son planos y geométricos, y son nuevos.</p></div>
+        <div class="caja lam-pila"><h4>Movimiento</h4><p>Solo para explicar un cambio: un aviso que aparece o un botón que avisa que está trabajando. Ninguna sección entra animada. Hay un solo trazo: al confirmar una recepción, el último tramo de la raíz se dibuja una vez. Con movimiento reducido, nada gira, late ni se traza.</p></div>
+        <div class="caja lam-pila"><h4>Voz</h4><p>Los estados, las cifras y los errores no se adornan. Se agradece solo un hecho confirmado. Cada cifra dice su período y de dónde sale.</p></div>
+      </div>
+      <div class="rejilla">
+        <div class="lam-pila">
+          <h4>Reparto 60-30-10 en la huerta</h4>
+          <div class="tira-60" role="img" aria-label="60 % papel; 30 % papel claro, salvia y tierra; 10 % verde hoja, paja y mandarina"><i class="t60 fondo-papel"></i><i class="t14 fondo-claro"></i><i class="t10 fondo-salvia"></i><i class="t6 fondo-suelo"></i><i class="t6 fondo-acento"></i><i class="t2 fondo-raiz"></i><i class="t2 fondo-fruto"></i></div>
+          <p class="lam-chico lam-suave">60 % papel. 30 % papel claro, salvia y tierra. 10 % verde hoja en la acción, paja en la raíz y mandarina solo en los frutos.</p>
+        </div>
+        <div class="lam-pila">
+          <h4>Reparto 60-30-10 en el galpón</h4>
+          <div class="tira-60" role="img" aria-label="60 % papel claro; 30 % tierra y salvia; 10 % verde hoja y paja"><i class="t60 fondo-claro"></i><i class="t20 fondo-suelo"></i><i class="t10 fondo-salvia"></i><i class="t8 fondo-acento"></i><i class="t2 fondo-raiz"></i></div>
+          <p class="lam-chico lam-suave">60 % papel claro. 30 % tierra en el cajón y salvia en las filas elegidas. 10 % verde hoja en la acción y paja en el foco. La mandarina no aparece.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion" id="decisiones">
+      <div class="lam-pila lam-lectura"><h2>Decisiones de esta fase</h2><p>Lo que se resolvió al pasar a alta fidelidad y no estaba decidido antes.</p></div>
+      <div class="tabla-lam">
+        <table>
+          <thead><tr><th scope="col">Tema</th><th scope="col">Qué se decidió</th><th scope="col">Por qué</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Seis estados y cuatro pares de color</th><td>Registrada, Asignada y Preparada comparten el par neutro. Las distingue el texto y un disco que se va llenando.</td><td>Las tres dicen lo mismo de lo que importa: la donación todavía está en el depósito. No hizo falta sumar colores.</td></tr>
+            <tr><th scope="row">«Espera tu confirmación»</th><td>Tiene una chapa propia, de tinta llena. No usa la de «En camino».</td><td>No es un estado de la donación: es un pedido a quien mira.</td></tr>
+            <tr><th scope="row">«Sin entregas en curso»</th><td>Es texto, sin chapa.</td><td>No hay nada que estampar.</td></tr>
+            <tr><th scope="row">Sombras</th><td>Se retiran la sombra granulada de las tarjetas y la sombra de hoja de los botones. Quedan tres escalones.</td><td>La sombra de paja tiene que significar «lo principal». Si todo tiene sombra, no significa nada.</td></tr>
+            <tr><th scope="row">El sello</th><td>Va derecho, sin girar, en la huerta y en el galpón.</td><td>Se pidió al revisar la primera versión, que lo giraba en la huerta: un solo sello para los dos lados. En una tabla densa, además, los sellos girados eran ruido.</td></tr>
+            <tr><th scope="row">El galpón</th><td>Reasigna dos tokens: el fondo pasa a papel claro y la superficie, al blanco de los campos.</td><td>Mismas piezas, otro papel. No hay un segundo juego de componentes.</td></tr>
+            <tr><th scope="row">El foco</th><td>Un aro de tinta separado por un filete de papel. Sobre la tierra, el aro es paja.</td><td>Se ve igual sobre el papel, sobre un botón verde y sobre una fila elegida.</td></tr>
+            <tr><th scope="row">Aceite de girasol</th><td>Llegaron 0 de 20 litros; una entrega de 20 litros no pudo llegar el 13 y sale de nuevo el 17.</td><td>La fase 2 decía «en camino 0» y «sale de nuevo el 17» a la vez.</td></tr>
+            <tr><th scope="row">Producto y cantidad</th><td>Se escriben con coma: «Lentejas secas, 15 kg».</td><td>Así lo escribe el sitio hoy, y evita el punto medio en todos lados.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="rejilla">
+        <div class="caja lam-pila"><h4>Lo que cuesta y quedó a la vista</h4><ul class="vinetas"><li>En el celular, la tabla del admin muestra tres columnas. Es un costo que la mezcla C ya declaraba. La tabla de quien dona, en cambio, se apila: el porqué está en «Donaciones, el problema y las entregas».</li><li>Son dos navegaciones para mantener: la barra superior y el cajón.</li><li>La organización está dibujada a tres horas del mismo día. Cuatro de sus pantallas llevan dos estados o dos horas en un mismo marcado. Confirmar recepción quedó solo a las 18:30.</li></ul></div>
+        <div class="caja lam-pila"><h4>Lo que conviene probar con personas</h4><ul class="vinetas"><li>Si quien llega a la portada entiende el dibujo sin leer los pasos.</li><li>Si la organización encuentra «Confirmar recepción» sin ayuda desde el celular.</li><li>Si el equipo distingue Registrada, Asignada y Preparada por el signo.</li></ul></div>
+      </div>
+    </div>
+
+    <div class="seccion" id="comprobacion">
+      <div class="lam-pila lam-lectura"><h2>Cómo se comprobó</h2><p>El piso sigue las pautas WCAG 2.2 en nivel AA, ordenadas por sus cuatro principios (perceptible, operable, comprensible y robusto), que es lo que pide la Ley 26.653 de Accesibilidad Web.</p></div>
+      <div class="tabla-lam">
+        <table>
+          <thead><tr><th scope="col">Qué</th><th scope="col">Cómo</th><th scope="col">Resultado</th></tr></thead>
+          <tbody id="tabla-comprobacion">
+<!--COMPROBACION-->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

@@ -198,9 +198,9 @@ class TokensTests(unittest.TestCase):
             self.assertRegex(cuerpo, re.escape(variable) + r":\s*var\(--(?:color|fuente)-")
 
     def test_estan_los_tokens_de_uso_que_el_tema_necesita(self):
-        for variable in ("--color-fondo-pagina", "--color-superficie", "--color-texto", "--color-titulo", "--color-enlace", "--color-campo",
+        for variable in ("--color-fondo-pagina", "--color-superficie", "--color-texto", "--color-accion-primaria", "--color-enlace", "--color-campo",
                          "--color-borde-control", "--color-foco", "--color-accion-primaria", "--color-accion-primaria-activa",
-                         "--color-texto-sobre-accion", "--color-sombra", "--radio-lamina", "--radio-boton", "--sombra-papel",
+                         "--color-texto-sobre-accion", "--color-hoja", "--radio-lamina", "--radio-boton", "--sombra-papel",
                          "--fuente-titulo", "--fuente-texto"):
             self.assertIn(variable, declaraciones())
 
@@ -213,10 +213,10 @@ class ContrasteWcagAATests(unittest.TestCase):
     PARES = (
         ("--color-texto", "--color-superficie", TEXTO), ("--color-texto", "--color-fondo-pagina", TEXTO), ("--color-texto", "--color-campo", TEXTO),
         ("--color-texto-suave", "--color-superficie", TEXTO), ("--color-texto-suave", "--color-fondo-pagina", TEXTO),
-        ("--color-titulo", "--color-superficie", TEXTO), ("--color-enlace", "--color-superficie", TEXTO),
-        ("--color-enlace", "--color-fondo-pagina", TEXTO), ("--color-acento-hondo", "--color-superficie", TEXTO),
+        ("--color-accion-primaria", "--color-superficie", TEXTO), ("--color-enlace", "--color-superficie", TEXTO),
+        ("--color-enlace", "--color-fondo-pagina", TEXTO), ("--color-accion-primaria-activa", "--color-superficie", TEXTO),
         ("--color-texto-sobre-accion", "--color-accion-primaria", TEXTO), ("--color-texto-sobre-accion", "--color-accion-primaria-activa", TEXTO),
-        ("--color-tinta", "--color-papel", TEXTO), ("--color-tinta", "--color-acento-claro", TEXTO),
+        ("--color-tinta", "--color-fondo-pagina", TEXTO), ("--color-tinta", "--color-salvia", TEXTO),
         ("--color-error-texto", "--color-error-fondo", TEXTO), ("--color-exito-texto", "--color-exito-fondo", TEXTO),
         ("--color-info-texto", "--color-info-fondo", TEXTO), ("--color-advertencia-texto", "--color-advertencia-fondo", TEXTO),
         ("--color-error-texto", "--color-superficie", TEXTO), ("--color-error-texto", "--color-campo", TEXTO),
@@ -233,7 +233,7 @@ class ContrasteWcagAATests(unittest.TestCase):
         # Si el CSS empieza a usar un token de color que ningún par cubre, este test lo avisa.
         usados = {v for v in re.findall(r"var\((--color-[\w-]+)", css_propio())}
         cubiertos = {t for par in self.PARES for t in par[:2]}
-        cubiertos |= {"--color-fondo-pagina", "--color-sombra", "--color-filete", "--color-papel", "--color-acento", "--color-exito-fondo",
+        cubiertos |= {"--color-fondo-pagina", "--color-hoja", "--color-filete", "--color-accion-primaria", "--color-exito-fondo",
                       "--color-exito-texto", "--color-info-fondo", "--color-info-texto", "--color-advertencia-fondo", "--color-advertencia-texto"}
         self.assertEqual(sorted(usados - cubiertos), [], "tokens de color usados sin un par de contraste")
 
@@ -259,7 +259,7 @@ class EstilosDelTemaTests(unittest.TestCase):
 
     def test_la_marca_lleva_el_icono_del_sitio_y_track_en_el_color_de_acento(self):
         self.assertIn('background: url("../img/logo.svg")', regla(self.css, "#kc-header-wrapper::before"))
-        self.assertIn("color: var(--color-acento);", regla(self.css, "#kc-header-wrapper em"))
+        self.assertIn("color: var(--color-accion-primaria);", regla(self.css, "#kc-header-wrapper em"))
 
     def test_se_saca_la_franja_de_color_del_tema_base(self):
         self.assertIn("border-top: 0;", regla(self.css, ".pf-v5-c-login__main-header"))
@@ -272,14 +272,14 @@ class EstilosDelTemaTests(unittest.TestCase):
     def test_los_titulos_usan_la_letra_de_los_titulos_y_el_color_de_titulo(self):
         cuerpo = regla(self.css, "#kc-page-title")
         self.assertIn("font-family: var(--fuente-titulo);", cuerpo)
-        self.assertIn("color: var(--color-titulo);", cuerpo)
+        self.assertIn("color: var(--color-accion-primaria);", cuerpo)
 
     def test_el_cuerpo_usa_la_letra_del_texto(self):
         self.assertIn("font-family: var(--fuente-texto);", regla(self.css, "html"))
 
     def test_el_boton_principal_es_verde_con_la_sombra_plana_de_hoja(self):
         cuerpo = regla(self.css, ".pf-v5-c-button.pf-m-primary")
-        for dato in ("background-color: var(--color-accion-primaria);", "color: var(--color-texto-sobre-accion);", "box-shadow: 0.25rem 0.25rem 0 var(--color-sombra);"):
+        for dato in ("background-color: var(--color-accion-primaria);", "color: var(--color-texto-sobre-accion);", "box-shadow: 0.25rem 0.25rem 0 var(--color-hoja);"):
             self.assertIn(dato, cuerpo)
 
     def test_los_demas_botones_van_en_contorno_de_tinta(self):
@@ -297,7 +297,7 @@ class EstilosDelTemaTests(unittest.TestCase):
         for dato in ("background-color: var(--color-campo);", "border: 1.5px solid var(--color-borde-control);", "border-radius: var(--radio-boton);"):
             self.assertIn(dato, campo)
         foco = regla(self.css, ".pf-v5-c-form-control:focus-within")
-        self.assertIn("border-color: var(--color-acento);", foco)
+        self.assertIn("border-color: var(--color-accion-primaria);", foco)
         self.assertIn("outline: 3px solid var(--color-foco);", foco)
 
     def test_un_campo_con_error_se_marca_con_el_color_del_error(self):

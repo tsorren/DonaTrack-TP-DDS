@@ -1,0 +1,371 @@
+<section class="vista" id="guia">
+  <div class="lam-ancho">
+    <div class="seccion">
+      <div class="lam-pila lam-lectura">
+        <h1>Guía de estilo</h1>
+        <p>Los tokens y los componentes de la mezcla C. Todo lo que se ve acá abajo es el producto de verdad, dibujado con el mismo CSS que usan las trece pantallas.</p>
+      </div>
+      <nav class="indice" aria-label="Secciones de la guía">
+        <a href="#g-tokens">Tokens</a><a href="#g-contraste">Contraste</a><a href="#g-botones">Botones</a><a href="#g-campos">Campos</a><a href="#g-chapas">Chapas de estado</a><a href="#g-tarjetas">Tarjetas</a><a href="#g-listas">Listas y tablas</a><a href="#g-avisos">Notificaciones</a><a href="#g-navegacion">Navegación</a><a href="#g-detalles">Detalles gráficos</a><a href="#g-patrones">Patrones</a><a href="#g-codigo">Llevarlo al código</a>
+      </nav>
+    </div>
+
+    <div class="seccion" id="g-tokens">
+      <div class="lam-pila lam-lectura">
+        <h2>Tokens</h2>
+        <p>Una sola fuente: un bloque de propiedades CSS con dos niveles, como el <code>tokens.css</code> de hoy. Los valores base llevan <code>--p-</code> y solo se usan dentro del bloque. Las pantallas y los componentes usan los tokens de uso. Ningún color está escrito fuera de este bloque.</p>
+        <p class="lam-suave">Cada token dice si es <span class="marca-token" data-m="igual">igual</span> al de hoy, si <span class="marca-token" data-m="cambia">cambia</span> de valor o si es <span class="marca-token" data-m="nuevo">nuevo</span>. La comparación se hizo contra <code>tokens.css</code> al armar esta página. Los tokens de hoy que este bloque no trae están contados en <a href="#g-codigo">«Llevarlo al código»</a>.</p>
+      </div>
+      <p id="resumen-tokens" class="lam-lectura"></p>
+      <div id="tablas-tokens" class="lam-pila tokens-grupos"><p class="lam-suave">Las tablas se arman con JavaScript a partir del bloque. Sin JavaScript, el bloque completo está abajo.</p></div>
+      <details class="lam-pila">
+        <summary class="boton-lam">Ver el bloque completo</summary>
+        <div class="lam-pila">
+          <p><button type="button" class="boton-lam" id="copiar-tokens">Copiar el bloque</button> <span id="copiar-estado" class="lam-suave lam-chico" role="status"></span></p>
+          <pre class="codigo" id="bloque-tokens" tabindex="0"><code><!--TOKENS--></code></pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="seccion" id="g-contraste">
+      <div class="lam-pila lam-lectura">
+        <h2>Contraste</h2>
+        <p>Calculado en esta página a partir de los tokens. El piso es 4,5 a 1 en el texto y 3 a 1 en las partes de un control que hay que ver para usarlo.</p>
+      </div>
+      <div class="tabla-lam"><table><thead><tr><th scope="col">Par</th><th scope="col">Muestra</th><th scope="col">Razón</th><th scope="col">Piso</th><th scope="col">Pasa</th></tr></thead><tbody id="tabla-contraste"><tr><td colspan="5">Se calcula con JavaScript.</td></tr></tbody></table></div>
+    </div>
+
+    <div class="seccion" id="g-botones">
+      <div class="lam-pila lam-lectura"><h2>Botones</h2><p>Una sola acción llena por pantalla. Todos miden 48 px de alto como mínimo. El nombre dice qué pasa al tocarlo.</p></div>
+      <div class="dt muestra muestra--tabla">
+        <div class="muestra-fila"><span class="rotulo-m">Lleno: la acción principal</span>
+          <div class="estados" data-col="13">
+            <div class="estado-m"><button type="button" class="boton boton--lleno">Confirmar recepción</button><small>Normal</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--lleno es-cursor">Confirmar recepción</button><small>Con el cursor</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--lleno es-foco">Confirmar recepción</button><small>Con foco</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--lleno es-activo">Confirmar recepción</button><small>Activo</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--lleno" disabled>Confirmar recepción</button><small>Deshabilitado</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--lleno" aria-busy="true">Confirmando…</button><small>Trabajando</small></div>
+          </div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Secundario</span>
+          <div class="estados" data-col="13">
+            <div class="estado-m"><button type="button" class="boton">Publicar una necesidad</button><small>Normal</small></div>
+            <div class="estado-m"><button type="button" class="boton es-cursor">Publicar una necesidad</button><small>Con el cursor</small></div>
+            <div class="estado-m"><button type="button" class="boton es-foco">Publicar una necesidad</button><small>Con foco</small></div>
+            <div class="estado-m"><button type="button" class="boton es-activo">Publicar una necesidad</button><small>Activo</small></div>
+            <div class="estado-m"><button type="button" class="boton" disabled>Publicar una necesidad</button><small>Deshabilitado</small></div>
+          </div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">De texto: la salida que no cambia nada</span>
+          <div class="estados" data-col="13">
+            <div class="estado-m"><button type="button" class="boton boton--texto">Volver sin confirmar</button><small>Normal</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--texto es-cursor">Volver sin confirmar</button><small>Con el cursor</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--texto es-foco">Volver sin confirmar</button><small>Con foco</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--texto es-activo">Volver sin confirmar</button><small>Activo</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--texto" disabled>Volver sin confirmar</button><small>Deshabilitado</small></div>
+          </div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">De peligro: lo que no tiene vuelta atrás</span>
+          <div class="estados" data-col="13">
+            <div class="estado-m"><button type="button" class="boton boton--peligro">Dar de baja</button><small>Normal</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--peligro es-cursor">Dar de baja</button><small>Con el cursor</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--peligro es-foco">Dar de baja</button><small>Con foco</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--peligro es-activo">Dar de baja</button><small>Activo</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--peligro" disabled>Dar de baja</button><small>Deshabilitado</small></div>
+          </div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Denso, para el galpón: la misma altura de 48 px, con menos aire a los lados</span>
+          <div class="estados" data-col="13">
+            <div class="estado-m"><button type="button" class="boton boton--denso">Descartar</button><small>Normal</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--denso es-cursor">Descartar</button><small>Con el cursor</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--denso es-foco">Descartar</button><small>Con foco</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--denso es-activo">Descartar</button><small>Activo</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--denso" disabled>Descartar</button><small>Deshabilitado</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--lleno boton--denso">Aprobar las 2</button><small>Denso y lleno</small></div>
+          </div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Solo ícono: siempre con un nombre para el lector de pantalla</span>
+          <div class="estados" data-col="13">
+            <div class="estado-m"><button type="button" class="boton boton--icono" aria-label="Cerrar el aviso"><svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg></button><small>Normal</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--icono es-cursor" aria-label="Cerrar el aviso"><svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg></button><small>Con el cursor</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--icono es-foco" aria-label="Cerrar el aviso"><svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg></button><small>Con foco</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--icono es-activo" aria-label="Cerrar el aviso"><svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg></button><small>Activo</small></div>
+            <div class="estado-m"><button type="button" class="boton boton--icono" aria-label="Cerrar el aviso" disabled><svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg></button><small>Deshabilitado</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion" id="g-campos">
+      <div class="lam-pila lam-lectura"><h2>Campos</h2><p>El rótulo va siempre arriba y a la vista. La ayuda dice dónde encontrar el dato. El error dice qué pasó y cómo seguir, al lado del campo, y lo ya cargado se conserva.</p></div>
+      <div class="dt muestra muestra--tabla">
+        <div class="muestra-fila"><span class="rotulo-m">Campo de texto</span>
+          <div class="estados" data-col="15">
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-c1">Número de remito</label><p class="campo-ayuda">Está arriba a la derecha del papel.</p><input class="entrada" id="m-c1" type="text"></div><small>Normal</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-c2">Número de remito</label><p class="campo-ayuda">Está arriba a la derecha del papel.</p><input class="entrada es-cursor" id="m-c2" type="text"></div><small>Con el cursor</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-c3">Número de remito</label><p class="campo-ayuda">Está arriba a la derecha del papel.</p><input class="entrada es-foco" id="m-c3" type="text"></div><small>Con foco</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-c4">Número de remito</label><p class="campo-ayuda">Está arriba a la derecha del papel.</p><input class="entrada" id="m-c4" type="text" value="0001-00004521"></div><small>Con dato</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-c5">Número de remito</label><p class="campo-ayuda">Está arriba a la derecha del papel.</p><input class="entrada" id="m-c5" type="text" value="0001-00004498" disabled></div><small>Deshabilitado</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-c6">Número de remito</label><input class="entrada" id="m-c6" type="text" aria-invalid="true" aria-describedby="m-c6-error"><p class="campo-error" id="m-c6-error"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg><span>Falta el número de remito. Está arriba a la derecha del papel.</span></p></div><small>Con error</small></div>
+          </div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Elegir de una lista</span>
+          <div class="estados" data-col="15">
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-s1">Cada cuánto</label><select class="entrada" id="m-s1"><option>Una sola vez</option><option>Cada mes</option></select></div><small>Normal</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-s2">Cada cuánto</label><select class="entrada es-cursor" id="m-s2"><option>Una sola vez</option><option>Cada mes</option></select></div><small>Con el cursor</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-s3">Cada cuánto</label><select class="entrada es-foco" id="m-s3"><option>Una sola vez</option><option>Cada mes</option></select></div><small>Con foco</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-s4">Cada cuánto</label><select class="entrada" id="m-s4" disabled><option>Cada mes</option></select></div><small>Deshabilitado</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-s5">Cada cuánto</label><select class="entrada" id="m-s5" aria-invalid="true" aria-describedby="m-s5-error"><option>Elegí una opción</option><option>Una sola vez</option><option>Cada mes</option></select><p class="campo-error" id="m-s5-error"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg><span>Elegí cada cuánto hace falta.</span></p></div><small>Con error</small></div>
+          </div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Texto largo</span>
+          <div class="estados" data-col="15">
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-t1">Qué pasó</label><textarea class="entrada" id="m-t1">Llegaron 13 kg: faltó una bolsa.</textarea></div><small>Con dato</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-t2">Qué pasó</label><textarea class="entrada es-cursor" id="m-t2"></textarea></div><small>Con el cursor</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-t3">Qué pasó</label><textarea class="entrada es-foco" id="m-t3"></textarea></div><small>Con foco</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-t4">Qué pasó</label><textarea class="entrada" id="m-t4" disabled>Llegó completa.</textarea></div><small>Deshabilitado</small></div>
+            <div class="estado-m estado-m--ancho"><div class="campo"><label for="m-t5">Qué pasó</label><textarea class="entrada" id="m-t5" aria-invalid="true" aria-describedby="m-t5-error"></textarea><p class="campo-error" id="m-t5-error"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg><span>Contanos qué pasó con la entrega.</span></p></div><small>Con error</small></div>
+          </div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Opciones y casilla sola</span>
+          <div class="estados" data-col="15">
+            <div class="estado-m estado-m--ancho"><fieldset class="campo"><legend>¿Llegó bien?</legend><div class="pila g1"><label class="opcion"><input type="radio" name="m-r1" checked> Sí, completa</label><label class="opcion"><input type="radio" name="m-r1"> Llegó con un problema</label></div></fieldset><small>Elegida y normal</small></div>
+            <div class="estado-m estado-m--ancho"><fieldset class="campo"><legend>¿Llegó bien?</legend><div class="pila g1"><label class="opcion es-cursor"><input type="radio" name="m-r2"> Sí, completa</label><label class="opcion es-foco"><input type="radio" name="m-r2"> Llegó con un problema</label></div></fieldset><small>Con el cursor y con foco</small></div>
+            <div class="estado-m estado-m--ancho"><fieldset class="campo"><legend>¿Llegó bien?</legend><div class="pila g1"><label class="opcion"><input type="radio" name="m-r3" disabled> Sí, completa</label><label class="opcion"><input type="radio" name="m-r3" disabled> Llegó con un problema</label></div></fieldset><small>Deshabilitadas</small></div>
+            <div class="estado-m estado-m--ancho"><fieldset class="campo" aria-describedby="m-r4-error"><legend>¿Llegó bien?</legend><div class="pila g1"><label class="opcion es-error"><input type="radio" name="m-r4" aria-invalid="true"> Sí, completa</label><label class="opcion es-error"><input type="radio" name="m-r4" aria-invalid="true"> Llegó con un problema</label></div><p class="campo-error" id="m-r4-error"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg><span>Elegí cómo llegó la entrega.</span></p></fieldset><small>Con error</small></div>
+            <div class="estado-m"><div class="fila g1"><label class="casilla"><input type="checkbox" aria-label="Casilla sin marcar (muestra)"></label><label class="casilla"><input type="checkbox" checked aria-label="Casilla marcada (muestra)"></label><label class="casilla"><input type="checkbox" class="es-foco" aria-label="Casilla con foco (muestra)"></label><label class="casilla"><input type="checkbox" disabled aria-label="Casilla deshabilitada (muestra)"></label><label class="casilla es-cursor"><input type="checkbox" aria-label="Casilla con el cursor (muestra)"></label><label class="casilla"><input type="checkbox" aria-invalid="true" aria-label="Casilla con error (muestra)"></label></div><small>Casilla sola, 48 × 48: normal, marcada, con foco, deshabilitada, con el cursor y con error</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion" id="g-chapas">
+      <div class="lam-pila lam-lectura"><h2>Chapas de estado</h2><p>El sello dice el estado de una donación con su signo y su texto, nunca solo con el color. Antes del viaje el disco se va llenando: registrada, asignada, preparada, en camino.</p></div>
+      <div class="dt muestra muestra--tabla">
+        <div class="muestra-fila"><span class="rotulo-m">Los seis estados. El sello es el mismo en la huerta y en el galpón, y va siempre derecho</span>
+          <div class="fila g3">
+            <span class="sello" data-estado="registrada"><svg class="signo" aria-hidden="true"><use href="#e-registrada"/></svg>Registrada</span>
+            <span class="sello" data-estado="asignada"><svg class="signo" aria-hidden="true"><use href="#e-asignada"/></svg>Asignada</span>
+            <span class="sello" data-estado="preparada"><svg class="signo" aria-hidden="true"><use href="#e-preparada"/></svg>Preparada</span>
+            <span class="sello" data-estado="en-camino"><svg class="signo" aria-hidden="true"><use href="#e-en-camino"/></svg>En camino</span>
+            <span class="sello" data-estado="confirmada"><svg class="signo" aria-hidden="true"><use href="#e-confirmada"/></svg>Entrega confirmada</span>
+            <span class="sello" data-estado="problema"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg>Con problema</span>
+          </div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Lo que no es un estado</span>
+          <div class="fila g3">
+            <span class="pedido"><svg class="signo" aria-hidden="true"><use href="#e-espera"/></svg>Espera tu confirmación</span>
+            <span class="suave">Sin entregas en curso.</span>
+          </div>
+          <p class="chico suave medida">«Espera tu confirmación» es un pedido a quien mira: va en tinta llena, sin borde. «Sin entregas en curso» es texto: no hay nada que estampar.</p>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">El sello junto a la raíz, donde una lámina sigue una sola donación</span>
+          <div class="estado-raiz medida"><span class="sello" data-estado="en-camino"><svg class="signo" aria-hidden="true"><use href="#e-en-camino"/></svg>En camino</span><ol class="raiz raiz--acostada" aria-label="Paso 4 de 5"><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Registrada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Asignada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Preparada</span></li><li class="raiz-paso" data-paso="actual"><span class="raiz-nudo"></span><span class="oculto-visual">En camino, ahora</span></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo"></span><span class="oculto-visual">Falta confirmar la entrega</span></li></ol></div>
+          <div class="estado-raiz medida"><span class="sello" data-estado="confirmada"><svg class="signo" aria-hidden="true"><use href="#e-confirmada"/></svg>Entrega confirmada</span><ol class="raiz raiz--acostada" aria-label="Paso 5 de 5"><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Registrada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Asignada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Preparada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">En camino</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Entrega confirmada</span></li></ol></div>
+          <div class="estado-raiz medida"><span class="sello" data-estado="problema"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg>Con problema</span><ol class="raiz raiz--acostada" aria-label="Cumplió 3 de 5 pasos y el cuarto no pudo llegar"><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Registrada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Asignada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Preparada</span></li><li class="raiz-paso" data-paso="problema"><span class="raiz-nudo"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg></span><span class="oculto-visual">Salió y no pudo llegar</span></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo"></span><span class="oculto-visual">Falta: entrega confirmada</span></li></ol></div>
+          <p class="chico suave medida">El sello dice cómo se llama el estado; la raíz, por qué paso va. Si no entran en un renglón, la raíz baja. Con los 5 pasos cumplidos, la raíz queda llena de punta a punta. Si un paso se intentó y no pudo ser, su nudo lleva el signo del problema, además del color, y el tramo que sigue es punteado.</p>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Un paso que no pudo ser, en el recorrido paso a paso: entre uno cumplido y uno que falta</span>
+          <ol class="raiz medida"><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo" aria-hidden="true"></span><div><p><strong>Preparada</strong> <span class="raiz-cuando">9 de octubre, 16:30</span></p><p class="suave chico">En el Depósito Central.</p></div></li><li class="raiz-paso" data-paso="problema"><span class="raiz-nudo" aria-hidden="true"><svg class="signo"><use href="#e-problema"/></svg></span><div><p><strong>Salió y no pudo llegar</strong> <span class="raiz-cuando">11 de octubre</span></p><p class="suave chico">El camino estaba cortado. Sale de nuevo el 17 de octubre.</p></div></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo" aria-hidden="true"></span><div><p><strong>Falta confirmar la entrega</strong></p><p class="suave chico">La confirma la organización con la foto.</p></div></li></ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion" id="g-tarjetas">
+      <div class="lam-pila lam-lectura"><h2>Tarjetas</h2><p>Cada tarjeta cuenta un solo tema. No son todas iguales: la lámina común no tiene sombra, la protagonista lleva la sombra de paja y la etiqueta es recta, como un rótulo de herbario.</p></div>
+      <div class="dt muestra">
+        <div class="estados" data-col="17">
+          <div class="estado-m estado-m--ancho"><div class="lamina pila g1"><h3>Arroz</h3><p class="suave chico">Cada mes, hasta el 31 de octubre</p><progress class="avance" value="15" max="40" aria-label="Llegaron 15 de 40 kg"></progress><p>Llegaron 15 de 40 kg. Sin entregas en curso.</p></div><small>Lámina</small></div>
+          <div class="estado-m estado-m--ancho"><a class="lamina pila g1" href="#g-tarjetas"><h3>Merendero Ejemplo Sur</h3><p class="suave chico">Confirmó Ropa de abrigo, 12 prendas, el 9 de octubre.</p></a><small>Lámina que es un enlace</small></div>
+          <div class="estado-m estado-m--ancho"><a class="lamina es-cursor pila g1" href="#g-tarjetas"><h3>Merendero Ejemplo Sur</h3><p class="suave chico">Confirmó Ropa de abrigo, 12 prendas, el 9 de octubre.</p></a><small>La misma, con el cursor</small></div>
+          <div class="estado-m estado-m--ancho"><a class="lamina es-foco pila g1" href="#g-tarjetas"><h3>Merendero Ejemplo Sur</h3><p class="suave chico">Confirmó Ropa de abrigo, 12 prendas, el 9 de octubre.</p></a><small>La misma, con foco</small></div>
+          <div class="estado-m estado-m--ancho"><a class="lamina es-activo pila g1" href="#g-tarjetas"><h3>Merendero Ejemplo Sur</h3><p class="suave chico">Confirmó Ropa de abrigo, 12 prendas, el 9 de octubre.</p></a><small>La misma, activa</small></div>
+          <div class="estado-m estado-m--ancho"><div class="lamina lamina--protagonista pila g1"><h3>Llegó una entrega: falta que la confirmes</h3><p><strong>Lentejas secas, 15 kg.</strong> Llegó hoy a las 17:40.</p></div><small>Protagonista: una sola por pantalla</small></div>
+          <div class="estado-m estado-m--ancho"><div class="lamina lamina--tierra"><p>Al confirmar, la entrega queda como confirmada y Distribuidora Ejemplo SA recibe el aviso con tu foto.</p></div><small>Nota: qué va a pasar</small></div>
+          <div class="estado-m estado-m--ancho"><article class="etiqueta"><figure class="foto"><svg role="img" aria-label="Foto de ejemplo: paquetes de fideos y una caja en dos estantes"><use href="#escena-estante"/></svg><figcaption class="foto-rotulo">Foto de ejemplo</figcaption></figure><div class="etiqueta-cuerpo"><h3>Fideos secos, 8 kg</h3><p>Comedor Barrio Ejemplo</p><p class="etiqueta-pie">Recibió Marta el 5 de octubre</p><span class="sello" data-estado="confirmada"><svg class="signo" aria-hidden="true"><use href="#e-confirmada"/></svg>Entrega confirmada</span></div></article><small>Etiqueta, con la foto arriba</small></div>
+          <div class="estado-m estado-m--ancho"><article class="etiqueta etiqueta--costado"><figure class="foto"><svg role="img" aria-label="Foto de ejemplo: dos pilas de ropa doblada sobre una mesa"><use href="#escena-ropa"/></svg><figcaption class="foto-rotulo">Foto de ejemplo</figcaption></figure><div class="etiqueta-cuerpo"><h3>Ropa de abrigo, 12 prendas</h3><p>Merendero Ejemplo Sur</p><p class="etiqueta-pie">Recibió Inés el 9 de octubre</p></div></article><small>Etiqueta, con la foto al costado</small></div>
+          <div class="estado-m estado-m--ancho"><div class="etiqueta etiqueta--espera"><h3>La foto de la organización</h3><p class="suave">Va a aparecer acá cuando Comedor Barrio Ejemplo confirme la entrega.</p></div><small>Etiqueta que espera la foto</small></div>
+          <div class="estado-m estado-m--ancho"><div class="dt pantalla muestra-angosta"><article class="etiqueta etiqueta--costado etiqueta--fila"><figure class="foto"><svg role="img" aria-label="Foto de ejemplo: cinco paquetes de arroz parados en un cajón"><use href="#escena-cajon"/></svg><figcaption class="foto-rotulo">Foto de ejemplo</figcaption></figure><div class="etiqueta-cuerpo"><h3>Arroz, 15 kg</h3><p>De Almacén Ejemplo SRL. 1 foto.</p><p class="etiqueta-pie">Recibió Marta el 3 de octubre</p></div></article></div><small>Etiqueta en una lista de entregas: en el celular no se apila; la foto queda al costado, chica y entera</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion" id="g-listas">
+      <div class="lam-pila lam-lectura"><h2>Listas y tablas</h2><p>En la huerta, listas donde tocar una fila lleva al detalle y, cuando hay que comparar varias donaciones, una tabla que en el celular se apila. En el galpón, tablas densas con selección de varias filas. Toda lista tiene sus tres estados: vacía, cargando y con error.</p></div>
+      <div class="dt muestra muestra--tabla">
+        <div class="muestra-fila"><span class="rotulo-m">Lista: la fila entera es el enlace. Normal, con el cursor, con foco y activa</span>
+          <ul class="lista medida">
+            <li><a class="lista-fila" href="#g-listas"><strong>Leche en polvo, 6 unidades</strong><span class="sello" data-estado="asignada"><svg class="signo" aria-hidden="true"><use href="#e-asignada"/></svg>Asignada</span><span class="suave chico">Paso 2 de 5. Sale el 16 de octubre.</span></a></li>
+            <li><a class="lista-fila es-cursor" href="#g-listas"><strong>Arroz largo fino, 10 kg</strong><span class="sello" data-estado="registrada"><svg class="signo" aria-hidden="true"><use href="#e-registrada"/></svg>Registrada</span><span class="suave chico">Paso 1 de 5. En el depósito desde el 12 de octubre. Con el cursor.</span></a></li>
+            <li><a class="lista-fila es-foco" href="#g-listas"><strong>Útiles escolares, 2 cajas</strong><span class="sello" data-estado="problema"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg>Con problema</span><span class="suave chico">Sale de nuevo el 17 de octubre. Con foco.</span></a></li>
+            <li><a class="lista-fila es-activo" href="#g-listas"><strong>Fideos secos, 8 kg</strong><span class="sello" data-estado="confirmada"><svg class="signo" aria-hidden="true"><use href="#e-confirmada"/></svg>Entrega confirmada</span><span class="suave chico">La confirmó Comedor Barrio Ejemplo el 5 de octubre. Activa.</span></a></li>
+          </ul>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Fila de una necesidad: el nombre, cuánto llegó y su barra de avance. Normal, con el cursor, con foco y activa</span>
+          <ul class="lista medida">
+            <li><a class="lista-fila lista-fila--avance" href="#g-listas"><strong>Lentejas secas</strong><span class="cifra">25 de 40 kg</span><progress class="avance" value="25" max="40" aria-label="Llegaron 25 de 40 kg"></progress><span class="suave chico">Faltan 15 kg. Hasta el 31 de octubre.</span></a></li>
+            <li><a class="lista-fila lista-fila--avance es-cursor" href="#g-listas"><strong>Leche en polvo</strong><span class="cifra">12 de 24 unidades</span><progress class="avance" value="12" max="24" aria-label="Llegaron 12 de 24 unidades"></progress><span class="suave chico">6 asignadas, que salen el 16. Con el cursor.</span></a></li>
+            <li><a class="lista-fila lista-fila--avance es-foco" href="#g-listas"><strong>Arroz</strong><span class="cifra">15 de 40 kg</span><progress class="avance" value="15" max="40" aria-label="Llegaron 15 de 40 kg"></progress><span class="suave chico">Sin entregas en curso. Con foco.</span></a></li>
+            <li><a class="lista-fila lista-fila--avance es-activo" href="#g-listas"><strong>Aceite de girasol</strong><span class="cifra">0 de 20 litros</span><progress class="avance" value="0" max="20" aria-label="Llegaron 0 de 20 litros"></progress><span class="suave chico">20 litros con problema, que salen de nuevo el 17. Activa.</span></a></li>
+          </ul>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Lista de datos: lo que quedó asentado. No se toca: no tiene estados</span>
+          <dl class="datos medida">
+            <div><dt>Remito</dt><dd class="cifra">0001-00004521</dd></div>
+            <div><dt>Recibió</dt><dd>Marta, por Comedor Barrio Ejemplo</dd></div>
+            <div><dt>Cuándo</dt><dd>15 de octubre de 2026, 18:45</dd></div>
+          </dl>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Tabla de la huerta, en escritorio: fila normal, con el cursor y con el foco en su enlace. En una ventana angosta se ve apilada</span>
+          <div class="dt pantalla"><div class="tabla-caja"><table class="tabla tabla--apilable" role="table"><caption class="oculto-visual">Muestra: tres donaciones, en escritorio</caption><thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">Donación</th><th scope="col" role="columnheader">Para</th><th scope="col" role="columnheader">Estado</th><th scope="col" role="columnheader">Lo último</th></tr></thead><tbody role="rowgroup"><tr role="row"><th scope="row" role="rowheader"><a class="tabla-enlace" href="#g-listas">Leche en polvo, 6 unidades</a><small>Donación 0043</small></th><td role="cell" data-rotulo="Para"><span>Comedor Barrio Ejemplo</span></td><td role="cell" data-rotulo="Estado"><div><div class="estado-raiz"><span class="sello" data-estado="asignada"><svg class="signo" aria-hidden="true"><use href="#e-asignada"/></svg>Asignada</span><ol class="raiz raiz--acostada" aria-label="Paso 2 de 5"><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Registrada</span></li><li class="raiz-paso" data-paso="actual"><span class="raiz-nudo"></span><span class="oculto-visual">Asignada, ahora</span></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo"></span><span class="oculto-visual">Falta: preparada</span></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo"></span><span class="oculto-visual">Falta: en camino</span></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo"></span><span class="oculto-visual">Falta: entrega confirmada</span></li></ol></div><small>Paso 2 de 5</small></div></td><td role="cell" data-rotulo="Lo último"><span>14 de octubre, 12:15. Se asignó. Sale el 16 de octubre.</span></td></tr><tr role="row" class="es-cursor"><th scope="row" role="rowheader"><a class="tabla-enlace es-cursor" href="#g-listas">Lentejas secas, 15 kg</a><small>Donación 0041</small></th><td role="cell" data-rotulo="Para"><span>Comedor Barrio Ejemplo</span></td><td role="cell" data-rotulo="Estado"><div><div class="estado-raiz"><span class="sello" data-estado="en-camino"><svg class="signo" aria-hidden="true"><use href="#e-en-camino"/></svg>En camino</span><ol class="raiz raiz--acostada" aria-label="Paso 4 de 5"><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Registrada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Asignada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Preparada</span></li><li class="raiz-paso" data-paso="actual"><span class="raiz-nudo"></span><span class="oculto-visual">En camino, ahora</span></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo"></span><span class="oculto-visual">Falta: entrega confirmada</span></li></ol></div><small>Paso 4 de 5</small></div></td><td role="cell" data-rotulo="Lo último"><span>Hoy, 14:30. Salió del depósito. Con el cursor.</span></td></tr><tr role="row"><th scope="row" role="rowheader"><a class="tabla-enlace es-foco" href="#g-listas">Útiles escolares, 2 cajas</a><small>Donación 0040</small></th><td role="cell" data-rotulo="Para"><span>Escuela Ejemplo N.º&nbsp;12</span></td><td role="cell" data-rotulo="Estado"><div><div class="estado-raiz"><span class="sello" data-estado="problema"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg>Con problema</span><ol class="raiz raiz--acostada" aria-label="Cumplió 3 de 5 pasos y el cuarto no pudo llegar"><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Registrada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Asignada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Preparada</span></li><li class="raiz-paso" data-paso="problema"><span class="raiz-nudo"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg></span><span class="oculto-visual">Salió y no pudo llegar</span></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo"></span><span class="oculto-visual">Falta: entrega confirmada</span></li></ol></div><small>Paso 3 de 5. El viaje no pudo llegar.</small></div></td><td role="cell" data-rotulo="Lo último"><span>11 de octubre. No pudo llegar. Sale de nuevo el 17. Con foco en su enlace.</span></td></tr></tbody></table></div></div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">La misma tabla, en el celular: cada fila es un bloque y cada dato lleva su rótulo</span>
+          <div class="dt pantalla muestra-angosta"><div class="tabla-caja"><table class="tabla tabla--apilable" role="table"><caption class="oculto-visual">Muestra: dos donaciones, en el celular</caption><thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">Donación</th><th scope="col" role="columnheader">Para</th><th scope="col" role="columnheader">Estado</th><th scope="col" role="columnheader">Lo último</th></tr></thead><tbody role="rowgroup"><tr role="row"><th scope="row" role="rowheader"><a class="tabla-enlace" href="#g-listas">Leche en polvo, 6 unidades</a><small>Donación 0043</small></th><td role="cell" data-rotulo="Para"><span>Comedor Barrio Ejemplo</span></td><td role="cell" data-rotulo="Estado"><div><div class="estado-raiz"><span class="sello" data-estado="asignada"><svg class="signo" aria-hidden="true"><use href="#e-asignada"/></svg>Asignada</span><ol class="raiz raiz--acostada" aria-label="Paso 2 de 5"><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Registrada</span></li><li class="raiz-paso" data-paso="actual"><span class="raiz-nudo"></span><span class="oculto-visual">Asignada, ahora</span></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo"></span><span class="oculto-visual">Falta: preparada</span></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo"></span><span class="oculto-visual">Falta: en camino</span></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo"></span><span class="oculto-visual">Falta: entrega confirmada</span></li></ol></div><small>Paso 2 de 5</small></div></td><td role="cell" data-rotulo="Lo último"><span>14 de octubre, 12:15. Se asignó. Sale el 16 de octubre.</span></td></tr><tr role="row"><th scope="row" role="rowheader"><a class="tabla-enlace" href="#g-listas">Útiles escolares, 2 cajas</a><small>Donación 0040</small></th><td role="cell" data-rotulo="Para"><span>Escuela Ejemplo N.º&nbsp;12</span></td><td role="cell" data-rotulo="Estado"><div><div class="estado-raiz"><span class="sello" data-estado="problema"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg>Con problema</span><ol class="raiz raiz--acostada" aria-label="Cumplió 3 de 5 pasos y el cuarto no pudo llegar"><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Registrada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Asignada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Preparada</span></li><li class="raiz-paso" data-paso="problema"><span class="raiz-nudo"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg></span><span class="oculto-visual">Salió y no pudo llegar</span></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo"></span><span class="oculto-visual">Falta: entrega confirmada</span></li></ol></div><small>Paso 3 de 5. El viaje no pudo llegar.</small></div></td><td role="cell" data-rotulo="Lo último"><span>11 de octubre. No pudo llegar. Sale de nuevo el 17.</span></td></tr></tbody></table></div></div>
+          <p class="suave chico">No se esconde ninguna columna. El nombre de la donación es el enlace al detalle y ocupa 48 px de alto. Sigue siendo una tabla: lleva sus roles escritos, para que un lector de pantalla siga anunciando filas y columnas cuando se apila. El rótulo que se ve no se anuncia otra vez: la cabecera de la columna ya lo dice.</p>
+        </div>
+        <div class="muestra-fila galpon"><span class="rotulo-m">Tabla del galpón: fila normal, con el cursor (y el foco en su casilla) y elegida</span>
+          <div class="tabla-caja">
+            <table class="tabla">
+              <thead><tr><th scope="col" class="col-casilla"><span class="oculto-visual">Elegir</span></th><th scope="col">Donación</th><th scope="col">Para</th><th scope="col">Estado</th><th scope="col">Desde</th></tr></thead>
+              <tbody>
+                <tr><td class="col-casilla"><label class="casilla"><input type="checkbox" aria-label="Elegir Arroz largo fino, 10 kg"></label></td><td><strong>Arroz largo fino</strong>, 10 kg<small>Distribuidora Ejemplo SA</small></td><td class="suave">Todavía sin organización</td><td><span class="sello" data-estado="registrada"><svg class="signo" aria-hidden="true"><use href="#e-registrada"/></svg>Registrada</span></td><td>12/10</td></tr>
+                <tr class="es-cursor"><td class="col-casilla"><label class="casilla"><input type="checkbox" class="es-foco" aria-label="Elegir Lentejas secas, 15 kg"></label></td><td><strong>Lentejas secas</strong>, 15 kg<small>Distribuidora Ejemplo SA</small></td><td>Comedor Barrio Ejemplo</td><td><span class="sello" data-estado="en-camino"><svg class="signo" aria-hidden="true"><use href="#e-en-camino"/></svg>En camino</span></td><td>15/10</td></tr>
+                <tr><td class="col-casilla"><label class="casilla"><input type="checkbox" checked aria-label="Elegir Útiles escolares, 2 cajas"></label></td><td><strong>Útiles escolares</strong>, 2 cajas<small>Distribuidora Ejemplo SA</small></td><td>Escuela Ejemplo N.º 12</td><td><span class="sello" data-estado="problema"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg>Con problema</span></td><td>11/10</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <nav class="paginador" aria-label="Páginas"><span aria-disabled="true">‹<span class="oculto-visual"> Anterior</span></span><a href="#g-listas" aria-current="page">1</a><a href="#g-listas">2</a><a href="#g-listas" class="es-cursor">3</a><a href="#g-listas">›<span class="oculto-visual"> Siguiente</span></a><span class="suave chico">Mostrando 1 a 20 de 1.284 entregas confirmadas desde marzo de 2026.</span></nav>
+          <p class="suave chico">Paginador: «anterior» deshabilitado, la página actual (1), una normal (2), una con el cursor (3) y «siguiente». Al apretar una página, baja 2 px y toma el mismo fondo que con el cursor.</p>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Los tres estados, que valen para una lista y para una tabla</span>
+          <div class="estados" data-col="17">
+            <div class="estado-m estado-m--ancho"><div class="lista-estado lista-estado--vacia trama"><h3>Todavía no hay entregas confirmadas</h3><p>Cuando una organización confirme la primera, aparece acá con su foto.</p><a class="boton" href="#g-listas">Ver las que están en camino</a></div><small>Vacía: dice qué va a aparecer y qué hacer</small></div>
+            <div class="estado-m estado-m--ancho"><div class="lista-estado" aria-busy="true"><p class="suave">Buscando las entregas…</p><div class="esqueleto" aria-hidden="true"><i></i><i></i><i></i></div></div><small>Cargando: si tarda más de 300 ms</small></div>
+            <div class="estado-m estado-m--ancho"><div class="aviso" data-tipo="error" role="alert"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg><p class="aviso-titulo">No pudimos traer las entregas</p><p>El servicio no respondió. Lo que ya confirmaste está guardado.</p><p><a class="enlace-suelto" href="#g-listas">Volver a intentar</a></p></div><small>Con error: qué pasó y cómo seguir</small></div>
+            <div class="estado-m estado-m--ancho galpon"><div class="tabla-caja"><table class="tabla"><thead><tr><th scope="col">Propuestas</th></tr></thead><tbody><tr><td><div class="pila g1 tabla-vacia"><strong>No hay propuestas por decidir</strong><span class="suave">La próxima asignación corre esta noche, a las 0:00.</span></div></td></tr></tbody></table></div><small>Tabla vacía, en el galpón</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion" id="g-avisos">
+      <div class="lam-pila lam-lectura"><h2>Notificaciones</h2><p>Tres piezas. El aviso en la página queda hasta que se resuelve. El aviso breve cuenta cómo salió algo y no pide nada. La campanita junta las novedades sin cambiar de pantalla.</p></div>
+      <div class="dt muestra muestra--tabla">
+        <div class="muestra-fila"><span class="rotulo-m">Avisos en la página: cada tipo con su signo</span>
+          <div class="estados" data-col="17">
+            <div class="estado-m estado-m--ancho"><div class="aviso" data-tipo="info"><svg class="signo" aria-hidden="true"><use href="#e-info"/></svg><p class="aviso-titulo">La revisión suele llevar unos días hábiles</p><p>Te avisamos por correo cuando esté.</p></div><small>Información</small></div>
+            <div class="estado-m estado-m--ancho"><div class="aviso" data-tipo="exito" role="status"><svg class="signo" aria-hidden="true"><use href="#e-confirmada"/></svg><p class="aviso-titulo">Publicaste la necesidad</p><p>Arroz, 40 kg cada mes. Ya la ven quienes donan.</p></div><small>Salió bien</small></div>
+            <div class="estado-m estado-m--ancho"><div class="aviso" data-tipo="advertencia"><svg class="signo" aria-hidden="true"><use href="#e-atencion"/></svg><p class="aviso-titulo">4 donaciones vencen en 7 días</p><p><a class="enlace-suelto" href="#g-avisos">Ver las que vencen</a></p></div><small>Para mirar</small></div>
+            <div class="estado-m estado-m--ancho"><div class="aviso" data-tipo="error" role="alert"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg><p class="aviso-titulo">Una entrega no pudo llegar</p><p>Útiles escolares, 2 cajas: el camino estaba cortado. Sale de nuevo el 17 de octubre.</p></div><small>Problema</small></div>
+          </div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Aviso que lleva a un detalle: el enlace es su título y ocupa 48 px de alto. Normal, con el cursor y con foco</span>
+          <div class="estados" data-col="17">
+            <div class="estado-m estado-m--ancho"><div class="aviso" data-tipo="error"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg><p class="aviso-titulo"><a href="#g-avisos">Útiles escolares, 2&nbsp;cajas: no pudo llegar</a></p><p>El 11 de octubre el camino estaba cortado. Sale de nuevo el&nbsp;17.</p></div><small>Normal</small></div>
+            <div class="estado-m estado-m--ancho"><div class="aviso" data-tipo="error"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg><p class="aviso-titulo"><a class="es-cursor" href="#g-avisos">Útiles escolares, 2&nbsp;cajas: no pudo llegar</a></p><p>El 11 de octubre el camino estaba cortado. Sale de nuevo el&nbsp;17.</p></div><small>Con el cursor</small></div>
+            <div class="estado-m estado-m--ancho"><div class="aviso" data-tipo="error"><svg class="signo" aria-hidden="true"><use href="#e-problema"/></svg><p class="aviso-titulo"><a class="es-foco" href="#g-avisos">Útiles escolares, 2&nbsp;cajas: no pudo llegar</a></p><p>El 11 de octubre el camino estaba cortado. Sale de nuevo el&nbsp;17.</p></div><small>Con foco</small></div>
+          </div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Aviso breve y campanita</span>
+          <div class="estados" data-col="19">
+            <div class="estado-m estado-m--ancho"><div class="aviso aviso--breve" data-tipo="exito" role="status"><svg class="signo" aria-hidden="true"><use href="#e-confirmada"/></svg><p>Aprobaste 2 propuestas.</p><button type="button" class="boton boton--icono" aria-label="Cerrar el aviso"><svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg></button></div><small>Aviso breve: aparece, se lee y se cierra solo o con la cruz</small></div>
+            <div class="estado-m estado-m--ancho"><div class="novedades"><p class="novedades-cabeza">Novedades <span class="cuenta-chica">2 sin leer</span></p><a class="novedad" data-leida="no" href="#g-avisos"><span><span class="novedad-texto">Llegó Lentejas secas, 15 kg. Falta tu confirmación.</span><span class="suave chico"> Hoy, 17:40</span></span></a><a class="novedad es-cursor" data-leida="no" href="#g-avisos"><span><span class="novedad-texto">Aceite de girasol sale de nuevo el 17 de octubre.</span><span class="suave chico"> 13 de octubre</span></span></a><a class="novedad" data-leida="si" href="#g-avisos"><span><span class="novedad-texto">Confirmaste Lentejas secas, 10 kg.</span><span class="suave chico"> 10 de octubre</span></span></a><a class="enlace-suelto" href="#g-avisos">Ver todas</a></div><small>Campanita: sin leer, con el cursor y leída</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion" id="g-navegacion">
+      <div class="lam-pila lam-lectura"><h2>Navegación</h2><p>Patrones conocidos, dibujados a la manera de Raíces. La huerta usa barra superior y, en el celular, barra de navegación inferior con 4 destinos. El galpón usa un cajón siempre abierto en escritorio.</p></div>
+      <div class="dt muestra muestra--tabla">
+        <div class="muestra-fila"><span class="rotulo-m">Barra superior, en escritorio: normal, actual, con el cursor y con foco</span>
+          <div class="dt pantalla"><div class="pagina"><header class="barra">
+            <a class="marca" href="#g-navegacion"><svg aria-hidden="true"><use href="#i-marca"/></svg>DonaTrack</a>
+            <nav class="barra-secciones" aria-label="Secciones (muestra)"><a href="#g-navegacion">Inicio</a><a href="#g-navegacion" aria-current="page">Necesidades</a><a href="#g-navegacion" class="es-cursor">Entregas</a><a href="#g-navegacion" class="es-foco">Ayuda</a></nav>
+            <div class="barra-acciones"><a class="boton boton--icono campana" href="#g-navegacion" aria-label="Novedades: 2 sin leer"><svg class="icono" aria-hidden="true"><use href="#i-campana"/></svg><span class="campana-cuenta" aria-hidden="true">2</span></a><button type="button" class="cuenta"><span class="cuenta-foto" aria-hidden="true">CB</span><span class="cuenta-datos">Comedor Barrio Ejemplo<small>Organización</small></span></button></div>
+          </header></div></div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">En el celular: barra superior y barra de navegación inferior (normal, actual y, en «Ayuda», con foco)</span>
+          <div class="dt pantalla muestra-angosta"><div class="pagina"><header class="barra">
+            <a class="marca" href="#g-navegacion"><svg aria-hidden="true"><use href="#i-marca"/></svg>DonaTrack</a>
+            <div class="barra-acciones"><a class="boton boton--icono campana" href="#g-navegacion" aria-label="Novedades: 2 sin leer"><svg class="icono" aria-hidden="true"><use href="#i-campana"/></svg><span class="campana-cuenta" aria-hidden="true">2</span></a><button type="button" class="cuenta" aria-label="Cuenta de Comedor Barrio Ejemplo"><span class="cuenta-foto" aria-hidden="true">CB</span></button></div>
+          </header>
+          <nav class="menu-celular sobre-suelo" aria-label="Secciones en el celular (muestra)"><a href="#g-navegacion"><svg class="icono" aria-hidden="true"><use href="#i-casa"/></svg>Inicio</a><a href="#g-navegacion" aria-current="page"><svg class="icono" aria-hidden="true"><use href="#i-lista"/></svg>Necesidades</a><a href="#g-navegacion"><svg class="icono" aria-hidden="true"><use href="#i-caja"/></svg>Entregas</a><a href="#g-navegacion" class="es-foco"><svg class="icono" aria-hidden="true"><use href="#i-ayuda"/></svg>Ayuda</a></nav></div></div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Cajón del galpón: actual, normal, con el cursor y con foco</span>
+          <div class="dt pantalla muestra-angosta"><nav class="cajon cajon--muestra sobre-suelo" aria-label="Secciones del admin (muestra)"><a href="#g-navegacion" aria-current="page"><svg class="icono" aria-hidden="true"><use href="#i-bandeja"/></svg>Por decidir <span class="cuenta-chica">9</span></a><a href="#g-navegacion"><svg class="icono" aria-hidden="true"><use href="#i-caja"/></svg>Donaciones</a><a href="#g-navegacion" class="es-cursor"><svg class="icono" aria-hidden="true"><use href="#i-cuenta"/></svg>Donantes</a><a href="#g-navegacion" class="es-foco"><svg class="icono" aria-hidden="true"><use href="#i-camion"/></svg>Camiones</a></nav></div>
+        </div>
+        <div class="muestra-fila"><span class="rotulo-m">Pestañas, migas de pan, paginador y «Saltar al contenido»</span>
+          <div class="dt pantalla"><nav class="pestanas" aria-label="Pestañas en escritorio (muestra)"><a href="#g-navegacion" aria-current="page">Vigentes <span class="cuenta-chica">4</span></a><a href="#g-navegacion">Cumplidas <span class="cuenta-chica">3</span></a><a href="#g-navegacion" class="es-cursor">Dadas de baja <span class="cuenta-chica">1</span></a><a href="#g-navegacion" class="es-foco">Con foco</a></nav></div>
+          <div class="dt pantalla muestra-angosta muestra-angosta--aire"><nav class="pestanas" aria-label="Pestañas en el celular (muestra)"><a href="#g-navegacion" aria-current="page">Vigentes <span class="cuenta-chica">4</span></a><a href="#g-navegacion">Cumplidas <span class="cuenta-chica">3</span></a><a href="#g-navegacion" class="es-cursor">Dadas de baja <span class="cuenta-chica">1</span></a></nav></div>
+          <p class="suave chico">En el celular las pestañas bajan de renglón como botones: ninguna queda escondida detrás de un desplazamiento.</p>
+          <nav class="migas" aria-label="Dónde estás (muestra)"><ol><li><a href="#g-navegacion">Donaciones</a><svg class="icono" aria-hidden="true"><use href="#i-ir"/></svg></li><li aria-current="page">Lentejas secas, 15 kg</li></ol></nav>
+          <nav class="paginador" aria-label="Páginas (muestra)"><a href="#g-navegacion">‹<span class="oculto-visual"> Anterior</span></a><a href="#g-navegacion">1</a><a href="#g-navegacion" aria-current="page">2</a><a href="#g-navegacion">3</a><a href="#g-navegacion">›<span class="oculto-visual"> Siguiente</span></a></nav>
+          <p class="fila g3"><a class="boton es-foco" href="#g-navegacion">Saltar al contenido</a> <span class="suave chico">Es lo primero que encuentra el teclado en cada pantalla. Se ve solo con foco.</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion" id="g-detalles">
+      <div class="lam-pila lam-lectura"><h2>Detalles gráficos</h2><p>Los seis que reserva la mezcla C. Cada uno tiene un solo significado. El folio (D6) no se usa.</p></div>
+      <div class="rejilla">
+        <div class="lam-pila"><div class="dt muestra fila g3"><span class="sello" data-estado="confirmada"><svg class="signo" aria-hidden="true"><use href="#e-confirmada"/></svg>Entrega confirmada</span><span class="sello" data-estado="en-camino"><svg class="signo" aria-hidden="true"><use href="#e-en-camino"/></svg>En camino</span></div><h4><span class="dg">D1</span> El sello</h4><p class="lam-chico">Dice el estado de una donación. Va en la huerta y en el galpón, donde se nombra un estado.</p></div>
+        <div class="lam-pila"><div class="dt muestra pila"><ol class="raiz raiz--acostada" aria-label="Paso 4 de 5"><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Registrada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Asignada</span></li><li class="raiz-paso" data-paso="hecho"><span class="raiz-nudo"></span><span class="oculto-visual">Preparada</span></li><li class="raiz-paso" data-paso="actual"><span class="raiz-nudo"></span><span class="oculto-visual">En camino, ahora</span></li><li class="raiz-paso" data-paso="falta"><span class="raiz-nudo"></span><span class="oculto-visual">Falta confirmar la entrega</span></li></ol><p class="chico suave">Paso 4 de 5: en camino.</p></div><h4><span class="dg">D2</span> La raíz de los 5 pasos</h4><p class="lam-chico">El recorrido comprobado de una donación. Llena, lo que pasó. Punteada, lo que falta. Con el signo del problema, un paso que se intentó y no pudo ser. Solo en la huerta.</p></div>
+        <div class="lam-pila"><div class="dt muestra"><article class="etiqueta etiqueta--costado"><figure class="foto"><svg role="img" aria-label="Foto de ejemplo: tres bolsas y una caja junto a una puerta"><use href="#escena-puerta"/></svg><figcaption class="foto-rotulo">Foto de ejemplo</figcaption></figure><div class="etiqueta-cuerpo"><h3>Lentejas secas, 10 kg</h3><p class="etiqueta-pie">Recibió Marta el 10 de octubre</p></div></article></div><h4><span class="dg">D3</span> La etiqueta</h4><p class="lam-chico">Esto se recibió: la foto, qué es, dónde y quién lo recibió. Punteada, espera la foto.</p></div>
+        <div class="lam-pila"><div class="dt muestra pila g1"><ul class="frutos" aria-label="9 frutos"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul><p class="chico"><strong>9 entregas confirmadas</strong> en octubre, del 1 al 15.</p></div><h4><span class="dg">D4</span> Los frutos</h4><p class="lam-chico">Un fruto es una entrega confirmada. Va junto a su cifra, con el período. Nunca cuenta una donación registrada.</p></div>
+        <div class="lam-pila"><div class="dt muestra"><div class="portada-titulo trama"><h3><span>Seguí tu donación hasta que la confirman</span></h3></div></div><h4><span class="dg">D5</span> La trama</h4><p class="lam-chico">No dice nada: es textura de imprenta. Va detrás del título de la portada y en las listas vacías, nunca debajo de un texto corrido.</p></div>
+        <div class="lam-pila"><div class="dt muestra"><div class="lamina lamina--protagonista"><strong>En camino ahora</strong></div></div><h4><span class="dg">D7</span> La sombra de paja</h4><p class="lam-chico">Esto es lo principal de la pantalla. Una sola por pantalla, y solo en la huerta.</p></div>
+      </div>
+      <div class="lam-pila lam-lectura"><h3>La puerta: la raíz y los frutos, juntos</h3><p>Un dibujo para las pantallas de la organización. Es el final de la ilustración de la portada. Tiene dos estados y un solo movimiento: al confirmar una recepción, el tramo que faltaba se dibuja una vez, en 1,1 segundos; después se llena el quinto nudo y aparece el fruto. Con movimiento reducido no se mueve nada.</p></div>
+      <div class="comparar">
+        <div class="lam-pila"><div class="dt muestra"><figure class="puerta-dibujo"><svg viewBox="0 0 640 400" aria-hidden="true" focusable="false"><use href="#puerta-fondo"/><path class="pta-tramo-falta f-nada s-papel" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 10" d="M345 350C420 350 500 360 520 318V254"/><use href="#puerta-nudos"/><g class="nudo-numero nudo-numero--falta"><circle class="f-suelo s-papel" cx="520" cy="318" r="13" stroke-width="2.500" stroke-dasharray="4 4"/><text x="520" y="323.500">5</text></g><g class="f-fruto s-fruto-hondo" stroke-width="2.500"><circle class="pta-fruto" cx="474" cy="138" r="10"/><circle class="pta-fruto" cx="498" cy="86" r="10"/><circle class="pta-fruto" cx="554" cy="90" r="10"/><circle class="pta-fruto" cx="574" cy="140" r="10"/></g><g class="pta-bultos"><g class="s-tinta" stroke-width="3"><rect class="f-ambar" x="330" y="216" width="34" height="34"/><rect class="f-claro" x="366" y="188" width="44" height="62" rx="15"/><rect class="f-claro" x="406" y="204" width="38" height="46" rx="13"/><rect class="f-claro" x="440" y="194" width="36" height="56" rx="13"/><path class="f-nada" d="M377 188c4-9 18-9 22 0M415 204c4-8 16-8 20 0M449 194c4-8 14-8 18 0"/></g><rect class="f-hondo" x="344" y="217.500" width="6" height="31"/><rect class="f-raiz" x="375" y="214" width="26" height="12"/><rect class="f-raiz" x="413" y="223" width="24" height="11"/><rect class="f-raiz" x="447" y="217" width="22" height="11"/></g></svg><span class="oculto-visual">Dibujo: la puerta de la organización, con una caja y tres bolsas que esperan afuera. La raíz llega al cuarto de cinco nudos; el tramo que falta es punteado. El árbol tiene cuatro frutos.</span><figcaption><ul class="frutos" aria-hidden="true"><li></li><li></li><li></li><li></li></ul><span><strong>4 entregas confirmadas</strong> por tu organización en octubre, del 1 al 15.</span></figcaption></figure></div><h4>Con una entrega que espera</h4><p class="lam-chico">Los bultos en la puerta. La raíz, llena hasta el cuarto nudo y punteada hasta el quinto. Un fruto por cada entrega que la organización ya confirmó en el mes.</p></div>
+        <div class="lam-pila"><div class="dt muestra"><figure class="puerta-dibujo"><svg viewBox="0 0 640 400" aria-hidden="true" focusable="false"><use href="#puerta-fondo"/><path class="pta-tramo-falta f-nada s-papel" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 10" d="M345 350C420 350 500 360 520 318V254"/><g class="pta-hecho"><path class="pta-tramo f-nada s-tinta" pathLength="1" stroke-width="11" stroke-linecap="round" d="M345 350C420 350 500 360 520 318V254"/><path class="pta-tramo f-nada s-raiz" pathLength="1" stroke-width="7" stroke-linecap="round" d="M345 350C420 350 500 360 520 318V254"/></g><use href="#puerta-nudos"/><g class="nudo-numero nudo-numero--falta"><circle class="f-suelo s-papel" cx="520" cy="318" r="13" stroke-width="2.500" stroke-dasharray="4 4"/><text x="520" y="323.500">5</text></g><g class="pta-nudo-5 nudo-numero"><circle class="f-raiz s-tinta" cx="520" cy="318" r="13" stroke-width="2.500"/><text x="520" y="323.500">5</text></g><g class="f-fruto s-fruto-hondo" stroke-width="2.500"><circle class="pta-fruto" cx="474" cy="138" r="10"/><circle class="pta-fruto" cx="498" cy="86" r="10"/><circle class="pta-fruto" cx="554" cy="90" r="10"/><circle class="pta-fruto" cx="574" cy="140" r="10"/><circle class="pta-fruto pta-fruto-nuevo" cx="522" cy="124" r="10"/></g></svg><span class="oculto-visual">Dibujo: la puerta de la organización. La raíz pasa por los cinco nudos y sube hasta el árbol, que tiene cinco frutos.</span><figcaption><ul class="frutos" aria-hidden="true"><li></li><li></li><li></li><li></li><li></li></ul><span><strong>5 entregas confirmadas</strong> por tu organización en octubre, del 1 al 15.</span></figcaption></figure></div><h4>Confirmada</h4><p class="lam-chico">Sin bultos. La raíz llega al árbol y hay un fruto más. La cifra del pie cambia con él.</p></div>
+      </div>
+    </div>
+
+    <div class="seccion" id="g-patrones">
+      <div class="lam-pila lam-lectura"><h2>Patrones que usa</h2><p>Con el nombre que les da el material de la cátedra. Ninguno es inventado: la identidad está en cómo se dibujan.</p></div>
+      <div class="tabla-lam"><table>
+        <thead><tr><th scope="col">Patrón</th><th scope="col">Dónde</th><th scope="col">Pieza de esta guía</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Barra superior</th><td>Lo público, quien dona y la organización</td><td>La marca, las secciones a la vista y las acciones de la cuenta</td></tr>
+          <tr><th scope="row">Barra de navegación inferior</th><td>Todos los roles, en el celular</td><td>4 destinos de primer nivel</td></tr>
+          <tr><th scope="row">Cajón</th><td>El admin, en escritorio</td><td>Siempre abierto: 6 secciones y la cuenta</td></tr>
+          <tr><th scope="row">Pestañas</th><td>Necesidades, Bandeja y Donaciones</td><td>Destacan la elegida y muestran cuántas hay en cada una</td></tr>
+          <tr><th scope="row">Migas de pan</th><td>Los tres detalles de quien dona (Donación asignada, Seguimiento y Donación con problema), Entrega con problema, Confirmar recepción y Recepción confirmada</td><td>El camino desde el nivel de arriba</td></tr>
+          <tr><th scope="row">Barra de progreso</th><td>El recorrido de una donación y el avance de una necesidad</td><td>La raíz de 5 pasos, que en Recepción confirmada está completa y en Donaciones va una por fila, y la barra de avance</td></tr>
+          <tr><th scope="row">Listas</th><td>La huerta: «También en curso», en el inicio de quien dona; «Lo que viene» y «Tus necesidades», en el de la organización</td><td>Tocar una fila lleva al detalle. La lista de datos de Recepción confirmada no se toca</td></tr>
+          <tr><th scope="row">Tarjetas</th><td>La huerta</td><td>Lámina y etiqueta, de un solo tema. En Entregas, una lámina por entrega que falta llegar y una etiqueta por entrega confirmada</td></tr>
+          <tr><th scope="row">Campos de texto</th><td>Confirmar recepción</td><td>Rótulo arriba, ayuda y error al lado</td></tr>
+          <tr><th scope="row">Avisos en la página</th><td>Los dos inicios, Donación con problema, Entrega con problema y el error de Confirmar recepción</td><td>El aviso que queda hasta que se resuelve. Si lleva a un detalle, el enlace es su título</td></tr>
+          <tr><th scope="row">Avisos breves</th><td>Después de una acción que no cierra un recorrido</td><td>El aviso breve. Confirmar una recepción responde con una página propia: sigue la heurística 1, que pide una respuesta visible a cada acción</td></tr>
+          <tr><th scope="row">Listas de contenido estructurado</th><td>Donaciones de quien dona</td><td>La tabla que se apila: tabla en escritorio y, en el celular, un bloque por fila con el rótulo de cada dato</td></tr>
+          <tr><th scope="row">Listas, en su forma densa</th><td>El galpón</td><td>La tabla con selección de varias filas. El material de la cátedra no la nombra aparte: es la lista de contenido estructurado, con una casilla por fila</td></tr>
+          <tr><th scope="row">Avisos que no interrumpen</th><td>La campanita y el resumen de errores</td><td>La campanita junta las novedades sin cambiar de pantalla. El resumen de errores sigue la heurística 9: el problema exacto y qué hacer</td></tr>
+          <tr><th scope="row">Elegir antes que escribir</th><td>Confirmar recepción</td><td>Las opciones de «¿Llegó bien?» y el botón que abre la cámara o la galería</td></tr>
+          <tr><th scope="row">Paginado</th><td>Las listas largas</td><td>El paginador, que dice qué parte se ve y de cuántas</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="seccion" id="g-codigo">
+      <div class="lam-pila lam-lectura">
+        <h2>Llevarlo al código</h2>
+        <p>Está pensado para el stack de hoy: Thymeleaf, HTMX y Alpine, con CSS plano y sin armado de frontend.</p>
+        <ul class="vinetas">
+          <li>El bloque trae los tokens que usan esta guía y las trece pantallas. Se suma a <code>static/css/tokens.css</code>: no reemplaza el archivo entero. Los tokens que ya existían y están acá conservan su nombre.</li>
+<!--AUSENTES-->
+          <li>Esta maqueta dibuja cada pantalla dentro de un marco, así que sus quiebres son consultas de contenedor. En el producto pasan a <code>@media</code> con los mismos valores: 37,5 em y 56 em. El título usa <code>cqi</code>; en el producto, <code>vw</code>.</li>
+          <li>Cada componente es una clase con sus variantes y usa solo tokens de uso. Las clases <code>es-cursor</code>, <code>es-foco</code> y <code>es-activo</code> existen solo para mostrar los estados en esta guía: comparten la regla con el estado real.</li>
+          <li>Todo enlace es un <code>&lt;a&gt;</code> y todo formulario es un <code>&lt;form&gt;</code>. La selección de la bandeja son casillas dentro de un formulario; JavaScript solo actualiza la cuenta.</li>
+          <li>El avance de una necesidad es un <code>&lt;progress&gt;</code> nativo.</li>
+          <li>Los dibujos son SVG en línea y toman el color de los tokens por clase.</li>
+          <li>La tabla que se apila es un <code>&lt;table&gt;</code> con sus <code>role</code> escritos y el rótulo de cada dato en <code>data-rotulo</code>. Es el patrón que ya usa <code>static/css/componentes/tabla.css</code>: acá cambia cómo se dibuja, no cómo se arma.</li>
+          <li>Los dos estados del inicio de la organización, de Entregas y de Necesidades son la misma plantilla con datos distintos. En esta maqueta se eligen por el ancla; en el producto los decide el servidor. Las dos horas de Entrega con problema existen solo en la maqueta, que dibuja tres horas de un mismo día: en el producto es una plantilla, y es la misma que la de Donación con problema, con otra voz.</li>
+          <li>El trazo de Recepción confirmada se dibuja solo en la respuesta al formulario: la plantilla lleva la clase <code>recien</code> esa única vez. Usa <code>--movimiento-duracion-trazo</code> y <code>--movimiento-curva-entrada</code>, que ya estaban en <code>tokens.css</code>. Las esperas entre el tramo, el nudo y el fruto están escritas acá con esas mismas duraciones; en el producto se piden a los tokens de espera de <code>tokens.css</code> (<code>--movimiento-retraso-</code>), que este bloque no trae.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>

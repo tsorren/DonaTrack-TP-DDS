@@ -9,8 +9,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
- * Seguimiento de la empresa de ejemplo: las siete donaciones y los puntos sintéticos del mapa que
- * escribía la plantilla, uno por barrio.
+ * Seguimiento de la empresa de ejemplo: las siete donaciones y el punto sintético del mapa de la
+ * que está en camino, por barrio.
  */
 @Component
 @ConditionalOnProperty(
@@ -22,10 +22,8 @@ class DonanteSeguimientoMaqueta implements DonanteSeguimientoPuerto {
   private static final DonanteSeguimientoVista SEGUIMIENTO =
       new DonanteSeguimientoVista(
           DonanteDonacionesDeEjemplo.DONACIONES,
-          Map.of(
-              "lentejas", new Punto(-34.6392, -58.4150, -34.6418, -58.4291),
-              "utiles", new Punto(-34.6240, -58.3944, -34.6052, -58.3846),
-              "leche", new Punto(-34.6405, -58.3960, -34.6683, -58.4067)),
+          // Un punto por donación en camino: la asignada y la que no pudo llegar no viajan.
+          Map.of("lentejas", new Punto(-34.6392, -58.4150, -34.6418, -58.4291)),
           "hoy, 15 de octubre, a las 16:25");
 
   @Override

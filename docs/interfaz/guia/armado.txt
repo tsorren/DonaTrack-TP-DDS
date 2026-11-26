@@ -1,0 +1,5 @@
+Salida: <carpeta temporal de la sesión>/artifacts/guia-y-pantallas.html (384 KB)
+Tokens del producto: 149 {"igual":96,"cambia":6,"nuevo":47}
+Tokens de uso del repo: 117 · presentes en el bloque: 73 · ausentes: 44 · de uso propios: 119 · de uso nuevos: 46
+Cambian: --color-accion-secundaria (antes #e4efc9); --color-accion-secundaria-activa (antes #8fcb4a); --color-enlace (antes #2a7035); --color-foco (antes #2a7035); --tamano-titulo-portada (antes clamp(2.6rem, 1.4rem + 4.4vw, 5rem)); --medida-menu-celular (antes 3.8125rem)
+Sin colores literales fuera de los bloques de tokens; ids únicos; anclas con destino.

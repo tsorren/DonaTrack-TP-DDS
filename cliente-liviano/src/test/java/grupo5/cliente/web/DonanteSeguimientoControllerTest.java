@@ -30,7 +30,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-/** Seguimiento del donante con lo que da el puerto: una entrega en camino, en el mapa. */
+/**
+ * Seguimiento de una donación (arquetipo A07, DA-03a) con lo que da el puerto: la pedida o la
+ * primera en camino, en el mapa, con su recorrido.
+ */
 @WebMvcTest(controllers = {DonanteSeguimientoController.class, PantallasController.class})
 @ActiveProfiles("maqueta")
 @Import({MaquetaConfig.class, Pantallas.class})
@@ -70,13 +73,53 @@ class DonanteSeguimientoControllerTest {
                 Map.of("s1", new Punto(-34.6, -58.4, -34.7, -58.5)),
                 "hoy, 7 de noviembre, a las 19:40"));
 
+    // DA-03a: una sola donación, a la que se llega desde su detalle (las migas vuelven a él).
     mvc.perform(get("/donante-seguimiento"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("1 entrega en curso.")))
+        .andExpect(content().string(containsString("<h1>Silla plegable, 1 unidad</h1>")))
         .andExpect(
-            content().string(containsString("actualizadas hoy, 7 de noviembre, a las 19:40.")))
+            content().string(containsString("href=\"/donante-donaciones-detalle?donacion=s1\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "Posición aproximada, actualizada hoy, 7 de noviembre, a las 19:40.")))
         .andExpect(content().string(containsString("data-lat=\"-34.6\"")))
-        .andExpect(content().string(containsString("Para Hogar Ejemplo")));
+        .andExpect(content().string(containsString("Para Hogar Ejemplo")))
+        // HG-02: el texto de «Si no llega», con la hora de salida, como en el inicio.
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "En camino desde el 7 de noviembre, 10:00. Posición aproximada,")))
+        .andExpect(content().string(not(containsString("Salió el 7 de noviembre"))))
+        // HG-02: la hora estimada no llega del backend.
+        .andExpect(content().string(not(containsString("Hora estimada"))));
+  }
+
+  /** DA-03a: con ?donacion=, la pedida; una que no va en curso lo dice, sin mostrar otra. */
+  @Test
+  void muestraLaDonacionPedidaYAvisaSiNoVaEnCurso() throws Exception {
+    when(cuentas.donante(any())).thenReturn(Optional.of(DONANTE));
+    when(seguimientos.seguimiento(DONANTE))
+        .thenReturn(
+            new DonanteSeguimientoVista(
+                List.of(
+                    donacion("s1", "Silla plegable", "Hogar Ejemplo"),
+                    donacion("m1", "Mesa ratona", "Comedor Ejemplo")),
+                Map.of("m1", new Punto(-34.61, -58.41, -34.7, -58.5)),
+                "hoy, 7 de noviembre, a las 19:40"));
+
+    mvc.perform(get("/donante-seguimiento?donacion=m1"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("<h1>Mesa ratona, 1 unidad</h1>")))
+        .andExpect(content().string(containsString("data-lat=\"-34.61\"")))
+        .andExpect(content().string(not(containsString("Silla plegable, 1 unidad"))));
+
+    mvc.perform(get("/donante-seguimiento?donacion=otra"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("No encontramos esa donación en camino.")))
+        .andExpect(content().string(not(containsString("data-mapa"))));
   }
 
   /** R11-39: lo que espera destino es un aviso con ícono, título y lista, no un párrafo suelto. */
@@ -102,7 +145,7 @@ class DonanteSeguimientoControllerTest {
         .andExpect(content().string(containsString("<li>Arroz largo fino</li>")))
         .andExpect(content().string(containsString("<li>Fideos secos</li>")))
         .andExpect(
-            content().string(containsString("Aparecen en esta lista cuando se les asigne una")))
+            content().string(containsString("Las vas a poder seguir acá cuando se les asigne una")))
         .andExpect(content().string(not(containsString("seguimiento-pie"))));
   }
 
@@ -121,7 +164,7 @@ class DonanteSeguimientoControllerTest {
     mvc.perform(get("/donante-seguimiento"))
         .andExpect(content().string(containsString("Todavía espera destino")))
         .andExpect(
-            content().string(containsString("Aparece en esta lista cuando se le asigne una")));
+            content().string(containsString("La vas a poder seguir acá cuando se le asigne una")));
   }
 
   @Test
@@ -177,6 +220,7 @@ class DonanteSeguimientoControllerTest {
         .andExpect(status().isOk())
         .andExpect(
             content().string(containsString("Ningún camión está en camino con tus donaciones")))
-        .andExpect(content().string(not(containsString("aria-labelledby=\"lista-titulo\""))));
+        .andExpect(content().string(not(containsString("aria-labelledby=\"recorrido-titulo\""))))
+        .andExpect(content().string(not(containsString("data-mapa"))));
   }
 }

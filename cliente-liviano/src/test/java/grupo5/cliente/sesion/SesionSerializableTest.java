@@ -124,8 +124,8 @@ class SesionSerializableTest {
   void loQueElSitioGuardaPorSuCuentaEnLaSesionEsSerializable() throws Exception {
     // CuentaPorParametro y CuentaDeEjemplo guardan un UUID o un texto, y los flash attributes que
     // deja el sitio entre un POST y su redirección son un texto (el aviso), un long (el número del
-    // mensaje de contacto), un boolean ("guardado") y la contraseña provisoria cifrada, que es un
-    // texto: todos tipos del JDK.
+    // mensaje de contacto), dos boolean ("guardado" y "recien") y la contraseña provisoria cifrada,
+    // que es un texto: todos tipos del JDK.
     UUID id = UUID.randomUUID();
     String provisoria =
         new CifradoDeLaSesion("", false).cifrar("K7pQ-m4Rt-x9Wa-2Lse".getBytes(UTF_8));
@@ -134,6 +134,7 @@ class SesionSerializableTest {
     atributos.put("perfil", "pendiente");
     atributos.put("numeroDelMensaje", 4821L);
     atributos.put("guardado", true);
+    atributos.put("recien", true);
     atributos.put("provisoria", provisoria);
 
     Map<String, Object> recuperados = viajar(atributos);
@@ -143,6 +144,7 @@ class SesionSerializableTest {
         .containsEntry("perfil", "pendiente")
         .containsEntry("numeroDelMensaje", 4821L)
         .containsEntry("guardado", true)
+        .containsEntry("recien", true)
         .containsEntry("provisoria", provisoria);
   }
 }

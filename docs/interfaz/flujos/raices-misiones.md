@@ -1,5 +1,10 @@
 # Flujo: Misiones e insignias de la persona que dona, en Raíces
 
+> **Desde el 2026-11-23,** la ficha [`guia-don-misiones.md`](guia-don-misiones.md) (ola DON de la
+> guía «Huerta y galpón») manda sobre esta en cómo se ve Misiones, el menú de la persona y el toque
+> de 48 px, y cierra la prueba A/B con la huerta. Los datos, los estados y los textos de esta ficha
+> siguen, salvo los cambios de §4 y §6 de `guia-don-misiones.md`.
+
 > **Estado:** aprobado · **Fecha:** 2026-11-07 · **Aprobó:** usuario (2026-11-07), después de `revision-ui` PASS en la ronda 2
 > Ficha de la skill `ux-flujo`, fase F5 del [roadmap de las vistas](../roadmap-vistas-enunciado.md).
 > Pantalla nueva: `/donante-misiones`. RF-07 la muestra solo a quien dona como persona, y la cuenta

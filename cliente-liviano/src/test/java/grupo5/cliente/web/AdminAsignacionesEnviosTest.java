@@ -1,8 +1,11 @@
 package grupo5.cliente.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,9 +17,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import grupo5.cliente.puertos.AdminOperacionPuerto;
+import grupo5.cliente.puertos.AdminPersonasPuerto;
 import grupo5.cliente.puertos.AdministradorActual;
 import grupo5.cliente.vistas.AdminAsignacionesVista;
 import grupo5.cliente.vistas.AdminAsignacionesVista.Cuentas;
+import grupo5.cliente.vistas.AdminInicioVista;
+import grupo5.cliente.vistas.AdminInicioVista.Decisiones;
 import grupo5.cliente.vistas.ConsultaAsignaciones;
 import grupo5.cliente.vistas.ConsultaDecididas;
 import grupo5.cliente.vistas.Tramo;
@@ -25,6 +31,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -34,6 +41,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 /**
  * Asignar donaciones fuera de la maqueta: la lista sin asignaciones corridas, los envíos que
@@ -49,6 +57,7 @@ class AdminAsignacionesEnviosTest {
 
   @MockitoBean private AdminOperacionPuerto operacion;
   @MockitoBean private AdministradorActual administrador;
+  @MockitoBean private AdminPersonasPuerto personas;
   @Autowired private MockMvc mvc;
 
   @Test
@@ -70,7 +79,98 @@ class AdminAsignacionesEnviosTest {
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Todavía no se corrió ninguna asignación.")))
         .andExpect(content().string(containsString("No hay propuestas que esperen tu decisión.")))
-        .andExpect(content().string(containsString("aria-label=\"Qué querés revisar\"")));
+        .andExpect(content().string(containsString("aria-label=\"Qué hay por decidir\"")));
+  }
+
+  // DA-25: la cabecera y las pestañas de Por decidir, las mismas que /admin-inicio, con la fecha y
+  // las cuentas de Solicitudes y Por vencer de la misma fuente (el inicio del puerto de personas)
+  @Test
+  void laMesaLlevaLaCabeceraYLasPestanasDePorDecidir() throws Exception {
+    when(personas.inicio())
+        .thenReturn(
+            new AdminInicioVista(
+                "Jueves 15 de octubre de 2026",
+                null,
+                new Decisiones(3, List.of("Hogar Ejemplo Norte"), 0, 7, 4, null, 8),
+                "15 de octubre de 2026, 18:30",
+                null));
+    when(operacion.asignaciones(any(), eq("")))
+        .thenReturn(
+            new AdminAsignacionesVista(
+                ConsultaAsignaciones.primera(),
+                new Cuentas(7, 4, 3),
+                "hoy, 0:00 · generó 7 propuestas",
+                new Tramo<>(List.of(), 4, 1, 1),
+                List.of(),
+                null,
+                List.of(),
+                null,
+                null));
+
+    mvc.perform(get("/admin-asignaciones"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(matchesPattern("(?s).*<h1[^>]*>Por decidir</h1>.*")))
+        .andExpect(content().string(containsString("Jueves 15 de octubre de 2026.")))
+        .andExpect(content().string(containsString("Última asignación: hoy, 0:00 · generó 7")))
+        .andExpect(content().string(containsString("action=\"/admin-asignaciones-corrida\"")))
+        .andExpect(content().string(containsString("href=\"/admin-donaciones-registrar\"")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-inicio\"[^>]*aria-current=\"page\">Propuestas"
+                            + " <b>4</b></a>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-asignaciones\\?pestana=conflictos\"[^>]*>Conflictos"
+                            + " <b>3</b></a>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-entidades\"[^>]*>Solicitudes <b>3</b></a>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-donaciones\\?vence=pronto\"[^>]*>Por vencer"
+                            + " <b>4</b></a>.*")));
+    mvc.perform(get("/admin-asignaciones?pestana=destino")).andExpect(status().isOk());
+    mvc.perform(get("/admin-asignaciones?vista=decididas")).andExpect(status().isOk());
+  }
+
+  // DA-25: si el inicio no responde, la mesa sigue con la fecha de hoy y esas dos pestañas sin
+  // cuenta
+  @Test
+  void sinElInicioLasPestanasVanSinCuentaYLaMesaSigue() throws Exception {
+    when(personas.inicio()).thenThrow(new ResourceAccessException("Personas no responde"));
+    when(operacion.asignaciones(any(), eq("")))
+        .thenReturn(
+            new AdminAsignacionesVista(
+                ConsultaAsignaciones.primera(),
+                new Cuentas(7, 4, 3),
+                null,
+                new Tramo<>(List.of(), 4, 1, 1),
+                List.of(),
+                null,
+                List.of(),
+                null,
+                null));
+
+    mvc.perform(get("/admin-asignaciones"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString(AdminAsignacionesController.hoy() + ".")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern("(?s).*<a href=\"/admin-entidades\"[^>]*>Solicitudes</a>.*")))
+        .andExpect(
+            content()
+                .string(
+                    matchesPattern(
+                        "(?s).*<a href=\"/admin-donaciones\\?vence=pronto\"[^>]*>Por vencer</a>.*")));
   }
 
   @Test
@@ -246,6 +346,140 @@ class AdminAsignacionesEnviosTest {
                     "No se pudo aprobar: la necesidad de Merendero Ejemplo ya no está activa (la"
                         + " organización la dio de baja o ya se cumplió). No se asignó nada; podés"
                         + " descartar la propuesta."));
+  }
+
+  // DA-26: varias propuestas juntas, una por una contra el puerto, en orden
+  @Test
+  void aprobarVariasLlamaAlPuertoUnaVezPorPropuesta() throws Exception {
+    when(operacion.decidirPropuesta("p-1", true, null)).thenReturn(0);
+    when(operacion.decidirPropuesta("p-2", true, null)).thenReturn(1);
+
+    mvc.perform(post("/admin-asignaciones-aprobada").param("propuesta", "p-1", "p-2"))
+        .andExpect(redirectedUrl("/admin-asignaciones"))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "Aprobaste las 2 propuestas. Las donaciones quedaron asignadas y salen del"
+                        + " depósito cuando se arme la ruta. 1 propuesta que pedía la misma"
+                        + " donación pasó a Conflictos."));
+    InOrder orden = inOrder(operacion);
+    orden.verify(operacion).decidirPropuesta("p-1", true, null);
+    orden.verify(operacion).decidirPropuesta("p-2", true, null);
+  }
+
+  @Test
+  void siUnaAprobacionFallaParaYDiceCuantasSeAprobaron() throws Exception {
+    when(operacion.decidirPropuesta("p-1", true, null)).thenReturn(0);
+    when(operacion.decidirPropuesta("p-2", true, null)).thenThrow(conflicto("ERR-EST-521"));
+
+    mvc.perform(post("/admin-asignaciones-aprobada").param("propuesta", "p-1", "p-2", "p-3"))
+        .andExpect(redirectedUrl("/admin-asignaciones"))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "Aprobaste 1 de las 3 propuestas. No se pudo aprobar la siguiente: la necesidad"
+                        + " ya no está activa (la organización la dio de baja o ya se cumplió)."
+                        + " Las demás quedaron sin decidir."));
+    verify(operacion).decidirPropuesta("p-1", true, null);
+    verify(operacion, never()).decidirPropuesta("p-3", true, null);
+  }
+
+  @Test
+  void siLaPrimeraFallaNoSeAproboNinguna() throws Exception {
+    when(operacion.decidirPropuesta("p-1", true, null)).thenThrow(conflicto("ERR-EST-999"));
+
+    mvc.perform(post("/admin-asignaciones-aprobada").param("propuesta", "p-1", "p-2"))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "No se aprobó ninguna de las 2 propuestas. No se pudo aprobar la primera: cambió"
+                        + " mientras la mirabas. Las demás quedaron sin decidir."));
+    verify(operacion, never()).decidirPropuesta("p-2", true, null);
+  }
+
+  @Test
+  void descartarVariasConUnMotivo() throws Exception {
+    mvc.perform(
+            post("/admin-asignaciones-descartada")
+                .param("propuesta", "p-1", "p-2")
+                .param("motivo", "Ya no hace falta"))
+        .andExpect(redirectedUrl("/admin-asignaciones"))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "Descartaste las 2 propuestas y guardamos el motivo. Las donaciones siguen en el"
+                        + " depósito para otra asignación."));
+    InOrder orden = inOrder(operacion);
+    orden.verify(operacion).decidirPropuesta("p-1", false, "Ya no hace falta");
+    orden.verify(operacion).decidirPropuesta("p-2", false, "Ya no hace falta");
+  }
+
+  @Test
+  void siUnDescarteFallaParaYDiceCuantasSeDescartaron() throws Exception {
+    when(operacion.decidirPropuesta("p-2", false, "Ya no hace falta"))
+        .thenThrow(conflicto("ERR-EST-999"));
+
+    mvc.perform(
+            post("/admin-asignaciones-descartada")
+                .param("propuesta", "p-1", "p-2", "p-3")
+                .param("motivo", "Ya no hace falta"))
+        .andExpect(
+            flash()
+                .attribute(
+                    Envios.AVISO,
+                    "Descartaste 1 de las 3 propuestas. No se pudo descartar la siguiente: cambió"
+                        + " mientras la mirabas. Las demás quedaron sin decidir."));
+    verify(operacion, never()).decidirPropuesta("p-3", false, "Ya no hace falta");
+  }
+
+  @Test
+  void sinElegirNingunaNoSeLlamaAlPuerto() throws Exception {
+    mvc.perform(post("/admin-asignaciones-aprobada").param("pestana", "inicio"))
+        .andExpect(redirectedUrl("/admin-inicio"))
+        .andExpect(flash().attribute(Envios.AVISO, "Elegí al menos una propuesta para aprobar."));
+    mvc.perform(post("/admin-asignaciones-descartada"))
+        .andExpect(redirectedUrl("/admin-asignaciones"))
+        .andExpect(flash().attribute(Envios.AVISO, "Elegí al menos una propuesta para descartar."));
+    verify(operacion, never()).decidirPropuesta(any(), anyBoolean(), any());
+  }
+
+  // Desde Por decidir (/admin-inicio) el formulario manda pestana=inicio y vuelve ahí
+  @Test
+  void desdeElInicioVuelvenAlInicio() throws Exception {
+    when(operacion.correrAsignacion()).thenReturn(0);
+    mvc.perform(post("/admin-asignaciones-corrida").param("pestana", "inicio"))
+        .andExpect(redirectedUrl("/admin-inicio"));
+    when(operacion.decidirPropuesta("p-1", true, null)).thenThrow(conflicto("ERR-EST-520"));
+
+    mvc.perform(
+            post("/admin-asignaciones-aprobada")
+                .param("propuesta", "p-1", "p-2")
+                .param("pestana", "inicio"))
+        .andExpect(redirectedUrl("/admin-inicio"));
+    mvc.perform(
+            post("/admin-asignaciones-descartada")
+                .param("propuesta", "p-1")
+                .param("pestana", "inicio"))
+        .andExpect(redirectedUrl("/admin-inicio"));
+    mvc.perform(
+            post("/admin-asignaciones-descartada")
+                .param("propuesta", "p-1")
+                .param("pestana", "inicio")
+                .param("motivo", "a".repeat(501)))
+        .andExpect(redirectedUrl("/admin-inicio"));
+  }
+
+  private static HttpClientErrorException conflicto(String codigo) {
+    return HttpClientErrorException.create(
+        HttpStatus.CONFLICT,
+        "Conflict",
+        HttpHeaders.EMPTY,
+        ("{\"code\": \"" + codigo + "\"}").getBytes(StandardCharsets.UTF_8),
+        StandardCharsets.UTF_8);
   }
 
   @Test

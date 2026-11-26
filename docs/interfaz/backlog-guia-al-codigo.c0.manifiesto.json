@@ -1,0 +1,91 @@
+{
+  "formato": "oleada-ui/1",
+  "version": "1.0.0",
+  "nombre": "guia",
+  "fecha": "2026-11-22",
+  "backlog": "docs/interfaz/backlog-guia-al-codigo.md",
+  "prefijoCommit": "E7: guía al código",
+  "comoLeerlo": "Manifiesto de la ola piloto C0 (los tokens de la guía «Huerta y galpón»). Los ítems, con su evidencia, están en la sección 3 del backlog; las decisiones del usuario, con su texto y su fecha, en la sección 2. Un manifiesto por ola, todos con nombre 'guia', y cada ola sale de E7_guia_ui y vuelve a ella. C0 es la primera corrida real del workflow oleada-ui y además mide cuánto tarda y cuánto gasta una ola (backlog, sección 3.4). 'modelos' vale para los lotes sin pantallas: el workflow corre con Opus high todo lote con rutasVisuales (c0-tokens), como aceptó el usuario en DA-11.",
+  "ramas": {
+    "base": "E7_guia_ui",
+    "destino": "E7_guia_ui",
+    "prefijoOla": "E7_guia_ui_"
+  },
+  "topes": {
+    "constructoresEnParalelo": 2,
+    "rondasDeReparacion": 3
+  },
+  "modelos": {
+    "juicio": { "model": "opus", "effort": "medium" },
+    "mecanico": { "model": "sonnet", "effort": "high" }
+  },
+  "olas": ["C0"],
+  "reglas": [
+    "Segunda corrida de C0: la primera se paró el 2026-11-22 porque la decisión DA-14a pedía retirar --medida-quiebre-medio, que sí se usa; la decisión ya está corregida. La rama E7_guia_ui_c0 ya tiene el trabajo de la primera: c0-adr (34cf87ae7, aprobado por su revisión) y c0-tokens (9e995ec42). Cada constructor parte de ahí: verifica su lote contra el backlog, completa lo que falte y no rehace lo que ya está. En c0-tokens, la revisión de la primera corrida pidió: (1) en /estilos, la tarjeta «Color: los nombres de antes» se desarma (cada palabra cae en su propio renglón): cada alias tiene que leerse entero en su renglón; (2) el selector .muestra-tokens[data-tipo=\"sombra\"] > li::before está duplicado en componentes/muestra.css (Sonar css:S4666): una sola regla; (3) la corrida de -Pvisual sobre las 320 rutas no quedó registrada. Si un lote no tiene nada que cambiar, su constructor igual comitea con git commit --allow-empty y el mensaje del lote, y el integrador lo trae con git cherry-pick --allow-empty.",
+    "Esta ola cambia el sistema visual. La fuente de verdad es la guía versionada en docs/interfaz/guia/ (partes/05-tokens.css para los valores): donde la guía y el catálogo de hoy difieren, manda la guía.",
+    "En el producto no hay consultas de contenedor para los quiebres: los valores de la guía en cqi pasan a vw y los quiebres siguen la regla de --medida-quiebre-* de cliente-liviano/AGENTS.md.",
+    "Ningún tope de InterfazFitnessTest sube. Si un par de tokens nuevo no llega al contraste AA, se informa como bloqueante: no se cambia el valor de la guía por cuenta propia.",
+    "auth-service/themes/donatrack/login/resources/css/tokens.css es una copia idéntica de tokens.css (auth-service/README.md): no se edita a mano. Después de cambiar tokens.css, corré python scripts/sincronizar_tema.py y después python -m unittest scripts/tests/test_auth_theme.py; los dos tienen que terminar sin error.",
+    "Antes de comitear el lote de tokens, corré -Pvisual sin -Dverificacion.paginas (las 320 rutas de cliente-liviano/src/test/resources/verificacion/paginas.txt) y anotá en pendiente cuántas rutas pasan y cuáles no.",
+    "Quien cierra la ola, después de los gates y antes de bajar el stack, corre otra vez -Pvisual sin -Dverificacion.paginas (rm -rf cliente-liviano/target/capturas; mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false). Que falle una pantalla que no es de la ola no es un bloqueante. Copiá cliente-liviano/target/capturas/reporte.json y las capturas a 360 y 1280 px de las 7 rutas de la muestra para G1 a una carpeta muestra-g1/ junto a cierre.md, fuera del repo, y escribí en cierre.md cuántas rutas pasan, cuáles no y por qué.",
+    "Una pantalla que no es de esta ola no se rediseña ni se arregla, aunque se vea inconsistente con los tokens nuevos: quien construye y quien revisa la anotan como menor, nunca como bloqueante. Esta regla vale también para la revisión de pantallas. Es un dato para la decisión G1 (backlog, sección 9).",
+    "Muestra para G1, solo para mirar: publico-portada, donante-inicio, donante-donaciones, entidad-inicio, entidad-seguimiento-confirmar, admin-asignaciones y admin-donaciones (backlog, sección 3.3). Sus capturas salen de la corrida completa de -Pvisual; no entran en la revisión de pantallas ni en la hoja de contacto de la ola.",
+    "Al cerrar la ola, cierre.md lleva la hora de cada commit de la ola (git log) y las rondas de reparación de cada lote: es parte de la medida del piloto (backlog, sección 3.4). La duración total y los tokens los mide la sesión que lanza el workflow."
+  ],
+  "decisiones": [
+    {
+      "id": "G-01",
+      "texto": "Los tokens de la guía se suman a tokens.css: ningún token que ya existía cambia de nombre.",
+      "quien": "usuario",
+      "ok": "Cierre de la fase 3 de la guía, 2026-11-22 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.1)",
+      "lote": "c0-tokens",
+      "criterio": "tokens.css define los 119 tokens de uso de docs/interfaz/guia/partes/05-tokens.css con el valor de la guía (cqi pasa a vw), y los 73 que ya existían conservan su nombre."
+    },
+    {
+      "id": "G-02",
+      "texto": "La identidad pasa a «Huerta y galpón» (mezcla C): un esqueleto aireado para lo público, quien dona y la organización, y uno denso para el admin.",
+      "quien": "usuario",
+      "ok": "Elección de la mezcla C, 2026-11-20 (docs/interfaz/backlog-guia-al-codigo.md, sección 2.1)",
+      "lote": "c0-adr",
+      "criterio": "Existe un ADR en docs/adr/cliente-liviano/ con Status proposed que registra la decisión, las alternativas descartadas con su motivo, tal como están en la sección 2.1 del backlog (Poda, Acta, Recorrido, Remito y las mezclas A y B), y su relación con el ADR 20261110 de la piel Huerta; no está promovido a accepted."
+    },
+    {
+      "id": "DA-14a",
+      "texto": "Los 10 nombres de color de hoy que la guía no trae y siguen en uso quedan como alias del token de la guía del mismo valor (backlog, sección 3.2); se retiran solo los 3 tokens sin ninguna referencia, ni por nombre ni por valor (--medida-estrato, --color-nodo y --color-estrato); --medida-quiebre-medio se conserva, porque 39 media queries usan su valor (53.75em) y InterfazFitnessTest exige que cada media query use un quiebre declarado en tokens.css; los otros 30 de los 44 que la guía no trae (los 11 que solo nombra InterfazFitnessTest y los 19 de movimiento, capas, medidas y letra) no se tocan.",
+      "quien": "usuario",
+      "ok": "Respuesta del usuario en la ronda 1, 2026-11-22: «todas las recomendadas»; corregida el mismo día: se retiran 3 tokens y no 4 (el usuario eligió «parar, corregir la decisión y relanzar», su respuesta «Opción B»; esa «B» no se refiere a ninguna otra lista de opciones) (docs/interfaz/backlog-guia-al-codigo.md, secciones 2.2 y 3.2)",
+      "lote": "c0-tokens",
+      "criterio": "En tokens.css, cada uno de los 10 nombres de color en uso se define con var() del token de la guía del mismo valor, sin cambiar ningún color calculado; los 3 tokens sin referencias ya no están en tokens.css ni en su copia del tema de Keycloak; --medida-quiebre-medio sigue declarado con 53.75em; ningún par de contraste de InterfazFitnessTest se quita y el test pasa."
+    }
+  ],
+  "lotes": [
+    {
+      "id": "c0-adr",
+      "ola": "C0",
+      "tanda": 1,
+      "items": ["C0-01"],
+      "titulo": "ADR proposed de «Huerta y galpón» y dirección de arte al día",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [],
+      "archivos": "docs/adr/cliente-liviano/**; docs/adr/README.md; docs/interfaz/direccion-de-arte.md; docs/README.md; docs/ESTADO_DOCUMENTACION.md",
+      "rutasVisuales": [],
+      "que": "Un ADR proposed, con la plantilla de docs/adr/README.md, registra que la guía de docs/interfaz/guia/ es el sistema visual del cliente liviano y que hay un esqueleto por rol. Dice qué cambia frente al ADR 20261110 y propone la relación, sin promover nada. direccion-de-arte.md deja de nombrar a Pico como base y apunta a la guía."
+    },
+    {
+      "id": "c0-tokens",
+      "ola": "C0",
+      "tanda": 1,
+      "items": ["C0-02", "C0-03", "C0-04", "C0-05", "C0-06"],
+      "titulo": "Los tokens de la guía en tokens.css y en /estilos",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": ["cliente-liviano"],
+      "archivos": "cliente-liviano/src/main/resources/static/css/tokens.css; cliente-liviano/src/main/resources/templates/estilos.html; cliente-liviano/src/test/java/grupo5/cliente/InterfazFitnessTest.java (solo los pares de contraste); cliente-liviano/src/main/resources/static/css/componentes/muestra.css (solo las muestras de token de /estilos); auth-service/themes/donatrack/login/resources/css/tokens.css (solo con scripts/sincronizar_tema.py); docs/interfaz/componentes.md (una sección de tokens, nueva)",
+      "rutasVisuales": ["estilos"],
+      "que": "tokens.css suma los 46 tokens nuevos de la guía, cambia el valor de los 6 que cambian y deja los alias y los retiros de la decisión DA-14a. /estilos gana una sección «Tokens» que muestra color, letra, espaciado, radio, borde, elevación y movimiento, con sus muestras en componentes/muestra.css (sin style sueltos). La copia del tema de Keycloak se vuelve a copiar con el script. Ninguna otra pantalla se toca."
+    }
+  ]
+}

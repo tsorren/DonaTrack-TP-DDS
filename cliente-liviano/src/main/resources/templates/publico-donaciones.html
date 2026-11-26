@@ -1,18 +1,22 @@
 <!DOCTYPE html>
-<!--/* Raíces, sitio A: Entregas confirmadas (ficha docs/interfaz/flujos/raices-publico-navegable.md,
-       4.1). Las piezas de Raíces tal cual: la cifra del período es un fruto, como en "Lo que está
-       confirmado" de la portada (el usuario pidió reusar los frutos con cifras adentro); cada entrega,
-       una lámina de papel con su foto, el sello impreso de entrega confirmada y el pictograma de su
-       categoría en el cuadro salvia del cuaderno del mes. La foto grande, en el popover de la portada.
+<!--/* Entregas (RF-01, PUB1-03): deriva del arquetipo A10 de la guía «Huerta y galpón»
+       (docs/interfaz/guia/partes/50-pantallas.html, #entregas), hecho con las piezas del catálogo
+       (docs/interfaz/componentes.md). En lo público queda solo lo confirmado: los frutos del período
+       (componentes/huerta :: frutos, un fruto por entrega) y la etiqueta de cada entrega
+       (componentes/etiqueta-entrega), con su foto, el sello de la entrega confirmada y quién la
+       recibió: la organización, nunca una persona (DA-10, HG-03). No se muestra quién donó.
+       El Mapa queda dentro de Entregas: esta pantalla lo enlaza y el Mapa vuelve por sus migas (DA-01).
        El período va en la barra del componente listado (R11-B04, la arma PublicoDonacionesController),
        como desplegable propio: el puerto trae el mes y la semana, no un rango de fechas.
+       La foto grande, en el popover de datos-publicos :: fotoVentana. Una foto que no es una dirección
+       web es de los datos de ejemplo: lleva el rótulo «Foto de ejemplo».
        Estados: ?periodo=semana, ?escenario=vacio, lento, error y sin-foto (la primera foto no carga:
        se ve su texto alternativo). Datos: entregasConfirmadas, de PublicoPuerto (de ejemplo o las
        destacadas de Donaciones, HB-01); sin entregas, el estado vacío. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout-publico :: pagina(~{::title}, 'publico-donaciones', ~{::contenido})}">
 <head>
-  <title>Entregas confirmadas - DonaTrack</title>
+  <title>Entregas - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
@@ -24,26 +28,17 @@
              escenario=${param.escenario != null ? param.escenario[0] : (entregas.isEmpty() ? 'vacio' : '')},
              semana=${param.periodo != null and param.periodo[0] == 'semana'},
              lista=${semana ? entregas.?[semana] : entregas},
-             conDatos=${escenario == '' or escenario == 'sin-foto'}">
-  <svg th:replace="~{iconos :: categorias}"></svg>
-  <div class="publica entregas">
-    <header class="publica-cabeza">
-      <p class="rotulo">Entregas confirmadas</p>
-      <h1>Lo que ya llegó, <em>con su foto</em></h1>
-      <p class="lectura-bajada">Cada entrega la confirmó la organización que la recibió, con la fecha y una foto
-        de lo entregado. Mostramos qué se donó, a qué organización llegó y cuándo; no mostramos quién donó.</p>
+             conDatos=${escenario == '' or escenario == 'sin-foto'},
+             periodo=${semana ? 'la última semana' : 'el último mes'},
+             rango=${semana ? entregasConfirmadas.rangoSemana : entregasConfirmadas.rangoMes}">
+  <div class="pila" data-espacio="5" data-v="entregas">
+    <header class="pila" data-espacio="1">
+      <h1>Entregas</h1>
+      <p data-tono="suave">Cada entrega la confirmó la organización que la recibió, con la fecha y una foto de lo
+        entregado. Mostramos qué se donó, a qué organización llegó y cuándo; no mostramos quién donó.</p>
     </header>
 
-    <div th:if="${conDatos}" class="publica-barra">
-      <form th:replace="~{componentes/listado :: listado(${listado})}"></form>
-      <!--/* La cifra del período, en un fruto. */-->
-      <div class="cifra-fruto" aria-live="polite">
-        <p><b class="fruto" th:text="${#lists.size(lista)}">10</b>
-          <span th:if="${!semana}">entregas confirmadas en el último mes, [[${entregasConfirmadas.rangoMes}]].</span>
-          <span th:if="${semana}">entregas confirmadas en la última semana, [[${entregasConfirmadas.rangoSemana}]].</span></p>
-        <p class="nota">Actualizado el [[${entregasConfirmadas.actualizado}]].</p>
-      </div>
-    </div>
+    <th:block th:if="${conDatos}"><form th:replace="~{componentes/listado :: listado(${listado})}"></form></th:block>
 
     <section th:if="${escenario == 'vacio'}" class="vacio" aria-labelledby="vacio-titulo">
       <h2 id="vacio-titulo">Todavía no hay entregas confirmadas en el último mes.</h2>
@@ -52,52 +47,59 @@
          th:href="@{/publico-entidades}">Ver las organizaciones y lo que piden</a>
     </section>
 
-    <!--/* Cargando: el aviso y el lugar de cada entrega, sin datos inventados. Viene con la página:
-           en el sistema, el aviso va a una región viva. */-->
-    <th:block th:if="${escenario == 'lento'}">
+    <!--/* Cargando: el aviso y el lugar de cada entrega, sin datos inventados. */-->
+    <div th:if="${escenario == 'lento'}" class="pila" data-espacio="3" aria-busy="true">
       <p class="cargando" role="status">Cargando las entregas confirmadas…</p>
-      <ul class="lista laminas" role="list" aria-busy="true">
-        <li th:each="i : ${#numbers.sequence(1, 6)}" class="esqueleto lamina"></li>
-      </ul>
-    </th:block>
+      <div class="lista">
+        <div th:each="i : ${#numbers.sequence(1, 4)}" class="esqueleto" data-tamano="alto"></div>
+      </div>
+    </div>
 
     <th:block th:if="${escenario == 'error'}">
       <section th:replace="~{datos-publicos :: avisoError('No pudimos cargar las entregas confirmadas.',
           'Es un problema nuestro. Probá de nuevo en unos minutos;', '/publico-donaciones', true)}"></section>
     </th:block>
 
-    <ol th:if="${conDatos}" class="lista laminas" role="list">
-      <li th:each="e, i : ${lista}" class="tarjeta lamina" data-filete="contorno" th:with="id=${'foto-' + i.count}">
-        <div class="lamina-foto">
-          <img src="/img/ejemplo-entrega.svg"
-               th:src="${escenario == 'sin-foto' and i.first} ? @{/img/foto-que-no-carga.jpg} : @{${e.foto}}"
-               th:alt="${e.alt}" width="640" height="400">
-          <!--/* El sello de entrega confirmada, impreso sobre la foto. */-->
-          <p class="sello-entrega"><svg viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle
-              class="sello-tinta" cx="12.5" cy="12.5" r="9"/><circle class="sello-disco" cx="10.5" cy="10.5"
-              r="9"/><path class="sello-calado sello-calado--fino" d="M6.5 10.5l3 3 5-5"/></svg>Entrega
-            confirmada</p>
-        </div>
-        <div class="lamina-texto">
-          <h2 th:id="${id + '-que'}" th:text="${e.que}">Sillas, 6 unidades</h2>
-          <p class="lamina-categoria"><svg class="categoria-icono" viewBox="-14 -14 128 128" aria-hidden="true"
-              focusable="false"><use width="100" height="100" href="#cat-muebles" th:href="${'#cat-' + e.cat}"/></svg><span
-              th:text="${e.categoria}">Muebles</span></p>
-          <p th:text="${e.lugar}">Escuela Ejemplo N.º 12 · Centro Ejemplo</p>
-          <p class="lamina-fecha">Entrega confirmada el <time th:datetime="${e.fecha}"
-             th:text="|${e.dia} de ${e.anio}|">14 de octubre de 2026</time></p>
-        </div>
-        <button type="button" class="boton" data-tamano="chico" th:attr="popovertarget=${id},aria-describedby=${id + '-que'}">Ver
-          la foto de la entrega</button>
-        <div th:replace="~{datos-publicos :: fotoVentana(${id}, ${e})}"></div>
-      </li>
-    </ol>
+    <!--/* Las confirmadas: los frutos del período (D4) y la etiqueta de cada entrega (D3), de la última
+           a la primera. Con los datos reales llegan hasta 50: los frutos bajan de renglón. */-->
+    <section th:if="${conDatos}" class="pila" data-espacio="3" aria-labelledby="confirmadas-titulo">
+      <div class="racimo" data-alinea="entre">
+        <h2 id="confirmadas-titulo" th:text="|Confirmadas en ${periodo}|">Confirmadas en el último mes</h2>
+        <a class="boton" data-tono="secundario" href="/publico-mapa"
+           th:href="@{/publico-mapa}">Ver dónde llegaron, en el mapa</a>
+      </div>
+      <div aria-live="polite" class="pila" data-espacio="1">
+        <div th:replace="~{componentes/huerta :: frutos(${#lists.size(lista)}, ${rango}, false)}"></div>
+        <p data-tono="suave" class="texto-chico"
+           th:text="|Actualizado el ${entregasConfirmadas.actualizado}.|">Actualizado el 15 de octubre de 2026,
+          14:30.</p>
+      </div>
+      <ol th:unless="${#lists.isEmpty(lista)}" class="lista" role="list">
+        <li th:each="e, i : ${lista}" class="pila" data-espacio="1"
+            th:with="id=${'foto-' + i.count},
+                     real=${#strings.startsWith(e.foto, 'https://') or #strings.startsWith(e.foto, 'http://')},
+                     foto=${escenario == 'sin-foto' and i.first} ? @{/img/foto-que-no-carga.jpg} : @{${e.foto}},
+                     barrio=${#strings.contains(e.lugar, ' · ')} ? ${#strings.substringAfter(e.lugar, ' · ')} : null,
+                     lugar=${e.categoria == null ? barrio : (barrio == null ? e.categoria : e.categoria + ' · ' + barrio)}">
+          <article th:replace="~{componentes/etiqueta-entrega :: etiqueta-entrega(foto=${foto},
+                descripcion=${e.alt}, rotulo=${real} ? null : 'Foto de ejemplo', titulo=${e.que},
+                lugar=${lugar}, pie=|Recibió: ${e.entidad}, el ${e.dia} de ${e.anio}.|,
+                sello='Entrega confirmada', costado=true)}"></article>
+          <button type="button" class="boton" data-tamano="chico" th:attr="popovertarget=${id}">Ver la foto de
+            la entrega<span class="solo-lectores" th:text="| de ${e.que}|"> de Sillas, 6 unidades</span></button>
+          <div th:replace="~{datos-publicos :: fotoVentana(${id}, ${e})}"></div>
+        </li>
+      </ol>
+      <p th:unless="${#lists.isEmpty(lista)}" data-tono="suave" class="texto-chico"
+         th:text="${#lists.size(lista) == 1} ? 'Mostrando 1 entrega confirmada.' : |Mostrando ${#lists.size(lista)} entregas confirmadas, de la última a la primera.|">Mostrando
+        10 entregas confirmadas, de la última a la primera.</p>
+    </section>
 
-    <div th:if="${conDatos}" class="salidas">
-      <a class="boton" data-tono="secundario" href="/publico-mapa"
-         th:href="@{/publico-mapa}">Ver dónde llegaron, en el mapa</a>
+    <div th:if="${conDatos}" class="racimo">
       <a class="boton" data-tono="principal" href="/publico-registro-donante"
          th:href="@{/publico-registro-donante}">Quiero donar</a>
+      <a class="boton" data-tono="secundario" href="/publico-entidades"
+         th:href="@{/publico-entidades}">Ver las organizaciones y lo que piden</a>
     </div>
   </div>
 </th:block>

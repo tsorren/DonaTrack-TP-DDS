@@ -64,12 +64,18 @@ public class Pantallas {
 
   /**
    * Pantallas que son parte de una sección aunque su nombre no empiece con el de ella: la pestaña
-   * Importaciones es de Donantes (R11-20) y la pestaña Actividad, de Administradores (R11-26).
+   * Importaciones es de Donantes (R11-20), la pestaña Actividad, de Administradores (R11-26),
+   * Asignar y sus respuestas, de Por decidir (DA-25), la entrega con problema, de Entregas de la
+   * organización (ORG-08), y el seguimiento de quien dona, que se abre desde el detalle de una
+   * donación, de Donaciones (DA-03a).
    */
   private static final Map<String, String> EN_LA_SECCION =
       Map.of(
           "admin-importaciones", "admin-donantes",
-          "admin-actividad", "admin-administradores");
+          "admin-actividad", "admin-administradores",
+          "admin-asignaciones", "admin-inicio",
+          "entidad-entrega-problema", "entidad-seguimiento",
+          "donante-seguimiento", "donante-donaciones");
 
   private static final String SIN_DIBUJAR = "sin-dibujar";
   private static final String INICIO = "Inicio";
@@ -77,7 +83,9 @@ public class Pantallas {
   private static final String ICONO_INICIO = "inicio";
   private static final String ICONO_DONACIONES = "donaciones";
   private static final String ICONO_ENTIDADES = "entidades";
-  private static final String ICONO_SEGUIMIENTO = "seguimiento";
+  private static final String ICONO_AYUDA = "ayuda";
+  /* Cómo donar es la página pública Para donantes con otro nombre (DA-05). */
+  private static final String COMO_DONAR = "Cómo donar";
   private static final String ICONO_ESTRELLA = "estrella";
 
   /** Una sección del menú: su nombre, el corto de la barra del celular, su ícono y su pantalla. */
@@ -88,34 +96,37 @@ public class Pantallas {
     }
   }
 
-  /** Las secciones de cada área, en el orden del menú. Notificaciones va aparte, en la cabecera. */
+  /**
+   * Las secciones de cada área, en el orden del menú. Notificaciones va aparte, en la cabecera. La
+   * del admin es la del galpón (DA-04, DA-17 y DA-25): Por decidir reemplaza a Inicio y a Asignar,
+   * y sus íconos son el símbolo {@code i-<icono>} de {@code iconos :: comunes} (layout-privado).
+   */
   private static final Map<Area, List<Seccion>> MENUS =
       Map.of(
           Area.DONANTE,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "donante-inicio"),
-              new Seccion("Mis donaciones", DONACIONES, ICONO_DONACIONES, "donante-donaciones"),
+              new Seccion(DONACIONES, ICONO_DONACIONES, "donante-donaciones"),
               new Seccion("Organizaciones", ICONO_ENTIDADES, "donante-entidades"),
-              new Seccion("Seguimiento", ICONO_SEGUIMIENTO, "donante-seguimiento")),
+              new Seccion(COMO_DONAR, ICONO_AYUDA, "publico-para-donantes")),
           Area.ENTIDAD,
           List.of(
               new Seccion(INICIO, ICONO_INICIO, "entidad-inicio"),
               new Seccion("Necesidades", "necesidades", "entidad-necesidades"),
-              new Seccion(DONACIONES, ICONO_DONACIONES, "entidad-recibidas"),
-              new Seccion("Seguir entregas", "Entregas", ICONO_SEGUIMIENTO, "entidad-seguimiento")),
+              new Seccion("Entregas", "entregas", "entidad-seguimiento"),
+              new Seccion("Ayuda", "ayuda", "publico-para-entidades")),
           Area.ADMIN,
           List.of(
-              new Seccion(INICIO, ICONO_INICIO, "admin-inicio"),
-              new Seccion("Donantes", "donantes", "admin-donantes"),
-              new Seccion("Organizaciones", ICONO_ENTIDADES, "admin-entidades"),
-              new Seccion(DONACIONES, ICONO_DONACIONES, "admin-donaciones"),
-              new Seccion("Asignar donaciones", "Asignar", "asignar", "admin-asignaciones"),
-              new Seccion("Camiones", "camiones", "admin-camiones"),
-              new Seccion("Ranking", ICONO_ESTRELLA, "admin-ranking")));
+              new Seccion("Por decidir", "bandeja", "admin-inicio"),
+              new Seccion(DONACIONES, "caja", "admin-donaciones"),
+              new Seccion("Donantes", "cuenta", "admin-donantes"),
+              new Seccion("Organizaciones", "gente", "admin-entidades"),
+              new Seccion("Camiones", "camion", "admin-camiones"),
+              new Seccion("Ranking", "podio", "admin-ranking")));
 
   /**
-   * El menú de la persona que dona: el del donante con Misiones antes de Seguimiento (RF-07; la
-   * empresa no la ve).
+   * El menú de la persona que dona: el del donante con Misiones antes de Cómo donar (RF-07 y
+   * DA-03b; la empresa no la ve).
    */
   private static final List<Seccion> MENU_PERSONA =
       List.of(
@@ -266,7 +277,7 @@ public class Pantallas {
     String prefijo = pantalla.substring(0, pantalla.indexOf('-'));
     Optional<Area> area = Area.deRuta(prefijo);
     List<Seccion> menu = conMisiones ? MENU_PERSONA : area.map(MENUS::get).orElse(List.of());
-    String deLaSeccion = EN_LA_SECCION.getOrDefault(pantalla, pantalla);
+    String deLaSeccion = deLaSeccion(pantalla);
     Seccion actual =
         menu.stream()
             .filter(
@@ -299,6 +310,18 @@ public class Pantallas {
       }
     }
     return dibujada ? pantalla : SIN_DIBUJAR;
+  }
+
+  /**
+   * La pantalla de la sección a la que pertenece: la de {@link #EN_LA_SECCION}, también para sus
+   * pantallas de nivel 3 (como el menú, por el prefijo con guion), o ella misma.
+   */
+  private static String deLaSeccion(String pantalla) {
+    return EN_LA_SECCION.entrySet().stream()
+        .filter(e -> pantalla.equals(e.getKey()) || pantalla.startsWith(e.getKey() + "-"))
+        .map(Map.Entry::getValue)
+        .findFirst()
+        .orElse(pantalla);
   }
 
   private static List<OpcionNavegacion> opciones(List<Seccion> menu, Seccion actual) {

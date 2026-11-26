@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<!--/* Entrega con problema (RF-14): el arquetipo A11 de la guía «Huerta y galpón»
+       (docs/interfaz/guia/partes/50-pantallas.html, #entrega-problema), hecho con las piezas del
+       catálogo (docs/interfaz/componentes.md). El detalle de una entrega que no pudo llegar, dicho
+       para quien recibe: qué pasó (el aviso), cuándo sale de nuevo y qué le toca hacer (la lista de
+       datos), para qué necesidad es y el recorrido (la raíz, con el paso que no pudo ser). Cada cosa
+       va una sola vez; no hay sombra de paja ni acción llena: no hay nada que hacer hoy. La
+       necesidad lleva su avance, el de Necesidades (la cuenta de hoy, HG-04), si se sabe cuál es
+       (con los datos reales todavía no: HB-17). La nueva
+       salida no llega del backend (HG-01): «Todavía sin fecha de nueva salida». Del recorrido solo
+       se sabe el estado, no las horas de cada paso: la raíz va sin horas. La entrega sale de lo
+       asignado (la pedida en ?entrega=, o la primera con problema) y la última noticia, de
+       Logística; los dos, del controller (EntidadSeguimientoController). Sin una entrega con
+       problema con esa clave, lo dice y vuelve a Entregas. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, 'entidad-seguimiento', ~{::contenido})}">
+<head>
+  <title>Entrega con problema - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido"
+    th:with="d=${entrega},
+             titulo=${d == null ? 'Entrega con problema' : d.nombre + ', ' + d.cuanto}">
+  <svg th:replace="~{iconos :: signos}"></svg>
+  <div class="pila" data-espacio="5">
+    <div class="pila" data-espacio="1">
+      <nav th:replace="~{componentes/migas :: migas(pasos=${ { {texto: 'Entregas', ruta: '/entidad-seguimiento'} } }, actual=${titulo})}"></nav>
+      <div class="racimo" data-alinea="entre arriba">
+        <header class="pila" data-espacio="1">
+          <h1 th:text="${titulo}">Aceite de girasol, 10 litros</h1>
+          <p th:if="${d != null}" data-tono="suave"
+             th:text="|De ${d.dono}.${d.pedidoNombre != null ? ' Para tu necesidad de ' + d.pedidoNombre + '.' : ''} Al ${recibidas.actualizado}.|">De
+            Almacén Ejemplo SRL. Para tu necesidad de aceite de girasol. Al 15 de octubre de 2026,
+            18:30.</p>
+        </header>
+        <span th:if="${d != null}" class="estado" data-estado="problema"><th:block
+            th:replace="~{componentes/sello :: sello('problema')}"></th:block>Con problema</span>
+      </div>
+    </div>
+
+    <!--/* La pedida ya no tiene un problema (llegó, o la clave no es de la organización). */-->
+    <section th:if="${d == null}" class="vacio" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo">No encontramos esa entrega con problema.</h2>
+      <p>Puede que ya haya salido de nuevo o que la hayas confirmado. En Entregas están todas, con
+        su estado de hoy.</p>
+      <a class="boton" data-tono="secundario" href="/entidad-seguimiento"
+         th:href="@{/entidad-seguimiento}">Volver a Entregas</a>
+    </section>
+
+    <th:block th:if="${d != null}">
+      <div class="grilla" data-espacio="5">
+        <div class="pila" data-espacio="4">
+          <div class="aviso" data-tipo="error">
+            <svg th:replace="~{componentes/sello :: signo('problema')}"></svg>
+            <p class="aviso-titulo">Esta entrega no pudo seguir</p>
+            <p th:text="${d.paso}">El camión no pudo llegar el 14 de octubre.</p>
+          </div>
+
+          <section class="pila" data-espacio="2" aria-labelledby="sigue-titulo">
+            <h2 id="sigue-titulo">Qué sigue</h2>
+            <!--/* La nueva salida (HG-01) y la última noticia, si Logística la manda. */-->
+            <dl th:replace="~{componentes/datos :: datos(${ {
+                {rotulo: 'Sale de nuevo', valor: 'Todavía sin fecha de nueva salida'},
+                {rotulo: 'Qué tenés que hacer', valor: 'Nada por ahora. Cuando llegue, la confirmás con la foto'},
+                {rotulo: 'Última noticia', valor: noticia != null and #strings.startsWith(noticia, 'Última noticia: ') ? #strings.substringAfter(noticia, 'Última noticia: ') : noticia} } })}"></dl>
+            <p data-tono="suave" class="texto-chico">Cuando tenga fecha de salida, te avisamos y lo vas
+              a ver acá.</p>
+          </section>
+
+          <!--/* La necesidad que cubre y su avance, con la cuenta de Necesidades (la de hoy, HG-04):
+                 el período, la barra con la cifra en palabras y la fecha de la lectura. */-->
+          <section th:if="${d.pedido != null}" class="pila" data-espacio="2"
+                   aria-labelledby="necesidad-titulo">
+            <h2 id="necesidad-titulo" th:text="|Tu necesidad de ${d.pedidoNombre}|">Tu necesidad de
+              aceite de girasol</h2>
+            <div class="tarjeta pila" data-espacio="1" th:with="n=${necesidad}">
+              <th:block th:if="${n != null}">
+                <p data-tono="suave" class="texto-chico"
+                   th:text="${n.plazo != null} ? |${n.repite} · ${n.plazo}| : ${n.repite}">Una sola
+                  vez · Hasta el 20 de octubre</p>
+                <progress th:if="${n.valor != null}" class="progreso" th:value="${n.valor}"
+                          th:max="${n.max}" th:aria-label="|Llegaron ${n.valor} de ${n.max} ${n.unidad}|"
+                          value="0" max="20" aria-label="Llegaron 0 de 20 litros"></progress>
+                <p th:text="${n.valor != null} ? |Llegaron ${n.valor} de ${n.max} ${n.unidad}. Esta entrega trae ${d.cuanto}.| : |Pedís ${n.max} ${n.unidad}. Esta entrega trae ${d.cuanto}.|">Llegaron
+                  0 de 20 litros. Esta entrega trae 10 litros.</p>
+                <p data-tono="suave" class="texto-chico" th:text="|Al ${necesidadAl}.|">Al 15 de
+                  octubre de 2026.</p>
+              </th:block>
+              <p th:if="${n == null}" th:text="|Esta entrega es para tu necesidad de ${d.pedidoNombre}: ${d.cuanto}.|">Esta
+                entrega es para tu necesidad de aceite de girasol: 10 litros.</p>
+              <a href="/entidad-necesidades?necesidad=aceite"
+                 th:href="@{/entidad-necesidades(necesidad=${d.pedido})}">Ver tu necesidad<span
+                  class="solo-lectores" th:text="| de ${d.pedidoNombre}|"> de aceite de girasol</span></a>
+            </div>
+          </section>
+        </div>
+
+        <!--/* La raíz (D2): lo que pasó, lleno; el paso que no pudo ser, con su signo; lo que falta,
+               punteado. Del backend solo llega el estado de hoy: sin horas. */-->
+        <section class="pila" data-espacio="3" aria-labelledby="recorrido-titulo">
+          <h2 id="recorrido-titulo">El recorrido, paso a paso</h2>
+          <ol th:replace="~{componentes/huerta :: raiz-pasos(pasos=${ {
+              {nombre: 'Registrada', avance: 'hecho', detalle: 'La donó ' + d.dono + '.'},
+              {nombre: 'Asignada', avance: 'hecho', detalle: d.pedidoNombre != null ? 'Para tu necesidad de ' + d.pedidoNombre + '.' : 'Para tu organización.'},
+              {nombre: 'No pudo seguir', avance: 'problema', detalle: d.paso},
+              {nombre: 'Falta confirmar la entrega', avance: 'falta', detalle: 'La confirmás vos, con la foto, cuando llegue.'} } }, forma=null, nombre=null, recien=false)}"></ol>
+          <!--/* La foto que va a sacar la organización: lo que falta, punteado (D3). */-->
+          <div class="tarjeta pila" data-papel="hueco" data-espacio="1">
+            <h3>Tu foto de la entrega</h3>
+            <p data-tono="suave">La sacás al recibir. Va a quedar acá, y es lo que va a ver quien
+              donó.</p>
+          </div>
+          <p data-tono="suave" class="texto-chico" th:text="|${d.dono} ve este mismo recorrido en el detalle de su donación.|">Almacén
+            Ejemplo SRL ve este mismo recorrido en el detalle de su donación.</p>
+        </section>
+      </div>
+
+      <div class="racimo">
+        <a class="boton" href="/entidad-seguimiento" th:href="@{/entidad-seguimiento}">Volver a
+          Entregas</a>
+      </div>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

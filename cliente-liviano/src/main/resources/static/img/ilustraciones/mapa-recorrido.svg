@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+<!-- El mapa del seguimiento: del Depósito Central al Comedor Barrio Ejemplo; lo recorrido es la raíz y lo que falta, punteado. Dibujo de la guía (docs/interfaz/guia/partes/20-simbolos.html), con los colores de tokens.css escritos adentro, como los demás de esta carpeta. Se usa entero (img) o por símbolo (use href="…/mapa-recorrido.svg#mapa-recorrido"). -->
+<symbol id="mapa-recorrido" viewBox="0 0 640 400" preserveAspectRatio="xMidYMid slice">
+      <rect fill="#fffaea" width="640" height="400"/>
+      <path fill="#cfe1d4" d="M0 300c80-30 150 20 240-6s150-70 250-58 110 40 150 34v130H0z"/>
+      <g fill="#e4efc9"><rect x="40" y="36" width="120" height="70" rx="6"/><rect x="330" y="150" width="96" height="60" rx="6"/><rect x="500" y="30" width="110" height="64" rx="6"/></g>
+      <g fill="none" stroke="#2a2a22" stroke-opacity=".16" stroke-width="10"><path d="M0 130h640M0 228l300-20M200 0v260M460 0v236M0 60h200M300 208l160-90 180-20M90 130v130"/></g>
+      <path fill="none" stroke="#5d5c4c" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 10" d="M392 130h68V70h80"/>
+      <path fill="none" stroke="#2a2a22" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" d="M90 240V130h302"/>
+      <path fill="none" stroke="#f4c844" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" d="M90 240V130h302"/>
+      <rect fill="#2a2a22" x="76" y="226" width="28" height="28" rx="3"/><rect fill="#f4c844" x="84" y="234" width="12" height="12"/>
+      <circle fill="#fbf2d3" stroke="#2a2a22" cx="392" cy="130" r="17" stroke-width="3"/><g fill="none" stroke="#2a2a22" stroke-width="2" stroke-linejoin="round" transform="translate(381 119) scale(.92)"><path d="M2.5 6.5h11v10h-11zM13.5 10h4l3 3v3.5h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></g>
+      <circle fill="#fbf2d3" stroke="#5d5c4c" cx="540" cy="70" r="13" stroke-width="3" stroke-dasharray="4 4"/><circle fill="#5d5c4c" cx="540" cy="70" r="4"/>
+    </symbol>
+<use href="#mapa-recorrido"/>
+</svg>

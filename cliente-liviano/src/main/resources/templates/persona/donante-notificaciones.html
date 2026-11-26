@@ -10,9 +10,9 @@
        donante-notificaciones-leidas. ?escenario=vacio, error y lento.
        Fragmento hoja(leidas): la pantalla entera; leidas es true en donante-notificaciones-leidas. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-notificaciones', ~{::contenido})}">
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-comun', ~{::contenido})}">
 <head>
-  <title>Notificaciones - DonaTrack</title>
+  <title>Novedades - DonaTrack</title>
 </head>
 <body>
 <th:block th:fragment="contenido">
@@ -61,8 +61,8 @@
              sinLeerAhora=${#lists.size(deDonaciones.?[!leida]) + #lists.size(deMisiones.?[!leida]) + #lists.size(otras.?[!leida])}">
   <div class="pila" data-espacio="4">
     <header class="pila" data-espacio="2">
-      <p class="rotulo">Notificaciones</p>
-      <h1>Noticias de <em>tus donaciones</em></h1>
+      <p class="rotulo">Novedades</p>
+      <h1>Novedades</h1>
       <p th:if="${leidas}" class="aviso-breve" hx-swap-oob="beforeend:#avisos" data-estado="hecho" role="status" tabindex="-1" autofocus
          th:text="${marcadas == 'todas'} ? 'Listo: marcaste todas como leídas.' : (${noLeidas != ''} ? 'Listo: marcaste la notificación como no leída.' : 'Listo: marcaste la notificación como leída.')">Listo: marcaste la notificación.</p>
       <p th:if="${conDatos}" class="bajada"
@@ -78,17 +78,22 @@
          th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
     </section>
 
-    <th:block th:if="${escenario == 'error'}">
-      <section th:replace="~{datos-donante :: error('No pudimos cargar tus notificaciones.', '/donante-notificaciones')}"></section>
-    </th:block>
+    <!--/* Error y cargando: los estados de lista del catálogo (el aviso de error y la lista que carga). */-->
+    <div th:if="${escenario == 'error'}" class="aviso" data-tipo="error" role="alert"><svg
+        th:replace="~{componentes/sello :: signo('problema')}"></svg>
+      <p class="aviso-titulo">No pudimos cargar tus notificaciones.</p>
+      <p>Es un problema nuestro y no cambia el estado de tus donaciones. Probá de nuevo en unos
+        minutos; si sigue, <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
+           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/donante-notificaciones')}">escribinos
+          con este código</a>.</p>
+      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
+      <p><a href="/donante-notificaciones" th:href="@{/donante-notificaciones}">Volver a intentar</a></p>
+    </div>
 
-    <th:block th:if="${escenario == 'lento'}">
+    <div th:if="${escenario == 'lento'}" aria-busy="true">
       <p class="cargando" role="status">Cargando tus notificaciones…</p>
-      <div class="pila" data-espacio="3" aria-busy="true">
-        <div class="esqueleto" data-forma="punteado"></div>
-        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
-      </div>
-    </th:block>
+      <div class="esqueleto" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
 
     <th:block th:if="${conDatos}">
       <div th:replace="~{componentes/buzon :: buzon(${leidas ? '/donante-notificaciones-leidas' : '/donante-notificaciones'},

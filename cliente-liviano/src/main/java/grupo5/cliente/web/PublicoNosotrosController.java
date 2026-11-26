@@ -21,6 +21,8 @@ public class PublicoNosotrosController {
   String nosotros(Model model) {
     String vista = pantallas.mostrar("publico-nosotros", model);
     model.addAttribute("cifrasDeNosotros", publico.cifrasDeNosotros());
+    // La fecha de las cifras: la de las entregas confirmadas, como en la portada.
+    model.addAttribute("entregasConfirmadas", publico.entregasConfirmadas());
     return vista;
   }
 }

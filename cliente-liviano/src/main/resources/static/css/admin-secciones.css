@@ -3,28 +3,6 @@
    lo demás viene de las capas CUBE y de la hoja del inicio. */
 @import url("admin-inicio.css");
 
-/* Va después de formularios.css: gana al margen propio del formulario. */
-.mesa > * + * {
-  margin-top: var(--espacio-4);
-}
-
-/* Cada papel de la mesa (importar, las pestañas, una propuesta, una donación, un bien), con su
-   relleno (parámetro de .tarjeta). */
-.mesa .tarjeta {
-  --espacio-relleno: var(--espacio-3);
-}
-
-/* El renglón de cada solicitud se toca entero: al menos el alto de un toque. */
-#solicitudes summary {
-  min-height: var(--medida-toque-minimo);
-  padding-block: var(--espacio-2);
-}
-
-/* Un botón que pliega (summary) mide lo que su texto, no el ancho de la columna. */
-.mesa details > summary.boton {
-  width: fit-content;
-}
-
 /* Las celdas de una fila, al medio: el enlace de la primera mide un toque y las demás, un renglón. */
 .tabla :is(th, td) {
   vertical-align: middle;
@@ -37,92 +15,57 @@
   min-height: var(--medida-toque-minimo);
 }
 
-/* Los datos de una solicitud y de una donación: el rótulo arriba y el dato debajo, sin sangría. */
-:is(#solicitudes, .mesa .tarjeta) dd {
-  margin: 0;
-}
-
-/* --- Ronda del 2026-11-09 (docs/interfaz/plan-ronda-2026-11-09.md) ------------------------------ */
-
-/* Regla general 1: el encabezado ocupa todo el ancho de la mesa; la bajada conserva un largo de línea
-   legible. Si lleva acciones (un .racimo al lado del texto), van a la derecha y, cuando no entran
-   (el celular), bajan debajo del texto. */
-.mesa-cabecera:has(> .racimo) {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--espacio-3);
-}
-
-.mesa-cabecera > div:first-child {
-  flex: 1 1 28rem;
-  min-width: 0;
-}
-
-.mesa-cabecera > .racimo {
-  flex: 0 1 auto;
-}
-
-/* Regla general 2: el desplegable (o la búsqueda) y su botón, centrados entre sí, no con el rótulo.
-   El botón se alinea al pie del campo y los dos miden un toque de alto. */
-.mesa form.racimo:has(> .campo) {
-  align-items: flex-end;
-}
-
-.mesa form.racimo > .campo :is(input, select),
-.mesa form.racimo > .boton {
-  box-sizing: border-box;
-  height: 3rem;
-  min-height: var(--medida-toque-minimo);
-}
-
-.mesa form.racimo > .boton {
-  padding-block: 0;
-}
-
-/* --- Entidades (ronda del 2026-11-09, tarde: la prueba admin-entidades-c pasó a ser la pantalla;
-   ronda del 2026-11-10: una sola lista y la ficha de la maqueta 15, en componentes/maestro.css) -- */
+/* --- Organizaciones (A03, ADM2-04): la cabecera, el listado, la bandeja con ficha (.maestro y
+   .maestro-ficha), el aviso y el paginador son del catálogo; acá queda lo que la pieza no resuelve. */
 
 /* Lo que mandó una pendiente, dentro de la ficha (.maestro-ficha): sin viñetas. */
-[data-lista="documentos"] {
+[data-pantalla="entidades"] [data-lista="documentos"] {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* Los pictogramas de la lista y de la ficha, a su medida: sellos.css (sin capa, por entidad-comun.css)
-   le gana al bloque maestro con su 1,75 rem. */
-.maestro .categoria-icono {
-  width: 2.25rem;
-  height: 2.25rem;
+/* Los pictogramas de la lista y de la ficha, a la medida del bloque maestro: sellos.css (sin capa,
+   por entidad-comun.css) le gana a la capa de bloques con su 1,75 rem; revert-layer vuelve a la
+   medida de maestro.css (2,25 rem; 2,75 rem en las necesidades; 4,5 rem el de la identidad de la
+   ficha, con data-tamano="grande", como la muestra de /estilos). */
+[data-pantalla="entidades"] .maestro .categoria-icono {
+  width: revert-layer;
+  height: revert-layer;
 }
 
-.maestro-ficha .categoria-icono[data-tamano="grande"] {
-  width: 4.5rem;
-  height: 4.5rem;
+/* La ficha mide su propio ancho: con menos de 45 rem (en el galpón, a 1280 px), el resumen va
+   apilado debajo de la identidad, alineado al inicio y con su filete a la izquierda, como en el
+   celular; lado a lado, el nombre quedaba en tres renglones y la bolita lejos de su palabra. Con
+   ancho, la disposición de maestro.css (identidad a la izquierda, resumen a la derecha). */
+[data-pantalla="entidades"] .maestro-ficha {
+  container-type: inline-size;
 }
 
-.maestro-ficha [data-lista="necesidades-ficha"] .categoria-icono {
-  width: 2.75rem;
-  height: 2.75rem;
-}
+@container (width < 45rem) {
+  [data-pantalla="entidades"] .maestro-ficha > :is([data-parte="identidad"], [data-parte="resumen"]) {
+    grid-column: 1 / -1;
+  }
 
-/* Desde la tableta, la ficha con el relleno grande (.mesa .tarjeta le pone el chico). */
-@media (min-width: 53.75em) {
-  .mesa .maestro-ficha {
-    --espacio-relleno: var(--espacio-4);
+  [data-pantalla="entidades"] .maestro-ficha > [data-parte="resumen"] {
+    justify-items: start;
+    text-align: start;
+  }
+
+  [data-pantalla="entidades"] .maestro-ficha [data-parte="resumen"] > dl {
+    padding-inline: var(--espacio-2) 0;
+    border-inline-start: 0.25rem solid var(--color-salvia);
+    border-inline-end: 0;
   }
 }
 
-/* --- Asignar donaciones (R11-24, ficha r11-p1-asignaciones) ------------------------------------- */
+/* --- Por decidir, la mesa (R11-24; A03, ADM1-05): la cabecera, las pestañas y la tabla con
+   selección son del catálogo; acá quedan las tarjetas de Conflictos y de Destino. ---------------- */
 
-/* La lista y el panel: uno debajo del otro en el celular; desde el ancho de escritorio, el panel a
-   la derecha, fijo al desplazarse. */
-[data-pantalla="asignaciones"] [data-parte="cuerpo"] {
-  display: grid;
-  gap: var(--espacio-4);
-  align-items: start;
+/* Cada tarjeta (una propuesta de Conflictos o de Destino, una donación), con su relleno (parámetro
+   de .tarjeta), como en la mesa. */
+[data-pantalla="asignaciones"] .tarjeta {
+  --espacio-relleno: var(--espacio-3);
 }
 
 [data-pantalla="asignaciones"] [data-lista="propuestas"] {
@@ -142,66 +85,191 @@
   min-height: var(--medida-toque-minimo);
 }
 
-[data-pantalla="asignaciones"] dd {
-  margin: 0;
-}
-
 /* Los enlaces con forma de botón (volver, ver todas) miden lo que su texto. */
 [data-pantalla="asignaciones"] .pila > a.boton {
   align-self: flex-start;
 }
 
+/* Dos tarjetas por fila desde el ancho de escritorio. */
 @media (min-width: 68.75em) {
-  [data-pantalla="asignaciones"] [data-parte="cuerpo"] {
-    grid-template-columns: minmax(0, 1fr) 20rem;
-  }
-
-  [data-pantalla="asignaciones"] [data-parte="panel"] {
-    position: sticky;
-    top: calc(var(--medida-cabecera-fija) + var(--espacio-4));
-  }
-
-  /* Dos tarjetas por fila. */
   [data-pantalla="asignaciones"] [data-lista="propuestas"] {
     --medida-columna: 22rem;
   }
 }
 
-/* Todas las decididas (R11-35): cada renglón, con la categoría al lado de lo que pedía. */
-[data-pantalla="asignaciones"] [data-parte="decidida-cabeza"] {
-  margin: 0;
+/* --- Registrar donación (A12, ADM1-11): las piezas son del catálogo (migas, aviso, banner, campo,
+   tarjeta, listado y botones); acá quedan la columna del formulario y dónde va cada cosa. -------- */
+
+[data-pantalla="registrar-donacion"] {
+  max-width: var(--medida-formulario);
 }
 
-/* --- Donaciones y Donantes como bandeja (R11-34, ficha r11-p2-admin-bandeja) ------------------- */
+/* Quién dona y cada bien, con el relleno chico (parámetro de .tarjeta). */
+[data-pantalla="registrar-donacion"] .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+}
+
+/* La salida sin registrar, un enlace suelto con su lugar para el dedo. */
+[data-pantalla="registrar-donacion"] > p > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+/* Desde la tableta la envoltura del botón fijo no arma caja (data-fijo de app.css): el botón toma
+   el espacio de la pila del formulario y mide lo que su texto, como en Confirmar recepción. */
+@media (min-width: 37.5em) {
+  [data-pantalla="registrar-donacion"] form > [data-fijo] > .boton {
+    align-self: start;
+    margin-block-start: var(--espacio-entre);
+  }
+}
+
+/* --- Dar de alta un administrador, la contraseña provisoria y Mi perfil (A12, ADM2-07 y ADM2-08):
+   las piezas son del catálogo; acá quedan la columna del formulario y dónde va cada cosa. ------- */
+
+:is(
+    [data-pantalla="alta-administrador"],
+    [data-pantalla="contrasena-provisoria"],
+    [data-pantalla="perfil-admin"]
+  ) {
+  max-width: var(--medida-formulario);
+}
+
+/* El código de seguimiento del aviso de error es el traceId entero: en el celular baja de renglón
+   en lugar de ensanchar la página. */
+:is(
+    [data-pantalla="administradores"],
+    [data-pantalla="alta-administrador"],
+    [data-pantalla="perfil-admin"]
+  )
+  .aviso-codigo
+  code {
+  overflow-wrap: anywhere;
+}
+
+/* La salida sin dar de alta, un enlace suelto con su lugar para el dedo. */
+[data-pantalla="alta-administrador"] > p > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+/* Desde la tableta, «Guardar los cambios» mide lo que su texto, como en Registrar donación. */
+@media (min-width: 37.5em) {
+  [data-pantalla="perfil-admin"] form > [data-fijo] > .boton {
+    align-self: start;
+    margin-block-start: var(--espacio-entre);
+  }
+}
+
+/* --- Registrar organización y su error de datos (A12, ADM2-12): las piezas son del catálogo; acá
+   quedan la columna del formulario y dónde va cada cosa, como en Registrar donación. ----------- */
+
+[data-pantalla="registrar-organizacion"] {
+  max-width: var(--medida-formulario);
+}
+
+/* Cada campo de la grilla empieza arriba de su celda: el vecino de la calle con error no estira
+   su control. */
+[data-pantalla="registrar-organizacion"] .grilla {
+  align-items: start;
+}
+
+/* La salida sin registrar, un enlace suelto con su lugar para el dedo. */
+[data-pantalla="registrar-organizacion"] > p > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+/* Desde la tableta, «Registrar organización» mide lo que su texto, como en Registrar donación. */
+@media (min-width: 37.5em) {
+  [data-pantalla="registrar-organizacion"] form > [data-fijo] > .boton {
+    align-self: start;
+    margin-block-start: var(--espacio-entre);
+  }
+}
+
+/* --- Agregar camión (ADM1, en el diálogo o abierto con el error de datos): cada campo de la grilla
+   empieza arriba de su celda; el vecino de un campo con error no estira su control. ----------- */
+
+#agregar-titulo + form > .grilla {
+  align-items: start;
+}
+
+/* --- Donantes como bandeja (R11-34, ficha r11-p2-admin-bandeja; Donaciones pasó a la tabla, ADM1-08)
+   y el avance de una importación (ADM2-01 y ADM2-02, en el galpón) ------------------------------ */
+
+/* El aviso de una actualización que no llegó, vacío, no suma un espacio de la pila entre las migas
+   y el avance (#avance-etapa es solo para lectores y no ocupa lugar). Sigue en la página, porque es
+   una región que se lee sola. */
+[data-pantalla="importacion"] > #avance-aviso:empty {
+  margin-block-start: 0;
+}
+
+/* Importar y las cifras del avance, con el relleno chico (parámetro de .tarjeta). */
+:is([data-pantalla="donantes"], #avance) > .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+}
 
 /* En el celular, la ficha de partida (la primera de la página, sin elegir) no se abre sola: la
-   lista se ve primero. "Cerrar la ficha" vuelve al renglón. */
-:is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro > li[data-elegido="partida"] > .maestro-ficha {
+   lista se ve primero. Igual en Donantes y en Organizaciones. "Cerrar la ficha" vuelve al renglón. */
+:is([data-pantalla="donantes"], [data-pantalla="entidades"]) .maestro > li[data-elegido="partida"] > .maestro-ficha {
   display: none;
 }
 
-:is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro > li > a > span:not(.estado) {
+/* El renglón no lleva pictograma: el texto toma lo que sobra y el estado mide lo que su palabra. */
+[data-pantalla="donantes"] .maestro > li > a {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+[data-pantalla="donantes"] .maestro > li > a > span:not(.estado) {
   gap: var(--espacio-1);
 }
 
-/* Desde la tableta: la ficha a la derecha, fija al desplazarse (el renglón elegido no queda fijo);
+/* Desde la tableta: la ficha a la derecha, entera y alineada con la lista, como en Organizaciones;
    la de partida se ve y "Cerrar la ficha" ya no hace falta. */
 @media (min-width: 53.75em) {
-  :is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro > li[data-elegido="partida"] > .maestro-ficha {
+  :is([data-pantalla="donantes"], [data-pantalla="entidades"]) .maestro > li[data-elegido="partida"] > .maestro-ficha {
     display: grid;
   }
 
-  :is([data-pantalla="donaciones"], [data-pantalla="donantes"]) .maestro-ficha {
-    position: sticky;
-    /* Debajo de la cabecera y de la barra de filtros fijas (R11-33). */
-    top: calc(var(--medida-cabecera-fija) + var(--medida-filtros-fijos) + var(--espacio-4));
-    max-height: calc(
-      100vh - 2 * var(--espacio-4) - var(--medida-cabecera-fija) - var(--medida-filtros-fijos)
-    );
-    overflow-y: auto;
-  }
-
-  :is([data-pantalla="donaciones"], [data-pantalla="donantes"]) [data-parte="cerrar"] {
+  [data-pantalla="donantes"] [data-parte="cerrar"] {
     display: none;
+  }
+}
+
+/* --- Registrar donante (A12, ADM2-10): deriva de Registrar donación; las piezas son del catálogo
+   (migas, aviso, opciones, campo, tarjeta y botones). Acá quedan la columna del formulario y dónde
+   va cada cosa. ---------------------------------------------------------------------------------- */
+
+[data-pantalla="registrar-donante"] {
+  max-width: var(--medida-formulario);
+}
+
+/* Quién dona, con el relleno chico (parámetro de .tarjeta). */
+[data-pantalla="registrar-donante"] .tarjeta {
+  --espacio-relleno: var(--espacio-3);
+}
+
+/* Cada campo de la grilla empieza arriba de su celda: el vecino de un campo con error o con ayuda
+   no estira su control, como en Agregar camión. */
+[data-pantalla="registrar-donante"] form > .grilla {
+  align-items: start;
+}
+
+/* La salida sin registrar, un enlace suelto con su lugar para el dedo. */
+[data-pantalla="registrar-donante"] > p > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+/* Desde la tableta, «Registrar donante» mide lo que su texto, como en Registrar donación. */
+@media (min-width: 37.5em) {
+  [data-pantalla="registrar-donante"] form > [data-fijo] > .boton {
+    align-self: start;
+    margin-block-start: var(--espacio-entre);
   }
 }

@@ -1,109 +1,25 @@
-/* Estructura de las pantallas privadas de Raíces (layout-privado.html): la cabecera con la marca,
-   el menú del rol y la cuenta, y el contenido. El menú es el bloque `navegacion`
-   (componentes/navegacion.css): una barra inferior en el celular (criterios de la cátedra, sección
-   4) y, desde la tableta, horizontal en la cabecera de tierra honda (usuario, 2026-11-03, tomado del
-   sitio B). Acá solo va dónde queda en la cabecera: en la tableta, en una segunda fila; en pantalla
-   grande, en la misma fila que la marca. También: el rótulo y el título de cada pantalla. */
+/* Estructura de las pantallas privadas de Raíces (layout-privado.html): la barra superior con la
+   marca, el menú del rol y las acciones de la cuenta, y el contenido. La barra es la de la huerta
+   (app.css; C1-07, guía «Huerta y galpón»). El menú es el bloque `navegacion`
+   (componentes/navegacion.css): el menú del celular, abajo, hasta --medida-quiebre-menu (56 em;
+   criterios de la cátedra, sección 4) y, desde ahí, las secciones en la barra, después de la marca
+   (guía, 15-pantallas.css:79-84). Acá solo va dónde queda cada cosa en la barra. También: el rótulo y
+   el título de cada pantalla, y el armazón del galpón del admin (al final). */
 @import url("app.css");
 
-/* --- El celular: la marca y la cuenta arriba; el menú, una barra fija abajo ---------------------- */
+/* --- Hasta 56 em: la marca y las acciones de la cuenta arriba; el menú, fijo abajo -------------- */
 .raices-privado {
-  padding-bottom: 4.5rem;
+  padding-bottom: calc(var(--medida-menu-celular) + var(--espacio-1));
 }
 
-/* La administración no tiene barra abajo: su menú es el botón del final de la cabecera, después de
-   la campana y la cuenta (usuario, 2026-11-12). */
-.raices-privado:has(.navegacion[data-forma="panel"]) {
-  padding-bottom: 0;
-}
-
-.armazon .navegacion[data-forma="panel"] {
-  order: 1;
-}
-
-/* Marca, campana, cuenta y botón de menú en una fila también a 360 px: más juntos. Desde la
-   tableta hay lugar y vuelven a separarse. */
-.armazon:has(.navegacion[data-forma="panel"]) {
-  column-gap: 0.25rem;
-}
-
-@media (min-width: 37.5em) {
-  .armazon:has(.navegacion[data-forma="panel"]) {
-    column-gap: 1rem;
-  }
-}
-
+/* El desplegable de la campanita, en el celular, cuelga de la barra entera. */
 .armazon {
   position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 1.5rem;
-  padding: 0.75rem 1rem;
 }
 
-/* El acceso a Notificaciones: la campana con la cantidad sin leer en un disco verde, junto a la foto
-   de perfil (usuario, 2026-11-08; antes, una carta). */
-.armazon-avisos {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.625rem;
-  min-width: var(--medida-toque-minimo);
-  min-height: var(--medida-toque-minimo);
-  margin-left: auto;
-  color: var(--color-tinta);
-  font-weight: 700;
-  text-decoration: none;
-}
-
-/* La campanita (R11-29): la campana es el summary de un <details> (componentes/campanita.css); el
-   lugar en la cabecera lo toma el details, como antes el enlace. */
+/* Las acciones de la cuenta (la campanita y la foto) van a la derecha (guía: .barra-acciones). */
 .campanita {
   margin-left: auto;
-}
-
-.campanita > .armazon-avisos {
-  margin-left: 0;
-}
-
-.armazon-avisos svg {
-  flex: none;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linejoin: round;
-}
-
-.armazon-avisos-texto {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.armazon-avisos-cuenta {
-  position: absolute;
-  top: 0.125rem;
-  right: -0.125rem;
-  display: grid;
-  place-items: center;
-  min-width: 1.375rem;
-  height: 1.375rem;
-  padding: 0 0.25rem;
-  border-radius: 50%;
-  background: var(--color-acento);
-  color: var(--color-texto-sobre-accion);
-  font-size: 0.8125rem;
-  line-height: 1;
-}
-
-.armazon-avisos[aria-current="page"] {
-  color: var(--color-acento);
 }
 
 main {
@@ -118,7 +34,7 @@ main:focus {
 
 .rotulo {
   margin: 0 0 0.25rem;
-  color: var(--color-acento);
+  color: var(--color-accion-primaria);
   font: 700 0.78rem/1.2 var(--fuente-titulo);
   font-stretch: 112%;
   text-transform: uppercase;
@@ -151,73 +67,104 @@ main h1 {
   font-weight: 700;
 }
 
-.sin-dibujar {
-  max-width: 38rem;
-}
-
 @media (min-width: 37.5em) {
+  /* El borde de la barra, alineado con el contenido (main, hasta 82 rem). */
   .armazon {
-    padding: 0.75rem 2rem;
+    padding-inline: max(2rem, (100% - 82rem) / 2);
   }
 
   main {
     padding: 2rem 2rem 4rem;
   }
-
 }
 
-/* --- Desde la tableta: el menú, horizontal en la cabecera ------------------------------------- */
-@media (min-width: 37.5em) {
+/* --- Desde 56 em: las secciones en la barra, después de la marca ------------------------------- */
+@media (min-width: 56em) {
   .raices-privado {
     padding-bottom: 0;
   }
+}
 
-  .armazon {
-    padding-inline: max(2rem, (100% - 82rem) / 2);
-  }
+/* --- El armazón del galpón: el admin (ADM1-02; guía, 15-pantallas.css:16-25 y 98-104) ---------- */
+/* Lo lleva solo el admin (`body[data-armazon="galpon"]`, layout-privado.html; DA-18 y DA-27): el
+   papel claro, los títulos un escalón más chicos y el contenido denso, sin tope de ancho. La barra
+   de arriba es la de la huerta, con la marca, la campana y la cuenta, en todos los anchos (DA-27: la
+   guía la saca desde 56 em). Hasta 56 em el menú es la barra del celular, abajo; desde ahí, el cajón
+   (componentes/navegacion.css) queda fijo a la izquierda, debajo de la barra, y el contenido y el
+   pie empiezan a su derecha. */
+/* --color-fondo-pagina se redefine acá para que lo que pinta papel (la barra fija del listado y su
+   sombra, el panel de Más, la pantalla de carga) salga del papel del galpón y no deje una franja de
+   otro color. */
+[data-armazon="galpon"] {
+  --color-fondo-pagina: var(--color-galpon-fondo);
+  --color-superficie: var(--color-campo);
+}
 
-  /* En la tableta, el menú (componentes/navegacion.css) va en una segunda fila a todo el ancho de la
-     cabecera. */
-  .armazon .navegacion:not([data-forma="panel"]) {
-    order: 1;
-    flex-basis: 100%;
+body[data-armazon="galpon"] > main {
+  max-width: none;
+  padding: var(--espacio-3) var(--espacio-3) var(--espacio-5);
+}
+
+body[data-armazon="galpon"] main h1 {
+  font-size: var(--tamano-titulo-2);
+  line-height: var(--tamano-interlinea-titulo);
+}
+
+@layer base {
+  body[data-armazon="galpon"] main h2 {
+    font-size: var(--tamano-titulo-3);
   }
 }
 
-/* --- La pantalla grande: marca, menú, Notificaciones y cuenta en una sola fila ----------------- */
-@media (min-width: 68.75em) {
-  .armazon {
-    flex-wrap: nowrap;
-    column-gap: 1rem;
+/* Lo que va pegado arriba de la barra del listado (el título de la lista o su frase) deja un
+   espacio: .listado lleva margin 0 y, desde 68,75 em, queda fija y pinta un filete de papel hacia
+   arriba (listado.css) que tapaba los rabos de las letras del título. */
+body[data-armazon="galpon"] main :has(+ .listado) {
+  margin-block-end: var(--espacio-2);
+}
+
+@media (min-width: 37.5em) {
+  body[data-armazon="galpon"] > .armazon {
+    padding-inline: var(--espacio-4);
   }
 
-  .armazon .navegacion:not([data-forma="panel"]) {
-    order: 0;
-    flex: 1 1 auto;
-  }
-
-  /* El menú en un solo renglón: si se parte, la segunda fila deja un hueco a su lado (pulido,
-     2026-11-03: "Seguir entregas" de la entidad bajaba a 1280 px). Se achica la cuenta. La
-     administración tiene su botón de menú y no entra acá. */
-  .armazon .navegacion:not([data-forma="panel"]) ul {
-    flex-wrap: nowrap;
-  }
-
-  .armazon .navegacion:not([data-forma="panel"]) a {
-    padding-inline: 0.5rem;
-    white-space: nowrap;
-  }
-
-  .armazon-avisos,
-  .campanita {
-    margin-left: 0;
+  body[data-armazon="galpon"] > main {
+    padding: var(--espacio-4) var(--espacio-4) var(--espacio-5);
   }
 }
 
-/* La campana de la administración (ronda 2026-11-09): sin el menú en la fila, la campana va a la
-   derecha, junto a la cuenta y el botón de menú. */
-@media (min-width: 68.75em) {
-  .armazon:has(.navegacion[data-forma="panel"]) .campanita {
-    margin-left: auto;
+/* Desde 56 em la barra de arriba queda fija también en las ventanas bajas: el cajón cuelga de ella. */
+@media (min-width: 56em) {
+  :root:has(body[data-armazon="galpon"]) {
+    --medida-cabecera-fija: 4.125rem;
+  }
+
+  body[data-armazon="galpon"] > header {
+    position: sticky;
+    top: 0;
+    z-index: var(--capa-encabezado-fijo);
+    min-height: var(--medida-cabecera-fija);
+    align-content: center;
+  }
+
+  body[data-armazon="galpon"] > header > .navegacion {
+    position: fixed;
+    inset: var(--medida-cabecera-fija) auto 0 0;
+    width: var(--medida-cajon);
+    overflow-y: auto;
+  }
+
+  body[data-armazon="galpon"] > :is(main, footer) {
+    margin-left: var(--medida-cajon);
+  }
+}
+
+/* Con el cajón, el contenido es 15 rem más angosto y la barra del listado abierta baja de renglón:
+   en Donaciones y en las decididas de Asignar, medida el 2026-11-24, 387 px a 1100 px (el ancho más
+   angosto de este quiebre) y 293,5 px a 1280 px; la más alta, redondeada hacia arriba a 1/8 rem.
+   Solo sirve para que el foco no quede debajo (app.css). */
+@media (min-width: 68.75em) and (min-height: 37.5em) {
+  :root:has(body[data-armazon="galpon"]):has(.listado) {
+    --medida-filtros-fijos: 24.25rem;
   }
 }

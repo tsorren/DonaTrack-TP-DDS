@@ -6,8 +6,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * La portada ({@code /} y {@code /publico-portada}, la misma plantilla), con las cifras del puerto.
- * La ruta literal le gana a la {@code /{pantalla}} de {@link PantallasController}.
+ * La portada ({@code /} y {@code /publico-portada}, la misma plantilla), con las cifras y las
+ * entregas confirmadas del mes del puerto (A01: la última, los frutos y las del mes). La ruta
+ * literal le gana a la {@code /{pantalla}} de {@link PantallasController}.
  */
 @Controller
 public class PublicoPortadaController {
@@ -24,6 +25,7 @@ public class PublicoPortadaController {
   String portada(Model model) {
     String vista = pantallas.mostrar("publico-portada", model);
     model.addAttribute("cifrasDePortada", publico.cifrasDePortada());
+    model.addAttribute("entregasConfirmadas", publico.entregasConfirmadas());
     return vista;
   }
 }

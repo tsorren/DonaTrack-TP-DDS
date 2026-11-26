@@ -114,20 +114,89 @@ class PublicoPaginasControllerTest {
 
   @Test
   void laPortadaEnSusDosDireccionesMuestraLasCifrasDelPuerto() throws Exception {
+    entregas = conEntregas();
     for (String ruta : List.of("/", "/publico-portada")) {
       mvc.perform(get(ruta))
           .andExpect(status().isOk())
-          .andExpect(content().string(containsString("<b>7</b>")))
-          .andExpect(content().string(containsString("Donantes con al menos una donación")))
+          .andExpect(content().string(containsString("<strong>7</strong> entregas confirmadas")))
+          .andExpect(
+              content()
+                  .string(
+                      containsString("y <strong>5</strong> donantes con al menos una donación.")))
           .andExpect(content().string(not(containsString("1.284"))));
     }
+  }
+
+  /**
+   * A01 con las entregas del puerto: la última con su foto real (sin «Foto de ejemplo») y quien
+   * recibió es la organización (HG-03, DA-10); un fruto por entrega de la lista, con el período y
+   * la fecha que trae el puerto. Sin entregas, el vacío.
+   */
+  @Test
+  void laPortadaMuestraLasEntregasDelPuertoConUnFrutoPorCada() throws Exception {
+    PublicoEntregas.Entrega arroz =
+        new PublicoEntregas.Entrega(
+            "Arroz, 5 kg",
+            null,
+            "Otra categoría",
+            "Comedor Barrio Ejemplo",
+            "Comedor Barrio Ejemplo",
+            "9 de noviembre",
+            "2026",
+            "2026-11-09",
+            true,
+            "https://fotos/2.jpg",
+            "Foto de Arroz, 5 kg");
+    PublicoEntregas.Entrega fideos =
+        new PublicoEntregas.Entrega(
+            "Fideos secos, 8 kg",
+            null,
+            "Alimentos",
+            "Merendero Ejemplo Sur",
+            "Merendero Ejemplo Sur",
+            "2 de noviembre",
+            "2026",
+            "2026-11-02",
+            false,
+            "https://fotos/1.jpg",
+            "Foto de Fideos secos, 8 kg");
+    entregas = conEntregas(arroz, fideos);
+
+    mvc.perform(get("/publico-portada"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("src=\"https://fotos/2.jpg\"")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("Recibió: Comedor Barrio Ejemplo, el 9 de noviembre de 2026.")))
+        .andExpect(
+            content()
+                .string(
+                    containsString("Recibió: Merendero Ejemplo Sur, el 2 de noviembre de 2026.")))
+        // Las del mes, con el lugar como en Entregas: la categoría (y el barrio, si llega).
+        .andExpect(content().string(containsString("<p>Alimentos</p>")))
+        .andExpect(content().string(containsString("2 entregas confirmadas")))
+        .andExpect(
+            content().string(containsString("del 11 de octubre al 10 de noviembre de 2026.")))
+        .andExpect(
+            content().string(containsString("Actualizado el 10 de noviembre de 2026, 14:30.")))
+        .andExpect(content().string(not(containsString("Foto de ejemplo"))))
+        .andExpect(content().string(not(containsString("Lentejas"))));
+
+    entregas = conEntregas();
+    mvc.perform(get("/publico-portada"))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().string(containsString("Todavía no hay entregas confirmadas este mes.")))
+        .andExpect(content().string(not(containsString("class=\"etiqueta-entrega"))))
+        .andExpect(content().string(containsString("<strong>7</strong> entregas confirmadas")));
   }
 
   @Test
   void nosotrosMuestraLasCifrasDelPuerto() throws Exception {
     mvc.perform(get("/publico-nosotros"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("<b>3</b>")))
+        .andExpect(content().string(containsString("<strong>3</strong> entidades en el mapa")))
         .andExpect(content().string(not(containsString("318"))));
   }
 }

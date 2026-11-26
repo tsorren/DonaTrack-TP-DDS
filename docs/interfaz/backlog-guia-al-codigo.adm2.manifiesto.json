@@ -1,0 +1,226 @@
+{
+  "formato": "oleada-ui/1",
+  "version": "1.0.0",
+  "nombre": "guia",
+  "fecha": "2026-11-25",
+  "backlog": "docs/interfaz/backlog-guia-al-codigo.md",
+  "prefijoCommit": "E7: guía al código",
+  "comoLeerlo": "Manifiesto de la ola ADM2: las 22 plantillas de ADM2 de la sección 5 del backlog (Donantes y sus importaciones, Organizaciones, los dos registros, Administradores y Actividad, Mi perfil y las Novedades del admin). Los ítems, con su arquetipo, están en la sección 16 del backlog; las decisiones, en la sección 2.2; el arquetipo de cada plantilla, en la sección 5. Son 6 lotes en 2 tandas (sección 16.2): la tanda 1 trae las listas y la cuenta (adm2-donantes, adm2-organizaciones, adm2-administradores y adm2-novedades); la tanda 2, los dos registros (adm2-registrar-donante y adm2-registrar-organizacion), que tocan envíos y controllers que en la tanda 1 son de las listas y cuya respuesta, con DA-06, se muestra en la lista que rehace la tanda 1. No lleva fichas: todas las pantallas derivan de A03 o de A12 (DA-08), salvo el buzón, que sigue la suya de ORG (docs/interfaz/flujos/guia-org-buzon.md), así que todos los lotes van con disenio ninguno. Ningún menú cambia: el del admin cambió en ADM1 (DA-17). Se escribió el 2026-11-25 en la corrida desatendida (plan C:/IdeaProjects/DonaTrack-TP-DDS/.claude/plan-guia-resto.md), mientras corría PUB2: el reparto y DA-33 a DA-35 van con la opción recomendada, delegada por el relevamiento del 2026-11-24, y no los aprobó el usuario. En rutasVisuales va una ruta por plantilla (DA-20), más /admin-donantes?donante=juan, la única ruta de ADM2 que queda en la línea de base de toque de la sección 10.4 y que adm2-donantes tiene que sacar; adm2-administradores suma a paginas.txt /admin-administradores-nuevo y /admin-administradores-alta. La regla 5 es solo para el cierre: esta ola no levanta el stack (plan de la corrida, punto 5; DA-20). DA-19 y DA-20 son decisiones del plan y no de un lote. Requisito para lanzarla: este manifiesto integrado en E7_guia_ui, con PUB2 ya mergeada o pusheada en su rama.",
+  "ramas": {
+    "base": "E7_guia_ui",
+    "destino": "E7_guia_ui",
+    "prefijoOla": "E7_guia_ui_"
+  },
+  "topes": {
+    "constructoresEnParalelo": 4,
+    "rondasDeReparacion": 3
+  },
+  "modelos": {
+    "juicio": {
+      "model": "opus",
+      "effort": "medium"
+    },
+    "mecanico": {
+      "model": "sonnet",
+      "effort": "high"
+    }
+  },
+  "olas": [
+    "ADM2"
+  ],
+  "reglas": [
+    "Cada pantalla se rehace con su arquetipo de la guía (docs/interfaz/guia/partes/50-pantallas.html, el ancla de la sección 4 del backlog: #bandeja para A03 y #confirmar para A12) y con las piezas del catálogo (docs/interfaz/componentes.md y /estilos), también las del galpón que dejó ADM1: no se copia el marcado ni las clases de la guía, se usan los fragmentos y las clases del catálogo. Una plantilla que «deriva» sigue la composición de su arquetipo; las pantallas sin arquetipo son derivación del agente, sin ficha (DA-08), salvo el buzón, que sigue la suya de ORG (docs/interfaz/flujos/guia-org-buzon.md). Lo de A03 y A12 que no es una pieza se arma así, igual en todos los lotes y como en las pantallas de ADM1 (templates/admin-donaciones.html, admin-camiones.html y admin-donaciones-registrar.html): la pantalla va en un .pila con data-espacio=\"4\" y su data-pantalla, en lugar de .mesa; la cabecera del galpón es un header.racimo con data-alinea=\"entre arriba\", con un .pila data-espacio=\"0\" (el h1, sin el rótulo «Administración» arriba, y la cifra o la bajada con su fecha en un p.texto-chico data-tono=\"suave\") y las acciones en un .racimo de botones del catálogo con data-tamano=\"chico\", sin clase propia; las pestañas de una sección (Donantes · Importaciones y Cuentas · Actividad) siguen con componentes/segmentos; el error de carga o de guardado es el aviso en la página del catálogo (.aviso con data-tipo=\"error\", el signo problema, el .aviso-titulo, el código y «escribinos con este código»), no el .banner, que se queda solo en los avisos ocultos de corte de conexión (data-corte), como en ADM1; la respuesta a un envío es el aviso breve con signo del fragmento admin-donaciones :: hecho(texto), que se usa sin editarlo; vacío y cargando, .vacio, .cargando y .esqueleto; una lista con búsqueda o filtros, componentes/listado, y su paginador, componentes/paginas :: paginas (no paginador :: paginador); una tabla, la .tabla del catálogo con el encabezado del galpón; una lista de datos, .datos. Donantes y Organizaciones siguen como bandeja con ficha (.maestro y .maestro-ficha, DA-34). Un formulario que deriva de A12 sigue a Registrar donación (ADM1-11): las migas a su lista (componentes/migas), una columna de --medida-formulario dispuesta por su data-pantalla en admin-secciones.css, el resumen del error arriba en un .aviso data-tipo=\"error\" con un enlace a cada campo, los campos del catálogo (.campo con su .campo-error) y, si la tiene, la salida sin enviar como enlace («Volver sin registrar»). Una sola acción llena por pantalla. Si una pantalla necesita una pieza que el catálogo no tiene, es un bloqueante del lote y se informa: no se crea una pieza nueva dentro de una hoja de pantalla. Cada lote termina la migración de las hojas heredadas de sus pantallas: lo que la pieza del catálogo ya resuelve sale de la hoja de la pantalla; admin-secciones.css y admin-inicio.css no se borran, porque las usan también las pantallas de ADM1 (regla 4).",
+    "Los cercos no se mueven: ningún tope de InterfazFitnessTest cambia (ni sube ni baja), la lista de clases heredadas no crece (si un lote deja sin uso una clase heredada, borra su línea de cliente-liviano/src/test/resources/verificacion/clases-heredadas.txt y lo anota; mesa y mesa-cabecera, que usan plantillas de los seis lotes, las borra el integrador de la tanda, regla 4), tokens.css no se toca y nadie edita un test de cliente-liviano/src/test/java/grupo5/cliente/visual/ ni le suma una excepción. El tope de medidas literales no tiene margen: cada lote deja el conteo de sus hojas igual o menor; una medida que la guía escribe como número pasa al token más cercano o se compensa en las hojas del lote, y la diferencia se anota. Las listas LISTAS, HOJAS_HEREDADAS y BARRAS_EXCEPTUADAS de InterfazFitnessTest no son topes: si un lote borra una plantilla o una hoja que nombran, la reemplaza por la que la sucede o saca su línea; admin-donantes, admin-importaciones, admin-entidades y admin-actividad siguen usando componentes/listado, y admin-inicio.css no sale de HOJAS_HEREDADAS en esta ola (tiene los gráficos del inicio, DA-30). Los tests funcionales que afirman un texto, una ruta o un enlace que esta ola cambia (por DA-06 y DA-33, o por un ítem de la sección 16.3 del backlog) se actualizan al comportamiento nuevo, con aserciones igual de fuertes; ninguno se borra ni se debilita. ArmazonFijoTest (de visual/) y ArmazonDelGalponTest miden /admin-donantes y el armazón del galpón: un fallo nuevo es bloqueante del lote que lo rompe, y se arregla la pantalla, nunca el test.",
+    "El alcance es lo de ADM2: las 22 plantillas de la sección 5 (ADM2), con lo que la sección 16.2 del backlog asigna. Las 18 pantallas de ADM1 (admin-inicio, admin-asignaciones, admin-donaciones, admin-camiones, admin-ranking y sus respuestas) no se rediseñan ni se arreglan, ni las de otra ola: quien construye y quien revisa las anotan como menor, nunca como bloqueante. Ningún menú cambia (DA-17): el del admin cambió en ADM1, y java/grupo5/cliente/web/Pantallas.java, templates/layout-privado.html, templates/cuenta-menu.html y java/grupo5/cliente/maqueta/CuentaDeEjemplo.java no se editan. Ningún lote cambia un adaptador de cliente-liviano/src/main/java/grupo5/cliente/rest/ ni un puerto de cliente-liviano/src/main/java/grupo5/cliente/puertos/: ninguna pantalla de ADM2 muestra un hueco de la sección 7 del backlog, y si a una le falta un dato, usa el texto de «Si no llega» de esa sección o lo anota como deuda del lote; no se inventa ni se escribe en la plantilla un dato de la guía. Los datos de ejemplo nuevos van en las clases de cliente-liviano/src/main/java/grupo5/cliente/maqueta/.",
+    "Algunos archivos los tocan varios lotes. cliente-liviano/src/test/resources/verificacion/paginas.txt: cada lote, solo las líneas de sus rutas; adm2-administradores suma /admin-administradores-nuevo y /admin-administradores-alta debajo de /admin-administradores. SitioControllerTest.java, NombresVisiblesTest.java, SitioConApisTest.java, SeguridadTest.java, ErroresConSesionTest.java, CompletarPerfilTest.java, PaginadoresTest.java, EstilosPaginasTest.java, MaquetaAbiertaTest.java, PortadaConSesionMaquetaTest.java, ListadoEnAdminRegistrosTest.java, ListadoEnAdminOperacionTest.java, ListadoEnLaMaquetaTest.java y AdministradoresConIngresoTest.java: cada lote, solo los casos de sus rutas. clases-heredadas.txt: cada lote, solo las líneas de las clases que deja sin uso. Una clase heredada que usan plantillas de dos o más lotes de ADM2, y ninguna plantilla de fuera de la ola, no la borra ningún lote en su rama, porque la plantilla del otro todavía la usa y el test clasesDeLasPlantillasEstanEnElCatalogoOEnLasHeredadas daría rojo. Hoy son dos: mesa y mesa-cabecera. Si al integrar una tanda alguna queda sin uso, ese test da rojo: es un choque entre lotes y lo arregla el integrador de la tanda (su paso 4), que borra de clases-heredadas.txt cada línea que ya no usa ninguna plantilla y, con cada una, las reglas que quedan sin uso (.mesa y .mesa-cabecera en static/css/admin-inicio.css y las de .mesa en static/css/admin-secciones.css). Lo comitea como la integración de la tanda y lo anota en su detalle. Java: java/grupo5/cliente/web/AdminDonantesController.java, AdminImportacionesController.java y AdminDonantesControllerTest.java son de adm2-donantes; en la tanda 2, adm2-registrar-donante toca solo lo que sirve /admin-donantes-registrado en la maqueta y sus casos. AdminDonantesEnvioController.java: adm2-donantes, solo importar; adm2-registrar-donante, solo registrar; tipoJuridico y direccion, que usa también AdminEntidadesEnvioController, conservan su firma. AdminEntidadesController.java, AdminEntidadesEnvioController.java, AdminEntidadesControllerTest.java y SolicitudesConIngresoTest.java son de adm2-organizaciones (la lista, aprobar, pedir corrección y rechazar); en la tanda 2, adm2-registrar-organizacion toca solo registrar y lo que sirve /admin-entidades-registrada en la maqueta, con sus casos. AdminAdministradoresController.java, AdminActividadController.java, AdminPerfilController.java y sus tests son de adm2-administradores; AdminNotificacionesController.java, AdminNotificacionesEnvioController.java y sus tests, de adm2-novedades. Maqueta: java/grupo5/cliente/maqueta/AdminPersonasMaqueta.java la comparten los lotes de ADM2 y ADM1 (el inicio): cada lote, solo los datos de sus pantallas, y un método que usan dos lotes conserva su firma; AdminImportacionesDeEjemplo.java es de adm2-donantes, AdminPersonasEntidadesDeEjemplo.java de adm2-organizaciones, AdministradoresMaqueta.java y AdminActividadDeEjemplo.java de adm2-administradores, y AdminNotificacionesMaqueta.java de adm2-novedades. Fragmentos: admin-importaciones :: pestanas y los fragmentos hoja y lista de admin-donantes.html son de adm2-donantes; admin-actividad :: pestanas y admin-administradores :: formulario, de adm2-administradores; admin-entidades :: hoja, de adm2-organizaciones. Los dos registros usan en la tanda 2 los de su lista para mostrarla con el aviso breve, sin editarlos, así que conservan su firma. Hojas: static/css/admin-secciones.css es la hoja de todas las pantallas del admin salvo el inicio, y admin-inicio.css la importa: cada lote saca solo las reglas que usan nada más que sus pantallas (las de [data-pantalla=\"donantes\"] y #solicitudes, por ejemplo); las de .tabla y las de ADM1 se quedan, y las dos hojas no se borran. templates/admin-donaciones.html (su fragmento hecho) y las demás plantillas de ADM1, templates/componentes/ (buzon, listado, migas, paginas y datos incluidos), static/css/componentes/ (maestro, listado, segmentos, tabla, datos y buzon incluidos), static/js/, templates/iconos.html, templates/estilos.html, templates/paginador.html, envio.html, interaccion.html, cerrar-sesion.html, pie.html, static/css/entidad-comun.css, templates/persona/datos-persona.html (no es una pantalla: son los datos de ejemplo de la persona, de DON), datos-donante.html, viaje-datos.html, piezas-entidad.html y datos-publicos.html no se editan en esta ola: son del catálogo, comunes a los cuatro roles o de otras olas. docs/interfaz/componentes.md: solo adm2-novedades, y solo la frase de la fila .buzon que dice que los estados del admin llegan con ADM2. InterfazFitnessTest.java: ningún lote debería tocarlo (regla 2); si un lote borra una hoja o una plantilla que nombra, toca solo esa línea. Si al integrar chocan dos lotes en líneas vecinas, se conservan los dos cambios.",
+    "Solo para quien cierra la ola; no es criterio de revisión de ningún lote. (1) No levantes el stack ni hagas el recorrido con login (pasos 2, 3 y 5 del cierre): el recorrido real se hace una sola vez, en Z, y ningún lote de ADM2 cambia un adaptador rest (plan C:/IdeaProjects/DonaTrack-TP-DDS/.claude/plan-guia-resto.md, punto 5; decisión DA-20, backlog, sección 2.2). (2) Después de los gates corré una vez -Pvisual sobre las rutas de la ola, no sobre las 320: la pasada completa es de C1 y de Z (DA-20, puntos 1 y 4). Son las 49 líneas de ADM2 de cliente-liviano/src/test/resources/verificacion/paginas.txt (las que empiezan con /admin-donantes, -importaciones, -entidades, -administradores, -actividad, -notificaciones y -perfil, con las dos que suma adm2-administradores), sin la barra inicial y separadas por comas: rm -rf cliente-liviano/target/capturas; R=$(grep -E '^/admin-(donantes|importaciones|entidades|administradores|actividad|notificaciones|perfil)' cliente-liviano/src/test/resources/verificacion/paginas.txt | sed 's#^/##' | paste -sd, -); MSYS2_ARG_CONV_EXCL='-Dverificacion' mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.failIfNoSpecifiedTests=false -Dverificacion.paginas=\"$R\". Si el filtro no da 49 líneas, anotalo con la cuenta que dio. De esas rutas, la única de la línea de base de la sección 10.4 del backlog es /admin-donantes?donante=juan, que adm2-donantes tiene que sacar: si sigue fallando, es bloqueante de ese lote; cualquier otra falla es bloqueante del lote que la rompe. (3) Corré los otros tests visuales (mvn test -pl cliente-liviano -Pvisual -Dtest=ArmazonFijoTest,MenusQueSeCierranTest,BajoTierraRotulosTest,AbejasYRenglonesTest,DonanteDetallesTest -Dsurefire.failIfNoSpecifiedTests=false) y compará con la línea de base de las secciones 10.5, 11.3, 12.5, 13.5 y 14.5 y del cierre de PUB2 (sección 15). Un fallo que ya estaba se anota. Cualquier fallo nuevo es bloqueante del lote que tocó eso (en ArmazonFijoTest, casi seguro adm2-donantes), y se arregla la pantalla, nunca el test. (4) En cierre.md: cuántas rutas pasan y cuáles no, la hora de cada commit de la ola (git log) y las rondas de revisión de cada lote. (5) Actualizá docs/adr/DEUDA_TECNICA.md con lo que deja ADM2: el paso de más de DA-33 (registrar la donación de un donante nuevo pide buscarlo en la lista), y si templates/paginador.html queda sin uso y si admin-inicio.css puede salir de HOJAS_HEREDADAS en Z."
+  ],
+  "decisiones": [
+    {
+      "id": "DA-34",
+      "texto": "Donantes sigue como bandeja con ficha (.maestro y .maestro-ficha, R11-34), en el galpón: cada renglón elige su donante (?donante=, en la misma página) y la ficha lleva a sus donaciones y a «Registrar una donación». No pasa a la .tabla con una página de detalle por fila, como Donaciones en ADM1.",
+      "quien": "autor del manifiesto de ADM2, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-34",
+      "lote": "adm2-donantes",
+      "criterio": "templates/admin-donantes.html sigue con ul.maestro y section.maestro-ficha, y no hay ninguna plantilla nueva admin-donantes-detalle*. Un caso de SitioControllerTest (la maqueta, donde existe el donante juan) o de AdminDonantesControllerTest (con el puerto simulado) afirma que /admin-donantes?donante=<clave> responde 200, con aria-current=\"true\" en el renglón de ese donante y, en su ficha, un enlace a /admin-donaciones-registrar?donante=<clave>. El gate visual del lote no reporta ninguna falla en /admin-donantes?donante=juan (sale de la línea de base de toque de la sección 10.4), y git diff E7_guia_ui...HEAD no toca puertos/ ni rest/."
+    },
+    {
+      "id": "DA-34-organizaciones",
+      "texto": "Organizaciones sigue como bandeja con ficha (.maestro y .maestro-ficha), en el galpón: cada renglón elige su organización (?entidad=) y la ficha de una que pide sumarse lleva lo que mandó y sus tres acciones (Aprobar, Pedir corrección y Rechazar).",
+      "quien": "autor del manifiesto de ADM2, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-34",
+      "lote": "adm2-organizaciones",
+      "criterio": "templates/admin-entidades.html sigue con ul.maestro y section.maestro-ficha, y no hay ninguna plantilla nueva admin-entidades-detalle*. Un caso de SitioControllerTest (la maqueta) o de AdminEntidadesControllerTest (con el puerto simulado) afirma que /admin-entidades?entidad=<una que pide sumarse> (en la maqueta, hogar) responde 200 con su ficha, un formulario que manda a /admin-entidades-aprobada y las acciones Pedir corrección y Rechazar; /admin-entidades sin parámetros sigue respondiendo 200 (la pestaña Solicitudes de Por decidir llega ahí, DA-25)."
+    },
+    {
+      "id": "DA-35",
+      "texto": "La contraseña provisoria (/admin-administradores-alta) se queda como página propia, no como aviso breve: muestra una contraseña que se ve una sola vez (Cache-Control: no-store; recargarla lleva a Administradores). Va en el galpón con la composición de A12 y una sola acción llena, «Volver a Administradores». /admin-administradores-nuevo, el alta sin JavaScript, sigue como su página aparte.",
+      "quien": "autor del manifiesto de ADM2, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-35 y DA-06 (ronda 4, 2026-11-23: «Todas las recomendadas»)",
+      "lote": "adm2-administradores",
+      "criterio": "AdministradoresConIngresoTest pasa sin cambiar lo que afirma de /admin-administradores-alta (200 con Cache-Control no-store y la contraseña cuando llega en el flash; laContrasenaRecargadaYaNoSeMuestra, que sin ella redirige a /admin-administradores). En templates/admin-administradores-alta.html, git grep -c 'data-tono=\"principal\"' da 1 (el enlace a /admin-administradores) y git grep 'aviso-breve' no da resultados; un caso de SitioControllerTest afirma que, en la maqueta, /admin-administradores-alta responde 200 con la contraseña de ejemplo y /admin-administradores-nuevo responde 200 con el formulario id=\"alta-formulario\". paginas.txt tiene /admin-administradores-nuevo y /admin-administradores-alta, y las dos están en rutasVisuales del lote."
+    },
+    {
+      "id": "DA-33",
+      "texto": "Con DA-06, registrar un donante responde con el aviso breve en Donantes, sin página propia: en la maqueta, /admin-donantes-registrado sigue y muestra Donantes con el aviso («Registraste a Ana Ejemplo como donante.» y, con ?escenario=ya-era, «Ana Ejemplo ya era donante. No cambiamos nada.»). Sale «Registrar su donación»: la donación se registra desde la ficha del donante («Registrar una donación»).",
+      "quien": "autor del manifiesto de ADM2, por delegación del relevamiento del 2026-11-24",
+      "ok": "Delegada por el relevamiento del 2026-11-24 (corrida desatendida, rama = gate: opción recomendada; plan-guia-resto.md); docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, filas DA-33 y DA-06 (ronda 4, 2026-11-23: «Todas las recomendadas»)",
+      "lote": "adm2-registrar-donante",
+      "criterio": "Un caso de SitioControllerTest o de AdminDonantesControllerTest afirma que /admin-donantes-registrado responde 200 con el h1 «Donantes» y la lista, y con «Registraste a Ana Ejemplo como donante.» dentro de un aviso-breve con data-estado=\"hecho\"; con ?escenario=ya-era, «Ana Ejemplo ya era donante. No cambiamos nada.»; en los dos, la respuesta no contiene «Registrar su donación». En templates/admin-donantes-registrado.html, git grep -nE 'class=\"[^\"]*banner' no da resultados. Un caso de AdminDonantesControllerTest (con el puerto simulado; en la maqueta el POST va a /admin-donantes-registrado) afirma que el POST a /admin-donantes-registrado sigue redirigiendo a /admin-donantes con el aviso «Registraste a … como donante.». git diff E7_guia_ui...HEAD no toca puertos/ ni rest/."
+    },
+    {
+      "id": "DA-06-registrada",
+      "texto": "La parte de DA-06 que es de registrar una organización: la respuesta es el aviso breve en Organizaciones, sin página propia; en la maqueta, /admin-entidades-registrada sigue y muestra Organizaciones con ese aviso, sin el banner de hoy.",
+      "quien": "usuario",
+      "ok": "Ronda 4 de decisiones, 2026-11-23: «Todas las recomendadas» (docs/interfaz/backlog-guia-al-codigo.md, sección 2.2, fila DA-06)",
+      "lote": "adm2-registrar-organizacion",
+      "criterio": "Un caso de SitioControllerTest o de AdminEntidadesControllerTest afirma que /admin-entidades-registrada responde 200 con el h1 «Organizaciones» y la lista, y con «Registraste a Escuela Ejemplo N.º 5.» dentro de un aviso-breve con data-estado=\"hecho\"; en templates/admin-entidades-registrada.html, git grep -nE 'class=\"[^\"]*banner' no da resultados. Un caso de AdminEntidadesControllerTest (con el puerto simulado) afirma que el POST a /admin-entidades-registrada sigue redirigiendo a /admin-entidades con su aviso. Ninguna ruta de paginas.txt responde 404."
+    }
+  ],
+  "lotes": [
+    {
+      "id": "adm2-donantes",
+      "ola": "ADM2",
+      "tanda": 1,
+      "items": [
+        "ADM2-01",
+        "ADM2-02",
+        "ADM2-03"
+      ],
+      "titulo": "Donantes, sus importaciones e Importaciones",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/admin-donantes.html, admin-donantes-importando.html, -importado.html, -importar-error.html y admin-importaciones.html; en resources/static/css/admin-secciones.css, solo las reglas que usan nada más que estas pantallas (regla 4); java/grupo5/cliente/web/AdminDonantesController.java, AdminImportacionesController.java y, en AdminDonantesEnvioController.java, solo importar, si las pantallas lo piden; los datos de ejemplo de Donantes en java/grupo5/cliente/maqueta/AdminPersonasMaqueta.java (regla 4) y AdminImportacionesDeEjemplo.java; las líneas de /admin-donantes (sin -registrar ni -registrado) y /admin-importaciones en cliente-liviano/src/test/resources/verificacion/paginas.txt; clases-heredadas.txt, solo las líneas de las clases que deja sin uso; y los tests de esas pantallas (AdminDonantesControllerTest, AdminImportacionesControllerTest, y en ListadoEnAdminRegistrosTest, SitioControllerTest, NombresVisiblesTest, SitioConApisTest, SeguridadTest, PaginadoresTest y EstilosPaginasTest los casos de esas rutas).",
+      "rutasVisuales": [
+        "admin-donantes",
+        "admin-donantes?donante=juan",
+        "admin-donantes-importando",
+        "admin-donantes-importado",
+        "admin-donantes-importar-error",
+        "admin-importaciones"
+      ],
+      "que": "Donantes deriva del arquetipo A03 (#bandeja), en el galpón y con la composición de la regla 1: la cabecera con la cifra de activos y su fecha, «Registrar donante» como única acción llena e «Importar CSV»; las pestañas Donantes · Importaciones (el fragmento admin-importaciones :: pestanas, con componentes/segmentos); la franja de la importación de esta sesión como aviso en la página (.aviso), con «Ver el avance» o «Ver el resultado»; importar plegado (?importar=abrir), con el campo del archivo del catálogo y su error (admin-donantes-importar-error es un estado del mismo formulario, con el resumen arriba y el campo marcado); la barra de componentes/listado; y la bandeja con ficha (DA-34): cada renglón con el estado en palabras y la ficha con el contacto, sus 3 donaciones más recientes, «Ver sus donaciones» y «Registrar una donación». Cada donación reciente de la ficha lleva a /admin-donaciones-detalle?donacion=<clave>, no a /admin-donaciones?donacion= (DTI-51, ítem 5); el atajo de AdminDonacionesController es de ADM1 y no se toca. /admin-donantes?donante=juan está en la línea de base de toque de la sección 10.4 por un enlace de 22 px de la ficha: tiene que pasar, con su lugar para el dedo. El avance y el resultado de una importación (admin-donantes-importando e -importado) siguen como páginas aparte, porque son el estado de una importación y no una respuesta: la cabecera del galpón, las cifras, los avisos de etapa de hoy (#avance-etapa, #avance-aviso y el fragmento no-actualizado), las filas con error en la .tabla del catálogo y el paginador; con JavaScript el avance se sigue pidiendo solo, como hoy, y sus escenarios (esperando, leyendo, cortada y sin-errores) siguen. Importaciones deriva de A03: la cabecera con «Importar CSV», la ayuda plegada, la barra de componentes/listado, los avisos de lo que no se entendió, la .tabla y el paginador; sus escenarios (vacia, sin-resultados y con-viejas) siguen. Los fragmentos hoja(accion) y lista(accion) de admin-donantes.html conservan su firma: adm2-registrar-donante los usa en la tanda 2. Conserva componentes/listado (LISTAS) y lo que miden ArmazonFijoTest y ArmazonDelGalponTest en /admin-donantes (body > header, la barra del listado fija debajo de la cabecera y el foco con Tab). Antes de comitear corre mvn test -pl cliente-liviano -Pvisual -Dtest=ArmazonFijoTest,MenusQueSeCierranTest -Dsurefire.failIfNoSpecifiedTests=false y compara con la línea de base de la sección 14.5 del backlog: un fallo nuevo es bloqueante del lote; esos tests no entran en la revisión ni en la hoja de contacto. Mientras dura la tanda 1, desde la lista nueva «Registrar donante» lleva al formulario de hoy, que rehace adm2-registrar-donante en la tanda 2: no es hallazgo."
+    },
+    {
+      "id": "adm2-organizaciones",
+      "ola": "ADM2",
+      "tanda": 1,
+      "items": [
+        "ADM2-04",
+        "ADM2-05"
+      ],
+      "titulo": "Organizaciones del admin y sus respuestas",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/admin-entidades.html, admin-entidades-aprobada.html, -correccion.html y -rechazada.html; en resources/static/css/admin-secciones.css, solo las reglas que usan nada más que estas pantallas (regla 4); java/grupo5/cliente/web/AdminEntidadesController.java y, en AdminEntidadesEnvioController.java, solo aprobar, si las pantallas lo piden; los datos de ejemplo en java/grupo5/cliente/maqueta/AdminPersonasEntidadesDeEjemplo.java y, si hace falta, AdminPersonasMaqueta.java (regla 4); las líneas de /admin-entidades (sin -registrar ni -registrada) en cliente-liviano/src/test/resources/verificacion/paginas.txt; clases-heredadas.txt, solo las líneas de las clases que deja sin uso; y los tests de esas pantallas (AdminEntidadesControllerTest, SolicitudesConIngresoTest, y en ListadoEnAdminOperacionTest, SitioControllerTest y NombresVisiblesTest los casos de esas rutas).",
+      "rutasVisuales": [
+        "admin-entidades",
+        "admin-entidades-aprobada",
+        "admin-entidades-correccion",
+        "admin-entidades-rechazada"
+      ],
+      "que": "Organizaciones deriva del arquetipo A03 (#bandeja), en el galpón y con la composición de la regla 1: la cabecera con la fecha y «Registrar organización» como única acción llena; la barra de componentes/listado con Estado y su cuenta (listado.conEstados), Necesidades y Tipo, como hoy; y la bandeja con ficha (DA-34): cada renglón con su pictograma, su línea y el estado en palabras, y la ficha por partes de hoy (identidad, resumen, necesidades y acciones). Las que piden sumarse van primero en la página 1, como hoy, con lo que mandaron (cada dato con su signo y la palabra) y sus tres acciones: Aprobar, Pedir corrección y Rechazar, con sus diálogos y su campo obligatorio. Las tres respuestas (admin-entidades-aprobada, -correccion y -rechazada) siguen como hoy, la lista con su aviso breve (DA-06), ahora con el aviso breve con signo del fragmento admin-donaciones :: hecho. El paginador, componentes/paginas. Los escenarios de hoy (vacio, lento y error) siguen. El fragmento hoja(accion) conserva su firma: adm2-registrar-organizacion lo usa en la tanda 2. La pestaña Solicitudes de Por decidir (ADM1, DA-25) lleva a /admin-entidades: esa dirección sigue. Conserva componentes/listado (LISTAS). Mientras dura la tanda 1, desde la lista nueva «Registrar organización» lleva al formulario de hoy, que rehace adm2-registrar-organizacion en la tanda 2: no es hallazgo."
+    },
+    {
+      "id": "adm2-administradores",
+      "ola": "ADM2",
+      "tanda": 1,
+      "items": [
+        "ADM2-06",
+        "ADM2-07",
+        "ADM2-08"
+      ],
+      "titulo": "Administradores, Actividad y Mi perfil del admin",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/admin-administradores.html, admin-administradores-nuevo.html, -alta.html, admin-actividad.html y admin-perfil.html; en resources/static/css/admin-secciones.css, solo las reglas que usan nada más que estas pantallas (regla 4); java/grupo5/cliente/web/AdminAdministradoresController.java, AdminActividadController.java y AdminPerfilController.java, si las pantallas lo piden; los datos de ejemplo en java/grupo5/cliente/maqueta/AdministradoresMaqueta.java y AdminActividadDeEjemplo.java; las líneas de /admin-administradores, /admin-actividad y /admin-perfil en cliente-liviano/src/test/resources/verificacion/paginas.txt, con las dos que suma (/admin-administradores-nuevo y /admin-administradores-alta, debajo de /admin-administradores); clases-heredadas.txt, solo las líneas de las clases que deja sin uso; y los tests de esas pantallas (AdministradoresConIngresoTest, AdminActividadControllerTest, PortadaConSesionMaquetaTest, y en ListadoEnAdminRegistrosTest, SitioControllerTest, NombresVisiblesTest, CompletarPerfilTest y SeguridadTest los casos de esas rutas).",
+      "rutasVisuales": [
+        "admin-administradores",
+        "admin-administradores-nuevo",
+        "admin-administradores-alta",
+        "admin-actividad",
+        "admin-perfil"
+      ],
+      "que": "Administradores (la pestaña Cuentas) y Actividad derivan del arquetipo A03 (#bandeja), en el galpón y con la composición de la regla 1: las pestañas Cuentas · Actividad (el fragmento admin-actividad :: pestanas, con componentes/segmentos). En Cuentas, la cabecera con la bajada y «Dar de alta un administrador» como única acción llena; cuántas cuentas hay; la .tabla de las cuentas de a 10 con el paginador; y «Generar otra contraseña provisoria», con su diálogo, solo en las cuentas que todavía no entraron. El alta, en su ventana (el diálogo de hoy, con el fragmento admin-administradores :: formulario y su error en la misma ventana con HTMX) y, sin JavaScript, en su página aparte (/admin-administradores-nuevo, DA-35), con las migas a Administradores y el patrón de A12. La contraseña provisoria (/admin-administradores-alta) se queda como página propia (DA-35), en el galpón con la composición de A12: el título, el correo, la contraseña en su bloque monoespaciado con «Copiar» (static/js/copiar.js, que no se edita), el texto de cómo pasarla y una sola acción llena, «Volver a Administradores»; sigue con Cache-Control: no-store y, recargada, lleva a Administradores con su aviso. Actividad: la cabecera, la ayuda plegada «¿Qué se registra?», cuándo se leyó con «Actualizar», la barra de componentes/listado, los avisos de lo que no se pudo aplicar y la .tabla de a 20 con el paginador; sus escenarios (muchas, vacia, sin-resultados y sin-nombres) y sus filtros siguen. Mi perfil deriva de A12 en el galpón, como el perfil de la organización (ORG-06): una columna con el nombre y el apellido, el correo y la fecha de alta como texto fijo, «Cambiar la contraseña», «Ver quiénes administran DonaTrack» y «Ver mi actividad» como enlaces, una sola acción llena («Guardar los cambios») y los dos errores (al traer y al guardar) con el aviso en la página; ?escenario=vacio y error siguen. El lote suma a paginas.txt /admin-administradores-nuevo y /admin-administradores-alta, debajo de /admin-administradores. Conserva componentes/listado en admin-actividad (LISTAS)."
+    },
+    {
+      "id": "adm2-novedades",
+      "ola": "ADM2",
+      "tanda": 1,
+      "items": [
+        "ADM2-09"
+      ],
+      "titulo": "Las Novedades del admin",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/admin-notificaciones.html y admin-notificaciones-leidas.html; en resources/static/css/admin-secciones.css, solo las reglas que usan nada más que estas pantallas (regla 4); java/grupo5/cliente/web/AdminNotificacionesController.java y AdminNotificacionesEnvioController.java, si la pantalla lo pide; los datos de ejemplo en java/grupo5/cliente/maqueta/AdminNotificacionesMaqueta.java, si hacen falta; las líneas de /admin-notificaciones en cliente-liviano/src/test/resources/verificacion/paginas.txt; clases-heredadas.txt, solo las líneas de las clases que deja sin uso; en docs/interfaz/componentes.md, solo la frase de la fila .buzon que dice que los estados del admin llegan con ADM2; y los tests de esas pantallas (AdminNotificacionesMaquetaTest, AdminNotificacionesEnvioControllerTest, y en ListadoEnLaMaquetaTest, AdministradoresConIngresoTest y SitioControllerTest los casos de esas rutas).",
+      "rutasVisuales": [
+        "admin-notificaciones",
+        "admin-notificaciones-leidas"
+      ],
+      "que": "Novedades del admin (el buzón, sin arquetipo) sigue su ficha de ORG (docs/interfaz/flujos/guia-org-buzon.md), que ya llevó al admin la pieza componentes/buzon :: pagina con la fila de la campana y la casilla de 48 × 48 px (ORG-01 y ORG-02, DA-21): esa pieza es del catálogo y no se edita. Lo que cambia es la pantalla, en el galpón y con la composición de la regla 1: la cabecera con el título «Novedades», cuántas sin leer y su fecha, y la bajada de que la bandeja es la misma para todas las cuentas de administración; los estados de lista del catálogo, como ya los tienen la organización y quien dona (vacío con .vacio, cargando con .cargando y .esqueleto, y el error de carga con el aviso en la página); y el aviso de marcar (admin-notificaciones-leidas) como aviso breve con signo, con el fragmento admin-donaciones :: hecho, sin página propia (DA-06). ?escenario=vacio, lento y error siguen. En docs/interfaz/componentes.md, la fila .buzon deja de decir que los estados del admin llegan con ADM2. /admin-notificaciones salió de la línea de base de toque en ORG: tiene que seguir pasando."
+    },
+    {
+      "id": "adm2-registrar-donante",
+      "ola": "ADM2",
+      "tanda": 2,
+      "items": [
+        "ADM2-10",
+        "ADM2-11"
+      ],
+      "titulo": "Registrar un donante, en el galpón",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/admin-donantes-registrar.html, admin-donantes-registrado.html y admin-donantes-registrar-error.html; en resources/static/css/admin-secciones.css, solo las reglas que usan nada más que estas pantallas (regla 4); en java/grupo5/cliente/web/AdminDonantesEnvioController.java, solo registrar, y en AdminDonantesController.java, solo lo que sirve /admin-donantes-registrado en la maqueta, si hace falta (regla 4); los datos de ejemplo del registro en java/grupo5/cliente/maqueta/AdminPersonasMaqueta.java, si hacen falta (regla 4); las líneas de /admin-donantes-registrar y /admin-donantes-registrado en cliente-liviano/src/test/resources/verificacion/paginas.txt; clases-heredadas.txt, solo las líneas de las clases que deja sin uso; y los tests de esas pantallas (en AdminDonantesControllerTest, SitioControllerTest y NombresVisiblesTest, los casos de esas rutas).",
+      "rutasVisuales": [
+        "admin-donantes-registrar",
+        "admin-donantes-registrado",
+        "admin-donantes-registrar-error"
+      ],
+      "que": "Registrar donante deriva del arquetipo A12 (#confirmar), en el galpón, como Registrar donación (ADM1-11) y con la composición de la regla 1: las migas a Donantes; el tipo (persona u organización, ?tipo=organizacion) y los campos de cada uno con los del catálogo; el error de datos, un estado del mismo formulario (admin-donantes-registrar-error y ?escenario=error), con el resumen arriba y cada campo marcado en su lugar; una sola acción llena y «Volver sin registrar». El fragmento hoja(error) de admin-donantes-registrar.html conserva su firma. «Registrado» pasa a aviso breve en Donantes (DA-06 y DA-33): el envío real ya termina en /admin-donantes con el aviso; en la maqueta, /admin-donantes-registrado sigue y muestra Donantes (los fragmentos de admin-donantes.html, de adm2-donantes, que no se editan) con el aviso breve con signo del fragmento admin-donaciones :: hecho, también con ?escenario=ya-era. Sale el enlace «Registrar su donación»: la donación se registra desde la ficha del donante («Registrar una donación»), y el paso de más se anota como deuda del lote. El lote parte de lo que integró la tanda 1: ve la lista nueva y rehace el formulario de hoy."
+    },
+    {
+      "id": "adm2-registrar-organizacion",
+      "ola": "ADM2",
+      "tanda": 2,
+      "items": [
+        "ADM2-12",
+        "ADM2-13"
+      ],
+      "titulo": "Registrar una organización, en el galpón",
+      "rol": "juicio",
+      "ruta": "STANDARD",
+      "disenio": "ninguno",
+      "modulos": [
+        "cliente-liviano"
+      ],
+      "archivos": "Bajo cliente-liviano/src/main/: resources/templates/admin-entidades-registrar.html, admin-entidades-registrada.html y admin-entidades-registrar-error.html; en resources/static/css/admin-secciones.css, solo las reglas que usan nada más que estas pantallas (regla 4); en java/grupo5/cliente/web/AdminEntidadesEnvioController.java, solo registrar, y en AdminEntidadesController.java, solo lo que sirve /admin-entidades-registrada en la maqueta, si hace falta (regla 4); los datos de ejemplo del registro en java/grupo5/cliente/maqueta/AdminPersonasEntidadesDeEjemplo.java o AdminPersonasMaqueta.java, si hacen falta (regla 4); las líneas de /admin-entidades-registrar y /admin-entidades-registrada en cliente-liviano/src/test/resources/verificacion/paginas.txt; clases-heredadas.txt, solo las líneas de las clases que deja sin uso; y los tests de esas pantallas (en AdminEntidadesControllerTest, SitioControllerTest y NombresVisiblesTest, los casos de esas rutas).",
+      "rutasVisuales": [
+        "admin-entidades-registrar",
+        "admin-entidades-registrada",
+        "admin-entidades-registrar-error"
+      ],
+      "que": "Registrar organización deriva del arquetipo A12 (#confirmar), en el galpón, como Registrar donación (ADM1-11) y con la composición de la regla 1: las migas a Organizaciones; los datos de la organización, su dirección y su responsable con los campos del catálogo; el error de datos, un estado del mismo formulario (admin-entidades-registrar-error), con el resumen arriba y cada campo marcado en su lugar; una sola acción llena y «Volver sin registrar». El fragmento hoja(error) de admin-entidades-registrar.html conserva su firma. «Registrada» pasa a aviso breve en Organizaciones (DA-06): el envío real ya termina en /admin-entidades con el aviso; en la maqueta, /admin-entidades-registrada sigue y muestra Organizaciones (el fragmento hoja de admin-entidades.html, de adm2-organizaciones, que no se edita) con el aviso breve con signo del fragmento admin-donaciones :: hecho, sin el banner de hoy. El lote parte de lo que integró la tanda 1: ve la lista nueva y rehace el formulario de hoy."
+    }
+  ]
+}

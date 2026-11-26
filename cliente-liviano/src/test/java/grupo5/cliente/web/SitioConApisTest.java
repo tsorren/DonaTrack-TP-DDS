@@ -66,10 +66,16 @@ class SitioConApisTest {
   }
 
   @Test
-  void recibidasSinEntidadMandaAIngresarYConDonacionesCaidoEsUnaFallaNuestra() throws Exception {
-    mvc.perform(get("/entidad-recibidas")).andExpect(redirectedUrl("/publico-ingresar"));
-    mvc.perform(get("/entidad-recibidas?entidad=00000000-0000-0000-0000-000000000003"))
+  void entregasSinEntidadMandaAIngresarYConDonacionesCaidoEsUnaFallaNuestra() throws Exception {
+    mvc.perform(get("/entidad-seguimiento")).andExpect(redirectedUrl("/publico-ingresar"));
+    mvc.perform(get("/entidad-seguimiento?entidad=00000000-0000-0000-0000-000000000003"))
         .andExpect(status().isBadGateway());
+  }
+
+  @Test
+  void laPortadaConDonacionesCaidoEsUnaFallaNuestra() throws Exception {
+    // La portada pide las cifras y las entregas del mes (A01) a Donaciones.
+    mvc.perform(get("/publico-portada")).andExpect(status().isBadGateway());
   }
 
   @Test

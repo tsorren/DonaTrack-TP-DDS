@@ -1,265 +1,196 @@
 <!DOCTYPE html>
-<!--/* Raíces, Seguimiento del donante (RF-09), según su ficha de flujo
-       (docs/interfaz/flujos/raices-seguir-entregas.md). Arriba, cuántas entregas van en curso y cuándo
-       se actualizó, y las cifras por estado. Después, el mapa de seguimiento (usuario, 2026-11-10: el
-       mapa real en lugar del dibujo de subte; fragmento mapa): MapLibre con OpenFreeMap, como
-       publico-mapa (static/js/mapa.js), con el depósito, la entidad de destino de cada entrega y, con
-       el número de la lista, su posición aproximada, unidas por su recorrido (lleno lo hecho, punteado
-       lo que falta). Los puntos de la maqueta están en puntos (th:with), por clave de donación, y son
-       sintéticos, uno por barrio (los da la maqueta; con datos reales, la posición del camión y el destino
-       de la entrega en Logística). Debajo, la lista dice lo mismo con el mismo número (RF-CL-06), la
-       más avanzada primero: 1 en camino, 2 con problema y 3 pendiente; al pasar o enfocar una entrega,
-       se destaca en el mapa. Sin JavaScript, el aviso del mapa y la lista. Los datos son los de
-       viaje-datos.html. Los datos vienen del controller (miSeguimiento: de la maqueta, las de
-       viaje-datos, o de Donaciones y Logística); viaje-datos sigue envolviendo la pantalla. Estados de la maqueta: ?escenario=vacio, error y lento.
-       Fragmentos: mapa (el contenedor del mapa y su script; lo usa también persona/),
-       sinDestino(nombres) (el aviso de lo que espera destino, R11-39; también persona/) y
-       entrega(d, numero, punto). */-->
+<!--/* Seguimiento de una donación (RF-09): el arquetipo A07 de la guía «Huerta y galpón»
+       (docs/interfaz/guia/partes/50-pantallas.html, #seguimiento), hecho con las piezas del catálogo
+       (docs/interfaz/componentes.md). Ya no es una sección del menú (DA-03a): se llega desde el
+       detalle de la donación, que tiene el enlace, y las migas vuelven a él. Una sola donación: el
+       mapa grande (MapLibre con OpenFreeMap, static/js/mapa.js, como publico-mapa) con el depósito,
+       la posición aproximada del camión y la organización que la recibe, y al lado el recorrido paso
+       a paso, que dice lo mismo en texto (RF-CL-06). No hay nada que hacer: no hay acción llena. La
+       hora estimada de llegada no llega del backend (HG-02): solo la hora en que salió, en su paso.
+       ?donacion=<clave>: la pedida, si va en curso; sin parámetro, la primera en camino (o la primera
+       en curso). Debajo, lo que todavía espera destino (R11-39). Los datos vienen del controller
+       (miSeguimiento: de la maqueta o de Donaciones y Logística). ?escenario=vacio, error y lento.
+       Fragmentos: seguimiento(donaciones, puntos, actualizado, escenario) (la pantalla; la usa también
+       persona/) y sinDestino(nombres) (el aviso de lo que espera destino). */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-seguimiento', ~{::contenido})}">
+      th:replace="~{layout-privado :: pagina(~{::title}, 'donante-donaciones-detalle', ~{::contenido})}">
 <head>
-  <title>Seguimiento - DonaTrack</title>
+  <title>Seguimiento de la donación - Donaciones - DonaTrack</title>
 </head>
 <body>
-<th:block th:fragment="contenido">
-  <th:block th:replace="~{viaje-datos :: viaje(~{::pantalla})}"></th:block>
+<th:block th:fragment="contenido" th:with="escenario=${param.escenario != null ? param.escenario[0] : ''}">
+  <th:block th:replace="~{:: seguimiento(${miSeguimiento.donaciones}, ${miSeguimiento.puntos}, ${miSeguimiento.actualizado}, ${escenario})}"></th:block>
 </th:block>
 
-<!--/* El orden de la lista y del mapa: la más avanzada primero (en camino, con problema y
-       pendiente); dentro del mismo estado, la donación más reciente primero, como vienen los datos. */-->
-<th:block th:fragment="pantalla"
-    th:with="escenario=${param.escenario != null ? param.escenario[0] : ''},
-             donaciones=${miSeguimiento.donaciones},
-             enCurso=${escenario == 'vacio' ? {} : donaciones.?[destino != null and estado.tono != 'entregada']},
-             puntos=${miSeguimiento.puntos},
-             vanEnCamino=${enCurso.?[estado.tono == 'en-camino']},
-             tienenProblema=${enCurso.?[estado.tono == 'con-problema']},
-             esperanSalir=${enCurso.?[estado.tono == 'pendiente']},
+<!--/* La donación que se sigue: la pedida en ?donacion=, si va en curso (tiene destino y no llegó);
+       sin pedir ninguna, la primera en camino o, si no hay, la primera en curso. El mapa con el
+       camión, solo si está en camino: asignada (A06) o con problema (A08), no hay camión que seguir,
+       y queda el hueco sin posición, aunque el puerto traiga un punto. */-->
+<th:block th:fragment="seguimiento(donaciones, puntos, actualizado, escenario)"
+    th:with="enCurso=${escenario == 'vacio' ? {} : donaciones.?[destino != null and estado.tono != 'entregada']},
+             claves=${enCurso.![clave]},
+             enCamino=${enCurso.?[estado.tono == 'en-camino']},
+             pedida=${param.donacion != null ? param.donacion[0] : null},
+             clave=${pedida != null ? (claves.contains(pedida) ? pedida : null)
+                     : (!enCamino.isEmpty() ? enCamino[0].clave : (enCurso.isEmpty() ? null : enCurso[0].clave))},
+             d=${clave == null ? null : enCurso[claves.indexOf(clave)]},
+             punto=${d == null or d.estado.tono != 'en-camino' ? null : puntos.get(d.clave)},
              sinDestino=${donaciones.?[destino == null and estado.tono == 'pendiente'].![titulo]},
-             conDatos=${escenario == '' and !enCurso.isEmpty()},
-             vacia=${escenario == 'vacio' or (escenario == '' and enCurso.isEmpty())}">
-  <div class="seguimiento">
-    <header class="seguimiento-cabecera">
-      <p class="rotulo" th:text="${seccion}">Seguimiento</p>
-      <h1>Tus entregas en curso</h1>
-      <p class="seguimiento-bajada" th:if="${conDatos}"
-         th:text="|Gracias por donar. ${#lists.size(enCurso)} ${#lists.size(enCurso) == 1 ? 'entrega' : 'entregas'} en curso. Posiciones aproximadas, actualizadas ${miSeguimiento.actualizado}.|">Gracias
-        por donar. 3 entregas en curso. Posiciones aproximadas, actualizadas hoy, 15 de octubre, a las 16:25.</p>
-      <p class="seguimiento-bajada" th:if="${vacia}">Ninguna entrega en curso.</p>
-    </header>
-
-    <!--/* Cargando: primero el aviso, que se ve en el celular; después, el lugar de cada parte, sin
-           datos inventados. Viene con la página, así que no es una región viva: un lector de
-           pantalla no anuncia lo que ya estaba al cargar. En el sistema, cuando la carga tarda, el
-           aviso se agrega a la región #avisos del layout, que sí lo anuncia. */-->
-    <p th:if="${escenario == 'lento'}" class="seguimiento-aviso">Cargando tus entregas en curso…</p>
-    <div th:if="${escenario == 'lento'}" class="seguimiento-cuerpo" aria-busy="true">
-      <div class="seguimiento-dibujo seguimiento-reserva esqueleto"></div>
-      <div class="seguimiento-lista seguimiento-reserva esqueleto"></div>
+             titulo=${d == null ? 'Seguimiento' : d.titulo + ', ' + d.cantidad}">
+  <svg th:replace="~{iconos :: signos}"></svg>
+  <div class="pila" data-espacio="5">
+    <div class="pila" data-espacio="1">
+      <nav th:replace="~{componentes/migas :: migas(pasos=${d == null
+          ? { {texto: 'Donaciones', ruta: '/donante-donaciones'} }
+          : { {texto: 'Donaciones', ruta: '/donante-donaciones'},
+              {texto: titulo, ruta: '/donante-donaciones-detalle?donacion=' + d.clave} } }, actual='Seguimiento')}"></nav>
+      <div class="racimo" data-alinea="entre arriba">
+        <header class="pila" data-espacio="1">
+          <h1 th:text="${titulo}">Lentejas secas, 15 kg</h1>
+          <p th:if="${d != null and escenario == ''}" data-tono="suave"
+             th:text="|Donación ${#numbers.formatInteger(d.numero, 4)}. Para ${d.destino}.|">Donación 0005. Para Comedor
+            Barrio Ejemplo.</p>
+        </header>
+        <!--/* El sello dice lo mismo que la lista y el detalle: la pendiente (acá siempre con
+               organización) va como asignada. */-->
+        <span th:if="${d != null and escenario == ''}" class="estado"
+              th:with="sello=${d.estado.tono == 'pendiente' ? 'asignada' : d.estado.tono},
+                       palabra=${d.estado.tono == 'pendiente' ? 'Asignada' : d.estado.texto}"
+              th:data-estado="${sello}" data-estado="en-camino"><th:block
+            th:replace="~{componentes/sello :: sello(${sello})}"></th:block><th:block
+            th:text="${palabra}">En camino</th:block></span>
+      </div>
     </div>
 
-    <section th:if="${escenario == 'error'}" class="banner" data-estado="error" role="alert"
-             aria-labelledby="error-titulo">
-      <h2 id="error-titulo">No pudimos cargar tus entregas en curso.</h2>
-      <p>Es un problema nuestro y no cambia el estado de tus donaciones. Probá de nuevo en unos
-        minutos; si sigue, <a href="/publico-contacto?codigo=a1b2c3d4e5f6"
-           th:href="@{/publico-contacto(codigo='a1b2c3d4e5f6',volver='/donante-seguimiento')}">escribinos
-          con este código</a>.</p>
-      <p class="aviso-codigo">Código: <code>a1b2c3d4e5f6</code></p>
-      <a class="boton" data-tono="secundario" href="/donante-seguimiento"
-         th:href="@{/donante-seguimiento}">Volver a intentar</a>
-    </section>
+    <!--/* Cargando: primero el aviso; después, el lugar del mapa y del recorrido, sin datos. */-->
+    <div th:if="${escenario == 'lento'}" class="pila" data-espacio="3" aria-busy="true">
+      <p class="cargando" role="status">Cargando el seguimiento…</p>
+      <div class="mapa-cuerpo">
+        <div class="esqueleto" data-tamano="alto"></div>
+        <div class="esqueleto" data-forma="punteado" data-tamano="alto"></div>
+      </div>
+    </div>
 
-    <section th:if="${vacia}" class="vacio" aria-labelledby="vacio-titulo">
-      <h2 id="vacio-titulo">Ningún camión está en camino con tus donaciones</h2>
-      <p>Cuando a una donación se le asigne una organización, vas a ver acá su camino y, cuando salga, por
+    <th:block th:if="${escenario == 'error'}">
+      <section th:replace="~{datos-donante :: error('No pudimos cargar el seguimiento.', '/donante-seguimiento')}"></section>
+    </th:block>
+
+    <section th:if="${d == null and (escenario == '' or escenario == 'vacio')}" class="vacio"
+             aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo"
+          th:text="${pedida != null and escenario == ''} ? 'No encontramos esa donación en camino.' : 'Ningún camión está en camino con tus donaciones'">Ningún
+        camión está en camino con tus donaciones</h2>
+      <p th:text="${pedida != null and escenario == ''}
+           ? 'Puede que ya haya llegado o que todavía no tenga organización. En Donaciones están todas, con su estado de hoy.'
+           : 'Cuando a una donación se le asigne una organización, vas a ver acá su camino y, cuando salga, por dónde va el camión.'">Cuando
+        a una donación se le asigne una organización, vas a ver acá su camino y, cuando salga, por
         dónde va el camión.</p>
       <a class="boton" data-tono="secundario" href="/donante-donaciones"
-         th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
+         th:href="@{/donante-donaciones}">Ver Donaciones</a>
     </section>
 
-    <!--/* Las cifras por estado, un registro como el de la portada; aparte, las que esperan destino. */-->
-    <section th:if="${conDatos}" class="cifras" aria-labelledby="cifras-titulo">
-      <h2 id="cifras-titulo" class="cifras-titulo">Tus donaciones, por estado</h2>
-      <dl>
-        <div class="cifra">
-          <dt><span class="estado" data-estado="en-camino"><th:block th:replace="~{componentes/sello :: sello('en-camino')}"></th:block>En camino</span></dt>
-          <dd th:text="${#lists.size(vanEnCamino)}">1</dd>
+    <th:block th:if="${d != null and escenario == ''}">
+      <div class="mapa-cuerpo">
+        <!--/* El mapa: el depósito, la posición aproximada del camión y la organización, unidos por
+               el recorrido (lleno lo hecho, punteado lo que falta). Sin JavaScript, el aviso; el
+               recorrido de al lado tiene los mismos datos. Los puntos son sintéticos en la maqueta,
+               uno por barrio: nunca una dirección. El mapa y su nota van juntos en
+               [data-parte="mapa"], como en publico-mapa: en pantalla ancha quedan fijos enteros. El
+               marco (.mapa-dibujo) envuelve al mapa y no va en el mismo elemento: MapLibre le pone
+               position: relative a .mapa-real y el top del fijo de .mapa-dibujo lo correría hacia
+               abajo, encima de la nota. La hoja de MapLibre se pide acá, antes del script (que la
+               pide recién después de cargar la biblioteca): sin ella, al armarse el mapa sus piezas
+               estiran .mapa-real en el celular, MapLibre lo mide más alto de lo que queda y el
+               encuadre deja afuera el camión y la organización. data-mapa-margenes: el encuadre deja
+               a la derecha el ancho de los botones de acercar y medio marcador, y abajo el alto de la
+               atribución a 360 px (dos renglones de 48 px) y medio marcador, para que ningún
+               marcador quede debajo de ellos. */-->
+        <div th:if="${punto != null}" class="pila" data-espacio="1" data-parte="mapa">
+          <div class="mapa-dibujo"><div class="mapa-real" data-mapa data-mapa-puntos="[data-mapa-punto]" role="region"
+               th:aria-label="|Mapa: el camión con ${d.titulo}, desde el depósito hasta ${d.destino}. El recorrido de al lado tiene los mismos datos.|"
+               aria-label="Mapa: el camión con Lentejas secas, desde el depósito hasta Comedor Barrio Ejemplo. El recorrido de al lado tiene los mismos datos."
+               data-maplibre="/webjars/maplibre-gl/dist/" th:data-maplibre="@{/webjars/maplibre-gl/dist/}"
+               data-deposito-lat="-34.6365" data-deposito-lng="-58.4010" data-deposito-nombre="Depósito de DonaTrack"
+               data-mapa-margenes="64 96 136 64">
+            <p class="mapa-real-aviso">Para ver el mapa hace falta JavaScript. El recorrido, paso a
+              paso, dice lo mismo.</p>
+            <template data-mapa-icono="deposito"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path
+                d="M3 20V9l9-5 9 5v11"/><path d="M7 20v-7h10v7M7 16.5h10"/></svg></template>
+            <template data-mapa-icono="destino"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path
+                d="M4 20V10l8-6 8 6v10z"/><path d="M10 20v-5h4v5"/></svg></template>
+            <template data-mapa-globo-deposito>
+              <p>Depósito de DonaTrack. De acá salen tus donaciones hacia cada organización.</p>
+            </template>
+          </div></div>
+          <!--/* La hora de salida, sin la estimada de llegada (HG-02): como en el inicio; sin nota, solo
+                 la posición. */-->
+          <p data-tono="suave" class="texto-chico"
+             th:text="${(d.nota == null ? '' : #strings.replace(#strings.replace(d.nota, 'Salió hoy a las ', 'En camino desde las '), 'Salió el ', 'En camino desde el ') + '. ')
+                       + 'Posición aproximada, actualizada ' + actualizado + '.'}">En
+            camino desde las 14:30. Posición aproximada, actualizada hoy, 15 de octubre, a las 16:25.</p>
+          <link rel="stylesheet" href="/webjars/maplibre-gl/dist/maplibre-gl.css"
+                th:href="@{/webjars/maplibre-gl/dist/maplibre-gl.css}">
+          <script src="/js/mapa.js" th:src="@{/js/mapa.js}" defer></script>
         </div>
-        <div class="cifra">
-          <dt><span class="estado" data-estado="con-problema"><th:block th:replace="~{componentes/sello :: sello('con-problema')}"></th:block>Con problema</span></dt>
-          <dd th:text="${#lists.size(tienenProblema)}">1</dd>
+        <div th:if="${punto == null}" class="tarjeta pila" data-papel="hueco" data-espacio="1">
+          <h2>Todavía sin posición del camión</h2>
+          <p data-tono="suave" th:text="${d.estado.tono == 'con-problema'}
+               ? 'El camión no está viajando con esta donación. Cuando salga de nuevo, vas a ver acá por dónde va.'
+               : 'Cuando el camión salga del depósito, vas a ver acá por dónde va.'">Cuando el camión
+            salga del depósito, vas a ver acá por dónde va.</p>
         </div>
-        <div class="cifra">
-          <dt><span class="estado" data-estado="pendiente"><th:block th:replace="~{componentes/sello :: sello('pendiente')}"></th:block>Pendientes</span></dt>
-          <dd th:text="${#lists.size(esperanSalir)}">1</dd>
-        </div>
-        <div class="cifra cifra--aparte">
-          <dt><a href="/donante-donaciones"
-                 th:href="@{/donante-donaciones}">Esperan destino</a></dt>
-          <dd th:text="${#lists.size(sinDestino)}">2</dd>
-        </div>
-      </dl>
-    </section>
 
-    <div th:if="${conDatos}" class="seguimiento-cuerpo">
-      <!--/* El mapa de seguimiento (usuario, 2026-11-10: "sigue teniendo una abeja bajo tierra. Sacar.
-             Dije que acá iba el mapa de seguimiento"): el mapa real de publico-mapa (MapLibre con
-             OpenFreeMap, D21; static/js/mapa.js) con el depósito, la entidad de destino de cada
-             entrega y, numerada como en la lista, la posición aproximada de cada una; del depósito a
-             la entrega, la línea llena; de la entrega al destino, punteada (lo que falta). Al pasar o
-             enfocar una entrega de la lista, su marcador, su destino y su recorrido se destacan. Sin
-             JavaScript, el aviso y la lista, con los mismos datos (RF-CL-06). Los puntos son
-             sintéticos, uno por barrio: nunca una dirección. Antes, el dibujo de la red de subte. */-->
-      <div th:replace="~{:: mapa}"></div>
-
-      <!--/* Los íconos de categoría: los pictogramas impresos del cuaderno de la portada. */-->
-      <svg th:replace="~{iconos :: categorias}"></svg>
-
-      <!--/* La lista: lo mismo que el dibujo, con el mismo número (RF-CL-06). */-->
-      <section class="seguimiento-lista" aria-labelledby="lista-titulo">
-        <h2 id="lista-titulo">Entrega por entrega</h2>
-        <ol class="entregas" role="list">
-          <th:block th:each="d, vuelta : ${vanEnCamino}">
-            <li th:replace="~{:: entrega(${d}, ${vuelta.count}, ${puntos.get(d.clave)})}"></li>
-          </th:block>
-          <th:block th:each="d, vuelta : ${tienenProblema}">
-            <li th:replace="~{:: entrega(${d}, ${#lists.size(vanEnCamino) + vuelta.count}, ${puntos.get(d.clave)})}"></li>
-          </th:block>
-          <th:block th:each="d, vuelta : ${esperanSalir}">
-            <li th:replace="~{:: entrega(${d}, ${#lists.size(vanEnCamino) + #lists.size(tienenProblema) + vuelta.count}, ${puntos.get(d.clave)})}"></li>
-          </th:block>
-        </ol>
-        <th:block th:unless="${#lists.isEmpty(sinDestino)}">
-          <aside th:replace="~{donante-seguimiento :: sinDestino(${sinDestino})}"></aside>
-        </th:block>
-        <a class="boton" data-tono="secundario" href="/donante-donaciones"
-           th:href="@{/donante-donaciones}">Ver Mis donaciones</a>
-      </section>
-    </div>
-  </div>
-</th:block>
-
-<!--/* Lo que espera destino (R11-39): un aviso con el ícono del reloj (decorativo), el título, las
-       donaciones en una lista y qué pasa después, no un párrafo suelto. Lo usan la empresa y la persona.
-       sinDestino(nombres): los títulos de las donaciones que todavía no tienen organización. */-->
-<aside th:fragment="sinDestino(nombres)" data-v="sin-destino" aria-labelledby="sin-destino-titulo"
-       th:with="una=${#lists.size(nombres) == 1}">
-  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-    <circle data-v="sin-destino-circulo" cx="12" cy="12" r="11"/>
-    <path data-v="sin-destino-manos" d="M12 5.5V12l4 2.5"/>
-  </svg>
-  <div>
-    <h3 id="sin-destino-titulo" th:text="${una} ? 'Todavía espera destino' : 'Todavía esperan destino'">Todavía esperan destino</h3>
-    <ul role="list">
-      <li th:each="nombre : ${nombres}" th:text="${nombre}">Arroz largo fino</li>
-    </ul>
-    <p th:text="${una} ? 'Aparece en esta lista cuando se le asigne una organización.' : 'Aparecen en esta lista cuando se les asigne una organización.'">Aparecen
-      en esta lista cuando se les asigne una organización.</p>
-    <p>Las que ya llegaron, con la foto de la organización, están en Mis donaciones.</p>
-  </div>
-</aside>
-
-<!--/* El mapa de seguimiento, que usan la empresa y la persona: el contenedor que static/js/mapa.js
-       llena con MapLibre (sus puntos son las entregas de la lista, .entrega[data-lat]), el depósito con
-       su punto y su globo, los íconos del depósito y de los destinos, y el aviso para cuando no hay
-       JavaScript. En el celular es cuadrado; desde la tableta, más ancho que alto
-       (donante-seguimiento.css). */-->
-<th:block th:fragment="mapa">
-  <div class="seguimiento-dibujo mapa-real" data-mapa data-mapa-puntos=".entrega[data-lat]" role="region"
-       aria-label="Mapa de tus entregas en curso: el depósito, por dónde va cada una y la organización que la recibe. La lista de abajo tiene los mismos datos."
-       data-maplibre="/webjars/maplibre-gl/dist/" th:data-maplibre="@{/webjars/maplibre-gl/dist/}"
-       data-deposito-lat="-34.6365" data-deposito-lng="-58.4010" data-deposito-nombre="Depósito de DonaTrack">
-    <p class="mapa-real-aviso">Para ver el mapa hace falta JavaScript. En la lista están las mismas
-      entregas, con su estado y su destino.</p>
-    <template data-mapa-icono="deposito"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path
-        d="M3 20V9l9-5 9 5v11"/><path d="M7 20v-7h10v7M7 16.5h10"/></svg></template>
-    <template data-mapa-icono="destino"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path
-        d="M4 20V10l8-6 8 6v10z"/><path d="M10 20v-5h4v5"/></svg></template>
-    <template data-mapa-globo-deposito>
-      <div class="mapa-globo-cuerpo">
-        <p class="mapa-globo-nombre">Depósito de DonaTrack</p>
-        <p>De acá salen tus donaciones hacia cada organización.</p>
+        <!--/* El recorrido (D2), que es también el punto del mapa: sus datos y sus globos. */-->
+        <section class="pila" data-espacio="3" aria-labelledby="recorrido-titulo" data-mapa-punto
+                 th:attr="data-lat=${punto != null ? punto.lat : null},data-lng=${punto != null ? punto.lng : null},
+                          data-destino-lat=${punto != null ? punto.destinoLat : null},data-destino-lng=${punto != null ? punto.destinoLng : null},
+                          data-nombre=|Camión con ${d.titulo}, ${#strings.toLowerCase(d.estado.texto)}|,
+                          data-destino-nombre=|${d.destino}, destino de la donación|">
+          <template th:if="${punto != null}" data-mapa-globo>
+            <p th:text="|${d.titulo}: ${#strings.toLowerCase(d.estado.texto)}. Para ${d.destino}.|">Lentejas
+              secas: en camino. Para Comedor Barrio Ejemplo.</p>
+          </template>
+          <template th:if="${punto != null}" data-mapa-globo-destino>
+            <p th:text="|${d.destino}. Recibe ${d.titulo}.|">Comedor Barrio Ejemplo. Recibe Lentejas
+              secas.</p>
+          </template>
+          <h2 id="recorrido-titulo">El recorrido, paso a paso</h2>
+          <th:block th:replace="~{donante-donaciones-detalle :: recorrido(${d.pasos}, ${d.estado.tono == 'con-problema'})}"></th:block>
+          <div class="tarjeta pila" data-papel="hueco" data-espacio="1">
+            <h3>La foto de la organización</h3>
+            <p data-tono="suave" th:text="|Va a aparecer acá cuando ${d.destino} confirme la entrega. Te avisamos.|">Va
+              a aparecer acá cuando Comedor Barrio Ejemplo confirme la entrega. Te avisamos.</p>
+          </div>
+        </section>
       </div>
-    </template>
+
+      <th:block th:unless="${#lists.isEmpty(sinDestino)}">
+        <aside th:replace="~{donante-seguimiento :: sinDestino(${sinDestino})}"></aside>
+      </th:block>
+
+      <div class="racimo">
+        <a class="boton" href="/donante-donaciones-detalle?donacion=lentejas"
+           th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}">Volver al detalle</a>
+      </div>
+    </th:block>
   </div>
-  <script src="/js/mapa.js" th:src="@{/js/mapa.js}" defer></script>
 </th:block>
 
-<!--/* Una entrega de la lista (usuario, 2026-11-09: "menos margen a la izquierda, más gráfica, con
-       íconos y que se entienda qué está agrupado"). Tres grupos, de arriba abajo: qué es (el número,
-       el nombre, que lleva al detalle, y la cantidad); a dónde va (la categoría y la entidad, con sus
-       íconos); y cómo va (el estado con su fecha, las cinco etapas y la última noticia), sobre un
-       fondo propio. punto es su lugar en el mapa ({lat, lng, destinoLat, destinoLng}, la posición
-       aproximada y la de su entidad) o null: con punto, la entrega es un punto del mapa de seguimiento,
-       con su número, y trae sus globos; se llega a ella con #entrega-<clave>. */-->
-<li th:fragment="entrega(d, numero, punto)" class="entrega" th:classappend="|entrega--${d.estado.tono}|"
-    th:id="|entrega-${d.clave}|" tabindex="-1"
-    th:attr="data-lat=${punto != null ? punto.lat : null},data-lng=${punto != null ? punto.lng : null},
-             data-destino-lat=${punto != null ? punto.destinoLat : null},data-destino-lng=${punto != null ? punto.destinoLng : null},
-             data-numero=${numero},data-nombre=|${d.titulo}, ${#strings.toLowerCase(d.estado.texto)}|,
-             data-destino-nombre=|${d.destino}, destino de la entrega ${numero}|">
-  <!--/* Los globos de su marcador y del de su destino en el mapa: los arma el servidor; mapa.js solo
-         los copia. */-->
-  <template th:if="${punto != null}" data-mapa-globo>
-    <div class="mapa-globo-cuerpo">
-      <p class="mapa-globo-nombre" th:text="|${numero}. ${d.titulo}|">1. Lentejas secas</p>
-      <p th:text="|${d.estado.texto} · ${d.nota}|">En camino · Salió hoy a las 14:30</p>
-      <p th:text="|Para ${d.destino}. ${d['seguimiento']}|">Para Comedor Barrio Ejemplo. El camión va por
-        la mitad del camino.</p>
-      <a href="#entrega-lentejas" th:href="|#entrega-${d.clave}|">Ver la entrega en la lista</a>
-    </div>
-  </template>
-  <template th:if="${punto != null}" data-mapa-globo-destino>
-    <div class="mapa-globo-cuerpo">
-      <p class="mapa-globo-nombre" th:text="${d.destino}">Comedor Barrio Ejemplo</p>
-      <p th:text="|Recibe ${numero}. ${d.titulo}.|">Recibe 1. Lentejas secas.</p>
-    </div>
-  </template>
-  <header>
-    <span class="entrega-numero" aria-hidden="true" th:text="${numero}">1</span>
-    <h3><a href="/donante-donaciones-detalle"
-           th:href="@{/donante-donaciones-detalle(donacion=${d.clave})}"
-           th:text="${d.titulo}">Lentejas secas</a></h3>
-    <span data-dato="cantidad" th:text="${d.cantidad}">15 kg</span>
-  </header>
-  <p class="entrega-categoria">
-    <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-      <use href="#cat-alimentos" th:href="|#${d.categoria == 'cat-vestimenta' ? 'cat-ropa' : d.categoria}|"/>
-    </svg>
-    <span th:text="${d.categoriaTexto == 'Vestimenta' ? 'Ropa' : d.categoriaTexto}">Alimentos</span>
-  </p>
-  <p class="entrega-destino">
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20V10l8-6 8 6v10z"/><path
-         d="M10 20v-5h4v5"/></svg>
-    <span th:text="|Para ${d.destino}|">Para Comedor Barrio Ejemplo</span>
-  </p>
-  <div data-grupo="estado">
-    <p class="entrega-estado">
-      <span class="estado" th:data-estado="${d.estado.tono}">
-        <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
-        <span th:text="${d.estado.texto}">En camino</span>
-      </span>
-      <span data-dato="cuando"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12"
-           cy="12" r="8"/><path d="M12 8v4l3 2"/></svg><span th:text="${d.nota}">Salió hoy a las 14:30</span></span>
-    </p>
-    <!--/* Las etapas: lo hecho, un disco paja con el tilde calado; la actual, el sello del estado de
-           la entrega; lo que falta, un círculo hueco. Sus nombres, solo para el lector de pantalla. */-->
-    <ol class="etapas" role="list" th:aria-label="|Etapas de ${d.titulo}|">
-      <li th:each="p : ${d.pasos}" class="etapa" th:classappend="|etapa--${p.avance.tono()}|"
-          th:aria-current="${p.avance.tono() == 'actual'} ? 'step' : null">
-        <th:block th:if="${p.avance.tono() == 'hecho'}"><th:block th:replace="~{componentes/sello :: sello('hecho')}"></th:block></th:block>
-        <th:block th:if="${p.avance.tono() == 'actual'}">
-          <th:block th:replace="~{componentes/sello :: sello(${d.estado.tono})}"></th:block>
-        </th:block>
-        <th:block th:if="${p.avance.tono() == 'pendiente'}"><th:block th:replace="~{componentes/sello :: sello('falta')}"></th:block></th:block>
-        <span class="etapa-nombre" th:text="${p.nombre}">En camino</span>
-        <span class="etapa-detalle" th:text="${p.detalle}">Hoy, 14:30</span>
-      </li>
-    </ol>
-    <p class="entrega-noticia" th:text="${d['seguimiento']}">Posición aproximada.</p>
-  </div>
-</li>
+<!--/* Lo que espera destino (R11-39): un aviso de la página (componentes/aviso) con su signo, el
+       título, las donaciones en una lista y qué pasa después, no un párrafo suelto. Lo usan la
+       empresa y la persona. sinDestino(nombres): los títulos de las donaciones que todavía no tienen
+       organización. */-->
+<aside th:fragment="sinDestino(nombres)" class="aviso" data-v="sin-destino" aria-labelledby="sin-destino-titulo"
+       th:with="una=${#lists.size(nombres) == 1}">
+  <svg th:replace="~{componentes/sello :: signo('registrada')}"></svg>
+  <h3 id="sin-destino-titulo" class="aviso-titulo" th:text="${una} ? 'Todavía espera destino' : 'Todavía esperan destino'">Todavía
+    esperan destino</h3>
+  <ul role="list">
+    <li th:each="nombre : ${nombres}" th:text="${nombre}">Arroz largo fino</li>
+  </ul>
+  <p th:text="${una} ? 'La vas a poder seguir acá cuando se le asigne una organización.' : 'Las vas a poder seguir acá cuando se les asigne una organización.'">Las
+    vas a poder seguir acá cuando se les asigne una organización.</p>
+</aside>
 
 </body>
 </html>

@@ -47,7 +47,7 @@ figure.mapa-dibujo {
   position: relative;
   min-width: 0;
   aspect-ratio: 1;
-  background: var(--color-papel);
+  background: var(--color-fondo-pagina);
 }
 
 .mapa-real[data-listo="no"] {
@@ -57,7 +57,7 @@ figure.mapa-dibujo {
 .mapa-real-aviso {
   margin: 0;
   padding: 1.25rem;
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
 }
 
 /* El marcador: el sello numerado de las estaciones, del tamaño de un toque. */
@@ -91,7 +91,7 @@ figure.mapa-dibujo {
 
 .mapa-marcador[data-tipo="deposito"] {
   background: var(--color-tinta);
-  color: var(--color-papel);
+  color: var(--color-fondo-pagina);
 }
 
 .mapa-marcador[data-tipo="destino"] {
@@ -111,8 +111,8 @@ figure.mapa-dibujo {
 .mapa-real[data-destacado] .mapa-marcador[data-activo] {
   z-index: 1;
   opacity: 1;
-  background: var(--color-acento);
-  color: var(--color-papel);
+  background: var(--color-accion-primaria);
+  color: var(--color-fondo-pagina);
 }
 
 /* El globo de MapLibre, con el papel y las esquinas de las tarjetas. */
@@ -121,7 +121,7 @@ figure.mapa-dibujo {
   border-radius: var(--radio-lamina);
   background: var(--color-superficie);
   box-shadow: var(--sombra-papel);
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font: 0.9375rem/1.4 var(--fuente-texto);
 }
 
@@ -184,7 +184,7 @@ figure.mapa-dibujo {
 /* La ficha a la que se llegó con #entidad-<clave>: el fondo verde claro, sin el recuadro verde (regla
    general de la ronda del 2026-11-09, tarde). */
 .estacion-ficha:target {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 .estacion-cabeza {
@@ -221,7 +221,7 @@ figure.mapa-dibujo {
   gap: 0.75rem;
   margin: 0;
   padding: 0.75rem 0 0;
-  border-top: 1px solid var(--color-tinta-suave);
+  border-top: 1px solid var(--color-texto-suave);
   list-style: none;
 }
 
@@ -266,7 +266,7 @@ figure.mapa-dibujo {
 }
 
 .estacion-ficha:target > .plegable {
-  background: var(--color-acento-claro);
+  background: var(--color-salvia);
 }
 
 .estacion-ficha > .plegable > summary {
@@ -382,6 +382,6 @@ figure.mapa-dibujo {
 .mapa-real [class~="maplibregl-ctrl-attrib"] {
   border-radius: var(--radio-boton) 0 0;
   background: var(--color-campo);
-  color: var(--color-tinta-suave);
+  color: var(--color-texto-suave);
   font-size: 0.75rem;
 }
