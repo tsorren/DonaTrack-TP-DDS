@@ -31,6 +31,22 @@ lo que queda pendiente. El detalle de valores va en el código y en las capturas
 
 ## Decisiones
 
+### 2026-11-25 · contraste · El borde de los controles vuelve a medirse sobre el papel de la página
+
+- **Decisión:** `PARES` suma `--color-borde-control` sobre `--color-fondo-pagina`, con mínimo 3.
+  Quedan 39 pares.
+- **Alternativas:** dejarlo medido solo sobre `--color-campo`.
+- **Por qué:** el lote `z-tokens` (`0dba3e78f`) sacó el par contra `--color-fondo`, uno de los
+  tokens retirados (Z-02). DA-37 lo contó entre los 12 que «ya los mide un par que se queda», pero
+  el único par que quedó para este borde es el del campo. El color también dibuja bordes fuera del
+  campo: con `--borde-control` o `--borde-punteado` en listas, pestañas, tarjetas y la subida de
+  fotos, y directo en filtros, el listado y la huerta (11 hojas de `componentes/` y
+  `formularios.css`). Con solo el par del campo, el test pasaría aunque el borde se pierda sobre el
+  papel (`AGENTS.md` §4.3). Hoy da 6,04 a 1.
+- **Costo:** ninguno.
+- **Quién decidió:** usuario (punto 5 del handoff de la guía, 2026-11-25).
+- **Evidencia:** `InterfazFitnessTest`, 19 tests en verde; `git grep -c 'new Par("'` da 39.
+
 ### 2026-11-25 · migración · B3-02 y B3-04 constan como fuera de la lista, no como hechos
 
 - **Decisión:** en el [backlog de migración](backlog-migracion-componentes.md), B3-02 y B3-04

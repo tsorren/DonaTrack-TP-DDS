@@ -90,6 +90,7 @@ class InterfazFitnessTest {
           new Par("--color-texto-suelo", "--color-suelo", 4.5),
           new Par("--color-texto-suelo", "--color-suelo-medio", 4.5),
           new Par("--color-borde-control", "--color-campo", 3),
+          new Par("--color-borde-control", "--color-fondo-pagina", 3),
           new Par("--color-error-borde", "--color-campo", 3),
           new Par("--color-foco", "--color-fondo-pagina", 3),
           new Par("--color-foco-sobre-suelo", "--color-suelo", 3),
