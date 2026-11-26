@@ -1790,7 +1790,10 @@ está en [DTI-54](../adr/DEUDA_TECNICA.md#dti-54); las decisiones, en la [bitác
   `docker info` se cuelgan y `docker ps` devuelve 500. No hubo seed, ni recorrido, ni ingreso real.
   No había stack del usuario corriendo y no se detuvo nada. Quedan los contenedores y volúmenes del
   proyecto `donatrack-guia`, y lo que las olas dejaron para Z sigue sin comprobar con datos reales
-  ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54), ítem 13).
+  ([DTI-54](../adr/DEUDA_TECNICA.md#dti-54), ítem 13). **Actualización (2026-11-25, noche):** el
+  stack, el seed y `IngresoConKeycloakRealTest` corrieron en G2 (el admin, sin pasar). El recorrido
+  quedó parcial y encontró que el gateway no enruta `/donaciones-independientes`. El detalle está en
+  el ítem 13 de DTI-54.
 - Cercos `[VERIFIED]`: ningún tope sube (de 159 a 37 y de 1192 a 532, el valor medido: con 36 y 531
   el test falla en los dos). `HOJAS_HEREDADAS` pasa de 20 a 8, `PARES` de 51 a 38 con los mínimos de
   siempre, y `clases-heredadas.txt`, `LISTAS` y `BARRAS_EXCEPTUADAS` no crecen. Entre `3511e2567` y
