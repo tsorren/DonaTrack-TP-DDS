@@ -24,14 +24,34 @@
             <artifactId>aspectjweaver</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-tracing-bridge-brave</artifactId>
-        </dependency>
-
+        <!-- Trazas, métricas y logs por OTLP (ADR de observabilidad con otel-lgtm, E7-S03b).
+             La versión la fija el BOM de Spring Boot 4.0.7, como las demás de Boot. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-micrometer-tracing-brave</artifactId>
+            <artifactId>spring-boot-starter-opentelemetry</artifactId>
+            <exclusions>
+                <!-- Trae okhttp 5 y choca con el okhttp 4 de MinIO (NoSuchMethodError en okio). -->
+                <exclusion>
+                    <groupId>io.opentelemetry</groupId>
+                    <artifactId>opentelemetry-exporter-sender-okhttp</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Emisor OTLP con el HttpClient de la JDK, en lugar del de okhttp. Versión del BOM de
+             OpenTelemetry que importa el de Boot. -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-sender-jdk</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Logs por OTLP: el starter no trae el appender de Logback ni el BOM de Boot lo gestiona.
+             2.21.0-alpha es la que va con OpenTelemetry 1.55.0, la versión del BOM de Boot 4.0.7. -->
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-logback-appender-1.0</artifactId>
+            <version>2.21.0-alpha</version>
         </dependency>
 
 
@@ -68,6 +88,20 @@
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
+        </dependency>
+
+        <!-- ShedLock con JDBC (E7-S01d-1): ShedLockAutoConfiguration lo enciende solo en los
+             servicios con base y tareas programadas. Optional: no llega al gateway, al cliente ni
+             a Notificaciones; lo declaran Donaciones, Incentivos y Logistica. -->
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-spring</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <dependency>

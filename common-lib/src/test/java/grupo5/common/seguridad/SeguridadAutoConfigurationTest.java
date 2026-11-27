@@ -74,6 +74,21 @@ class SeguridadAutoConfigurationTest {
       return "publica";
     }
 
+    @GetMapping("/actuator/health")
+    String salud() {
+      return "salud";
+    }
+
+    @GetMapping("/actuator/health/liveness")
+    String vivo() {
+      return "vivo";
+    }
+
+    @GetMapping("/actuator/health/readiness")
+    String listo() {
+      return "listo";
+    }
+
     @GetMapping("/cosas/{duenio}")
     @PreAuthorize("hasAuthority('VER_COSAS') or hasRole('ADMIN')")
     String cosas(@ActorActual Actor actor, @PathVariable UUID duenio) {
@@ -100,6 +115,26 @@ class SeguridadAutoConfigurationTest {
   @Test
   void habilitadaDejaPasarLasRutasPublicasSinToken() {
     conSeguridad(get("/publica"), status().isOk());
+  }
+
+  @Test
+  void habilitadaDejaPasarLaSaludSinToken() {
+    conSeguridad(get("/actuator/health"), status().isOk());
+  }
+
+  @Test
+  void habilitadaDejaPasarLivenessSinTokenParaElHealthcheckDeSwarm() {
+    conSeguridad(get("/actuator/health/liveness"), status().isOk());
+  }
+
+  @Test
+  void habilitadaDejaPasarReadinessSinToken() {
+    conSeguridad(get("/actuator/health/readiness"), status().isOk());
+  }
+
+  @Test
+  void habilitadaNoAbreLosComponentesDeLaSaludSinToken() {
+    conSeguridad(get("/actuator/health/db"), status().isUnauthorized());
   }
 
   @Test

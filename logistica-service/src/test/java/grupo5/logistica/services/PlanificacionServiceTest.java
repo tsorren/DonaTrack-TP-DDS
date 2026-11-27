@@ -2,14 +2,17 @@ package grupo5.logistica.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.RutaPlanificadaDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
@@ -60,6 +63,7 @@ class PlanificacionServiceTest {
   private SolicitudPlanificacionMapper solicitudMapper;
   private ComunicadorEventosLogistica comunicadorEventos;
   private IServicioExternoPlanificacion planificadorExterno;
+  private IMetricasLogistica metricas;
   private PlanificacionService service;
 
   @BeforeEach
@@ -72,6 +76,7 @@ class PlanificacionServiceTest {
     solicitudMapper = new SolicitudPlanificacionMapper();
     comunicadorEventos = mock(ComunicadorEventosLogistica.class);
     planificadorExterno = mock(IServicioExternoPlanificacion.class);
+    metricas = mock(IMetricasLogistica.class);
     service =
         new PlanificacionService(
             solicitudesRepository,
@@ -84,6 +89,7 @@ class PlanificacionServiceTest {
             planificadorExterno,
             evento -> service.despacharAlProveedor((SolicitudPlanificacionRegistrada) evento),
             new GeneradorDeRutas(new GeneradorLotesSimple()),
+            metricas,
             FIXED_CLOCK,
             50,
             "http://logistica");
@@ -216,6 +222,8 @@ class PlanificacionServiceTest {
     assertEquals(rutaCaptor.getValue().getId(), entrega.getIdRuta());
     assertNotNull(resultado);
     assertEquals(solicitudId, resultado.id());
+    verify(metricas).planificacionProcesada();
+    verify(metricas, never()).planificacionFallida();
   }
 
   @Test
@@ -233,8 +241,40 @@ class PlanificacionServiceTest {
     verify(rutasRepository, never()).save(any());
     verify(entregasRepository, never()).save(any());
     verify(comunicadorEventos, never()).comunicarRutaAsignada(any(), any());
+    verifyNoInteractions(metricas);
     assertNotNull(resultado);
     assertEquals(solicitudId, resultado.id());
+  }
+
+  @Test
+  void procesarCallbackConErrorDelProveedorCuentaPlanificacionFallida() {
+    UUID solicitudId = UUID.randomUUID();
+    SolicitudPlanificacion pendiente =
+        new SolicitudPlanificacion(solicitudId, LocalDate.now(), 1, "http://logistica");
+    CallbackPlanificacionRequestDTO callback =
+        new CallbackPlanificacionRequestDTO(solicitudId, null, "ERROR", "sin capacidad");
+    when(solicitudesRepository.findById(solicitudId)).thenReturn(Optional.of(pendiente));
+    when(solicitudesRepository.save(any(SolicitudPlanificacion.class)))
+        .thenAnswer(invocacion -> invocacion.getArgument(0));
+
+    service.procesarCallback(callback);
+
+    verify(metricas).planificacionFallida();
+    verify(metricas, never()).planificacionProcesada();
+  }
+
+  @Test
+  void procesarCallbackConPayloadInvalidoNoCuentaNada() {
+    UUID solicitudId = UUID.randomUUID();
+    SolicitudPlanificacion pendiente =
+        new SolicitudPlanificacion(solicitudId, LocalDate.now(), 1, "http://logistica");
+    CallbackPlanificacionRequestDTO callback =
+        new CallbackPlanificacionRequestDTO(solicitudId, List.of(), "OK", null);
+    when(solicitudesRepository.findById(solicitudId)).thenReturn(Optional.of(pendiente));
+
+    assertThrows(ValidationException.class, () -> service.procesarCallback(callback));
+
+    verifyNoInteractions(metricas);
   }
 
   private static Entrega crearEntrega() {

@@ -4,6 +4,7 @@ import grupo5.incentivos.services.IRankingService;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.UUID;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -21,6 +22,10 @@ public class RankingMensualJob {
     this.rankingService = rankingService;
   }
 
+  @SchedulerLock(
+      name = "incentivos.ranking-mensual",
+      lockAtMostFor = "PT30M",
+      lockAtLeastFor = "PT30S")
   @Scheduled(cron = "0 59 23 L * *")
   public void ejecutarRankingMensual() {
     YearMonth periodoActual = YearMonth.now(ZoneId.systemDefault());

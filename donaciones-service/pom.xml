@@ -62,6 +62,16 @@
             <artifactId>common-lib</artifactId>
             <version>1.0</version>
         </dependency>
+        <!-- ShedLock (E7-S01d-1): common-lib lo declara optional y lo arma solo si el servicio
+             lo trae. -->
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-spring</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>

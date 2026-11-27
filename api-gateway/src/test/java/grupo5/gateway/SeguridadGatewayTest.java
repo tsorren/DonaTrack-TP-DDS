@@ -184,6 +184,17 @@ class SeguridadGatewayTest {
     assertThat(pedir("/actuator/health", null).statusCode()).isEqualTo(200);
   }
 
+  @Test
+  void livenessYReadinessNoPidenTokenParaElHealthcheckDeSwarm() throws Exception {
+    assertThat(pedir("/actuator/health/liveness", null).statusCode()).isEqualTo(200);
+    assertThat(pedir("/actuator/health/readiness", null).statusCode()).isEqualTo(200);
+  }
+
+  @Test
+  void losComponentesDeLaSaludPidenToken() throws Exception {
+    assertThat(pedir("/actuator/health/ping", null).statusCode()).isEqualTo(401);
+  }
+
   private HttpResponse<String> pedir(String ruta, String authorization)
       throws IOException, InterruptedException {
     return pedir("GET", ruta, authorization);

@@ -1,10 +1,18 @@
 package grupo5.donaciones.services.impl;
 
+import static grupo5.donaciones.services.logistica.MotivoDescarteEvento.DONACION_AJENA;
+import static grupo5.donaciones.services.logistica.MotivoDescarteEvento.SIN_PROVEEDOR;
+import static grupo5.donaciones.services.logistica.MotivoDescarteEvento.SIN_TOKEN_CONFIGURADO;
+import static grupo5.donaciones.services.logistica.MotivoDescarteEvento.TOKEN_INCORRECTO;
+
 import grupo5.donaciones.config.ClaveSegura;
 import grupo5.donaciones.models.entities.logistica.SolicitudEntrega;
 import grupo5.donaciones.models.repositories.ISolicitudesEntregaRepository;
+import grupo5.donaciones.services.IMetricasDonaciones;
 import grupo5.donaciones.services.logistica.IVerificadorOrigenEventos;
+import grupo5.donaciones.services.logistica.MotivoDescarteEvento;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
@@ -30,18 +38,28 @@ public class VerificadorOrigenEventos implements IVerificadorOrigenEventos {
 
   private final Environment environment;
   private final ISolicitudesEntregaRepository solicitudesRepository;
+  private final IMetricasDonaciones metricas;
 
   public VerificadorOrigenEventos(
-      Environment environment, ISolicitudesEntregaRepository solicitudesRepository) {
+      Environment environment,
+      ISolicitudesEntregaRepository solicitudesRepository,
+      IMetricasDonaciones metricas) {
     this.environment = environment;
     this.solicitudesRepository = solicitudesRepository;
+    this.metricas = metricas;
   }
 
   @Override
   public boolean esOrigenValido(String proveedorId, String token, Collection<UUID> donaciones) {
-    if (!seAutentica(proveedorId, token)) {
-      return false;
-    }
+    Optional<MotivoDescarteEvento> motivo =
+        fallaDeAutenticacion(proveedorId, token)
+            .or(() -> fallaDePertenencia(proveedorId, donaciones));
+    motivo.ifPresent(metricas::eventoDeProveedorDescartado);
+    return motivo.isEmpty();
+  }
+
+  private Optional<MotivoDescarteEvento> fallaDePertenencia(
+      String proveedorId, Collection<UUID> donaciones) {
     for (UUID donacionId : donaciones) {
       if (!esDelProveedor(donacionId, proveedorId)) {
         log.warn(
@@ -49,16 +67,16 @@ public class VerificadorOrigenEventos implements IVerificadorOrigenEventos {
                 + " se descarta el evento",
             proveedorId,
             donacionId);
-        return false;
+        return Optional.of(DONACION_AJENA);
       }
     }
-    return true;
+    return Optional.empty();
   }
 
-  private boolean seAutentica(String proveedorId, String token) {
+  private Optional<MotivoDescarteEvento> fallaDeAutenticacion(String proveedorId, String token) {
     if (proveedorId == null || !ID_VALIDO.matcher(proveedorId).matches()) {
       log.warn("[ORIGEN-EVENTO] Evento sin proveedor identificable: se descarta");
-      return false;
+      return Optional.of(SIN_PROVEEDOR);
     }
     String esperado =
         environment.getProperty("donatrack.logistica.proveedor." + proveedorId + ".token-vuelta");
@@ -67,14 +85,14 @@ public class VerificadorOrigenEventos implements IVerificadorOrigenEventos {
           "[ORIGEN-EVENTO] El proveedor {} no tiene token-vuelta configurado: se descarta el"
               + " evento",
           proveedorId);
-      return false;
+      return Optional.of(SIN_TOKEN_CONFIGURADO);
     }
     if (!ClaveSegura.coinciden(token, esperado)) {
       log.warn(
           "[ORIGEN-EVENTO] Token ausente o incorrecto del proveedor {}: se descarta", proveedorId);
-      return false;
+      return Optional.of(TOKEN_INCORRECTO);
     }
-    return true;
+    return Optional.empty();
   }
 
   private boolean esDelProveedor(UUID donacionId, String proveedorId) {

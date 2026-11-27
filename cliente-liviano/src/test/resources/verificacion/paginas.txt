@@ -32,6 +32,7 @@
 # Las páginas de error (RF-CL-08): el código de ?respuesta= es el esperado.
 /publico-donaciones?respuesta=404
 /entidad-inicio?respuesta=403
+/donante-inicio?respuesta=429
 /donante-inicio?respuesta=500
 /donante-inicio?respuesta=500&escenario=sin-codigo
 /entidad-necesidades

@@ -2,9 +2,11 @@ package grupo5.donaciones.models.entities.donaciones;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.common.events.EventoDeDominio;
 import grupo5.common.exceptions.BusinessStateException;
@@ -196,5 +198,38 @@ class DonacionTest {
 
     assertEquals(ErrorCatalog.DONACION_SIN_DESCRIPCION, sinDescripcion.getError());
     assertEquals(ErrorCatalog.DONACION_SIN_DESCRIPCION, enBlanco.getError());
+  }
+
+  @Test
+  void esPerecedera_conUnBienConVencimiento_esVerdadero() {
+    donacion.agregarItem(new ItemDonacion(BienMother.alimentoPerecedero("Leche"), 2));
+
+    assertTrue(donacion.esPerecedera());
+  }
+
+  @Test
+  void esPerecedera_sinBienesConVencimiento_esFalso() {
+    donacion.agregarItem(new ItemDonacion(BienMother.mueble("Mesa"), 1));
+
+    assertFalse(donacion.esPerecedera());
+  }
+
+  @Test
+  void esPerecedera_conBienesMezclados_esVerdadero() {
+    donacion.agregarItem(new ItemDonacion(BienMother.mueble("Mesa"), 1));
+    donacion.agregarItem(new ItemDonacion(BienMother.alimentoPerecedero("Leche"), 2));
+
+    assertTrue(donacion.esPerecedera());
+  }
+
+  @Test
+  void esPerecedera_sinItems_esFalso() {
+    assertFalse(donacion.esPerecedera());
+  }
+
+  @Test
+  void bien_conFechaDeVencimiento_esPerecedero() {
+    assertTrue(BienMother.alimentoPerecedero("Leche").esPerecedero());
+    assertFalse(BienMother.simple("Lapicera").esPerecedero());
   }
 }
