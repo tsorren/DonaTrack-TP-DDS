@@ -194,6 +194,21 @@ class LimitesDeConsultaTest extends BaseSliceGraphQl {
   }
 
   @Test
+  void lasRaicesDeUnFragmentoTambienCuentan_yTypenameNo() throws Exception {
+    String seisEnUnFragmento =
+        "{ __typename ...Raices } fragment Raices on Query { "
+            + conRaices(6).substring(2, conRaices(6).length() - 2)
+            + " }";
+
+    consultar(seisEnUnFragmento, null)
+        .andExpect(jsonPath("$.errors[0].extensions.motivo").value("complejidad"))
+        .andExpect(
+            jsonPath("$.errors[0].message")
+                .value("La consulta pide demasiadas consultas raíz: 6, el tope es 5"));
+    verifyNoInteractions(entidadBeneficiariaService);
+  }
+
+  @Test
   void lasRaicesDelTopeSeResuelven() throws Exception {
     consultar(conRaices(5), null).andExpect(jsonPath("$.errors").doesNotExist());
 
