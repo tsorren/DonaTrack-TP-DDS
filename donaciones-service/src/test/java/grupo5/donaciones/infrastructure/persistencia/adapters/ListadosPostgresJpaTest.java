@@ -331,6 +331,29 @@ class ListadosPostgresJpaTest {
     assertEquals(1, entidades.contarActivas());
   }
 
+  // SPEC-11, G2 (g2-relaciones): la carga por lotes de GraphQL lee las entidades en una consulta
+  @Test
+  void entidades_findAllById_traeActivasYDadasDeBaja_ySinIdsNoConsulta() {
+    Juridica fundacion = juridica("Fundación Esperanza", TipoJuridico.ONG);
+    Juridica empresa = juridica("Empresa SA", TipoJuridico.EMPRESA);
+    personas.save(fundacion);
+    personas.save(empresa);
+    entidades.save(new EntidadBeneficiaria(fundacion.getId()));
+    EntidadBeneficiaria deBaja = new EntidadBeneficiaria(empresa.getId());
+    deBaja.darDeBaja();
+    entidades.save(deBaja);
+
+    assertEquals(
+        Set.of(fundacion.getId(), empresa.getId()),
+        Set.copyOf(
+            entidades
+                .findAllById(List.of(fundacion.getId(), empresa.getId(), UUID.randomUUID()))
+                .stream()
+                .map(EntidadBeneficiaria::getId)
+                .toList()));
+    assertEquals(List.of(), entidades.findAllById(List.of()));
+  }
+
   // R11-12 (A1 a A5 y A8): categoría y "ya doné" en SQL, las mismas reglas que en memoria
   @Test
   void entidades_porCategoriaYSoloDonadas_yLaMarcaDeLaPagina() {

@@ -16,8 +16,8 @@ import unittest
 
 RAIZ = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 
-DIGEST = "sha256:3f3c5f8e03c614774b4bd9173b88391fefa4153bfc010d8012d59ad825377332"
-IMAGEN = "quay.io/keycloak/keycloak:26.8.1@" + DIGEST
+DIGEST = "sha256:7e66a96e4739239070aeaf72e4c5decf0f7f682cfc725b9f7ea2b336eaba38b3"
+IMAGEN = "quay.io/keycloak/keycloak:26.8.2@" + DIGEST
 
 VARIABLES_KEYCLOAK = [
     "KEYCLOAK_DB_PASSWORD",

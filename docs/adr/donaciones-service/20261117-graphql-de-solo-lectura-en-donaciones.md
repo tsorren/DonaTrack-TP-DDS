@@ -3,6 +3,7 @@
 - Status: proposed
 - Date: 2026-11-17
 - Actualizado: 2026-11-18 (revisión de simplificación: sin el donante, E7-S04c; consumido por una pantalla existente, E7-S04b)
+- Actualizado: 2026-11-27 (implementación, PR 1015 y su revisión: la regla de acceso va en cada resolver y la ruta es pública en el gateway, D08 de [SPEC-11](../../specs/active/SPEC-11-graphql-de-solo-lectura-en-donaciones.md); la privacidad, en el esquema y el mapeo; la introspección, solo en el preprod; los valores de los límites, con el tope de raíces)
 - Deciders: el grupo, en las rondas de decisión de E7 (Q01 y Q18 a Q23, 2026-11-16) y en la revisión de simplificación (E7-S04b y E7-S04c, 2026-11-18), en [requerimientos-e7.md](../../requerimientos/requerimientos-e7.md); redacción asistida por agente. Pendiente de aprobación del equipo en el PR
 - Tags: donaciones, graphql, contrato, api, privacidad, cliente-liviano, entrega-7
 
@@ -57,16 +58,22 @@ Elegida la **opción 1**: un endpoint GraphQL de **solo lectura** en `donaciones
 - **Solo lectura (Q19).** Sin mutaciones: las escrituras siguen por REST, con su Outbox, su
   idempotencia y sus contratos. Los contratos REST no cambian (cambio aditivo, AGENTS.md §8.2).
 - **Adaptador de entrada (Q20).** Los resolvers son adaptadores, como los controladores
-  (AGENTS.md §4.2): delegan en los servicios de aplicación existentes y heredan la misma
-  autorización y las mismas reglas de privacidad. Sin acceso directo a repositorios. Las relaciones
+  (AGENTS.md §4.2): delegan en los servicios de aplicación existentes. Sin acceso directo a repositorios.
+  La autorización de este repo vive en los `@PreAuthorize` de los controladores, no en los
+  servicios: cada resolver lleva el suyo, con las mismas constantes de `Acceso`. La de donaciones es
+  la misma constante que `GET /donaciones-independientes`, con un test de paridad, y un test de
+  ArchUnit exige una regla en cada resolver (SPEC-11, D08 y D15). Las relaciones
   anidadas se cargan por lotes (`@BatchMapping`) para evitar consultas N+1.
 - **Límites (Q21).** Paginación obligatoria con tope, profundidad máxima, tope de complejidad y
-  *timeout* por consulta. Introspección y GraphiQL apagados por defecto; encendidos solo en preprod y
-  demo. Los valores se calibran al implementar (orden de magnitud: 50 elementos por página,
-  profundidad 5). Se suman al cupo por minuto del gateway, que cuenta pedidos y no su costo
+  *timeout* por consulta. Introspección y GraphiQL apagados por defecto; encendidos solo en el preprod
+  (`DONACIONES_GRAPHQL_EXPLORAR=true`); la demo pública no los enciende. Valores implementados: 50
+  elementos por página, profundidad 6, complejidad 100 campos, 5 campos raíz por consulta (con
+  alias, cada raíz es una lectura de la base) y 5000 ms, por debajo de la espera del gateway. Se suman al cupo por minuto del gateway, que cuenta pedidos y no su costo
   (ver el [ADR de rate limiting](../20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md)).
-- **Exposición (Q22).** `/api/donaciones/graphql`, detrás del gateway: el JWT, el rate limiting y el
-  `traceId` aplican solos. El esquema `.graphqls` vive en el repo, se documenta junto a los
+- **Exposición (Q22).** `/api/donaciones/graphql`, detrás del gateway, como ruta pública: las
+  necesidades y las entidades no piden token, y las donaciones piden rol, que decide el resolver con
+  el Bearer que el gateway reenvía intacto. El rate limiting y el `traceId` aplican solos: el cupo es
+  de la cuenta si el token es válido y de la IP si no. El esquema `.graphqls` vive en el repo, se documenta junto a los
   contratos de [`docs/arquitectura/contratos/`](../../arquitectura/contratos/) y un test de contrato
   lo vigila. GraphQL en Logística queda fuera de E7 (E7-S04c); si se suma más adelante, tiene su
   propio esquema en `/api/logistica/graphql`, sin federación.
@@ -126,8 +133,9 @@ Elegida la **opción 1**: un endpoint GraphQL de **solo lectura** en `donaciones
 
 **Principios.** El resolver es un adaptador de entrada en la arquitectura hexagonal: depende de los
 servicios de aplicación y no al revés (inversión de dependencias); el dominio no conoce GraphQL
-(pureza del dominio). La privacidad se aplica en un solo lugar, el servicio de aplicación (experto en
-información, GRASP), y no se repite en cada resolver.
+(pureza del dominio). La privacidad se aplica en el esquema, que no tiene campos de la persona, y en el
+mapeo del resolver, que descarta `quienDono`, el actor y la justificación que trae el DTO del
+servicio de aplicación.
 
 ## Consecuencias
 
@@ -138,7 +146,9 @@ información, GRASP), y no se repite en cada resolver.
 - **Negativas.**
   - Una dependencia nueva en Donaciones y un contrato más que mantener (esquema y test de contrato).
   - Una sola URL para todas las consultas: el cupo del gateway no distingue una consulta barata de
-    una cara; eso lo cubren los límites de profundidad y complejidad dentro del servicio.
+    una cara; eso lo cubren los límites de profundidad, complejidad y raíces dentro del servicio.
+  - La ruta es pública: un resolver sin regla quedaría abierto. Lo cubren el test de ArchUnit y el
+    de la allowlist del gateway (`scripts/tests/test_gateway_seguridad.py`).
   - La pantalla elegida pasa a depender de GraphQL: su adaptador REST anterior sale o queda sin
     uso.
 - **Abiertas.**

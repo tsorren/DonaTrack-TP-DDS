@@ -1,7 +1,7 @@
 # DonaTrack
 
 [![Java 21](https://img.shields.io/badge/Java-21-orange?style=flat-square&logo=openjdk)](https://openjdk.org/)
-[![Spring Boot 4.0.7](https://img.shields.io/badge/Spring_Boot-4.0.7-brightgreen?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
+[![Spring Boot 4.0.10](https://img.shields.io/badge/Spring_Boot-4.0.10-brightgreen?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
 [![Maven](https://img.shields.io/badge/Maven-build-blue?style=flat-square&logo=apachemaven)](https://maven.apache.org/)
 [![Docker](https://img.shields.io/badge/Docker-compose-blue?style=flat-square&logo=docker)](https://www.docker.com/)
 [![SonarCloud](https://img.shields.io/badge/SonarCloud-quality_gate-green?style=flat-square&logo=sonarcloud)](https://sonarcloud.io/)
@@ -96,7 +96,7 @@ DonaTrack-TP-DDS/
 
 La seleccion de tecnologias responde a la necesidad de construir un producto confiable, mantenible a largo plazo y facilmente adaptable:
 
-* **Java 21 y Spring Boot 4.0.7:** Plataforma robusta y tipada que ofrece un rendimiento estable y una infraestructura segura para el desarrollo de servicios web transaccionales.
+* **Java 21 y Spring Boot 4.0.10:** Plataforma robusta y tipada que ofrece un rendimiento estable y una infraestructura segura para el desarrollo de servicios web transaccionales.
 * **RabbitMQ (AMQP 3.13):** Broker de mensajeria asincrono para desacoplar eventos logisticos de alto volumen.
 * **Spring Cloud OpenFeign:** Cliente HTTP declarativo; hoy lo usa solo `incentivos-service` para invocar a `notificaciones-service` (el resto de la comunicacion inter-servicios es por RabbitMQ).
 * **Docker y Docker Compose:** Virtualizacion de entornos que garantiza la portabilidad absoluta del sistema en preproduccion y desarrollo local.
