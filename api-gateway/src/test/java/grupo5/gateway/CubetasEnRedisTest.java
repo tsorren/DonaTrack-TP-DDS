@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.bucket4j.BucketConfiguration;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -75,11 +76,14 @@ class CubetasEnRedisTest {
               .isLessThan(Duration.ofSeconds(2));
         }
 
-        // A través del filtro: el pedido pasa (fail-open) aunque el cupo sea de una ficha.
+        // A través del filtro: el pedido pasa (fail-open) aunque el cupo sea de una ficha, y cada
+        // uno cuenta como timeout de Redis (M25).
+        SimpleMeterRegistry registro = new SimpleMeterRegistry();
         LimiteDeSolicitudes limite =
             new LimiteDeSolicitudes(
                 new LimiteDeSolicitudes.Config(true, Duration.ofMinutes(1), 1, 1, 1, 1, ""),
-                cubetas);
+                cubetas,
+                registro);
         for (int i = 0; i < 3; i++) {
           MockHttpServletRequest servlet = new MockHttpServletRequest("POST", "/api/donaciones");
           servlet.setRemoteAddr("198.51.100.9");
@@ -88,6 +92,8 @@ class CubetasEnRedisTest {
                   ServerRequest.create(servlet, List.of()), p -> ServerResponse.ok().build());
           assertThat(respuesta.statusCode().value()).isEqualTo(200);
         }
+        assertThat(registro.counter(LimiteDeSolicitudes.FALLAS_DE_REDIS, "tipo", "timeout").count())
+            .isEqualTo(3);
       } finally {
         cubetas.destroy();
         mudo.close();

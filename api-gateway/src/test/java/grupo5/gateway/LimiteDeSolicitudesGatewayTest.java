@@ -3,6 +3,8 @@ package grupo5.gateway;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sun.net.httpserver.HttpServer;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -13,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -55,6 +58,8 @@ class LimiteDeSolicitudesGatewayTest {
 
   @LocalServerPort private int puerto;
 
+  @Autowired private MeterRegistry registro;
+
   @DynamicPropertySource
   static void urls(DynamicPropertyRegistry registry) {
     String url = "http://localhost:" + SERVICIO.getAddress().getPort();
@@ -73,6 +78,7 @@ class LimiteDeSolicitudesGatewayTest {
   void pasadoElCupoDa429ConElErrorComunYElPedidoNoLlegaAlServicio() throws Exception {
     String ip = "203.0.113.10";
     int antes = RECIBIDOS.get();
+    double rechazosAntes = rechazados("donaciones", "escritura");
     for (int i = 0; i < 3; i++) {
       assertThat(pedir("POST", "/api/donaciones", ip).statusCode()).isEqualTo(200);
     }
@@ -87,6 +93,8 @@ class LimiteDeSolicitudesGatewayTest {
     assertThat(espera).isBetween(1L, 60L);
     assertThat(rechazado.headers().firstValue("X-Trace-Id")).isPresent();
     assertThat(RECIBIDOS.get() - antes).isEqualTo(3);
+    // M24 con la ruta que pone RutasGateway.
+    assertThat(rechazados("donaciones", "escritura") - rechazosAntes).isEqualTo(1);
   }
 
   @Test
@@ -136,6 +144,15 @@ class LimiteDeSolicitudesGatewayTest {
       assertThat(pedir("GET", "/actuator/health", "203.0.113.16").statusCode()).isEqualTo(200);
     }
     assertThat(pedir("GET", "/api/donaciones", "203.0.113.16").statusCode()).isEqualTo(200);
+  }
+
+  private double rechazados(String ruta, String operacion) {
+    Counter contador =
+        registro
+            .find(LimiteDeSolicitudes.RECHAZADOS)
+            .tags("ruta", ruta, "cubeta", "ip", "operacion", operacion)
+            .counter();
+    return contador == null ? 0 : contador.count();
   }
 
   private HttpResponse<String> pedir(String metodo, String ruta, String ip)
