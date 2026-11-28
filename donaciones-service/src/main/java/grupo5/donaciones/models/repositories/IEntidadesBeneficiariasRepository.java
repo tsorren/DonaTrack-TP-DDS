@@ -3,12 +3,18 @@ package grupo5.donaciones.models.repositories;
 import grupo5.common.repositories.CrudRepository;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.repositories.listados.CriterioEntidades;
+import grupo5.donaciones.models.repositories.listados.LecturaPorLote;
 import grupo5.donaciones.models.repositories.listados.Tramo;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 
-public interface IEntidadesBeneficiariasRepository extends CrudRepository<EntidadBeneficiaria> {
+/**
+ * Entidades beneficiarias. {@link LecturaPorLote} lee varias por id en una consulta: la usa la
+ * carga por lotes de las relaciones de GraphQL (SPEC-11, G2).
+ */
+public interface IEntidadesBeneficiariasRepository
+    extends CrudRepository<EntidadBeneficiaria>, LecturaPorLote<EntidadBeneficiaria> {
 
   /** Una página de entidades por razón social, con la búsqueda por nombre (HB-15, R11-01). */
   Tramo<EntidadBeneficiaria> buscar(CriterioEntidades criterio);

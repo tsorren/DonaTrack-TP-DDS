@@ -1,0 +1,267 @@
+# Esquema GraphQL de solo lectura de donaciones-service (SPEC-11, tarea G1).
+#
+# Contrato canónico: docs/arquitectura/contratos/donaciones-graphql.md.
+# La copia que lee el servicio vive en donaciones-service/src/main/resources/graphql/ y un test de
+# contrato exige que sea idéntica a esta (D14). El esquema no cambia después del primer control
+# (D16).
+#
+# Reglas que este archivo respeta (SPEC-11, §4):
+# - Solo lectura: no hay Mutation ni Subscription.
+# - Una sola puerta a las donaciones: el tipo Donacion solo se alcanza desde Query.donaciones.
+#   Necesidad y Entidad no tienen campos que devuelvan donaciones.
+# - Ningún tipo expone datos de una persona: no hay tipo Donante, ni quienDono, ni documento,
+#   dirección, medios de contacto o representantes, ni el actor o la justificacion del historial.
+# - Toda consulta raíz es paginada, con tope de tamaño. Las relaciones hacia otras entidades
+#   devuelven un solo elemento.
+#
+# Convenciones: los identificadores son UUID en texto (ID); las fechas, texto ISO-8601
+# (AAAA-MM-DD) y las fechas con hora, texto ISO-8601 sin zona (AAAA-MM-DDThh:mm:ss). No hay
+# escalares propios.
+
+type Query {
+  """
+  Necesidades vigentes: activas, sin vencer y no satisfechas. Pública, sin token.
+  Orden fijo: por descripción y después por id.
+  """
+  necesidades(
+    filtro: FiltroNecesidades! = {}
+    "Desde 0."
+    pagina: Int = 0
+    "De 1 a 50."
+    tamanio: Int = 20
+  ): PaginaNecesidades
+
+  """
+  Entidades beneficiarias activas, con su vista pública. Pública, sin token.
+  Orden fijo: por razón social.
+  """
+  entidades(
+    filtro: FiltroEntidades! = {}
+    "Desde 0."
+    pagina: Int = 0
+    "De 1 a 50."
+    tamanio: Int = 20
+  ): PaginaEntidades
+
+  """
+  Donaciones independientes. Pide rol, con la misma regla que GET /donaciones-independientes:
+  el administrador ve todas; un donante con VER_DONACIONES, solo con filtro.donanteId igual al
+  suyo; una entidad con VER_DONACIONES, solo con filtro.entidadId igual al suyo. Si la regla no
+  se cumple, el campo vuelve nulo con un error de acceso.
+  """
+  donaciones(
+    filtro: FiltroDonaciones! = {}
+    "Desde 0."
+    pagina: Int = 0
+    "De 1 a 50."
+    tamanio: Int = 20
+    orden: OrdenDonaciones = RECIENTES
+  ): PaginaDonaciones
+}
+
+# ---------------------------------------------------------------------------------------------
+# Necesidades
+# ---------------------------------------------------------------------------------------------
+
+"Filtros de Query.necesidades. Un campo nulo no filtra; los que vienen se combinan con Y."
+input FiltroNecesidades {
+  "Solo las de esa entidad."
+  entidadId: ID
+  "Solo las de alguna subcategoría de esa categoría."
+  categoriaId: ID
+  "Solo las de esa subcategoría."
+  subcategoriaId: ID
+  tipo: TipoNecesidad
+}
+
+enum TipoNecesidad {
+  RECURRENTE
+  EXTRAORDINARIA
+}
+
+"Vista pública de una necesidad (NecesidadPublicaDTO)."
+type Necesidad {
+  id: ID!
+  entidadId: ID!
+  subcategoriaId: ID!
+  descripcion: String!
+  cantidadNecesitada: Int!
+  tipo: TipoNecesidad!
+  "Fin del período actual en las recurrentes; nulo en las extraordinarias."
+  fechaFin: String
+  "La entidad que la pide. Pública, cargada por lotes."
+  entidad: Entidad
+}
+
+type PaginaNecesidades {
+  elementos: [Necesidad!]!
+  "Cuántas cumplen el filtro, en todas las páginas."
+  total: Int!
+  pagina: Int!
+  tamanio: Int!
+}
+
+# ---------------------------------------------------------------------------------------------
+# Entidades
+# ---------------------------------------------------------------------------------------------
+
+"Filtros de Query.entidades, los mismos que admite buscarPublicas. Un campo nulo no filtra."
+input FiltroEntidades {
+  "Contenido en la razón social, sin distinguir mayúsculas ni tildes. Hasta 100 caracteres."
+  nombre: String
+  "Solo las que tienen una necesidad vigente de alguna subcategoría de esa categoría."
+  categoriaId: ID
+}
+
+"""
+Vista pública de una entidad beneficiaria (EntidadPublicaDTO): sin documento, dirección, medios de
+contacto ni representantes.
+"""
+type Entidad {
+  id: ID!
+  razonSocial: String!
+  rubro: String
+}
+
+type PaginaEntidades {
+  elementos: [Entidad!]!
+  "Cuántas cumplen el filtro, en todas las páginas."
+  total: Int!
+  pagina: Int!
+  tamanio: Int!
+}
+
+# ---------------------------------------------------------------------------------------------
+# Donaciones
+# ---------------------------------------------------------------------------------------------
+
+"""
+Filtros de Query.donaciones (FiltroDonacionesIndependientes y el texto de ParametrosListado).
+Un campo nulo no filtra; los que vienen se combinan con Y. donanteId y entidadId deciden además
+la regla de acceso.
+"""
+input FiltroDonaciones {
+  "Las del donante con ese id. Un donante solo puede pedir las suyas."
+  donanteId: ID
+  "Las asignadas a esa entidad. Una entidad solo puede pedir las suyas."
+  entidadId: ID
+  "Una o varias: las que están en alguno de esos estados."
+  estado: [EstadoDonacion!]
+  "Las que cubren esa necesidad, en cualquier período."
+  necesidadId: ID
+  subcategoriaId: ID
+  categoriaId: ID
+  "Fecha de registro desde ese día, inclusive (AAAA-MM-DD)."
+  desde: String
+  "Fecha de registro hasta ese día, inclusive (AAAA-MM-DD)."
+  hasta: String
+  "Alguno de sus bienes vence a más tardar ese día, inclusive (AAAA-MM-DD)."
+  venceHasta: String
+  "Solo esa donación."
+  id: ID
+  "Contenido en la descripción de algún bien, sin tildes. Hasta 100 caracteres."
+  texto: String
+}
+
+"Los estados de una donación independiente (TipoEstadoDonacion)."
+enum EstadoDonacion {
+  EN_DEPOSITO
+  ASIGNACION_REALIZADA
+  EN_TRASLADO
+  EN_PUERTA
+  LISTA_PARA_ENTREGAR
+  ENTREGADA
+  ENTREGA_FALLIDA
+  VENCIDA
+}
+
+"Los órdenes de GET /donaciones-independientes (OrdenDonacionesIndependientes)."
+enum OrdenDonaciones {
+  "Fecha de registro, la más reciente primero."
+  RECIENTES
+  "Fecha de registro, la más antigua primero."
+  ANTIGUAS
+  "Lo que la entidad tiene que atender primero, por grupos de estado."
+  ATENCION
+  "El vencimiento más próximo de sus bienes primero; las que no vencen, al final."
+  VENCE
+}
+
+"""
+Una donación independiente (DonacionIndependienteResponseDTO) sin quién donó y sin el id de la
+donación original.
+"""
+type Donacion {
+  id: ID!
+  descripcion: String
+  estado: EstadoDonacion!
+  "AAAA-MM-DDThh:mm:ss"
+  fechaRegistro: String!
+  cantidad: Int!
+  cancelacionPedida: Boolean!
+  "Nulo mientras no está asignada."
+  entidadId: ID
+  "Nulo si no cubre una necesidad."
+  necesidadId: ID
+  items: [ItemDonacion!]!
+  "Los cambios de estado, sin el actor ni la justificación."
+  historial: [CambioEstado!]!
+  """
+  La necesidad que cubre, aunque ya no esté vigente. Nula si no cubre ninguna. Cargada por
+  lotes.
+  """
+  necesidad: Necesidad
+  """
+  La entidad asignada, con su vista pública, aunque después se haya dado de baja. Nula mientras
+  no está asignada. Cargada por lotes.
+  """
+  entidad: Entidad
+}
+
+type ItemDonacion {
+  cantidad: Int
+  bien: Bien!
+  subcategoria: Subcategoria
+  categoria: Categoria
+}
+
+type Bien {
+  descripcion: String
+  fotoUrl: String
+  "AAAA-MM-DD; nulo si no vence."
+  fechaVencimiento: String
+  estado: EstadoBien
+}
+
+enum EstadoBien {
+  NUEVO
+  USADO
+  DESGASTADO
+}
+
+type Subcategoria {
+  id: ID!
+  nombre: String
+}
+
+type Categoria {
+  id: ID!
+  nombre: String
+  unidad: String
+}
+
+"Un cambio de estado del historial, sin quién lo hizo ni por qué."
+type CambioEstado {
+  estadoAnterior: EstadoDonacion
+  estadoNuevo: EstadoDonacion!
+  "AAAA-MM-DDThh:mm:ss"
+  fecha: String!
+}
+
+type PaginaDonaciones {
+  elementos: [Donacion!]!
+  "Cuántas cumplen el filtro, en todas las páginas."
+  total: Int!
+  pagina: Int!
+  tamanio: Int!
+}

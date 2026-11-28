@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import grupo5.common.testing.DisabledIfDockerUnavailable;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -111,7 +112,9 @@ class CubetasEnRedisContraRedisTest {
 
   private static LimiteDeSolicitudes limite(CubetasEnRedis almacen) {
     return new LimiteDeSolicitudes(
-        new LimiteDeSolicitudes.Config(true, Duration.ofMinutes(1), 3, 3, 3, 3, ""), almacen);
+        new LimiteDeSolicitudes.Config(true, Duration.ofMinutes(1), 3, 3, 3, 3, ""),
+        almacen,
+        new SimpleMeterRegistry());
   }
 
   private static HttpStatus filtrar(LimiteDeSolicitudes limite, String ip) throws Exception {

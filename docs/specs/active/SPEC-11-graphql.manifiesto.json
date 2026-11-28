@@ -1,0 +1,385 @@
+{
+  "formato": "frente-backend/1",
+  "version": "0.3.0",
+  "nombre": "e7-graphql",
+  "fecha": "2026-11-20",
+  "spec": "docs/specs/active/SPEC-11-graphql-de-solo-lectura-en-donaciones.md",
+  "guia": "docs/IA/prompts/orquestacion-frente-backend.md",
+  "contrato": "docs/arquitectura/contratos/donaciones-graphql.md",
+  "comoLeerlo": "Manifiesto del workflow frente-backend para las tareas G1 a G4 de la Entrega 7. Un lote es el trabajo de un agente constructor; los de una misma tanda corren en paralelo y sus zonas no se solapan. 'fase' dice en qué corrida entra el lote (disenar o construir). 'rol' elige el modelo en 'modelos'. 'archivos' es la zona autorizada del lote, como lista de globs: reemplaza a la regla de alcance mínimo de AGENTS.md. 'modulos' vacío quiere decir que el lote no corre Maven. Una tarea se audita cuando se integra su última tanda, sobre los commits de sus lotes. Cada decisión lleva id, texto, quien y ok (dónde consta), y va a un lote con su criterio o queda a cargo de alguien.",
+  "prefijoCommit": "E7: ",
+  "ramas": {
+    "base": "origin/ENTREGA_7",
+    "trabajo": "E7_graphql",
+    "destino": "ENTREGA_7"
+  },
+  "topes": {
+    "constructoresEnParalelo": 3,
+    "rondasDeReparacion": 3
+  },
+  "modelos": {
+    "juicio": { "model": "opus", "effort": "medium" },
+    "mecanico": { "model": "sonnet", "effort": "high" },
+    "preauditor": { "agentType": "preauditor", "model": "haiku" },
+    "auditor": { "agentType": "auditor", "model": "opus", "effort": "medium" }
+  },
+  "precedencia": {
+    "regla": "manda-el-workflow",
+    "ok": "ronda de decisiones del 2026-11-20, ronda 2, pregunta 1, y ronda 3, pregunta 1",
+    "reglasDuras": [
+      {
+        "id": "integridad",
+        "seAudita": "tarea",
+        "texto": "Los tests y los gates no se debilitan ni se deshabilitan. Sin secretos ni datos reales. AGENTS.md y los documentos históricos no se tocan. Ningún ADR pasa a accepted. Nunca se mergea ni se hace push a ENTREGA_7."
+      },
+      {
+        "id": "ci",
+        "seAudita": "tarea",
+        "texto": "node scripts/agent-check.js con 0 FAIL, mvn spotless:check, los tests de ArchUnit y el pre-flight de SonarCloud (docs/IA/07-errores-frecuentes-sonarcloud-ia.md)."
+      },
+      {
+        "id": "arquitectura",
+        "seAudita": "tarea",
+        "texto": "Los resolvers no acceden a repositorios. Los contratos REST no cambian. El dominio no conoce GraphQL. No hay mutaciones."
+      },
+      {
+        "id": "documentacion",
+        "seAudita": "cierre",
+        "texto": "Los índices de docs/ quedan sincronizados y el reporte del PR usa las etiquetas de AGENTS.md §3. Los índices los toca solo el paso de documentación, así que esta regla se exige en la auditoría de cierre."
+      }
+    ],
+    "flexibles": [
+      "AGENTS.md §6, alcance mínimo y refactors: el alcance de cada lote es su campo 'archivos'. El control de dependencias de §6 no es flexible: una dependencia que no esté en el 'que' del lote no se agrega, y el agente la anota en 'pendientes'.",
+      "AGENTS.md §7, niveles de tarea y los siete pasos: los reemplazan las fases del workflow.",
+      "El ciclo de skills define-spec, design-spec, design-review, implement-task e implementation-review: lo reemplazan la fase disenar, los dos controles humanos y la auditoría por tarea.",
+      "Las preferencias de sesión del usuario (explicar antes de implementar, commits manuales, preguntar por diálogo): no aplican a los agentes de la corrida."
+    ]
+  },
+  "reglas": [
+    "No frenes a preguntar. Si falta una decisión, elegí la mejor opción, anotala en 'decisiones' con lo que descartaste y por qué, y seguí.",
+    "Si una regla del repo choca con este manifiesto, gana el manifiesto: anotá el choque en 'conflictos' (la regla, qué hiciste y por qué) y seguí. Las reglas duras no se pisan nunca.",
+    "Primero el test, después el código. Los tests no usan @SpringBootTest.",
+    "Todo método con @QueryMapping, @SchemaMapping o @BatchMapping lleva @PreAuthorize en el método, con una constante de Acceso, también cuando es público.",
+    "Ningún camino del esquema llega al tipo Donación salvo su consulta raíz, que pide rol.",
+    "Ningún tipo expone datos de una persona: ni donante, ni quienDono, ni documento, ni dirección, ni medios de contacto, ni representantes, ni el actor o la justificacion del historial.",
+    "En los servicios de aplicación solo se agregan métodos; las firmas que existen no cambian.",
+    "Las consultas raíz y las relaciones hacia otras entidades salen paginadas o con tope.",
+    "El esquema no cambia después del primer control. Si un lote necesita cambiarlo, lo anota en 'conflictos' y no lo toca.",
+    "Hacé commit solo de los archivos de tu zona, nombrándolos; nunca 'git add -A'. En el árbol puede haber archivos sin versionar que no son de la corrida.",
+    "No estimes tiempos ni horas en ningún documento.",
+    "Los índices de docs/ los toca solo el paso de documentación del cierre.",
+    "No hagas push ni PR: eso lo hace la fase pr."
+  ],
+  "tareas": [
+    { "id": "G1", "nombre": "Esquema GraphQL acordado, sin el tipo Donante" },
+    { "id": "G2", "nombre": "Resolvers sobre los servicios de aplicación y carga por lotes" },
+    { "id": "G3", "nombre": "Límites (paginación, profundidad, complejidad, timeout) y M08" },
+    { "id": "G4", "nombre": "Ruta en el gateway y test de contrato" }
+  ],
+  "decisiones": [
+    {
+      "id": "D01",
+      "texto": "Un solo workflow para G1 a G4, con G3 incluida.",
+      "quien": "Nicolás",
+      "ok": "ronda de decisiones del 2026-11-20, ronda 1, pregunta 1",
+      "lote": "g3-limites",
+      "criterio": "El lote g3-limites se construye, se integra y se audita dentro de esta corrida."
+    },
+    {
+      "id": "D02",
+      "texto": "Una rama E7_graphql y un PR borrador hacia ENTREGA_7.",
+      "quien": "Nicolás",
+      "ok": "primera consulta del 2026-11-20, pregunta 4",
+      "aCargoDe": { "quien": "fase pr", "ok": "El PR sale de E7_graphql, en borrador, con base ENTREGA_7." }
+    },
+    {
+      "id": "D03",
+      "texto": "Dos controles humanos: después de G1 y antes del PR.",
+      "quien": "Nicolás",
+      "ok": "primera consulta del 2026-11-20, pregunta 2",
+      "aCargoDe": { "quien": "motor", "ok": "La fase disenar termina sin construir y la fase construir termina sin push ni PR." }
+    },
+    {
+      "id": "D04",
+      "texto": "Armazón primero y después lotes en paralelo.",
+      "quien": "Nicolás",
+      "ok": "ronda de decisiones del 2026-11-20, ronda 1, pregunta 2",
+      "lote": "g2-armazon",
+      "criterio": "Las tres raíces de la tanda 2 se construyen sobre el commit integrado del armazón y ninguna toca archivos de otra."
+    },
+    {
+      "id": "D05",
+      "texto": "Auditoría por tarea: preauditor y auditor, re-auditoría solo del diff, tope de 3 rondas.",
+      "quien": "Nicolás",
+      "ok": "ronda de decisiones del 2026-11-20, ronda 1, pregunta 3",
+      "aCargoDe": { "quien": "motor", "ok": "Cada tarea tiene su SHA auditado en estado.json y su Review Contract en la carpeta de la corrida." }
+    },
+    {
+      "id": "D06",
+      "texto": "Gates 1 a 3; el Gate 4 queda diferido a la integración en Swarm.",
+      "quien": "Nicolás",
+      "ok": "ronda de decisiones del 2026-11-20, ronda 1, pregunta 4",
+      "aCargoDe": { "quien": "cierre", "ok": "El cierre corre 'gates.cierre', corre el Gate 3 solo con args.stackDeLaRama en true y declara lo diferido." }
+    },
+    {
+      "id": "D07",
+      "texto": "Durante la corrida manda el workflow; quedan cuatro grupos de reglas duras.",
+      "quien": "Nicolás",
+      "ok": "ronda de decisiones del 2026-11-20, ronda 2, pregunta 1, y ronda 3, pregunta 1",
+      "aCargoDe": { "quien": "auditor", "ok": "Solo bloquean las reglas duras, las decisiones y el 'que' del lote; lo demás va como menor." }
+    },
+    {
+      "id": "D08",
+      "texto": "Acceso mixto: necesidades y entidades públicas sin token; donaciones con rol. La regla va en el resolver, con las constantes de Acceso.",
+      "quien": "Nicolás",
+      "ok": "ronda de decisiones del 2026-11-20, ronda 2, pregunta 2",
+      "lote": "g2-donaciones",
+      "criterio": "Con la seguridad encendida, un visitante sin token no recibe donaciones, un donante no recibe las de otra persona y una entidad no recibe las de otra entidad; los tests de la matriz de acceso lo prueban."
+    },
+    {
+      "id": "D09",
+      "texto": "El tipo Donación sale de la donación independiente, sin quienDono.",
+      "quien": "Nicolás",
+      "ok": "ronda de decisiones del 2026-11-20, ronda 2, pregunta 2",
+      "lote": "g1-esquema",
+      "criterio": "El tipo Donación del esquema no tiene quienDono, ni el actor ni la justificacion del historial, ni ningún otro dato de una persona; enlaza con la necesidad y la entidad; y ningún tipo público tiene un campo que devuelva donaciones."
+    },
+    {
+      "id": "D10",
+      "texto": "La rama no toca el ADR; las cuatro divergencias de la spec, §6, se piden en el PR 987.",
+      "quien": "Nicolás",
+      "ok": "ronda de decisiones del 2026-11-20, ronda 2, pregunta 3",
+      "aCargoDe": { "quien": "Nicolás", "ok": "Pendiente 3 de la spec, §9." }
+    },
+    {
+      "id": "D11",
+      "texto": "Juicio en Opus medio, mecánico en Sonnet alto, preauditor en Haiku.",
+      "quien": "Nicolás",
+      "ok": "ronda de decisiones del 2026-11-20, ronda 3, pregunta 4",
+      "aCargoDe": { "quien": "motor", "ok": "Cada agente recibe su modelo de 'modelos'; ninguno hereda el de la sesión." }
+    },
+    {
+      "id": "D12",
+      "texto": "La rama sale de ENTREGA_7 tal cual: M08 se prueba con un registro en memoria y el cupo del gateway queda fuera de los tests.",
+      "quien": "Nicolás",
+      "ok": "ronda de decisiones del 2026-11-20, ronda 3, pregunta 2",
+      "lote": "g3-limites",
+      "criterio": "Los tests de M08 usan un registro de métricas en memoria y no dependen de OTLP ni de otra rama."
+    },
+    {
+      "id": "D13",
+      "texto": "Motor nuevo de backend, guiado por manifiesto.",
+      "quien": "Nicolás",
+      "ok": "ronda de decisiones del 2026-11-20, ronda 2, pregunta 4",
+      "aCargoDe": { "quien": "Nicolás", "ok": "El script es .claude/workflows/frente-backend.js; falta su primera corrida real." }
+    },
+    {
+      "id": "D14",
+      "texto": "El esquema tiene dos copias, una en docs/arquitectura/contratos y otra en los recursos del servicio, con un test que las compara.",
+      "quien": "agente; la aprobó Nicolás con la spec",
+      "ok": "spec SPEC-11, §3, aprobada el 2026-11-20",
+      "lote": "g4-gateway-contrato",
+      "criterio": "Un test con @Tag(\"contract\") falla si las dos copias del esquema difieren."
+    },
+    {
+      "id": "D15",
+      "texto": "La regla del listado de donaciones es una constante de Acceso que comparten el controlador REST y el resolver, con un test de paridad.",
+      "quien": "agente; la aprobó Nicolás con la spec",
+      "ok": "spec SPEC-11, §3, aprobada el 2026-11-20",
+      "lote": "g2-donaciones",
+      "criterio": "DonacionesIndependientesController y el resolver de donaciones usan la misma constante de Acceso, un test lo comprueba y los tests de seguridad de REST siguen en verde sin cambios."
+    },
+    {
+      "id": "D16",
+      "texto": "El esquema no cambia después del primer control.",
+      "quien": "agente; la aprobó Nicolás con la spec",
+      "ok": "spec SPEC-11, §3, aprobada el 2026-11-20",
+      "aCargoDe": { "quien": "motor", "ok": "La fase construir comprueba que el esquema de docs/arquitectura/contratos sea el del SHA aprobado, al empezar y al cerrar." }
+    }
+  ],
+  "lotes": [
+    {
+      "id": "g1-esquema",
+      "tarea": "G1",
+      "fase": "disenar",
+      "tanda": 0,
+      "titulo": "Esquema GraphQL y documento de contrato",
+      "rol": "juicio",
+      "modulos": [],
+      "archivos": [
+        "docs/arquitectura/contratos/donaciones.graphqls",
+        "docs/arquitectura/contratos/donaciones-graphql.md"
+      ],
+      "que": "Escribe el esquema de solo lectura (donaciones, necesidades y entidades, sin el tipo Donante) con filtros y paginación, y el documento de contrato con una consulta de ejemplo por raíz. Responde las siete preguntas de la spec, §7.5, cada una con su alternativa y el porqué. Parte de los DTO que lista la spec, §7.1; los filtros de entidades, dentro de los que ya admite buscarPublicas. Respeta los invariantes de la spec, §4: puerta única a las donaciones, donanteId y entidadId como filtros, y nada de una persona."
+    },
+    {
+      "id": "g2-armazon",
+      "tarea": "G2",
+      "fase": "construir",
+      "tanda": 1,
+      "titulo": "Armazón de GraphQL en Donaciones",
+      "rol": "juicio",
+      "modulos": ["donaciones-service"],
+      "archivos": [
+        "donaciones-service/pom.xml",
+        "donaciones-service/src/main/resources/application*.properties",
+        "donaciones-service/src/main/resources/graphql/**",
+        "donaciones-service/src/main/java/grupo5/donaciones/graphql/comun/**",
+        "donaciones-service/src/main/java/grupo5/donaciones/seguridad/ReglasDeAccesoDonaciones.java",
+        "donaciones-service/src/test/java/grupo5/donaciones/graphql/comun/**",
+        "donaciones-service/src/test/java/grupo5/donaciones/architecture/**",
+        "donaciones-service/src/test/java/grupo5/donaciones/seguridad/**"
+      ],
+      "que": "Suma spring-boot-starter-graphql (la versión la da el BOM) y, solo si los tests de slice lo piden, su starter de test, anotándolo en 'pendientes' para que el grupo lo confirme. Deja la ruta /api/donaciones/graphql, la copia del esquema aprobado en resources/graphql, los tipos de página con su tope leído de una propiedad, la traducción de los errores del servicio a errores GraphQL con su código del catálogo y el traceId, y la ruta sin token en ReglasDeAccesoDonaciones. En tests: una base de slice para los resolvers con la seguridad encendida y un JwtDecoder falso reutilizable (donante, entidad, administrador), y las reglas de ArchUnit del paquete graphql (sin repositorios, @PreAuthorize en cada método con @QueryMapping, @SchemaMapping o @BatchMapping)."
+    },
+    {
+      "id": "g2-necesidades",
+      "tarea": "G2",
+      "fase": "construir",
+      "tanda": 2,
+      "titulo": "Consulta de necesidades",
+      "rol": "juicio",
+      "modulos": ["donaciones-service"],
+      "archivos": [
+        "donaciones-service/src/main/java/grupo5/donaciones/graphql/necesidades/**",
+        "donaciones-service/src/main/java/grupo5/donaciones/services/INecesidadesService.java",
+        "donaciones-service/src/main/java/grupo5/donaciones/services/impl/NecesidadesService.java",
+        "donaciones-service/src/main/java/grupo5/donaciones/models/repositories/**/*Necesidad*",
+        "donaciones-service/src/main/java/grupo5/donaciones/infrastructure/persistencia/**/*Necesidad*",
+        "donaciones-service/src/test/java/grupo5/donaciones/graphql/necesidades/**",
+        "donaciones-service/src/test/java/grupo5/donaciones/services/**/*Necesidad*",
+        "donaciones-service/src/test/java/grupo5/donaciones/models/**/*Necesidad*",
+        "donaciones-service/src/test/java/grupo5/donaciones/infrastructure/**/*Necesidad*"
+      ],
+      "que": "Resolver de la consulta de necesidades públicas con los filtros y la página del esquema, sobre un método de servicio nuevo que pagina en el repositorio y en sus dos adaptadores (JPA y en memoria). La lectura REST que existe no cambia. Tests de filtros, página, campos y acceso sin token con la seguridad encendida."
+    },
+    {
+      "id": "g2-entidades",
+      "tarea": "G2",
+      "fase": "construir",
+      "tanda": 2,
+      "titulo": "Consulta de entidades",
+      "rol": "juicio",
+      "modulos": ["donaciones-service"],
+      "archivos": [
+        "donaciones-service/src/main/java/grupo5/donaciones/graphql/entidades/**",
+        "donaciones-service/src/test/java/grupo5/donaciones/graphql/entidades/**"
+      ],
+      "que": "Resolver de la consulta de entidades públicas con los filtros y la página del esquema, sobre buscarPublicas. Tests de filtros, página, campos y acceso sin token con la seguridad encendida."
+    },
+    {
+      "id": "g2-donaciones",
+      "tarea": "G2",
+      "fase": "construir",
+      "tanda": 2,
+      "titulo": "Consulta de donaciones",
+      "rol": "juicio",
+      "modulos": ["donaciones-service"],
+      "archivos": [
+        "donaciones-service/src/main/java/grupo5/donaciones/graphql/donaciones/**",
+        "donaciones-service/src/main/java/grupo5/donaciones/seguridad/Acceso.java",
+        "donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/DonacionesIndependientesController.java",
+        "donaciones-service/src/test/java/grupo5/donaciones/graphql/donaciones/**"
+      ],
+      "que": "Resolver de la consulta de donaciones sobre obtenerConFiltros, con los filtros y la página del esquema. La regla del listado pasa de DonacionesIndependientesController a una constante de Acceso, que usan el controlador y el resolver; el comportamiento de REST no cambia. El mapeo al tipo del esquema descarta quienDono y el actor y la justificacion del historial. Tests de filtros, página y campos; la matriz de acceso con la seguridad encendida (sin token, donante propio y ajeno, entidad propia y ajena, administrador); y el test de paridad con REST."
+    },
+    {
+      "id": "g2-relaciones",
+      "tarea": "G2",
+      "fase": "construir",
+      "tanda": 3,
+      "titulo": "Relaciones anidadas con carga por lotes",
+      "rol": "juicio",
+      "modulos": ["donaciones-service"],
+      "archivos": [
+        "donaciones-service/src/main/java/grupo5/donaciones/graphql/relaciones/**",
+        "donaciones-service/src/main/java/grupo5/donaciones/services/**",
+        "donaciones-service/src/main/java/grupo5/donaciones/models/repositories/**",
+        "donaciones-service/src/main/java/grupo5/donaciones/infrastructure/persistencia/**",
+        "donaciones-service/src/test/java/grupo5/donaciones/graphql/relaciones/**",
+        "donaciones-service/src/test/java/grupo5/donaciones/services/**",
+        "donaciones-service/src/test/java/grupo5/donaciones/infrastructure/**"
+      ],
+      "que": "Las relaciones anidadas que aprobó G1, con @BatchMapping, sobre métodos de servicio nuevos que leen por lista de ids, con lo que pidan en los repositorios y en sus adaptadores. Tests: una sola llamada al servicio por página, la regla de acceso de cada relación con la seguridad encendida (comprueba que el contexto de seguridad llega al @BatchMapping) y ningún dato de una persona."
+    },
+    {
+      "id": "g3-limites",
+      "tarea": "G3",
+      "fase": "construir",
+      "tanda": 4,
+      "titulo": "Límites de las consultas y M08",
+      "rol": "juicio",
+      "modulos": ["donaciones-service"],
+      "archivos": [
+        "donaciones-service/src/main/java/grupo5/donaciones/graphql/limites/**",
+        "donaciones-service/src/main/resources/application*.properties",
+        "donaciones-service/src/test/java/grupo5/donaciones/graphql/limites/**",
+        "docker-compose.preprod.yml"
+      ],
+      "que": "Profundidad máxima, tope de complejidad y timeout por consulta, con valores por propiedad; el timeout queda por debajo de la espera de lectura del gateway (10 s). El tope de página ya lo dejó el armazón: acá va su test. Introspección y GraphiQL apagados por defecto y encendidos solo donde lo aprobó G1; en docker-compose.preprod.yml, solo la variable que los enciende. Test de un rechazo por cada uno de los cuatro límites. M08 con un registro de métricas en memoria: una medición por operación con su duración, y un contador de rechazos por profundidad o complejidad con su motivo."
+    },
+    {
+      "id": "g4-gateway-contrato",
+      "tarea": "G4",
+      "fase": "construir",
+      "tanda": 4,
+      "titulo": "Ruta pública del gateway y test de contrato",
+      "rol": "juicio",
+      "modulos": ["api-gateway", "donaciones-service"],
+      "archivos": [
+        "api-gateway/src/main/resources/application.yml",
+        "api-gateway/src/test/java/grupo5/gateway/**",
+        "donaciones-service/src/test/java/grupo5/donaciones/contracts/**"
+      ],
+      "que": "POST /api/donaciones/graphql entra en las rutas públicas del gateway, con sus filas en RutasGatewayTest y SeguridadGatewayTest. RutasGateway no cambia: ya enruta /api/donaciones/**. Test de contrato con @Tag(\"contract\") que compara el esquema del servicio con el de docs/arquitectura/contratos."
+    }
+  ],
+  "gates": {
+    "porLote": ["mvn spotless:check", "mvn clean test -pl <módulos del lote> -am"],
+    "cierre": [
+      "mvn spotless:check",
+      "mvn clean test -pl donaciones-service,api-gateway -am",
+      "node scripts/agent-check.js",
+      "node scripts/validate-contracts.js",
+      "node scripts/tests/run-tests.js"
+    ],
+    "siHayStack": [
+      {
+        "gate": "Gate 3",
+        "comando": "mvn verify -pl integration-tests -DskipTests=false",
+        "nota": "Corre solo con args.stackDeLaRama en true: el dueño levantó los servicios de esta rama. Vale como regresión de REST, no prueba GraphQL. Sin eso: [DEFERRED_NO_DOCKER]."
+      }
+    ],
+    "diferidos": [
+      { "gate": "Gate 4", "a": "la integración en Swarm (O5 e I2, de Tadeo)" }
+    ],
+    "sinDocker": "[DEFERRED_NO_DOCKER] para el Gate 3 y para los tests con Testcontainers"
+  },
+  "documentacion": {
+    "archivos": [
+      "docs/README.md",
+      "docs/ESTADO_DOCUMENTACION.md",
+      "docs/specs/README.md",
+      "docs/context-index.md",
+      "docs/arquitectura/contratos-rest.md",
+      "docs/arquitectura/seguridad/matriz-permisos.md",
+      "docs/adr/DEUDA_TECNICA.md",
+      "api-gateway/README.md"
+    ],
+    "que": "Sincroniza los índices, documenta el endpoint y la ruta pública, y registra la deuda que dejó la corrida. La spec se queda en docs/specs/active: no se mueve en este PR."
+  },
+  "pr": {
+    "borrador": true,
+    "titulo": "E7: GraphQL de solo lectura en Donaciones (G1 a G4)",
+    "plantilla": "docs/IA/04-checklist-antes-de-pr.md"
+  },
+  "pendientesDeUnaPersona": [
+    "Avisarle a Tadeo que G3 sale de este workflow, para que W1 no la repita.",
+    "Pedirle a Tadeo que corrija en el PR 987 las cuatro divergencias de la spec, §6.",
+    "Confirmar con el grupo la dependencia nueva (Q23) y, si hace falta, la de tests.",
+    "Confirmar con el grupo que G4 no lleva k6, como dice la versión 3 del plan.",
+    "Decidir si el Gate 3 corre con un stack levantado a mano o se difiere a O5.",
+    "Después del primer control, compartir el contrato con Sofía: el workflow no hace push.",
+    "Llevar al grupo el régimen de precedencia de D07."
+  ]
+}
