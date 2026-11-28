@@ -71,6 +71,7 @@ class RutasGatewayTest {
     "GET, /api/donaciones/contadores, donaciones",
     "GET, /api/donaciones/resumen, donaciones",
     "GET, /api/donaciones/destacadas, donaciones",
+    "POST, /api/donaciones/graphql, donaciones",
     "PUT, /api/subcategorias/3, donaciones",
     "GET, /api/actividad, donaciones",
     "POST, /api/actividad, donaciones",
@@ -142,6 +143,11 @@ class RutasGatewayTest {
     assertThat(devuelto).hasSize(1);
     assertThat(devuelto.getFirst()).matches("[0-9a-f]{32}");
     assertThat(respuesta.headers().firstValue(TRACE_RECIBIDO)).contains(devuelto.getFirst());
+  }
+
+  @Test
+  void laRutaDeGraphqlEstaEnLaAllowlistPublica_SPEC11() {
+    assertThat(props.rutasPublicas()).contains("POST /api/donaciones/graphql");
   }
 
   @Test

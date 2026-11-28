@@ -39,7 +39,7 @@ docs/
 │   ├── contratos-rest.md                  # Contratos REST consolidados, OpenAPI 3.0 y Swagger UI
 │   ├── eventos-amqp.md                    # Topología RabbitMQ y contratos de eventos asíncronos
 │   ├── seguridad/matriz-permisos.md       # Matriz de permisos E6: rol, permiso y pertenencia por endpoint (borrador)
-│   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML), Schemas JSON y guía de migración E4
+│   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML), esquema y contrato GraphQL de Donaciones (SPEC-11), Schemas JSON y guía de migración E4
 │   └── diseno/                            # Bitácoras de refactor por oleadas, diagramas PUML y anexos
 │       ├── README.md                      # 🟢 Portal de diseño y anexos técnicos
 │       ├── donaciones/                # Diagrama de clases, DER implementado (V1-V12), cambios al DER y componentes de persistencia
@@ -94,12 +94,12 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-45) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-46) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-10, R11-p1-importador, R11-p2-actividad, R11-p2-listas-restantes)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03 a SPEC-11, R11-p1-importador, R11-p2-actividad, R11-p2-listas-restantes)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02, R11-p0-api-listados y las cinco de R11-p1)
 │
 ├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
@@ -195,6 +195,7 @@ docs/
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
 * 📋 **Requerimientos de Entrega 6 (cliente liviano, autenticación y gateway):** [requerimientos/requerimientos-e6.md](requerimientos/requerimientos-e6.md)
 * 📋 **Requerimientos de Entrega 7 (observabilidad y seguridad; rondas de decisión):** [requerimientos/requerimientos-e7.md](requerimientos/requerimientos-e7.md)
+* 🔎 **GraphQL de solo lectura en Donaciones (E7, tareas G1 a G4, implementadas en la rama `E7_graphql`, PR pendiente):** [SPEC-11](specs/active/SPEC-11-graphql-de-solo-lectura-en-donaciones.md) · [contrato](arquitectura/contratos/donaciones-graphql.md) · [esquema](arquitectura/contratos/donaciones.graphqls) · [manifiesto del frente](specs/active/SPEC-11-graphql.manifiesto.json) · [guía del workflow `frente-backend`](IA/prompts/orquestacion-frente-backend.md) (primera corrida real: este frente) · lo que queda: [DTI-46](adr/DEUDA_TECNICA.md#dti-46)
 * 🧭 **ADRs de E7 (`proposed`, PR de los ADR):** [despliegue en Docker Swarm de un nodo, con réplicas](adr/20261118-despliegue-en-docker-swarm-de-un-nodo-con-replicas.md) · [observabilidad con OpenTelemetry y `otel-lgtm`](adr/20261118-observabilidad-con-opentelemetry-y-grafana-otel-lgtm.md) · [rate limiting en el gateway](adr/20261115-rate-limiting-en-el-api-gateway-por-cuenta-o-por-ip.md) · [GraphQL de solo lectura en Donaciones](adr/donaciones-service/20261117-graphql-de-solo-lectura-en-donaciones.md)
 * 📊 **HG-04, avance de una necesidad en unidades (propuesta):** [SPEC-HG04](specs/active/SPEC-HG04-avance-en-unidades.md) · contrato: `avance` en [`openapi-donaciones.yaml`](arquitectura/contratos/openapi-donaciones.yaml) (1.14.0)
 * 🗺️ **Diagramas de E7 (borrador de componentes y de despliegue en Docker Swarm):** [entrega-7/arquitectura/diagramas/](entrega-7/arquitectura/diagramas/README.md)
@@ -208,6 +209,7 @@ docs/
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
 * ⚡ **Optimización de Compilación y Testing (TIA):** [testing/testing-performance.md](testing/testing-performance.md)
 * 🎬 **Seeder de demo (propuesta):** [SPEC-10](specs/active/SPEC-10-seeder-de-demo.md) · [testing/demo-seeder.md](testing/demo-seeder.md)
+* 🕒 **Hora estimada de llegada en el seguimiento (HG-02, Logística 1.12.0):** [spec](specs/active/HG-02-hora-estimada-de-llegada-spec.md) · [contratos REST](arquitectura/contratos-rest.md)
 * 📏 **Ensayo de importación de 20.000 donantes:** [testing/ensayo-importacion-20000.md](testing/ensayo-importacion-20000.md)
 * 📄 **Listados paginados y cifras de Donaciones (R11-01, implementada en la oleada P0):** [spec del lote p0-api-listados](specs/completed/R11-p0-api-listados-spec.md) · [backlog de la revisión del 2026-11-11](interfaz/backlog-revision-2026-11-11.md) · ADRs `proposed`: [listados siempre paginados](adr/donaciones-service/20261111-listados-paginados-de-donaciones-sin-lista-completa.md), [búsqueda sin tildes](adr/donaciones-service/20261111-busqueda-sin-tildes-con-unaccent-en-el-esquema-del-servicio.md), [SQL nativo y lectura por lote](adr/donaciones-service/20261111-consultas-de-listado-en-sql-nativo-y-lectura-por-lote.md), [cifras del admin como conteos](adr/donaciones-service/20261111-cifras-del-admin-como-conteos-en-un-resumen.md) y [`fecha_alta` y últimos importados](adr/donaciones-service/20261111-fecha-de-alta-del-donante-y-ultimos-importados-en-el-archivo.md) · deuda: [DTI-39](adr/DEUDA_TECNICA.md#dti-39) y [DTI-40](adr/DEUDA_TECNICA.md#dti-40)
 * 📥 **Pantalla de importaciones del admin (R11-20, construida 2026-11-12):** [spec del lote p1-importaciones](specs/completed/R11-p1-importaciones-spec.md) · [ficha de flujo](interfaz/flujos/r11-p1-importaciones.md)
@@ -234,6 +236,7 @@ docs/
 * 🗺️ **Preprod fiel — roadmap por entrega y decisiones:** [testing/preprod-fiel-roadmap.md](testing/preprod-fiel-roadmap.md)
 * 🩺 **Diagnóstico de integration-tests (E5):** [testing/diagnostico-integration-tests-e5.md](testing/diagnostico-integration-tests-e5.md)
 * 🌐 **Demo pública por túnel (E6):** [testing/demo-publica-tunel.md](testing/demo-publica-tunel.md)
+* 🛡️ **Escaneo de seguridad con Trivy en el CI (E7):** [testing/escaneo-seguridad-ci.md](testing/escaneo-seguridad-ci.md)
 * 🚀 **Pipeline de CI/CD y Workflows:** [cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md)
 * 🤖 **Protocolo y Prompts de IA:** [IA/README.md](IA/README.md)
 * 🛡️ **Pre-Flight SonarCloud para IA:** [IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md)

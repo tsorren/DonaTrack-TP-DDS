@@ -26,7 +26,8 @@ La tabla de [`RutasGateway`](src/main/java/grupo5/gateway/RutasGateway.java) es 
 `donatrack.gateway.rutas-publicas` en [`application.yml`](src/main/resources/application.yml) lista lo que pasa sin token (D26), con el formato `"MÉTODO /ruta"`. Se aplica solo con la seguridad encendida. Si una pantalla pública suma una llamada, su ruta entra ahí **y** en el servicio, en el mismo cambio.
 
 - **Se abre la ruta, no el método.** El gateway usa la misma cadena de seguridad de `common-lib` que los servicios, que decide por ruta. El método lo decide el `@PreAuthorize` del servicio (la segunda capa). Por eso `POST /api/contacto` es público y `GET /api/contacto` (el listado del ADMIN) pasa el gateway sin token y lo rechaza Notificaciones con `401`.
-- **Las dos capas coinciden por test.** `scripts/tests/test_gateway_seguridad.py` exige que esta lista sea exactamente el conjunto de endpoints `@PreAuthorize(PUBLICO)` de los servicios, y que cada ruta tenga una ruta expuesta.
+- **Las dos capas coinciden por test.** `scripts/tests/test_gateway_seguridad.py` exige que esta lista sea exactamente el conjunto de endpoints `@PreAuthorize(PUBLICO)` de los servicios más la ruta de GraphQL, y que cada ruta tenga una ruta expuesta.
+- **GraphQL de Donaciones (E7, SPEC-11).** `POST /api/donaciones/graphql` está en la lista y lo enruta la entrada `/api/donaciones/**` de Donaciones, sin una ruta propia. La ruta es pública porque `necesidades` y `entidades` se leen sin token; `donaciones` pide rol, y lo decide el `@PreAuthorize` del resolver con el `Authorization` que el gateway reenvía intacto (`SeguridadGatewayTest` prueba los dos casos). Como se abre la ruta y no el método, `GET /api/donaciones/graphql` también pasa sin token. `[VERIFIED]` (2026-11-20) `test_gateway_seguridad.py` la trata como caso propio, porque detrás no hay un endpoint `@PreAuthorize(PUBLICO)` sino resolvers: exige que el servicio tenga algún resolver público y que ninguno quede sin `@PreAuthorize`. Contrato: [`donaciones-graphql.md`](../docs/arquitectura/contratos/donaciones-graphql.md).
 - Una entrada mal escrita (método desconocido, ruta sin `/`) corta el arranque.
 
 ## Validación del JWT
@@ -72,7 +73,15 @@ Requerimiento 3 de E7 ([ADR](../docs/adr/20261115-rate-limiting-en-el-api-gatewa
 - Cada rechazo deja un log `[GATEWAY] [RATE-LIMIT]` con el tipo de cubeta (`usuario` o `ip`), sin la IP ni el `sub`.
 - `/actuator/**` no consume fichas.
 - **Las cubetas viven en Redis** (decisión Q11): todas las réplicas del gateway cuentan contra el mismo cupo. Redis no persiste nada (los contadores son descartables) y borra cada clave 10 s después de que su cubeta se recargó entera.
-- **Si Redis no responde, el pedido pasa** (*fail-open*, Q11b). Cada operación (conectar, consumir) espera como máximo `GATEWAY_REDIS_TIMEOUT`. El gateway arranca aunque Redis esté caído y se conecta con el primer pedido. Si no conecta, no reintenta hasta pasado `GATEWAY_REDIS_REINTENTO`, y mientras tanto los pedidos pasan sin esperar. Queda un `WARN` `[GATEWAY] [RATE-LIMIT] [REDIS-NO-DISPONIBLE]`, uno por ventana como máximo. La métrica y la alerta del panel son de las tareas R3 y O4.
+- **Si Redis no responde, el pedido pasa** (*fail-open*, Q11b). Cada operación (conectar, consumir) espera como máximo `GATEWAY_REDIS_TIMEOUT`. El gateway arranca aunque Redis esté caído y se conecta con el primer pedido. Si no conecta, no reintenta hasta pasado `GATEWAY_REDIS_REINTENTO`, y mientras tanto los pedidos pasan sin esperar. Queda un `WARN` `[GATEWAY] [RATE-LIMIT] [REDIS-NO-DISPONIBLE]`, uno por ventana como máximo, y la métrica M25 (abajo). La alerta del panel es de la tarea O4.
+- **Métricas (R3).** Dos contadores de Micrometer, documentados también en [las métricas de negocio](../docs/arquitectura/metricas-de-negocio.md):
+
+  | Id | Nombre | Etiquetas y valores | Qué cuenta |
+  |---|---|---|---|
+  | M24 | `donatrack.gateway.rate_limit.rechazos` | `ruta`: `donaciones`, `notificaciones`, `incentivos`, `logistica` · `cubeta`: `usuario`, `ip` · `operacion`: `lectura`, `escritura` | Cada pedido que recibió `429`. `cubeta` y `operacion` juntas son el nivel: cuál de los cuatro cupos se agotó |
+  | M25 | `donatrack.gateway.redis.fallas` | `tipo`: `timeout`, `error` | Cada pedido que pasó sin límite porque Redis falló. `timeout` si en la cadena de causas hay un timeout (Bucket4j, Lettuce o la JDK); `error` para el resto, incluidos los pedidos que llegan mientras el gateway espera para reintentar la conexión |
+
+  M25 cuenta pedidos, no caídas: mientras Redis está caído crece con el tráfico, así que la alerta va sobre `increase(...) > 0` en una ventana. La `ruta` es el nombre de la ruta del gateway (`RutasGateway`), no el path: así la cantidad de series queda fija (4 × 2 × 2). Una serie aparece la primera vez que se cuenta ese valor. En Prometheus se leen como `donatrack_gateway_rate_limit_rechazos_total` y `donatrack_gateway_redis_fallas_total`, los nombres que usan las alertas de O4 (`observabilidad/grafana/provisioning/alerting/donatrack-alertas.yaml`).
 
 Para probarlo a mano (con los cupos por defecto, la escritura 31 de la misma IP en un minuto da `429`):
 

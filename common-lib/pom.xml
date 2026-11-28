@@ -25,7 +25,7 @@
         </dependency>
 
         <!-- Trazas, métricas y logs por OTLP (ADR de observabilidad con otel-lgtm, E7-S03b).
-             La versión la fija el BOM de Spring Boot 4.0.7, como las demás de Boot. -->
+             La versión la fija el BOM de Spring Boot 4.0.10, como las demás de Boot. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-opentelemetry</artifactId>
@@ -47,7 +47,7 @@
         </dependency>
 
         <!-- Logs por OTLP: el starter no trae el appender de Logback ni el BOM de Boot lo gestiona.
-             2.21.0-alpha es la que va con OpenTelemetry 1.55.0, la versión del BOM de Boot 4.0.7. -->
+             2.21.0-alpha es la que va con OpenTelemetry 1.55.0, la versión del BOM de Boot 4.0.10. -->
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-logback-appender-1.0</artifactId>

@@ -6,6 +6,7 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.AvanceNecesidadDTO;
 import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.dto.Pagina;
 import grupo5.donaciones.dto.PeriodoNecesidadDTO;
 import grupo5.donaciones.dto.publico.NecesidadPublicaDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
@@ -17,13 +18,18 @@ import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.entities.necesidades.PeriodoNecesidad;
 import grupo5.donaciones.models.entities.necesidades.ResultadoPeriodo;
+import grupo5.donaciones.models.entities.necesidades.TipoNecesidad;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
+import grupo5.donaciones.models.repositories.listados.CriterioNecesidades;
+import grupo5.donaciones.models.repositories.listados.Paginado;
+import grupo5.donaciones.models.repositories.listados.Tramo;
 import grupo5.donaciones.services.INecesidadesService;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -167,19 +173,63 @@ public class NecesidadesService implements INecesidadesService {
         .filter(n -> !n.estaSatisfechaCon(asignado.getOrDefault(n.getId(), 0)))
         .map(
             n ->
-                new NecesidadPublicaDTO(
-                    n.getId(),
-                    n.getEntidadId(),
-                    n.getSubcategoriaId(),
-                    n.getDescripcion(),
-                    n.getCantidadNecesitada(),
-                    n.getTipoNecesidad().name(),
-                    n.finDelPeriodoActual(),
+                publica(
+                    n,
                     AvanceNecesidadDTO.de(
                         n.getCantidadNecesitada(),
                         asignado.getOrDefault(n.getId(), 0),
                         sinLlegar.getOrDefault(n.getId(), 0))))
         .toList();
+  }
+
+  @Override
+  public Pagina<NecesidadPublicaDTO> buscarPublicas(
+      UUID entidadId,
+      UUID categoriaId,
+      UUID subcategoriaId,
+      TipoNecesidad tipo,
+      int pagina,
+      int tamanio) {
+    if (pagina < 0 || tamanio < 1) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    Tramo<Necesidad> tramo =
+        necesidadRepository.buscarVigentes(
+            new CriterioNecesidades(
+                entidadId,
+                categoriaId,
+                subcategoriaId,
+                tipo,
+                hoy(),
+                new Paginado(pagina, tamanio)));
+    return new Pagina<>(
+        tramo.elementos().stream().map(NecesidadesService::publica).toList(),
+        Math.toIntExact(tramo.total()));
+  }
+
+  @Override
+  public List<NecesidadPublicaDTO> buscarPublicasPorIds(Collection<UUID> ids) {
+    if (ids.isEmpty()) {
+      return List.of();
+    }
+    return necesidadRepository.findAllById(ids).stream().map(NecesidadesService::publica).toList();
+  }
+
+  private static NecesidadPublicaDTO publica(Necesidad n) {
+    return publica(n, null);
+  }
+
+  // GraphQL usa la de un argumento: su esquema no tiene el avance (D16)
+  private static NecesidadPublicaDTO publica(Necesidad n, AvanceNecesidadDTO avance) {
+    return new NecesidadPublicaDTO(
+        n.getId(),
+        n.getEntidadId(),
+        n.getSubcategoriaId(),
+        n.getDescripcion(),
+        n.getCantidadNecesitada(),
+        n.getTipoNecesidad().name(),
+        n.finDelPeriodoActual(),
+        avance);
   }
 
   @Override

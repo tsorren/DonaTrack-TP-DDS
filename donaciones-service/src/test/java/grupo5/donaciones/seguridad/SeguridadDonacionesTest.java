@@ -1,5 +1,7 @@
 package grupo5.donaciones.seguridad;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
@@ -165,6 +167,17 @@ class SeguridadDonacionesTest extends AbstractDonacionesWebMvcTest {
   void lasRutasPublicasNoPidenToken() throws Exception {
     pedir(get(NECESIDADES + "/publicas"), null).andExpect(status().isOk());
     pedir(get("/api/donaciones/contadores"), null).andExpect(status().isOk());
+  }
+
+  // SPEC-11, D08: la ruta de GraphQL pasa la cadena sin token. Este slice no carga GraphQL, así
+  // que el pedido sigue hasta los controladores REST (que no lo atienden) en lugar de cortarse
+  // con 401. La respuesta con GraphQL cargado la prueba ArmazonGraphQlTest
+  @Test
+  void laRutaDeGraphQlNoPideToken() throws Exception {
+    pedir(post("/api/donaciones/graphql").contentType(APPLICATION_JSON).content("{}"), null)
+        .andExpect(resultado -> assertThat(resultado.getResponse().getStatus()).isNotEqualTo(401))
+        .andExpect(jsonPath("$.code").value(not("ERR-CSR-401")));
+    pedir(get(NECESIDADES), null).andExpect(status().isUnauthorized());
   }
 
   @Test

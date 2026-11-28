@@ -137,4 +137,14 @@ public class EntidadBeneficiariaRepositoryJpaAdapter
   public long contarActivas() {
     return springDataRepo.countByActivoTrue();
   }
+
+  /** Una consulta para todas: la carga por lotes de GraphQL (SPEC-11, G2). */
+  @Override
+  @Transactional(readOnly = true)
+  public List<EntidadBeneficiaria> findAllById(Collection<UUID> ids) {
+    if (ids.isEmpty()) {
+      return List.of();
+    }
+    return springDataRepo.findAllById(ids).stream().map(toDomain).toList();
+  }
 }

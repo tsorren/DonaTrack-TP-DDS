@@ -5,11 +5,13 @@ import grupo5.common.responses.ErrorResponse;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
 import io.github.bucket4j.ConsumptionProbe;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -57,6 +59,11 @@ import org.springframework.web.servlet.function.ServerResponse;
  * pasa sin consumir ficha: Redis no puede tirar el sitio. Queda un {@code WARN} {@code
  * [REDIS-NO-DISPONIBLE]}, uno por ventana como máximo para no inundar el log mientras dure la
  * caída.
+ *
+ * <p><b>Métricas (R3).</b> Cada rechazo suma uno a {@value #RECHAZADOS} (M24) con la ruta, la
+ * cubeta y la operación; cada pedido que pasa sin límite porque el almacén falló suma uno a {@value
+ * #FALLAS_DE_REDIS} (M25) con el tipo de falla. La ruta la pone {@link #para(String)}; el filtro
+ * usado sin ruta cuenta {@value #SIN_RUTA}.
  */
 @Component
 public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse, ServerResponse> {
@@ -73,6 +80,20 @@ public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse
       @DefaultValue("") String proxiesConfiables) {}
 
   static final String RESTANTES = "X-RateLimit-Remaining";
+
+  /**
+   * M24: pedidos rechazados, por {@code ruta}, {@code cubeta} y {@code operacion}. El nombre es el
+   * que espera la alerta de O4 ({@code donatrack_gateway_rate_limit_rechazos_total}).
+   */
+  static final String RECHAZADOS = "donatrack.gateway.rate_limit.rechazos";
+
+  /**
+   * M25: pedidos que pasaron sin límite porque Redis falló, por {@code tipo}. El nombre es el que
+   * espera la alerta de O4 ({@code donatrack_gateway_redis_fallas_total}).
+   */
+  static final String FALLAS_DE_REDIS = "donatrack.gateway.redis.fallas";
+
+  static final String SIN_RUTA = "sin_ruta";
   static final String X_FORWARDED_FOR = "X-Forwarded-For";
 
   private static final Logger log = LoggerFactory.getLogger(LimiteDeSolicitudes.class);
@@ -91,8 +112,9 @@ public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse
   private final Almacen almacen;
   private final Pattern proxiesConfiables;
   private final AtomicLong proximoAviso = new AtomicLong(System.nanoTime());
+  private final MeterRegistry registro;
 
-  public LimiteDeSolicitudes(Config config, Almacen almacen) {
+  public LimiteDeSolicitudes(Config config, Almacen almacen, MeterRegistry registro) {
     if (config.ventana().isZero() || config.ventana().isNegative()) {
       throw new IllegalStateException("La ventana del límite de solicitudes debe ser positiva");
     }
@@ -104,13 +126,25 @@ public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse
     }
     this.config = config;
     this.almacen = almacen;
+    this.registro = registro;
     String proxies = config.proxiesConfiables();
     this.proxiesConfiables =
         proxies == null || proxies.isBlank() ? null : Pattern.compile(proxies.trim());
   }
 
+  /** El mismo límite, con el nombre de la ruta para las métricas (el {@code route} del gateway). */
+  public HandlerFilterFunction<ServerResponse, ServerResponse> para(String ruta) {
+    return (pedido, siguiente) -> filtrar(pedido, siguiente, ruta);
+  }
+
   @Override
   public ServerResponse filter(ServerRequest pedido, HandlerFunction<ServerResponse> siguiente)
+      throws Exception {
+    return filtrar(pedido, siguiente, SIN_RUTA);
+  }
+
+  private ServerResponse filtrar(
+      ServerRequest pedido, HandlerFunction<ServerResponse> siguiente, String ruta)
       throws Exception {
     if (!config.habilitado()) {
       return siguiente.handle(pedido);
@@ -126,6 +160,7 @@ public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse
     try {
       intento = almacen.cubeta(clave, () -> configuracion(cupo)).tryConsumeAndReturnRemaining(1);
     } catch (RuntimeException falla) {
+      registro.counter(FALLAS_DE_REDIS, "tipo", tipoDeFalla(falla)).increment();
       avisarQueElAlmacenFalla(falla);
       return siguiente.handle(pedido);
     }
@@ -134,6 +169,16 @@ public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse
       informarRestantes(respuesta, intento.getRemainingTokens());
       return respuesta;
     }
+    registro
+        .counter(
+            RECHAZADOS,
+            "ruta",
+            ruta,
+            "cubeta",
+            sujeto != null ? "usuario" : "ip",
+            "operacion",
+            lectura ? "lectura" : "escritura")
+        .increment();
     long segundos = segundosHastaLaProximaFicha(intento.getNanosToWaitForRefill());
     // Sin la IP ni el sub: alcanza con saber de qué tipo es la cubeta (datos personales, ADR
     // 20260519). El traceId del MDC une esta línea con el pedido.
@@ -189,9 +234,27 @@ public class LimiteDeSolicitudes implements HandlerFilterFunction<ServerResponse
     if (ahora - previsto >= 0
         && proximoAviso.compareAndSet(previsto, ahora + config.ventana().toNanos())) {
       log.warn(
-          "[GATEWAY] [RATE-LIMIT] [REDIS-NO-DISPONIBLE] Los pedidos pasan sin límite (fail-open): {}",
+          "[GATEWAY] [RATE-LIMIT] [REDIS-NO-DISPONIBLE] Los pedidos pasan sin límite (fail-open):"
+              + " {}",
           falla.toString());
     }
+  }
+
+  /**
+   * {@code timeout} si en la cadena de causas hay un timeout (el de Bucket4j, el de Lettuce o uno
+   * de la JDK); si no, {@code error}. Se reconoce por el nombre de la clase para no atarse a una
+   * versión de cada librería.
+   */
+  static String tipoDeFalla(Throwable falla) {
+    Throwable actual = falla;
+    for (int nivel = 0; actual != null && nivel < 10; nivel++) {
+      if (actual instanceof TimeoutException
+          || actual.getClass().getSimpleName().contains("Timeout")) {
+        return "timeout";
+      }
+      actual = actual.getCause() == actual ? null : actual.getCause();
+    }
+    return "error";
   }
 
   /** {@code Retry-After} va en segundos enteros: se redondea para arriba y nunca es 0. */
