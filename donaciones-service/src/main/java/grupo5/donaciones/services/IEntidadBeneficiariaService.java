@@ -6,6 +6,8 @@ import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.FiltroOrganizaciones;
 import grupo5.donaciones.dto.publico.EntidadParaDonanteDTO;
 import grupo5.donaciones.dto.publico.EntidadPublicaDTO;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 public interface IEntidadBeneficiariaService {
@@ -33,6 +35,21 @@ public interface IEntidadBeneficiariaService {
    */
   Pagina<EntidadPublicaDTO> buscarPublicas(
       String nombre, UUID categoriaId, Integer page, Integer size);
+
+  /**
+   * La vista pública (D26) de las entidades con esos ids, con una lectura de entidades y una de
+   * jurídicas para todas (SPEC-11, G2: la carga por lotes de {@code Necesidad.entidad} y {@code
+   * Donacion.entidad}). No filtra por estado: una donación muestra la entidad asignada aunque
+   * después se haya dado de baja. Los ids que no existen, o sin jurídica, no aparecen; el orden no
+   * está garantizado; sin ids no lee.
+   */
+  List<EntidadPublicaDTO> buscarPublicasPorIds(Collection<UUID> ids);
+
+  /**
+   * Lo mismo que {@link #buscarPublicasPorIds}, solo con las activas: la relación pública {@code
+   * Necesidad.entidad}, que sin token muestra lo mismo que {@code GET /api/entidades/publicas}.
+   */
+  List<EntidadPublicaDTO> buscarActivasPorIds(Collection<UUID> ids);
 
   /**
    * Las entidades activas vistas por un donante (R11-12): la misma búsqueda que {@link
