@@ -842,3 +842,17 @@ Complementa el ADR aceptado de [privacidad de usuarios](./20260519-privacidad-de
 12. **La spec y el contrato no dicen lo mismo en dos cifras.** `[OBSERVED]` SPEC-11 §7.5 habla de una página con `items` y el esquema usa `elementos` (aprobado en el primer control); SPEC-11 cita el tope 100 de `ParametrosListado` (el de REST) y el tope de GraphQL es 50. La spec no se toca en este PR.
 13. **`agent-check` en el árbol de trabajo.** `[VERIFIED]` Sobre un `git archive` de la rama da 0 FAIL; en el árbol de trabajo marca FAIL por las copias de `AGENTS.md` y `docs/IA/history` de `.claude/worktrees/`, los worktrees de la corrida. Excluir esa carpeta en `scripts/agent-check.js` o borrar los worktrees al cerrar.
 14. **Muchas raíces con alias.** `[VERIFIED]` (2026-11-27, revisión del PR 1015) La complejidad suma un punto por campo y no pesa las raíces: con alias, una consulta sin token de 100 puntos pedía unas 50 lecturas paginadas de la base. `LimitesDeConsulta` rechaza más de `donatrack.graphql.limites.raices-maximas` (5) campos raíz, con el motivo `complejidad`. Queda abierto: la complejidad no pesa el `tamanio` de cada lista.
+
+## DTI-55 — El nombre de quien recibió una entrega no se puede suprimir
+<a id="dti-55"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261125-nombre-de-quien-recibio-la-entrega](./logistica-service/20261125-nombre-de-quien-recibio-la-entrega.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `entrega.recibido_por` (Postgres) y `recibidoPor` (Mongo) se guardan en claro; no hay borrado ni cifrado |
+| Target | logistica-service (prioridad media) |
+| Cuándo se saldará | Con la implementación del [crypto-shredding](./20260901-estrategia-de-crypto-shredding-para-supresion-de-datos-personales.md) o con una baja propia del dato; lo decide el equipo |
+
+1. **Supresión.** `[OBSERVED]` Quien recibe no tiene `persona_id`, así que la clave por persona del crypto-shredding no le aplica tal como está escrita. Hace falta otra clave (por entrega u organización) o un borrado del campo a pedido.
+2. **Quien dona lo ve.** `[INFERRED]` DA-10 fija solo lo público; los seguimientos por donación y por donante devuelven el nombre. Si el revisor lo quiere solo para la organización, es un filtro en esas lecturas.

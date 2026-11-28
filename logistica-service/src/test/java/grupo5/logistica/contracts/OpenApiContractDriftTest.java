@@ -2,16 +2,21 @@ package grupo5.logistica.contracts;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.Request;
+import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.model.SimpleResponse;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import grupo5.common.testutils.OpenApiTestUtils;
+import grupo5.logistica.dto.entregas.EntregaMapaPublicoResponseDTO;
+import grupo5.logistica.dto.entregas.EntregaResponseDTO;
 import grupo5.logistica.dto.entregas.PosicionCamionDTO;
 import grupo5.logistica.dto.entregas.SeguimientoEntregaResponseDTO;
+import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
@@ -88,6 +93,88 @@ class OpenApiContractDriftTest {
         assertFalse(hasNotNull, rc.getName() + " debe ser opcional (sin @NotNull/@NotBlank)");
       }
     }
+  }
+
+  @Test
+  void quienRecibio_estaEnLasLecturasPrivadasYNuncaEnElMapaPublico() {
+    // HG-03 (DA-10): el nombre de quien recibió es un dato personal; lo público muestra la
+    // organización, nunca la persona
+    assertTrue(tieneComponente(SeguimientoEntregaResponseDTO.class, "recibidoPor"));
+    assertTrue(tieneComponente(EntregaResponseDTO.class, "recibidoPor"));
+    assertFalse(tieneComponente(EntregaMapaPublicoResponseDTO.class, "recibidoPor"));
+    assertFalse(tieneComponente(EventoEntregaExitosa.class, "recibidoPor"));
+  }
+
+  private static boolean tieneComponente(Class<? extends Record> tipo, String nombre) {
+    return java.util.Arrays.stream(tipo.getRecordComponents())
+        .anyMatch(rc -> rc.getName().equals(nombre));
+  }
+
+  @Test
+  void seguimiento_conQuienRecibio_cumpleElContrato() throws Exception {
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-logistica.yaml");
+    OpenApiInteractionValidator validator = OpenApiInteractionValidator.createFor(specPath).build();
+    ObjectMapper jackson =
+        new ObjectMapper()
+            .findAndRegisterModules()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    Instant ahora = Instant.parse("2026-11-08T12:00:30Z");
+    SeguimientoEntregaResponseDTO dto =
+        new SeguimientoEntregaResponseDTO(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            EstadoEntrega.ENTREGADA,
+            false,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0,
+            0,
+            0,
+            ahora,
+            ahora,
+            ahora,
+            List.of(),
+            null,
+            null,
+            "Persona Sintetica");
+    SimpleResponse response =
+        SimpleResponse.Builder.status(200)
+            .withContentType("application/json")
+            .withBody(jackson.writeValueAsString(dto))
+            .build();
+
+    ValidationReport report =
+        validator.validateResponse(
+            "/api/entregas/seguimiento/donaciones/" + UUID.randomUUID(),
+            Request.Method.GET,
+            response);
+    assertFalse(
+        report.hasErrors(), "recibidoPor debe cumplir el contrato: " + report.getMessages());
+  }
+
+  @Test
+  void confirmar_conQuienRecibioDe80CaracteresYEspaciosEnLosBordes_cumpleElContrato() {
+    // HG-03: el tope de 80 se cuenta sin los espacios de los bordes, como en el dominio
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-logistica.yaml");
+    OpenApiInteractionValidator validator = OpenApiInteractionValidator.createFor(specPath).build();
+    String body =
+        "{\"estado\":\"ENTREGADA\",\"actor\":\"org-sintetica\","
+            + "\"fotosRecepcion\":[\"https://ejemplo.test/foto.jpg\"],"
+            + "\"recibidoPor\":\"  "
+            + "a".repeat(80)
+            + "  \"}";
+    SimpleRequest request =
+        SimpleRequest.Builder.patch("/api/entregas/" + UUID.randomUUID() + "/estado")
+            .withContentType("application/json")
+            .withBody(body)
+            .build();
+
+    ValidationReport report = validator.validateRequest(request);
+    assertFalse(
+        report.hasErrors(), "recibidoPor debe cumplir el contrato: " + report.getMessages());
   }
 
   @Test

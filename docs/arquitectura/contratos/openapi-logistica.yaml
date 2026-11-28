@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DonaTrack - Logística Service API
-  version: 1.12.0
+  version: 1.13.0
   description: API REST para planificación de rutas de transporte, seguimiento por paradas planificadas, asignación de choferes, mapa público de donaciones entregadas y trazabilidad de entregas.
 servers:
   - url: http://localhost:8083
@@ -937,6 +937,15 @@ components:
           maxLength: 40
           pattern: '\S'
           description: Número de remito al pasar a ENTREGADA (HB-17, DTI-29). Opcional durante la migración; no se publica en el mapa ni en los eventos.
+        recibidoPor:
+          type: string
+          nullable: true
+          description: >-
+            Nombre de la persona que recibió, al pasar a ENTREGADA (HG-03, desde 1.13.0). Opcional;
+            en blanco queda sin nombre. El servicio quita los espacios de los bordes y después
+            cuenta: con más de 80 caracteres da 400. Por eso el contrato no declara maxLength sobre
+            el valor que llega. Es un dato personal: sale solo en las lecturas privadas de la entrega, nunca en
+            el mapa público ni en los eventos (DA-10). El actor sigue siendo la organización.
         reporte:
           type: object
           nullable: true
@@ -1052,6 +1061,10 @@ components:
           type: string
           nullable: true
           description: Remito cargado al confirmar (HB-17); nulo si no se cargó.
+        recibidoPor:
+          type: string
+          nullable: true
+          description: Nombre de quien recibió, si la organización lo dijo al confirmar (HG-03, desde 1.13.0); nulo si no lo dijo. Dato personal, privado.
         reporte:
           type: object
           nullable: true
@@ -1249,6 +1262,10 @@ components:
           format: date-time
           nullable: true
           description: Hora estimada de llegada al destino mientras la entrega va EN_TRASLADO (HG-02), desde la última posición del camión de esta ruta, en línea recta a 20 km/h y con 10 minutos por cada parada pendiente anterior. Es null cuando la entrega no está EN_TRASLADO, la ruta no está EN_TRASLADO, no hay posición de esta ruta o el destino no tiene coordenadas. Puede quedar en el pasado si la posición es vieja. Campo aditivo desde 1.12.0.
+        recibidoPor:
+          type: string
+          nullable: true
+          description: Nombre de quien recibió, si la organización lo dijo al confirmar (HG-03, desde 1.13.0); nulo si no lo dijo. Dato personal, privado; el mapa público no lo tiene.
     CambioEstadoEntregaResponseDTO:
       type: object
       required:

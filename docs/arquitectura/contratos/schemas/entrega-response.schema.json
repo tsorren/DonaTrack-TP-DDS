@@ -60,6 +60,10 @@
       "type": ["string", "null"],
       "description": "Remito cargado al confirmar (HB-17); nulo si no se cargó."
     },
+    "recibidoPor": {
+      "type": ["string", "null"],
+      "description": "Nombre de quien recibió, si la organización lo dijo al confirmar (HG-03); nulo si no lo dijo. Dato personal, privado."
+    },
     "reporte": {
       "type": ["object", "null"],
       "description": "Problema contado al confirmar (HB-17); nulo si llegó bien.",

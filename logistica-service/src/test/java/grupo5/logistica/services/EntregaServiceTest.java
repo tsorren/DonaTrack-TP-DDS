@@ -60,6 +60,8 @@ import org.mockito.ArgumentCaptor;
 
 class EntregaServiceTest {
 
+  private static final String QUIEN_RECIBIO = "Persona Sintetica";
+
   private IEntregasRepository entregasRepository;
   private EntregaMapper entregaMapper;
   private ComunicadorEventosLogistica comunicadorEventos;
@@ -678,6 +680,52 @@ class EntregaServiceTest {
     assertEquals("R-0001", resultado.numeroRemito());
     assertEquals(reporte, resultado.reporte());
     assertEquals(MotivoReporte.DANADA, entrega.getReporteRecepcion().motivo());
+  }
+
+  @Test
+  void cambiarEstado_conQuienRecibio_loGuardaYLoDevuelveSinTocarElActor() {
+    UUID rutaId = UUID.randomUUID();
+    UUID camionId = UUID.randomUUID();
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.asignarRuta(rutaId);
+    entrega.iniciarRuta("Chofer");
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(
+            EstadoEntrega.ENTREGADA,
+            "org-1",
+            null,
+            null,
+            List.of("https://storage.donatrack.org/evidencia-1.jpg"),
+            null,
+            null,
+            null,
+            " " + QUIEN_RECIBIO + " ");
+    Ruta ruta = mock(Ruta.class);
+    when(entregasRepository.findById(entrega.getId())).thenReturn(Optional.of(entrega));
+    when(rutasRepository.findById(rutaId)).thenReturn(Optional.of(ruta));
+    when(ruta.getCamionId()).thenReturn(camionId);
+    when(camionRepository.findById(camionId)).thenReturn(Optional.of(mock(Camion.class)));
+    when(entregasRepository.save(entrega)).thenReturn(entrega);
+
+    EntregaResponseDTO resultado = entregasService.cambiarEstado(entrega.getId(), request);
+
+    assertEquals(QUIEN_RECIBIO, resultado.recibidoPor());
+    assertEquals("org-1", resultado.historialEstado().getLast().actor());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_entregada_devuelveQuienRecibio() {
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.iniciarRuta("Chofer");
+    entrega.confirmarEntrega(
+        "org-1", List.of("https://storage.donatrack.org/f.jpg"), null, null, QUIEN_RECIBIO);
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+
+    SeguimientoEntregaResponseDTO dto =
+        entregasService.obtenerSeguimientoPorDonacion(entrega.getIdDonacion());
+
+    assertEquals(QUIEN_RECIBIO, dto.recibidoPor());
   }
 
   @Test

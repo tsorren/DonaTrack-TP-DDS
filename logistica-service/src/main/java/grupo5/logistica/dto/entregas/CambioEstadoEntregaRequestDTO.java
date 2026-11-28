@@ -14,8 +14,31 @@ public record CambioEstadoEntregaRequestDTO(
     List<@NotNull String> fotosRecepcion, // Obligatorio cuando el estado es ENTREGADA
     String fotoRecepcionUrl, // Compatibilidad con envío de una única URL
     String numeroRemito, // Opcional; solo cuando el estado es ENTREGADA (DTI-29)
-    ReporteRecepcionDTO reporte // Opcional; solo cuando el estado es ENTREGADA (DTI-29)
+    ReporteRecepcionDTO reporte, // Opcional; solo cuando el estado es ENTREGADA (DTI-29)
+    String recibidoPor // Opcional; dato personal, solo cuando el estado es ENTREGADA (HG-03)
     ) {
+
+  @SuppressWarnings("java:S107")
+  public CambioEstadoEntregaRequestDTO(
+      EstadoEntrega estado,
+      String actor,
+      String justificacion,
+      Boolean replanificable,
+      List<String> fotosRecepcion,
+      String fotoRecepcionUrl,
+      String numeroRemito,
+      ReporteRecepcionDTO reporte) {
+    this(
+        estado,
+        actor,
+        justificacion,
+        replanificable,
+        fotosRecepcion,
+        fotoRecepcionUrl,
+        numeroRemito,
+        reporte,
+        null);
+  }
 
   public CambioEstadoEntregaRequestDTO(
       EstadoEntrega estado,
@@ -25,7 +48,15 @@ public record CambioEstadoEntregaRequestDTO(
       List<String> fotosRecepcion,
       String fotoRecepcionUrl) {
     this(
-        estado, actor, justificacion, replanificable, fotosRecepcion, fotoRecepcionUrl, null, null);
+        estado,
+        actor,
+        justificacion,
+        replanificable,
+        fotosRecepcion,
+        fotoRecepcionUrl,
+        null,
+        null,
+        null);
   }
 
   public CambioEstadoEntregaRequestDTO(

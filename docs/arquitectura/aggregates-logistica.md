@@ -69,6 +69,7 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
     *   `Localidad`, `Provincia`, `Pais` (Records geográficos).
     *   `ReporteRecepcion` (record con `MotivoReporte` `INCOMPLETA`/`DANADA`/`OTRO`, `detalle` y `cantidadRecibida`; valida que haya motivo, detalle con `OTRO` y cantidad con `INCOMPLETA`). Lo carga la entidad al confirmar si algo estuvo mal; no cambia el estado (HB-17).
 *   **Remito**: `numeroRemito` opcional (1 a 40 caracteres), cargado al confirmar; no sale en el mapa ni en los eventos (HB-17).
+*   **Quien recibió**: `recibidoPor` opcional (hasta 80 caracteres contados sin los espacios de los bordes; en blanco queda nulo), el nombre que dice la organización al confirmar. Es el único dato personal de la entrega: no sale en el mapa ni en los eventos, y el `actor` del historial sigue siendo la organización (HG-03, [ADR](../adr/logistica-service/20261125-nombre-de-quien-recibio-la-entrega.md)).
 *   **Propiedades Físicas**: `pesoTotalKG` y `volumenTotalM3` (magnitudes positivas validadas para cubicaje).
 *   **Referencias Externas (por ID)**:
     *   `idRuta` (UUID nulable de la ruta asignada).
@@ -82,7 +83,7 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
     *   `asignarRuta(UUID idRuta)`
     *   `iniciarRuta(String chofer)`
     *   `llegarAPuerta(String actor)` (HB-22: solo desde EN_TRASLADO; emite `EntregaEnPuerta`; no toca `horaArribo`)
-    *   `confirmarEntrega(String entidad, List<String> fotos, String numeroRemito, ReporteRecepcion reporte)` (remito y reporte opcionales; las sobrecargas sin ellos siguen)
+    *   `confirmarEntrega(String entidad, List<String> fotos, String numeroRemito, ReporteRecepcion reporte, String recibidoPor)` (remito, reporte y quien recibió opcionales; las sobrecargas sin ellos siguen)
     *   `adjuntarFotoRecepcion(String fotoURL)`
     *   `negarEntrega(String entidad, String justificacion, boolean replanificable)`
     *   `regresarAlDeposito(String administrador)`
