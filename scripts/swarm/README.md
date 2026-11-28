@@ -11,6 +11,7 @@ Compose sigue siendo el entorno de desarrollo, del CI y de la demo pública.
 | `verificar-replicas.sh` | SW2: despliega con dos réplicas, espera a que converja y deja la evidencia en `target/swarm/evidencia-replicas.md` |
 | `probar-rate-limit.sh` | R4: corre el escenario de k6 del rate limiting contra el stack desplegado y deja `target/swarm/evidencia-rate-limit.md` |
 | `humo-jwt.sh` | S3 y S4: prueba de humo de la cadena JWT con el Keycloak real (401, 200 y 403) y de los encabezados de seguridad del gateway en cada réplica; evidencia en `target/swarm/evidencia-humo-jwt.md` |
+| `caos.sh` | K6: rompe una réplica (congelada o muerta), espera a que Swarm la reemplace y deja la evidencia en `target/swarm/` |
 | `../../docker-stack.override.yml` | Réplicas, límites de memoria, `hostname` de mongodb, healthchecks y `minio-init` |
 
 ## Por qué hay una transformación
@@ -241,6 +242,46 @@ de la prueba. Por eso el override le pone `GATEWAY_REDIS_TIMEOUT=1s` al gateway:
 pasan (298 pedidos normales sin `429`, 37 `429` en la ráfaga, 125 de 240 en el cupo compartido) y no hubo caídas.
 `[INFERRED]` Las caídas bajo carga en *fail-open* no se repitieron con Redis conectado; no se investigó si el
 *fail-open* con carga tumba al gateway.
+
+## Prueba del autorestart (K6)
+
+```bash
+scripts/swarm/caos.sh incentivos-service congelar   # docker kill -s STOP: proceso colgado
+scripts/swarm/caos.sh incentivos-service matar      # docker kill: proceso muerto
+```
+
+Requisitos: el stack desplegado y estable (`scripts/swarm/verificar-replicas.sh --sin-desplegar` en verde),
+idealmente con `DONATRACK_REPLICAS=2`, y `curlimages/curl` local (o `HELPER_IMAGEN`). Sirve cualquiera de los seis
+módulos propios. Espera hasta `ESPERA_MAX` segundos (300 por defecto). Sale con 1 si falla alguna comprobación y
+con 2 si los argumentos o el entorno no sirven.
+
+Qué hace y qué comprueba:
+
+1. Antes: el servicio tiene todas sus réplicas en `Running`. Si no, no rompe nada.
+2. Rompe uno de sus contenedores. `congelar` simula un proceso colgado: sigue vivo para Docker, pero no contesta, y
+   lo detecta el `healthcheck` (`/actuator/health/liveness`, K3). `matar` simula una caída: el contenedor termina y
+   Swarm lo reemplaza por su política de reinicio (`condition: any`).
+3. Mide cuándo Swarm sacó la réplica rota y cuándo el servicio volvió a `N/N` con un contenedor nuevo.
+4. Mientras tanto pide `/actuator/health/liveness` por el nombre del servicio (la VIP) una vez por segundo, desde
+   un contenedor auxiliar en la red del stack. Con `congelar`, hasta que el `healthcheck` marca la réplica, la VIP
+   todavía le puede mandar pedidos: esos fallos se informan como aviso, no como falla. Con el servicio recuperado,
+   liveness tiene que contestar 10 de 10.
+
+Si el script se corta con la réplica congelada, la descongela al salir. El informe queda en
+`target/swarm/evidencia-caos-<servicio>-<modo>.md`, sin secretos, y se puede pegar en el PR. El reinicio también
+tiene que aparecer en Grafana, en la alerta M26 (reinicios inesperados de servicios).
+
+`[VERIFIED]` Corrida del 2026-11-24 con `incentivos-service` y 2 réplicas (Docker Desktop 29.7.2, Windows), con el
+override (`interval` 5 s, `retries` 3):
+
+| Modo | Swarm sacó la réplica | Otra vez en 2/2 | Pedidos fallidos durante el caos |
+|---|---|---|---|
+| `congelar` | a los 28 s (`unhealthy container`) | a los 65 s | 5 de 35, todos antes de los 22 s |
+| `matar` | al instante | a los 27 s | 0 de 18 |
+
+Con `congelar`, los fallos son el tiempo en que la réplica colgada todavía figuraba sana y la VIP le mandaba pedidos;
+después del `healthcheck`, la otra réplica atendió todo. En los dos modos, la mayor parte del tiempo es el arranque de
+la JVM nueva hasta pasar su `healthcheck`.
 
 ## Arranque observado
 

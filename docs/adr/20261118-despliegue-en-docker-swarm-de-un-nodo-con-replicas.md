@@ -194,7 +194,9 @@ Elegidas **Docker** (E7-S01), **Swarm de un nodo con los seis módulos propios r
   demás puertos de infraestructura no se publican.
 - **Prueba del autorestart (Q09).** Un script de caos (tarea K6) congela o mata el proceso de una
   réplica (`docker kill -s STOP`, `docker kill`) y espera a que Swarm la reemplace, con el evento
-  visible en el panel.
+  visible en el panel. `[VERIFIED]` Con `scripts/swarm/caos.sh` el 2026-11-24, sobre `incentivos-service`
+  con 2 réplicas: congelada, Swarm la sacó a los 28 s y volvió a 2/2 a los 65 s (5 de 35 pedidos fallaron
+  antes de que el `healthcheck` la marcara); muerta, volvió a 2/2 a los 27 s sin pedidos fallidos.
 - **Convivencia.** `[PROPOSED]` Compose sigue siendo el entorno de desarrollo, del CI (Gate 4) y de
   la demo pública con túnel. Swarm es el de la defensa y la prueba final. Pasar el CI a Swarm no
   está decidido y tocaría AGENTS.md §11 (PR aparte, §13).
