@@ -3,6 +3,7 @@
 # Uso: scripts/swarm/desplegar.sh [--solo-generar]
 #   ENV_FILE           .env a usar (por defecto, el de la raíz del repo)
 #   DONATRACK_REPLICAS réplicas de los seis módulos propios (1 por defecto, 2 en la defensa)
+#   DONATRACK_SEGURIDAD=false apaga la validación del JWT (encendida por defecto en Swarm, E7-S04 A)
 #   DONATRACK_PUBLICAR_RABBITMQ=true publica el 5672 (pruebas desde el host)
 #   DONATRACK_BORRAR_COLAS_SAC=true  lugar del paso que borra las colas con single active consumer;
 #                                    hoy solo avisa y corta (el paso lo documenta SL2)
@@ -22,6 +23,16 @@ set -a
 # shellcheck disable=SC1090
 . "$env_file"
 set +a
+
+# E7-S04 A: en el stack de Swarm la cadena JWT está encendida por defecto (gateway y los cuatro servicios
+# validan el token de Keycloak). El compose lo lee como ${PREPROD_SEGURIDAD:-false}, así que el preprod
+# de Compose y el CI no cambian. Se fija después del .env: un PREPROD_SEGURIDAD suelto ahí no la apaga.
+# Prueba de humo: scripts/swarm/humo-jwt.sh.
+case "${DONATRACK_SEGURIDAD:-true}" in
+  true|false) export PREPROD_SEGURIDAD="${DONATRACK_SEGURIDAD:-true}" ;;
+  *) echo "DONATRACK_SEGURIDAD tiene que ser true o false" >&2; exit 1 ;;
+esac
+echo "Validación del JWT: PREPROD_SEGURIDAD=$PREPROD_SEGURIDAD"
 
 mkdir -p target/swarm
 # -p fija el nombre de la red y del volumen (donatrack_preprod-network, donatrack_n8n_data) sin
