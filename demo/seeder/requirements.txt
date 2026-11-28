@@ -2,5 +2,5 @@
 psycopg[binary]==3.2.3
 pymongo==4.10.1
 minio==7.2.10
-Pillow==11.0.0
+Pillow==13.0.0
 requests==2.32.3

@@ -2,6 +2,7 @@ package grupo5.donaciones.controllers.impl;
 
 import static grupo5.donaciones.seguridad.Acceso.ADMIN;
 import static grupo5.donaciones.seguridad.Acceso.DONANTE;
+import static grupo5.donaciones.seguridad.Acceso.LISTAR_DONACIONES_INDEPENDIENTES;
 import static grupo5.donaciones.seguridad.Acceso.SU_DONACION_INDEPENDIENTE;
 
 import grupo5.donaciones.controllers.IDonacionesIndependientesController;
@@ -45,11 +46,7 @@ public class DonacionesIndependientesController implements IDonacionesIndependie
   }
 
   @Override
-  @PreAuthorize(
-      ADMIN
-          + " or hasAuthority('VER_DONACIONES') and ("
-          + "hasRole('DONANTE') and principal.puedeOperarSobre(#filtro.donanteId()) or "
-          + "hasRole('ENTIDAD') and principal.puedeOperarSobre(#filtro.entidadId()))")
+  @PreAuthorize(LISTAR_DONACIONES_INDEPENDIENTES)
   @GetMapping
   public ResponseEntity<List<DonacionIndependienteResponseDTO>> obtenerTodas(
       FiltroDonacionesIndependientes filtro, ParametrosListado listado) {

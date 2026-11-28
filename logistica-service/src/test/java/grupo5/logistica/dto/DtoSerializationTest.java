@@ -3,6 +3,7 @@ package grupo5.logistica.dto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -98,6 +99,42 @@ class DtoSerializationTest {
     assertEquals(salida, deserializado.horaSalida());
     assertEquals(arribo, deserializado.horaArribo());
     assertEquals(actualizacion, deserializado.ultimaActualizacion());
+  }
+
+  @Test
+  @DisplayName(
+      "SeguimientoEntregaResponseDTO serializa horaEstimadaLlegada en UTC ISO-8601 (HG-02)")
+  void seguimientoEntregaResponse_serializaHoraEstimadaLlegadaUtcIso8601()
+      throws JsonProcessingException {
+    Instant estimada = Instant.parse("2026-11-25T14:33:22Z");
+
+    SeguimientoEntregaResponseDTO dto =
+        new SeguimientoEntregaResponseDTO(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            EstadoEntrega.EN_TRASLADO,
+            true,
+            UUID.randomUUID(),
+            LocalDate.of(2026, 11, 25),
+            EstadoRuta.EN_TRASLADO,
+            "AB123CD",
+            1,
+            1,
+            0,
+            0,
+            Instant.parse("2026-11-25T14:00:00Z"),
+            null,
+            Instant.parse("2026-11-25T14:00:30Z"),
+            List.of(),
+            null,
+            estimada);
+
+    String json = objectMapper.writeValueAsString(dto);
+
+    assertTrue(json.contains("\"horaEstimadaLlegada\":\"2026-11-25T14:33:22Z\""));
+    assertEquals(
+        estimada,
+        objectMapper.readValue(json, SeguimientoEntregaResponseDTO.class).horaEstimadaLlegada());
   }
 
   @Test

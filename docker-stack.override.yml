@@ -23,6 +23,11 @@ x-salud-replicado: &salud-replicado
 
 services:
   api-gateway:
+    # [VERIFIED] R4 (24/11): con el timeout por defecto (100ms) la primera conexión a Redis no llegaba a
+    # resolver el nombre en el DNS de Swarm ("redis/<unresolved>:6379"), el gateway quedaba en fail-open
+    # y la ráfaga no recibía 429. Con 1s se conecta y el escenario de k6 pasa.
+    environment:
+      GATEWAY_REDIS_TIMEOUT: 1s
     deploy:
       <<: *replicado
       resources:
