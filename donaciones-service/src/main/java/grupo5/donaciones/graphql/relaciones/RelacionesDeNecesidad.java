@@ -14,8 +14,9 @@ import org.springframework.stereotype.Controller;
 /**
  * {@code Necesidad.entidad} (SPEC-11, G2; contrato de GraphQL, §4.5): la vista pública de la
  * entidad que pide cada necesidad, cargada por lotes con {@link
- * IEntidadBeneficiariaService#buscarPublicasPorIds}, una llamada por página. Pública, como la raíz
- * {@code necesidades}: une dos vistas públicas (§4.6).
+ * IEntidadBeneficiariaService#buscarActivasPorIds}, una llamada por página. Solo las activas, como
+ * {@code GET /api/entidades/publicas}: la de una entidad dada de baja queda nula. Pública, como la
+ * raíz {@code necesidades}: une dos vistas públicas (§4.6).
  */
 @Controller
 public class RelacionesDeNecesidad {
@@ -32,7 +33,7 @@ public class RelacionesDeNecesidad {
     return CargaPorId.unir(
         necesidades,
         NecesidadGraphQl::entidadId,
-        entidades::buscarPublicasPorIds,
+        entidades::buscarActivasPorIds,
         EntidadPublicaDTO::id,
         Function.identity());
   }

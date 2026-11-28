@@ -46,6 +46,12 @@ public interface IEntidadBeneficiariaService {
   List<EntidadPublicaDTO> buscarPublicasPorIds(Collection<UUID> ids);
 
   /**
+   * Lo mismo que {@link #buscarPublicasPorIds}, solo con las activas: la relación pública {@code
+   * Necesidad.entidad}, que sin token muestra lo mismo que {@code GET /api/entidades/publicas}.
+   */
+  List<EntidadPublicaDTO> buscarActivasPorIds(Collection<UUID> ids);
+
+  /**
    * Las entidades activas vistas por un donante (R11-12): la misma búsqueda que {@link
    * #buscarPublicas} y, con {@code soloDonadas}, solo las que recibieron alguna donación suya, en
    * cualquier estado. Cada fila dice si ese donante ya le donó. Si el donante no existe, 404.

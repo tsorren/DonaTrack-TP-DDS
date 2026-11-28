@@ -42,7 +42,9 @@ una entrada en `errors` con el código del catálogo (`docs/arquitectura/catalog
 | Cualquier otro error del servicio | El código que traiga la excepción, o `ERR-CSR-500` |
 
 La traducción la deja el lote `g2-armazon`. Los rechazos por profundidad, complejidad o *timeout*
-los define `g3-limites`.
+los define `g3-limites`: `ERR-CSR-003` por profundidad (más de 6 niveles), por complejidad (más de
+100 campos) o por más de 5 campos raíz, alias incluidos, y `ERR-CSR-500` por tiempo (5000 ms), con
+`extensions.motivo` (ver la nota D8 de `contratos-rest.md`).
 
 ## 3. Consultas de ejemplo
 
@@ -226,7 +228,7 @@ más que en REST. El 50 sigue siendo más que el 20 por defecto de REST.
 
 | Relación | Qué devuelve | Lectura por lote |
 |---|---|---|
-| `Necesidad.entidad` | La vista pública de la entidad que la pide | Entidades por lista de ids |
+| `Necesidad.entidad` | La vista pública de la entidad que la pide, solo si está activa (como `GET /api/entidades/publicas`); nula si se dio de baja | Entidades activas por lista de ids |
 | `Donacion.necesidad` | La necesidad que cubre, aunque ya no esté vigente; nula si no cubre ninguna | Necesidades por lista de ids, sin filtrar por vigencia |
 | `Donacion.entidad` | La vista pública de la entidad asignada, aunque después se haya dado de baja; nula mientras no está asignada | La misma de entidades por lista de ids, sin filtrar por estado |
 

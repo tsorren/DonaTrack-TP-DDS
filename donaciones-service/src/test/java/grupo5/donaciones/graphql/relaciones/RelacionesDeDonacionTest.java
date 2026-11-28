@@ -124,11 +124,13 @@ class RelacionesDeDonacionTest extends BaseSliceGraphQl {
                     NECESIDAD, ENTIDAD, SUBCATEGORIA, "Frazadas", 40, "EXTRAORDINARIA", null),
                 new NecesidadPublicaDTO(
                     OTRA_NECESIDAD, OTRA_ENTIDAD, SUBCATEGORIA, "Leche", 12, "RECURRENTE", null)));
-    when(entidadBeneficiariaService.buscarPublicasPorIds(any()))
-        .thenReturn(
-            List.of(
-                new EntidadPublicaDTO(ENTIDAD, "Comedor de ejemplo", "Comedor"),
-                new EntidadPublicaDTO(OTRA_ENTIDAD, "Hogar de ejemplo", "Hogar")));
+    List<EntidadPublicaDTO> entidades =
+        List.of(
+            new EntidadPublicaDTO(ENTIDAD, "Comedor de ejemplo", "Comedor"),
+            new EntidadPublicaDTO(OTRA_ENTIDAD, "Hogar de ejemplo", "Hogar"));
+    when(entidadBeneficiariaService.buscarPublicasPorIds(any())).thenReturn(entidades);
+    // Necesidad.entidad lee solo las activas (la misma vista que GET /api/entidades/publicas)
+    when(entidadBeneficiariaService.buscarActivasPorIds(any())).thenReturn(entidades);
   }
 
   @AfterEach
@@ -195,7 +197,8 @@ class RelacionesDeDonacionTest extends BaseSliceGraphQl {
 
     ArgumentCaptor<Collection<UUID>> entidades = ArgumentCaptor.forClass(Collection.class);
     verify(necesidadesService, times(1)).buscarPublicasPorIds(any());
-    verify(entidadBeneficiariaService, times(1)).buscarPublicasPorIds(entidades.capture());
+    verify(entidadBeneficiariaService, times(1)).buscarActivasPorIds(entidades.capture());
+    verify(entidadBeneficiariaService, never()).buscarPublicasPorIds(any());
     assertThat(entidades.getValue()).containsExactlyInAnyOrder(ENTIDAD, OTRA_ENTIDAD);
   }
 

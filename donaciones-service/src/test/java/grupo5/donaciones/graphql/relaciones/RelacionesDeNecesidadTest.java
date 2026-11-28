@@ -60,7 +60,7 @@ class RelacionesDeNecesidadTest extends BaseSliceGraphQl {
                     necesidadDe("00000000-0000-4000-8000-0000000000a3", COMEDOR),
                     necesidadDe("00000000-0000-4000-8000-0000000000a4", SIN_VISTA)),
                 4));
-    when(entidadBeneficiariaService.buscarPublicasPorIds(any()))
+    when(entidadBeneficiariaService.buscarActivasPorIds(any()))
         .thenReturn(
             List.of(
                 new EntidadPublicaDTO(COMEDOR, "Comedor de ejemplo", "Comedor"),
@@ -98,7 +98,7 @@ class RelacionesDeNecesidadTest extends BaseSliceGraphQl {
     consultar(CON_ENTIDAD, null).andExpect(jsonPath("$.errors").doesNotExist());
 
     ArgumentCaptor<Collection<UUID>> ids = ArgumentCaptor.forClass(Collection.class);
-    verify(entidadBeneficiariaService, times(1)).buscarPublicasPorIds(ids.capture());
+    verify(entidadBeneficiariaService, times(1)).buscarActivasPorIds(ids.capture());
     assertThat(ids.getValue()).containsExactlyInAnyOrder(COMEDOR, HOGAR, SIN_VISTA);
   }
 
@@ -107,7 +107,7 @@ class RelacionesDeNecesidadTest extends BaseSliceGraphQl {
     consultar("{ necesidades { elementos { id } } }", null)
         .andExpect(jsonPath("$.errors").doesNotExist());
 
-    verify(entidadBeneficiariaService, never()).buscarPublicasPorIds(any());
+    verify(entidadBeneficiariaService, never()).buscarActivasPorIds(any());
   }
 
   @Test
@@ -120,7 +120,7 @@ class RelacionesDeNecesidadTest extends BaseSliceGraphQl {
 
     verify(necesidadesService, never())
         .buscarPublicas(any(), any(), any(), any(), anyInt(), anyInt());
-    verify(entidadBeneficiariaService, never()).buscarPublicasPorIds(any());
+    verify(entidadBeneficiariaService, never()).buscarActivasPorIds(any());
   }
 
   @Test

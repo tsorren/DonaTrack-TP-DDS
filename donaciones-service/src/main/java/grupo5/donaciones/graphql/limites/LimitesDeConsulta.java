@@ -22,10 +22,12 @@ import org.springframework.stereotype.Component;
  * y su motivo, y suma uno al contador de {@link RechazosDeConsulta}.
  *
  * <p>La profundidad cuenta los campos anidados desde la raíz (la raíz es 1); la complejidad cuenta
- * un punto por campo pedido, alias incluidos. Los campos de introspección ({@code __schema}, {@code
- * __type}, {@code __typename}) no cuentan: los acota graphql-java con {@code
- * GoodFaithIntrospection} y GraphiQL, donde está encendido, los necesita más profundos que
- * cualquier consulta de datos.
+ * un punto por campo pedido, alias incluidos. Además, una consulta no puede pedir más de {@code
+ * raices-maximas} campos raíz: con alias, cada raíz es una lectura paginada de la base, y la
+ * complejidad sola dejaría pasar unas 50 en un pedido sin token. Ese rechazo cuenta como {@code
+ * complejidad}. Los campos de introspección ({@code __schema}, {@code __type}, {@code __typename})
+ * no cuentan: los acota graphql-java con {@code GoodFaithIntrospection} y GraphiQL, donde está
+ * encendido, los necesita más profundos que cualquier consulta de datos.
  */
 @Component
 public class LimitesDeConsulta extends SimplePerformantInstrumentation {
@@ -34,18 +36,21 @@ public class LimitesDeConsulta extends SimplePerformantInstrumentation {
 
   private final int profundidadMaxima;
   private final int complejidadMaxima;
+  private final int raicesMaximas;
   private final RechazosDeConsulta rechazos;
 
   public LimitesDeConsulta(
       @Value("${donatrack.graphql.limites.profundidad-maxima}") int profundidadMaxima,
       @Value("${donatrack.graphql.limites.complejidad-maxima}") int complejidadMaxima,
+      @Value("${donatrack.graphql.limites.raices-maximas}") int raicesMaximas,
       RechazosDeConsulta rechazos) {
-    if (profundidadMaxima < 1 || complejidadMaxima < 1) {
+    if (profundidadMaxima < 1 || complejidadMaxima < 1 || raicesMaximas < 1) {
       throw new IllegalArgumentException(
-          "La profundidad y la complejidad máximas de GraphQL tienen que ser al menos 1");
+          "La profundidad, la complejidad y las raíces máximas de GraphQL tienen que ser al menos 1");
     }
     this.profundidadMaxima = profundidadMaxima;
     this.complejidadMaxima = complejidadMaxima;
+    this.raicesMaximas = raicesMaximas;
     this.rechazos = rechazos;
   }
 
@@ -70,6 +75,14 @@ public class LimitesDeConsulta extends SimplePerformantInstrumentation {
               medida.complejidad, complejidadMaxima),
           contexto);
     }
+    if (medida.raices > raicesMaximas) {
+      rechazar(
+          MotivoDeRechazo.COMPLEJIDAD,
+          String.format(
+              "La consulta pide demasiadas consultas raíz: %d, el tope es %d",
+              medida.raices, raicesMaximas),
+          contexto);
+    }
     return super.beginExecuteOperation(parametros, estado);
   }
 
@@ -79,6 +92,10 @@ public class LimitesDeConsulta extends SimplePerformantInstrumentation {
 
   public int complejidadMaxima() {
     return complejidadMaxima;
+  }
+
+  public int raicesMaximas() {
+    return raicesMaximas;
   }
 
   private void rechazar(MotivoDeRechazo motivo, String mensaje, ExecutionContext contexto) {
@@ -103,6 +120,9 @@ public class LimitesDeConsulta extends SimplePerformantInstrumentation {
                 if (nivel > 0) {
                   medida.complejidad++;
                   medida.profundidad = Math.max(medida.profundidad, nivel);
+                  if (nivel == 1) {
+                    medida.raices++;
+                  }
                 }
               }
             });
@@ -123,9 +143,10 @@ public class LimitesDeConsulta extends SimplePerformantInstrumentation {
     return nivel;
   }
 
-  /** Lo que mide el recorrido: el nivel más hondo y la cantidad de campos. */
+  /** Lo que mide el recorrido: el nivel más hondo, la cantidad de campos y la de raíces. */
   private static final class Medida {
     private int profundidad;
     private int complejidad;
+    private int raices;
   }
 }

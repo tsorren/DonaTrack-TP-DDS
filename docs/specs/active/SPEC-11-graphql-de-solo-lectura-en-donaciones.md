@@ -6,7 +6,7 @@
 > **Nivel:** ARCHITECTURAL. Suma un contrato público nuevo (un esquema GraphQL), una dependencia
 > nueva en `donaciones-service` y una ruta sin token en el gateway.
 > **ADR:** ninguno nuevo. Implementa el ADR "GraphQL de solo lectura en Donaciones" (`proposed`),
-> que está en la rama `E7_adrs` (PR 987) y todavía no llegó a `ENTREGA_7`:
+> que llegó a `ENTREGA_7` con el PR 987 (2026-11-24) y se enmendó con las divergencias de §6 el 2026-11-27:
 > `docs/adr/donaciones-service/20261117-graphql-de-solo-lectura-en-donaciones.md`. Las divergencias
 > con ese ADR están en §6.
 > **Depende de:** A0 (los ADR de E7, PR 987). El trabajo arranca sobre `ENTREGA_7` sin esperar el
@@ -184,8 +184,9 @@ anota.
 
 ## 6. Riesgos
 
-- **Divergencias con el ADR** (`AGENTS.md` §9.5). `[OBSERVED]` El ADR de la rama `E7_adrs` dice
-  cuatro cosas que esta spec no puede cumplir tal cual. Se piden en el PR 987 (D10):
+- **Divergencias con el ADR** (`AGENTS.md` §9.5). `[OBSERVED]` El ADR, tal como llegó con el PR 987, decía
+  cuatro cosas que esta spec no puede cumplir tal cual. Se pidieron en el PR 987 (D10), que se mergeó
+  sin cambiarlas; se enmendaron en el ADR el 2026-11-27 (revisión del PR 1015):
   1. *"Heredan la misma autorización"* de los servicios. Las 16 clases con `@PreAuthorize` están
      en `controllers/` y no hay ninguna en `services/`. La frase también está en la respuesta del
      grupo a Q20. D08 pone la regla en el resolver.

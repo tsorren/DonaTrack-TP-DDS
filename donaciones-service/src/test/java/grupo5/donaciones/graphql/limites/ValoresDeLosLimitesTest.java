@@ -39,6 +39,11 @@ class ValoresDeLosLimitesTest {
   }
 
   @Test
+  void lasRaicesMaximasSonCinco() {
+    assertThat(entero("donatrack.graphql.limites.raices-maximas")).isEqualTo(5);
+  }
+
+  @Test
   void elTiempoMaximoQuedaPorDebajoDeLaEsperaDelGateway() {
     Duration tiempo = Duration.ofMillis(entero("donatrack.graphql.limites.tiempo-maximo-ms"));
 
@@ -57,9 +62,11 @@ class ValoresDeLosLimitesTest {
   void unTopeMenorQueUnoNoArranca() {
     RechazosDeConsulta rechazos = new RechazosDeConsulta(new SimpleMeterRegistry());
 
-    assertThatThrownBy(() -> new LimitesDeConsulta(0, 100, rechazos))
+    assertThatThrownBy(() -> new LimitesDeConsulta(0, 100, 5, rechazos))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> new LimitesDeConsulta(6, 0, rechazos))
+    assertThatThrownBy(() -> new LimitesDeConsulta(6, 0, 5, rechazos))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> new LimitesDeConsulta(6, 100, 0, rechazos))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
