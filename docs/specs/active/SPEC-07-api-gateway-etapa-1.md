@@ -33,7 +33,7 @@ Que el cliente liviano tenga **una sola URL base** para los cuatro servicios (RI
 - Validación del JWT y aplicación de la allowlist: etapa 2 (F5, E2-01).
 - Gateway en el preprod y el cliente apuntando al gateway en el compose: E2-12 y F6. El CI ya lo construye y publica su imagen solo, porque arma la lista de servicios desde `*/pom.xml` con `Dockerfile`. `scripts/resolver-imagenes-ghcr.sh` lo saltea, como a `auth-service`, porque no está en `docker-compose.preprod.yml`.
 - Contadores (`GET /api/donaciones/contadores`, HB-02) y destacadas (`GET /api/donaciones/destacadas`, HB-01) de la landing: ya están en `rutas-publicas`.
-- Alias sin `/api` de Notificaciones y `/donaciones-independientes`: el ADR los deja afuera.
+- Alias sin `/api` de Notificaciones y `/donaciones-independientes`: el ADR los deja afuera. **Actualización (2026-11-26):** `/donaciones-independientes` se enruta desde el [ADR del 2026-11-26](../../adr/20261126-api-gateway-enruta-donaciones-independientes-sin-prefijo-api.md) (`proposed`): no es un alias, es la única ruta del recurso. Los alias de Notificaciones siguen afuera.
 
 ## 3. Decisiones Acordadas y Trade-offs
 
@@ -107,7 +107,7 @@ Escenario: traceId generado
 
 | Gate | Comando | Qué cubre |
 |---|---|---|
-| 1–2 | `mvn clean test -pl api-gateway -am` | `RutasGatewayTest`: 18 rutas a su servicio, 5 rutas fuera de la tabla (`404`), trace propagado y generado, cada ruta pública con ruta expuesta |
+| 1–2 | `mvn clean test -pl api-gateway -am` | `RutasGatewayTest`: 31 rutas a su servicio, 4 rutas fuera de la tabla (`404`) (conteo del 2026-11-26), trace propagado y generado, cada ruta pública con ruta expuesta |
 | 2 | `mvn test` (reactor) | Que el módulo nuevo no rompa los demás |
 | 4 | `docker compose up api-gateway` y `curl :8086/api/entregas/mapa` | `[DEFERRED_NO_DOCKER]` si no hay Docker |
 

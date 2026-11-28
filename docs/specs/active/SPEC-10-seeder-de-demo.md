@@ -170,7 +170,7 @@ Escenario: pendientes del admin
   - Logística no geocodifica, así que el seeder les pone coordenadas a mano a las entregas.
   - Con la seguridad encendida, la foto de una destacada da 403 a un visitante.
   - Incentivos llama a Notificaciones sin token.
-  - El gateway no tiene la ruta `/donaciones-independientes`.
+  - El gateway no tiene la ruta `/donaciones-independientes`. **Resuelto (2026-11-26):** el gateway la enruta tal cual, por el [ADR del 2026-11-26](../../adr/20261126-api-gateway-enruta-donaciones-independientes-sin-prefijo-api.md) (`proposed`).
   - Donaciones consume `ruta.asignada` y `ruta.iniciada` por colas distintas. Si la ruta arranca
     antes de que llegue la asignación, la donación no pasa a `EN_TRASLADO` y después rechaza
     `ENTREGADA` (`BusinessStateException`): Logística la da por entregada y Donaciones no. El seeder

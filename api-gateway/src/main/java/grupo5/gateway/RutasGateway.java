@@ -25,7 +25,8 @@ import org.springframework.web.servlet.function.ServerResponse;
  *
  * <p>Sin reescritura (R1 del ADR-E6-02): la ruta llega igual al servicio. {@code /api/logistica} es
  * de dos servicios, así que se enruta por ruta completa. Quedan afuera los alias sin {@code /api}
- * de Notificaciones y {@code /donaciones-independientes}.
+ * de Notificaciones. {@code /donaciones-independientes} no es un alias: es la única ruta del
+ * recurso y se enruta tal cual (ADR 20261126).
  */
 @Configuration(proxyBeanMethods = false)
 public class RutasGateway {
@@ -50,7 +51,9 @@ public class RutasGateway {
         "/api/asignaciones/**",
         "/api/subcategorias/**",
         "/api/logistica/proveedores",
-        "/api/logistica/proveedor-preferido");
+        "/api/logistica/proveedor-preferido",
+        "/donaciones-independientes",
+        "/donaciones-independientes/**");
   }
 
   @Bean

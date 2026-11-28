@@ -13,13 +13,14 @@ La tabla de [`RutasGateway`](src/main/java/grupo5/gateway/RutasGateway.java) es 
 
 | Servicio | Rutas |
 |---|---|
-| Donaciones | `/api/{categorias,donaciones,donantes,entidades,items-normalizados,necesidades,personas,asignaciones,subcategorias}/**`, `/api/logistica/proveedores`, `/api/logistica/proveedor-preferido` |
+| Donaciones | `/api/{categorias,donaciones,donantes,entidades,items-normalizados,necesidades,personas,asignaciones,subcategorias}/**`, `/api/logistica/proveedores`, `/api/logistica/proveedor-preferido`, `/donaciones-independientes` y `/donaciones-independientes/**` |
 | Notificaciones | `/api/notificaciones/**`, `/api/contacto` y `/api/contacto/**` (HB-21) |
 | Incentivos | `/api/incentivos/**` |
 | Logística | `/api/{camiones,choferes,entregas,rutas}/**`, `/api/logistica/resultados`, `/api/logistica/callback/**`, `/api/logistica/planificaciones/**` |
 
 - `/api/logistica` es de dos servicios: va por ruta completa. Una ruta nueva bajo ese prefijo hay que sumarla a mano.
-- Afuera: los alias sin `/api` de Notificaciones y `/donaciones-independientes`.
+- Afuera: los alias sin `/api` de Notificaciones, que repiten una ruta ya enrutada.
+- `/donaciones-independientes` no lleva `/api` pero no es un alias: es la única ruta del recurso y se enruta tal cual ([ADR del 2026-11-26](../docs/adr/20261126-api-gateway-enruta-donaciones-independientes-sin-prefijo-api.md), `proposed`). Pide token como las demás.
 
 ## Rutas públicas
 

@@ -78,6 +78,10 @@ class RutasGatewayTest {
     "GET, /api/asignaciones/propuestas, donaciones",
     "GET, /api/logistica/proveedores, donaciones",
     "PUT, /api/logistica/proveedor-preferido, donaciones",
+    "GET, /donaciones-independientes, donaciones",
+    "GET, /donaciones-independientes/conteos, donaciones",
+    "GET, /donaciones-independientes/0b6f2c1e-4d1a-4c8e-9f3a-2b7d5e6a1c90, donaciones",
+    "PATCH, /donaciones-independientes/0b6f2c1e-4d1a-4c8e-9f3a-2b7d5e6a1c90/estado, donaciones",
     "POST, /api/notificaciones/eventos, notificaciones",
     "GET, /api/notificaciones/persona/7/no-leidas/conteo, notificaciones",
     "POST, /api/contacto, notificaciones",
@@ -104,7 +108,6 @@ class RutasGatewayTest {
   @CsvSource({
     "POST, /notificaciones",
     "GET, /notificaciones/persona/7",
-    "GET, /donaciones-independientes",
     "GET, /api/logistica/otra",
     "GET, /api/inexistente"
   })
