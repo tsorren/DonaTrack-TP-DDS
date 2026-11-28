@@ -210,7 +210,7 @@
       "webOrigins": [],
       "attributes": { "post.logout.redirect.uris": "${CLIENTE_LIVIANO_BASE_URL}/" },
       "defaultClientScopes": ["basic"],
-      "optionalClientScopes": [],
+      "optionalClientScopes": ["kc-admin-api"],
       "protocolMappers": [
         {
           "name": "roles",

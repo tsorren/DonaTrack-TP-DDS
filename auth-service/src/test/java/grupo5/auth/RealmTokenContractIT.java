@@ -52,6 +52,7 @@ class RealmTokenContractIT {
   private static final String REALM = "donatrack";
   private static final String CLIENT_ID = "cliente-liviano";
   private static final String API_AUDIENCE = "donatrack-api";
+  private static final String ADMIN_API_SCOPE = "kc-admin-api";
   private static final String BASE_URL_CLIENTE = "http://localhost:8090";
   private static final String REDIRECT_URI = BASE_URL_CLIENTE + "/login/oauth2/code/keycloak";
   private static final String ESTADO = "estado-de-prueba";
@@ -480,8 +481,25 @@ class RealmTokenContractIT {
     JsonNode access = claims(tokenDeServicio());
     assertEquals(List.of("SERVICIO"), valores(access.get("roles")));
     assertTrue(valores(access.get("aud")).contains(API_AUDIENCE), access.toString());
+    assertTrue(tieneLaAudienciaDeLaAdminApi(access), access.toString());
     assertFalse(access.has("permisos"));
     assertFalse(access.has("personaId"));
+  }
+
+  // Keycloak 26.8.2 (CVE-2026-19688): la Admin API exige el scope kc-admin-api. Es opcional en el
+  // realm, así que sin pedirlo el token de servicio no entra, aunque tenga manage-users.
+  @Test
+  void sinElScopeDeLaAdminApiLaCuentaDeServicioNoEntra() throws Exception {
+    Map<String, String> campos = new LinkedHashMap<>();
+    campos.put("grant_type", "client_credentials");
+    campos.put("client_id", CLIENT_ID);
+    campos.put("client_secret", CLIENT_SECRET);
+    HttpResponse<String> respuesta = post(HTTP, urlDeToken(REALM), form(campos));
+    assertEquals(200, respuesta.statusCode(), respuesta.body());
+    String sinScope = JSON.readTree(respuesta.body()).get("access_token").asText();
+    assertFalse(tieneLaAudienciaDeLaAdminApi(claims(sinScope)));
+    HttpResponse<String> usuarios = get(baseUrl + "/admin/realms/" + REALM + "/users", sinScope);
+    assertEquals(401, usuarios.statusCode(), usuarios.body());
   }
 
   // E2-07: la cuenta de pruebas llama a los servicios como ADMIN con la seguridad encendida.
@@ -495,13 +513,25 @@ class RealmTokenContractIT {
   }
 
   // Es la credencial más poderosa del realm: ser ADMIN de DonaTrack no da poder sobre Keycloak.
+  // Desde Keycloak 26.8.2 (CVE-2026-19688) la Admin API rechaza con 401, antes de mirar los roles,
+  // todo token sin el scope kc-admin-api; esta cuenta no lo tiene asignado ni lo puede pedir.
   @Test
   void laCuentaDePruebasNoAdministraElRealm() throws Exception {
     String pruebas = tokenDePruebas();
+    assertFalse(tieneLaAudienciaDeLaAdminApi(claims(pruebas)));
     HttpResponse<String> roles = get(baseUrl + "/admin/realms/" + REALM + "/roles", pruebas);
-    assertEquals(403, roles.statusCode(), roles.body());
+    assertEquals(401, roles.statusCode(), roles.body());
     HttpResponse<String> usuarios = get(baseUrl + "/admin/realms/" + REALM + "/users", pruebas);
-    assertEquals(403, usuarios.statusCode(), usuarios.body());
+    assertEquals(401, usuarios.statusCode(), usuarios.body());
+
+    Map<String, String> pidiendoElScope = new LinkedHashMap<>();
+    pidiendoElScope.put("grant_type", "client_credentials");
+    pidiendoElScope.put("client_id", PRUEBAS_CLIENT_ID);
+    pidiendoElScope.put("client_secret", PRUEBAS_SECRET);
+    pidiendoElScope.put("scope", ADMIN_API_SCOPE);
+    HttpResponse<String> respuesta = post(HTTP, urlDeToken(REALM), form(pidiendoElScope));
+    assertEquals(400, respuesta.statusCode(), respuesta.body());
+    assertTrue(respuesta.body().contains("invalid_scope"), respuesta.body());
   }
 
   @Test
@@ -671,12 +701,14 @@ class RealmTokenContractIT {
     return JSON.readTree(respuesta.body()).get("access_token").asText();
   }
 
-  // Client credentials del cliente liviano: el token técnico SERVICIO.
+  // Client credentials del cliente liviano: el token técnico SERVICIO, con el scope de la Admin API
+  // como lo pide el sitio (registro servicio de cliente-liviano).
   private static String tokenDeServicio() throws IOException, InterruptedException {
     Map<String, String> campos = new LinkedHashMap<>();
     campos.put("grant_type", "client_credentials");
     campos.put("client_id", CLIENT_ID);
     campos.put("client_secret", CLIENT_SECRET);
+    campos.put("scope", ADMIN_API_SCOPE);
     HttpResponse<String> respuesta = post(HTTP, urlDeToken(REALM), form(campos));
     assertEquals(200, respuesta.statusCode(), respuesta.body());
     return JSON.readTree(respuesta.body()).get("access_token").asText();
@@ -1066,5 +1098,11 @@ class RealmTokenContractIT {
       valores.add(nodo.asText());
     }
     return valores;
+  }
+
+  // La audiencia que agrega el scope kc-admin-api: la URL base de la Admin API del realm.
+  private static boolean tieneLaAudienciaDeLaAdminApi(JsonNode access) {
+    return valores(access.get("aud")).stream()
+        .anyMatch(aud -> aud.endsWith("/admin/realms/" + REALM));
   }
 }

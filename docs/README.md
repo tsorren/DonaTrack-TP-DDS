@@ -234,6 +234,7 @@ docs/
 * 🗺️ **Preprod fiel — roadmap por entrega y decisiones:** [testing/preprod-fiel-roadmap.md](testing/preprod-fiel-roadmap.md)
 * 🩺 **Diagnóstico de integration-tests (E5):** [testing/diagnostico-integration-tests-e5.md](testing/diagnostico-integration-tests-e5.md)
 * 🌐 **Demo pública por túnel (E6):** [testing/demo-publica-tunel.md](testing/demo-publica-tunel.md)
+* 🛡️ **Escaneo de seguridad con Trivy en el CI (E7):** [testing/escaneo-seguridad-ci.md](testing/escaneo-seguridad-ci.md)
 * 🚀 **Pipeline de CI/CD y Workflows:** [cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md)
 * 🤖 **Protocolo y Prompts de IA:** [IA/README.md](IA/README.md)
 * 🛡️ **Pre-Flight SonarCloud para IA:** [IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md)
