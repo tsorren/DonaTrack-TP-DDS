@@ -20,6 +20,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
+import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 import org.springframework.boot.graphql.autoconfigure.GraphQlAutoConfiguration;
 import org.springframework.boot.graphql.autoconfigure.security.GraphQlWebMvcSecurityAutoConfiguration;
 import org.springframework.boot.graphql.autoconfigure.servlet.GraphQlWebMvcAutoConfiguration;
@@ -39,12 +40,18 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
  * <p>Cada test declara sus resolvers con {@code @WebMvcTest(controllers = MiResolver.class)}: así
  * solo carga los suyos y no los de otros lotes. Los componentes del paquete {@code graphql} que no
  * son {@code @Controller} (mapeos, cargas por lote) se suman con {@code @Import} en el test.
+ *
+ * <p>{@link TaskExecutionAutoConfiguration} deja el <i>executor</i> de hilos virtuales de la
+ * aplicación ({@code spring.threads.virtual.enabled=true}): los resolvers corren en otro hilo, como
+ * en producción, y los tests prueban que el contexto de seguridad llegue a {@code @PreAuthorize} y
+ * a {@code @BatchMapping} (DTI-46, ítem 3).
  */
 @ImportAutoConfiguration({
   AopAutoConfiguration.class,
   GraphQlAutoConfiguration.class,
   GraphQlWebMvcAutoConfiguration.class,
-  GraphQlWebMvcSecurityAutoConfiguration.class
+  GraphQlWebMvcSecurityAutoConfiguration.class,
+  TaskExecutionAutoConfiguration.class
 })
 @Import({
   CommonLibAutoConfiguration.class,

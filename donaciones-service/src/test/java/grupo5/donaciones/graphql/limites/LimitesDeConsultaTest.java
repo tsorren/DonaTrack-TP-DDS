@@ -61,9 +61,8 @@ class LimitesDeConsultaTest extends BaseSliceGraphQl {
 
   private static final String TRES_NIVELES = "{ necesidades { elementos { id } } }";
 
-  /** Cinco campos por alias: {@code entidades}, {@code elementos} y sus tres campos. */
-  private static final String UNA_PAGINA_DE_ENTIDADES =
-      "entidades { elementos { id razonSocial rubro } }";
+  /** Dos campos por raíz: {@code entidades} y {@code total}. */
+  private static final String UNA_RAIZ_DE_ENTIDADES = "entidades { total }";
 
   private static final String INTROSPECCION_PROFUNDA =
       "{ __schema { types { fields { type { name } } } } }";
@@ -100,6 +99,7 @@ class LimitesDeConsultaTest extends BaseSliceGraphQl {
   void losTopesSonLosDeLasPropiedades() {
     assertThat(limites.profundidadMaxima()).isEqualTo(3);
     assertThat(limites.complejidadMaxima()).isEqualTo(100);
+    assertThat(limites.raicesMaximas()).isEqualTo(5);
   }
 
   // --- el tope de página --------------------------------------------------------------------
@@ -154,7 +154,7 @@ class LimitesDeConsultaTest extends BaseSliceGraphQl {
 
   @Test
   void unaConsultaMasComplejaQueElTopeSeRechazaSinLeerLaBase() throws Exception {
-    consultar(conAlias(21), null)
+    consultar(conCampos(105), null)
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data").doesNotExist())
         .andExpect(jsonPath("$.errors[0].extensions.codigo").value("ERR-CSR-003"))
@@ -170,9 +170,49 @@ class LimitesDeConsultaTest extends BaseSliceGraphQl {
 
   @Test
   void unaConsultaEnElTopeDeComplejidadSeResuelve() throws Exception {
-    consultar(conAlias(20), null).andExpect(jsonPath("$.errors").doesNotExist());
+    consultar(conCampos(100), null).andExpect(jsonPath("$.errors").doesNotExist());
 
-    verify(entidadBeneficiariaService, times(20)).buscarPublicas(any(), any(), anyInt(), anyInt());
+    verify(entidadBeneficiariaService, times(1)).buscarPublicas(any(), any(), anyInt(), anyInt());
+  }
+
+  // --- las raíces -----------------------------------------------------------------------------
+
+  @Test
+  void masRaicesQueElTopeSeRechazanSinLeerLaBase_aunqueEntrenEnLaComplejidad() throws Exception {
+    consultar(conRaices(6), null)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data").doesNotExist())
+        .andExpect(jsonPath("$.errors.length()").value(1))
+        .andExpect(jsonPath("$.errors[0].extensions.codigo").value("ERR-CSR-003"))
+        .andExpect(jsonPath("$.errors[0].extensions.motivo").value("complejidad"))
+        .andExpect(
+            jsonPath("$.errors[0].message")
+                .value("La consulta pide demasiadas consultas raíz: 6, el tope es 5"));
+
+    verifyNoInteractions(entidadBeneficiariaService);
+    assertThat(rechazos("complejidad")).isEqualTo(1.0);
+  }
+
+  @Test
+  void lasRaicesDeUnFragmentoTambienCuentan_yTypenameNo() throws Exception {
+    String seisEnUnFragmento =
+        "{ __typename ...Raices } fragment Raices on Query { "
+            + conRaices(6).substring(2, conRaices(6).length() - 2)
+            + " }";
+
+    consultar(seisEnUnFragmento, null)
+        .andExpect(jsonPath("$.errors[0].extensions.motivo").value("complejidad"))
+        .andExpect(
+            jsonPath("$.errors[0].message")
+                .value("La consulta pide demasiadas consultas raíz: 6, el tope es 5"));
+    verifyNoInteractions(entidadBeneficiariaService);
+  }
+
+  @Test
+  void lasRaicesDelTopeSeResuelven() throws Exception {
+    consultar(conRaices(5), null).andExpect(jsonPath("$.errors").doesNotExist());
+
+    verify(entidadBeneficiariaService, times(5)).buscarPublicas(any(), any(), anyInt(), anyInt());
   }
 
   // --- M08 ----------------------------------------------------------------------------------
@@ -194,7 +234,7 @@ class LimitesDeConsultaTest extends BaseSliceGraphQl {
   void cadaRechazoSumaUnoASuMotivo() throws Exception {
     consultar(CUATRO_NIVELES, null);
     consultar(CUATRO_NIVELES, null);
-    consultar(conAlias(30), null);
+    consultar(conCampos(120), null);
 
     assertThat(rechazos("profundidad")).isEqualTo(2.0);
     assertThat(rechazos("complejidad")).isEqualTo(1.0);
@@ -204,9 +244,19 @@ class LimitesDeConsultaTest extends BaseSliceGraphQl {
     return registro.get(RECHAZOS).tag("motivo", motivo).counter().count();
   }
 
-  private static String conAlias(int cantidad) {
+  /**
+   * Una sola raíz con {@code campos} campos en total: {@code entidades}, {@code elementos} y alias
+   * de {@code id}.
+   */
+  private static String conCampos(int campos) {
+    return IntStream.rangeClosed(1, campos - 2)
+        .mapToObj(i -> "c" + i + ": id")
+        .collect(Collectors.joining(" ", "{ entidades { elementos { ", " } } }"));
+  }
+
+  private static String conRaices(int cantidad) {
     return IntStream.rangeClosed(1, cantidad)
-        .mapToObj(i -> "e" + i + ": " + UNA_PAGINA_DE_ENTIDADES)
+        .mapToObj(i -> "e" + i + ": " + UNA_RAIZ_DE_ENTIDADES)
         .collect(Collectors.joining(" ", "{ ", " }"));
   }
 }

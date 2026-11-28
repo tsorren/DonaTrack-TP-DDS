@@ -30,7 +30,9 @@ import reactor.core.publisher.Mono;
 /**
  * El tiempo máximo por consulta (SPEC-11, G3, lote {@code g3-limites}): una consulta que tarda más
  * que la propiedad la corta Donaciones con un error, antes de la espera de lectura del gateway. El
- * tope baja a 200 ms por propiedad y un resolver de prueba sobre {@code entidades} tarda 5 s.
+ * tope baja a 200 ms por propiedad y un resolver de prueba sobre {@code entidades} tarda 5 s. Otro,
+ * sobre {@code necesidades}, bloquea su hilo como los resolvers reales (servicio y JPA): lo corta
+ * igual porque corre en el <i>executor</i> de hilos virtuales de la base.
  */
 @WebMvcTest(controllers = LimiteDeTiempoTest.ResolverLento.class)
 @Import({
@@ -66,7 +68,20 @@ class LimiteDeTiempoTest extends BaseSliceGraphQl {
               new Pagina<>(List.<EntidadPublicaDTO>of(), 0), tope.validar(pagina, tamanio), e -> e);
       return Mono.delay(DEMORA).map(listo -> respuesta);
     }
+
+    /** Como un resolver real: bloquea el hilo y devuelve el valor directo. */
+    @QueryMapping
+    @PreAuthorize(Acceso.PUBLICO)
+    public PaginaGraphQl<EntidadPublicaDTO> necesidades(
+        @Argument Integer pagina, @Argument Integer tamanio) throws InterruptedException {
+      hiloDelBloqueante = Thread.currentThread();
+      Thread.sleep(DEMORA);
+      return PaginaGraphQl.de(
+          new Pagina<>(List.<EntidadPublicaDTO>of(), 0), tope.validar(pagina, tamanio), e -> e);
+    }
   }
+
+  private static volatile Thread hiloDelBloqueante;
 
   @BeforeEach
   void unRegistroVacio() {
@@ -90,6 +105,20 @@ class LimiteDeTiempoTest extends BaseSliceGraphQl {
     assertThat(Duration.ofNanos(System.nanoTime() - inicio)).isLessThan(DEMORA);
     assertThat(registro.get("donatrack.graphql.rechazos").tag("motivo", "tiempo").counter().count())
         .isEqualTo(1.0);
+  }
+
+  @Test
+  void unResolverQueBloqueaSuHiloTambienSeCorta() throws Exception {
+    long inicio = System.nanoTime();
+
+    ejecutar(pedido("{ necesidades { total } }", Map.of(), null))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data").doesNotExist())
+        .andExpect(jsonPath("$.errors[0].extensions.codigo").value("ERR-CSR-500"))
+        .andExpect(jsonPath("$.errors[0].extensions.motivo").value("tiempo"));
+
+    assertThat(Duration.ofNanos(System.nanoTime() - inicio)).isLessThan(DEMORA);
+    assertThat(hiloDelBloqueante.isVirtual()).isTrue();
   }
 
   @Test

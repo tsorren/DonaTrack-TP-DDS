@@ -82,6 +82,29 @@ class EntidadesPublicasPorIdsServiceTest {
   }
 
   @Test
+  void lasActivas_dejanAfueraLasDadasDeBajaConUnaSolaLectura() {
+    Juridica comedor = juridica("Comedor de ejemplo", "Comedor");
+    Juridica hogar = juridica("Hogar de ejemplo", "Hogar");
+    EntidadBeneficiaria activa = new EntidadBeneficiaria(comedor.getId());
+    EntidadBeneficiaria deBaja = new EntidadBeneficiaria(hogar.getId());
+    deBaja.darDeBaja();
+    Set<UUID> ids = Set.of(activa.getId(), deBaja.getId());
+    when(repositorio.findAllById(any())).thenReturn(List.of(activa, deBaja));
+    when(personas.findAllById(any())).thenReturn(List.of(comedor, hogar));
+
+    assertThat(servicio.buscarActivasPorIds(ids))
+        .containsExactly(new EntidadPublicaDTO(comedor.getId(), "Comedor de ejemplo", "Comedor"));
+    verify(repositorio, times(1)).findAllById(ids);
+  }
+
+  @Test
+  void lasActivas_sinIds_noLeen() {
+    assertThat(servicio.buscarActivasPorIds(Set.of())).isEmpty();
+
+    verify(repositorio, never()).findAllById(any());
+  }
+
+  @Test
   void unaEntidadSinJuridicaNoAparece() {
     EntidadBeneficiaria huerfana = new EntidadBeneficiaria(UUID.randomUUID());
     when(repositorio.findAllById(any())).thenReturn(List.of(huerfana));

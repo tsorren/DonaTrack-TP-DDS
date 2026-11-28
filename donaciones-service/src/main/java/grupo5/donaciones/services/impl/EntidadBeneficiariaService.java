@@ -155,6 +155,15 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
     return publicas(repository.findAllById(ids));
   }
 
+  @Override
+  public List<EntidadPublicaDTO> buscarActivasPorIds(Collection<UUID> ids) {
+    if (ids.isEmpty()) {
+      return List.of();
+    }
+    return publicas(
+        repository.findAllById(ids).stream().filter(EntidadBeneficiaria::estaActivo).toList());
+  }
+
   /** Las de la página con su jurídica, en el DTO público (D26). */
   private List<EntidadPublicaDTO> publicas(Tramo<EntidadBeneficiaria> tramo) {
     return publicas(tramo.elementos());
