@@ -138,6 +138,34 @@ public interface SpringDataDonacionIndependienteRepository
       @Param("necesidadIds") Collection<UUID> necesidadIds,
       @Param("estado") TipoEstadoDonacion estado);
 
+  // Lo que no llegó todavía (HG-04): lo asignado salvo las donaciones en el estado indicado
+  // (ENTREGADA)
+  @Query(
+      "select coalesce(sum(i.cantidad), 0) from DonacionIndependienteEntity d join d.items i"
+          + " where d.necesidadId = :necesidadId and d.periodoId = :periodoId"
+          + " and (d.estadoActual is null or d.estadoActual <> :estado)")
+  long sumarCantidadEnPeriodoSalvoEstado(
+      @Param("necesidadId") UUID necesidadId,
+      @Param("periodoId") UUID periodoId,
+      @Param("estado") TipoEstadoDonacion estado);
+
+  @Query(
+      "select coalesce(sum(i.cantidad), 0) from DonacionIndependienteEntity d join d.items i"
+          + " where d.necesidadId = :necesidadId and d.periodoId is null"
+          + " and (d.estadoActual is null or d.estadoActual <> :estado)")
+  long sumarCantidadSinPeriodoSalvoEstado(
+      @Param("necesidadId") UUID necesidadId, @Param("estado") TipoEstadoDonacion estado);
+
+  @Query(
+      "select d.necesidadId as necesidadId, d.periodoId as periodoId, sum(i.cantidad) as cantidad"
+          + " from DonacionIndependienteEntity d join d.items i"
+          + " where d.necesidadId in :necesidadIds"
+          + " and (d.estadoActual is null or d.estadoActual <> :estado)"
+          + " group by d.necesidadId, d.periodoId")
+  List<SumaPorDestino> sumarCantidadPorDestinoSalvoEstado(
+      @Param("necesidadIds") Collection<UUID> necesidadIds,
+      @Param("estado") TipoEstadoDonacion estado);
+
   interface SumaPorDestino {
     UUID getNecesidadId();
 

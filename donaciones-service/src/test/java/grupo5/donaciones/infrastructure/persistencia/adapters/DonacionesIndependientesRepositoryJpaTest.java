@@ -422,6 +422,46 @@ class DonacionesIndependientesRepositoryJpaTest {
         4, independientes.findById(incompleta.getId()).orElseThrow().getCantidadNoRecibida());
   }
 
+  /** HG-04: lo que tiene destino y todavía no llegó, de a una y por lote. */
+  @Test
+  void sumarCantidadSinLlegar_noCuentaLasEntregadasNiOtrosPeriodos() {
+    NecesidadRecurrente recurrente = recurrente();
+    UUID periodoId = recurrente.periodoActualId();
+    NecesidadExtraordinaria extraordinaria =
+        NecesidadMother.extraordinaria(entidadId, subcategoriaId, 80);
+    necesidades.save(extraordinaria);
+    DonacionIndependiente entregada = nueva(10);
+    entregada.asignar(ACTOR, recurrente.destinoDeAsignacion());
+    entregada.planificarRuta(ACTOR);
+    entregada.iniciarRecorrido(ACTOR);
+    entregada.cambiarEstado(
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.ENTREGADA, null, null, null, "AB123CD", null, ACTOR));
+    entregada.registrarCantidadRecibida(7);
+    DonacionIndependiente enCamino = nueva(6);
+    enCamino.asignar(ACTOR, recurrente.destinoDeAsignacion());
+    enCamino.planificarRuta(ACTOR);
+    enCamino.iniciarRecorrido(ACTOR);
+    DonacionIndependiente asignada = nueva(3);
+    asignada.asignar(ACTOR, recurrente.destinoDeAsignacion());
+    DonacionIndependiente aExtraordinaria = nueva(4);
+    aExtraordinaria.asignar(ACTOR, extraordinaria.destinoDeAsignacion());
+    independientes.saveAll(List.of(entregada, enCamino, asignada, aExtraordinaria, nueva(9)));
+    Map<UUID, UUID> periodos = new HashMap<>();
+    periodos.put(recurrente.getId(), periodoId);
+    periodos.put(extraordinaria.getId(), null);
+
+    assertEquals(9, independientes.sumarCantidadSinLlegar(recurrente.getId(), periodoId));
+    assertEquals(0, independientes.sumarCantidadSinLlegar(recurrente.getId(), UUID.randomUUID()));
+    assertEquals(4, independientes.sumarCantidadSinLlegar(extraordinaria.getId(), null));
+    assertEquals(
+        Map.of(recurrente.getId(), 9, extraordinaria.getId(), 4),
+        independientes.sumarCantidadSinLlegar(periodos));
+    // Lo asignado cuenta 7 de la entregada: llegaron 7 y faltan llegar 9
+    assertEquals(16, independientes.sumarCantidadAsignada(recurrente.getId(), periodoId));
+    assertTrue(independientes.sumarCantidadSinLlegar(new HashMap<>()).isEmpty());
+  }
+
   @Test
   void contarPorEntidadRegistradasDesde_cuentaSoloLasAsignadasRegistradasDespues() {
     DonacionIndependiente asignada = nueva(5);

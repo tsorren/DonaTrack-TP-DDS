@@ -241,7 +241,33 @@ public class DonacionIndependienteRepositoryJpaAdapter
             periodoPorNecesidad.keySet(), TipoEstadoDonacion.ENTREGADA));
   }
 
-  private Map<UUID, Integer> delPeriodoActual(
+  @Override
+  public int sumarCantidadSinLlegar(UUID necesidadId, UUID periodoId) {
+    if (necesidadId == null) {
+      return 0;
+    }
+    long suma =
+        periodoId != null
+            ? springDataRepo.sumarCantidadEnPeriodoSalvoEstado(
+                necesidadId, periodoId, TipoEstadoDonacion.ENTREGADA)
+            : springDataRepo.sumarCantidadSinPeriodoSalvoEstado(
+                necesidadId, TipoEstadoDonacion.ENTREGADA);
+    return Math.toIntExact(suma);
+  }
+
+  @Override
+  public Map<UUID, Integer> sumarCantidadSinLlegar(Map<UUID, UUID> periodoPorNecesidad) {
+    if (periodoPorNecesidad.isEmpty()) {
+      return new HashMap<>();
+    }
+    // Lo que no llegó solo se registra en las ENTREGADA: acá no hay nada que descontar
+    return soloDelPeriodoActual(
+        periodoPorNecesidad,
+        springDataRepo.sumarCantidadPorDestinoSalvoEstado(
+            periodoPorNecesidad.keySet(), TipoEstadoDonacion.ENTREGADA));
+  }
+
+  private static Map<UUID, Integer> soloDelPeriodoActual(
       Map<UUID, UUID> periodoPorNecesidad, List<SumaPorDestino> filas) {
     Map<UUID, Integer> sumas = new HashMap<>();
     periodoPorNecesidad.keySet().forEach(id -> sumas.put(id, 0));
@@ -251,6 +277,12 @@ public class DonacionIndependienteRepositoryJpaAdapter
         sumas.put(fila.getNecesidadId(), Math.toIntExact(fila.getCantidad()));
       }
     }
+    return sumas;
+  }
+
+  private Map<UUID, Integer> delPeriodoActual(
+      Map<UUID, UUID> periodoPorNecesidad, List<SumaPorDestino> filas) {
+    Map<UUID, Integer> sumas = soloDelPeriodoActual(periodoPorNecesidad, filas);
     for (SumaPorDestino fila :
         springDataRepo.sumarNoRecibidoPorDestino(periodoPorNecesidad.keySet())) {
       if (Objects.equals(fila.getPeriodoId(), periodoPorNecesidad.get(fila.getNecesidadId()))) {

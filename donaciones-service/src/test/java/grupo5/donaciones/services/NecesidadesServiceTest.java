@@ -9,6 +9,7 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.AvanceNecesidadDTO;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.dto.PeriodoNecesidadDTO;
 import grupo5.donaciones.dto.publico.NecesidadPublicaDTO;
@@ -205,7 +206,8 @@ class NecesidadesServiceTest {
                 vigente.getDescripcion(),
                 10,
                 "EXTRAORDINARIA",
-                null)),
+                null,
+                new AvanceNecesidadDTO(4, 0, 6))),
         publicas);
   }
 
@@ -524,6 +526,8 @@ class NecesidadesServiceTest {
         .thenReturn(4);
     when(donacionesIndependientesRepositoryMock.sumarCantidadRecibida(semanal.getId(), cerrado))
         .thenReturn(2);
+    when(donacionesIndependientesRepositoryMock.sumarCantidadSinLlegar(semanal.getId(), cerrado))
+        .thenReturn(2);
 
     List<PeriodoNecesidadDTO> historia = necesidadesService.listarPeriodos(semanal.getId());
 
@@ -536,7 +540,8 @@ class NecesidadesServiceTest {
                 4,
                 4,
                 2,
-                ResultadoPeriodo.INCOMPLETO),
+                ResultadoPeriodo.INCOMPLETO,
+                new AvanceNecesidadDTO(2, 2, 0)),
             new PeriodoNecesidadDTO(
                 enCurso,
                 periodos.get(0).fechaFin(),
@@ -544,7 +549,8 @@ class NecesidadesServiceTest {
                 4,
                 0,
                 0,
-                ResultadoPeriodo.EN_CURSO)),
+                ResultadoPeriodo.EN_CURSO,
+                new AvanceNecesidadDTO(0, 0, 4))),
         historia);
   }
 
@@ -599,5 +605,94 @@ class NecesidadesServiceTest {
 
     assertFalse(necesidad.isActiva());
     verifyNoInteractions(logisticaBrokerMock);
+  }
+
+  // ===================== Avance en unidades (HG-04) =====================
+
+  @Test
+  void listarPeriodos_traeElAvanceEnUnidadesDeCadaPeriodo() {
+    NecesidadRecurrente semanal = NecesidadMother.recurrenteSemanal(UUID.randomUUID(), 24);
+    UUID periodoId = semanal.periodoActualId();
+    when(necesidadRepositoryMock.findById(semanal.getId())).thenReturn(Optional.of(semanal));
+    // 12 llegaron y 6 están asignadas sin llegar: 18 asignadas en total
+    when(donacionesIndependientesRepositoryMock.sumarCantidadAsignada(semanal.getId(), periodoId))
+        .thenReturn(18);
+    when(donacionesIndependientesRepositoryMock.sumarCantidadRecibida(semanal.getId(), periodoId))
+        .thenReturn(12);
+    when(donacionesIndependientesRepositoryMock.sumarCantidadSinLlegar(semanal.getId(), periodoId))
+        .thenReturn(6);
+
+    PeriodoNecesidadDTO periodo = necesidadesService.listarPeriodos(semanal.getId()).getFirst();
+
+    assertEquals(new AvanceNecesidadDTO(12, 6, 6), periodo.avance());
+    assertEquals(18, periodo.asignado());
+    assertEquals(12, periodo.recibido());
+  }
+
+  @Test
+  void obtenerPorId_deUnaExtraordinaria_traeElAvanceConLoQueLlegoMenos() {
+    NecesidadExtraordinaria necesidad = NecesidadMother.extraordinaria(UUID.randomUUID(), 20);
+    when(necesidadRepositoryMock.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
+    // Salieron 10 y llegaron 7 (HB-17): lo asignado cuenta 7; hay 5 más en camino
+    when(donacionesIndependientesRepositoryMock.sumarCantidadAsignada(necesidad.getId(), null))
+        .thenReturn(12);
+    when(donacionesIndependientesRepositoryMock.sumarCantidadRecibida(necesidad.getId(), null))
+        .thenReturn(10);
+    when(donacionesIndependientesRepositoryMock.sumarCantidadSinLlegar(necesidad.getId(), null))
+        .thenReturn(5);
+
+    NecesidadDTO dto = necesidadesService.obtenerPorId(necesidad.getId());
+
+    assertEquals(new AvanceNecesidadDTO(7, 5, 8), dto.avance());
+  }
+
+  @Test
+  void obtenerPorId_conMasDeLoPedido_noDejaNadaSinAsignarNiNegativo() {
+    NecesidadExtraordinaria necesidad = NecesidadMother.extraordinaria(UUID.randomUUID(), 5);
+    when(necesidadRepositoryMock.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
+    when(donacionesIndependientesRepositoryMock.sumarCantidadAsignada(necesidad.getId(), null))
+        .thenReturn(8);
+    when(donacionesIndependientesRepositoryMock.sumarCantidadSinLlegar(necesidad.getId(), null))
+        .thenReturn(8);
+
+    assertEquals(
+        new AvanceNecesidadDTO(0, 8, 0),
+        necesidadesService.obtenerPorId(necesidad.getId()).avance());
+  }
+
+  @Test
+  void avance_sinObjetivo_dejaSinAsignarNulo() {
+    assertEquals(new AvanceNecesidadDTO(3, 2, null), AvanceNecesidadDTO.de(null, 5, 2));
+  }
+
+  @Test
+  void listarConFiltros_traeElAvanceDelPeriodoEnCursoConUnaConsultaPorLote() {
+    NecesidadRecurrente semanal = NecesidadMother.recurrenteSemanal(UUID.randomUUID(), 10);
+    when(necesidadRepositoryMock.findAll()).thenReturn(List.of(semanal));
+    when(donacionesIndependientesRepositoryMock.sumarCantidadAsignada(anyMap()))
+        .thenReturn(Map.of(semanal.getId(), 9));
+    when(donacionesIndependientesRepositoryMock.sumarCantidadSinLlegar(anyMap()))
+        .thenReturn(Map.of(semanal.getId(), 4));
+
+    NecesidadDTO dto = necesidadesService.listarConFiltros(null, null, null).getFirst();
+
+    assertEquals(new AvanceNecesidadDTO(5, 4, 1), dto.avance());
+    verify(donacionesIndependientesRepositoryMock)
+        .sumarCantidadSinLlegar(Map.of(semanal.getId(), semanal.periodoActualId()));
+  }
+
+  @Test
+  void listarPublicas_traeElAvanceEnUnidades() {
+    NecesidadExtraordinaria necesidad =
+        NecesidadMother.extraordinaria(UUID.randomUUID(), UUID.randomUUID(), 40);
+    when(necesidadRepositoryMock.findAll()).thenReturn(List.of(necesidad));
+    when(donacionesIndependientesRepositoryMock.sumarCantidadAsignada(anyMap()))
+        .thenReturn(Map.of(necesidad.getId(), 25));
+    when(donacionesIndependientesRepositoryMock.sumarCantidadSinLlegar(anyMap()))
+        .thenReturn(Map.of(necesidad.getId(), 15));
+
+    NecesidadPublicaDTO publica = necesidadesService.listarPublicas(null).getFirst();
+
+    assertEquals(new AvanceNecesidadDTO(10, 15, 15), publica.avance());
   }
 }

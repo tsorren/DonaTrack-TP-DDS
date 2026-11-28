@@ -2,6 +2,7 @@ package grupo5.donaciones.contracts;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.Request;
@@ -103,5 +104,42 @@ class OpenApiContractDriftTest {
           report.hasErrors(),
           "La evolución debe ser válida contra openapi-donaciones.yaml: " + report.getMessages());
     }
+  }
+
+  /** HG-04: el período trae el avance en unidades; una cifra negativa no cumple el contrato. */
+  @Test
+  void periodoConAvanceEnUnidades_debeSerValidoContraSpec_HG04() {
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-donaciones.yaml");
+    OpenApiInteractionValidator validator = OpenApiInteractionValidator.createFor(specPath).build();
+    String periodo =
+        """
+        [{
+          "id": "11111111-1111-1111-1111-111111111111",
+          "inicio": "2026-10-01",
+          "fin": "2026-10-31",
+          "objetivo": 24,
+          "asignado": 18,
+          "recibido": 12,
+          "resultado": "EN_CURSO",
+          "avance": { "llegaron": %s, "asignadas": 6, "sinAsignar": 6 }
+        }]
+        """;
+    String ruta = "/api/necesidades/11111111-1111-1111-1111-111111111111/periodos";
+
+    ValidationReport valido =
+        validator.validateResponse(ruta, Request.Method.GET, json(periodo.formatted("12")));
+    ValidationReport negativo =
+        validator.validateResponse(ruta, Request.Method.GET, json(periodo.formatted("-1")));
+
+    assertFalse(
+        valido.hasErrors(), "El período con avance debe ser válido: " + valido.getMessages());
+    assertTrue(negativo.hasErrors(), "Una cifra negativa del avance no cumple el contrato");
+  }
+
+  private static SimpleResponse json(String cuerpo) {
+    return SimpleResponse.Builder.status(200)
+        .withContentType("application/json")
+        .withBody(cuerpo)
+        .build();
   }
 }
