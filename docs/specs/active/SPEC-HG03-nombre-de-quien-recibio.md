@@ -27,7 +27,7 @@ opcional; `GET /api/entregas/{id}` y los tres seguimientos lo devuelven; el mapa
 - `logistica-service`: request de cambio de estado, dominio de la entrega (`Entrega`,
   `ConfirmacionRecepcion`, `GestorDeEntregas`), persistencia JPA (migración `V12`) y Mongo,
   `EntregaResponseDTO` y `SeguimientoEntregaResponseDTO`.
-- Contratos: `openapi-logistica.yaml` (1.12.0), schemas de request y response de entrega,
+- Contratos: `openapi-logistica.yaml` (1.13.0), schemas de request y response de entrega,
   `contratos-rest.md` y `aggregates-logistica.md`.
 
 ### Out-of-Scope

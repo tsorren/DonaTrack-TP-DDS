@@ -15,7 +15,10 @@ import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.CambioEstadoRuta;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
+import grupo5.logistica.models.entities.rutas.EstimadorDeLlegada;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
+import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.repositories.CriterioSeguimiento;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
@@ -486,6 +489,7 @@ public class EntregasService implements IEntregasService {
           calcularUltimaActualizacion(entrega, null, List.of()),
           List.of(),
           null,
+          null,
           entrega.getRecibidoPor());
     }
 
@@ -529,6 +533,7 @@ public class EntregasService implements IEntregasService {
     }
 
     Instant ultimaActualizacion = calcularUltimaActualizacion(entrega, ruta, entregasDeRuta);
+    PosicionCamion posicion = posicionDeEstaRuta(ruta, camion);
 
     return new SeguimientoEntregaResponseDTO(
         entrega.getId(),
@@ -547,11 +552,61 @@ public class EntregasService implements IEntregasService {
         aInstantUtc(entrega.getHoraArribo()),
         ultimaActualizacion,
         List.copyOf(paradas),
-        posicionCamion(ruta, camion),
+        aDTO(posicion),
+        horaEstimadaLlegada(entrega, posicion, entregasDeRuta),
         entrega.getRecibidoPor());
   }
 
-  private static PosicionCamionDTO posicionCamion(Ruta ruta, @Nullable Camion camion) {
+  private static @Nullable PosicionCamionDTO aDTO(@Nullable PosicionCamion posicion) {
+    return posicion != null
+        ? new PosicionCamionDTO(posicion.latitud(), posicion.longitud(), posicion.registradaEn())
+        : null;
+  }
+
+  /** Las paradas en camino ({@code EN_TRASLADO} o {@code EN_PUERTA}) antes de la consultada. */
+  private static List<Entrega> pendientesPrevias(Entrega consultada, List<Entrega> entregasDeRuta) {
+    return entregasDeRuta.stream()
+        .takeWhile(parada -> !parada.getId().equals(consultada.getId()))
+        .filter(
+            parada ->
+                parada.getEstadoActual() == EstadoEntrega.EN_TRASLADO
+                    || parada.getEstadoActual() == EstadoEntrega.EN_PUERTA)
+        .toList();
+  }
+
+  /**
+   * HG-02: la hora estimada de llegada de {@code entrega}, solo si está en traslado, hay posición
+   * de esta ruta, su destino tiene coordenadas y figura en {@code entregasDeRuta}; recorre antes
+   * las paradas pendientes previas.
+   */
+  private static @Nullable Instant horaEstimadaLlegada(
+      Entrega entrega, @Nullable PosicionCamion posicion, List<Entrega> entregasDeRuta) {
+    CoordenadasGeograficas destino = coordenadasDe(entrega);
+    if (entrega.getEstadoActual() != EstadoEntrega.EN_TRASLADO
+        || posicion == null
+        || destino == null
+        || entregasDeRuta.stream().noneMatch(parada -> parada.getId().equals(entrega.getId()))) {
+      return null;
+    }
+    List<Entrega> pendientesPrevias = pendientesPrevias(entrega, entregasDeRuta);
+    List<CoordenadasGeograficas> tramos = new ArrayList<>(pendientesPrevias.size() + 1);
+    for (Entrega previa : pendientesPrevias) {
+      CoordenadasGeograficas punto = coordenadasDe(previa);
+      if (punto != null) {
+        tramos.add(punto);
+      }
+    }
+    tramos.add(destino);
+    return EstimadorDeLlegada.estimar(posicion, tramos, pendientesPrevias.size());
+  }
+
+  private static @Nullable CoordenadasGeograficas coordenadasDe(Entrega entrega) {
+    Direccion destino = entrega.getDestino();
+    return destino != null && destino.tieneCoordenadas() ? destino.coordenadas() : null;
+  }
+
+  /** La posición del camión de una ruta en traslado, si es de esta ruta (nula si no). */
+  private static @Nullable PosicionCamion posicionDeEstaRuta(Ruta ruta, @Nullable Camion camion) {
     if (ruta.getEstado() != EstadoRuta.EN_TRASLADO || camion == null) {
       return null;
     }
@@ -561,9 +616,7 @@ public class EntregasService implements IEntregasService {
         posicion != null
             && ruta.getHoraInicioReal() != null
             && !posicion.registradaEn().isBefore(aInstantUtc(ruta.getHoraInicioReal()));
-    return esDeEstaRuta
-        ? new PosicionCamionDTO(posicion.latitud(), posicion.longitud(), posicion.registradaEn())
-        : null;
+    return esDeEstaRuta ? posicion : null;
   }
 
   private static Instant calcularUltimaActualizacion(

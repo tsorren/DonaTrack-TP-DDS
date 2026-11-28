@@ -3,6 +3,7 @@ package grupo5.gateway;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -105,7 +106,9 @@ class LimiteDeSolicitudesTest {
     CubetasEnMemoria almacen = new CubetasEnMemoria();
     LimiteDeSolicitudes limite =
         new LimiteDeSolicitudes(
-            new LimiteDeSolicitudes.Config(false, Duration.ofMinutes(1), 1, 1, 1, 1, ""), almacen);
+            new LimiteDeSolicitudes.Config(false, Duration.ofMinutes(1), 1, 1, 1, 1, ""),
+            almacen,
+            new SimpleMeterRegistry());
 
     for (int i = 0; i < 5; i++) {
       assertThat(filtrar(limite, "POST", PROXY)).isEqualTo(HttpStatus.OK);
@@ -118,7 +121,9 @@ class LimiteDeSolicitudesTest {
     CubetasEnMemoria almacen = new CubetasEnMemoria();
     LimiteDeSolicitudes limite =
         new LimiteDeSolicitudes(
-            new LimiteDeSolicitudes.Config(true, Duration.ofMinutes(1), 2, 2, 2, 2, ""), almacen);
+            new LimiteDeSolicitudes.Config(true, Duration.ofMinutes(1), 2, 2, 2, 2, ""),
+            almacen,
+            new SimpleMeterRegistry());
 
     filtrar(limite, "GET", PROXY);
     filtrar(limite, "POST", PROXY);
@@ -134,7 +139,8 @@ class LimiteDeSolicitudesTest {
             new LimiteDeSolicitudes.Config(true, Duration.ofMinutes(1), 1, 1, 1, 1, ""),
             (clave, configuracion) -> {
               throw new IllegalStateException("Redis caído");
-            });
+            },
+            new SimpleMeterRegistry());
 
     for (int i = 0; i < 3; i++) {
       ServerRequest pedido = ServerRequest.create(servlet("POST", PROXY), List.of());
@@ -164,7 +170,7 @@ class LimiteDeSolicitudesTest {
         new LimiteDeSolicitudes.Config(true, Duration.ZERO, 1, 1, 1, 1, "");
 
     CubetasEnMemoria almacen = new CubetasEnMemoria();
-    assertThatThrownBy(() -> new LimiteDeSolicitudes(config, almacen))
+    assertThatThrownBy(() -> new LimiteDeSolicitudes(config, almacen, new SimpleMeterRegistry()))
         .isInstanceOf(IllegalStateException.class);
   }
 
@@ -174,7 +180,7 @@ class LimiteDeSolicitudesTest {
         new LimiteDeSolicitudes.Config(true, Duration.ofMinutes(1), 1, 1, 1, 0, "");
     CubetasEnMemoria almacen = new CubetasEnMemoria();
 
-    assertThatThrownBy(() -> new LimiteDeSolicitudes(config, almacen))
+    assertThatThrownBy(() -> new LimiteDeSolicitudes(config, almacen, new SimpleMeterRegistry()))
         .isInstanceOf(IllegalStateException.class);
   }
 
@@ -182,7 +188,8 @@ class LimiteDeSolicitudesTest {
     return new LimiteDeSolicitudes(
         new LimiteDeSolicitudes.Config(
             true, Duration.ofMinutes(1), cupo, cupo, cupo, cupo, proxies),
-        new CubetasEnMemoria());
+        new CubetasEnMemoria(),
+        new SimpleMeterRegistry());
   }
 
   private static HttpStatus filtrar(LimiteDeSolicitudes limite, String metodo, String ip)

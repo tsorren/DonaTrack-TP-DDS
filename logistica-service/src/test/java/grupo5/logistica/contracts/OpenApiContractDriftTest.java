@@ -138,6 +138,7 @@ class OpenApiContractDriftTest {
             ahora,
             List.of(),
             null,
+            null,
             "Persona Sintetica");
     SimpleResponse response =
         SimpleResponse.Builder.status(200)

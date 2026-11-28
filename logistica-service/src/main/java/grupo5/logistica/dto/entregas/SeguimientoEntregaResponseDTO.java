@@ -19,6 +19,10 @@ import java.util.UUID;
  * <p>{@code posicionCamion} es la última posición conocida del camión, exacta (ADR-E6-07); es
  * {@code null} cuando la ruta no está {@code EN_TRASLADO} o la fuente todavía no informó ninguna.
  *
+ * <p>{@code horaEstimadaLlegada} es la hora estimada de llegada al destino mientras la entrega va
+ * en camino (HG-02), calculada desde la última posición del camión; es {@code null} cuando no se
+ * puede estimar. Es aditivo y opcional.
+ *
  * <p>{@code recibidoPor} es el nombre de quien recibió, si la organización lo dijo al confirmar
  * (HG-03): un dato personal, solo para estas lecturas privadas (DA-10).
  */
@@ -40,9 +44,53 @@ public record SeguimientoEntregaResponseDTO(
     @JsonFormat(shape = JsonFormat.Shape.STRING) Instant ultimaActualizacion,
     List<ParadaSeguimientoDTO> paradas,
     PosicionCamionDTO posicionCamion,
+    @JsonFormat(shape = JsonFormat.Shape.STRING) Instant horaEstimadaLlegada,
     String recibidoPor) {
 
-  /** Seguimiento sin quien recibió. */
+  /** Seguimiento sin quien recibió (HG-02, antes de HG-03). */
+  @SuppressWarnings("java:S107")
+  public SeguimientoEntregaResponseDTO(
+      UUID idEntrega,
+      UUID idDonacion,
+      EstadoEntrega estadoEntrega,
+      boolean rutaAsignada,
+      UUID idRuta,
+      LocalDate fechaRuta,
+      EstadoRuta estadoRuta,
+      String patenteCamion,
+      Integer ordenVisita,
+      int totalParadas,
+      int paradasEntregadas,
+      int paradasProcesadas,
+      Instant horaSalida,
+      Instant horaArribo,
+      Instant ultimaActualizacion,
+      List<ParadaSeguimientoDTO> paradas,
+      PosicionCamionDTO posicionCamion,
+      Instant horaEstimadaLlegada) {
+    this(
+        idEntrega,
+        idDonacion,
+        estadoEntrega,
+        rutaAsignada,
+        idRuta,
+        fechaRuta,
+        estadoRuta,
+        patenteCamion,
+        ordenVisita,
+        totalParadas,
+        paradasEntregadas,
+        paradasProcesadas,
+        horaSalida,
+        horaArribo,
+        ultimaActualizacion,
+        paradas,
+        posicionCamion,
+        horaEstimadaLlegada,
+        null);
+  }
+
+  /** Seguimiento sin hora estimada de llegada ni quien recibió. */
   @SuppressWarnings("java:S107")
   public SeguimientoEntregaResponseDTO(
       UUID idEntrega,

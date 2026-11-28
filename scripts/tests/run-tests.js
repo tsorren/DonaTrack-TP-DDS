@@ -930,6 +930,279 @@ const agenteFalso = (pantallasPasan, { mudos = [], noCumple = '', omite = '', ex
     contradice.resultado.pr === '' && parcial.resultado.pr === '' &&
     !parcial.resultado.decisionesDelUsuario.some((d) => d.startsWith('D2') && d.includes(': cumplida')));
 
+  // ─── [20] workflow frente-backend ──────────────────────────────────────────
+  // Igual que arriba: el script cargado como en el sandbox, con agentes falsos. Prueba la regla del
+  // manifiesto, el orden de las tandas, cada fila de "Cuando algo falla" de la guía, el estado
+  // entre corridas y los controles de la fase pr. No reemplaza una corrida real.
+  console.log('\n[20] workflow frente-backend');
+
+  const RUTA_FRENTE = path.join(REPO, '.claude/workflows/frente-backend.js');
+  assert('20.0  .claude/workflows/frente-backend.js is in the repo (it is force-added: .claude/ may be locally excluded)',
+    fs.existsSync(RUTA_FRENTE));
+  if (!fs.existsSync(RUTA_FRENTE)) { resumen(); return; }
+  const FRENTE = fs.readFileSync(RUTA_FRENTE, 'utf8');
+  const RUTA_GQL = ['active', 'completed']
+    .map((d) => path.join(REPO, 'docs/specs', d, 'SPEC-11-graphql.manifiesto.json'))
+    .find((r) => fs.existsSync(r));
+  const GQL = JSON.parse(fs.readFileSync(RUTA_GQL, 'utf8'));
+  const TODOS = GQL.lotes.map((l) => l.id);
+  const SHA_A = 'a'.repeat(40);
+  const SHA_CIERRE = '9'.repeat(40);
+  const conFrente = (mutar) => { const m = JSON.parse(JSON.stringify(GQL)); mutar(m); return m; };
+  const correrFrente = async (args, responder = async () => null) => {
+    const agentes = [];
+    const fn = new AsyncFunction('args', 'agent', 'parallel', 'phase', 'log', FRENTE.replace(/^export const meta/m, 'const meta'));
+    const resultado = await fn(
+      { manifiesto: GQL, carpeta: '/tmp/frente', ...args },
+      async (prompt, opts) => { agentes.push({ prompt, ...opts }); return responder(opts, prompt); },
+      async (thunks) => Promise.all(thunks.map((t) => t())),
+      () => {}, () => {});
+    return { resultado, agentes, llamadas: agentes.map((a) => a.label) };
+  };
+  // Agentes falsos que completan su esquema y responden bien. "cambios" pisa la respuesta de una
+  // etiqueta: recibe la respuesta por defecto y cuántas veces se llamó. "guardado.estado" es el
+  // último estado.json escrito, tal como lo devolvería el preparador de la corrida siguiente.
+  const frenteFalso = ({ mudos = [], estado = null, head = 'c0ffee0'.repeat(5) + 'c0ffe', noCumple = '', tareasVigentes = [], lotesEnRama = null, sinTipos = false, cambios = {} } = {}) => {
+    const guardado = { estado };
+    const veces = {};
+    const responder = async (opts, prompt) => {
+      if (sinTipos && opts.agentType) throw new Error('agent type not found');
+      if (mudos.includes(opts.label)) return null;
+      const props = opts.schema.properties;
+      const r = {};
+      for (const k of opts.schema.required) r[k] = props[k].type === 'array' ? [] : props[k].type === 'boolean' ? true : 'x';
+      if (opts.label === 'preparar') {
+        // Por defecto, la rama tiene los lotes que el estado da por integrados.
+        const enRama = lotesEnRama || (estado && typeof estado === 'object' ? estado.lotes : []);
+        Object.assign(r, { base: head, baseline: 'GREEN', tareasVigentes, lotesEnRama: enRama, hayEstado: Boolean(estado),
+          estado: !estado ? '' : typeof estado === 'string' ? estado : JSON.stringify(estado) });
+      }
+      if ('integrados' in props) Object.assign(r, { integrados: TODOS, sha: 'b'.repeat(40) });
+      if ('veredicto' in props) {
+        Object.assign(r, { veredicto: 'PASS', shaAuditado: SHA_A });
+        r.decisiones = GQL.decisiones.map((d) => `${d.id}: ${d.id === noCumple ? 'NO CUMPLE' : 'CUMPLE'} — archivo:1`);
+      }
+      if (opts.label.startsWith('estado')) {
+        const m = prompt.match(/\n(\{"formato".*\})\n/);
+        if (m) { r.contenido = m[1]; guardado.estado = JSON.parse(m[1]); }
+      }
+      if (opts.label.startsWith('revertir')) r.detalle = 'e'.repeat(40);
+      if (opts.label === 'cierre') r.sha = SHA_CIERRE;
+      if ('url' in props) r.url = 'https://pr';
+      veces[opts.label] = (veces[opts.label] || 0) + 1;
+      return cambios[opts.label] ? cambios[opts.label](r, veces[opts.label]) : r;
+    };
+    return { responder, guardado };
+  };
+  const lanza = async (args, responder) => {
+    try { const r = await correrFrente(args, responder); return { error: null, llamadas: r.llamadas.length }; }
+    catch (e) { return { error: e, llamadas: 0 }; }
+  };
+  const antes = (ls, a, b) => ls.indexOf(a) !== -1 && ls.indexOf(a) < ls.indexOf(b);
+  const tareaEn = (r, t, veredicto) => r.resultado.tareas.some((x) => x.startsWith(`${t}: ${veredicto}`));
+
+  // ── La regla del manifiesto ──
+  const arranque = await correrFrente({ fase: 'disenar' });
+  assert('20.1  SPEC-11 manifest passes the rule; mute agents → stops at Preparar after one agent',
+    arranque.llamadas.length === 1 && /Detenida en Preparar/.test(arranque.resultado.detenida));
+
+  const sinDestino = await lanza({ fase: 'disenar', manifiesto: conFrente((m) => { delete m.decisiones[0].lote; delete m.decisiones[0].criterio; }) });
+  assert('20.2  decision without lote or aCargoDe → throws before any agent',
+    sinDestino.error !== null && /sin destino/.test(sinDestino.error.message) && sinDestino.llamadas === 0);
+
+  const zona = (id, glob) => lanza({ fase: 'disenar', manifiesto: conFrente((m) => { m.lotes.find((l) => l.id === id).archivos.push(glob); }) });
+  const DS = 'donaciones-service/src/main/java/grupo5/donaciones';
+  const solapado = await zona('g2-entidades', `${DS}/graphql/necesidades/Algo.java`);
+  const carpeta = await zona('g2-entidades', `${DS}/seguridad`);
+  const llaves = await zona('g2-entidades', `${DS}/{graphql,otro}/donaciones/X.java`);
+  assert('20.3  two lotes of the same tanda with overlapping zones (file in a glob, plain folder, braces) → throws',
+    [solapado, carpeta, llaves].every((x) => x.error !== null && /se solapan/.test(x.error.message)));
+
+  const desordenado = await lanza({ fase: 'disenar', manifiesto: conFrente((m) => { m.lotes.find((l) => l.id === 'g2-armazon').tanda = 5; }) });
+  const comillas = await lanza({ fase: 'disenar', manifiesto: conFrente((m) => { m.pr.titulo = 'E7: "GraphQL"'; }) });
+  assert('20.4  lote with a tanda after a later task, or a PR title with quotes → throws',
+    desordenado.error !== null && /tarea que viene después/.test(desordenado.error.message) &&
+    comillas.error !== null && /titulo/.test(comillas.error.message));
+
+  const sinAprobacion = await lanza({ fase: 'construir' });
+  assert('20.5  construir without disenoAprobado → throws before any agent',
+    sinAprobacion.error !== null && /disenoAprobado/.test(sinAprobacion.error.message) && sinAprobacion.llamadas === 0);
+
+  // ── disenar ──
+  const fDisenar = frenteFalso();
+  const disenar = await correrFrente({ fase: 'disenar' }, fDisenar.responder);
+  assert('20.6  disenar: design lote, integration, preauditor and auditor; no construction, no PR',
+    ['diseño g1-esquema', 'integrar el diseño', 'preauditoría G1 r1', 'auditoría G1 r1'].every((l) => disenar.llamadas.includes(l)) &&
+    !disenar.llamadas.includes('g2-armazon') && !disenar.llamadas.includes('PR') &&
+    disenar.resultado.paraAprobar.length === 1 && /Primer control/.test(disenar.resultado.siguiente));
+  assert('20.7  disenar saves estado.json with G1 in PASS, the design SHA and the control field',
+    fDisenar.guardado.estado !== null && fDisenar.guardado.estado.tareas.G1.veredicto === 'PASS' &&
+    fDisenar.guardado.estado.shaDiseno === SHA_A && Number.isInteger(fDisenar.guardado.estado.control));
+  const ESTADO_DISENO = fDisenar.guardado.estado;
+  const construirCon = (opciones = {}, args = {}) => {
+    const f = frenteFalso({ estado: ESTADO_DISENO, ...opciones });
+    return correrFrente({ fase: 'construir', disenoAprobado: SHA_A, ...args }, f.responder).then((r) => ({ ...r, guardado: f.guardado }));
+  };
+
+  // ── construir, camino feliz ──
+  const construir = await construirCon();
+  const lc = construir.llamadas;
+  assert('20.8  construir: tandas in order, each task audited when its last tanda is integrated',
+    antes(lc, 'g2-armazon', 'g2-necesidades') && antes(lc, 'g2-donaciones', 'g2-relaciones') &&
+    antes(lc, 'g2-relaciones', 'auditoría G2 r1') && antes(lc, 'auditoría G2 r1', 'g3-limites') &&
+    antes(lc, 'g4-gateway-contrato', 'auditoría G3 r1') && antes(lc, 'auditoría G3 r1', 'auditoría G4 r1') &&
+    !lc.includes('auditoría G1 r1'));
+  assert('20.9  construir: documentation, closing audit and, last, the closing gates; shaFinal is the commit the gates ran on; no push or PR',
+    antes(lc, 'documentación', 'auditoría cierre r1') && antes(lc, 'auditoría cierre r1', 'cierre') && !lc.includes('PR') &&
+    ['G1', 'G2', 'G3', 'G4'].every((t) => construir.guardado.estado.tareas[t].veredicto === 'PASS') &&
+    construir.guardado.estado.cierre.veredicto === 'PASS' && construir.guardado.estado.shaFinal === SHA_CIERRE &&
+    /Segundo control/.test(construir.resultado.siguiente) && construir.resultado.detenida === '');
+  const etiqueta = (l) => construir.agentes.find((a) => a.label === l);
+  assert('20.10 models by role: builders Opus medium in a worktree, integrator Sonnet high, preauditor Haiku, auditor Opus medium',
+    etiqueta('g2-armazon').model === 'opus' && etiqueta('g2-armazon').effort === 'medium' && etiqueta('g2-armazon').isolation === 'worktree' &&
+    etiqueta('integrar tanda 1').model === 'sonnet' && etiqueta('integrar tanda 1').effort === 'high' &&
+    etiqueta('preauditoría G2 r1').model === 'haiku' && etiqueta('preauditoría G2 r1').agentType === 'preauditor' &&
+    etiqueta('auditoría G2 r1').agentType === 'auditor' && etiqueta('auditoría G2 r1').effort === 'medium');
+  const conStack = await construirCon({}, { stackDeLaRama: true });
+  assert('20.11 Gate 3 runs only with stackDeLaRama',
+    !etiqueta('cierre').prompt.includes('mvn verify -pl integration-tests') &&
+    conStack.agentes.find((a) => a.label === 'cierre').prompt.includes('mvn verify -pl integration-tests'));
+  assert('20.12 every builder gets the precedence regime, its zone and the approved contract; the task audit also looks at the integration fixes of its tandas',
+    etiqueta('g2-donaciones').prompt.includes('gana el manifiesto') && etiqueta('g2-donaciones').prompt.includes('seguridad/Acceso.java') &&
+    etiqueta('g2-donaciones').prompt.includes(GQL.contrato) && etiqueta('g2-donaciones').prompt.includes('D15') &&
+    etiqueta('auditoría G2 r1').prompt.includes('integración tanda 3') && etiqueta('auditoría G3 r1').prompt.includes('integración tanda 4') &&
+    antes(lc, 'integrar tanda 1', 'estado Integrar'));
+
+  // ── construir, cuando algo falla ──
+  const armazonMudo = await construirCon({ mudos: ['g2-armazon'] });
+  assert('20.13 a lote that nobody delivers stops the later tandas and the later tasks',
+    !armazonMudo.llamadas.includes('g2-necesidades') && !armazonMudo.llamadas.includes('g3-limites') &&
+    !armazonMudo.llamadas.includes('cierre') && tareaEn(armazonMudo, 'G4', 'CHANGES_REQUIRED'));
+
+  const noCumpleD08 = await construirCon({ noCumple: 'D08' });
+  assert('20.14 a decision NO CUMPLE blocks: fixes and re-audits up to the cap, then the later tasks do not run',
+    ['arreglos G2 r1', 'arreglos G2 r2', 'auditoría G2 r3'].every((l) => noCumpleD08.llamadas.includes(l)) &&
+    !noCumpleD08.llamadas.includes('arreglos G2 r3') && !noCumpleD08.llamadas.includes('g3-limites') &&
+    /G2 sin PASS/.test(noCumpleD08.resultado.detenida) &&
+    noCumpleD08.resultado.decisionesDelUsuario.some((d) => d.startsWith('D08') && d.includes('no cumplida')));
+
+  const parcial20 = await construirCon({ cambios: { 'integrar tanda 2': (r) => ({ ...r, integrados: ['g2-necesidades', 'g2-entidades'] }) } });
+  const fantasma = await construirCon({ mudos: ['g2-donaciones'] });
+  assert('20.15 a lote left out by the integrator, or claimed by it but never delivered, breaks its task',
+    !parcial20.llamadas.includes('g2-relaciones') && tareaEn(parcial20, 'G2', 'CHANGES_REQUIRED (el lote g2-donaciones no se integró') &&
+    !fantasma.guardado.estado.lotes.includes('g2-donaciones') && !fantasma.llamadas.includes('g2-relaciones'));
+
+  const rojo = (r) => ({ ...r, gatesOk: false, detalle: 'un test en rojo' });
+  const arreglado = await construirCon({ cambios: { 'integrar tanda 1': rojo } });
+  assert('20.16 red gates after integrating: one fix, the gates run again, and the run goes on',
+    antes(arreglado.llamadas, 'arreglo de gates tanda 1', 'gates tanda 1 después del arreglo') &&
+    !arreglado.llamadas.includes('revertir tanda 1') && arreglado.llamadas.includes('g2-necesidades'));
+
+  const sigueRojo = { 'integrar tanda 4': rojo, 'gates tanda 4 después del arreglo': (r) => ({ ...r, gatesOk: false, culpables: ['g3-limites'] }) };
+  const revertido = await construirCon({ cambios: sigueRojo });
+  assert('20.17 gates still red: only the lote that causes it is reverted, the gates run again, and the other task of the tanda is audited on its own',
+    antes(revertido.llamadas, 'revertir tanda 4', 'gates tanda 4 después de revertir') &&
+    !revertido.llamadas.includes('auditoría G3 r1') && revertido.llamadas.includes('auditoría G4 r1') &&
+    tareaEn(revertido, 'G3', 'CHANGES_REQUIRED') && tareaEn(revertido, 'G4', 'PASS') &&
+    !revertido.guardado.estado.lotes.includes('g3-limites'));
+
+  const sinConfirmar = await construirCon({ cambios: { ...sigueRojo, 'revertir tanda 4': (r) => ({ ...r, detalle: 'Listo, HEAD quedó bien' }) } });
+  const rojoAlFinal = await construirCon({ cambios: { ...sigueRojo, 'gates tanda 4 después de revertir': (r) => ({ ...r, gatesOk: false }) } });
+  assert('20.18 a revert that does not return a SHA, or gates still red after it → the run stops and asks for a manual check',
+    [sinConfirmar, rojoAlFinal].every((x) => /Revisala a mano/.test(x.resultado.detenida) && !x.llamadas.includes('documentación')));
+
+  const auditorMudo = await construirCon({ mudos: ['auditoría G2 r1', 'auditoría G2 r2', 'auditoría G2 r3'] });
+  const sinBloqueantes = await construirCon({ cambios: { 'auditoría G3 r1': (r, n) => (n === 1 ? { ...r, veredicto: 'CHANGES_REQUIRED' } : r) } });
+  assert('20.19 a mute auditor never passes; CHANGES_REQUIRED without findings is audited again, with nothing to fix',
+    tareaEn(auditorMudo, 'G2', 'CHANGES_REQUIRED') && !auditorMudo.llamadas.includes('arreglos G2 r1') && !auditorMudo.llamadas.includes('g3-limites') &&
+    !sinBloqueantes.llamadas.includes('arreglos G3 r1') && sinBloqueantes.llamadas.includes('auditoría G3 r2') && tareaEn(sinBloqueantes, 'G3', 'PASS'));
+
+  const SHA_F = 'f'.repeat(40);
+  const disenoCambiado = await construirCon({}, { disenoAprobado: SHA_F });
+  const disenoRechazado = await construirCon({ cambios: { 'auditoría G1 r1': (r) => ({ ...r, veredicto: 'CHANGES_REQUIRED', bloqueantes: ['el tipo Entidad expone representantes'] }) } }, { disenoAprobado: SHA_F });
+  assert('20.20 design changed at the first control: audited again in one round, without preauditor or fixes; without PASS nothing is built',
+    disenoCambiado.llamadas.includes('auditoría G1 r1') && !disenoCambiado.llamadas.includes('preauditoría G1 r1') &&
+    disenoCambiado.llamadas.includes('g2-armazon') && disenoCambiado.guardado.estado.shaDiseno === SHA_F &&
+    !disenoRechazado.llamadas.includes('arreglos G1 r1') && !disenoRechazado.llamadas.includes('g2-armazon') &&
+    /diseño no está en PASS/.test(disenoRechazado.resultado.detenida));
+
+  const cierreRojo = await construirCon({ cambios: { cierre: (r) => ({ ...r, gatesOk: false, gates: 'agent-check: 1 FAIL' }) } });
+  const disenoTocado = await construirCon({ cambios: { cierre: (r) => ({ ...r, disenoIgual: false }) } });
+  assert('20.21 closing gates red, or the design touched after the first control → the closing is not PASS',
+    cierreRojo.guardado.estado.cierre.veredicto === 'CHANGES_REQUIRED' && /gates en rojo/.test(cierreRojo.resultado.detenida) &&
+    disenoTocado.guardado.estado.cierre.veredicto === 'CHANGES_REQUIRED' && /diseño cambió/.test(disenoTocado.resultado.detenida));
+
+  const noListo = await construirCon({ cambios: { preparar: (r) => ({ ...r, ok: false, motivo: 'hay cambios sin comitear' }) } });
+  const sinDiseno = await construirCon({ cambios: { preparar: (r) => ({ ...r, disenoEnRama: false }) } });
+  const perdidos = await construirCon({ estado: construir.guardado.estado, lotesEnRama: ['g1-esquema'] });
+  const sobrantes = await construirCon({ lotesEnRama: ['g1-esquema', 'g2-armazon'] });
+  const envuelto = await construirCon({ estado: '```json\n' + JSON.stringify(ESTADO_DISENO) + '\n```' , lotesEnRama: ['g1-esquema'] });
+  assert('20.22 dirty tree, design not in the branch, or a branch that does not match the saved lotes (missing or extra) → does not start',
+    noListo.llamadas.length === 1 && /cambios sin comitear/.test(noListo.resultado.detenida) &&
+    sinDiseno.llamadas.length === 1 && /diseño aprobado/.test(sinDiseno.resultado.detenida) &&
+    perdidos.llamadas.length === 1 && /no aparecen en la rama/.test(perdidos.resultado.detenida) &&
+    sobrantes.llamadas.length === 1 && /ya están en la rama/.test(sobrantes.resultado.detenida) &&
+    envuelto.llamadas.includes('g2-armazon'));
+
+  // ── el estado entre corridas ──
+  const truncado = await construirCon({ estado: JSON.stringify(ESTADO_DISENO).slice(0, 80) });
+  const resumido = await construirCon({ estado: JSON.stringify({ ...ESTADO_DISENO, lotes: [] }) });
+  assert('20.23 a truncated or altered estado.json is never taken as a fresh start',
+    [truncado, resumido].every((x) => x.llamadas.length === 1 && /no se pudo leer entero/.test(x.resultado.detenida)));
+
+  const malGuardado = await lanza({ fase: 'construir', disenoAprobado: SHA_A },
+    frenteFalso({ estado: ESTADO_DISENO, cambios: { 'estado Integrar': (r) => ({ ...r, contenido: r.contenido.slice(0, 60) }) } }).responder);
+  assert('20.24 the state read back from disk differs from what was sent → two attempts, then the run is cut',
+    malGuardado.error !== null && /No se pudo guardar el estado/.test(malGuardado.error.message));
+
+  const reanudado = await construirCon({ estado: noCumpleD08.guardado.estado, tareasVigentes: ['G1'] });
+  assert('20.25 relaunching construir resumes: integrated lotes are not rebuilt, the task without PASS is audited again',
+    !reanudado.llamadas.includes('g2-armazon') && reanudado.llamadas.includes('auditoría G2 r1') &&
+    reanudado.llamadas.includes('g3-limites'));
+
+  const duenoTocoG2 = await construirCon({ estado: construir.guardado.estado, tareasVigentes: ['G1', 'G3', 'G4'] });
+  assert('20.26 a task that is no longer current (the owner committed on it) is audited again without rebuilding',
+    duenoTocoG2.llamadas.includes('auditoría G2 r1') && !duenoTocoG2.llamadas.includes('g2-armazon') &&
+    !duenoTocoG2.llamadas.includes('auditoría G3 r1') && duenoTocoG2.llamadas.includes('auditoría cierre r1'));
+
+  // ── lotes condicionales y tipos de agente ──
+  const CON_CONDICION = conFrente((m) => { m.lotes.find((l) => l.id === 'g4-gateway-contrato').condicion = 'con-gateway'; });
+  const sinCondicion = await construirCon({}, { manifiesto: CON_CONDICION });
+  const conCondicion = await construirCon({}, { manifiesto: CON_CONDICION, condiciones: ['con-gateway'] });
+  assert('20.27 a conditional lote runs only with its condition; without it, its decisions are reported as not met',
+    !sinCondicion.llamadas.includes('g4-gateway-contrato') && conCondicion.llamadas.includes('g4-gateway-contrato') &&
+    sinCondicion.resultado.decisionesDelUsuario.some((d) => d.startsWith('D14') && d.includes('no cumplida: el lote g4-gateway-contrato no corrió')));
+
+  const sinTipos = await correrFrente({ fase: 'disenar' }, frenteFalso({ sinTipos: true }).responder);
+  assert('20.28 session without the preauditor and auditor agent types → generic agents with the same model',
+    sinTipos.resultado.tareas.includes('G1: PASS') &&
+    sinTipos.agentes.some((a) => a.label === 'auditoría G1 r1' && !a.agentType && a.model === 'opus'));
+
+  // ── pr ──
+  const ESTADO_FINAL = construir.guardado.estado;
+  const prCon = (estado, head) => correrFrente({ fase: 'pr' }, frenteFalso({ estado, head }).responder);
+  const prListo = await prCon(ESTADO_FINAL, ESTADO_FINAL.shaFinal);
+  const agentePr = prListo.agentes.find((a) => a.label === 'PR');
+  assert('20.29 pr with everything in PASS and HEAD at shaFinal → draft PR that lists the relaxed rules',
+    prListo.resultado.pr === 'https://pr' && agentePr.prompt.includes('gh pr create --draft') &&
+    agentePr.prompt.includes('Reglas del repo flexibilizadas') && agentePr.prompt.includes('--base ENTREGA_7'));
+  const prMovido = await prCon(ESTADO_FINAL, 'd'.repeat(40));
+  const prSinPass = await prCon(noCumpleD08.guardado.estado, noCumpleD08.guardado.estado.shaFinal);
+  const prCierreRojo = await prCon(cierreRojo.guardado.estado, cierreRojo.guardado.estado.shaFinal);
+  assert('20.30 pr with HEAD moved after the closing, a task without PASS, or the closing not in PASS → no push, no PR',
+    prMovido.llamadas.length === 1 && /HEAD/.test(prMovido.resultado.detenida) &&
+    prSinPass.llamadas.length === 1 && /sin PASS/.test(prSinPass.resultado.detenida) &&
+    prCierreRojo.llamadas.length === 1 && /cierre no está en PASS/.test(prCierreRojo.resultado.detenida));
+  const prAbreviado = await prCon(ESTADO_FINAL, ESTADO_FINAL.shaFinal.slice(0, 12));
+  const disenoAbreviado = await construirCon({}, { disenoAprobado: SHA_A.slice(0, 10) });
+  assert('20.31 an abbreviated SHA still matches: the PR opens and the design is not audited again',
+    prAbreviado.resultado.pr === 'https://pr' && !disenoAbreviado.llamadas.includes('auditoría G1 r1'));
+  const todos = [...disenar.agentes, ...construir.agentes];
+  const enWorktree = todos.filter((a) => a.isolation === 'worktree');
+  assert('20.32 every agent in a worktree checks that it starts on the base, and no prompt asks for git reset --hard',
+    enWorktree.length >= 8 && enWorktree.every((a) => /git rev-parse HEAD tiene que dar [0-9a-f]{7,40} /.test(a.prompt)) &&
+    todos.every((a) => !/reset --hard/.test(a.prompt)));
+
   resumen();
 })().catch((e) => { console.error(e); failed++; resumen(); });
 

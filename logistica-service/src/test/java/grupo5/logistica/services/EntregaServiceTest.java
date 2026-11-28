@@ -934,6 +934,187 @@ class EntregaServiceTest {
 
     assertEquals(EstadoRuta.PENDIENTE, dto.estadoRuta());
     assertNull(dto.posicionCamion());
+    assertNull(dto.horaEstimadaLlegada(), "Con la ruta sin salir no hay hora estimada");
+  }
+
+  // ===================== Hora estimada de llegada (HG-02) =====================
+
+  private static final CoordenadasGeograficas DESTINO = new CoordenadasGeograficas(-34.7, -58.4);
+
+  /** Una ruta en traslado del camión con {@code paradas}, en ese orden, ya salidas. */
+  private Ruta rutaEnTraslado(Camion camion, Entrega... paradas) {
+    Ruta ruta = new Ruta(LocalDate.of(2026, 11, 25), UUID.randomUUID(), camion.getId());
+    for (Entrega parada : paradas) {
+      ruta.agregarEntrega(parada.getId());
+      parada.asignarRuta(ruta.getId());
+    }
+    ruta.iniciarRuta();
+    for (Entrega parada : paradas) {
+      parada.iniciarRuta("Chofer");
+    }
+    when(rutasRepository.findById(ruta.getId())).thenReturn(Optional.of(ruta));
+    when(camionRepository.findById(camion.getId())).thenReturn(Optional.of(camion));
+    return ruta;
+  }
+
+  private static PosicionCamion registrarPosicion(Camion camion, Ruta ruta) {
+    PosicionCamion posicion =
+        new PosicionCamion(
+            -34.6, -58.4, ruta.getHoraInicioReal().toInstant(ZoneOffset.UTC).plusSeconds(30));
+    camion.registrarPosicion(posicion);
+    return posicion;
+  }
+
+  private SeguimientoEntregaResponseDTO seguimientoDe(Entrega entrega) {
+    when(entregasRepository.findByIdDonacion(entrega.getIdDonacion()))
+        .thenReturn(Optional.of(entrega));
+    return entregasService.obtenerSeguimientoPorDonacion(entrega.getIdDonacion());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_enTrasladoConPosicion_informaLaHoraEstimadaDeLlegada() {
+    Entrega entrega = EntregaMother.pendienteEn(DESTINO);
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    Ruta ruta = rutaEnTraslado(camion, entrega);
+    PosicionCamion posicion = registrarPosicion(camion, ruta);
+
+    SeguimientoEntregaResponseDTO dto = seguimientoDe(entrega);
+
+    // 11,119 km a 20 km/h desde la hora de la posición.
+    assertEquals(posicion.registradaEn().plusSeconds(2002), dto.horaEstimadaLlegada());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_sinPosicionDelCamion_noInformaHoraEstimada() {
+    Entrega entrega = EntregaMother.pendienteEn(DESTINO);
+    rutaEnTraslado(new Camion("AB123CD", 50f, 2000f, 3f), entrega);
+
+    SeguimientoEntregaResponseDTO dto = seguimientoDe(entrega);
+
+    assertEquals(EstadoEntrega.EN_TRASLADO, dto.estadoEntrega());
+    assertNull(dto.horaEstimadaLlegada());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_destinoSinCoordenadas_noInformaHoraEstimada() {
+    Entrega entrega = EntregaMother.pendiente();
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    registrarPosicion(camion, rutaEnTraslado(camion, entrega));
+
+    SeguimientoEntregaResponseDTO dto = seguimientoDe(entrega);
+
+    assertNotNull(dto.posicionCamion());
+    assertNull(dto.horaEstimadaLlegada());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_entregaYaEntregada_noInformaHoraEstimada() {
+    Entrega entrega = EntregaMother.pendienteEn(DESTINO);
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    registrarPosicion(camion, rutaEnTraslado(camion, entrega));
+    entrega.confirmarEntrega("Comedor Ejemplo", "https://storage.donatrack.org/foto.jpg");
+
+    SeguimientoEntregaResponseDTO dto = seguimientoDe(entrega);
+
+    assertEquals(EstadoRuta.EN_TRASLADO, dto.estadoRuta());
+    assertNull(dto.horaEstimadaLlegada());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_entregaEnPuerta_noInformaHoraEstimada() {
+    Entrega entrega = EntregaMother.pendienteEn(DESTINO);
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    registrarPosicion(camion, rutaEnTraslado(camion, entrega));
+    entrega.llegarAPuerta("Chofer");
+
+    SeguimientoEntregaResponseDTO dto = seguimientoDe(entrega);
+
+    assertEquals(EstadoEntrega.EN_PUERTA, dto.estadoEntrega());
+    assertNull(dto.horaEstimadaLlegada());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_entregaQueNoFiguraEnSuRuta_noInformaHoraEstimada() {
+    Entrega otra = EntregaMother.pendienteEn(new CoordenadasGeograficas(-34.65, -58.4));
+    Entrega entrega = EntregaMother.pendienteEn(DESTINO);
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    Ruta ruta = rutaEnTraslado(camion, otra);
+    registrarPosicion(camion, ruta);
+    entrega.asignarRuta(ruta.getId());
+    entrega.iniciarRuta("Chofer");
+    when(entregasRepository.findById(otra.getId())).thenReturn(Optional.of(otra));
+
+    SeguimientoEntregaResponseDTO dto = seguimientoDe(entrega);
+
+    assertNull(dto.ordenVisita());
+    assertNull(dto.horaEstimadaLlegada());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_conParadasAnteriores_sumaLasPendientesYNoLasEntregadas() {
+    Entrega yaEntregada = EntregaMother.pendienteEn(new CoordenadasGeograficas(-34.9, -58.4));
+    Entrega pendienteAnterior = EntregaMother.pendienteEn(DESTINO);
+    Entrega consultada = EntregaMother.pendienteEn(new CoordenadasGeograficas(-34.6, -58.4));
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    Ruta ruta = rutaEnTraslado(camion, yaEntregada, pendienteAnterior, consultada);
+    yaEntregada.confirmarEntrega("Comedor Ejemplo", "https://storage.donatrack.org/foto.jpg");
+    PosicionCamion posicion = registrarPosicion(camion, ruta);
+    when(entregasRepository.findById(yaEntregada.getId())).thenReturn(Optional.of(yaEntregada));
+    when(entregasRepository.findById(pendienteAnterior.getId()))
+        .thenReturn(Optional.of(pendienteAnterior));
+
+    SeguimientoEntregaResponseDTO dto = seguimientoDe(consultada);
+
+    // Ida y vuelta a la parada pendiente (22,239 km, 4003 s) y sus 10 minutos.
+    assertEquals(posicion.registradaEn().plusSeconds(4003 + 600L), dto.horaEstimadaLlegada());
+  }
+
+  /**
+   * Los listados arman la hora estimada con las paradas leídas por lote: la página trae solo la
+   * consultada, y el lote devuelve las otras dos en orden inverso al de visita. El recorrido sigue
+   * el orden de la ruta, no el del lote.
+   */
+  private Instant[] horaEstimadaEnListadoConParadasAnteriores(boolean porDonante) {
+    Entrega yaEntregada = EntregaMother.pendienteEn(new CoordenadasGeograficas(-34.9, -58.4));
+    Entrega pendienteAnterior = EntregaMother.pendienteEn(DESTINO);
+    Entrega consultada = EntregaMother.pendienteEn(new CoordenadasGeograficas(-34.6, -58.4));
+    Camion camion = new Camion("AB123CD", 50f, 2000f, 3f);
+    Ruta ruta = rutaEnTraslado(camion, yaEntregada, pendienteAnterior, consultada);
+    yaEntregada.confirmarEntrega("Comedor Ejemplo", "https://storage.donatrack.org/foto.jpg");
+    PosicionCamion posicion = registrarPosicion(camion, ruta);
+    when(entregasRepository.buscarSeguimiento(any()))
+        .thenReturn(new TramoDeEntregas(List.of(consultada), 1));
+    when(rutasRepository.findByIds(any())).thenReturn(List.of(ruta));
+    when(camionRepository.findByIds(any())).thenReturn(List.of(camion));
+    when(entregasRepository.findByIds(any())).thenReturn(List.of(pendienteAnterior, yaEntregada));
+
+    SeguimientosDeEntregas resultado =
+        porDonante
+            ? entregasService.listarSeguimientoPorDonante(
+                UUID.randomUUID(), ConsultaSeguimiento.primeraPagina())
+            : entregasService.listarSeguimientoPorBeneficiaria(
+                UUID.randomUUID(), ConsultaSeguimiento.primeraPagina());
+
+    verify(entregasRepository, never()).findById(any());
+    // Ida y vuelta a la parada pendiente (22,239 km, 4003 s) y sus 10 minutos.
+    return new Instant[] {
+      posicion.registradaEn().plusSeconds(4003 + 600L),
+      resultado.seguimientos().getFirst().horaEstimadaLlegada()
+    };
+  }
+
+  @Test
+  void listarSeguimientoPorBeneficiaria_conParadasAnteriores_informaLaHoraEstimadaDeLlegada() {
+    Instant[] esperadaYObtenida = horaEstimadaEnListadoConParadasAnteriores(false);
+
+    assertEquals(esperadaYObtenida[0], esperadaYObtenida[1]);
+  }
+
+  @Test
+  void listarSeguimientoPorDonante_conParadasAnteriores_informaLaHoraEstimadaDeLlegada() {
+    Instant[] esperadaYObtenida = horaEstimadaEnListadoConParadasAnteriores(true);
+
+    assertEquals(esperadaYObtenida[0], esperadaYObtenida[1]);
   }
 
   // ===================== cancelarPorDonacion() (HB-19) =====================

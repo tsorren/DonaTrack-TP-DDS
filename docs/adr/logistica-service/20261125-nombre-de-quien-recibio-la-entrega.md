@@ -70,7 +70,7 @@ Opción elegida: **A**.
 ### Positivas
 
 - La etiqueta privada puede nombrar a la persona sin tocar Donaciones ni los eventos.
-- El cambio es aditivo: OpenAPI 1.12.0, campo `nullable` en request y response.
+- El cambio es aditivo: OpenAPI 1.13.0, campo `nullable` en request y response.
 
 ### Negativas
 
